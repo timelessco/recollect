@@ -6,6 +6,7 @@ import {
 	MAX_VIDEO_SIZE_BYTES,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_FILES_PATH,
+	VIDEO_ACCESSIBILITY_TIMEOUT_MS,
 	VIDEO_DOWNLOAD_TIMEOUT_MS,
 } from "./constants";
 import { storageHelpers } from "./storageClient";
@@ -352,6 +353,49 @@ const processBlurhash = async (
 };
 
 /**
+ * Returns video URL if accessible, null otherwise.
+ * Domain validation is done in uploadVideoToR2.
+ */
+export async function getValidatedVideoUrl(
+	videoUrl: string | null | undefined,
+): Promise<string | null> {
+	if (!videoUrl || typeof videoUrl !== "string") {
+		return null;
+	}
+
+	const accessible = await isVideoUrlAccessible(videoUrl);
+	if (!accessible) {
+		console.log("[getValidatedVideoUrl] Video URL not accessible:", {
+			videoUrl,
+		});
+		return null;
+	}
+
+	return videoUrl;
+}
+
+/**
+ * Checks if a video URL is accessible via HEAD request.
+ * Returns false on timeout, 4xx/5xx, or network errors.
+ */
+export async function isVideoUrlAccessible(videoUrl: string): Promise<boolean> {
+	try {
+		const response = await fetch(videoUrl, {
+			method: "HEAD",
+			signal: AbortSignal.timeout(VIDEO_ACCESSIBILITY_TIMEOUT_MS),
+			headers: {
+				"User-Agent":
+					"Mozilla/5.0 (compatible; Recollect/1.0; +https://recollect.so)",
+				Accept: "video/*,*/*;q=0.8",
+			},
+		});
+		return response.ok;
+	} catch {
+		return false;
+	}
+}
+
+/**
  * Downloads a video from external URL and uploads to R2
  * @param videoUrl - External video URL
  * @param user_id - User ID for storage path
@@ -366,6 +410,14 @@ export const uploadVideoToR2 = async (
 	isInstagramBookmark: boolean,
 ): Promise<string | null> => {
 	try {
+		// Check accessibility first; if inaccessible, return null before validation or upload
+		if (!(await isVideoUrlAccessible(videoUrl))) {
+			console.log("[uploadVideoToR2] Video URL inaccessible, skipping upload", {
+				videoUrl,
+			});
+			return null;
+		}
+
 		// Validate URL based on bookmark type (defense in depth)
 		if (isTwitterBookmark) {
 			validateTwitterMediaUrl(videoUrl);

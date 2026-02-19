@@ -9,6 +9,7 @@ import {
 	tweetType,
 	WORKER_SCREENSHOT_API,
 } from "./constants";
+import { getValidatedVideoUrl } from "./helpers.server";
 
 type ProcessParameters = { batchSize: number; queue_name: string };
 
@@ -16,6 +17,29 @@ const SLEEP_SECONDS = 30;
 
 // max retries for a message
 const MAX_RETRIES = 3;
+
+const OG_IMAGE_VALIDATION_TIMEOUT_MS = 5_000;
+
+/**
+ * Checks if an ogImage URL is accessible via HEAD request.
+ * Returns false on timeout, 4xx/5xx, or network errors.
+ */
+async function isOgImageAccessible(ogImageUrl: string): Promise<boolean> {
+	try {
+		const response = await fetch(ogImageUrl, {
+			method: "HEAD",
+			signal: AbortSignal.timeout(OG_IMAGE_VALIDATION_TIMEOUT_MS),
+			headers: {
+				"User-Agent":
+					"Mozilla/5.0 (compatible; Recollect/1.0; +https://recollect.so)",
+			},
+		});
+		return response.ok;
+	} catch {
+		return false;
+	}
+}
+
 export const processImageQueue = async (
 	supabase: SupabaseClient,
 	parameters: ProcessParameters,
@@ -84,9 +108,21 @@ export const processImageQueue = async (
 				const isInstagramBookmark = message.message.type === instagramType;
 
 				const isRaindropBookmark =
-					message.message.meta_data.is_raindrop_bookmark;
+					message.message.meta_data?.is_raindrop_bookmark;
 
+				// When ogImage exists, validate URL before routing
+				let useOgImage = Boolean(ogImage);
 				if (ogImage) {
+					useOgImage = await isOgImageAccessible(ogImage);
+					if (!useOgImage) {
+						console.log(
+							"[process-image-queue] ogImage URL inaccessible, falling back to screenshot",
+							{ url, ogImage },
+						);
+					}
+				}
+
+				if (useOgImage) {
 					// here we upload the image into R2 if it is a raindrop bookmark
 					// and generate ocr imagecaption and bulhash for both twitter and raindrop bookmarks,
 					// we are not awaiting, because we fire this api and vercel will handle the response
@@ -110,10 +146,23 @@ export const processImageQueue = async (
 					// here we take screenshot of the url for both twitter and raindrop bookmarks
 					// we are not awaiting, because we fire this api and vercel will handle the response
 
+					const rawVideoUrl = message.message.meta_data?.video_url;
+					const validatedVideoUrl = await getValidatedVideoUrl(rawVideoUrl);
+
 					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					const response_ = axios.post(
 						`${getBaseUrl()}${NEXT_API_URL}${WORKER_SCREENSHOT_API}`,
-						{ id, url, user_id, mediaType, message, queue_name },
+						{
+							id,
+							url,
+							user_id,
+							mediaType,
+							message,
+							queue_name,
+							video_url: validatedVideoUrl,
+							isTwitterBookmark,
+							isInstagramBookmark,
+						},
 					);
 				}
 			} catch (error) {

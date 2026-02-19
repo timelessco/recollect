@@ -11,6 +11,7 @@ import {
 	SCREENSHOT_API,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
+import { uploadVideoToR2 } from "../../../utils/helpers.server";
 import { createServiceClient } from "../../../utils/supabaseClient";
 
 import { upload } from "@/lib/storage/media-upload";
@@ -24,6 +25,9 @@ const ScreenshotPayloadSchema = z.object({
 	message: z.object({
 		msg_id: z.number(),
 	}),
+	video_url: z.string().url().nullable().optional(),
+	isTwitterBookmark: z.boolean().optional(),
+	isInstagramBookmark: z.boolean().optional(),
 });
 
 type ScreenshotPayload = z.infer<typeof ScreenshotPayloadSchema>;
@@ -51,6 +55,9 @@ export default async function handler(
 		mediaType,
 		queue_name,
 		message,
+		video_url: videoUrl,
+		isTwitterBookmark,
+		isInstagramBookmark,
 	}: ScreenshotPayload = parsed.data;
 
 	const supabase = createServiceClient();
@@ -141,6 +148,20 @@ export default async function handler(
 			mediaType,
 			isPageScreenshot,
 		};
+
+		// Video upload - uploadVideoToR2 validates domain for Twitter/Instagram
+		// When video_url is null (inaccessible), persist null to overwrite stale URL
+		if (videoUrl === null) {
+			newMeta.video_url = null;
+		} else if (videoUrl) {
+			const r2VideoUrl = await uploadVideoToR2(
+				videoUrl,
+				user_id,
+				Boolean(isTwitterBookmark),
+				Boolean(isInstagramBookmark),
+			);
+			newMeta.video_url = r2VideoUrl ?? videoUrl;
+		}
 
 		// ai-enrichment
 		const imageToTextResult = await imageToText(ogImage, supabase, user_id, {
