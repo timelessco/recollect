@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import * as Sentry from "@sentry/nextjs";
 import { Resend } from "resend";
 
@@ -12,6 +14,9 @@ export interface SendCollectionDeletedNotificationProps {
 
 const resendKey = process.env.RESEND_KEY;
 const resend = new Resend(resendKey);
+
+const filePath = path.join(process.cwd(), "public", "logo.png");
+const base64Logo = fs.readFileSync(filePath).toString("base64");
 
 export async function sendCollectionDeletedNotification(
 	props: SendCollectionDeletedNotificationProps,
@@ -29,37 +34,41 @@ export async function sendCollectionDeletedNotification(
 	}
 
 	const subject = `Collection "${categoryName}" was deleted`;
+	const html = buildEmailHtml({ categoryName, ownerDisplayName });
 
-	const emails = collaboratorEmails.map((email) => ({
-		from: EMAIL_FROM,
-		to: email,
-		subject,
-		html: buildEmailHtml({ categoryName, ownerDisplayName }),
-	}));
+	const results = await Promise.allSettled(
+		collaboratorEmails.map((email) =>
+			resend.emails.send({
+				from: EMAIL_FROM,
+				to: email,
+				subject,
+				html,
+				attachments: [
+					{
+						filename: "logo.png",
+						content: base64Logo,
+						contentType: "image/png",
+						contentId: "logo",
+					},
+				],
+			}),
+		),
+	);
 
-	try {
-		const { error } = await resend.batch.send(emails);
-
-		if (error) {
-			console.error(`${LOG_PREFIX} Batch send error:`, error);
-			Sentry.captureException(error, {
+	for (const result of results) {
+		if (result.status === "rejected") {
+			console.error(`${LOG_PREFIX} Send error:`, result.reason);
+			Sentry.captureException(result.reason, {
 				tags: { operation: "send_collection_deleted_notification" },
-				extra: { categoryName, recipientCount: collaboratorEmails.length },
+				extra: { categoryName },
 			});
-			return;
 		}
-
-		console.log(`${LOG_PREFIX} Sent:`, {
-			categoryName,
-			recipientCount: collaboratorEmails.length,
-		});
-	} catch (error) {
-		console.error(`${LOG_PREFIX} Unexpected error:`, error);
-		Sentry.captureException(error, {
-			tags: { operation: "send_collection_deleted_notification" },
-			extra: { categoryName, recipientCount: collaboratorEmails.length },
-		});
 	}
+
+	console.log(`${LOG_PREFIX} Sent:`, {
+		categoryName,
+		recipientCount: collaboratorEmails.length,
+	});
 }
 
 interface BuildEmailHtmlProps {
@@ -76,6 +85,9 @@ function buildEmailHtml(props: BuildEmailHtmlProps) {
 		<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
 			<tr>
 				<td align="center" style="padding:48px 16px;">
+					<div style="margin-bottom:24px;">
+						<img src="cid:logo" width="20" height="24" style="display:block;" alt="logo"/>
+					</div>
 					<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:640px; margin:0 auto; background:#ffffff; border-radius:20px; box-shadow:0 1px 12px rgba(0,0,0,0.06);">
 						<tr>
 							<td style="padding:56px 48px 48px 48px; text-align:center;">
