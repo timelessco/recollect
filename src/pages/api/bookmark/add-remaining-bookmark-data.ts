@@ -10,7 +10,6 @@ import { isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
 import imageToText from "../../../async/ai/imageToText";
-import ocr from "../../../async/ai/ocr";
 import {
 	type AddBookmarkRemainingDataPayloadTypes,
 	type NextApiRequest,
@@ -272,17 +271,6 @@ export default async function handler(
 		}
 
 		try {
-			// Get OCR using the centralized function
-			// Returns { text, status } object
-			const ocrResult = await ocr(
-				imageUrlForMetaDataGeneration,
-				supabase,
-				userId,
-			);
-			imageOcrValue = ocrResult.text;
-			ocrStatus = ocrResult.status;
-
-			// Get image caption and keywords using the centralized function
 			const imageToTextResult = await imageToText(
 				currentData?.meta_data?.isOgImagePreferred
 					? ogImageMetaDataGeneration
@@ -299,13 +287,14 @@ export default async function handler(
 							title: currentData?.title,
 							description: currentData?.description,
 							url,
-							ocrText: imageOcrValue,
 						}
 					: null,
 			);
 			if (imageToTextResult) {
 				imageCaption = imageToTextResult.sentence;
 				imageKeywords = imageToTextResult.image_keywords ?? [];
+				imageOcrValue = imageToTextResult.ocr_text;
+				ocrStatus = imageToTextResult.ocr_text ? "success" : "no_text";
 
 				// Auto-assign collections (non-critical, handled internally)
 				await autoAssignCollections({
