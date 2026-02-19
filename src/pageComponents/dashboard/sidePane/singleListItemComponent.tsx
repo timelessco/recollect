@@ -201,14 +201,8 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 							)}
 					</div>
 				)}
-				{item?.count !== undefined && !showDropdown && (
-					<span
-						className={`${
-							item?.name === "Tweets" ? "block" : "hidden"
-						} text-[11px] leading-3 font-450 text-gray-600 ${
-							showDropdown ? "block group-hover:hidden" : "block"
-						}`}
-					>
+				{item?.count !== undefined && item?.current && !showDropdown && (
+					<span className="text-[11px] leading-3 font-450 text-gray-600">
 						{item?.count}
 					</span>
 				)}
