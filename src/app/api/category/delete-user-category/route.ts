@@ -89,11 +89,19 @@ export const POST = createPostApiHandlerWithAuth({
 		const serviceClient = await createServerServiceClient();
 
 		// Query accepted collaborator emails before deleting shared_categories
-		const { data: collaborators } = await serviceClient
-			.from(SHARED_CATEGORIES_TABLE_NAME)
-			.select("email")
-			.eq("category_id", categoryId)
-			.eq("is_accept_pending", false);
+		const { data: collaborators, error: collaboratorsError } =
+			await serviceClient
+				.from(SHARED_CATEGORIES_TABLE_NAME)
+				.select("email")
+				.eq("category_id", categoryId)
+				.eq("is_accept_pending", false);
+
+		if (collaboratorsError) {
+			console.error(
+				`[${route}] Failed to fetch collaborator emails, skipping notification:`,
+				{ error: collaboratorsError, categoryId },
+			);
+		}
 
 		const collaboratorEmails: string[] = (collaborators ?? [])
 			.map((collaborator) => collaborator.email)
