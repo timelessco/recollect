@@ -10,7 +10,11 @@ const TRACKING_PARAMS = new Set([
 	"igshid",
 ]);
 
-export function normalizeUrl(raw: string): string | null {
+export function normalizeUrl(raw: string | null): string | null {
+	if (!raw) {
+		return null;
+	}
+
 	let parsed: URL;
 	try {
 		parsed = new URL(raw);
