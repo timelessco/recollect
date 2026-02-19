@@ -55,19 +55,35 @@ export async function sendCollectionDeletedNotification(
 		),
 	);
 
+	let failureCount = 0;
+
 	for (const result of results) {
 		if (result.status === "rejected") {
-			console.error(`${LOG_PREFIX} Send error:`, result.reason);
-			Sentry.captureException(result.reason, {
+			failureCount++;
+			const error =
+				result.reason instanceof Error
+					? result.reason
+					: new Error(String(result.reason));
+			console.error(`${LOG_PREFIX} Send error:`, error);
+			Sentry.captureException(error, {
+				tags: { operation: "send_collection_deleted_notification" },
+				extra: { categoryName },
+			});
+		} else if (result.value.error) {
+			failureCount++;
+			const apiError = new Error(result.value.error.message);
+			console.error(`${LOG_PREFIX} API error:`, result.value.error);
+			Sentry.captureException(apiError, {
 				tags: { operation: "send_collection_deleted_notification" },
 				extra: { categoryName },
 			});
 		}
 	}
 
-	console.log(`${LOG_PREFIX} Sent:`, {
+	console.log(`${LOG_PREFIX} Done:`, {
 		categoryName,
-		recipientCount: collaboratorEmails.length,
+		sent: collaboratorEmails.length - failureCount,
+		failed: failureCount,
 	});
 }
 
