@@ -10,12 +10,12 @@ import {
 	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
 } from "../types/apiTypes";
+import { getPageViewData, getPageViewKey } from "../utils/bookmarksViewKeyed";
 import {
 	CATEGORIES_KEY,
 	SHARED_CATEGORIES_TABLE_NAME,
 	USER_PROFILE,
 } from "../utils/constants";
-import { getPageViewData, getPageViewKey } from "../utils/bookmarksViewKeyed";
 import { isUserInACategory } from "../utils/helpers";
 import { getCategorySlugFromRouter } from "../utils/url";
 

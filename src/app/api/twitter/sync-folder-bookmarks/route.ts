@@ -1,5 +1,7 @@
-import { z } from "zod";
-
+import {
+	SyncFolderBookmarksInputSchema,
+	SyncFolderBookmarksOutputSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { createServerServiceClient } from "@/lib/supabase/service";
@@ -7,22 +9,6 @@ import { type Json } from "@/types/database.types";
 import { TWITTER_IMPORTS_QUEUE } from "@/utils/constants";
 
 const ROUTE = "twitter-sync-folder-bookmarks";
-
-const SyncFolderBookmarksInputSchema = z.object({
-	mappings: z
-		.array(
-			z.object({
-				url: z.string().url(),
-				category_name: z.string().min(1, "Category name is required"),
-			}),
-		)
-		.min(1, "At least one mapping required")
-		.max(500, "Maximum 500 mappings per request"),
-});
-
-const SyncFolderBookmarksOutputSchema = z.object({
-	queued: z.number(),
-});
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

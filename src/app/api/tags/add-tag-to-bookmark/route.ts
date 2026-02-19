@@ -1,3 +1,7 @@
+import {
+	AddTagToBookmarkPayloadSchema,
+	AddTagToBookmarkResponseSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
@@ -6,11 +10,6 @@ import {
 	MAIN_TABLE_NAME,
 	TAG_TABLE_NAME,
 } from "@/utils/constants";
-
-import {
-	AddTagToBookmarkPayloadSchema,
-	AddTagToBookmarkResponseSchema,
-} from "./schema";
 
 const ROUTE = "add-tag-to-bookmark";
 

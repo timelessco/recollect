@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { find } from "lodash";
 import { Button } from "@base-ui/react/button";
+import { find } from "lodash";
 
+import { EditPopover } from "./edit-popover";
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import BackIcon from "@/icons/actionIcons/backIcon";
@@ -14,8 +15,6 @@ import { TRASH_URL, viewValues } from "@/utils/constants";
 import { isBookmarkOwner, isUserInACategory } from "@/utils/helpers";
 import { cn } from "@/utils/tailwind-merge";
 import { getCategorySlugFromRouter } from "@/utils/url";
-
-import { EditPopover } from "./edit-popover";
 
 export type EditAndDeleteIconsProps = {
 	cardTypeCondition: string;

@@ -71,10 +71,6 @@ For detailed architecture, module guides, and data flows, see [`docs/CODEBASE_MA
 - [`docs/CODEBASE_MAP.md`](./docs/CODEBASE_MAP.md) - **Complete architecture map, module guides, data flows**
 - [`docs/project_overview.md`](./docs/project_overview.md) - Tech stack, features, architecture
 - [`docs/project_structure.md`](./docs/project_structure.md) - Directory layout, file conventions
-- [`docs/task_completion_checklist.md`](./docs/task_completion_checklist.md)
-- [`docs/code_style_conventions.md`](./docs/code_style_conventions.md)
-- [`docs/frontend_rules.md`](./docs/frontend_rules.md)
-- [`docs/sentry_rules.md`](./docs/sentry_rules.md)
 - [`docs/suggested_commands.md`](./docs/suggested_commands.md)
 
 ## Development Commands
