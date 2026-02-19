@@ -1,8 +1,8 @@
 -- ============================================================================
--- MIGRATION: Auto-assign collections toggle + atomic RPC
+-- MIGRATION: AI features toggle + atomic auto-assign collections RPC
 -- Created: 2026-02-19
 -- Purpose:
---   1. Add auto_assign_collections toggle to profiles table
+--   1. Add ai_features_toggle JSONB column to profiles for per-feature toggles
 --   2. Create atomic RPC to replace Uncategorized with matched collections,
 --      preventing orphaned bookmarks on partial failure.
 -- ============================================================================
@@ -10,12 +10,12 @@
 BEGIN;
 SET search_path = public, pg_temp;
 
--- 1. Add toggle column (default true so existing users get the feature)
+-- 1. Add JSONB column for AI feature toggles (empty object = all defaults)
 ALTER TABLE public.profiles
-ADD COLUMN auto_assign_collections boolean NOT NULL DEFAULT true;
+ADD COLUMN ai_features_toggle jsonb NOT NULL DEFAULT '{"auto_assign_collections": true}'::jsonb;
 
-COMMENT ON COLUMN public.profiles.auto_assign_collections IS
-'When true, AI enrichment automatically assigns bookmarks to matching collections.';
+COMMENT ON COLUMN public.profiles.ai_features_toggle IS
+'Per-user AI feature toggles. Keys: auto_assign_collections (bool).';
 
 -- 2. Atomic function to replace Uncategorized with matched collections
 CREATE OR REPLACE FUNCTION public.auto_assign_collections(

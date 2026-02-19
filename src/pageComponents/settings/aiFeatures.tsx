@@ -224,7 +224,8 @@ const AutoAssignCollectionsToggle = () => {
 		useUpdateUserProfileOptimisticMutation();
 
 	const userData = userProfileData?.data?.[0];
-	const enabled = userData?.auto_assign_collections ?? true;
+	const aiFeatures = userData?.ai_features_toggle;
+	const enabled = aiFeatures?.auto_assign_collections;
 
 	return (
 		<div className="pt-10">
@@ -246,7 +247,12 @@ const AutoAssignCollectionsToggle = () => {
 						? undefined
 						: () => {
 								updateUserProfileOptimisticMutation.mutate({
-									updateData: { auto_assign_collections: !enabled },
+									updateData: {
+										ai_features_toggle: {
+											...aiFeatures,
+											auto_assign_collections: !enabled,
+										},
+									},
 								});
 							}
 				}

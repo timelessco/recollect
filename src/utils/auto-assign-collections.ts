@@ -27,11 +27,16 @@ export async function fetchUserCollections(
 		// Check if user has auto-assign enabled
 		const { data: profileData } = await supabase
 			.from(PROFILES)
-			.select("auto_assign_collections")
+			.select("ai_features_toggle")
 			.eq("id", userId)
 			.single();
 
-		if (profileData?.auto_assign_collections === false) {
+		const aiFeatures = profileData?.ai_features_toggle as Record<
+			string,
+			unknown
+		> | null;
+
+		if (aiFeatures?.auto_assign_collections === false) {
 			return [];
 		}
 

@@ -254,8 +254,8 @@ export type Database = {
 			};
 			profiles: {
 				Row: {
+					ai_features_toggle: Json;
 					api_key: string | null;
-					auto_assign_collections: boolean;
 					bookmark_count: number | null;
 					bookmarks_view: Json | null;
 					category_order: number[] | null;
@@ -268,8 +268,8 @@ export type Database = {
 					user_name: string | null;
 				};
 				Insert: {
+					ai_features_toggle?: Json;
 					api_key?: string | null;
-					auto_assign_collections?: boolean;
 					bookmark_count?: number | null;
 					bookmarks_view?: Json | null;
 					category_order?: number[] | null;
@@ -282,8 +282,8 @@ export type Database = {
 					user_name?: string | null;
 				};
 				Update: {
+					ai_features_toggle?: Json;
 					api_key?: string | null;
-					auto_assign_collections?: boolean;
 					bookmark_count?: number | null;
 					bookmarks_view?: Json | null;
 					category_order?: number[] | null;
