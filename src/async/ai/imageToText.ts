@@ -108,8 +108,8 @@ export const imageToText = async (
 					"Describe only what is in the image. Do NOT include readable text.",
 				].join("\n");
 
-		const hasCollections =
-			context?.collections && context.collections.length > 0;
+		const collections = context?.collections ?? [];
+		const hasCollections = collections.length > 0;
 
 		const collectionsSection = hasCollections
 			? [
@@ -124,17 +124,15 @@ export const imageToText = async (
 					"- When nothing fits well, return NONE",
 					"",
 					"User's collections:",
-					context.collections
-						.map((collection) => `- ${collection.name}`)
-						.join("\n"),
+					collections.map((collection) => `- ${collection.name}`).join("\n"),
 					"",
 					"Additional bookmark context:",
-					...(context.title ? [`Title: ${context.title}`] : []),
-					...(context.description
+					...(context?.title ? [`Title: ${context.title}`] : []),
+					...(context?.description
 						? [`Description: ${context.description}`]
 						: []),
-					...(context.url ? [`URL: ${context.url}`] : []),
-					...(context.ocrText
+					...(context?.url ? [`URL: ${context.url}`] : []),
+					...(context?.ocrText
 						? [`OCR text: ${context.ocrText.slice(0, 500)}`]
 						: []),
 				]
@@ -196,7 +194,7 @@ export const imageToText = async (
 
 			if (!/^none$/iu.test(collectionsPart.split("\n")[0]?.trim() ?? "")) {
 				const collectionNameToId = new Map(
-					context.collections.map((collection) => [
+					collections.map((collection) => [
 						collection.name.toLowerCase(),
 						collection.id,
 					]),
