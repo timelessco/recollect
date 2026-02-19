@@ -17,7 +17,7 @@ Sentry.setTag("execution_id", Deno.env.get("SB_EXECUTION_ID") ?? "unknown");
 
 // Keep in sync with src/utils/constants.ts INSTAGRAM_IMPORTS_QUEUE
 const QUEUE_NAME = "instagram_imports";
-const BATCH_SIZE = 5;
+const BATCH_SIZE = 15;
 const VISIBILITY_TIMEOUT = 30; // seconds
 const MAX_RETRIES = 3;
 

@@ -53,6 +53,9 @@ public/robots.txt
 public/sitemap.xml
 public/sitemap-0.xml
 
+# OpenAPI (generated)
+public/openapi.json
+
 ############################
 # Extras
 ############################

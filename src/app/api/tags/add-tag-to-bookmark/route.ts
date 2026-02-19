@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
@@ -9,33 +7,12 @@ import {
 	TAG_TABLE_NAME,
 } from "@/utils/constants";
 
+import {
+	AddTagToBookmarkPayloadSchema,
+	AddTagToBookmarkResponseSchema,
+} from "./schema";
+
 const ROUTE = "add-tag-to-bookmark";
-
-const AddTagToBookmarkPayloadSchema = z.object({
-	bookmarkId: z.number(),
-	tagId: z.number(),
-});
-
-export type AddTagToBookmarkPayload = z.infer<
-	typeof AddTagToBookmarkPayloadSchema
->;
-
-const AddTagToBookmarkResponseSchema = z
-	.array(
-		z.object({
-			id: z.number(),
-			bookmark_id: z.number(),
-			tag_id: z.number(),
-			user_id: z.string().nullable(),
-			created_at: z.string().nullable(),
-		}),
-	)
-	.nonempty();
-
-export type AddTagToBookmarkResponse = [
-	z.infer<typeof AddTagToBookmarkResponseSchema>[number],
-	...z.infer<typeof AddTagToBookmarkResponseSchema>,
-];
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
