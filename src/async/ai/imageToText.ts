@@ -190,7 +190,7 @@ export const imageToText = async (
 
 		// Parse collections — each line is "CollectionName (XX%)", filter >= 90%
 		const CONFIDENCE_THRESHOLD = 90;
-		let matched_collection_ids: number[] = [];
+		const matched_collection_ids: number[] = [];
 		if (hasCollections && text.includes("COLLECTIONS:")) {
 			const collectionsPart = text.split("COLLECTIONS:")[1]?.trim() ?? "";
 
@@ -202,32 +202,22 @@ export const imageToText = async (
 					]),
 				);
 
-				// Match lines like "CollectionName (95%)" or "CollectionName (95)"
-				const linePattern = /^([^(]+)\((\d+)%?\)\s*$/u;
+				// Extract all "Name (XX%)" entries — handles both comma-separated and multi-line
+				const entryPattern = /([^,(]+)\((\d+)%?\)/gu;
+				let entryMatch;
 
-				matched_collection_ids = collectionsPart
-					.split("\n")
-					.map((line) => line.trim())
-					.filter(Boolean)
-					.map((line) => {
-						const match = linePattern.exec(line);
-						if (!match) {
-							return null;
-						}
+				while ((entryMatch = entryPattern.exec(collectionsPart)) !== null) {
+					const name = entryMatch[1]?.trim() ?? "";
+					const confidence = Number(entryMatch[2]);
+					const collectionId = collectionNameToId.get(name.toLowerCase());
 
-						const name = match[1]?.trim() ?? "";
-						const confidence = Number(match[2]);
-						const collectionId = collectionNameToId.get(name.toLowerCase());
-						if (
-							collectionId === undefined ||
-							confidence < CONFIDENCE_THRESHOLD
-						) {
-							return null;
-						}
-
-						return collectionId;
-					})
-					.filter((id): id is number => id !== null);
+					if (
+						collectionId !== undefined &&
+						confidence >= CONFIDENCE_THRESHOLD
+					) {
+						matched_collection_ids.push(collectionId);
+					}
+				}
 			}
 		}
 
