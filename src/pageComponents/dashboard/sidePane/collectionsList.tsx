@@ -499,6 +499,7 @@ const CollectionsList = () => {
 				href: `/${item?.category_slug}`,
 				id: item?.id,
 				current: currentPath === item?.category_slug,
+				isFavorite: item?.is_favorite,
 				isPublic: item?.is_public,
 				isCollab: !isEmpty(
 					find(
@@ -559,6 +560,10 @@ const CollectionsList = () => {
 
 		return collectionsList;
 	};
+
+	const allSorted = sortedList() ?? [];
+	const favoriteCollections = allSorted.filter((item) => item.isFavorite);
+	const nonFavoriteCollections = allSorted.filter((item) => !item.isFavorite);
 
 	const bookmarkCount =
 		bookmarksCountData?.data?.categoryCount?.find(
@@ -644,6 +649,18 @@ const CollectionsList = () => {
 		<span className="hidden" />
 	);
 
+	const favoritesHeader = (
+		<div className="group flex w-full items-center justify-between px-1 py-[7px]">
+			<div className="flex items-center text-13 leading-[14.95px] font-medium tracking-[0.02em] text-gray-600">
+				<p className="mr-1">Favorites</p>
+				<DownArrowGray
+					className="collections-sidepane-down-arrow hidden pt-px text-gray-500 group-hover:block"
+					size={10}
+				/>
+			</div>
+		</div>
+	);
+
 	const collectionsHeader = (
 		<div className="group flex w-full items-center justify-between px-1 py-[7px]">
 			<div className="flex items-center text-13 leading-[14.95px] font-medium tracking-[0.02em] text-gray-600">
@@ -702,6 +719,40 @@ const CollectionsList = () => {
 	);
 	return (
 		<div className="pt-3">
+			{favoriteCollections.length > 0 && (
+				<AriaDisclosure renderDisclosureButton={favoritesHeader}>
+					<div id="favorites-wrapper">
+						<ListBoxDrop
+							aria-label="Favorites-drop"
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
+							onItemDrop={(event: any) => {
+								void handleBookmarksDrop(event);
+							}}
+							onReorder={onReorder}
+							selectionBehavior="replace"
+							selectionMode="multiple"
+						>
+							{favoriteCollections.map((item) => (
+								<Item key={item?.id} textValue={item?.name}>
+									<SingleListItemComponent
+										extendedClassname="py-[6px]"
+										item={item}
+										listNameId="favorite-collection-name"
+										onCategoryOptionClick={handleCategoryOptionClick}
+										showDropdown
+										showSpinner={
+											addCategoryToBookmarkOptimisticMutation.isPending &&
+											addCategoryToBookmarkOptimisticMutation.variables
+												?.category_id === item?.id
+										}
+									/>
+								</Item>
+							))}
+						</ListBoxDrop>
+					</div>
+				</AriaDisclosure>
+			)}
+
 			<AriaDisclosure renderDisclosureButton={collectionsHeader}>
 				<div id="collections-wrapper">
 					{isLoadingCategories ? (
@@ -717,7 +768,7 @@ const CollectionsList = () => {
 							selectionBehavior="replace"
 							selectionMode="multiple"
 						>
-							{sortedList()?.map((item) => (
+							{nonFavoriteCollections?.map((item) => (
 								<Item key={item?.id} textValue={item?.name}>
 									<SingleListItemComponent
 										extendedClassname="py-[6px]"
