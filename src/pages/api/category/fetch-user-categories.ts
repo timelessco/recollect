@@ -97,7 +97,18 @@ export default async function handler(
 		]);
 
 		const { data, error } = categoriesResult;
-		const { data: userProfile } = profileResult;
+		const { data: userProfile, error: profileError } = profileResult;
+
+		if (profileError) {
+			console.warn(
+				"[fetch-user-categories][fetch-profile] Failed to fetch user profile:",
+				{ error: profileError, userId },
+			);
+			Sentry.captureException(profileError, {
+				tags: { operation: "fetch_user_profile" },
+				extra: { userId },
+			});
+		}
 
 		if (error) {
 			console.error(
@@ -171,7 +182,7 @@ export default async function handler(
 				user_id: {
 					id: userId,
 					email: userEmail,
-					profile_pic: userProfile?.profile_pic ?? null,
+					profile_pic: userProfile?.profile_pic ?? "",
 					user_name: userProfile?.user_name ?? "",
 				},
 			})) || [];
