@@ -472,6 +472,12 @@ const CollectionsList = () => {
 					(bookmarkItem) =>
 						Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
 				);
+
+				// Ignore drops that aren't bookmarks (e.g., collections dragged between sidebar lists)
+				if (!foundBookmark) {
+					return;
+				}
+
 				// Handle both nested object (from regular fetch) and plain string (from search)
 				const bookmarkCreatedUserId =
 					foundBookmark?.user_id?.id ?? foundBookmark?.user_id;
