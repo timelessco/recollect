@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
 
@@ -77,23 +78,66 @@ export const processImageQueue = async (
 				const read_ct = message.read_ct;
 
 				if (read_ct > MAX_RETRIES) {
+					const rawLastError: unknown = message.message?.last_error;
+					const lastError =
+						typeof rawLastError === "string" ? rawLastError : undefined;
+					const archiveReason = lastError
+						? `max_retries_exceeded: ${lastError}`
+						: "max_retries_exceeded";
+
+					const targetApi = message.message.ogImage
+						? "ai_enrichment"
+						: "screenshot";
+
+					Sentry.captureException(
+						new Error(
+							`Queue processing failed after ${MAX_RETRIES} retries (${targetApi})`,
+						),
+						{
+							tags: {
+								operation: `${targetApi}_archived`,
+								userId: user_id,
+							},
+							extra: {
+								msg_id: message.msg_id,
+								url,
+								bookmarkId: id,
+								read_ct,
+								lastError,
+								queueName: queue_name,
+							},
+						},
+					);
+
 					console.log(
 						"[process-image-queue] archiving message from queue",
 						message,
 					);
 
-					const { error: deleteError } = await supabase
-						.schema("pgmq_public")
-						.rpc("archive", {
-							queue_name,
-							message_id: message.msg_id,
-						});
+					const { error: archiveError } = await supabase.rpc(
+						"archive_with_reason",
+						{
+							p_queue_name: queue_name,
+							p_msg_id: message.msg_id,
+							p_reason: archiveReason,
+						},
+					);
 
-					if (deleteError) {
+					if (archiveError) {
 						console.error(
 							"[process-image-queue] Error archiving message from queue",
-							deleteError,
+							archiveError,
 						);
+						Sentry.captureException(new Error("Queue archive failed"), {
+							tags: {
+								operation: `${targetApi}_archive_failed`,
+								userId: user_id,
+							},
+							extra: {
+								msg_id: message.msg_id,
+								archiveError,
+							},
+						});
 					}
 
 					continue;
