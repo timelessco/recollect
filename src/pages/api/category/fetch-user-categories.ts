@@ -105,7 +105,7 @@ export default async function handler(
 				{ error: profileError, userId },
 			);
 			Sentry.captureException(profileError, {
-				tags: { operation: "fetch_user_profile" },
+				tags: { operation: "fetch_user_profile", userId },
 				extra: { userId },
 			});
 		}
