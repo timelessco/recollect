@@ -48,36 +48,6 @@ const CategorySchema = z.object({
 	icon_color: z.string(),
 });
 
-/**
- * Single-page view config (BookmarkViewDataTypes). Used for both legacy flat
- * bookmarks_view and as values in the keyed record.
- */
-const BookmarkViewDataTypesSchema = z.object({
-	bookmarksView: z.string(),
-	cardContentViewArray: z.array(z.string()),
-	moodboardColumns: z.array(z.number()),
-	sortBy: z.string(),
-});
-
-/**
- * Profile bookmarks_view at runtime: keyed (ProfilesBookmarksView) or legacy
- * flat (BookmarkViewDataTypes). Validates ProfilesBookmarksViewOrLegacy.
- */
-const ProfilesBookmarksViewSchema = z.union([
-	z.record(z.string(), BookmarkViewDataTypesSchema),
-	BookmarkViewDataTypesSchema,
-]);
-
-const ProfilesTableTypesSchema = z.object({
-	bookmarks_view: ProfilesBookmarksViewSchema,
-	category_order: z.array(z.number()),
-	display_name: z.string(),
-	id: z.string(),
-	preferred_og_domains: z.array(z.string()).nullable().optional(),
-	profile_pic: z.string(),
-	user_name: z.string(),
-});
-
 const DiscoverableBookmarkSchema = z.object({
 	id: z.number(),
 	inserted_at: z.string(),
@@ -94,7 +64,6 @@ const DiscoverableBookmarkSchema = z.object({
 	make_discoverable: z.string().nullable(),
 	addedTags: z.array(TagSchema).optional(),
 	addedCategories: z.array(CategorySchema).optional(),
-	user_id: ProfilesTableTypesSchema.nullable(),
 });
 
 const FetchDiscoverableByIdResponseSchema = DiscoverableBookmarkSchema;
@@ -109,7 +78,7 @@ export const GET = createGetApiHandler({
 		console.log("[route] API called:", { id });
 		const { supabase } = await createApiClient();
 
-		// Fetch the main bookmark data with user profile
+		// Fetch the main bookmark data
 		const { data, error } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.select(
@@ -126,16 +95,7 @@ export const GET = createGetApiHandler({
 				type,
 				meta_data,
 				sort_index,
-				make_discoverable,
-				user_id (
-					bookmarks_view,
-					category_order,
-					display_name,
- 					id,
-					preferred_og_domains,
-					profile_pic,
- 					user_name
-				)
+				make_discoverable
 			`,
 			)
 			.eq("id", id)
