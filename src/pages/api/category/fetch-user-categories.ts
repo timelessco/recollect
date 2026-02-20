@@ -14,6 +14,7 @@ import {
 } from "../../../types/apiTypes";
 import {
 	CATEGORIES_TABLE_NAME,
+	PROFILES,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
@@ -85,16 +86,18 @@ export default async function handler(
 			return;
 		}
 
-		// Fetch user's own categories
-		const { data, error } = await supabase
-			.from(CATEGORIES_TABLE_NAME)
-			.select(
-				`
-      *,
-      user_id (*)
-    `,
-			)
-			.eq("user_id", userId);
+		// Fetch user's own categories (no profile join) and user profile in parallel
+		const [categoriesResult, profileResult] = await Promise.all([
+			supabase.from(CATEGORIES_TABLE_NAME).select("*").eq("user_id", userId),
+			supabase
+				.from(PROFILES)
+				.select("profile_pic, user_name")
+				.eq("id", userId)
+				.single(),
+		]);
+
+		const { data, error } = categoriesResult;
+		const { data: userProfile } = profileResult;
 
 		if (error) {
 			console.error(
@@ -137,7 +140,9 @@ export default async function handler(
 		const { data: userCollabCategoryData, error: userCollabError } =
 			await supabase
 				.from(SHARED_CATEGORIES_TABLE_NAME)
-				.select(`category_id!inner(*, user_id(*))`)
+				.select(
+					`category_id!inner(*, user_id(id, email, profile_pic, user_name))`,
+				)
 				.eq("email", userEmail)
 				.eq("is_accept_pending", false);
 
@@ -159,8 +164,17 @@ export default async function handler(
 			return;
 		}
 
-		// Safely handle null data - THIS FIXES THE "data is not iterable" ERROR
-		const userCategories = data || [];
+		// Attach authenticated user's profile to own categories (avoids profile join)
+		const userCategories =
+			data?.map((item) => ({
+				...item,
+				user_id: {
+					id: userId,
+					email: userEmail,
+					profile_pic: userProfile?.profile_pic ?? null,
+					user_name: userProfile?.user_name ?? "",
+				},
+			})) || [];
 		const flattenedUserCollabCategoryData =
 			userCollabCategoryData?.map((item) => item.category_id) || [];
 
