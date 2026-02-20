@@ -25,7 +25,7 @@ export const GET = createGetApiHandler({
 		console.log("[route] API called:", { id });
 		const { supabase } = await createApiClient();
 
-		// Fetch the main bookmark data with user profile
+		// Fetch the main bookmark data
 		const { data, error } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.select(
@@ -42,16 +42,7 @@ export const GET = createGetApiHandler({
 				type,
 				meta_data,
 				sort_index,
-				make_discoverable,
-				user_id (
-					bookmarks_view,
-					category_order,
-					display_name,
- 					id,
-					preferred_og_domains,
-					profile_pic,
- 					user_name
-				)
+				make_discoverable
 			`,
 			)
 			.eq("id", id)

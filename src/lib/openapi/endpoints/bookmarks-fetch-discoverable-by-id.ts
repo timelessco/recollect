@@ -15,13 +15,13 @@ export function registerBookmarksFetchDiscoverableById() {
 		tags: ["Bookmarks"],
 		summary: "Get a single discoverable bookmark",
 		description:
-			"Fetches a single discoverable bookmark by ID, including its tags, categories, and owner profile. No authentication required. Returns 404 if the bookmark does not exist or is not discoverable.",
+			"Fetches a single discoverable bookmark by ID, including its tags and categories. No authentication required. Returns 404 if the bookmark does not exist or is not discoverable.",
 		request: {
 			query: FetchDiscoverableByIdQuerySchema,
 		},
 		responses: {
 			200: {
-				description: "Discoverable bookmark with tags, categories, and profile",
+				description: "Discoverable bookmark with tags and categories",
 				content: {
 					"application/json": {
 						schema: apiResponseSchema(FetchDiscoverableByIdResponseSchema),
@@ -50,15 +50,6 @@ export function registerBookmarksFetchDiscoverableById() {
 										icon_color: "#6366f1",
 									},
 								],
-								user_id: {
-									bookmarks_view: {},
-									category_order: [7, 8],
-									display_name: "Jane Doe",
-									id: "550e8400-e29b-41d4-a716-446655440000",
-									preferred_og_domains: null,
-									profile_pic: "https://example.com/avatar.jpg",
-									user_name: "janedoe",
-								},
 							},
 							error: null,
 						},

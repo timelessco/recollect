@@ -101,40 +101,6 @@ const CategorySchema = z.object({
 	icon_color: z.string().meta({ description: "Icon color hex code" }),
 });
 
-const BookmarkViewDataTypesSchema = z.object({
-	bookmarksView: z.string().meta({ description: "View layout type" }),
-	cardContentViewArray: z
-		.array(z.string())
-		.meta({ description: "Visible card content fields" }),
-	moodboardColumns: z
-		.array(z.number())
-		.meta({ description: "Column widths for moodboard view" }),
-	sortBy: z.string().meta({ description: "Sort field" }),
-});
-
-const ProfilesBookmarksViewSchema = z.union([
-	z.record(z.string(), BookmarkViewDataTypesSchema),
-	BookmarkViewDataTypesSchema,
-]);
-
-const ProfilesTableTypesSchema = z.object({
-	bookmarks_view: ProfilesBookmarksViewSchema.meta({
-		description: "View configuration keyed by category ID or legacy flat",
-	}),
-	category_order: z
-		.array(z.number())
-		.meta({ description: "Ordered category IDs" }),
-	display_name: z.string().meta({ description: "Display name" }),
-	id: z.string().meta({ description: "User ID" }),
-	preferred_og_domains: z
-		.array(z.string())
-		.nullable()
-		.optional()
-		.meta({ description: "Domains that prefer OG images" }),
-	profile_pic: z.string().meta({ description: "Profile picture URL" }),
-	user_name: z.string().meta({ description: "Username" }),
-});
-
 export const FetchDiscoverableByIdResponseSchema = z.object({
 	id: z.number().meta({ description: "Bookmark ID" }),
 	inserted_at: z
@@ -175,9 +141,6 @@ export const FetchDiscoverableByIdResponseSchema = z.object({
 		.array(CategorySchema)
 		.optional()
 		.meta({ description: "Categories assigned to this bookmark" }),
-	user_id: ProfilesTableTypesSchema.nullable().meta({
-		description: "Owner profile data",
-	}),
 });
 
 export type FetchDiscoverableByIdResponse = z.infer<
