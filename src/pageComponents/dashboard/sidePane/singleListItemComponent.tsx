@@ -1,8 +1,6 @@
 import { useState } from "react";
 import Link from "next/link";
 
-import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
-
 import {
 	AriaDropdown,
 	AriaDropdownMenu,
@@ -19,6 +17,8 @@ import {
 } from "../../../utils/commonClassNames";
 import ShareContent from "../share/shareContent";
 
+import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
+
 export type CollectionItemTypes = {
 	count?: number;
 	current: boolean;
@@ -28,7 +28,7 @@ export type CollectionItemTypes = {
 	iconValue?: string | null;
 	id: number;
 	isCollab?: boolean;
-	isFavorite?: boolean;
+	isFavorite: boolean;
 	isPublic?: boolean;
 	name: string;
 	responsiveIcon?: boolean;
@@ -166,7 +166,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 										].map((dropdownItem) => (
 											<AriaDropdownMenu
 												key={dropdownItem?.value}
-												onClick={async (event) => {
+												onClick={(event) => {
 													event.preventDefault();
 													event.stopPropagation();
 
