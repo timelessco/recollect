@@ -49,7 +49,7 @@ export type SingleListData = {
 	trash: string | null;
 	type: string;
 	url: string;
-	user_id: ProfilesTableTypes;
+	user_id: Pick<ProfilesTableTypes, "id" | "profile_pic">;
 };
 
 export type BookmarksCountTypes = {
