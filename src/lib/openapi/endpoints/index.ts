@@ -1,3 +1,4 @@
+export { registerBookmarksCheckUrl } from "./bookmarks-check-url";
 export { registerBookmarksClearBookmarkTrash } from "./bookmarks-clear-bookmark-trash";
 export { registerBookmarksDeleteBookmark } from "./bookmarks-delete-bookmark";
 export { registerBookmarksFetchBookmarksDiscoverable } from "./bookmarks-fetch-bookmarks-discoverable";
