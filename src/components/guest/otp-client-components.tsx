@@ -24,6 +24,8 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 	const extendedIsPending = usePendingWithMinDuration(isPending);
 
 	const verifyOtp = (otpValue: string) => {
+		if (isPending) return;
+
 		startTransition(async () => {
 			try {
 				const supabase = createClient();
