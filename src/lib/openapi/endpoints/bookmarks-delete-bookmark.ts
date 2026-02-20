@@ -16,7 +16,7 @@ export function registerBookmarksDeleteBookmark() {
 		summary: "Permanently delete bookmarks",
 		description:
 			"Permanently deletes one or more bookmarks by ID. The caller must own the bookmarks. Processes in batches of 1000. Bookmarks in trash can be deleted directly — this skips the trash and is irreversible.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

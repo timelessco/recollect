@@ -16,7 +16,7 @@ export function registerTwitterSyncFolders() {
 		summary: "Sync Twitter bookmark folders as collections",
 		description:
 			"Creates Recollect collections from Twitter/X bookmark folder names. Deduplicates by case-insensitive name match against existing collections. Returns counts of created and skipped collections.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

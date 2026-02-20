@@ -13,7 +13,7 @@ export function registerTagsAddTagToBookmark() {
 		summary: "Add a tag to a bookmark",
 		description:
 			"Assigns an existing tag to a bookmark. Returns the full list of tag assignments for the bookmark. Fails with 409 if the tag is already assigned.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

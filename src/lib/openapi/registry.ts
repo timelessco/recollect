@@ -25,6 +25,6 @@ export const bearerAuth = registry.registerComponent(
 		scheme: "bearer",
 		bearerFormat: "JWT",
 		description:
-			"Supabase JWT token. Get one by signing in at the app or via the Supabase auth API.",
+			"Supabase JWT token. Browser clients use cookie auth automatically. Mobile/external clients pass this token in the Authorization header.",
 	},
 );

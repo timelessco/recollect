@@ -16,7 +16,7 @@ export function registerProfilesTogglePreferredOgDomain() {
 		summary: "Toggle preferred OG image domain",
 		description:
 			"Adds or removes a domain from the user's preferred OG image domain list. When a domain is in the preferred list, Recollect will use OG images from that domain over others. Returns the updated profile with the full domain list.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

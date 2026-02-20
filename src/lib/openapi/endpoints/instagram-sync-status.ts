@@ -13,7 +13,7 @@ export function registerInstagramSyncStatus() {
 		summary: "Get Instagram sync status",
 		description:
 			"Returns the current status of the Instagram bookmark sync queue, including counts of pending and archived items with individual archive records.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		responses: {
 			200: {
 				description: "Sync status retrieved successfully",

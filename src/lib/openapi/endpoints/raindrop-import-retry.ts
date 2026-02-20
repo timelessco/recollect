@@ -16,7 +16,7 @@ export function registerRaindropImportRetry() {
 		summary: "Retry failed Raindrop import items",
 		description:
 			"Requeues failed Raindrop import messages for retry. Accepts either a list of specific message IDs or a flag to retry all failures.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

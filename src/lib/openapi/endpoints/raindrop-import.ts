@@ -16,7 +16,7 @@ export function registerRaindropImport() {
 		summary: "Import Raindrop.io bookmarks",
 		description:
 			"Enqueues a batch of Raindrop.io bookmarks for async import. Deduplicates within the batch and against existing bookmarks. Returns counts of queued and skipped items.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

@@ -16,7 +16,7 @@ export function registerTwitterSyncRetry() {
 		summary: "Retry failed Twitter sync imports",
 		description:
 			"Requeues failed Twitter/X import messages for retry. Accepts either a list of specific message IDs or a flag to retry all failures.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

@@ -16,7 +16,7 @@ export function registerBookmarksClearBookmarkTrash() {
 		summary: "Clear all trashed bookmarks",
 		description:
 			"Permanently deletes all bookmarks in the authenticated user's trash. Processes up to 1000 bookmarks per batch. Returns the total deleted count. Idempotent — calling with an empty trash returns deletedCount: 0.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

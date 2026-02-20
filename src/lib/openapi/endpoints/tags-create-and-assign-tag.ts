@@ -16,7 +16,7 @@ export function registerTagsCreateAndAssignTag() {
 		summary: "Create a new tag and assign it to a bookmark",
 		description:
 			"Atomically creates a new tag and assigns it to the specified bookmark in a single transaction. The caller must own both the bookmark and the tag name must be unique for this user. Returns 403 if the bookmark is not found or not owned by the user. Returns 409 if the user already has a tag with the same name.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

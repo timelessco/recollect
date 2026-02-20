@@ -16,7 +16,7 @@ export function registerIphoneShareError() {
 		summary: "Report iOS share extension error",
 		description:
 			"Reports an error that occurred in the iOS share extension to Sentry. Accepts error message, optional stack trace, device info, and context. Returns the Sentry event ID for tracking.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

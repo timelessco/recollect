@@ -16,7 +16,7 @@ export function registerTagsRemoveTagFromBookmark() {
 		summary: "Remove a tag from a bookmark",
 		description:
 			"Removes a tag assignment from a bookmark. Both the bookmark and tag must be owned by the authenticated user. Returns 403 if ownership check fails. Returns 404 if the tag was not assigned to the bookmark.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

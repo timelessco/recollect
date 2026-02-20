@@ -14,7 +14,7 @@ export function registerCategoriesDeleteUserCategory() {
 		summary: "Delete a category",
 		description:
 			"Deletes a category owned by the authenticated user. This cascades: shared access records are removed, owner's bookmarks are moved to trash, all category-bookmark junction entries are deleted, and the category itself is deleted. Collaborators lose the category reference but their bookmarks are not trashed. Returns 403 if the caller is not the category owner. Returns 404 if not found.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

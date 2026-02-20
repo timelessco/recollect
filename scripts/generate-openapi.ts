@@ -81,7 +81,7 @@ const document = generator.generateDocument({
 		title: "Recollect API",
 		version: "1.0.0",
 		description:
-			"Recollect API for bookmark management, organization, and import. Designed for mobile and frontend developers. Authenticate with a Supabase JWT bearer token.",
+			"Recollect API for bookmark management, organization, and import. Designed for mobile and frontend developers. Browser clients authenticate via cookies (automatic after login). Mobile/external clients use a Supabase JWT bearer token.",
 	},
 	tags: tagDescriptions,
 	servers: [{ url: "/api" }],

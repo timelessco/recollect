@@ -16,7 +16,7 @@ export function registerCategoriesSetBookmarkCategories() {
 		summary: "Replace all categories on a bookmark",
 		description:
 			"Atomically replaces all category assignments for a bookmark. All existing assignments are removed and replaced with the provided list. The caller must own the bookmark and have access to all specified categories. Maximum 100 category IDs. No duplicate IDs allowed. Triggers revalidation for all affected public categories (old and new).",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

@@ -16,7 +16,7 @@ export function registerTwitterSync() {
 		summary: "Sync Twitter/X bookmarks",
 		description:
 			"Enqueues a batch of Twitter/X bookmarks for async archiving. Deduplicates within the batch and against existing bookmarks. Returns counts of inserted and skipped items.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

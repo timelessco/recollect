@@ -14,7 +14,7 @@ export function registerCategoriesUpdateUserCategory() {
 		summary: "Update a category",
 		description:
 			"Updates one or more properties of a category owned by the authenticated user. All updateData fields are optional — only provided fields are updated. The category_views field accepts additional properties (additionalProperties: true) for flexible JSONB view configuration. Triggers revalidation for public categories on any field change. Returns 409 if renaming to a name that already exists for this user.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

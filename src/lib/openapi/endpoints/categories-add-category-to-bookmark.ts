@@ -16,7 +16,7 @@ export function registerCategoriesAddCategoryToBookmark() {
 		summary: "Add a category to a bookmark",
 		description:
 			"Assigns a category to a single bookmark. The caller must own the bookmark and have access to the category (owner or collaborator with edit access). Use category_id: 0 to assign to the Uncategorized collection. Returns 404 if the bookmark or category is not found. Returns 403 if access is denied.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

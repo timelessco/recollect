@@ -16,7 +16,7 @@ export function registerInstagramSync() {
 		summary: "Sync Instagram bookmarks",
 		description:
 			"Enqueues a batch of Instagram bookmarks for async archiving. Deduplicates within the batch and against existing bookmarks. Returns counts of inserted and skipped items.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,

@@ -16,7 +16,7 @@ export function registerBookmarksMoveBookmarkToTrash() {
 		summary: "Move bookmarks to trash or restore them",
 		description:
 			"Moves one or more bookmarks to trash (soft delete) or restores them from trash. Set isTrash: true to trash, isTrash: false to restore. Triggers revalidation for any affected public categories. Returns the updated bookmark records with their new trash timestamps.",
-		security: [{ [bearerAuth.name]: [] }],
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,
