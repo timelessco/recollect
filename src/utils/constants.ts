@@ -30,6 +30,7 @@ export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 export const AUDIO_OG_IMAGE_FALLBACK_URL = `${BASE_URL}/audio-fallback.png`;
 
 // Video upload limits
+export const VIDEO_ACCESSIBILITY_TIMEOUT_MS = 5_000;
 export const VIDEO_DOWNLOAD_TIMEOUT_MS = 60_000;
 
 // Image download timeout
