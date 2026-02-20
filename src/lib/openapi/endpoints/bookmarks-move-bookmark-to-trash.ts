@@ -47,7 +47,10 @@ export function registerBookmarksMoveBookmarkToTrash() {
 					},
 				},
 			},
-			400: { description: "No valid bookmark IDs provided" },
+			400: {
+				description:
+					"Invalid request: missing or invalid data array, or missing/non-boolean isTrash",
+			},
 			401: { $ref: "#/components/responses/Unauthorized" },
 			500: { $ref: "#/components/responses/InternalError" },
 		},

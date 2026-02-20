@@ -20,10 +20,8 @@ export type RemoveCategoryFromBookmarkPayload = z.infer<
 
 export const RemoveCategoryFromBookmarkResponseSchema = z.array(
 	z.object({
-		bookmark_id: z
-			.number()
-			.meta({ description: "ID of the affected bookmark" }),
-		category_id: z.number().meta({ description: "ID of the removed category" }),
+		bookmark_id: z.int().meta({ description: "ID of the affected bookmark" }),
+		category_id: z.int().meta({ description: "ID of the removed category" }),
 	}),
 );
 

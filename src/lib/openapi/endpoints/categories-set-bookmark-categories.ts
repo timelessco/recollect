@@ -49,7 +49,8 @@ export function registerCategoriesSetBookmarkCategories() {
 				},
 			},
 			400: {
-				description: "Invalid request: max 100 IDs, no duplicates",
+				description:
+					"Invalid request: invalid bookmark_id, max 100 category IDs, or duplicate IDs",
 			},
 			401: { $ref: "#/components/responses/Unauthorized" },
 			403: {
