@@ -1,20 +1,27 @@
-import { bearerAuth, registry } from "@/lib/openapi/registry";
 import {
 	AddTagToBookmarkPayloadSchema,
 	AddTagToBookmarkResponseSchema,
 } from "@/app/api/tags/add-tag-to-bookmark/schema";
+import { bearerAuth, registry } from "@/lib/openapi/registry";
+import { apiResponseSchema } from "@/lib/openapi/schemas/envelope";
 
 export function registerTagsAddTagToBookmark() {
 	registry.registerPath({
 		method: "post",
 		path: "/tags/add-tag-to-bookmark",
+		tags: ["Bookmarks"],
 		summary: "Add a tag to a bookmark",
-		security: [{ [bearerAuth.name]: [] }],
+		description:
+			"Assigns an existing tag to a bookmark. Returns the full list of tag assignments for the bookmark. Fails with 409 if the tag is already assigned.",
+		security: [{ [bearerAuth.name]: [] }, {}],
 		request: {
 			body: {
 				required: true,
 				content: {
-					"application/json": { schema: AddTagToBookmarkPayloadSchema },
+					"application/json": {
+						schema: AddTagToBookmarkPayloadSchema,
+						example: { bookmarkId: 42, tagId: 7 },
+					},
 				},
 			},
 		},
@@ -22,12 +29,26 @@ export function registerTagsAddTagToBookmark() {
 			200: {
 				description: "Tag successfully added to bookmark",
 				content: {
-					"application/json": { schema: AddTagToBookmarkResponseSchema },
+					"application/json": {
+						schema: apiResponseSchema(AddTagToBookmarkResponseSchema),
+						example: {
+							data: [
+								{
+									id: 101,
+									bookmark_id: 42,
+									tag_id: 7,
+									user_id: "550e8400-e29b-41d4-a716-446655440000",
+									created_at: "2024-03-15T10:30:00Z",
+								},
+							],
+							error: null,
+						},
+					},
 				},
 			},
-			401: { description: "Not authenticated" },
-			403: { description: "Forbidden" },
-			409: { description: "Tag already assigned to bookmark" },
+			401: { $ref: "#/components/responses/Unauthorized" },
+			409: { description: "Tag already assigned to this bookmark" },
+			500: { $ref: "#/components/responses/InternalError" },
 		},
 	});
 }

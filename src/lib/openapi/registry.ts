@@ -20,5 +20,11 @@ export const registry = new OpenAPIRegistry();
 export const bearerAuth = registry.registerComponent(
 	"securitySchemes",
 	"bearerAuth",
-	{ type: "http", scheme: "bearer", bearerFormat: "JWT" },
+	{
+		type: "http",
+		scheme: "bearer",
+		bearerFormat: "JWT",
+		description:
+			"Supabase JWT token. Browser clients use cookie auth automatically. Mobile/external clients pass this token in the Authorization header.",
+	},
 );

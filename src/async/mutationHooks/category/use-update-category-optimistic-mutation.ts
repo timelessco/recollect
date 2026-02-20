@@ -6,7 +6,7 @@ import { produce } from "immer";
 import {
 	type UpdateCategoryPayload,
 	type UpdateCategoryResponse,
-} from "@/app/api/category/update-user-category/route";
+} from "@/app/api/category/update-user-category/schema";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { useSupabaseSession } from "@/store/componentStore";

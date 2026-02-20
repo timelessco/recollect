@@ -1,44 +1,12 @@
-import { z } from "zod";
-
+import {
+	CreateAndAssignTagPayloadSchema,
+	CreateAndAssignTagResponseSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
 
 const ROUTE = "create-and-assign-tag";
-
-const CreateAndAssignTagPayloadSchema = z.object({
-	name: tagCategoryNameSchema,
-	bookmarkId: z.number(),
-});
-
-export type CreateAndAssignTagPayload = z.infer<
-	typeof CreateAndAssignTagPayloadSchema
->;
-
-const TagSchema = z.object({
-	id: z.number(),
-	name: z.string().nullable(),
-	user_id: z.string().nullable(),
-	created_at: z.string().nullable(),
-});
-
-const BookmarkTagSchema = z.object({
-	id: z.number(),
-	bookmark_id: z.number(),
-	tag_id: z.number(),
-	user_id: z.string().nullable(),
-	created_at: z.string().nullable(),
-});
-
-const CreateAndAssignTagResponseSchema = z.object({
-	tag: TagSchema,
-	bookmarkTag: BookmarkTagSchema,
-});
-
-export type CreateAndAssignTagResponse = z.infer<
-	typeof CreateAndAssignTagResponseSchema
->;
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
