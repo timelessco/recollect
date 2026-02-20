@@ -15,9 +15,7 @@ export function registerTwitterSyncFolderBookmarks() {
 		tags: ["Twitter"],
 		summary: "Link Twitter bookmarks to their folders",
 		description:
-			"Queues bookmark-to-collection mapping messages. " +
-			"Used after sync-folders to associate imported Twitter bookmarks with their respective collections. " +
-			"Returns the count of successfully queued mappings.",
+			"Queues bookmark-to-collection mapping messages. Used after sync-folders to associate imported Twitter bookmarks with their respective collections. Returns the count of successfully queued mappings.",
 		security: [{ [bearerAuth.name]: [] }],
 		request: {
 			body: {

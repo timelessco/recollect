@@ -13,10 +13,7 @@ export function registerCategoriesCreateUserCategory() {
 		tags: ["Categories"],
 		summary: "Create a new category",
 		description:
-			"Creates a new category for the authenticated user. The category name must be unique " +
-			"(case-insensitive) for this user. A URL-safe slug is auto-generated from the name. " +
-			"Optionally updates the user profile's category order to include the new category. " +
-			"Returns 409 if a category with the same name already exists.",
+			"Creates a new category for the authenticated user. The category name must be unique (case-insensitive) for this user. A URL-safe slug is auto-generated from the name. Optionally updates the user profile's category order to include the new category. Returns 409 if a category with the same name already exists.",
 		security: [{ [bearerAuth.name]: [] }],
 		request: {
 			body: {
@@ -49,7 +46,7 @@ export function registerCategoriesCreateUserCategory() {
 								icon_color: null,
 								is_public: false,
 								order_index: 0,
-								user_id: "usr_abc123",
+								user_id: "550e8400-e29b-41d4-a716-446655440000",
 							},
 							error: null,
 						},

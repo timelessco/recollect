@@ -15,10 +15,7 @@ export function registerBookmarksFetchPublicBookmarkById() {
 		tags: ["Bookmarks"],
 		summary: "Get a public bookmark by ID and collection",
 		description:
-			"Fetches a single bookmark by ID, verifying it belongs to a public category " +
-			"owned by the given username. No authentication required. " +
-			"Returns 404 if the category doesn't exist, the username doesn't match, " +
-			"or the bookmark isn't in the specified category. Returns 403 if the category is private.",
+			"Fetches a single bookmark by ID, verifying it belongs to a public category owned by the given username. No authentication required. Returns 404 if the category doesn't exist, the username doesn't match, or the bookmark isn't in the specified category. Returns 403 if the category is private.",
 		request: {
 			query: FetchPublicBookmarkByIdQuerySchema,
 		},

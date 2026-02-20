@@ -15,8 +15,7 @@ export function registerInstagramSyncRetry() {
 		tags: ["Instagram"],
 		summary: "Retry failed Instagram sync imports",
 		description:
-			"Requeues failed Instagram import messages for retry. " +
-			"Accepts either a list of specific message IDs or a flag to retry all failures.",
+			"Requeues failed Instagram import messages for retry. Accepts either a list of specific message IDs or a flag to retry all failures.",
 		security: [{ [bearerAuth.name]: [] }],
 		request: {
 			body: {

@@ -15,8 +15,7 @@ export function registerBookmarksFetchDiscoverableById() {
 		tags: ["Bookmarks"],
 		summary: "Get a single discoverable bookmark",
 		description:
-			"Fetches a single discoverable bookmark by ID, including its tags, categories, and owner profile. " +
-			"No authentication required. Returns 404 if the bookmark does not exist or is not discoverable.",
+			"Fetches a single discoverable bookmark by ID, including its tags, categories, and owner profile. No authentication required. Returns 404 if the bookmark does not exist or is not discoverable.",
 		request: {
 			query: FetchDiscoverableByIdQuerySchema,
 		},

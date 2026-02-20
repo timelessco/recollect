@@ -15,9 +15,7 @@ export function registerIphoneShareError() {
 		tags: ["iPhone"],
 		summary: "Report iOS share extension error",
 		description:
-			"Reports an error that occurred in the iOS share extension to Sentry. " +
-			"Accepts error message, optional stack trace, device info, and context. " +
-			"Returns the Sentry event ID for tracking.",
+			"Reports an error that occurred in the iOS share extension to Sentry. Accepts error message, optional stack trace, device info, and context. Returns the Sentry event ID for tracking.",
 		security: [{ [bearerAuth.name]: [] }],
 		request: {
 			body: {
@@ -28,7 +26,7 @@ export function registerIphoneShareError() {
 						example: {
 							message: "Network request failed while saving bookmark",
 							stackTrace:
-								"Error: Network timeout\n  at URLSession.swift:45\n  at BookmarkService.swift:102",
+								"Error: Network timeout\n at URLSession.swift:45\n at BookmarkService.swift:102",
 							deviceInfo: {
 								model: "iPhone 15 Pro",
 								osVersion: "iOS 17.2",

@@ -12,8 +12,7 @@ export function registerRaindropImportStatus() {
 		tags: ["Raindrop"],
 		summary: "Get Raindrop import status",
 		description:
-			"Returns the current status of the Raindrop.io import queue, " +
-			"including counts of pending and archived items with individual archive records.",
+			"Returns the current status of the Raindrop.io import queue, including counts of pending and archived items with individual archive records.",
 		security: [{ [bearerAuth.name]: [] }],
 		responses: {
 			200: {

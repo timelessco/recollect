@@ -15,9 +15,7 @@ export function registerProfilesTogglePreferredOgDomain() {
 		tags: ["Profiles"],
 		summary: "Toggle preferred OG image domain",
 		description:
-			"Adds or removes a domain from the user's preferred OG image domain list. " +
-			"When a domain is in the preferred list, Recollect will use OG images from that domain " +
-			"over others. Returns the updated profile with the full domain list.",
+			"Adds or removes a domain from the user's preferred OG image domain list. When a domain is in the preferred list, Recollect will use OG images from that domain over others. Returns the updated profile with the full domain list.",
 		security: [{ [bearerAuth.name]: [] }],
 		request: {
 			body: {
@@ -40,7 +38,7 @@ export function registerProfilesTogglePreferredOgDomain() {
 						schema: apiResponseSchema(TogglePreferredOgDomainResponseSchema),
 						example: {
 							data: {
-								id: "usr_abc123def456",
+								id: "550e8400-e29b-41d4-a716-446655440000",
 								preferred_og_domains: ["substack.com", "medium.com"],
 							},
 							error: null,

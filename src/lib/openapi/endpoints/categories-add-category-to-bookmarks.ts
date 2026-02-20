@@ -15,10 +15,7 @@ export function registerCategoriesAddCategoryToBookmarks() {
 		tags: ["Bookmarks"],
 		summary: "Assign a category to multiple bookmarks",
 		description:
-			"Assigns a category to multiple bookmarks in a single atomic operation. " +
-			"All bookmarks must be owned by the caller. The caller must have access to the category " +
-			"(owner or collaborator with edit access). Accepts 1–100 bookmark IDs. " +
-			"Returns only the newly-created assignments (existing ones are skipped).",
+			"Assigns a category to multiple bookmarks in a single atomic operation. All bookmarks must be owned by the caller. The caller must have access to the category (owner or collaborator with edit access). Accepts 1–100 bookmark IDs. Returns only the newly-created assignments (existing ones are skipped).",
 		security: [{ [bearerAuth.name]: [] }],
 		request: {
 			body: {

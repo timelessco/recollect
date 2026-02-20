@@ -12,8 +12,7 @@ export function registerTwitterSyncStatus() {
 		tags: ["Twitter"],
 		summary: "Get Twitter sync status",
 		description:
-			"Returns the current status of the Twitter/X bookmark sync queue, " +
-			"including counts of pending and archived items with individual archive records.",
+			"Returns the current status of the Twitter/X bookmark sync queue, including counts of pending and archived items with individual archive records.",
 		security: [{ [bearerAuth.name]: [] }],
 		responses: {
 			200: {

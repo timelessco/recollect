@@ -13,12 +13,7 @@ export function registerCategoriesUpdateUserCategory() {
 		tags: ["Categories"],
 		summary: "Update a category",
 		description:
-			"Updates one or more properties of a category owned by the authenticated user. " +
-			"All updateData fields are optional — only provided fields are updated. " +
-			"The category_views field accepts additional properties (additionalProperties: true) " +
-			"for flexible JSONB view configuration. " +
-			"Triggers revalidation for public categories on any field change. " +
-			"Returns 409 if renaming to a name that already exists for this user.",
+			"Updates one or more properties of a category owned by the authenticated user. All updateData fields are optional — only provided fields are updated. The category_views field accepts additional properties (additionalProperties: true) for flexible JSONB view configuration. Triggers revalidation for public categories on any field change. Returns 409 if renaming to a name that already exists for this user.",
 		security: [{ [bearerAuth.name]: [] }],
 		request: {
 			body: {
@@ -56,7 +51,7 @@ export function registerCategoriesUpdateUserCategory() {
 								icon_color: "#6366f1",
 								is_public: true,
 								order_index: 2,
-								user_id: "usr_abc123",
+								user_id: "550e8400-e29b-41d4-a716-446655440000",
 							},
 							error: null,
 						},

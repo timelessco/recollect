@@ -15,10 +15,7 @@ export function registerBookmarksToggleDiscoverableOnBookmark() {
 		tags: ["Bookmarks"],
 		summary: "Toggle discoverable status on a bookmark",
 		description:
-			"Makes a bookmark publicly discoverable or removes its discoverability. " +
-			"When making discoverable, the bookmark must not be in trash. " +
-			"Removing discoverability is always allowed regardless of trash status. " +
-			"Returns 400 if the bookmark is not found, not owned by the user, or is trashed (when enabling).",
+			"Makes a bookmark publicly discoverable or removes its discoverability. When making discoverable, the bookmark must not be in trash. Removing discoverability is always allowed regardless of trash status. Returns 400 if the bookmark is not found, not owned by the user, or is trashed (when enabling).",
 		security: [{ [bearerAuth.name]: [] }],
 		request: {
 			body: {

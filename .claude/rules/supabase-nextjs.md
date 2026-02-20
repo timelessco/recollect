@@ -129,7 +129,7 @@ Using deprecated patterns will:
 
 ## Health Check Patterns
 
-**getClaims() does NOT make a network call** — it parses the JWT from the cookie. A null result does not mean Supabase is unreachable.
+**getClaims() does NOT make a network call** — it validates the JWT locally (signature and expiration) from the cookie. A null result does not mean Supabase is unreachable.
 
 To verify actual Supabase connectivity, use:
 

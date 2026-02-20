@@ -15,9 +15,7 @@ export function registerBookmarksFetchBookmarksDiscoverable() {
 		tags: ["Bookmarks"],
 		summary: "List discoverable bookmarks",
 		description:
-			"Returns a paginated list of all bookmarks marked as discoverable across all users. " +
-			"No authentication required. Results are ordered by make_discoverable timestamp ascending. " +
-			"Page size is fixed at the server's PAGINATION_LIMIT (typically 20 items).",
+			"Returns a paginated list of all bookmarks marked as discoverable across all users. No authentication required. Results are ordered by make_discoverable timestamp ascending. Page size is fixed at the server's PAGINATION_LIMIT (typically 20 items).",
 		request: {
 			query: FetchDiscoverBookmarksQuerySchema,
 		},

@@ -15,11 +15,7 @@ export function registerCategoriesRemoveCategoryFromBookmark() {
 		tags: ["Bookmarks"],
 		summary: "Remove a category from a bookmark",
 		description:
-			"Removes a category assignment from a bookmark. Cannot remove the Uncategorized (ID: 0) " +
-			"category — it is auto-managed by the system. When the last real category is removed, " +
-			"the bookmark is automatically assigned to Uncategorized. " +
-			"Returns 404 if the bookmark is not found or the category association does not exist. " +
-			"Returns 400 if attempting to remove the Uncategorized category.",
+			"Removes a category assignment from a bookmark. Cannot remove the Uncategorized (ID: 0) category — it is auto-managed by the system. When the last real category is removed, the bookmark is automatically assigned to Uncategorized. Returns 404 if the bookmark is not found or the category association does not exist. Returns 400 if attempting to remove the Uncategorized category.",
 		security: [{ [bearerAuth.name]: [] }],
 		request: {
 			body: {
