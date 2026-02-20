@@ -63,6 +63,10 @@ export function useUpdateCategoryOptimisticMutation() {
 					category.icon_color = updateData.icon_color;
 				}
 
+				if (updateData.is_favorite !== undefined) {
+					category.is_favorite = updateData.is_favorite;
+				}
+
 				if (updateData.is_public !== undefined) {
 					category.is_public = updateData.is_public;
 				}

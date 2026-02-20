@@ -31,6 +31,7 @@ const UpdateCategoryPayloadSchema = z.object({
 		category_views: categoryViewsSchema,
 		icon: z.string().nullable().optional(),
 		icon_color: z.string().optional(),
+		is_favorite: z.boolean().optional(),
 		is_public: z.boolean().optional(),
 	}),
 });
@@ -47,6 +48,7 @@ const UpdateCategoryResponseSchema = z
 			created_at: z.string().nullable(),
 			icon: z.string().nullable(),
 			icon_color: z.string().nullable(),
+			is_favorite: z.boolean(),
 			is_public: z.boolean(),
 			order_index: z.number().nullable(),
 			user_id: z.string().nullable(),
