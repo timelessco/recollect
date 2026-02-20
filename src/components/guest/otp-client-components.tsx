@@ -23,14 +23,9 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 	const [isPending, startTransition] = React.useTransition();
 	const extendedIsPending = usePendingWithMinDuration(isPending);
 
-	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-
+	const verifyOtp = (otpValue: string) => {
 		startTransition(async () => {
 			try {
-				const formData = new FormData(event.currentTarget);
-				const otpValue = formData.get("otp") as string;
-
 				const supabase = createClient();
 
 				const { error } = await supabase.auth.verifyOtp({
@@ -52,6 +47,11 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 		});
 	};
 
+	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		verifyOtp(otp);
+	};
+
 	return (
 		<Form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
 			<div className="flex flex-col gap-1">
@@ -60,6 +60,7 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 					maxLength={6}
 					value={otp}
 					onChange={setOtp}
+					onComplete={verifyOtp}
 					pattern={REGEXP_ONLY_DIGITS}
 					autoFocus
 					inputMode="numeric"
