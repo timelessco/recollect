@@ -1,45 +1,19 @@
 import { type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
-import { z } from "zod";
+import { type z } from "zod";
 
+import {
+	IphoneShareErrorPayloadSchema,
+	IphoneShareErrorResponseSchema,
+} from "./schema";
 import { apiError, apiSuccess, parseBody } from "@/lib/api-helpers/response";
 import { requireAuth } from "@/lib/supabase/api";
-import { isNullable } from "@/utils/assertion-utils";
 
 const ROUTE = "iphone-share-error";
-
-const IphoneShareErrorPayloadSchema = z.object({
-	message: z
-		.string({
-			error: (issue) =>
-				isNullable(issue.input)
-					? "Error message is required"
-					: "Error message must be a string",
-		})
-		.min(1, { error: "Error message cannot be empty" }),
-	stackTrace: z.string().optional(),
-	deviceInfo: z
-		.object({
-			model: z.string().optional(),
-			osVersion: z.string().optional(),
-			appVersion: z.string().optional(),
-		})
-		.optional(),
-	context: z
-		.object({
-			screen: z.string().optional(),
-			action: z.string().optional(),
-		})
-		.optional(),
-});
 
 export type IphoneShareErrorPayload = z.infer<
 	typeof IphoneShareErrorPayloadSchema
 >;
-
-const IphoneShareErrorResponseSchema = z.object({
-	sentryEventId: z.string(),
-});
 
 export type IphoneShareErrorResponse = z.infer<
 	typeof IphoneShareErrorResponseSchema

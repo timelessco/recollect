@@ -20,5 +20,11 @@ export const registry = new OpenAPIRegistry();
 export const bearerAuth = registry.registerComponent(
 	"securitySchemes",
 	"bearerAuth",
-	{ type: "http", scheme: "bearer", bearerFormat: "JWT" },
+	{
+		type: "http",
+		scheme: "bearer",
+		bearerFormat: "JWT",
+		description:
+			"Supabase JWT token. Get one by signing in at the app or via the Supabase auth API.",
+	},
 );
