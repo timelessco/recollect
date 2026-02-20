@@ -5,7 +5,8 @@ export const DeleteBookmarkInputSchema = z.object({
 		.array(
 			z.object({
 				id: z
-					.number({ error: "Bookmark ID must be a number" })
+					.int({ error: "Bookmark ID must be a whole number" })
+					.positive({ error: "Bookmark ID must be a positive number" })
 					.meta({ description: "Bookmark ID to permanently delete" }),
 			}),
 		)

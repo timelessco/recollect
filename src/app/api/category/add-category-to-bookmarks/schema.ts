@@ -27,12 +27,8 @@ export type AddCategoryToBookmarksPayload = z.infer<
 
 export const AddCategoryToBookmarksResponseSchema = z.array(
 	z.object({
-		bookmark_id: z
-			.number()
-			.meta({ description: "ID of the affected bookmark" }),
-		category_id: z
-			.number()
-			.meta({ description: "ID of the assigned category" }),
+		bookmark_id: z.int().meta({ description: "ID of the affected bookmark" }),
+		category_id: z.int().meta({ description: "ID of the assigned category" }),
 	}),
 );
 

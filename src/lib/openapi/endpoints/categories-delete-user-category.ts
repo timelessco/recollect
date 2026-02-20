@@ -57,7 +57,7 @@ export function registerCategoriesDeleteUserCategory() {
 				},
 			},
 			401: { $ref: "#/components/responses/Unauthorized" },
-			403: { description: "Only the collection owner can delete it" },
+			403: { description: "Only the category owner can delete it" },
 			404: { description: "Category not found or already deleted" },
 			500: { $ref: "#/components/responses/InternalError" },
 		},

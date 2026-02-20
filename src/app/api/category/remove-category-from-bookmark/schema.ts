@@ -9,8 +9,7 @@ export const RemoveCategoryFromBookmarkPayloadSchema = z.object({
 		.int({ error: "Collection ID must be a whole number" })
 		.min(0, { error: "Collection ID must be non-negative" })
 		.meta({
-			description:
-				"Category ID to remove. Cannot be 0 (uncategorized is auto-managed).",
+			description: "Category ID to remove (0 = uncategorized, which is valid)",
 		}),
 });
 

@@ -55,7 +55,7 @@ export function registerBookmarksFetchDiscoverableById() {
 									bookmarks_view: {},
 									category_order: [7, 8],
 									display_name: "Jane Doe",
-									id: "usr_abc123",
+									id: "550e8400-e29b-41d4-a716-446655440000",
 									preferred_og_domains: null,
 									profile_pic: "https://example.com/avatar.jpg",
 									user_name: "janedoe",

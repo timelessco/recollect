@@ -7,15 +7,11 @@ export const InstagramSyncInputSchema = z.object({
 		.array(
 			z.object({
 				url: z.url().refine((url) => {
-					try {
-						const parsed = new URL(url);
-						return (
-							parsed.hostname === "instagram.com" ||
-							parsed.hostname === "www.instagram.com"
-						);
-					} catch {
-						return false;
-					}
+					const parsed = new URL(url);
+					return (
+						parsed.hostname === "instagram.com" ||
+						parsed.hostname === "www.instagram.com"
+					);
 				}, "Must be a valid Instagram URL"),
 				title: z.string().default(""),
 				description: z.string().default(""),

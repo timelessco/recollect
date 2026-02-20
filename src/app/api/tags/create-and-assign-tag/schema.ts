@@ -7,7 +7,8 @@ export const CreateAndAssignTagPayloadSchema = z.object({
 		description: "Tag name to create (1–20 characters)",
 	}),
 	bookmarkId: z
-		.number()
+		.int()
+		.positive()
 		.meta({ description: "ID of the bookmark to assign the new tag to" }),
 });
 

@@ -1,19 +1,13 @@
 import { z } from "zod";
 
 export const FetchPublicBookmarkByIdQuerySchema = z.object({
-	bookmark_id: z
-		.string()
-		.regex(/^\d+$/u, "Bookmark ID must be numeric")
-		.transform(Number)
-		.meta({
-			description: "Numeric bookmark ID as string query parameter",
-			example: "42",
-		}),
+	bookmark_id: z.coerce.number().int().positive().meta({
+		description: "Numeric bookmark ID as query parameter",
+		example: 42,
+	}),
 	user_name: z
 		.string()
-		.regex(/^[\w-]{1,39}$/u, "Invalid username format")
-		.min(1)
-		.max(39)
+		.regex(/^[a-zA-Z0-9-]{1,39}$/u, "Invalid username format")
 		.meta({
 			description: "Username of the bookmark owner",
 			example: "johndoe",
@@ -144,7 +138,7 @@ const BookmarkSchema = z.object({
 	user_id: ProfileSchema.meta({ description: "Owner profile data" }),
 });
 
-export const FetchPublicBookmarkByIdResponseSchema = BookmarkSchema.nullable();
+export const FetchPublicBookmarkByIdResponseSchema = BookmarkSchema;
 
 export type FetchPublicBookmarkByIdResponse = z.infer<
 	typeof FetchPublicBookmarkByIdResponseSchema

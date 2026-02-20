@@ -56,6 +56,7 @@ export function registerCategoriesCreateUserCategory() {
 					},
 				},
 			},
+			400: { description: "Invalid or missing request fields" },
 			401: { $ref: "#/components/responses/Unauthorized" },
 			409: {
 				description: "A category with this name already exists for this user",

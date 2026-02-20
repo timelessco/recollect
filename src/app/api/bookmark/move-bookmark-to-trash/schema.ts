@@ -2,14 +2,15 @@ import { z } from "zod";
 
 const BookmarkDataSchema = z.object({
 	id: z
-		.number({ error: "Bookmark ID must be a number" })
+		.int({ error: "Bookmark ID must be a whole number" })
+		.positive({ error: "Bookmark ID must be a positive number" })
 		.meta({ description: "Bookmark ID to move to trash" }),
 });
 
 export const MoveBookmarkToTrashInputSchema = z.object({
 	data: z
 		.array(BookmarkDataSchema)
-		.min(1, { message: "At least one bookmark is required" })
+		.min(1, { error: "At least one bookmark is required" })
 		.meta({ description: "Array of bookmark objects to move to trash" }),
 	isTrash: z.boolean({ error: "isTrash must be a boolean" }).meta({
 		description: "True to move to trash, false to restore from trash",

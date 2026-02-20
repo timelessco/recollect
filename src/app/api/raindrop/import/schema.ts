@@ -6,14 +6,14 @@ export const RaindropImportInputSchema = z.object({
 			z.object({
 				title: z.string().nullable(),
 				description: z.string().nullable(),
-				url: z.string().url(),
+				url: z.url(),
 				ogImage: z.string().nullable(),
 				category_name: z.string().nullable(),
-				inserted_at: z.string().datetime().nullable().or(z.literal("")),
+				inserted_at: z.iso.datetime().nullable().or(z.literal("")),
 			}),
 		)
-		.min(1, "At least one bookmark required")
-		.max(500, "Maximum 500 bookmarks per request"),
+		.min(1, { error: "At least one bookmark required" })
+		.max(500, { error: "Maximum 500 bookmarks per request" }),
 });
 
 export const RaindropImportOutputSchema = z.object({

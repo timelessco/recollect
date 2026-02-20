@@ -52,6 +52,9 @@ export function registerCategoriesSetBookmarkCategories() {
 					},
 				},
 			},
+			400: {
+				description: "Invalid request: max 100 IDs, no duplicates",
+			},
 			401: { $ref: "#/components/responses/Unauthorized" },
 			403: {
 				description: "Bookmark not owned or no access to specified categories",

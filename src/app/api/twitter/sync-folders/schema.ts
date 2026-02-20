@@ -4,10 +4,10 @@ export const SyncFoldersInputSchema = z.object({
 	categories: z
 		.array(
 			z.object({
-				name: z.string().trim().min(1, "Category name is required"),
+				name: z.string().trim().min(1, { error: "Category name is required" }),
 			}),
 		)
-		.min(1, "At least one category required"),
+		.min(1, { error: "At least one category required" }),
 });
 
 export const SyncFoldersOutputSchema = z.object({

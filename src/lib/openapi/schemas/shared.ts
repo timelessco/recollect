@@ -78,13 +78,16 @@ export const CategoryRowSchema = registry.register(
 	"CategoryRow",
 	z.object({
 		id: z.number().meta({ description: "Category ID" }),
-		category_name: z.string().meta({ description: "Display name" }),
+		category_name: z.string().nullable().meta({ description: "Display name" }),
 		category_slug: z.string().meta({ description: "URL-safe slug" }),
 		category_views: z
 			.unknown()
 			.nullable()
 			.meta({ description: "JSONB view configuration" }),
-		created_at: z.string().meta({ description: "ISO creation timestamp" }),
+		created_at: z
+			.string()
+			.nullable()
+			.meta({ description: "ISO creation timestamp" }),
 		icon: z.string().nullable().meta({ description: "Icon identifier" }),
 		icon_color: z
 			.string()
@@ -93,7 +96,10 @@ export const CategoryRowSchema = registry.register(
 		is_public: z
 			.boolean()
 			.meta({ description: "Whether collection is publicly visible" }),
-		order_index: z.number().meta({ description: "Sort order position" }),
-		user_id: z.string().meta({ description: "Owner user ID" }),
+		order_index: z
+			.number()
+			.nullable()
+			.meta({ description: "Sort order position" }),
+		user_id: z.string().nullable().meta({ description: "Owner user ID" }),
 	}),
 );

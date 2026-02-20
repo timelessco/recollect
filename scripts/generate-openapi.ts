@@ -40,18 +40,20 @@ const tagDescriptions: Array<{ name: string; description: string }> = [
 	},
 ];
 
+const errorResponseSchema = {
+	type: "object" as const,
+	properties: {
+		data: { type: "null" as const },
+		error: { type: "string" as const },
+	},
+	required: ["data", "error"],
+};
+
 registry.registerComponent("responses", "Unauthorized", {
 	description: "Not authenticated. Provide a valid bearer token.",
 	content: {
 		"application/json": {
-			schema: {
-				type: "object",
-				properties: {
-					data: { type: "null" },
-					error: { type: "string" },
-				},
-				required: ["data", "error"],
-			},
+			schema: errorResponseSchema,
 			example: { data: null, error: "Not authenticated" },
 		},
 	},
@@ -61,14 +63,7 @@ registry.registerComponent("responses", "InternalError", {
 	description: "Server error. The request could not be processed.",
 	content: {
 		"application/json": {
-			schema: {
-				type: "object",
-				properties: {
-					data: { type: "null" },
-					error: { type: "string" },
-				},
-				required: ["data", "error"],
-			},
+			schema: errorResponseSchema,
 			example: { data: null, error: "Failed to process request" },
 		},
 	},

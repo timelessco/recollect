@@ -10,7 +10,7 @@ import {
 	type FetchSharedCategoriesData,
 	type ProfilesTableTypes,
 } from "../types/apiTypes";
-import { getPageViewData, getPageViewKey } from "../utils/bookmarksViewKeyed";
+import { getPageViewData, getPageViewKey } from "@/utils/bookmarksViewKeyed";
 import {
 	CATEGORIES_KEY,
 	SHARED_CATEGORIES_TABLE_NAME,

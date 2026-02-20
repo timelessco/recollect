@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { Button } from "@base-ui/react/button";
 import { find } from "lodash";
 
-import { EditPopover } from "./edit-popover";
+import { EditPopover } from "@/pageComponents/dashboard/cardSection/edit-popover";
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import BackIcon from "@/icons/actionIcons/backIcon";
