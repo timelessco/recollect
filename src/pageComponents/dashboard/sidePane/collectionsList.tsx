@@ -180,7 +180,11 @@ const ListBoxDrop = (props: ListBoxDropTypes) => {
 
 	// Merge listbox props and dnd props, and render the items as normal.
 	return (
-		<ul {...mergeProps(listBoxProps, collectionProps)} ref={ref}>
+		<ul
+			{...mergeProps(listBoxProps, collectionProps)}
+			className="flex flex-col gap-px"
+			ref={ref}
+		>
 			{[...state.collection].map((item) => (
 				<OptionDrop
 					dragState={dragState}

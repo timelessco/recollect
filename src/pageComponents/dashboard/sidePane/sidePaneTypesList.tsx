@@ -61,7 +61,7 @@ const SidePaneTypesList = () => {
 					</div>
 				}
 			>
-				<div>
+				<div className="flex flex-col gap-px">
 					{optionsMenuList?.map((item) => (
 						<SingleListItemComponent
 							extendedClassname="py-[6px]"
