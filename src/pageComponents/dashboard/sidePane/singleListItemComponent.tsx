@@ -28,7 +28,7 @@ export type CollectionItemTypes = {
 	iconValue?: string | null;
 	id: number;
 	isCollab?: boolean;
-	isFavorite: boolean;
+	isFavorite?: boolean;
 	isPublic?: boolean;
 	name: string;
 	responsiveIcon?: boolean;
