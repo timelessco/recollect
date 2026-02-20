@@ -10,6 +10,8 @@ export const GET = createGetApiHandlerWithAuth({
 	inputSchema: CheckUrlInputSchema,
 	outputSchema: CheckUrlOutputSchema,
 	handler: async ({ data, supabase, user, route }) => {
+		console.log(`[${route}] API called:`, { userId: user.id, url: data.url });
+
 		const normalized = normalizeUrl(data.url);
 
 		if (!normalized) {
