@@ -22,6 +22,7 @@ export const GET = createGetApiHandlerWithAuth({
 		} catch {
 			return { exists: false as const };
 		}
+
 		const basePath = `${baseUrl.protocol}//${baseUrl.host}${baseUrl.pathname}`;
 
 		const { data: candidates, error } = await supabase
