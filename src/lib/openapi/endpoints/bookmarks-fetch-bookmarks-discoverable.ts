@@ -12,7 +12,7 @@ export function registerBookmarksFetchBookmarksDiscoverable() {
 	registry.registerPath({
 		method: "get",
 		path: "/bookmark/fetch-bookmarks-discoverable",
-		tags: ["bookmarks"],
+		tags: ["Bookmarks"],
 		summary: "List discoverable bookmarks",
 		description:
 			"Returns a paginated list of all bookmarks marked as discoverable across all users. " +

@@ -8,14 +8,14 @@ export const SetBookmarkCategoriesPayloadSchema = z.object({
 	category_ids: z
 		.array(
 			z
-				.int({ error: "Collection ID must be a whole number" })
-				.min(0, { error: "Collection ID must be non-negative" }),
+				.int({ error: "Category ID must be a whole number" })
+				.min(0, { error: "Category ID must be non-negative" }),
 		)
 		.max(100, {
-			error: "Cannot add more than 100 collections to a bookmark",
+			error: "Cannot add more than 100 categories to a bookmark",
 		})
 		.refine((ids) => new Set(ids).size === ids.length, {
-			error: "Duplicate collection IDs not allowed",
+			error: "Duplicate category IDs not allowed",
 		})
 		.meta({
 			description:

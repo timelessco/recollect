@@ -12,7 +12,7 @@ export function registerCategoriesRemoveCategoryFromBookmark() {
 	registry.registerPath({
 		method: "post",
 		path: "/category/remove-category-from-bookmark",
-		tags: ["bookmarks"],
+		tags: ["Bookmarks"],
 		summary: "Remove a category from a bookmark",
 		description:
 			"Removes a category assignment from a bookmark. Cannot remove the Uncategorized (ID: 0) " +

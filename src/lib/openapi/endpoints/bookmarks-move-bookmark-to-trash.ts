@@ -12,7 +12,7 @@ export function registerBookmarksMoveBookmarkToTrash() {
 	registry.registerPath({
 		method: "post",
 		path: "/bookmark/move-bookmark-to-trash",
-		tags: ["bookmarks"],
+		tags: ["Bookmarks"],
 		summary: "Move bookmarks to trash or restore them",
 		description:
 			"Moves one or more bookmarks to trash (soft delete) or restores them from trash. " +

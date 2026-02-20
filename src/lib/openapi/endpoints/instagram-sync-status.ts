@@ -9,11 +9,10 @@ export function registerInstagramSyncStatus() {
 	registry.registerPath({
 		method: "get",
 		path: "/instagram/sync/status",
-		tags: ["instagram"],
+		tags: ["Instagram"],
 		summary: "Get Instagram sync status",
 		description:
-			"Returns the current status of the Instagram bookmark sync queue, " +
-			"including counts of pending and archived items with individual archive records.",
+			"Returns the current status of the Instagram bookmark sync queue, including counts of pending and archived items with individual archive records.",
 		security: [{ [bearerAuth.name]: [] }],
 		responses: {
 			200: {

@@ -6,8 +6,8 @@ export const AddCategoryToBookmarkPayloadSchema = z.object({
 		.positive({ error: "Bookmark ID must be a positive number" })
 		.meta({ description: "ID of the bookmark to assign the category to" }),
 	category_id: z
-		.int({ error: "Collection ID must be a whole number" })
-		.min(0, { error: "Collection ID must be non-negative" })
+		.int({ error: "Category ID must be a whole number" })
+		.min(0, { error: "Category ID must be non-negative" })
 		.meta({
 			description:
 				"Category ID to assign (0 = uncategorized, positive = real category)",

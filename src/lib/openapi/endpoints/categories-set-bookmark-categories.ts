@@ -12,7 +12,7 @@ export function registerCategoriesSetBookmarkCategories() {
 	registry.registerPath({
 		method: "post",
 		path: "/category/set-bookmark-categories",
-		tags: ["bookmarks"],
+		tags: ["Bookmarks"],
 		summary: "Replace all categories on a bookmark",
 		description:
 			"Atomically replaces all category assignments for a bookmark. " +

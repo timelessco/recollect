@@ -18,7 +18,7 @@ export type DeleteBookmarkInput = z.infer<typeof DeleteBookmarkInputSchema>;
 
 export const DeleteBookmarkOutputSchema = z.object({
 	deletedCount: z
-		.number()
+		.int()
 		.meta({ description: "Total number of bookmarks permanently deleted" }),
 	message: z
 		.string()

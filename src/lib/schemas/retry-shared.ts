@@ -6,6 +6,6 @@ export const RetryInputSchema = z.union([
 ]);
 
 export const RetryOutputSchema = z.object({
-	requeued: z.number(),
-	requested: z.number().optional(),
+	requeued: z.int(),
+	requested: z.int().optional(),
 });

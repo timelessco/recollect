@@ -12,7 +12,7 @@ export function registerBookmarksToggleDiscoverableOnBookmark() {
 	registry.registerPath({
 		method: "post",
 		path: "/bookmark/toggle-discoverable-on-bookmark",
-		tags: ["bookmarks"],
+		tags: ["Bookmarks"],
 		summary: "Toggle discoverable status on a bookmark",
 		description:
 			"Makes a bookmark publicly discoverable or removes its discoverability. " +

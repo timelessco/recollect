@@ -12,7 +12,7 @@ export function registerBookmarksFetchDiscoverableById() {
 	registry.registerPath({
 		method: "get",
 		path: "/bookmark/fetch-discoverable-by-id",
-		tags: ["bookmarks"],
+		tags: ["Bookmarks"],
 		summary: "Get a single discoverable bookmark",
 		description:
 			"Fetches a single discoverable bookmark by ID, including its tags, categories, and owner profile. " +

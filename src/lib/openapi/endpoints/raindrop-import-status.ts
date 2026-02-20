@@ -9,7 +9,7 @@ export function registerRaindropImportStatus() {
 	registry.registerPath({
 		method: "get",
 		path: "/raindrop/import/status",
-		tags: ["raindrop"],
+		tags: ["Raindrop"],
 		summary: "Get Raindrop import status",
 		description:
 			"Returns the current status of the Raindrop.io import queue, " +

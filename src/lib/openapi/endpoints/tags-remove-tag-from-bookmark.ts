@@ -12,7 +12,7 @@ export function registerTagsRemoveTagFromBookmark() {
 	registry.registerPath({
 		method: "post",
 		path: "/tags/remove-tag-from-bookmark",
-		tags: ["bookmarks"],
+		tags: ["Bookmarks"],
 		summary: "Remove a tag from a bookmark",
 		description:
 			"Removes a tag assignment from a bookmark. Both the bookmark and tag must be owned by the " +

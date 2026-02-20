@@ -10,7 +10,7 @@ export function registerCategoriesUpdateUserCategory() {
 	registry.registerPath({
 		method: "post",
 		path: "/category/update-user-category",
-		tags: ["categories"],
+		tags: ["Categories"],
 		summary: "Update a category",
 		description:
 			"Updates one or more properties of a category owned by the authenticated user. " +

@@ -11,7 +11,7 @@ import { registry } from "@/lib/openapi/registry";
 export const ArchiveItemSchema = registry.register(
 	"ArchiveItem",
 	z.object({
-		msg_id: z.number().meta({ description: "Queue message ID" }),
+		msg_id: z.int().meta({ description: "Queue message ID" }),
 		url: z.string().meta({ description: "Bookmarked URL" }),
 		failure_reason: z
 			.string()
@@ -28,10 +28,10 @@ export const ImportStatusSchema = registry.register(
 	"ImportStatus",
 	z.object({
 		pending: z
-			.number()
+			.int()
 			.meta({ description: "Number of imports waiting to be processed" }),
 		archived: z
-			.number()
+			.int()
 			.meta({ description: "Number of successfully archived imports" }),
 		archives: z
 			.array(ArchiveItemSchema)
@@ -65,10 +65,10 @@ export const ImportRetryOutputSchema = registry.register(
 	"ImportRetryOutput",
 	z.object({
 		requeued: z
-			.number()
+			.int()
 			.meta({ description: "Number of messages requeued for retry" }),
 		requested: z
-			.number()
+			.int()
 			.optional()
 			.meta({ description: "Number of messages originally requested" }),
 	}),
@@ -77,7 +77,7 @@ export const ImportRetryOutputSchema = registry.register(
 export const CategoryRowSchema = registry.register(
 	"CategoryRow",
 	z.object({
-		id: z.number().meta({ description: "Category ID" }),
+		id: z.int().meta({ description: "Category ID" }),
 		category_name: z.string().nullable().meta({ description: "Display name" }),
 		category_slug: z.string().meta({ description: "URL-safe slug" }),
 		category_views: z
@@ -97,7 +97,7 @@ export const CategoryRowSchema = registry.register(
 			.boolean()
 			.meta({ description: "Whether collection is publicly visible" }),
 		order_index: z
-			.number()
+			.int()
 			.nullable()
 			.meta({ description: "Sort order position" }),
 		user_id: z.string().nullable().meta({ description: "Owner user ID" }),

@@ -15,5 +15,5 @@ export const SyncFolderBookmarksInputSchema = z.object({
 });
 
 export const SyncFolderBookmarksOutputSchema = z.object({
-	queued: z.number(),
+	queued: z.int(),
 });

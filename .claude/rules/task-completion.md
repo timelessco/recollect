@@ -3,7 +3,7 @@
 ## After Every Task
 
 ```bash
-pnpm fix        # Auto-fix all (spelling → css → md → prettier → eslint via turbo deps)
+pnpm fix        # Fix ESLint issues only (runs fix:eslint via turbo)
 pnpm lint:types # TypeScript strict checks
 ```
 

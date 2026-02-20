@@ -8,34 +8,34 @@ import * as sharedSchemas from "../src/lib/openapi/schemas/shared";
 
 const tagDescriptions: Array<{ name: string; description: string }> = [
 	{
-		name: "bookmarks",
+		name: "Bookmarks",
 		description:
 			"Bookmark management: CRUD, trash, discover, and tag/category assignment",
 	},
 	{
-		name: "categories",
+		name: "Categories",
 		description:
 			"Collection management: create, update, and delete collections",
 	},
 	{
-		name: "instagram",
+		name: "Instagram",
 		description: "Instagram bookmark sync: import and monitor import status",
 	},
 	{
-		name: "raindrop",
+		name: "Raindrop",
 		description: "Raindrop.io bookmark import: queue and monitor import status",
 	},
 	{
-		name: "twitter",
+		name: "Twitter",
 		description:
 			"Twitter/X bookmark sync: import folders and monitor import status",
 	},
 	{
-		name: "profiles",
+		name: "Profiles",
 		description: "User profile management: preferred OG domain settings",
 	},
 	{
-		name: "iphone",
+		name: "iPhone",
 		description: "iOS share extension error reporting",
 	},
 ];
@@ -81,9 +81,7 @@ const document = generator.generateDocument({
 		title: "Recollect API",
 		version: "1.0.0",
 		description:
-			"Recollect API for bookmark management, organization, and import. " +
-			"Designed for mobile and frontend developers. " +
-			"Authenticate with a Supabase JWT bearer token.",
+			"Recollect API for bookmark management, organization, and import. Designed for mobile and frontend developers. Authenticate with a Supabase JWT bearer token.",
 	},
 	tags: tagDescriptions,
 	servers: [{ url: "/api" }],
@@ -92,7 +90,7 @@ const document = generator.generateDocument({
 const outputPath = resolve(import.meta.dirname, "../public/openapi.json");
 writeFileSync(outputPath, JSON.stringify(document, null, 2), "utf8");
 
-const sharedSchemaCount = Object.keys(sharedSchemas).length;
+const sharedSchemaExports = Object.keys(sharedSchemas).length;
 console.log(
-	`OpenAPI spec written to public/openapi.json (${sharedSchemaCount} shared schemas registered)`,
+	`OpenAPI spec written to public/openapi.json (${sharedSchemaExports} shared schema exports registered)`,
 );

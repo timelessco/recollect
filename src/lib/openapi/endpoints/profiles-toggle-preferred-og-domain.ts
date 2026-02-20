@@ -12,7 +12,7 @@ export function registerProfilesTogglePreferredOgDomain() {
 	registry.registerPath({
 		method: "post",
 		path: "/profiles/toggle-preferred-og-domain",
-		tags: ["profiles"],
+		tags: ["Profiles"],
 		summary: "Toggle preferred OG image domain",
 		description:
 			"Adds or removes a domain from the user's preferred OG image domain list. " +

@@ -10,7 +10,7 @@ export function registerCategoriesCreateUserCategory() {
 	registry.registerPath({
 		method: "post",
 		path: "/category/create-user-category",
-		tags: ["categories"],
+		tags: ["Categories"],
 		summary: "Create a new category",
 		description:
 			"Creates a new category for the authenticated user. The category name must be unique " +

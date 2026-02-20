@@ -12,7 +12,7 @@ export function registerBookmarksFetchPublicBookmarkById() {
 	registry.registerPath({
 		method: "get",
 		path: "/bookmark/fetch-public-bookmark-by-id",
-		tags: ["bookmarks"],
+		tags: ["Bookmarks"],
 		summary: "Get a public bookmark by ID and collection",
 		description:
 			"Fetches a single bookmark by ID, verifying it belongs to a public category " +

@@ -12,7 +12,7 @@ export function registerInstagramSync() {
 	registry.registerPath({
 		method: "post",
 		path: "/instagram/sync",
-		tags: ["instagram"],
+		tags: ["Instagram"],
 		summary: "Sync Instagram bookmarks",
 		description:
 			"Enqueues a batch of Instagram bookmarks for async archiving. " +

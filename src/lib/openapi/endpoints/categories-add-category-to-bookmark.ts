@@ -12,7 +12,7 @@ export function registerCategoriesAddCategoryToBookmark() {
 	registry.registerPath({
 		method: "post",
 		path: "/category/add-category-to-bookmark",
-		tags: ["bookmarks"],
+		tags: ["Bookmarks"],
 		summary: "Add a category to a bookmark",
 		description:
 			"Assigns a category to a single bookmark. The caller must own the bookmark and have " +

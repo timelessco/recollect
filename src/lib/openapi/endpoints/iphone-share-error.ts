@@ -12,7 +12,7 @@ export function registerIphoneShareError() {
 	registry.registerPath({
 		method: "post",
 		path: "/iphone-share-error",
-		tags: ["iphone"],
+		tags: ["iPhone"],
 		summary: "Report iOS share extension error",
 		description:
 			"Reports an error that occurred in the iOS share extension to Sentry. " +

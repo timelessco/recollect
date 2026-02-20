@@ -15,7 +15,6 @@ export const FetchPublicBookmarkByIdQuerySchema = z.object({
 	category_slug: z
 		.string()
 		.regex(/^[\w-]+$/u, "Invalid category slug format")
-		.min(1)
 		.max(100)
 		.meta({
 			description: "URL-safe slug of the public category",

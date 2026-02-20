@@ -12,7 +12,7 @@ export function registerRaindropImport() {
 	registry.registerPath({
 		method: "post",
 		path: "/raindrop/import",
-		tags: ["raindrop"],
+		tags: ["Raindrop"],
 		summary: "Import Raindrop.io bookmarks",
 		description:
 			"Enqueues a batch of Raindrop.io bookmarks for async import. " +

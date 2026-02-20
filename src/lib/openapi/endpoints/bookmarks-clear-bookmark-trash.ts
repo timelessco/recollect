@@ -12,7 +12,7 @@ export function registerBookmarksClearBookmarkTrash() {
 	registry.registerPath({
 		method: "post",
 		path: "/bookmark/clear-bookmark-trash",
-		tags: ["bookmarks"],
+		tags: ["Bookmarks"],
 		summary: "Clear all trashed bookmarks",
 		description:
 			"Permanently deletes all bookmarks in the authenticated user's trash. " +

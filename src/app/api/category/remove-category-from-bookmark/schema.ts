@@ -6,8 +6,8 @@ export const RemoveCategoryFromBookmarkPayloadSchema = z.object({
 		.positive({ error: "Bookmark ID must be a positive number" })
 		.meta({ description: "ID of the bookmark to remove the category from" }),
 	category_id: z
-		.int({ error: "Collection ID must be a whole number" })
-		.min(0, { error: "Collection ID must be non-negative" })
+		.int({ error: "Category ID must be a whole number" })
+		.min(0, { error: "Category ID must be non-negative" })
 		.meta({
 			description: "Category ID to remove (0 = uncategorized, which is valid)",
 		}),

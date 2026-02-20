@@ -9,7 +9,7 @@ export function registerTwitterSyncStatus() {
 	registry.registerPath({
 		method: "get",
 		path: "/twitter/sync/status",
-		tags: ["twitter"],
+		tags: ["Twitter"],
 		summary: "Get Twitter sync status",
 		description:
 			"Returns the current status of the Twitter/X bookmark sync queue, " +

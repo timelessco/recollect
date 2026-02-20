@@ -12,7 +12,7 @@ export function registerTwitterSync() {
 	registry.registerPath({
 		method: "post",
 		path: "/twitter/sync",
-		tags: ["twitter"],
+		tags: ["Twitter"],
 		summary: "Sync Twitter/X bookmarks",
 		description:
 			"Enqueues a batch of Twitter/X bookmarks for async archiving. " +

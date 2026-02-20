@@ -12,7 +12,7 @@ export function registerRaindropImportRetry() {
 	registry.registerPath({
 		method: "post",
 		path: "/raindrop/import/retry",
-		tags: ["raindrop"],
+		tags: ["Raindrop"],
 		summary: "Retry failed Raindrop import items",
 		description:
 			"Requeues failed Raindrop import messages for retry. " +

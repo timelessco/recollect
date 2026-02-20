@@ -12,7 +12,7 @@ export function registerBookmarksDeleteBookmark() {
 	registry.registerPath({
 		method: "post",
 		path: "/bookmark/delete-bookmark",
-		tags: ["bookmarks"],
+		tags: ["Bookmarks"],
 		summary: "Permanently delete bookmarks",
 		description:
 			"Permanently deletes one or more bookmarks by ID. The caller must own the bookmarks. " +

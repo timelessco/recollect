@@ -13,8 +13,8 @@ export const AddCategoryToBookmarksPayloadSchema = z.object({
 			description: "Array of bookmark IDs to assign the category to (1–100)",
 		}),
 	category_id: z
-		.int({ error: "Collection ID must be a whole number" })
-		.min(0, { error: "Collection ID must be non-negative" })
+		.int({ error: "Category ID must be a whole number" })
+		.min(0, { error: "Category ID must be non-negative" })
 		.meta({
 			description:
 				"Category ID to assign (0 = uncategorized, positive = real category)",

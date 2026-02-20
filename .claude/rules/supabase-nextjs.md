@@ -126,3 +126,18 @@ Using deprecated patterns will:
 2. Fail to maintain session state
 3. Cause authentication loops
 4. Result in security vulnerabilities
+
+## Health Check Patterns
+
+**getClaims() does NOT make a network call** — it parses the JWT from the cookie. A null result does not mean Supabase is unreachable.
+
+To verify actual Supabase connectivity, use:
+
+```typescript
+// getUser() makes a network request
+const { data, error } = await supabase.auth.getUser();
+// Or a direct fetch to the REST endpoint:
+await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/`);
+```
+
+**Service health checks must run for ALL paths** (including guest paths like `/login`), not just protected routes. A broken Supabase should return 500 everywhere.

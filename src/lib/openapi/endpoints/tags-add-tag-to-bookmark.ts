@@ -9,7 +9,7 @@ export function registerTagsAddTagToBookmark() {
 	registry.registerPath({
 		method: "post",
 		path: "/tags/add-tag-to-bookmark",
-		tags: ["bookmarks"],
+		tags: ["Bookmarks"],
 		summary: "Add a tag to a bookmark",
 		description:
 			"Assigns an existing tag to a bookmark. Returns the full list of tag assignments " +

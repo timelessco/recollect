@@ -12,7 +12,7 @@ export function registerInstagramSyncRetry() {
 	registry.registerPath({
 		method: "post",
 		path: "/instagram/sync/retry",
-		tags: ["instagram"],
+		tags: ["Instagram"],
 		summary: "Retry failed Instagram sync imports",
 		description:
 			"Requeues failed Instagram import messages for retry. " +

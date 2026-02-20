@@ -10,7 +10,7 @@ export function registerCategoriesDeleteUserCategory() {
 	registry.registerPath({
 		method: "post",
 		path: "/category/delete-user-category",
-		tags: ["categories"],
+		tags: ["Categories"],
 		summary: "Delete a category",
 		description:
 			"Deletes a category owned by the authenticated user. " +
@@ -49,7 +49,7 @@ export function registerCategoriesDeleteUserCategory() {
 								icon_color: "#6366f1",
 								is_public: false,
 								order_index: 2,
-								user_id: "usr_abc123",
+								user_id: "550e8400-e29b-41d4-a716-446655440000",
 							},
 							error: null,
 						},

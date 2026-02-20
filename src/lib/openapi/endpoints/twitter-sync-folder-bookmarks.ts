@@ -12,7 +12,7 @@ export function registerTwitterSyncFolderBookmarks() {
 	registry.registerPath({
 		method: "post",
 		path: "/twitter/sync-folder-bookmarks",
-		tags: ["twitter"],
+		tags: ["Twitter"],
 		summary: "Link Twitter bookmarks to their folders",
 		description:
 			"Queues bookmark-to-collection mapping messages. " +

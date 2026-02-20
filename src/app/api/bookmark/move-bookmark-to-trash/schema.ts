@@ -23,8 +23,8 @@ export type MoveBookmarkToTrashInput = z.infer<
 
 export const MoveBookmarkToTrashOutputSchema = z.array(
 	z.object({
-		id: z.number().meta({ description: "Bookmark ID" }),
-		trash: z.string().nullable().meta({
+		id: z.int().meta({ description: "Bookmark ID" }),
+		trash: z.iso.datetime().nullable().meta({
 			description: "ISO timestamp when trashed, null when restored",
 		}),
 	}),

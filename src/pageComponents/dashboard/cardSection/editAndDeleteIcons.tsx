@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { Button } from "@base-ui/react/button";
-import { find } from "lodash";
 
 import { EditPopover } from "@/pageComponents/dashboard/cardSection/edit-popover";
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
@@ -41,7 +40,7 @@ export function EditAndDeleteIcons({
 
 	const isCategoryOwner =
 		!isUserInACategory(categorySlug as string) ||
-		find(allCategories?.data, (item) => item?.category_slug === categorySlug)
+		allCategories?.data?.find((item) => item?.category_slug === categorySlug)
 			?.user_id?.id === userId;
 
 	const isListView = cardTypeCondition === viewValues.list;

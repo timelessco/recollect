@@ -12,7 +12,7 @@ export function registerTwitterSyncRetry() {
 	registry.registerPath({
 		method: "post",
 		path: "/twitter/sync/retry",
-		tags: ["twitter"],
+		tags: ["Twitter"],
 		summary: "Retry failed Twitter sync imports",
 		description:
 			"Requeues failed Twitter/X import messages for retry. " +

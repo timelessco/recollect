@@ -12,7 +12,7 @@ export function registerTagsCreateAndAssignTag() {
 	registry.registerPath({
 		method: "post",
 		path: "/tags/create-and-assign-tag",
-		tags: ["bookmarks"],
+		tags: ["Bookmarks"],
 		summary: "Create a new tag and assign it to a bookmark",
 		description:
 			"Atomically creates a new tag and assigns it to the specified bookmark in a single transaction. " +
