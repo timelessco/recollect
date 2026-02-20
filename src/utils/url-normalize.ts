@@ -24,7 +24,7 @@ export function normalizeUrl(raw: string | null): string | null {
 
 	parsed.hostname = parsed.hostname.toLowerCase();
 
-	for (const key of [...parsed.searchParams.keys()]) {
+	for (const key of parsed.searchParams.keys()) {
 		if (TRACKING_PARAMS.has(key) || key.startsWith("utm_")) {
 			parsed.searchParams.delete(key);
 		}

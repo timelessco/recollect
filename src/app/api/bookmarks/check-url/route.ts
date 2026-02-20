@@ -18,20 +18,15 @@ export const GET = createGetApiHandlerWithAuth({
 			return { exists: false as const };
 		}
 
-		let baseUrl: URL;
-		try {
-			baseUrl = new URL(normalized);
-		} catch {
-			return { exists: false as const };
-		}
-
+		const baseUrl = new URL(normalized);
 		const basePath = `${baseUrl.protocol}//${baseUrl.host}${baseUrl.pathname}`;
+		const escapedBase = basePath.replaceAll("%", "\\%").replaceAll("_", "\\_");
 
 		const { data: candidates, error } = await supabase
 			.from("everything")
 			.select("id, url")
 			.eq("user_id", user.id)
-			.like("url", `${basePath}%`)
+			.like("url", `${escapedBase}%`)
 			.limit(50);
 
 		if (error) {
