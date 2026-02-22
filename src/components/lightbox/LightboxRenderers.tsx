@@ -167,7 +167,11 @@ export const PDFSlide = ({ bookmark }: SlideProps) => (
  */
 export const YouTubeSlide = ({ bookmark, isActive }: SlideProps) => (
 	<div className="relative flex h-full max-h-[80vh] w-full max-w-[min(1200px,90vw)] items-end justify-center">
-		<VideoPlayer isActive={isActive ?? false} src={bookmark?.url ?? ""} />
+		<VideoPlayer
+			isActive={isActive ?? false}
+			isYouTube
+			src={bookmark?.url ?? ""}
+		/>
 	</div>
 );
 

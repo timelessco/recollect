@@ -118,6 +118,7 @@
 		"jwt-decode": "4.0.0",
 		"lodash": "4.17.23",
 		"match-sorter": "8.2.0",
+		"media-chrome": "4.17.2",
 		"motion": "12.29.2",
 		"next": "16.1.6",
 		"next-themes": "0.4.6",
@@ -134,7 +135,6 @@
 		"react-infinite-scroll-component": "6.1.1",
 		"react-mentions": "4.4.10",
 		"react-modern-drawer": "1.4.0",
-		"react-player": "3.4.0",
 		"react-stately": "3.43.0",
 		"react-toastify": "11.0.5",
 		"resend": "6.9.1",
@@ -142,6 +142,7 @@
 		"tailwind-merge": "3.4.0",
 		"uniqid": "5.4.0",
 		"yet-another-react-lightbox": "3.28.0",
+		"youtube-video-element": "1.9.0",
 		"zod": "4.3.6",
 		"zustand": "5.0.10"
 	},
