@@ -20,7 +20,7 @@ media-controller {
 media-controller .video-gradient-bottom {
 	@apply pointer-events-none absolute bottom-0 left-0 w-full;
 
-	height: 120px;
+	height: calc(8 * var(--video-base));
 	opacity: 1;
 	background: linear-gradient(
 		to bottom,
