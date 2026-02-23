@@ -130,7 +130,7 @@ function VideoPlayerInner({ isYouTube, onError, src }: VideoPlayerProps) {
 								className="flex size-full items-center justify-center"
 								slot="icon"
 							>
-								<SettingsIcon slotIcon={false} />
+								<SettingsIcon />
 							</span>
 						</MediaPlaybackRateMenuButton>
 						<div className="settings-menu-wrap">

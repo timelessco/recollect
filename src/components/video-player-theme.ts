@@ -1,8 +1,6 @@
 import { type CSSProperties } from "react";
 
 const BASE_CONTROLLER_STYLE = {
-	"--base": "20px",
-	"--_accent-color": "#fff",
 	"--media-background-color": "#000",
 	"--media-primary-color": "#fff",
 	"--media-control-background": "transparent",
