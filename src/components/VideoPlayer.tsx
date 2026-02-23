@@ -28,7 +28,11 @@ import {
 	PlayPauseIcon,
 	SettingsIcon,
 } from "./video-player-icons";
-import { CONTROL_BAR_STYLE, CONTROLLER_STYLE } from "./video-player-theme";
+import {
+	CONTROL_BAR_STYLE,
+	CONTROLLER_STYLE,
+	YOUTUBE_CONTROLLER_STYLE,
+} from "./video-player-theme";
 
 import "./video-player-theme.css";
 
@@ -72,7 +76,10 @@ function VideoPlayerInner({
 	);
 
 	return (
-		<MediaController style={CONTROLLER_STYLE}>
+		<MediaController
+			onPointerDownCapture={(event) => event.stopPropagation()}
+			style={isYouTube ? YOUTUBE_CONTROLLER_STYLE : CONTROLLER_STYLE}
+		>
 			{isYouTube ? (
 				<youtube-video crossOrigin="" ref={ref} slot="media" src={src} />
 			) : (

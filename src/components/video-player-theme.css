@@ -19,6 +19,9 @@ media-controller {
 /* ─── Control bar ───────────────────────────────────────────────────────── */
 media-controller media-control-bar {
 	@apply items-center gap-3;
+
+	/* Prevent slider drags from triggering lightbox swipe navigation */
+	touch-action: none;
 }
 
 /* ─── Icon buttons (play, mute, seek, pip, fullscreen) ────────────────────── */
