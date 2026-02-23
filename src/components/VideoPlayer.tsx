@@ -107,7 +107,7 @@ function VideoPlayerInner({
 
 	return (
 		<MediaController
-			onPointerDownCapture={(event) => event.stopPropagation()}
+			onPointerDown={(event) => event.stopPropagation()}
 			style={isYouTube ? YOUTUBE_CONTROLLER_STYLE : CONTROLLER_STYLE}
 		>
 			{isYouTube ? (
