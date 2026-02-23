@@ -144,6 +144,7 @@ export const twitterSyncRequestExamples = {
 					type: "tweet",
 					meta_data: {},
 					sort_index: "1848019423856806629",
+					inserted_at: "2026-01-28T16:59:49.475Z",
 				},
 			],
 		},
@@ -181,26 +182,36 @@ export const twitterSyncRequestExamples = {
 export const twitterSyncResponse200Examples = {
 	"single-tweet": {
 		summary: "Single tweet inserted",
+		description: "One new tweet bookmark accepted and stored.",
 		value: { data: { inserted: 1, skipped: 0 }, error: null },
 	},
 	"batch-2-tweets": {
 		summary: "Batch of 2 inserted",
+		description: "Both tweets were new and stored successfully.",
 		value: { data: { inserted: 2, skipped: 0 }, error: null },
 	},
 	"duplicate-detection": {
 		summary: "Duplicate tweet skipped",
+		description:
+			"The URL already exists in the database, so it's skipped to avoid duplicates.",
 		value: { data: { inserted: 0, skipped: 1 }, error: null },
 	},
 	"all-optional-fields": {
 		summary: "Tweet with all fields inserted",
+		description:
+			"Tweet with video_url and all optional fields was stored successfully.",
 		value: { data: { inserted: 1, skipped: 0 }, error: null },
 	},
 	"minimal-fields": {
 		summary: "Minimal tweet inserted",
+		description:
+			"Only required fields were provided. Defaults applied for title, description, and ogImage.",
 		value: { data: { inserted: 1, skipped: 0 }, error: null },
 	},
 	"twitter-com-domain": {
 		summary: "Legacy domain tweet inserted",
+		description:
+			"Tweet from twitter.com domain accepted. Both x.com and twitter.com are valid.",
 		value: { data: { inserted: 1, skipped: 0 }, error: null },
 	},
 } as const;
@@ -208,6 +219,7 @@ export const twitterSyncResponse200Examples = {
 export const twitterSyncResponse400Examples = {
 	"empty-bookmarks-array": {
 		summary: "Empty array rejected",
+		description: "The bookmarks array must contain at least one item.",
 		value: {
 			data: null,
 			error: "bookmarks: Array must contain at least 1 element(s)",
@@ -215,6 +227,7 @@ export const twitterSyncResponse400Examples = {
 	},
 	"missing-bookmarks-field": {
 		summary: "Missing field rejected",
+		description: "The request body must include a bookmarks property.",
 		value: {
 			data: null,
 			error: "bookmarks: Required",
@@ -222,6 +235,7 @@ export const twitterSyncResponse400Examples = {
 	},
 	"invalid-url-format": {
 		summary: "Invalid URL rejected",
+		description: "The url field must be a valid URL with a protocol.",
 		value: {
 			data: null,
 			error: "bookmarks[0].url: Invalid url",

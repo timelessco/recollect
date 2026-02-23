@@ -55,7 +55,7 @@ export const instagramSyncRequestExamples = {
 	"invalid-url-format": {
 		summary: "Validation: not a URL (400)",
 		description:
-			"URL field must be a valid URL. A plain string without protocol fails the z.url() check.",
+			"URL field must be a valid URL. A plain string without protocol fails URL schema validation.",
 		value: {
 			bookmarks: [
 				{
@@ -83,7 +83,7 @@ export const instagramSyncRequestExamples = {
 	"javascript-protocol-xss": {
 		summary: "Validation: javascript: protocol (400)",
 		description:
-			"The javascript: protocol fails the z.url() format check before even reaching hostname validation, blocking XSS injection attempts.",
+			"The javascript: protocol fails URL format validation before even reaching hostname validation, blocking XSS injection attempts.",
 		value: {
 			bookmarks: [
 				{
@@ -114,10 +114,12 @@ export const instagramSyncRequestExamples = {
 export const instagramSyncResponseExamples = {
 	"single-bookmark": {
 		summary: "Single bookmark queued",
+		description: "One new Instagram post accepted and queued for processing.",
 		value: { data: { inserted: 1, skipped: 0 }, error: null },
 	},
 	"batch-2-bookmarks": {
 		summary: "Batch queued",
+		description: "Both posts were new and queued successfully.",
 		value: { data: { inserted: 2, skipped: 0 }, error: null },
 	},
 } as const;
@@ -125,22 +127,29 @@ export const instagramSyncResponseExamples = {
 export const instagramSync400Examples = {
 	"empty-bookmarks-array": {
 		summary: "Empty array rejected",
+		description: "The bookmarks array must contain at least one item.",
 		value: { data: null, error: "At least one bookmark required" },
 	},
 	"invalid-url-format": {
 		summary: "Invalid URL format",
+		description: "The url field must be a valid URL with a protocol.",
 		value: { data: null, error: "Invalid URL" },
 	},
 	"non-instagram-hostname": {
 		summary: "Non-Instagram hostname",
+		description:
+			"Only instagram.com and www.instagram.com hostnames are accepted.",
 		value: { data: null, error: "Must be a valid Instagram URL" },
 	},
 	"javascript-protocol-xss": {
 		summary: "XSS attempt blocked",
+		description:
+			"The javascript: protocol is rejected at URL format validation.",
 		value: { data: null, error: "Invalid URL" },
 	},
 	"invalid-type-field": {
 		summary: "Invalid type literal",
+		description: 'The type field only accepts the literal string "instagram".',
 		value: { data: null, error: 'Invalid input: expected "instagram"' },
 	},
 } as const;

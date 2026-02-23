@@ -110,7 +110,7 @@ export const raindropImportRequestExamples = {
 	"invalid-url-format": {
 		summary: "Validation: not a URL (400)",
 		description:
-			"The url field must be a valid URL. A plain string without protocol fails the z.url() check.",
+			"The url field must be a valid URL. A plain string without protocol fails URL schema validation.",
 		value: {
 			bookmarks: [
 				{
@@ -145,18 +145,24 @@ export const raindropImportRequestExamples = {
 export const raindropImportResponseExamples = {
 	"mixed-categories-batch": {
 		summary: "Batch queued",
+		description: "All 3 bookmarks were new and queued for import.",
 		value: { data: { queued: 3, skipped: 0 }, error: null },
 	},
 	"single-bookmark-unsorted": {
 		summary: "Single bookmark queued",
+		description: "One new bookmark accepted and queued for import.",
 		value: { data: { queued: 1, skipped: 0 }, error: null },
 	},
 	"deduplicate-same-url": {
 		summary: "URL already imported",
+		description:
+			"The URL was previously imported, so it's skipped to avoid duplicates.",
 		value: { data: { queued: 0, skipped: 1 }, error: null },
 	},
 	"batch-in-memory-dedup": {
 		summary: "In-memory dedup applied",
+		description:
+			"Duplicate URL within the same request is caught before hitting the database.",
 		value: { data: { queued: 1, skipped: 1 }, error: null },
 	},
 } as const;
@@ -164,14 +170,17 @@ export const raindropImportResponseExamples = {
 export const raindropImport400Examples = {
 	"empty-bookmarks-array": {
 		summary: "Empty array rejected",
+		description: "The bookmarks array must contain at least one item.",
 		value: { data: null, error: "At least one bookmark required" },
 	},
 	"invalid-url-format": {
 		summary: "Invalid URL format",
+		description: "The url field must be a valid URL with a protocol.",
 		value: { data: null, error: "Invalid URL" },
 	},
 	"missing-url-field": {
 		summary: "Missing url field",
+		description: "Each bookmark object must include a url property.",
 		value: {
 			data: null,
 			error: "Invalid input: expected string, received undefined",

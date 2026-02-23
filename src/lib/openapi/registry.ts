@@ -39,3 +39,19 @@ export const serviceRoleAuth = registry.registerComponent(
 			"Supabase service role key. Required for edge function workers. Get it locally via: docker exec supabase_edge_runtime_recollect printenv SUPABASE_SERVICE_ROLE_KEY",
 	},
 );
+
+export const workerResponseRef = registry.registerComponent(
+	"schemas",
+	"WorkerResponse",
+	{
+		type: "object",
+		properties: {
+			processed: { type: "integer" },
+			archived: { type: "integer" },
+			skipped: { type: "integer" },
+			retry: { type: "integer" },
+			message: { type: "string" },
+		},
+		required: ["processed", "archived", "skipped", "retry"],
+	},
+);

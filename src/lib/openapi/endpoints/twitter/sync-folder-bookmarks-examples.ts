@@ -148,18 +148,23 @@ export const twitterSyncFolderBookmarksRequestExamples = {
 export const twitterSyncFolderBookmarksResponse200Examples = {
 	"single-link": {
 		summary: "One mapping queued",
+		description: "One bookmark-to-collection mapping accepted and queued.",
 		value: { data: { queued: 1 }, error: null },
 	},
 	"multiple-links": {
 		summary: "Two mappings queued",
+		description: "Both bookmark-to-collection mappings accepted and queued.",
 		value: { data: { queued: 2 }, error: null },
 	},
 	"same-bookmark-multiple-categories": {
 		summary: "Three mappings queued",
+		description:
+			"One bookmark linked to 3 different collections. All mappings queued.",
 		value: { data: { queued: 3 }, error: null },
 	},
 	"large-batch-6-mappings": {
 		summary: "Six mappings queued",
+		description: "All 6 bookmark-to-collection mappings accepted and queued.",
 		value: { data: { queued: 6 }, error: null },
 	},
 } as const;
@@ -167,6 +172,7 @@ export const twitterSyncFolderBookmarksResponse200Examples = {
 export const twitterSyncFolderBookmarksResponse400Examples = {
 	"empty-mappings-array": {
 		summary: "Empty array rejected",
+		description: "The mappings array must contain at least one item.",
 		value: {
 			data: null,
 			error: "mappings: Array must contain at least 1 element(s)",
@@ -174,14 +180,17 @@ export const twitterSyncFolderBookmarksResponse400Examples = {
 	},
 	"missing-mappings-field": {
 		summary: "Missing field rejected",
+		description: "The request body must include a mappings property.",
 		value: { data: null, error: "mappings: Required" },
 	},
 	"missing-category-name": {
 		summary: "Missing category_name rejected",
+		description: "Each mapping must include a category_name property.",
 		value: { data: null, error: "mappings[0].category_name: Required" },
 	},
 	"empty-category-name": {
 		summary: "Empty category_name rejected",
+		description: "The category_name must be a non-empty string.",
 		value: {
 			data: null,
 			error:
@@ -190,10 +199,12 @@ export const twitterSyncFolderBookmarksResponse400Examples = {
 	},
 	"missing-url": {
 		summary: "Missing url rejected",
+		description: "Each mapping must include a url property.",
 		value: { data: null, error: "mappings[0].url: Required" },
 	},
 	"invalid-url-format": {
 		summary: "Invalid URL rejected",
+		description: "The url field must be a valid URL with a protocol.",
 		value: { data: null, error: "mappings[0].url: Invalid url" },
 	},
 } as const;

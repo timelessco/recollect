@@ -2,7 +2,6 @@
  * @module Build-time only
  */
 import { edgeFunctionServers } from "../edge-function-servers";
-import { workerResponseSchema } from "../edge-function-schemas";
 import { registry, serviceRoleAuth } from "@/lib/openapi/registry";
 
 export function registerEdgeProcessRaindropImports() {
@@ -71,7 +70,7 @@ export function registerEdgeProcessRaindropImports() {
 				description: "Queue processed successfully",
 				content: {
 					"application/json": {
-						schema: workerResponseSchema,
+						schema: { $ref: "#/components/schemas/WorkerResponse" },
 						examples: {
 							"queue-empty": {
 								summary: "Queue empty",
