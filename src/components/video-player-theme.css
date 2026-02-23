@@ -16,6 +16,25 @@ media-controller {
 	--media-tooltip-arrow-display: none;
 }
 
+/* ─── Bottom gradient (follows control auto-hide) ─────────────────────── */
+media-controller .video-gradient-bottom {
+	@apply pointer-events-none absolute bottom-0 left-0 w-full;
+
+	height: 120px;
+	opacity: 1;
+	background: linear-gradient(
+		to bottom,
+		transparent 0%,
+		rgb(0 0 0 / 40%) 60%,
+		rgb(0 0 0 / 70%) 100%
+	);
+	transition: opacity 0.25s;
+}
+
+media-controller[userinactive]:not([mediapaused]) .video-gradient-bottom {
+	opacity: 0;
+}
+
 /* ─── Control bar ───────────────────────────────────────────────────────── */
 media-controller media-control-bar {
 	@apply items-center gap-3;
@@ -36,7 +55,6 @@ media-controller media-fullscreen-button {
 	@apply inline-flex size-10 items-center justify-center rounded-full opacity-90;
 
 	background: rgb(0 0 0 / 20%);
-	backdrop-filter: blur(32px);
 	transition:
 		background 0.15s ease,
 		opacity 0.15s ease,
@@ -194,7 +212,7 @@ media-controller .vol-wrap media-volume-range {
 	--media-range-track-width: calc(14 * var(--video-base));
 	--media-range-track-height: var(--video-base);
 	--media-range-track-border-radius: 9999px;
-	--media-range-track-backdrop-filter: blur(10px) brightness(80%);
+	--media-range-track-backdrop-filter: brightness(80%);
 	--media-range-thumb-width: var(--video-base);
 	--media-range-thumb-border-radius: 9999px;
 
@@ -203,8 +221,6 @@ media-controller .vol-wrap media-volume-range {
 
 	width: calc(14 * var(--video-base));
 	height: var(--video-base);
-
-	backdrop-filter: blur(32px);
 
 	transition: opacity 0s 1s;
 
@@ -264,7 +280,6 @@ media-controller media-time-range {
 	--media-range-thumb-transition: opacity 0.1s linear;
 	--media-range-thumb-opacity: 0;
 	--media-range-track-border-radius: calc(0.25 * var(--video-base));
-	--media-range-track-backdrop-filter: blur(32px);
 	--media-preview-thumbnail-border: calc(0.125 * var(--video-base)) solid #fff;
 	--media-preview-thumbnail-border-radius: calc(0.5 * var(--video-base));
 	--media-preview-thumbnail-min-width: calc(8 * var(--video-base));
@@ -333,7 +348,6 @@ media-controller .settings-menu-wrap media-playback-rate-menu {
 
 	padding-block: 0;
 	border-radius: calc(0.5 * var(--video-base));
-	backdrop-filter: blur(32px);
 }
 
 media-controller
@@ -341,8 +355,9 @@ media-controller
 	@apply visible opacity-100;
 }
 
-/* ─── PiP (hide only when browser doesn't support it) ─────────────────── */
-media-controller[mediapipunavailable] media-pip-button {
+/* ─── PiP (hide when browser doesn't support it or width < 400px) ────── */
+media-controller[mediapipunavailable] media-pip-button,
+media-controller:not([breakpointpip]) media-pip-button {
 	@apply hidden;
 }
 

@@ -21,6 +21,7 @@ import {
 	MediaPlaybackRateMenuButton,
 } from "media-chrome/react/menu";
 
+import { Spinner } from "./spinner";
 import {
 	FullscreenIcon,
 	MuteIcon,
@@ -56,7 +57,7 @@ function VideoPlayerInner({
 	const mediaElRef = useRef<HTMLVideoElement | null>(null);
 	const onErrorRef = useRef(onError);
 	onErrorRef.current = onError;
-
+	const [loading, setLoading] = useState(true);
 	const [youTubeReady, setYouTubeReady] = useState(false);
 
 	useEffect(() => {
@@ -97,9 +98,12 @@ function VideoPlayerInner({
 			}
 
 			const handleError = () => onErrorRef.current?.();
+			const handleLoaded = () => setLoading(false);
 			el.addEventListener("error", handleError);
+			el.addEventListener("loadeddata", handleLoaded);
 			return () => {
 				el.removeEventListener("error", handleError);
+				el.removeEventListener("loadeddata", handleLoaded);
 				mediaRef(null);
 			};
 		},
@@ -107,71 +111,84 @@ function VideoPlayerInner({
 	);
 
 	return (
-		<MediaController
-			onPointerDown={(event) => event.stopPropagation()}
-			style={isYouTube ? YOUTUBE_CONTROLLER_STYLE : CONTROLLER_STYLE}
-		>
-			{isYouTube ? (
-				youTubeReady && (
-					<youtube-video crossOrigin="" ref={ref} slot="media" src={src} />
-				)
-			) : (
-				<video ref={ref} slot="media" src={src} style={MEDIA_STYLE}>
-					<track default kind="captions" label="No captions" srcLang="en" />
-				</video>
+		<>
+			{loading && (
+				<div className="flex items-center justify-center py-16">
+					<Spinner className="size-3" />
+				</div>
 			)}
-
-			<MediaControlBar style={CONTROL_BAR_STYLE}>
-				<MediaPlayButton>
-					<PlayPauseIcon />
-				</MediaPlayButton>
-
-				<div className="mute-group">
-					<div className="mute-group-inner">
-						<MediaMuteButton ref={(el) => el?.setAttribute("notooltip", "")}>
-							<MuteIcon />
-						</MediaMuteButton>
-						<div className="vol-wrap">
-							<MediaVolumeRange />
-						</div>
-					</div>
-				</div>
-
-				<MediaTimeDisplay />
-				<MediaTimeDisplay showDuration />
-
-				<MediaTimeRange>
-					<MediaPreviewThumbnail slot="preview" />
-					<MediaPreviewChapterDisplay slot="preview" />
-					<MediaPreviewTimeDisplay slot="preview" />
-				</MediaTimeRange>
-
-				<div className="settings-group">
-					<div className="settings-group-inner">
-						<MediaPlaybackRateMenuButton>
-							<span
-								className="flex size-full items-center justify-center"
-								slot="icon"
-							>
-								<SettingsIcon />
-							</span>
-						</MediaPlaybackRateMenuButton>
-						<div className="settings-menu-wrap">
-							<MediaPlaybackRateMenu hidden />
-						</div>
-					</div>
-				</div>
-				{!isYouTube && (
-					<MediaPipButton>
-						<PipIcon />
-					</MediaPipButton>
+			<MediaController
+				breakpoints="pip:400 sm:384 md:576 lg:768 xl:960"
+				onPointerDown={(event) => event.stopPropagation()}
+				style={{
+					...(isYouTube ? YOUTUBE_CONTROLLER_STYLE : CONTROLLER_STYLE),
+					...(loading ? { position: "absolute", opacity: 0 } : undefined),
+				}}
+			>
+				{isYouTube ? (
+					youTubeReady && (
+						<youtube-video crossOrigin="" ref={ref} slot="media" src={src} />
+					)
+				) : (
+					<video ref={ref} slot="media" src={src} style={MEDIA_STYLE}>
+						<track default kind="captions" label="No captions" srcLang="en" />
+					</video>
 				)}
 
-				<MediaFullscreenButton>
-					<FullscreenIcon />
-				</MediaFullscreenButton>
-			</MediaControlBar>
-		</MediaController>
+				<div className="video-gradient-bottom" />
+
+				<MediaControlBar style={CONTROL_BAR_STYLE}>
+					<MediaPlayButton>
+						<PlayPauseIcon />
+					</MediaPlayButton>
+
+					<div className="mute-group">
+						<div className="mute-group-inner">
+							<MediaMuteButton ref={(el) => el?.setAttribute("notooltip", "")}>
+								<MuteIcon />
+							</MediaMuteButton>
+							<div className="vol-wrap">
+								<MediaVolumeRange />
+							</div>
+						</div>
+					</div>
+
+					<MediaTimeDisplay />
+					<MediaTimeDisplay showDuration />
+
+					<MediaTimeRange>
+						<MediaPreviewThumbnail slot="preview" />
+						<MediaPreviewChapterDisplay slot="preview" />
+						<MediaPreviewTimeDisplay slot="preview" />
+					</MediaTimeRange>
+
+					<div className="settings-group">
+						<div className="settings-group-inner">
+							<MediaPlaybackRateMenuButton>
+								<span
+									className="flex size-full items-center justify-center"
+									slot="icon"
+								>
+									<SettingsIcon />
+								</span>
+							</MediaPlaybackRateMenuButton>
+							<div className="settings-menu-wrap">
+								<MediaPlaybackRateMenu hidden />
+							</div>
+						</div>
+					</div>
+					{!isYouTube && (
+						<MediaPipButton>
+							<PipIcon />
+						</MediaPipButton>
+					)}
+
+					<MediaFullscreenButton>
+						<FullscreenIcon />
+					</MediaFullscreenButton>
+				</MediaControlBar>
+			</MediaController>
+		</>
 	);
 }
 
