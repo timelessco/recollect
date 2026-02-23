@@ -341,8 +341,7 @@ media-controller
 	@apply visible opacity-100;
 }
 
-/* ─── PiP (desktop only, native video only) ────────────────────────────── */
-media-controller:not([breakpointmd]) media-pip-button,
+/* ─── PiP (hide only when browser doesn't support it) ─────────────────── */
 media-controller[mediapipunavailable] media-pip-button {
 	@apply hidden;
 }
