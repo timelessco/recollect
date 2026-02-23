@@ -13,6 +13,7 @@ asteasolutions
 Atleast
 attrelid
 blks
+breakpointmd
 btrim
 BTRIM
 catagories
@@ -56,6 +57,7 @@ infile
 jobid
 kieran
 Loggedin
+mediaisfullscreen
 micnncim
 msclkid
 msvideo
@@ -71,6 +73,7 @@ Navin
 noimageindex
 normalised
 Normalised
+notooltip
 nuqs
 Nuqs
 ogimage
