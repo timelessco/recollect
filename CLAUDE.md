@@ -139,3 +139,4 @@ npx tsx scripts/generate-openapi.ts # Regenerate OpenAPI spec (no pnpm alias)
 - `z.looseObject` infers `{ [x: string]: unknown; ... }` — incompatible with Supabase's `Json` type. Use `z.object` for schemas consumed by route handlers returning Supabase data.
 - In OpenAPI raw schema objects, do NOT use `as const` on `required` arrays — creates `readonly` tuple incompatible with `SchemaObject`'s `string[]`
 - Prefer `z.int()` over `z.number().int()` — linter may auto-transform the latter to the former
+- `z.iso.datetime()` rejects Supabase's `timestamptz` format (`+00:00` offset) — use `z.string()` for output schemas validating Supabase timestamp columns. Only use `z.iso.datetime()` for input schemas where the client sends `Z`-suffix timestamps via `toISOString()`
