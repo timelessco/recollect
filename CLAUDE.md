@@ -74,6 +74,7 @@ For detailed architecture, module guides, and data flows, see [`docs/CODEBASE_MA
 - For API endpoint validation during development, use Chrome MCP to navigate to `/api-docs` and test via Scalar's Try It client — not curl
 - When eliminating an API route via SSR refactor, (1) extract its Zod schemas to a shared module first, (2) verify the route is unused elsewhere before deleting
 - For constants shared across TypeScript (Next.js) and Deno Edge Functions, define in `src/utils/constants.ts` and add `// Keep in sync with src/utils/constants.ts` comment in Deno files — cross-imports are impossible
+- Always ground-truth CodeRabbit review suggestions against actual runtime behavior (use Chrome MCP to test endpoints) before implementing — suggestions can have the fix direction reversed
 
 ### Type Deduction
 
@@ -141,6 +142,6 @@ npx tsx scripts/generate-openapi.ts # Regenerate OpenAPI spec (no pnpm alias)
 ### Zod + Supabase Gotchas
 
 - `z.looseObject` infers `{ [x: string]: unknown; ... }` — incompatible with Supabase's `Json` type. Use `z.object` for schemas consumed by route handlers returning Supabase data.
-- In OpenAPI raw schema objects, do NOT use `as const` on `required` arrays — creates `readonly` tuple incompatible with `SchemaObject`'s `string[]`
+- In OpenAPI raw schema objects, do NOT use `as const` on `required` arrays — creates `readonly` tuple incompatible with `SchemaObject`'s `string[]`. Example data objects (in `-examples.ts` files) SHOULD use `as const` per frontend rules.
 - Prefer `z.int()` over `z.number().int()` — linter may auto-transform the latter to the former
 - `z.iso.datetime()` rejects Supabase's `timestamptz` format (`+00:00` offset) — use `z.string()` for output schemas validating Supabase timestamp columns. Only use `z.iso.datetime()` for input schemas where the client sends `Z`-suffix timestamps via `toISOString()`

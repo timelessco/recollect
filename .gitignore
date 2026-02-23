@@ -90,13 +90,8 @@ public/sitemap-0.xml
 
 # Extras(if any)
 .claude/settings.local.json
-.claude/docs
-.claude/auto-memory/dirty-files
-.claude/launch.json
 .claude/worktrees
-_plans
-todos
+.worktrees
 .planning
 .vercel
-.worktrees
 supabase/seed.sql
