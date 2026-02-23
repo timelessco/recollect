@@ -14,6 +14,7 @@ export const CONTROLLER_STYLE = {
 } as CSSProperties;
 
 export const CONTROL_BAR_STYLE = {
+	alignItems: "center",
 	background: "linear-gradient(transparent, rgba(0, 0, 0, 0.6))",
 	gap: "12px",
 	paddingBottom: "8px",

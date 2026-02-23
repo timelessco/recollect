@@ -74,7 +74,7 @@ function VideoPlayerInner({
 	return (
 		<MediaController style={CONTROLLER_STYLE}>
 			{isYouTube ? (
-				<youtube-video ref={ref} slot="media" src={src} />
+				<youtube-video crossOrigin="" ref={ref} slot="media" src={src} />
 			) : (
 				<video ref={ref} slot="media" src={src}>
 					<track default kind="captions" label="No captions" srcLang="en" />

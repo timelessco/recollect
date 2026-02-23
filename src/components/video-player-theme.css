@@ -18,7 +18,7 @@ media-controller {
 
 /* ─── Control bar ───────────────────────────────────────────────────────── */
 media-controller media-control-bar {
-	@apply gap-3;
+	@apply items-center gap-3;
 }
 
 /* ─── Icon buttons (play, mute, seek, pip, fullscreen) ────────────────────── */
@@ -92,6 +92,10 @@ media-controller media-play-button:not([mediapaused]) .icon-pause {
 }
 
 /* ─── Mute / Volume icon crossfade ──────────────────────────────────────── */
+media-controller[mediavolumeunavailable] .mute-group {
+	@apply hidden;
+}
+
 media-controller .mute-group {
 	@apply flex;
 }
@@ -219,7 +223,7 @@ media-controller[keyboardcontrol] .vol-wrap:focus-within media-volume-range {
 media-controller media-time-display {
 	--media-control-hover-background: var(--media-control-background);
 
-	@apply relative rounded-[calc(var(--video-base)*0.5)] px-[calc(var(--video-base)*0.5)] py-[calc(var(--video-base)*0.5)];
+	@apply relative flex items-center rounded-[calc(var(--video-base)*0.5)] px-[calc(var(--video-base)*0.5)] py-[calc(var(--video-base)*0.5)];
 
 	font-size: calc(0.7 * var(--video-base));
 }
@@ -329,8 +333,9 @@ media-controller
 	@apply visible opacity-100;
 }
 
-/* ─── PiP (desktop only) ────────────────────────────────────────────────── */
-media-controller:not([breakpointmd]) media-pip-button {
+/* ─── PiP (desktop only, native video only) ────────────────────────────── */
+media-controller:not([breakpointmd]) media-pip-button,
+media-controller[mediapipunavailable] media-pip-button {
 	@apply hidden;
 }
 
