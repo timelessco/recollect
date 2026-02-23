@@ -7,6 +7,7 @@ import {
 	ImportRetryInputSchema,
 	ImportRetryOutputSchema,
 } from "@/lib/openapi/schemas/shared";
+import { z } from "zod";
 
 export function registerRaindropImportRetry() {
 	registry.registerPath({
@@ -76,7 +77,7 @@ export function registerRaindropImportRetry() {
 							},
 							"retry-all-archived": {
 								summary: "All archived requeued",
-								value: { data: { requeued: 10, requested: 10 }, error: null },
+								value: { data: { requeued: 10 }, error: null },
 							},
 						},
 					},
@@ -86,14 +87,7 @@ export function registerRaindropImportRetry() {
 				description: "Invalid retry request",
 				content: {
 					"application/json": {
-						schema: {
-							type: "object",
-							properties: {
-								data: { type: "null" },
-								error: { type: "string" },
-							},
-							required: ["data", "error"],
-						},
+						schema: apiResponseSchema(z.null()),
 						examples: {
 							"empty-msg-ids-array": {
 								summary: "Empty array rejected",

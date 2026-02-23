@@ -7,6 +7,7 @@ import {
 	ImportRetryInputSchema,
 	ImportRetryOutputSchema,
 } from "@/lib/openapi/schemas/shared";
+import { z } from "zod";
 
 export function registerTwitterSyncRetry() {
 	registry.registerPath({
@@ -90,34 +91,27 @@ export function registerTwitterSyncRetry() {
 				description: "Invalid retry request",
 				content: {
 					"application/json": {
-						schema: {
-							type: "object",
-							properties: {
-								data: { type: "null" },
-								error: { type: "string" },
-							},
-							required: ["data", "error"],
-						},
+						schema: apiResponseSchema(z.null()),
 						examples: {
 							"empty-msg-ids-array": {
 								summary: "Empty array rejected",
 								value: {
 									data: null,
-									error: "msg_ids: Array must contain at least 1 element(s)",
+									error: "Too small: expected array to have >=1 items",
 								},
 							},
 							"empty-object": {
 								summary: "Empty object rejected",
 								value: {
 									data: null,
-									error: "Must provide either msg_ids or all: true",
+									error: "Invalid input",
 								},
 							},
 							"invalid-msg-ids-type": {
 								summary: "Invalid type rejected",
 								value: {
 									data: null,
-									error: "msg_ids[0]: Expected number, received string",
+									error: "Invalid input",
 								},
 							},
 						},

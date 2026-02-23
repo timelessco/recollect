@@ -2,19 +2,8 @@
  * @module Build-time only
  */
 import { edgeFunctionServers } from "../edge-function-servers";
+import { workerResponseSchema } from "../edge-function-schemas";
 import { registry, serviceRoleAuth } from "@/lib/openapi/registry";
-
-const workerResponseSchema = {
-	type: "object" as const,
-	properties: {
-		processed: { type: "integer" as const },
-		archived: { type: "integer" as const },
-		skipped: { type: "integer" as const },
-		retry: { type: "integer" as const },
-		message: { type: "string" as const },
-	},
-	required: ["processed", "archived", "skipped", "retry"],
-};
 
 export function registerEdgeProcessInstagramImports() {
 	registry.registerPath({
@@ -22,6 +11,7 @@ export function registerEdgeProcessInstagramImports() {
 		path: "/process-instagram-imports",
 		servers: edgeFunctionServers,
 		tags: ["Instagram"],
+		security: [],
 		summary: "Health check for Instagram import worker",
 		description:
 			"Returns the worker status and queue name. No authentication required.\n\n**Note:** This endpoint runs as a Supabase Edge Function, not under `/api`.",
@@ -102,6 +92,7 @@ export function registerEdgeProcessInstagramImports() {
 				},
 			},
 			401: { $ref: "#/components/responses/Unauthorized" },
+			500: { $ref: "#/components/responses/InternalError" },
 		},
 	});
 }

@@ -143,7 +143,7 @@ export const twitterSyncFolderBookmarksRequestExamples = {
 			],
 		},
 	},
-};
+} as const;
 
 export const twitterSyncFolderBookmarksResponse200Examples = {
 	"single-link": {
@@ -162,7 +162,7 @@ export const twitterSyncFolderBookmarksResponse200Examples = {
 		summary: "Six mappings queued",
 		value: { data: { queued: 6 }, error: null },
 	},
-};
+} as const;
 
 export const twitterSyncFolderBookmarksResponse400Examples = {
 	"empty-mappings-array": {
@@ -196,4 +196,4 @@ export const twitterSyncFolderBookmarksResponse400Examples = {
 		summary: "Invalid URL rejected",
 		value: { data: null, error: "mappings[0].url: Invalid url" },
 	},
-};
+} as const;

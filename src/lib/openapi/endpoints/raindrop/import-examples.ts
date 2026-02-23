@@ -140,7 +140,7 @@ export const raindropImportRequestExamples = {
 			],
 		},
 	},
-};
+} as const;
 
 export const raindropImportResponseExamples = {
 	"mixed-categories-batch": {
@@ -159,7 +159,7 @@ export const raindropImportResponseExamples = {
 		summary: "In-memory dedup applied",
 		value: { data: { queued: 1, skipped: 1 }, error: null },
 	},
-};
+} as const;
 
 export const raindropImport400Examples = {
 	"empty-bookmarks-array": {
@@ -177,4 +177,4 @@ export const raindropImport400Examples = {
 			error: "Invalid input: expected string, received undefined",
 		},
 	},
-};
+} as const;

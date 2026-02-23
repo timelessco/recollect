@@ -7,6 +7,7 @@ import {
 } from "@/app/api/instagram/sync/schema";
 import { bearerAuth, registry } from "@/lib/openapi/registry";
 import { apiResponseSchema } from "@/lib/openapi/schemas/envelope";
+import { z } from "zod";
 
 import {
 	instagramSync400Examples,
@@ -48,14 +49,7 @@ export function registerInstagramSync() {
 				description: "Invalid request body or bookmark data",
 				content: {
 					"application/json": {
-						schema: {
-							type: "object",
-							properties: {
-								data: { type: "null" },
-								error: { type: "string" },
-							},
-							required: ["data", "error"],
-						},
+						schema: apiResponseSchema(z.null()),
 						examples: instagramSync400Examples,
 					},
 				},

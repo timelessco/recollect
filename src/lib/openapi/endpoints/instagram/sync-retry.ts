@@ -7,6 +7,7 @@ import {
 	ImportRetryInputSchema,
 	ImportRetryOutputSchema,
 } from "@/lib/openapi/schemas/shared";
+import { z } from "zod";
 
 export function registerInstagramSyncRetry() {
 	registry.registerPath({
@@ -82,7 +83,7 @@ export function registerInstagramSyncRetry() {
 							},
 							"retry-all-archived": {
 								summary: "All archived requeued",
-								value: { data: { requeued: 12, requested: 12 }, error: null },
+								value: { data: { requeued: 12 }, error: null },
 							},
 						},
 					},
@@ -92,14 +93,7 @@ export function registerInstagramSyncRetry() {
 				description: "Invalid retry request",
 				content: {
 					"application/json": {
-						schema: {
-							type: "object",
-							properties: {
-								data: { type: "null" },
-								error: { type: "string" },
-							},
-							required: ["data", "error"],
-						},
+						schema: apiResponseSchema(z.null()),
 						examples: {
 							"empty-msg-ids-array": {
 								summary: "Empty array rejected",

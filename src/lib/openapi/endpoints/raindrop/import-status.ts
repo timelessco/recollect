@@ -33,7 +33,7 @@ export function registerRaindropImportStatus() {
 											{
 												msg_id: 17,
 												url: "https://example.com/article",
-												failure_reason: null,
+												failure_reason: "Failed to fetch URL",
 												archived_at: "2024-03-15T11:00:00Z",
 											},
 										],

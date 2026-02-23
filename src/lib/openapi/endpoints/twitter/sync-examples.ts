@@ -176,7 +176,7 @@ export const twitterSyncRequestExamples = {
 			],
 		},
 	},
-};
+} as const;
 
 export const twitterSyncResponse200Examples = {
 	"single-tweet": {
@@ -203,7 +203,7 @@ export const twitterSyncResponse200Examples = {
 		summary: "Legacy domain tweet inserted",
 		value: { data: { inserted: 1, skipped: 0 }, error: null },
 	},
-};
+} as const;
 
 export const twitterSyncResponse400Examples = {
 	"empty-bookmarks-array": {
@@ -227,4 +227,4 @@ export const twitterSyncResponse400Examples = {
 			error: "bookmarks[0].url: Invalid url",
 		},
 	},
-};
+} as const;

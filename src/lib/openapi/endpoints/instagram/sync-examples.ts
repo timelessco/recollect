@@ -109,7 +109,7 @@ export const instagramSyncRequestExamples = {
 			],
 		},
 	},
-};
+} as const;
 
 export const instagramSyncResponseExamples = {
 	"single-bookmark": {
@@ -120,7 +120,7 @@ export const instagramSyncResponseExamples = {
 		summary: "Batch queued",
 		value: { data: { inserted: 2, skipped: 0 }, error: null },
 	},
-};
+} as const;
 
 export const instagramSync400Examples = {
 	"empty-bookmarks-array": {
@@ -143,4 +143,4 @@ export const instagramSync400Examples = {
 		summary: "Invalid type literal",
 		value: { data: null, error: 'Invalid input: expected "instagram"' },
 	},
-};
+} as const;

@@ -7,6 +7,7 @@ import {
 } from "@/app/api/raindrop/import/schema";
 import { bearerAuth, registry } from "@/lib/openapi/registry";
 import { apiResponseSchema } from "@/lib/openapi/schemas/envelope";
+import { z } from "zod";
 
 import {
 	raindropImport400Examples,
@@ -48,14 +49,7 @@ export function registerRaindropImport() {
 				description: "Invalid request body or bookmark data",
 				content: {
 					"application/json": {
-						schema: {
-							type: "object",
-							properties: {
-								data: { type: "null" },
-								error: { type: "string" },
-							},
-							required: ["data", "error"],
-						},
+						schema: apiResponseSchema(z.null()),
 						examples: raindropImport400Examples,
 					},
 				},

@@ -2,19 +2,8 @@
  * @module Build-time only
  */
 import { edgeFunctionServers } from "../edge-function-servers";
+import { workerResponseSchema } from "../edge-function-schemas";
 import { registry, serviceRoleAuth } from "@/lib/openapi/registry";
-
-const workerResponseSchema = {
-	type: "object" as const,
-	properties: {
-		processed: { type: "integer" as const },
-		archived: { type: "integer" as const },
-		skipped: { type: "integer" as const },
-		retry: { type: "integer" as const },
-		message: { type: "string" as const },
-	},
-	required: ["processed", "archived", "skipped", "retry"],
-};
 
 export function registerEdgeProcessTwitterImports() {
 	registry.registerPath({
@@ -22,6 +11,7 @@ export function registerEdgeProcessTwitterImports() {
 		path: "/process-twitter-imports",
 		servers: edgeFunctionServers,
 		tags: ["Twitter"],
+		security: [],
 		summary: "Health check for Twitter import worker",
 		description:
 			"Returns the worker status and queue name. No authentication required.\n\n**Note:** This endpoint runs as a Supabase Edge Function, not under `/api`.",
@@ -102,6 +92,7 @@ export function registerEdgeProcessTwitterImports() {
 				},
 			},
 			401: { $ref: "#/components/responses/Unauthorized" },
+			500: { $ref: "#/components/responses/InternalError" },
 		},
 	});
 }
