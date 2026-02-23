@@ -118,8 +118,8 @@ importers:
         specifier: 8.2.0
         version: 8.2.0
       media-chrome:
-        specifier: 4.17.2
-        version: 4.17.2(react@19.2.4)
+        specifier: 4.18.0
+        version: 4.18.0(react@19.2.4)
       motion:
         specifier: 12.29.2
         version: 12.29.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -7244,8 +7244,8 @@ packages:
   mdurl@2.0.0:
     resolution: {integrity: sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w==}
 
-  media-chrome@4.17.2:
-    resolution: {integrity: sha512-o/IgiHx0tdSVwRxxqF5H12FK31A/A8T71sv3KdAvh7b6XeBS9dXwqvIFwlR9kdEuqg3n7xpmRIuL83rmYq8FTg==}
+  media-chrome@4.18.0:
+    resolution: {integrity: sha512-OQmpUCeMMWtUcbar3CiY7V0S6j43HaDhwa6uRUyYiWdfPIj3riWp0agu3x6EcIlDRFIf8iDGZiGeb26ll+mz0g==}
 
   media-played-ranges-mixin@0.1.0:
     resolution: {integrity: sha512-zTsvkleu5sAyTsPVxDI+KUbCwy/lXwHgOPi3ER9S3lhtAWhGTQH6qxvfrVMym1cvoLU36SPbVr6Qe8Zxyc0WpA==}
@@ -17747,7 +17747,7 @@ snapshots:
 
   mdurl@2.0.0: {}
 
-  media-chrome@4.17.2(react@19.2.4):
+  media-chrome@4.18.0(react@19.2.4):
     dependencies:
       ce-la-react: 0.3.2(react@19.2.4)
     transitivePeerDependencies:
