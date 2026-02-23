@@ -18,6 +18,13 @@ export const YOUTUBE_CONTROLLER_STYLE = {
 	width: "100%",
 } as CSSProperties;
 
+export const MEDIA_STYLE = {
+	height: "auto",
+	maxHeight: "80vh",
+	maxWidth: "min(1200px, 90vw)",
+	width: "auto",
+} as CSSProperties;
+
 export const CONTROL_BAR_STYLE = {
 	alignItems: "center",
 	background: "linear-gradient(transparent, rgba(0, 0, 0, 0.6))",

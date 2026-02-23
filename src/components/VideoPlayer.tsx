@@ -31,6 +31,7 @@ import {
 import {
 	CONTROL_BAR_STYLE,
 	CONTROLLER_STYLE,
+	MEDIA_STYLE,
 	YOUTUBE_CONTROLLER_STYLE,
 } from "./video-player-theme";
 
@@ -115,7 +116,7 @@ function VideoPlayerInner({
 					<youtube-video crossOrigin="" ref={ref} slot="media" src={src} />
 				)
 			) : (
-				<video ref={ref} slot="media" src={src}>
+				<video ref={ref} slot="media" src={src} style={MEDIA_STYLE}>
 					<track default kind="captions" label="No captions" srcLang="en" />
 				</video>
 			)}
