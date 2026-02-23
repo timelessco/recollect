@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	MediaControlBar,
 	MediaController,
@@ -49,10 +49,17 @@ function VideoPlayerInner({ isYouTube, onError, src }: VideoPlayerProps) {
 	const onErrorRef = useRef(onError);
 	onErrorRef.current = onError;
 
+	const [youTubeReady, setYouTubeReady] = useState(false);
+
 	useEffect(() => {
-		if (isYouTube) {
-			void import("youtube-video-element");
+		if (!isYouTube) {
+			return;
 		}
+
+		void (async () => {
+			await import("youtube-video-element");
+			setYouTubeReady(true);
+		})();
 	}, [isYouTube]);
 
 	const ref = useCallback(
@@ -76,7 +83,9 @@ function VideoPlayerInner({ isYouTube, onError, src }: VideoPlayerProps) {
 			style={isYouTube ? YOUTUBE_CONTROLLER_STYLE : CONTROLLER_STYLE}
 		>
 			{isYouTube ? (
-				<youtube-video crossOrigin="" ref={ref} slot="media" src={src} />
+				youTubeReady && (
+					<youtube-video crossOrigin="" ref={ref} slot="media" src={src} />
+				)
 			) : (
 				<video ref={ref} slot="media" src={src}>
 					<track default kind="captions" label="No captions" srcLang="en" />

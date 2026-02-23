@@ -308,7 +308,7 @@ media-controller .settings-group-inner {
 }
 
 media-controller .settings-menu-wrap {
-	@apply invisible absolute bottom-[calc(var(--video-base)*6+120px)] left-1/2 flex justify-center opacity-0;
+	@apply invisible absolute bottom-[calc(var(--video-base)*2.5)] left-1/2 flex justify-center opacity-0;
 
 	z-index: 10;
 	transform-origin: center bottom;
