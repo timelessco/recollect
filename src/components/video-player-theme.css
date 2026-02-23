@@ -11,6 +11,9 @@ media-controller {
 	--video-track-bg: rgb(255 255 255 / 20%);
 	--video-track-hover: rgb(255 255 255 / 50%);
 	--video-buffered: rgb(255 255 255 / 40%);
+	--media-tooltip-background: transparent;
+	--media-tooltip-background-color: transparent;
+	--media-tooltip-arrow-display: none;
 }
 
 /* ─── Control bar ───────────────────────────────────────────────────────── */
@@ -20,33 +23,48 @@ media-controller media-control-bar {
 
 /* ─── Icon buttons (play, mute, seek, pip, fullscreen) ────────────────────── */
 media-controller media-play-button,
-media-controller media-seek-backward-button,
+media-controller media-playback-rate-menu-button,
 media-controller media-mute-button,
 media-controller media-pip-button,
 media-controller media-fullscreen-button {
-	--media-control-background: var(--color-gray-400);
-	--media-control-hover-background: var(--color-gray-800);
+	--media-control-background: rgb(0 0 0 / 20%);
+	--media-control-hover-background: rgb(0 0 0 / 35%);
 
-	@apply inline-flex size-10 items-center justify-center rounded-full bg-[var(--color-gray-400)] transition-colors duration-200;
+	@apply inline-flex size-10 items-center justify-center rounded-full opacity-90;
+
+	background: rgb(0 0 0 / 20%);
+	backdrop-filter: blur(32px);
+	transition:
+		background 0.15s ease,
+		opacity 0.15s ease,
+		transform 0.15s ease;
+}
+
+media-controller media-play-button:active,
+media-controller media-playback-rate-menu-button:active,
+media-controller media-mute-button:active,
+media-controller media-pip-button:active,
+media-controller media-fullscreen-button:active {
+	transform: scale(0.92);
 }
 
 media-controller media-play-button:hover,
-media-controller media-seek-backward-button:hover,
+media-controller media-playback-rate-menu-button:hover,
 media-controller media-mute-button:hover,
 media-controller media-pip-button:hover,
 media-controller media-fullscreen-button:hover,
 media-controller media-play-button:focus-visible,
-media-controller media-seek-backward-button:focus-visible,
+media-controller media-playback-rate-menu-button:focus-visible,
 media-controller media-mute-button:focus-visible,
 media-controller media-pip-button:focus-visible,
 media-controller media-fullscreen-button:focus-visible {
-	@apply bg-[var(--color-gray-800)];
+	background: rgb(0 0 0 / 35%);
 }
 
 /* Icon SVG size */
 media-controller media-play-button svg,
 media-controller media-mute-button svg,
-media-controller media-seek-backward-button svg,
+media-controller media-playback-rate-menu-button svg,
 media-controller media-pip-button svg,
 media-controller media-fullscreen-button svg {
 	@apply size-5;
@@ -54,23 +72,23 @@ media-controller media-fullscreen-button svg {
 
 /* ─── Play / Pause icon crossfade ───────────────────────────────────────── */
 media-controller .icon-state {
-	@apply transition-all duration-200 ease-out;
+	@apply transition-all duration-200 ease-in-out;
 }
 
 media-controller media-play-button[mediapaused] .icon-play {
-	@apply scale-100 opacity-100 blur-none;
+	@apply scale-100 opacity-100;
 }
 
 media-controller media-play-button[mediapaused] .icon-pause {
-	@apply scale-[0.6] opacity-0 blur-sm;
+	@apply scale-90 opacity-0;
 }
 
 media-controller media-play-button:not([mediapaused]) .icon-play {
-	@apply scale-[0.6] opacity-0 blur-sm;
+	@apply scale-90 opacity-0;
 }
 
 media-controller media-play-button:not([mediapaused]) .icon-pause {
-	@apply scale-100 opacity-100 blur-none;
+	@apply scale-100 opacity-100;
 }
 
 /* ─── Mute / Volume icon crossfade ──────────────────────────────────────── */
@@ -87,24 +105,24 @@ media-controller media-mute-button {
 	@apply relative;
 }
 
-media-controller media-mute-button svg {
+media-controller media-mute-button .vol-on {
 	@apply translate-x-0.5;
 }
 
 media-controller media-mute-button:not([mediavolumelevel="off"]) .vol-on {
-	@apply scale-100 opacity-100 blur-none;
+	@apply scale-100 opacity-100;
 }
 
 media-controller media-mute-button:not([mediavolumelevel="off"]) .vol-off {
-	@apply scale-[0.6] opacity-0 blur-sm;
+	@apply scale-90 opacity-0;
 }
 
 media-controller media-mute-button[mediavolumelevel="off"] .vol-on {
-	@apply scale-[0.6] opacity-0 blur-sm;
+	@apply scale-90 opacity-0;
 }
 
 media-controller media-mute-button[mediavolumelevel="off"] .vol-off {
-	@apply scale-100 opacity-100 blur-none;
+	@apply scale-100 opacity-100;
 }
 
 /* ─── Volume popup (appears on hover) ───────────────────────────────────── */
@@ -199,6 +217,8 @@ media-controller[keyboardcontrol] .vol-wrap:focus-within media-volume-range {
 
 /* ─── Time display ─────────────────────────────────────────────────────── */
 media-controller media-time-display {
+	--media-control-hover-background: var(--media-control-background);
+
 	@apply relative rounded-[calc(var(--video-base)*0.5)] px-[calc(var(--video-base)*0.5)] py-[calc(var(--video-base)*0.5)];
 
 	font-size: calc(0.7 * var(--video-base));
@@ -260,6 +280,55 @@ media-controller media-preview-time-display {
 	@apply pt-0;
 }
 
+/* ─── Settings group (playback rate menu, like mute-group) ────────────────── */
+media-controller .settings-group {
+	@apply flex;
+}
+
+/* Rotate icon when menu is open (indicator) */
+media-controller media-playback-rate-menu-button [slot="icon"] {
+	@apply transition-transform duration-200 ease-in-out;
+}
+
+media-controller
+	media-playback-rate-menu-button[aria-expanded="true"]
+	[slot="icon"] {
+	transform: rotate(30deg);
+}
+
+media-controller .settings-group-inner {
+	@apply relative size-10 shrink-0;
+}
+
+media-controller .settings-menu-wrap {
+	@apply invisible absolute bottom-[calc(var(--video-base)*6+120px)] left-1/2 flex justify-center opacity-0;
+
+	z-index: 10;
+	transform-origin: center bottom;
+	transform: translateX(-50%);
+}
+
+media-controller .settings-menu-wrap media-playback-rate-menu {
+	--media-menu-background: #292929;
+	--media-control-padding: 0;
+
+	/* Override media-chrome's positioning: anchor above the button like vol-wrap */
+	position: absolute !important;
+	right: auto !important;
+	left: 50% !important;
+	transform: translateX(-50%) !important;
+
+	padding-block: 0;
+	border-radius: calc(0.5 * var(--video-base));
+
+	backdrop-filter: blur(32px);
+}
+
+media-controller
+	.settings-menu-wrap:has(media-playback-rate-menu:not([hidden])) {
+	@apply visible opacity-100;
+}
+
 /* ─── PiP (desktop only) ────────────────────────────────────────────────── */
 media-controller:not([breakpointmd]) media-pip-button {
 	@apply hidden;
@@ -267,17 +336,17 @@ media-controller:not([breakpointmd]) media-pip-button {
 
 /* ─── Fullscreen icon crossfade ─────────────────────────────────────────── */
 media-controller media-fullscreen-button:not([mediaisfullscreen]) .fs-enter {
-	@apply scale-100 opacity-100 blur-none;
+	@apply scale-100 opacity-100;
 }
 
 media-controller media-fullscreen-button:not([mediaisfullscreen]) .fs-exit {
-	@apply scale-[0.6] opacity-0 blur-sm;
+	@apply scale-90 opacity-0;
 }
 
 media-controller media-fullscreen-button[mediaisfullscreen] .fs-enter {
-	@apply scale-[0.6] opacity-0 blur-sm;
+	@apply scale-90 opacity-0;
 }
 
 media-controller media-fullscreen-button[mediaisfullscreen] .fs-exit {
-	@apply scale-100 opacity-100 blur-none;
+	@apply scale-100 opacity-100;
 }
