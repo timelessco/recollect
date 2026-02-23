@@ -84,10 +84,16 @@ function VideoPlayerInner({ isYouTube, onError, src }: VideoPlayerProps) {
 		>
 			{isYouTube ? (
 				youTubeReady && (
-					<youtube-video crossOrigin="" ref={ref} slot="media" src={src} />
+					<youtube-video
+						crossOrigin=""
+						ref={ref}
+						slot="media"
+						src={src}
+						autoPlay
+					/>
 				)
 			) : (
-				<video ref={ref} slot="media" src={src}>
+				<video ref={ref} slot="media" src={src} autoPlay>
 					<track default kind="captions" label="No captions" srcLang="en" />
 				</video>
 			)}
