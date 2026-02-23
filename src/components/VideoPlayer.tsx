@@ -57,8 +57,12 @@ function VideoPlayerInner({ isYouTube, onError, src }: VideoPlayerProps) {
 		}
 
 		void (async () => {
-			await import("youtube-video-element");
-			setYouTubeReady(true);
+			try {
+				await import("youtube-video-element");
+				setYouTubeReady(true);
+			} catch {
+				onErrorRef.current?.();
+			}
 		})();
 	}, [isYouTube]);
 
