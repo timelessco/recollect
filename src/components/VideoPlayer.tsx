@@ -72,7 +72,10 @@ function VideoPlayerInner({ isYouTube, onError, src }: VideoPlayerProps) {
 
 			const handleError = () => onErrorRef.current?.();
 			el.addEventListener("error", handleError);
-			return () => el.removeEventListener("error", handleError);
+			return () => {
+				el.removeEventListener("error", handleError);
+				mediaRef(null);
+			};
 		},
 		[mediaRef],
 	);
