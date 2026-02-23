@@ -175,6 +175,18 @@ media-controller .vol-wrap {
 	height: calc(14 * var(--video-base));
 }
 
+/* Invisible bridge covering the gap between the mute button and the popup */
+media-controller .vol-wrap::before {
+	content: "";
+
+	position: absolute;
+	right: -8px;
+	bottom: -16px;
+	left: -8px;
+
+	height: 16px;
+}
+
 media-controller .vol-wrap media-volume-range {
 	--media-range-bar-color: var(--video-accent);
 	--media-range-padding-left: 0;
