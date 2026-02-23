@@ -1,10 +1,17 @@
 /**
  * @module Build-time only
  */
+import { z } from "zod";
+
 import {
 	SyncFolderBookmarksInputSchema,
 	SyncFolderBookmarksOutputSchema,
 } from "@/app/api/twitter/sync-folder-bookmarks/schema";
+import {
+	twitterSyncFolderBookmarksRequestExamples,
+	twitterSyncFolderBookmarksResponse200Examples,
+	twitterSyncFolderBookmarksResponse400Examples,
+} from "./sync-folder-bookmarks-examples";
 import { bearerAuth, registry } from "@/lib/openapi/registry";
 import { apiResponseSchema } from "@/lib/openapi/schemas/envelope";
 
@@ -23,18 +30,7 @@ export function registerTwitterSyncFolderBookmarks() {
 				content: {
 					"application/json": {
 						schema: SyncFolderBookmarksInputSchema,
-						example: {
-							mappings: [
-								{
-									url: "https://twitter.com/user/status/1234567890",
-									category_name: "Tech Articles",
-								},
-								{
-									url: "https://twitter.com/user/status/9876543210",
-									category_name: "Design Inspiration",
-								},
-							],
-						},
+						examples: twitterSyncFolderBookmarksRequestExamples,
 					},
 				},
 			},
@@ -45,14 +41,19 @@ export function registerTwitterSyncFolderBookmarks() {
 				content: {
 					"application/json": {
 						schema: apiResponseSchema(SyncFolderBookmarksOutputSchema),
-						example: {
-							data: { queued: 2 },
-							error: null,
-						},
+						examples: twitterSyncFolderBookmarksResponse200Examples,
 					},
 				},
 			},
-			400: { description: "Invalid request body or mapping data" },
+			400: {
+				description: "Invalid request body or mapping data",
+				content: {
+					"application/json": {
+						schema: apiResponseSchema(z.null()),
+						examples: twitterSyncFolderBookmarksResponse400Examples,
+					},
+				},
+			},
 			401: { $ref: "#/components/responses/Unauthorized" },
 			500: { $ref: "#/components/responses/InternalError" },
 		},

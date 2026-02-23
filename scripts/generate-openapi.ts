@@ -84,7 +84,7 @@ const document = generator.generateDocument({
 			"Recollect API for bookmark management, organization, and import. Designed for mobile and frontend developers. Browser clients authenticate via cookies (automatic after login). Mobile/external clients use a Supabase JWT bearer token.",
 	},
 	tags: tagDescriptions,
-	servers: [{ url: "/api" }],
+	servers: [{ url: "/api", description: "Next.js API routes" }],
 });
 
 const outputPath = resolve(import.meta.dirname, "../public/openapi.json");
