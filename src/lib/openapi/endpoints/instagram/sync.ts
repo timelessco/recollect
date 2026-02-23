@@ -8,6 +8,12 @@ import {
 import { bearerAuth, registry } from "@/lib/openapi/registry";
 import { apiResponseSchema } from "@/lib/openapi/schemas/envelope";
 
+import {
+	instagramSync400Examples,
+	instagramSyncRequestExamples,
+	instagramSyncResponseExamples,
+} from "./sync-examples";
+
 export function registerInstagramSync() {
 	registry.registerPath({
 		method: "post",
@@ -23,19 +29,7 @@ export function registerInstagramSync() {
 				content: {
 					"application/json": {
 						schema: InstagramSyncInputSchema,
-						example: {
-							bookmarks: [
-								{
-									url: "https://www.instagram.com/p/ABC123/",
-									title: "Beautiful sunset photo",
-									description: "A stunning view of the horizon",
-									ogImage: "https://www.instagram.com/p/ABC123/media/?size=l",
-									type: "instagram",
-									meta_data: { shortcode: "ABC123" },
-									saved_at: "2024-03-15T10:30:00Z",
-								},
-							],
-						},
+						examples: instagramSyncRequestExamples,
 					},
 				},
 			},
@@ -46,14 +40,26 @@ export function registerInstagramSync() {
 				content: {
 					"application/json": {
 						schema: apiResponseSchema(InstagramSyncOutputSchema),
-						example: {
-							data: { inserted: 42, skipped: 3 },
-							error: null,
-						},
+						examples: instagramSyncResponseExamples,
 					},
 				},
 			},
-			400: { description: "Invalid request body or bookmark data" },
+			400: {
+				description: "Invalid request body or bookmark data",
+				content: {
+					"application/json": {
+						schema: {
+							type: "object",
+							properties: {
+								data: { type: "null" },
+								error: { type: "string" },
+							},
+							required: ["data", "error"],
+						},
+						examples: instagramSync400Examples,
+					},
+				},
+			},
 			401: { $ref: "#/components/responses/Unauthorized" },
 			500: { $ref: "#/components/responses/InternalError" },
 		},

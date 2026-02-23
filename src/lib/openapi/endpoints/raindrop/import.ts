@@ -8,6 +8,12 @@ import {
 import { bearerAuth, registry } from "@/lib/openapi/registry";
 import { apiResponseSchema } from "@/lib/openapi/schemas/envelope";
 
+import {
+	raindropImport400Examples,
+	raindropImportRequestExamples,
+	raindropImportResponseExamples,
+} from "./import-examples";
+
 export function registerRaindropImport() {
 	registry.registerPath({
 		method: "post",
@@ -23,18 +29,7 @@ export function registerRaindropImport() {
 				content: {
 					"application/json": {
 						schema: RaindropImportInputSchema,
-						example: {
-							bookmarks: [
-								{
-									title: "My Favorite Article",
-									description: "A great read about web development",
-									url: "https://example.com/article",
-									ogImage: "https://example.com/og.jpg",
-									category_name: "Tech",
-									inserted_at: "2024-03-15T10:30:00Z",
-								},
-							],
-						},
+						examples: raindropImportRequestExamples,
 					},
 				},
 			},
@@ -45,14 +40,26 @@ export function registerRaindropImport() {
 				content: {
 					"application/json": {
 						schema: apiResponseSchema(RaindropImportOutputSchema),
-						example: {
-							data: { queued: 150, skipped: 12 },
-							error: null,
-						},
+						examples: raindropImportResponseExamples,
 					},
 				},
 			},
-			400: { description: "Invalid request body or bookmark data" },
+			400: {
+				description: "Invalid request body or bookmark data",
+				content: {
+					"application/json": {
+						schema: {
+							type: "object",
+							properties: {
+								data: { type: "null" },
+								error: { type: "string" },
+							},
+							required: ["data", "error"],
+						},
+						examples: raindropImport400Examples,
+					},
+				},
+			},
 			401: { $ref: "#/components/responses/Unauthorized" },
 			500: { $ref: "#/components/responses/InternalError" },
 		},

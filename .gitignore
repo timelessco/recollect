@@ -92,6 +92,8 @@ public/sitemap-0.xml
 .claude/settings.local.json
 .claude/docs
 .claude/auto-memory/dirty-files
+.claude/launch.json
+.claude/worktrees
 _plans
 todos
 .planning

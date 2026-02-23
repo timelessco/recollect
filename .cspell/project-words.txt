@@ -110,6 +110,7 @@ sentryclirc
 Setof
 shhhhh
 SIWS
+slugified
 SQLERRM
 sslcert
 sslmode
