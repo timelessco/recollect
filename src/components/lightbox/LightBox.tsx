@@ -161,7 +161,11 @@ export const CustomLightBox = ({
 					);
 				} else {
 					content = (
-						<VideoSlide bookmark={bookmark} onVideoError={handleVideoError} />
+						<VideoSlide
+							bookmark={bookmark}
+							isActive={isActive}
+							onVideoError={handleVideoError}
+						/>
 					);
 				}
 			}
@@ -178,7 +182,7 @@ export const CustomLightBox = ({
 			) {
 				content = <PDFSlide bookmark={bookmark} />;
 			} else if (isYouTubeVideo(bookmark?.url)) {
-				content = <YouTubeSlide bookmark={bookmark} />;
+				content = <YouTubeSlide bookmark={bookmark} isActive={isActive} />;
 			} else if (bookmark?.url) {
 				content = (
 					<WebEmbedSlide

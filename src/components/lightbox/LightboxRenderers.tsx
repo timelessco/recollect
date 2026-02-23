@@ -74,7 +74,11 @@ export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => {
  * Renders a video slide using the custom VideoPlayer component
  * Notifies parent via onVideoError when video fails to load
  */
-export const VideoSlide = ({ bookmark, onVideoError }: VideoSlideProps) => {
+export const VideoSlide = ({
+	bookmark,
+	isActive,
+	onVideoError,
+}: VideoSlideProps) => {
 	const handleVideoError = useCallback(() => {
 		if (bookmark?.id && typeof bookmark.id === "number") {
 			onVideoError?.(bookmark.id);
@@ -91,7 +95,11 @@ export const VideoSlide = ({ bookmark, onVideoError }: VideoSlideProps) => {
 	return (
 		<div className="flex h-full w-full items-center justify-center">
 			<div className="w-full max-w-[min(1200px,90vw)]">
-				<VideoPlayer onError={handleVideoError} src={videoSrc} />
+				<VideoPlayer
+					isActive={isActive}
+					onError={handleVideoError}
+					src={videoSrc}
+				/>
 			</div>
 		</div>
 	);
@@ -157,9 +165,9 @@ export const PDFSlide = ({ bookmark }: SlideProps) => (
 /**
  * Renders a YouTube video slide
  */
-export const YouTubeSlide = ({ bookmark }: SlideProps) => (
+export const YouTubeSlide = ({ bookmark, isActive }: SlideProps) => (
 	<div className="relative flex h-full max-h-[80vh] w-full max-w-[min(1200px,90vw)] items-center justify-center">
-		<VideoPlayer isYouTube src={bookmark?.url ?? ""} />
+		<VideoPlayer isActive={isActive} isYouTube src={bookmark?.url ?? ""} />
 	</div>
 );
 

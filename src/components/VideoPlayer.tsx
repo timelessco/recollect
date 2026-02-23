@@ -37,6 +37,7 @@ import {
 import "./video-player-theme.css";
 
 export interface VideoPlayerProps {
+	isActive?: boolean;
 	isYouTube?: boolean;
 	onError?: () => void;
 	src: string;
@@ -44,8 +45,14 @@ export interface VideoPlayerProps {
 
 /* ---- Main player ---- */
 
-function VideoPlayerInner({ isYouTube, onError, src }: VideoPlayerProps) {
+function VideoPlayerInner({
+	isActive,
+	isYouTube,
+	onError,
+	src,
+}: VideoPlayerProps) {
 	const mediaRef = useMediaRef();
+	const mediaElRef = useRef<HTMLVideoElement | null>(null);
 	const onErrorRef = useRef(onError);
 	onErrorRef.current = onError;
 
@@ -66,8 +73,22 @@ function VideoPlayerInner({ isYouTube, onError, src }: VideoPlayerProps) {
 		})();
 	}, [isYouTube]);
 
+	useEffect(() => {
+		const el = mediaElRef.current;
+		if (!el) {
+			return;
+		}
+
+		if (isActive) {
+			void el.play();
+		} else {
+			el.pause();
+		}
+	}, [isActive]);
+
 	const ref = useCallback(
 		(el: HTMLVideoElement | null) => {
+			mediaElRef.current = el;
 			mediaRef(el);
 
 			if (!el) {
@@ -91,16 +112,10 @@ function VideoPlayerInner({ isYouTube, onError, src }: VideoPlayerProps) {
 		>
 			{isYouTube ? (
 				youTubeReady && (
-					<youtube-video
-						crossOrigin=""
-						ref={ref}
-						slot="media"
-						src={src}
-						autoPlay
-					/>
+					<youtube-video crossOrigin="" ref={ref} slot="media" src={src} />
 				)
 			) : (
-				<video ref={ref} slot="media" src={src} autoPlay>
+				<video ref={ref} slot="media" src={src}>
 					<track default kind="captions" label="No captions" srcLang="en" />
 				</video>
 			)}
