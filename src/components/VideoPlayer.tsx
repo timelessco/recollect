@@ -37,7 +37,6 @@ import {
 import "./video-player-theme.css";
 
 export interface VideoPlayerProps {
-	isActive: boolean;
 	isYouTube?: boolean;
 	onError?: () => void;
 	src: string;
@@ -45,11 +44,7 @@ export interface VideoPlayerProps {
 
 /* ---- Main player ---- */
 
-function VideoPlayerInner({
-	isYouTube,
-	onError,
-	src,
-}: Omit<VideoPlayerProps, "isActive">) {
+function VideoPlayerInner({ isYouTube, onError, src }: VideoPlayerProps) {
 	const mediaRef = useMediaRef();
 	const onErrorRef = useRef(onError);
 	onErrorRef.current = onError;

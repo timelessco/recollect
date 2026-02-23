@@ -319,15 +319,8 @@ media-controller .settings-menu-wrap media-playback-rate-menu {
 	--media-menu-background: #292929;
 	--media-control-padding: 0;
 
-	/* Override media-chrome's positioning: anchor above the button like vol-wrap */
-	position: absolute !important;
-	right: auto !important;
-	left: 50% !important;
-	transform: translateX(-50%) !important;
-
 	padding-block: 0;
 	border-radius: calc(0.5 * var(--video-base));
-
 	backdrop-filter: blur(32px);
 }
 
