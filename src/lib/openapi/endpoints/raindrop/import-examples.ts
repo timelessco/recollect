@@ -13,7 +13,7 @@ export const raindropImportRequestExamples = {
 					url: "https://v0.app/chat/react-view-transitions-u0iKm2LIxil?utm_source=sahaj-jj&utm_medium=referral&utm_campaign=share_chat&ref=35O8TY",
 					title: "React view transitions - v0 by Vercel",
 					description:
-						"use view transitions in react to demoswitching between alternate layouts (list ↔ grid ↔ masonry)",
+						"use view transitions in react to demo switching between alternate layouts (list ↔ grid ↔ masonry)",
 					ogImage: "https://v0.app/chat/api/og/u0iKm2LIxil",
 					category_name: "Unsorted",
 					inserted_at: "2025-11-16T09:25:32.574Z",
