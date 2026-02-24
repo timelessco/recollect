@@ -44,7 +44,6 @@ import {
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import Modal from "../../../components/modal";
-import { Collapsible } from "@/components/ui/recollect/collapsible";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
@@ -81,6 +80,7 @@ import SingleListItemComponent, {
 } from "./singleListItemComponent";
 import { useAddCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-optimistic-mutation";
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
+import { Collapsible } from "@/components/ui/recollect/collapsible";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { handleClientError } from "@/utils/error-utils/client";
 
@@ -731,10 +731,8 @@ const CollectionsList = () => {
 		<>
 			{favoriteCollections.length > 0 && (
 				<div className="py-4">
-					<Collapsible.Root defaultOpen>
-						<Collapsible.Trigger className="aria-disclosure-button w-full">
-							{favoritesHeader}
-						</Collapsible.Trigger>
+					<Collapsible.Root>
+						<Collapsible.Trigger>{favoritesHeader}</Collapsible.Trigger>
 						<Collapsible.Panel>
 							<ul className="flex flex-col gap-px" id="favorites-wrapper">
 								{favoriteCollections.map((item) => (
@@ -760,9 +758,7 @@ const CollectionsList = () => {
 			)}
 
 			<Collapsible.Root defaultOpen>
-				<Collapsible.Trigger className="aria-disclosure-button w-full">
-					{collectionsHeader}
-				</Collapsible.Trigger>
+				<Collapsible.Trigger>{collectionsHeader}</Collapsible.Trigger>
 				<Collapsible.Panel>
 					<div id="collections-wrapper">
 						{isLoadingCategories ? (

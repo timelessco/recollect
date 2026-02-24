@@ -9,6 +9,7 @@ function Root(props: CollapsiblePrimitive.Root.Props) {
 
 	return (
 		<CollapsiblePrimitive.Root
+			defaultOpen
 			className={cn("contents", className)}
 			{...rest}
 		/>
@@ -20,7 +21,7 @@ function Trigger(props: CollapsiblePrimitive.Trigger.Props) {
 
 	return (
 		<CollapsiblePrimitive.Trigger
-			className={cn("cursor-pointer", className)}
+			className={cn("aria-disclosure-button w-full cursor-pointer", className)}
 			{...rest}
 		/>
 	);

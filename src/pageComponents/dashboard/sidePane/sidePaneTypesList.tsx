@@ -1,7 +1,6 @@
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { Collapsible } from "@/components/ui/recollect/collapsible";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import DownArrowGray from "../../../icons/downArrowGray";
 import { useSupabaseSession } from "../../../store/componentStore";
@@ -13,6 +12,7 @@ import {
 } from "../../../utils/constants";
 
 import SingleListItemComponent from "./singleListItemComponent";
+import { Collapsible } from "@/components/ui/recollect/collapsible";
 
 const SidePaneTypesList = () => {
 	const currentPath = useGetCurrentUrlPath();
@@ -50,8 +50,8 @@ const SidePaneTypesList = () => {
 
 	return (
 		<div className="pt-4">
-			<Collapsible.Root defaultOpen>
-				<Collapsible.Trigger className="aria-disclosure-button w-full">
+			<Collapsible.Root>
+				<Collapsible.Trigger>
 					<div className="group flex items-center px-1 py-[7.5px] text-13 leading-[15px] font-medium tracking-[0.01em] text-gray-600">
 						<p className="mr-1">Types</p>
 						<DownArrowGray
