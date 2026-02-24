@@ -1,8 +1,6 @@
-import { NextResponse } from "next/server";
-
 import { DevSessionInputSchema, DevSessionOutputSchema } from "./schema";
 import { type HandlerConfig } from "@/lib/api-helpers/create-handler";
-import { apiSuccess } from "@/lib/api-helpers/response";
+import { apiSuccess, apiWarn } from "@/lib/api-helpers/response";
 import { createApiClient, getApiUser } from "@/lib/supabase/api";
 
 const ROUTE = "dev/session";
@@ -27,7 +25,7 @@ async function handleGet() {
 		process.env.NODE_ENV !== "development" ||
 		process.env.VERCEL_ENV === "production"
 	) {
-		return NextResponse.json({ error: "Not found" }, { status: 404 });
+		return apiWarn({ route: ROUTE, message: "Not found", status: 404 });
 	}
 
 	const { supabase, token } = await createApiClient();
@@ -36,10 +34,11 @@ async function handleGet() {
 	} = await getApiUser(supabase, token);
 
 	if (!user) {
-		return NextResponse.json(
-			{ error: "Not authenticated - visit localhost:3000 and log in first" },
-			{ status: 401 },
-		);
+		return apiWarn({
+			route: ROUTE,
+			message: "Not authenticated - visit localhost:3000 and log in first",
+			status: 401,
+		});
 	}
 
 	// Get session for access token
@@ -48,10 +47,11 @@ async function handleGet() {
 	} = await supabase.auth.getSession();
 
 	if (!session) {
-		return NextResponse.json(
-			{ error: "No active session found" },
-			{ status: 401 },
-		);
+		return apiWarn({
+			route: ROUTE,
+			message: "No active session found",
+			status: 401,
+		});
 	}
 
 	return apiSuccess({
