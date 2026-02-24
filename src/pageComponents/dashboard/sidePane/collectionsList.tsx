@@ -39,12 +39,12 @@ import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useF
 import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
-import AriaDisclosure from "../../../components/ariaDisclosure";
 import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
 import Modal from "../../../components/modal";
+import { Collapsible } from "@/components/ui/recollect/collapsible";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
@@ -731,80 +731,90 @@ const CollectionsList = () => {
 		<>
 			{favoriteCollections.length > 0 && (
 				<div className="py-4">
-					<AriaDisclosure renderDisclosureButton={favoritesHeader}>
-						<ul className="flex flex-col gap-px" id="favorites-wrapper">
-							{favoriteCollections.map((item) => (
-								<li key={item?.id}>
-									<SingleListItemComponent
-										extendedClassname="py-[6px]"
-										item={item}
-										listNameId="favorite-collection-name"
-										onCategoryOptionClick={handleCategoryOptionClick}
-										showDropdown
-										showSpinner={
-											addCategoryToBookmarkOptimisticMutation.isPending &&
-											addCategoryToBookmarkOptimisticMutation.variables
-												?.category_id === item?.id
-										}
-									/>
-								</li>
-							))}
-						</ul>
-					</AriaDisclosure>
+					<Collapsible.Root defaultOpen>
+						<Collapsible.Trigger className="aria-disclosure-button w-full">
+							{favoritesHeader}
+						</Collapsible.Trigger>
+						<Collapsible.Panel>
+							<ul className="flex flex-col gap-px" id="favorites-wrapper">
+								{favoriteCollections.map((item) => (
+									<li key={item?.id}>
+										<SingleListItemComponent
+											extendedClassname="py-[6px]"
+											item={item}
+											listNameId="favorite-collection-name"
+											onCategoryOptionClick={handleCategoryOptionClick}
+											showDropdown
+											showSpinner={
+												addCategoryToBookmarkOptimisticMutation.isPending &&
+												addCategoryToBookmarkOptimisticMutation.variables
+													?.category_id === item?.id
+											}
+										/>
+									</li>
+								))}
+							</ul>
+						</Collapsible.Panel>
+					</Collapsible.Root>
 				</div>
 			)}
 
-			<AriaDisclosure renderDisclosureButton={collectionsHeader}>
-				<div id="collections-wrapper">
-					{isLoadingCategories ? (
-						<CollectionsListSkeleton />
-					) : (
-						<ListBoxDrop
-							aria-label="Categories-drop"
-							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-							onItemDrop={(event: any) => {
-								void handleBookmarksDrop(event);
-							}}
-							onReorder={onReorder}
-							selectionBehavior="replace"
-							selectionMode="multiple"
-						>
-							{nonFavoriteCollections?.map((item) => (
-								<Item key={item?.id} textValue={item?.name}>
-									<SingleListItemComponent
-										extendedClassname="py-[6px]"
-										item={item}
-										listNameId="collection-name"
-										onCategoryOptionClick={handleCategoryOptionClick}
-										showDropdown
-										showSpinner={
-											addCategoryToBookmarkOptimisticMutation.isPending &&
-											addCategoryToBookmarkOptimisticMutation.variables
-												?.category_id === item?.id
-										}
-									/>
-								</Item>
-							))}
-						</ListBoxDrop>
-					)}
-				</div>
-				{renderAddCategoryInput}
-				<div
-					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] hover:bg-gray-100"
-					id="add-category-button"
-					onClick={() => setShowAddCategoryInput(true)}
-					onKeyDown={() => {}}
-					role="button"
-					tabIndex={0}
-				>
-					<figure className="text-gray-500">
-						<AddCategoryIcon />
-					</figure>
-					<p className="ml-2 flex-1 truncate text-sm leading-[16px] font-450 text-gray-600">
-						Add Collection
-					</p>
-				</div>
-			</AriaDisclosure>
+			<Collapsible.Root defaultOpen>
+				<Collapsible.Trigger className="aria-disclosure-button w-full">
+					{collectionsHeader}
+				</Collapsible.Trigger>
+				<Collapsible.Panel>
+					<div id="collections-wrapper">
+						{isLoadingCategories ? (
+							<CollectionsListSkeleton />
+						) : (
+							<ListBoxDrop
+								aria-label="Categories-drop"
+								// eslint-disable-next-line @typescript-eslint/no-explicit-any
+								onItemDrop={(event: any) => {
+									void handleBookmarksDrop(event);
+								}}
+								onReorder={onReorder}
+								selectionBehavior="replace"
+								selectionMode="multiple"
+							>
+								{nonFavoriteCollections?.map((item) => (
+									<Item key={item?.id} textValue={item?.name}>
+										<SingleListItemComponent
+											extendedClassname="py-[6px]"
+											item={item}
+											listNameId="collection-name"
+											onCategoryOptionClick={handleCategoryOptionClick}
+											showDropdown
+											showSpinner={
+												addCategoryToBookmarkOptimisticMutation.isPending &&
+												addCategoryToBookmarkOptimisticMutation.variables
+													?.category_id === item?.id
+											}
+										/>
+									</Item>
+								))}
+							</ListBoxDrop>
+						)}
+					</div>
+					{renderAddCategoryInput}
+					<div
+						className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] hover:bg-gray-100"
+						id="add-category-button"
+						onClick={() => setShowAddCategoryInput(true)}
+						onKeyDown={() => {}}
+						role="button"
+						tabIndex={0}
+					>
+						<figure className="text-gray-500">
+							<AddCategoryIcon />
+						</figure>
+						<p className="ml-2 flex-1 truncate text-sm leading-[16px] font-450 text-gray-600">
+							Add Collection
+						</p>
+					</div>
+				</Collapsible.Panel>
+			</Collapsible.Root>
 
 			{/* Delete Collection Confirmation Modal */}
 			<Modal

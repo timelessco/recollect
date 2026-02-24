@@ -1,7 +1,7 @@
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
-import AriaDisclosure from "../../../components/ariaDisclosure";
+import { Collapsible } from "@/components/ui/recollect/collapsible";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import DownArrowGray from "../../../icons/downArrowGray";
 import { useSupabaseSession } from "../../../store/componentStore";
@@ -50,8 +50,8 @@ const SidePaneTypesList = () => {
 
 	return (
 		<div className="pt-4">
-			<AriaDisclosure
-				renderDisclosureButton={
+			<Collapsible.Root defaultOpen>
+				<Collapsible.Trigger className="aria-disclosure-button w-full">
 					<div className="group flex items-center px-1 py-[7.5px] text-13 leading-[15px] font-medium tracking-[0.01em] text-gray-600">
 						<p className="mr-1">Types</p>
 						<DownArrowGray
@@ -59,19 +59,20 @@ const SidePaneTypesList = () => {
 							size={10}
 						/>
 					</div>
-				}
-			>
-				<div className="flex flex-col gap-px">
-					{optionsMenuList?.map((item) => (
-						<SingleListItemComponent
-							extendedClassname="py-[6px]"
-							item={item}
-							key={item.id}
-							showIconDropdown={false}
-						/>
-					))}
-				</div>
-			</AriaDisclosure>
+				</Collapsible.Trigger>
+				<Collapsible.Panel>
+					<div className="flex flex-col gap-px">
+						{optionsMenuList?.map((item) => (
+							<SingleListItemComponent
+								extendedClassname="py-[6px]"
+								item={item}
+								key={item.id}
+								showIconDropdown={false}
+							/>
+						))}
+					</div>
+				</Collapsible.Panel>
+			</Collapsible.Root>
 		</div>
 	);
 };
