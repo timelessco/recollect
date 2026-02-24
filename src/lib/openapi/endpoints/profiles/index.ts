@@ -1,1 +1,1 @@
-export { registerProfilesTogglePreferredOgDomain } from "./toggle-preferred-og-domain";
+export { togglePreferredOgDomainSupplement } from "./toggle-preferred-og-domain";

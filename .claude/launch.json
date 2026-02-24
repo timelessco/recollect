@@ -5,8 +5,7 @@
 			"name": "Next.js Dev",
 			"runtimeExecutable": "/bin/zsh",
 			"runtimeArgs": ["-il", "-c", "pnpm dev"],
-			"port": 3000,
-			"autoPort": true
+			"port": 3000
 		},
 		{
 			"name": "Supabase Local",

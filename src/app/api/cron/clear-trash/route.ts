@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 
+import { ClearTrashInputSchema, ClearTrashOutputSchema } from "./schema";
+import { type HandlerConfig } from "@/lib/api-helpers/create-handler";
 import { deleteBookmarksByIds } from "@/lib/bookmark-helpers/delete-bookmarks";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
@@ -9,7 +11,7 @@ const ROUTE = "cron/clear-trash";
 const BATCH_SIZE = 1000;
 const TRASH_RETENTION_DAYS = 30;
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
 	try {
 		const cronSecret = process.env.CRON_SECRET;
 		if (!cronSecret) {
@@ -125,3 +127,12 @@ export async function GET(request: NextRequest) {
 		);
 	}
 }
+
+export const GET = Object.assign(handleGet, {
+	config: {
+		factoryName: "createGetApiHandler",
+		inputSchema: ClearTrashInputSchema,
+		outputSchema: ClearTrashOutputSchema,
+		route: ROUTE,
+	} satisfies HandlerConfig,
+});

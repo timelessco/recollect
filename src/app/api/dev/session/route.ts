@@ -1,6 +1,9 @@
-import { NextResponse } from "next/server";
-
+import { DevSessionInputSchema, DevSessionOutputSchema } from "./schema";
+import { type HandlerConfig } from "@/lib/api-helpers/create-handler";
+import { apiSuccess, apiWarn } from "@/lib/api-helpers/response";
 import { createApiClient, getApiUser } from "@/lib/supabase/api";
+
+const ROUTE = "dev/session";
 
 /**
  * Dev-only endpoint to retrieve current session token for API testing.
@@ -15,14 +18,14 @@ import { createApiClient, getApiUser } from "@/lib/supabase/api";
  * 3. Use in CLI: curl -H "Authorization: Bearer <token>" ...
  * @returns {object} { access_token, expires_at, user_email }
  */
-export async function GET() {
+async function handleGet() {
 	// Block in production - return 404 as if endpoint doesn't exist
 	// Defense in depth: check both NODE_ENV and VERCEL_ENV to protect against misconfiguration
 	if (
 		process.env.NODE_ENV !== "development" ||
 		process.env.VERCEL_ENV === "production"
 	) {
-		return NextResponse.json({ error: "Not found" }, { status: 404 });
+		return apiWarn({ route: ROUTE, message: "Not found", status: 404 });
 	}
 
 	const { supabase, token } = await createApiClient();
@@ -31,10 +34,11 @@ export async function GET() {
 	} = await getApiUser(supabase, token);
 
 	if (!user) {
-		return NextResponse.json(
-			{ error: "Not authenticated - visit localhost:3000 and log in first" },
-			{ status: 401 },
-		);
+		return apiWarn({
+			route: ROUTE,
+			message: "Not authenticated - visit localhost:3000 and log in first",
+			status: 401,
+		});
 	}
 
 	// Get session for access token
@@ -43,15 +47,29 @@ export async function GET() {
 	} = await supabase.auth.getSession();
 
 	if (!session) {
-		return NextResponse.json(
-			{ error: "No active session found" },
-			{ status: 401 },
-		);
+		return apiWarn({
+			route: ROUTE,
+			message: "No active session found",
+			status: 401,
+		});
 	}
 
-	return NextResponse.json({
-		access_token: session.access_token,
-		expires_at: session.expires_at,
-		user_email: user.email,
+	return apiSuccess({
+		route: ROUTE,
+		data: {
+			access_token: session.access_token,
+			expires_at: session.expires_at,
+			user_email: user.email,
+		},
+		schema: DevSessionOutputSchema,
 	});
 }
+
+export const GET = Object.assign(handleGet, {
+	config: {
+		factoryName: "createGetApiHandlerWithAuth",
+		inputSchema: DevSessionInputSchema,
+		outputSchema: DevSessionOutputSchema,
+		route: ROUTE,
+	} satisfies HandlerConfig,
+});

@@ -1,1 +1,1 @@
-export { registerIphoneShareError } from "./share-error";
+export { iphoneShareErrorSupplement } from "./share-error";

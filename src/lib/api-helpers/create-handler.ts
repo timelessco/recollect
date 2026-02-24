@@ -36,16 +36,27 @@ type PublicHandlerConfig<TInput, TOutput> = {
 	route: string;
 };
 
+export type HandlerConfig = {
+	factoryName: string;
+	inputSchema: z.ZodTypeAny;
+	outputSchema: z.ZodTypeAny;
+	route: string;
+};
+
+type HandlerFn = ((request: NextRequest) => Promise<NextResponse>) & {
+	config: HandlerConfig;
+};
+
 // ============================================================
 // Public Handlers (no auth)
 // ============================================================
 
 export const createGetApiHandler = <TInput, TOutput>(
 	config: PublicHandlerConfig<TInput, TOutput>,
-) => {
+): HandlerFn => {
 	const { route, inputSchema, outputSchema, handler } = config;
 
-	return async (request: NextRequest) => {
+	const fn = async (request: NextRequest) => {
 		try {
 			const query = parseQuery({ request, schema: inputSchema, route });
 			if (query.errorResponse) {
@@ -68,14 +79,23 @@ export const createGetApiHandler = <TInput, TOutput>(
 			});
 		}
 	};
+
+	fn.config = {
+		factoryName: "createGetApiHandler",
+		inputSchema,
+		outputSchema,
+		route,
+	};
+
+	return fn;
 };
 
 export const createPostApiHandler = <TInput, TOutput>(
 	config: PublicHandlerConfig<TInput, TOutput>,
-) => {
+): HandlerFn => {
 	const { route, inputSchema, outputSchema, handler } = config;
 
-	return async (request: NextRequest) => {
+	const fn = async (request: NextRequest) => {
 		try {
 			const body = await parseBody({ request, schema: inputSchema, route });
 			if (body.errorResponse) {
@@ -98,6 +118,15 @@ export const createPostApiHandler = <TInput, TOutput>(
 			});
 		}
 	};
+
+	fn.config = {
+		factoryName: "createPostApiHandler",
+		inputSchema,
+		outputSchema,
+		route,
+	};
+
+	return fn;
 };
 
 // ============================================================
@@ -106,10 +135,10 @@ export const createPostApiHandler = <TInput, TOutput>(
 
 export const createGetApiHandlerWithAuth = <TInput, TOutput>(
 	config: AuthHandlerConfig<TInput, TOutput>,
-) => {
+): HandlerFn => {
 	const { route, inputSchema, outputSchema, handler } = config;
 
-	return async (request: NextRequest) => {
+	const fn = async (request: NextRequest) => {
 		try {
 			const auth = await requireAuth(route);
 			if (auth.errorResponse) {
@@ -138,14 +167,23 @@ export const createGetApiHandlerWithAuth = <TInput, TOutput>(
 			});
 		}
 	};
+
+	fn.config = {
+		factoryName: "createGetApiHandlerWithAuth",
+		inputSchema,
+		outputSchema,
+		route,
+	};
+
+	return fn;
 };
 
 export const createPostApiHandlerWithAuth = <TInput, TOutput>(
 	config: AuthHandlerConfig<TInput, TOutput>,
-) => {
+): HandlerFn => {
 	const { route, inputSchema, outputSchema, handler } = config;
 
-	return async (request: NextRequest) => {
+	const fn = async (request: NextRequest) => {
 		try {
 			const auth = await requireAuth(route);
 			if (auth.errorResponse) {
@@ -174,4 +212,13 @@ export const createPostApiHandlerWithAuth = <TInput, TOutput>(
 			});
 		}
 	};
+
+	fn.config = {
+		factoryName: "createPostApiHandlerWithAuth",
+		inputSchema,
+		outputSchema,
+		route,
+	};
+
+	return fn;
 };
