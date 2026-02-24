@@ -1,3 +1,5 @@
+import { after } from "next/server";
+
 import {
 	DeleteCategoryInputSchema,
 	DeleteCategoryResponseSchema,
@@ -297,9 +299,9 @@ export const POST = createPostApiHandlerWithAuth({
 			}
 		}
 
-		// Notify collaborators about the deletion - fire and forget
+		// Notify collaborators about the deletion - run after response is sent
 		if (isNonEmptyArray(collaboratorEmails)) {
-			void (async () => {
+			after(async () => {
 				const { data: ownerProfile, error: ownerProfileError } = await supabase
 					.from(PROFILES)
 					.select("display_name, user_name")
@@ -323,7 +325,7 @@ export const POST = createPostApiHandlerWithAuth({
 					collaboratorEmails,
 					ownerDisplayName,
 				});
-			})();
+			});
 		}
 
 		return deletedCategory;
