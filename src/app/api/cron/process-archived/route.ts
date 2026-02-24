@@ -6,6 +6,11 @@ import { createServiceClient } from "@/utils/supabaseClient";
 
 const ROUTE = "queue-archives-retry";
 
+const RpcResultSchema = z.object({
+	requeued: z.number(),
+	requested: z.number().optional(),
+});
+
 const InputSchema = z.union([
 	z.object({ retry_all: z.literal(true) }),
 	z.object({ count: z.int().min(1).max(1000) }),
@@ -44,8 +49,18 @@ export const POST = createPostApiHandler({
 				});
 			}
 
-			const result = data as { requeued: number };
-			return { requeued: result.requeued, requested: count ?? null };
+			const parsed = RpcResultSchema.safeParse(data);
+			if (!parsed.success) {
+				console.error(`[${route}] Unexpected RPC response:`, data);
+				return apiError({
+					route,
+					message: "Unexpected response from retry operation",
+					error: parsed.error,
+					operation: "retry_archives_bulk_parse",
+				});
+			}
+
+			return { requeued: parsed.data.requeued, requested: count ?? null };
 		}
 
 		const { data, error } = await supabase.rpc("retry_ai_embeddings_archive", {
@@ -62,7 +77,20 @@ export const POST = createPostApiHandler({
 			});
 		}
 
-		const result = data as { requeued: number; requested: number };
-		return { requeued: result.requeued, requested: result.requested };
+		const parsed = RpcResultSchema.safeParse(data);
+		if (!parsed.success) {
+			console.error(`[${route}] Unexpected RPC response:`, data);
+			return apiError({
+				route,
+				message: "Unexpected response from retry operation",
+				error: parsed.error,
+				operation: "retry_archives_parse",
+			});
+		}
+
+		return {
+			requeued: parsed.data.requeued,
+			requested: parsed.data.requested ?? null,
+		};
 	},
 });
