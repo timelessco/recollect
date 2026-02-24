@@ -376,32 +376,35 @@ export type Database = {
 		Functions: {
 			add_category_to_bookmarks: {
 				Args: { p_bookmark_ids: number[]; p_category_id: number };
-				Returns: {
+				Returns: Array<{
 					out_bookmark_id: number;
 					out_category_id: number;
-				}[];
+				}>;
 			};
 			admin_get_instagram_archives: {
 				Args: never;
-				Returns: {
+				Returns: Array<{
 					archived_at: string;
 					failure_reason: string;
 					msg_id: number;
 					url: string;
 					user_id: string;
-				}[];
+				}>;
 			};
 			admin_get_twitter_archives: {
 				Args: never;
-				Returns: {
+				Returns: Array<{
 					archived_at: string;
 					failure_reason: string;
 					msg_id: number;
 					url: string;
 					user_id: string;
-				}[];
+				}>;
 			};
-			admin_retry_all_ai_embeddings_archives: { Args: never; Returns: Json };
+			admin_retry_ai_embeddings_archives: {
+				Args: { p_count?: number };
+				Returns: Json;
+			};
 			admin_retry_all_instagram_archives: { Args: never; Returns: Json };
 			admin_retry_all_twitter_archives: { Args: never; Returns: Json };
 			admin_retry_instagram_import: {
@@ -427,7 +430,7 @@ export type Database = {
 			check_bookmarks_view_keyed_shape: { Args: { v: Json }; Returns: boolean };
 			create_and_assign_tag: {
 				Args: { p_bookmark_id: number; p_tag_name: string };
-				Returns: {
+				Returns: Array<{
 					bookmark_tag_bookmark_id: number;
 					bookmark_tag_created_at: string;
 					bookmark_tag_id: number;
@@ -437,7 +440,7 @@ export type Database = {
 					tag_id: number;
 					tag_name: string;
 					tag_user_id: string;
-				}[];
+				}>;
 			};
 			enqueue_instagram_bookmarks: {
 				Args: { p_bookmarks: Json; p_user_id: string };
@@ -454,23 +457,23 @@ export type Database = {
 			get_instagram_sync_status: { Args: { p_user_id: string }; Returns: Json };
 			get_instagram_worker_failures: {
 				Args: { p_since_minutes?: number };
-				Returns: {
+				Returns: Array<{
 					created_at: string;
 					error_body: string;
 					request_id: number;
 					status_code: number;
-				}[];
+				}>;
 			};
 			get_raindrop_sync_status: { Args: { p_user_id: string }; Returns: Json };
 			get_twitter_sync_status: { Args: { p_user_id: string }; Returns: Json };
 			get_twitter_worker_failures: {
 				Args: { p_since_minutes?: number };
-				Returns: {
+				Returns: Array<{
 					created_at: string;
 					error_body: string;
 					request_id: number;
 					status_code: number;
-				}[];
+				}>;
 			};
 			invoke_instagram_worker: { Args: never; Returns: number };
 			invoke_raindrop_worker: { Args: never; Returns: number };
@@ -508,10 +511,10 @@ export type Database = {
 			};
 			remove_category_from_bookmark: {
 				Args: { p_bookmark_id: number; p_category_id: number };
-				Returns: {
+				Returns: Array<{
 					added_uncategorized: boolean;
 					deleted_category_id: number;
-				}[];
+				}>;
 			};
 			retry_ai_embeddings_archive: {
 				Args: { p_msg_ids: number[] };
@@ -540,7 +543,7 @@ export type Database = {
 			};
 			search_bookmarks: {
 				Args: { search_text: string };
-				Returns: {
+				Returns: Array<{
 					category_id: number;
 					description: string;
 					id: number;
@@ -554,21 +557,21 @@ export type Database = {
 					type: string;
 					url: string;
 					user_id: string;
-				}[];
+				}>;
 			};
 			search_bookmarks_debug: {
 				Args: { search_text: string };
-				Returns: {
+				Returns: Array<{
 					caption: string;
 					has_meta: boolean;
 					id: number;
 					title: string;
-				}[];
+				}>;
 			};
 			search_bookmarks_debugging:
 				| {
 						Args: { search_text: string };
-						Returns: {
+						Returns: Array<{
 							category_id: number;
 							description: string;
 							id: number;
@@ -582,11 +585,11 @@ export type Database = {
 							type: string;
 							url: string;
 							user_id: string;
-						}[];
+						}>;
 				  }
 				| {
 						Args: { search_text: string; url_scope: string };
-						Returns: {
+						Returns: Array<{
 							category_id: number;
 							description: string;
 							id: number;
@@ -600,7 +603,7 @@ export type Database = {
 							type: string;
 							url: string;
 							user_id: string;
-						}[];
+						}>;
 				  };
 			search_bookmarks_url_tag_scope:
 				| {
@@ -609,7 +612,7 @@ export type Database = {
 							tag_scope?: string[];
 							url_scope?: string;
 						};
-						Returns: {
+						Returns: Array<{
 							added_tags: Json;
 							category_id: number;
 							description: string;
@@ -624,7 +627,7 @@ export type Database = {
 							type: string;
 							url: string;
 							user_id: string;
-						}[];
+						}>;
 				  }
 				| {
 						Args: {
@@ -633,7 +636,7 @@ export type Database = {
 							tag_scope?: string[];
 							url_scope?: string;
 						};
-						Returns: {
+						Returns: Array<{
 							added_categories: Json;
 							added_tags: Json;
 							description: string;
@@ -649,17 +652,17 @@ export type Database = {
 							type: string;
 							url: string;
 							user_id: string;
-						}[];
+						}>;
 				  };
 			set_bookmark_categories: {
 				Args: { p_bookmark_id: number; p_category_ids: number[] };
-				Returns: {
+				Returns: Array<{
 					bookmark_id: number;
 					category_id: number;
 					created_at: string;
 					id: number;
 					user_id: string;
-				}[];
+				}>;
 				SetofOptions: {
 					from: "*";
 					to: "bookmark_categories";
@@ -669,10 +672,10 @@ export type Database = {
 			};
 			toggle_preferred_og_domain: {
 				Args: { p_domain: string };
-				Returns: {
+				Returns: Array<{
 					out_id: string;
 					out_preferred_og_domains: string[];
-				}[];
+				}>;
 			};
 			update_queue_message_error: {
 				Args: { p_error: string; p_msg_id: number; p_queue_name: string };

@@ -9,6 +9,7 @@ const ROUTE = "queue-archives-retry";
 const InputSchema = z.union([
 	z.object({ msg_ids: z.array(z.number()).min(1).max(100) }),
 	z.object({ retry_all: z.literal(true) }),
+	z.object({ count: z.int().min(1).max(1000) }),
 ]);
 
 const OutputSchema = z.object({
@@ -23,23 +24,26 @@ export const POST = createPostApiHandler({
 	handler: async ({ input, route }) => {
 		const supabase = createServiceClient();
 
-		if ("retry_all" in input) {
+		if ("retry_all" in input || "count" in input) {
+			const count = "count" in input ? input.count : undefined;
+
 			const { data, error } = await supabase.rpc(
-				"admin_retry_all_ai_embeddings_archives",
+				"admin_retry_ai_embeddings_archives",
+				count !== undefined ? { p_count: count } : {},
 			);
 
 			if (error) {
-				console.error(`[${route}] Error retrying all archives:`, error);
+				console.error(`[${route}] Error retrying archives:`, error);
 				return apiError({
 					route,
-					message: "Failed to retry all archived queue items",
+					message: "Failed to retry archived queue items",
 					error,
-					operation: "retry_all_archives",
+					operation: "retry_archives_bulk",
 				});
 			}
 
 			const result = data as { requeued: number };
-			return { requeued: result.requeued, requested: null };
+			return { requeued: result.requeued, requested: count ?? null };
 		}
 
 		const { data, error } = await supabase.rpc("retry_ai_embeddings_archive", {

@@ -3,7 +3,7 @@
 -- ============================================================================
 -- Adds retry capability for archived ai-embeddings queue items:
 -- 1. retry_ai_embeddings_archive(p_msg_ids) - Retry specific archives by msg_id
--- 2. admin_retry_all_ai_embeddings_archives() - Retry ALL archives
+-- 2. admin_retry_ai_embeddings_archives(p_count) - Retry archives (all or limited)
 -- Both add is_final_retry flag so worker permanently deletes on final failure.
 -- ============================================================================
 
@@ -58,11 +58,12 @@ COMMENT ON FUNCTION public.retry_ai_embeddings_archive IS
 'Retry specific archived ai-embeddings items by msg_id. Adds is_final_retry flag — items are permanently deleted if they fail again. Service role only.';
 
 -- ============================================================================
--- PART 2: Retry ALL archived items (service_role only)
+-- PART 2: Retry archived items with optional count limit (service_role only)
 -- ============================================================================
 
-CREATE OR REPLACE FUNCTION public.admin_retry_all_ai_embeddings_archives()
-RETURNS JSONB
+CREATE OR REPLACE FUNCTION public.admin_retry_ai_embeddings_archives(
+  p_count INT DEFAULT NULL
+) RETURNS JSONB
 LANGUAGE plpgsql
 VOLATILE
 SECURITY DEFINER
@@ -75,6 +76,8 @@ BEGIN
   FOR v_msg IN
     SELECT msg_id, message
     FROM pgmq."a_ai-embeddings"
+    ORDER BY msg_id ASC
+    LIMIT p_count -- NULL means no limit (all rows)
   LOOP
     -- Re-queue with is_final_retry flag (strip failure metadata)
     PERFORM pgmq.send(
@@ -93,10 +96,10 @@ BEGIN
 END;
 $$;
 
-REVOKE EXECUTE ON FUNCTION public.admin_retry_all_ai_embeddings_archives() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.admin_retry_all_ai_embeddings_archives() TO service_role;
+REVOKE EXECUTE ON FUNCTION public.admin_retry_ai_embeddings_archives(INT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.admin_retry_ai_embeddings_archives(INT) TO service_role;
 
-COMMENT ON FUNCTION public.admin_retry_all_ai_embeddings_archives IS
-'ADMIN: Retry ALL archived ai-embeddings items. Adds is_final_retry flag — items are permanently deleted if they fail again. Service role only.';
+COMMENT ON FUNCTION public.admin_retry_ai_embeddings_archives IS
+'Retry archived ai-embeddings items. Pass p_count to limit how many (oldest first), or NULL to retry all. Adds is_final_retry flag — items are permanently deleted if they fail again. Service role only.';
 
 COMMIT;
