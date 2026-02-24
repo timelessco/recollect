@@ -116,6 +116,7 @@ sslcert
 sslmode
 sslrootcert
 statio
+stefanzweifel
 Supavisor
 svgs
 syncer

@@ -1,7 +1,7 @@
-export { registerCategoriesAddCategoryToBookmark } from "./add-category-to-bookmark";
-export { registerCategoriesAddCategoryToBookmarks } from "./add-category-to-bookmarks";
-export { registerCategoriesCreateUserCategory } from "./create-user-category";
-export { registerCategoriesDeleteUserCategory } from "./delete-user-category";
-export { registerCategoriesRemoveCategoryFromBookmark } from "./remove-category-from-bookmark";
-export { registerCategoriesSetBookmarkCategories } from "./set-bookmark-categories";
-export { registerCategoriesUpdateUserCategory } from "./update-user-category";
+export { addCategoryToBookmarkSupplement } from "./add-category-to-bookmark";
+export { addCategoryToBookmarksSupplement } from "./add-category-to-bookmarks";
+export { createUserCategorySupplement } from "./create-user-category";
+export { deleteUserCategorySupplement } from "./delete-user-category";
+export { removeCategoryFromBookmarkSupplement } from "./remove-category-from-bookmark";
+export { setBookmarkCategoriesSupplement } from "./set-bookmark-categories";
+export { updateUserCategorySupplement } from "./update-user-category";

@@ -1,8 +1,8 @@
-export { registerBookmarksCheckUrl } from "./check-url";
-export { registerBookmarksClearBookmarkTrash } from "./clear-bookmark-trash";
-export { registerBookmarksDeleteBookmark } from "./delete-bookmark";
-export { registerBookmarksFetchBookmarksDiscoverable } from "./fetch-bookmarks-discoverable";
-export { registerBookmarksFetchDiscoverableById } from "./fetch-discoverable-by-id";
-export { registerBookmarksFetchPublicBookmarkById } from "./fetch-public-bookmark-by-id";
-export { registerBookmarksMoveBookmarkToTrash } from "./move-bookmark-to-trash";
-export { registerBookmarksToggleDiscoverableOnBookmark } from "./toggle-discoverable-on-bookmark";
+export { checkUrlSupplement } from "./check-url";
+export { clearBookmarkTrashSupplement } from "./clear-bookmark-trash";
+export { deleteBookmarkSupplement } from "./delete-bookmark";
+export { fetchBookmarksDiscoverableSupplement } from "./fetch-bookmarks-discoverable";
+export { fetchDiscoverableByIdSupplement } from "./fetch-discoverable-by-id";
+export { fetchPublicBookmarkByIdSupplement } from "./fetch-public-bookmark-by-id";
+export { moveBookmarkToTrashSupplement } from "./move-bookmark-to-trash";
+export { toggleDiscoverableOnBookmarkSupplement } from "./toggle-discoverable-on-bookmark";

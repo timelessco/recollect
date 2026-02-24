@@ -1,53 +1,35 @@
 /**
  * @module Build-time only
  */
-import {
-	FetchPublicBookmarkByIdQuerySchema,
-	FetchPublicBookmarkByIdResponseSchema,
-} from "@/app/api/bookmark/fetch-public-bookmark-by-id/schema";
-import { registry } from "@/lib/openapi/registry";
-import { apiResponseSchema } from "@/lib/openapi/schemas/envelope";
+import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
 
-export function registerBookmarksFetchPublicBookmarkById() {
-	registry.registerPath({
-		method: "get",
-		path: "/bookmark/fetch-public-bookmark-by-id",
-		tags: ["Bookmarks"],
-		summary: "Get a public bookmark by ID and collection",
-		description:
-			"Fetches a single bookmark by ID, verifying it belongs to a public category owned by the given username. No authentication required. Returns 404 if the category doesn't exist, the username doesn't match, or the bookmark isn't in the specified category. Returns 403 if the category is private.",
-		request: {
-			query: FetchPublicBookmarkByIdQuerySchema,
+export const fetchPublicBookmarkByIdSupplement = {
+	path: "/bookmark/fetch-public-bookmark-by-id",
+	method: "get",
+	tags: ["Bookmarks"],
+	summary: "Get a public bookmark by ID and collection",
+	description:
+		"Fetches a single bookmark by ID, verifying it belongs to a public category owned by the given username. No authentication required. Returns 404 if the category doesn't exist, the username doesn't match, or the bookmark isn't in the specified category. Returns 403 if the category is private.",
+	responseExample: {
+		data: {
+			id: 42,
+			inserted_at: "2024-03-15T10:30:00Z",
+			title: "TypeScript Handbook",
+			url: "https://www.typescriptlang.org/docs/",
+			description: "Official TypeScript documentation",
+			ogImage: "https://www.typescriptlang.org/og.png",
+			screenshot: null,
+			trash: null,
+			type: "article",
+			meta_data: null,
+			make_discoverable: null,
+			user_id: { user_name: "johndoe" },
 		},
-		responses: {
-			200: {
-				description: "Public bookmark data",
-				content: {
-					"application/json": {
-						schema: apiResponseSchema(FetchPublicBookmarkByIdResponseSchema),
-						example: {
-							data: {
-								id: 42,
-								inserted_at: "2024-03-15T10:30:00Z",
-								title: "TypeScript Handbook",
-								url: "https://www.typescriptlang.org/docs/",
-								description: "Official TypeScript documentation",
-								ogImage: "https://www.typescriptlang.org/og.png",
-								screenshot: null,
-								trash: null,
-								type: "article",
-								meta_data: null,
-								make_discoverable: null,
-								user_id: { user_name: "johndoe" },
-							},
-							error: null,
-						},
-					},
-				},
-			},
-			403: { description: "Category is not public" },
-			404: { description: "Category or bookmark not found" },
-			500: { $ref: "#/components/responses/InternalError" },
-		},
-	});
-}
+		error: null,
+	},
+	additionalResponses: {
+		403: { description: "Category is not public" },
+		404: { description: "Category or bookmark not found" },
+		500: { description: "Server error" },
+	},
+} satisfies EndpointSupplement;

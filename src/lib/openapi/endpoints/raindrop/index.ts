@@ -1,4 +1,4 @@
 export { registerEdgeProcessRaindropImports } from "./edge-process-imports";
-export { registerRaindropImport } from "./import";
-export { registerRaindropImportRetry } from "./import-retry";
-export { registerRaindropImportStatus } from "./import-status";
+export { raindropImportSupplement } from "./import";
+export { raindropImportRetrySupplement } from "./import-retry";
+export { raindropImportStatusSupplement } from "./import-status";
