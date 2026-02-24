@@ -22,6 +22,8 @@ export const POST = createPostApiHandler({
 	inputSchema: InputSchema,
 	outputSchema: OutputSchema,
 	handler: async ({ input, route }) => {
+		console.log(`[${route}] API called:`, { input });
+
 		const supabase = createServiceClient();
 
 		if ("retry_all" in input || "count" in input) {
