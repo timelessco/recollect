@@ -1,8 +1,9 @@
 import classNames from "classnames";
 import { useTheme } from "next-themes";
 
+import { colorPickerColors } from "@/utils/constants";
+
 type ColorPickerProps = {
-	colorsList: string[];
 	onChange: (value: string) => void;
 	selectedColor: string;
 };
@@ -36,31 +37,31 @@ const colorBlockItemBorder = (colorItem: string, baseLightColor: string) =>
 		{ "border-transparent": colorItem !== baseLightColor },
 	);
 
-export const ColorPicker = ({
-	colorsList,
-	onChange,
-	selectedColor,
-}: ColorPickerProps) => {
+export const ColorPicker = ({ onChange, selectedColor }: ColorPickerProps) => {
 	const { resolvedTheme } = useTheme();
 	const isDark = resolvedTheme === "dark";
 
 	// Swap first two colors (white/black) in dark mode for better visibility.
 	const displayColors =
-		isDark && colorsList.length >= 2
-			? [colorsList[1], colorsList[0], ...colorsList.slice(2)]
-			: colorsList;
+		isDark && colorPickerColors.length >= 2
+			? [
+					colorPickerColors[1],
+					colorPickerColors[0],
+					...colorPickerColors.slice(2),
+				]
+			: colorPickerColors;
 
 	const swapFirstTwo = (color: string) => {
-		if (!isDark || colorsList.length < 2) {
+		if (!isDark || colorPickerColors.length < 2) {
 			return color;
 		}
 
-		if (color === colorsList[0]) {
-			return colorsList[1];
+		if (color === colorPickerColors[0]) {
+			return colorPickerColors[1];
 		}
 
-		if (color === colorsList[1]) {
-			return colorsList[0];
+		if (color === colorPickerColors[1]) {
+			return colorPickerColors[0];
 		}
 
 		return color;
@@ -68,7 +69,7 @@ export const ColorPicker = ({
 
 	const mappedSelected = swapFirstTwo(selectedColor);
 
-	const baseLightColor = colorsList[0];
+	const baseLightColor = colorPickerColors[0];
 
 	return (
 		<div className={colorBlockWrapper}>

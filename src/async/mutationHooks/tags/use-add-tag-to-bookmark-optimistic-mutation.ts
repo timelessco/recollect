@@ -1,7 +1,7 @@
 import {
 	type AddTagToBookmarkPayload,
 	type AddTagToBookmarkResponse,
-} from "@/app/api/tags/add-tag-to-bookmark/route";
+} from "@/app/api/tags/add-tag-to-bookmark/schema";
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";

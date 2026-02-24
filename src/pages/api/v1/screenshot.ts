@@ -4,7 +4,6 @@ import axios from "axios";
 import { z } from "zod";
 
 import imageToText from "../../../async/ai/imageToText";
-import ocr from "../../../async/ai/ocr";
 import {
 	MAIN_TABLE_NAME,
 	PDF_MIME_TYPE,
@@ -179,23 +178,16 @@ export default async function handler(
 			if (imageToTextResult.image_keywords?.length) {
 				newMeta.image_keywords = imageToTextResult.image_keywords;
 			}
+
+			newMeta.ocr = imageToTextResult.ocr_text;
+			newMeta.ocr_status = imageToTextResult.ocr_text ? "success" : "no_text";
 		} else {
 			console.warn(
 				"imageToText returned empty result (quota may be reached)",
 				url,
 			);
-		}
-
-		// OCR returns { text, status } object
-		const ocrResult = await ocr(ogImage, supabase, user_id);
-
-		if (ocrResult.text) {
-			newMeta.ocr = ocrResult.text;
-			newMeta.ocr_status = ocrResult.status;
-		} else {
 			newMeta.ocr = null;
-			newMeta.ocr_status = ocrResult.status;
-			console.error("ocr returned empty result", url);
+			newMeta.ocr_status = "no_text";
 		}
 
 		const { width, height, encoded } = await blurhashFromURL(ogImage);

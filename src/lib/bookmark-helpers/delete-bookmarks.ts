@@ -111,7 +111,7 @@ async function deleteStorageForBookmarks(
 		}
 
 		// Video file paths
-		if (urlFileName && item.type.includes("video")) {
+		if (urlFileName && item.type?.includes("video")) {
 			videoPaths.push(`${STORAGE_FILES_PATH}/${userId}/${urlFileName}`);
 		}
 	}

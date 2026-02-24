@@ -1,47 +1,10 @@
-import { z } from "zod";
-
+import { InstagramSyncInputSchema, InstagramSyncOutputSchema } from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { type Json } from "@/types/database.types";
-import { instagramType } from "@/utils/constants";
 
 const ROUTE = "instagram-sync";
-
-// Input validation - minimal at API level, full validation in worker
-const InstagramSyncInputSchema = z.object({
-	bookmarks: z
-		.array(
-			z.object({
-				url: z.url().refine((url) => {
-					try {
-						const parsed = new URL(url);
-						return (
-							parsed.hostname === "instagram.com" ||
-							parsed.hostname === "www.instagram.com"
-						);
-					} catch {
-						return false;
-					}
-				}, "Must be a valid Instagram URL"),
-				title: z.string().default(""),
-				description: z.string().default(""),
-				ogImage: z.string().nullish(),
-				type: z.literal(instagramType).default(instagramType),
-				meta_data: z.record(z.string(), z.unknown()).default({}),
-				// Instagram's original save timestamp for ordering
-				saved_at: z.iso.datetime(),
-			}),
-		)
-		.min(1, "At least one bookmark required")
-		.max(500, "Maximum 500 bookmarks per request"),
-});
-
-// Output schema - handler wrapper adds { data: ..., error: null }
-const InstagramSyncOutputSchema = z.object({
-	inserted: z.number(),
-	skipped: z.number(),
-});
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

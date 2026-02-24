@@ -116,7 +116,7 @@ export default async function handler(
 						icon_color
 					)
 				),
-				user_id!inner (*)
+				user_id!inner (id, profile_pic)
 			`,
 			)
 			.eq(`${BOOKMARK_CATEGORIES_TABLE_NAME}.category_id`, categoryId)

@@ -1,0 +1,48 @@
+{
+	"version": "0.0.1",
+	"configurations": [
+		{
+			"name": "Next.js Dev",
+			"runtimeExecutable": "/bin/zsh",
+			"runtimeArgs": ["-il", "-c", "pnpm dev"],
+			"port": 3000,
+			"autoPort": true
+		},
+		{
+			"name": "Supabase Local",
+			"runtimeExecutable": "/bin/zsh",
+			"runtimeArgs": ["-il", "-c", "npx supabase start"],
+			"port": 54321
+		},
+		{
+			"name": "Edge: Instagram Imports",
+			"runtimeExecutable": "/bin/zsh",
+			"runtimeArgs": [
+				"-il",
+				"-c",
+				"npx supabase functions serve process-instagram-imports"
+			],
+			"port": 54321
+		},
+		{
+			"name": "Edge: Twitter Imports",
+			"runtimeExecutable": "/bin/zsh",
+			"runtimeArgs": [
+				"-il",
+				"-c",
+				"npx supabase functions serve process-twitter-imports"
+			],
+			"port": 54321
+		},
+		{
+			"name": "Edge: Raindrop Imports",
+			"runtimeExecutable": "/bin/zsh",
+			"runtimeArgs": [
+				"-il",
+				"-c",
+				"npx supabase functions serve process-raindrop-imports"
+			],
+			"port": 54321
+		}
+	]
+}

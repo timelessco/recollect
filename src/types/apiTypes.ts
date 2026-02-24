@@ -49,7 +49,7 @@ export type SingleListData = {
 	trash: string | null;
 	type: string;
 	url: string;
-	user_id: ProfilesTableTypes;
+	user_id: Pick<ProfilesTableTypes, "id" | "profile_pic">;
 };
 
 export type BookmarksCountTypes = {
@@ -165,8 +165,12 @@ export type CategoriesData = {
 	icon: string | null;
 	icon_color: string;
 	id: number;
+	is_favorite: boolean;
 	is_public: boolean;
-	user_id: ProfilesTableTypes;
+	user_id: Pick<
+		ProfilesTableTypes,
+		"id" | "email" | "profile_pic" | "user_name"
+	>;
 };
 
 export type FetchCategoriesDataResponse = {
@@ -202,7 +206,12 @@ export type CollabDataInCategory = {
 
 // profiles table
 
+export type AiFeaturesToggle = {
+	auto_assign_collections?: boolean;
+};
+
 export type ProfilesTableTypes = {
+	ai_features_toggle: AiFeaturesToggle;
 	bookmarks_view: ProfilesBookmarksViewOrLegacy;
 	category_order: number[];
 	display_name: string;
@@ -215,6 +224,7 @@ export type ProfilesTableTypes = {
 };
 
 export type ProfilesTableForPayloadTypes = {
+	ai_features_toggle?: AiFeaturesToggle;
 	bookmarks_view?: ProfilesBookmarksView;
 	category_order?: number[];
 	display_name?: string;

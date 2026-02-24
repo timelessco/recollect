@@ -10,7 +10,6 @@ import { isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
 import imageToText from "../../../async/ai/imageToText";
-import ocr from "../../../async/ai/ocr";
 import {
 	type AddBookmarkRemainingDataPayloadTypes,
 	type NextApiRequest,
@@ -35,6 +34,10 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
+import {
+	autoAssignCollections,
+	fetchUserCollections,
+} from "@/utils/auto-assign-collections";
 
 type Data = {
 	data: SingleListData[] | null;
@@ -110,7 +113,7 @@ export default async function handler(
 	// this is a better solution as we are only getting one row of data
 	const { data: currentData, error: currentDataError } = await supabase
 		.from(MAIN_TABLE_NAME)
-		.select("ogImage, meta_data, description")
+		.select("ogImage, meta_data, description, title")
 		.match({ id })
 		.single();
 
@@ -134,6 +137,12 @@ export default async function handler(
 		Sentry.captureException(`Bookmark not found with id: ${id}`);
 		return;
 	}
+
+	const userCollections = await fetchUserCollections({ supabase, userId });
+	console.log(
+		"[add-remaining-bookmark-data] Fetched user collections for auto-assignment:",
+		{ bookmarkId: id, count: userCollections.length },
+	);
 
 	let imgData;
 
@@ -262,17 +271,6 @@ export default async function handler(
 		}
 
 		try {
-			// Get OCR using the centralized function
-			// Returns { text, status } object
-			const ocrResult = await ocr(
-				imageUrlForMetaDataGeneration,
-				supabase,
-				userId,
-			);
-			imageOcrValue = ocrResult.text;
-			ocrStatus = ocrResult.status;
-
-			// Get image caption and keywords using the centralized function
 			const imageToTextResult = await imageToText(
 				currentData?.meta_data?.isOgImagePreferred
 					? ogImageMetaDataGeneration
@@ -283,10 +281,28 @@ export default async function handler(
 					isPageScreenshot:
 						currentData?.meta_data?.isPageScreenshot ?? undefined,
 				},
+				userCollections.length > 0
+					? {
+							collections: userCollections,
+							title: currentData?.title,
+							description: currentData?.description,
+							url,
+						}
+					: null,
 			);
 			if (imageToTextResult) {
 				imageCaption = imageToTextResult.sentence;
 				imageKeywords = imageToTextResult.image_keywords ?? [];
+				imageOcrValue = imageToTextResult.ocr_text;
+				ocrStatus = imageToTextResult.ocr_text ? "success" : "no_text";
+
+				// Auto-assign collections (non-critical, handled internally)
+				await autoAssignCollections({
+					bookmarkId: id,
+					matchedCollectionIds: imageToTextResult.matched_collection_ids,
+					route: "add-remaining-bookmark-data",
+					userId,
+				});
 			}
 		} catch (error) {
 			console.error("Gemini AI processing error", error);
