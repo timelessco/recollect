@@ -47,15 +47,15 @@ jobs:
           fi
           git worktree remove /tmp/prev-commit --force 2>/dev/null || true
 
-      - id: oasdiff
-        if: steps.guard.outputs.skip != 'true'
+      - if: steps.guard.outputs.skip != 'true'
+        name: Install oasdiff
+        run: go install github.com/tufin/oasdiff@latest
+
+      - if: steps.guard.outputs.skip != 'true'
         name: Generate API changelog
-        uses: oasdiff/oasdiff-action/changelog@1c611ffb1253a72924624aa4fb662e302b3565d3 # v0.0.21
-        with:
-          args: "--format markdown"
-          base: .oasdiff/openapi-old.json
-          output-to-file: .oasdiff/changelog-entry.md
-          revision: .oasdiff/openapi-new.json
+        run: |
+          oasdiff changelog .oasdiff/openapi-old.json .oasdiff/openapi-new.json \
+            --format markdown > .oasdiff/changelog-entry.md || true
       - if: steps.guard.outputs.skip != 'true'
         name: Append changelog entry
         run: |
