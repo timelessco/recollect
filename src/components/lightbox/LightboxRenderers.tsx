@@ -13,7 +13,7 @@ import {
 	tweetType,
 } from "../../utils/constants";
 import { useBookmarkImageSources } from "../../utils/getBookmarkImageSource";
-import { VideoPlayer } from "../VideoPlayer";
+import { MediaPlayer } from "../MediaPlayer";
 
 interface SlideProps {
 	bookmark: SingleListData | undefined;
@@ -71,7 +71,7 @@ export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => {
 };
 
 /**
- * Renders a video slide using the custom VideoPlayer component
+ * Renders a video slide using the MediaPlayer component
  * Notifies parent via onVideoError when video fails to load
  */
 export const VideoSlide = ({
@@ -95,8 +95,9 @@ export const VideoSlide = ({
 	return (
 		<div className="flex h-full w-full items-center justify-center">
 			<div className="w-full max-w-[min(1200px,90vw)]">
-				<VideoPlayer
+				<MediaPlayer
 					isActive={isActive}
+					mediaType="video"
 					onError={handleVideoError}
 					src={videoSrc}
 				/>
@@ -106,29 +107,30 @@ export const VideoSlide = ({
 };
 
 /**
- * Renders an audio slide using a native HTML5 audio player
+ * Renders an audio slide using the MediaPlayer component
  */
-export const AudioSlide = ({ bookmark }: SlideProps) => {
-	// Generate a data URL for an empty WebVTT file to satisfy accessibility requirements
-	const emptyVttDataUrl = "data:text/vtt;base64,V0VCVlRUCg==";
+export const AudioSlide = ({ bookmark, isActive }: SlideProps) => (
+	<div className="flex h-full w-full items-center justify-center">
+		<MediaPlayer
+			isActive={isActive}
+			mediaType="audio"
+			src={bookmark?.url ?? ""}
+		/>
+	</div>
+);
 
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<div className="w-full max-w-[min(600px,90vw)]">
-				<audio className="w-full" controls src={bookmark?.url ?? ""}>
-					<track
-						default
-						kind="captions"
-						label="No captions"
-						src={emptyVttDataUrl}
-						srcLang="en"
-					/>
-					Your browser does not support the audio element.
-				</audio>
-			</div>
-		</div>
-	);
-};
+/**
+ * Renders a Spotify audio slide using the MediaPlayer component
+ */
+export const SpotifySlide = ({ bookmark, isActive }: SlideProps) => (
+	<div className="flex h-full w-full items-center justify-center">
+		<MediaPlayer
+			isActive={isActive}
+			mediaType="spotify"
+			src={bookmark?.url ?? ""}
+		/>
+	</div>
+);
 
 /**
  * Renders a PDF slide using an embedded object tag
@@ -167,7 +169,11 @@ export const PDFSlide = ({ bookmark }: SlideProps) => (
  */
 export const YouTubeSlide = ({ bookmark, isActive }: SlideProps) => (
 	<div className="relative flex h-full max-h-[80vh] w-full max-w-[min(1200px,90vw)] items-center justify-center">
-		<VideoPlayer isActive={isActive} isYouTube src={bookmark?.url ?? ""} />
+		<MediaPlayer
+			isActive={isActive}
+			mediaType="youtube"
+			src={bookmark?.url ?? ""}
+		/>
 	</div>
 );
 

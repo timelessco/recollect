@@ -7,6 +7,38 @@ import {
 	YOUTUBE_COM,
 } from "../../utils/constants";
 
+const SPOTIFY_HOST = "open.spotify.com";
+const SPOTIFY_CONTENT_TYPES = new Set([
+	"album",
+	"artist",
+	"episode",
+	"playlist",
+	"show",
+	"track",
+]);
+
+/**
+ * Checks if a given URL is a Spotify content URL
+ * Supports tracks, albums, playlists, episodes, shows, and artists
+ */
+export function isSpotifyLink(urlString: string | null | undefined): boolean {
+	if (!urlString) {
+		return false;
+	}
+
+	try {
+		const url = new URL(urlString);
+		if (url.hostname !== SPOTIFY_HOST) {
+			return false;
+		}
+
+		const segments = url.pathname.split("/").filter(Boolean);
+		return segments.length >= 2 && SPOTIFY_CONTENT_TYPES.has(segments[0]);
+	} catch {
+		return false;
+	}
+}
+
 /**
  * Checks if a given URL is a YouTube video URL
  * Supports standard YouTube URLs, short URLs (youtu.be), embeds, and shorts

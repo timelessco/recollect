@@ -25,6 +25,26 @@ export const MEDIA_STYLE = {
 	width: "auto",
 } as CSSProperties;
 
+export const AUDIO_CONTROLLER_STYLE = {
+	"--media-background-color": "#f3f3f3",
+	"--media-primary-color": "#1a1a1a",
+	"--media-control-background": "transparent",
+	"--media-control-hover-background": "rgba(0, 0, 0, 0.06)",
+	borderRadius: "9999px",
+	maxHeight: "none",
+	maxWidth: "min(600px, 90vw)",
+	width: "100%",
+} as CSSProperties;
+
+export const AUDIO_CONTROL_BAR_STYLE = {
+	alignItems: "center",
+	display: "flex",
+	gap: "16px",
+	paddingBlock: "14px",
+	paddingInline: "20px",
+	width: "100%",
+} as CSSProperties;
+
 export const CONTROL_BAR_STYLE = {
 	alignItems: "center",
 	gap: "12px",

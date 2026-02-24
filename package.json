@@ -139,6 +139,7 @@
 		"react-toastify": "11.0.5",
 		"resend": "6.9.1",
 		"slugify": "1.6.6",
+		"spotify-audio-element": "1.0.4",
 		"tailwind-merge": "3.4.0",
 		"uniqid": "5.4.0",
 		"yet-another-react-lightbox": "3.28.0",

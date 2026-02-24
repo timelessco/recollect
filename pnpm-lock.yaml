@@ -180,6 +180,9 @@ importers:
       slugify:
         specifier: 1.6.6
         version: 1.6.6
+      spotify-audio-element:
+        specifier: 1.0.4
+        version: 1.0.4
       tailwind-merge:
         specifier: 3.4.0
         version: 3.4.0
@@ -8620,6 +8623,9 @@ packages:
   split2@4.2.0:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
+
+  spotify-audio-element@1.0.4:
+    resolution: {integrity: sha512-QdKrJPkYCzaNwwz2vN2eDGyoW0KmQFmnwVprB41mpMzj4qujbqr6pegEchQeTn0b5PceKiLoVu0pp2QDpTcWnw==}
 
   sshpk@1.18.0:
     resolution: {integrity: sha512-2p2KJZTSqQ/I3+HX42EpYOa2l3f8Erv8MWKsy2I9uf4wA7yFIkXRffYdsx86y6z4vHtV8u7g+pPlr8/4ouAxsQ==}
@@ -19293,6 +19299,8 @@ snapshots:
   spdx-license-ids@3.0.22: {}
 
   split2@4.2.0: {}
+
+  spotify-audio-element@1.0.4: {}
 
   sshpk@1.18.0:
     dependencies:
