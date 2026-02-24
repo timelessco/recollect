@@ -151,9 +151,6 @@ export const enrichMetadata = async ({
 	const isFailed = isImageCaptionFailed || isBlurhashFailed;
 
 	const failedOperations: string[] = [];
-	if (isOcrFailed) {
-		failedOperations.push("ocr");
-	}
 
 	if (isImageCaptionFailed) {
 		failedOperations.push("image_caption");
