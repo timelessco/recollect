@@ -43,6 +43,7 @@ fetchs
 fgveraehgourpwwzlzhy
 fkey
 gclid
+GOPATH
 hcaptcha
 hnsw
 HNSW
