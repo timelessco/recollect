@@ -178,6 +178,11 @@ async function scanAndRegisterRoutes() {
 			const inputSchema = config.inputSchema;
 			const outputSchema = config.outputSchema;
 
+			const hasInput =
+				method === "post" ||
+				(inputSchema instanceof z.ZodObject &&
+					Object.keys(inputSchema.shape).length > 0);
+
 			const pathRegistration: Parameters<typeof registry.registerPath>[0] = {
 				method,
 				path: apiPath,
@@ -190,7 +195,9 @@ async function scanAndRegisterRoutes() {
 							},
 						},
 					},
-					400: { $ref: "#/components/responses/ValidationError" },
+					...(hasInput
+						? { 400: { $ref: "#/components/responses/ValidationError" } }
+						: {}),
 					401: { $ref: "#/components/responses/Unauthorized" },
 					500: { $ref: "#/components/responses/InternalError" },
 				},

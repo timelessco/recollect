@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { DevSessionInputSchema, DevSessionOutputSchema } from "./schema";
 import { type HandlerConfig } from "@/lib/api-helpers/create-handler";
+import { apiSuccess } from "@/lib/api-helpers/response";
 import { createApiClient, getApiUser } from "@/lib/supabase/api";
 
 /**
@@ -51,10 +52,14 @@ async function handleGet() {
 		);
 	}
 
-	return NextResponse.json({
-		access_token: session.access_token,
-		expires_at: session.expires_at,
-		user_email: user.email,
+	return apiSuccess({
+		route: ROUTE,
+		data: {
+			access_token: session.access_token,
+			expires_at: session.expires_at,
+			user_email: user.email,
+		},
+		schema: DevSessionOutputSchema,
 	});
 }
 

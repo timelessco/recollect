@@ -36,9 +36,12 @@ jobs:
             echo '{"openapi":"3.0.3","info":{"title":"Recollect API","version":"0.0.0"},"paths":{}}' > /tmp/openapi-old.json
           else
             cd /tmp/prev-commit
-            pnpm install --frozen-lockfile --prefer-offline
-            npx tsx scripts/generate-openapi.ts
-            cp public/openapi.json /tmp/openapi-old.json
+            if pnpm install --frozen-lockfile --prefer-offline && npx tsx scripts/generate-openapi.ts; then
+              cp public/openapi.json /tmp/openapi-old.json
+            else
+              echo "Prev-commit generation failed — falling back to empty spec"
+              echo '{"openapi":"3.0.3","info":{"title":"Recollect API","version":"0.0.0"},"paths":{}}' > /tmp/openapi-old.json
+            fi
             cd -
           fi
           git worktree remove /tmp/prev-commit --force 2>/dev/null || true
@@ -46,7 +49,7 @@ jobs:
       - id: oasdiff
         if: steps.guard.outputs.skip != 'true'
         name: Generate API changelog
-        uses: oasdiff/oasdiff-action/changelog@main
+        uses: oasdiff/oasdiff-action/changelog@1c611ffb1253a72924624aa4fb662e302b3565d3 # v0.0.21
         with:
           base: /tmp/openapi-old.json
           format: markdown
@@ -72,7 +75,7 @@ jobs:
 
       - if: steps.guard.outputs.skip != 'true'
         name: Commit changelog
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7
         with:
           commit_message: "docs(api): update API changelog [skip ci]"
           file_pattern: docs/API_CHANGELOG.md
