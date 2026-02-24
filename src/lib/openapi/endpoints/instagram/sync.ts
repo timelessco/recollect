@@ -1,13 +1,8 @@
 /**
  * @module Build-time only
  */
-import {
-	InstagramSyncInputSchema,
-	InstagramSyncOutputSchema,
-} from "@/app/api/instagram/sync/schema";
-import { bearerAuth, registry } from "@/lib/openapi/registry";
-import { apiResponseSchema } from "@/lib/openapi/schemas/envelope";
-import { z } from "zod";
+import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
+import { bearerAuth } from "@/lib/openapi/registry";
 
 import {
 	instagramSync400Examples,
@@ -15,47 +10,18 @@ import {
 	instagramSyncResponseExamples,
 } from "./sync-examples";
 
-export function registerInstagramSync() {
-	registry.registerPath({
-		method: "post",
-		path: "/instagram/sync",
-		tags: ["Instagram"],
-		summary: "Sync Instagram bookmarks",
-		description:
-			"Enqueues a batch of Instagram bookmarks for async archiving. Deduplicates within the batch and against existing bookmarks. Returns counts of inserted and skipped items.",
-		security: [{ [bearerAuth.name]: [] }, {}],
-		request: {
-			body: {
-				required: true,
-				content: {
-					"application/json": {
-						schema: InstagramSyncInputSchema,
-						examples: instagramSyncRequestExamples,
-					},
-				},
-			},
-		},
-		responses: {
-			200: {
-				description: "Bookmarks successfully enqueued",
-				content: {
-					"application/json": {
-						schema: apiResponseSchema(InstagramSyncOutputSchema),
-						examples: instagramSyncResponseExamples,
-					},
-				},
-			},
-			400: {
-				description: "Invalid request body or bookmark data",
-				content: {
-					"application/json": {
-						schema: apiResponseSchema(z.null()),
-						examples: instagramSync400Examples,
-					},
-				},
-			},
-			401: { $ref: "#/components/responses/Unauthorized" },
-			500: { $ref: "#/components/responses/InternalError" },
-		},
-	});
-}
+export const instagramSyncSupplement = {
+	path: "/instagram/sync",
+	method: "post",
+	tags: ["Instagram"],
+	summary: "Sync Instagram bookmarks",
+	description:
+		"Enqueues a batch of Instagram bookmarks for async archiving. Deduplicates within the batch and against existing bookmarks. Returns counts of inserted and skipped items.",
+	security: [{ [bearerAuth.name]: [] }, {}],
+	requestExamples: instagramSyncRequestExamples,
+	responseExamples: instagramSyncResponseExamples,
+	response400Examples: instagramSync400Examples,
+	additionalResponses: {
+		400: { description: "Invalid request body or bookmark data" },
+	},
+} satisfies EndpointSupplement;

@@ -116,6 +116,7 @@ sslcert
 sslmode
 sslrootcert
 statio
+stefanzweifel
 Supavisor
 svgs
 syncer
@@ -141,6 +142,7 @@ uniqid
 unrs
 workos
 xact
+XVCJ
 yarl
 youtu
 YOUTU

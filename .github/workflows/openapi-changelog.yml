@@ -1,0 +1,89 @@
+jobs:
+  changelog:
+    name: API Changelog
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 2
+
+      - id: guard
+        name: Guard — check previous commit exists
+        run: |
+          if ! git rev-parse HEAD~1 >/dev/null 2>&1; then
+            echo "No previous commit — skipping changelog generation"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.guard.outputs.skip != 'true'
+        name: Install dependencies
+        uses: ./.github/actions/pnpm-install
+
+      - if: steps.guard.outputs.skip != 'true'
+        name: Generate spec from current commit
+        run: |
+          npx tsx scripts/generate-openapi.ts
+          cp public/openapi.json /tmp/openapi-new.json
+
+      - if: steps.guard.outputs.skip != 'true'
+        name: Generate spec from previous commit
+        run: |
+          git worktree add /tmp/prev-commit HEAD~1
+          if [ ! -f /tmp/prev-commit/scripts/generate-openapi.ts ]; then
+            echo '{"openapi":"3.0.3","info":{"title":"Recollect API","version":"0.0.0"},"paths":{}}' > /tmp/openapi-old.json
+          else
+            cd /tmp/prev-commit
+            if pnpm install --frozen-lockfile --prefer-offline && npx tsx scripts/generate-openapi.ts; then
+              cp public/openapi.json /tmp/openapi-old.json
+            else
+              echo "Prev-commit generation failed — falling back to empty spec"
+              echo '{"openapi":"3.0.3","info":{"title":"Recollect API","version":"0.0.0"},"paths":{}}' > /tmp/openapi-old.json
+            fi
+            cd -
+          fi
+          git worktree remove /tmp/prev-commit --force 2>/dev/null || true
+
+      - id: oasdiff
+        if: steps.guard.outputs.skip != 'true'
+        name: Generate API changelog
+        uses: oasdiff/oasdiff-action/changelog@1c611ffb1253a72924624aa4fb662e302b3565d3 # v0.0.21
+        with:
+          base: /tmp/openapi-old.json
+          format: markdown
+          output-to-file: /tmp/changelog-entry.md
+          revision: /tmp/openapi-new.json
+      - if: steps.guard.outputs.skip != 'true'
+        name: Append changelog entry
+        run: |
+          if [ -s /tmp/changelog-entry.md ]; then
+            DATE=$(date -u +"%Y-%m-%d")
+            SHORT_SHA="${{ github.sha }}"
+            SHORT_SHA="${SHORT_SHA:0:7}"
+            REPO="${{ github.repository }}"
+            {
+              echo ""
+              echo "## ${DATE} [\`${SHORT_SHA}\`](https://github.com/${REPO}/commit/${{ github.sha }})"
+              echo ""
+              cat /tmp/changelog-entry.md
+            } >> docs/API_CHANGELOG.md
+          else
+            echo "No API changes detected — skipping changelog update"
+          fi
+
+      - if: steps.guard.outputs.skip != 'true'
+        name: Commit changelog
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7
+        with:
+          commit_message: "docs(api): update API changelog [skip ci]"
+          file_pattern: docs/API_CHANGELOG.md
+    timeout-minutes: 15
+
+name: OpenAPI Changelog
+
+on:
+  push:
+    branches:
+      - dev
