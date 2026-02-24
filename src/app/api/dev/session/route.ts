@@ -5,6 +5,8 @@ import { type HandlerConfig } from "@/lib/api-helpers/create-handler";
 import { apiSuccess } from "@/lib/api-helpers/response";
 import { createApiClient, getApiUser } from "@/lib/supabase/api";
 
+const ROUTE = "dev/session";
+
 /**
  * Dev-only endpoint to retrieve current session token for API testing.
  * Returns 404 in production for security.
@@ -62,8 +64,6 @@ async function handleGet() {
 		schema: DevSessionOutputSchema,
 	});
 }
-
-const ROUTE = "dev/session";
 
 export const GET = Object.assign(handleGet, {
 	config: {
