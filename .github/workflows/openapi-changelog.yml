@@ -65,6 +65,11 @@ jobs:
             # Strip auto-generated heading and demote ## to ### (nest under date heading)
             sed -i '1{/^# API Changelog/d}' .oasdiff/changelog-entry.md
             sed -i 's/^## /### /' .oasdiff/changelog-entry.md
+            # Skip if only whitespace remains after stripping heading
+            if ! grep -q '[^[:space:]]' .oasdiff/changelog-entry.md; then
+              echo "No API changes detected — skipping changelog update"
+              exit 0
+            fi
             DATE=$(date -u +"%Y-%m-%d")
             SHORT_SHA="${{ github.sha }}"
             SHORT_SHA="${SHORT_SHA:0:7}"
