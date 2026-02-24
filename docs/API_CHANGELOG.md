@@ -10,3 +10,12 @@ Breaking changes are marked with :warning:.
 
 
 
+
+## 2026-02-24 [`faa4b88`](https://github.com/timelessco/recollect/commit/faa4b88a940174a3a9569ccc52acdc9ce7092807)
+
+
+### GET /bookmarks/check-url
+- :warning: removed the required property 'data/oneOf[subschema #1]/test_field' from the response with the '200' status
+
+
+
