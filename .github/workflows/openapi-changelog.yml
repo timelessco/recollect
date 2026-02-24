@@ -52,6 +52,7 @@ jobs:
         name: Generate API changelog
         uses: oasdiff/oasdiff-action/changelog@1c611ffb1253a72924624aa4fb662e302b3565d3 # v0.0.21
         with:
+          args: "--format markdown"
           base: .oasdiff/openapi-old.json
           output-to-file: .oasdiff/changelog-entry.md
           revision: .oasdiff/openapi-new.json
@@ -59,6 +60,9 @@ jobs:
         name: Append changelog entry
         run: |
           if [ -s .oasdiff/changelog-entry.md ]; then
+            # Strip auto-generated heading and demote ## to ### (nest under date heading)
+            sed -i '1{/^# API Changelog/d}' .oasdiff/changelog-entry.md
+            sed -i 's/^## /### /' .oasdiff/changelog-entry.md
             DATE=$(date -u +"%Y-%m-%d")
             SHORT_SHA="${{ github.sha }}"
             SHORT_SHA="${SHORT_SHA:0:7}"
