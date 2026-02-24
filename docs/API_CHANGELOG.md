@@ -12,3 +12,10 @@ Breaking changes are marked with :warning:.
 info	[response-required-property-added] at .oasdiff/openapi-new.json	
 	in API GET /bookmarks/check-url
 		added the required property 'data/oneOf[subschema #1]/test_field' to the response with the '200' status
+
+## 2026-02-24 [`32127f2`](https://github.com/timelessco/recollect/commit/32127f29564918bb523df7b3ec8dc8bb3485504d)
+
+1 changes: 1 error, 0 warning, 0 info
+error	[response-required-property-removed] at .oasdiff/openapi-new.json	
+	in API GET /bookmarks/check-url
+		removed the required property 'data/oneOf[subschema #1]/test_field' from the response with the '200' status
