@@ -38,13 +38,17 @@ ECOMMERCE
 eqwhx
 fbca
 fbcdn
+fbclid
 fetchs
+fgveraehgourpwwzlzhy
 fkey
+gclid
 hcaptcha
 hnsw
 HNSW
 hookz
 ianvs
+igshid
 imdb
 inbucket
 Inbucket
@@ -53,6 +57,7 @@ jobid
 kieran
 Loggedin
 micnncim
+msclkid
 msvideo
 myapp
 mydb
@@ -105,6 +110,7 @@ sentryclirc
 Setof
 shhhhh
 SIWS
+slugified
 SQLERRM
 sslcert
 sslmode
@@ -126,6 +132,7 @@ tsquery
 tsvector
 turborepo
 Turborepo
+twclid
 twimg
 umami
 UMAMI

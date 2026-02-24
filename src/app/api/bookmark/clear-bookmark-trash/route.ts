@@ -1,5 +1,7 @@
-import { z } from "zod";
-
+import {
+	ClearBookmarkTrashInputSchema,
+	ClearBookmarkTrashOutputSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { deleteBookmarksByIds } from "@/lib/bookmark-helpers/delete-bookmarks";
@@ -7,14 +9,6 @@ import { MAIN_TABLE_NAME } from "@/utils/constants";
 
 const ROUTE = "clear-bookmark-trash";
 const BATCH_SIZE = 1000;
-
-// No input required — clears all trash for the authenticated user
-const ClearBookmarkTrashInputSchema = z.object({});
-
-const ClearBookmarkTrashOutputSchema = z.object({
-	deletedCount: z.number(),
-	message: z.string(),
-});
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

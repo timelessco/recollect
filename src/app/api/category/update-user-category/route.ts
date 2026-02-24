@@ -1,9 +1,10 @@
-import { z } from "zod";
-
+import {
+	UpdateCategoryPayloadSchema,
+	UpdateCategoryResponseSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
-import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { type Database } from "@/types/database-generated.types";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
 import {
@@ -13,51 +14,6 @@ import {
 } from "@/utils/constants";
 
 const ROUTE = "update-user-category";
-
-// Use looseObject for flexible JSONB column handling (allows extra keys)
-const categoryViewsSchema = z
-	.looseObject({
-		bookmarksView: z.string().optional(),
-		cardContentViewArray: z.array(z.string()).optional(),
-		moodboardColumns: z.array(z.number()).optional(),
-		sortBy: z.string().optional(),
-	})
-	.optional();
-
-const UpdateCategoryPayloadSchema = z.object({
-	category_id: z.union([z.number(), z.string()]),
-	updateData: z.object({
-		category_name: tagCategoryNameSchema.optional(),
-		category_views: categoryViewsSchema,
-		icon: z.string().nullable().optional(),
-		icon_color: z.string().optional(),
-		is_public: z.boolean().optional(),
-	}),
-});
-
-export type UpdateCategoryPayload = z.infer<typeof UpdateCategoryPayloadSchema>;
-
-const UpdateCategoryResponseSchema = z
-	.array(
-		z.object({
-			id: z.number(),
-			category_name: z.string().nullable(),
-			category_slug: z.string(),
-			category_views: z.unknown().nullable(),
-			created_at: z.string().nullable(),
-			icon: z.string().nullable(),
-			icon_color: z.string().nullable(),
-			is_public: z.boolean(),
-			order_index: z.number().nullable(),
-			user_id: z.string().nullable(),
-		}),
-	)
-	.nonempty();
-
-export type UpdateCategoryResponse = [
-	z.infer<typeof UpdateCategoryResponseSchema>[number],
-	...z.infer<typeof UpdateCategoryResponseSchema>,
-];
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

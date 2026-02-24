@@ -113,18 +113,7 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
 					type,
 					meta_data,
 					sort_index,
-					make_discoverable,
-					user_id (
-						bookmarks_view,
-						category_order,
-						display_name,
-						email,
-						id,
-						preferred_og_domains,
-						profile_pic,
-						provider,
-						user_name
-					)
+					make_discoverable
 				`,
 				)
 				.is("trash", null)

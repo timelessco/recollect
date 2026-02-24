@@ -1,5 +1,7 @@
-import { z } from "zod";
-
+import {
+	RemoveCategoryFromBookmarkPayloadSchema,
+	RemoveCategoryFromBookmarkResponseSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { revalidateCategoryIfPublic } from "@/lib/revalidation-helpers";
@@ -7,30 +9,6 @@ import { isNonEmptyArray } from "@/utils/assertion-utils";
 import { MAIN_TABLE_NAME, UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
 
 const ROUTE = "remove-category-from-bookmark";
-
-const RemoveCategoryFromBookmarkPayloadSchema = z.object({
-	bookmark_id: z
-		.int({ error: "Bookmark ID must be a whole number" })
-		.positive({ error: "Bookmark ID must be a positive number" }),
-	category_id: z
-		.int({ error: "Collection ID must be a whole number" })
-		.min(0, { error: "Collection ID must be non-negative" }),
-});
-
-export type RemoveCategoryFromBookmarkPayload = z.infer<
-	typeof RemoveCategoryFromBookmarkPayloadSchema
->;
-
-const RemoveCategoryFromBookmarkResponseSchema = z.array(
-	z.object({
-		bookmark_id: z.number(),
-		category_id: z.number(),
-	}),
-);
-
-export type RemoveCategoryFromBookmarkResponse = z.infer<
-	typeof RemoveCategoryFromBookmarkResponseSchema
->;
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
