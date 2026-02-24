@@ -53,20 +53,27 @@ export const instagramSyncRetrySupplement = {
 	responseExamples: {
 		"retry-specific-messages": {
 			summary: "Specific messages requeued",
+			description:
+				"All 3 requested messages found and requeued for processing.",
 			value: { data: { requeued: 3, requested: 3 }, error: null },
 		},
 		"retry-single-message": {
 			summary: "Single message requeued",
+			description:
+				"The requested message was found and requeued for another processing attempt.",
 			value: { data: { requeued: 1, requested: 1 }, error: null },
 		},
 		"retry-all-archived": {
 			summary: "All archived requeued",
+			description:
+				"All 12 archived messages for the user requeued in one operation.",
 			value: { data: { requeued: 12 }, error: null },
 		},
 	},
 	response400Examples: {
 		"empty-msg-ids-array": {
 			summary: "Empty array rejected",
+			description: "The msg_ids array must contain at least one message ID.",
 			value: {
 				data: null,
 				error: "Too small: expected array to have >=1 items",
@@ -74,6 +81,8 @@ export const instagramSyncRetrySupplement = {
 		},
 		"empty-object": {
 			summary: "Neither field provided",
+			description:
+				"Request must include either msg_ids array or all:true flag.",
 			value: {
 				data: null,
 				error: "Invalid input",
@@ -81,6 +90,8 @@ export const instagramSyncRetrySupplement = {
 		},
 		"invalid-msg-ids-type": {
 			summary: "Invalid type for msg_ids",
+			description:
+				"The msg_ids field must be an array of integers, not strings.",
 			value: {
 				data: null,
 				error: "Invalid input",

@@ -6,6 +6,7 @@ import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
 export const fetchDiscoverableByIdSupplement = {
 	path: "/bookmark/fetch-discoverable-by-id",
 	method: "get",
+	security: [],
 	tags: ["Bookmarks"],
 	summary: "Get a single discoverable bookmark",
 	description:

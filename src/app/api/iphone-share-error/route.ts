@@ -1,46 +1,22 @@
-import { type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
-import { type z } from "zod";
 
 import {
 	IphoneShareErrorPayloadSchema,
 	IphoneShareErrorResponseSchema,
 } from "./schema";
-import { type HandlerConfig } from "@/lib/api-helpers/create-handler";
-import { apiError, apiSuccess, parseBody } from "@/lib/api-helpers/response";
-import { requireAuth } from "@/lib/supabase/api";
+import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 
 const ROUTE = "iphone-share-error";
 
-export type IphoneShareErrorPayload = z.infer<
-	typeof IphoneShareErrorPayloadSchema
->;
-
-export type IphoneShareErrorResponse = z.infer<
-	typeof IphoneShareErrorResponseSchema
->;
-
-async function handlePost(request: NextRequest) {
-	try {
-		const auth = await requireAuth(ROUTE);
-		if (auth.errorResponse) {
-			return auth.errorResponse;
-		}
-
-		const body = await parseBody({
-			request,
-			schema: IphoneShareErrorPayloadSchema,
-			route: ROUTE,
-		});
-		if (body.errorResponse) {
-			return body.errorResponse;
-		}
-
-		const { user } = auth;
-		const { message, stackTrace, deviceInfo, context } = body.data;
+export const POST = createPostApiHandlerWithAuth({
+	route: ROUTE,
+	inputSchema: IphoneShareErrorPayloadSchema,
+	outputSchema: IphoneShareErrorResponseSchema,
+	handler: async ({ data, user, route }) => {
+		const { message, stackTrace, deviceInfo, context } = data;
 		const userId = user.id;
 
-		console.log(`[${ROUTE}] Error received:`, {
+		console.log(`[${route}] Error received:`, {
 			userId,
 			message,
 			hasStackTrace: Boolean(stackTrace),
@@ -66,31 +42,11 @@ async function handlePost(request: NextRequest) {
 			},
 		});
 
-		console.log(`[${ROUTE}] Error sent to Sentry:`, {
+		console.log(`[${route}] Error sent to Sentry:`, {
 			sentryEventId,
 			userId,
 		});
 
-		return apiSuccess({
-			route: ROUTE,
-			data: { sentryEventId },
-			schema: IphoneShareErrorResponseSchema,
-		});
-	} catch (error) {
-		return apiError({
-			route: ROUTE,
-			message: "An unexpected error occurred",
-			error,
-			operation: "iphone_share_error_unexpected",
-		});
-	}
-}
-
-export const POST = Object.assign(handlePost, {
-	config: {
-		factoryName: "createPostApiHandlerWithAuth",
-		inputSchema: IphoneShareErrorPayloadSchema,
-		outputSchema: IphoneShareErrorResponseSchema,
-		route: ROUTE,
-	} satisfies HandlerConfig,
+		return { sentryEventId };
+	},
 });

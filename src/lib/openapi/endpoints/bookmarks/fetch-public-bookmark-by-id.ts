@@ -6,6 +6,7 @@ import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
 export const fetchPublicBookmarkByIdSupplement = {
 	path: "/bookmark/fetch-public-bookmark-by-id",
 	method: "get",
+	security: [],
 	tags: ["Bookmarks"],
 	summary: "Get a public bookmark by ID and collection",
 	description:

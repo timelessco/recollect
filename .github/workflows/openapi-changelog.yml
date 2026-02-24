@@ -33,7 +33,7 @@ jobs:
         run: |
           git worktree add /tmp/prev-commit HEAD~1
           if [ ! -f /tmp/prev-commit/scripts/generate-openapi.ts ]; then
-            echo '{"openapi":"3.1.0","info":{"title":"Recollect API","version":"0.0.0"},"paths":{}}' > /tmp/openapi-old.json
+            echo '{"openapi":"3.0.3","info":{"title":"Recollect API","version":"0.0.0"},"paths":{}}' > /tmp/openapi-old.json
           else
             cd /tmp/prev-commit
             pnpm install --frozen-lockfile --prefer-offline
@@ -51,7 +51,6 @@ jobs:
           base: /tmp/openapi-old.json
           format: markdown
           output-to-file: /tmp/changelog-entry.md
-
           revision: /tmp/openapi-new.json
       - if: steps.guard.outputs.skip != 'true'
         name: Append changelog entry

@@ -6,6 +6,7 @@ import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
 export const fetchBookmarksDiscoverableSupplement = {
 	path: "/bookmark/fetch-bookmarks-discoverable",
 	method: "get",
+	security: [],
 	tags: ["Bookmarks"],
 	summary: "List discoverable bookmarks",
 	description:

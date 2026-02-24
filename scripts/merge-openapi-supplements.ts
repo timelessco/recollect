@@ -9,6 +9,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 import * as bookmarksSupplements from "../src/lib/openapi/endpoints/bookmarks";
 import * as categoriesSupplements from "../src/lib/openapi/endpoints/categories";
+import * as cronSupplements from "../src/lib/openapi/endpoints/cron";
+import * as devSupplements from "../src/lib/openapi/endpoints/dev";
 import * as instagramSupplements from "../src/lib/openapi/endpoints/instagram";
 import * as iphoneSupplements from "../src/lib/openapi/endpoints/iphone";
 import * as profilesSupplements from "../src/lib/openapi/endpoints/profiles";
@@ -17,7 +19,7 @@ import * as tagsSupplements from "../src/lib/openapi/endpoints/tags";
 import * as twitterSupplements from "../src/lib/openapi/endpoints/twitter";
 import { type EndpointSupplement } from "../src/lib/openapi/supplement-types";
 
-type OpenApiResponseContent = {
+type OpenApiJsonContent = {
 	schema?: unknown;
 	example?: unknown;
 	examples?: Record<
@@ -29,7 +31,7 @@ type OpenApiResponseContent = {
 type OpenApiResponse = {
 	description?: string;
 	content?: {
-		"application/json"?: OpenApiResponseContent;
+		"application/json"?: OpenApiJsonContent;
 	};
 };
 
@@ -41,7 +43,7 @@ type OpenApiOperation = {
 	requestBody?: {
 		required?: boolean;
 		content?: {
-			"application/json"?: OpenApiResponseContent;
+			"application/json"?: OpenApiJsonContent;
 		};
 	};
 	responses?: Record<string, OpenApiResponse | { $ref: string }>;
@@ -109,6 +111,10 @@ function applySupplementToOperation(
 		)) {
 			const existing = op.responses[statusCode];
 			if (existing !== undefined) {
+				if ("$ref" in existing && statusCode !== "400") {
+					continue;
+				}
+
 				const resolved = resolveResponseRef(spec, existing);
 				resolved.description = responseData.description;
 				op.responses[statusCode] = resolved;
@@ -218,6 +224,8 @@ export function collectSupplements(): EndpointSupplement[] {
 	const allModules = [
 		bookmarksSupplements,
 		categoriesSupplements,
+		cronSupplements,
+		devSupplements,
 		instagramSupplements,
 		iphoneSupplements,
 		profilesSupplements,
@@ -233,7 +241,9 @@ export function collectSupplements(): EndpointSupplement[] {
 				typeof value === "object" &&
 				value !== null &&
 				"path" in value &&
-				"method" in value
+				"method" in value &&
+				typeof value.path === "string" &&
+				typeof value.method === "string"
 			) {
 				supplements.push(value as EndpointSupplement);
 			}

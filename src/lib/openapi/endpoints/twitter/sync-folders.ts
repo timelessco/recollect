@@ -84,28 +84,37 @@ export const twitterSyncFoldersSupplement = {
 	responseExamples: {
 		"single-category": {
 			summary: "One folder created",
+			description: "The folder was created as a new Recollect collection.",
 			value: { data: { created: 1, skipped: 0 }, error: null },
 		},
 		"multiple-categories": {
 			summary: "Three folders created",
+			description: "All three folders created as new collections.",
 			value: { data: { created: 3, skipped: 0 }, error: null },
 		},
 		"case-insensitive-dedup": {
 			summary: "Duplicate skipped",
+			description:
+				"The second name matched an existing collection (case-insensitive), so it was skipped.",
 			value: { data: { created: 1, skipped: 1 }, error: null },
 		},
 		"special-characters": {
 			summary: "Special character folders created",
+			description:
+				"Folders with special characters in their names created successfully.",
 			value: { data: { created: 3, skipped: 0 }, error: null },
 		},
 		"unicode-characters": {
 			summary: "Unicode folders created",
+			description:
+				"Folders with emoji and non-ASCII characters created successfully.",
 			value: { data: { created: 2, skipped: 0 }, error: null },
 		},
 	},
 	response400Examples: {
 		"empty-categories-array": {
 			summary: "Empty array rejected",
+			description: "The categories array must contain at least one category.",
 			value: {
 				data: null,
 				error: "categories: Array must contain at least 1 element(s)",
@@ -113,10 +122,12 @@ export const twitterSyncFoldersSupplement = {
 		},
 		"missing-categories-field": {
 			summary: "Missing field rejected",
+			description: "Request body must include a categories array.",
 			value: { data: null, error: "categories: Required" },
 		},
 		"empty-category-name": {
 			summary: "Empty name rejected",
+			description: "Each category name must be at least 1 character long.",
 			value: {
 				data: null,
 				error:

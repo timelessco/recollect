@@ -27,6 +27,14 @@ const tagDescriptions: Array<{ name: string; description: string }> = [
 			"Collection management: create, update, and delete collections",
 	},
 	{
+		name: "Cron",
+		description: "Scheduled maintenance tasks: trash cleanup",
+	},
+	{
+		name: "Dev",
+		description: "Development-only utilities: session token retrieval",
+	},
+	{
 		name: "Instagram",
 		description: "Instagram bookmark sync: import and monitor import status",
 	},
@@ -89,7 +97,7 @@ registry.registerComponent("responses", "InternalError", {
 });
 
 // Paths to skip — not part of the public API spec
-const SKIP_PATHS = new Set(["cron", "dev"]);
+const SKIP_PATHS = new Set<string>();
 
 function getApiPath(routeFilePath: string): string {
 	const rel = relative(API_DIR, routeFilePath);
@@ -127,9 +135,9 @@ async function scanAndRegisterRoutes() {
 
 	for (const routeFile of routeFiles.toSorted((a, b) => a.localeCompare(b))) {
 		const rel = relative(API_DIR, routeFile);
-		const topSegment = rel.split("/")[0];
+		const topSegment = rel.split("/").at(0);
 
-		if (SKIP_PATHS.has(topSegment)) {
+		if (topSegment !== undefined && SKIP_PATHS.has(topSegment)) {
 			continue;
 		}
 

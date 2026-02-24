@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { DevSessionInputSchema, DevSessionOutputSchema } from "./schema";
+import { type HandlerConfig } from "@/lib/api-helpers/create-handler";
 import { createApiClient, getApiUser } from "@/lib/supabase/api";
 
 /**
@@ -15,7 +17,7 @@ import { createApiClient, getApiUser } from "@/lib/supabase/api";
  * 3. Use in CLI: curl -H "Authorization: Bearer <token>" ...
  * @returns {object} { access_token, expires_at, user_email }
  */
-export async function GET() {
+async function handleGet() {
 	// Block in production - return 404 as if endpoint doesn't exist
 	// Defense in depth: check both NODE_ENV and VERCEL_ENV to protect against misconfiguration
 	if (
@@ -55,3 +57,14 @@ export async function GET() {
 		user_email: user.email,
 	});
 }
+
+const ROUTE = "dev/session";
+
+export const GET = Object.assign(handleGet, {
+	config: {
+		factoryName: "createGetApiHandlerWithAuth",
+		inputSchema: DevSessionInputSchema,
+		outputSchema: DevSessionOutputSchema,
+		route: ROUTE,
+	} satisfies HandlerConfig,
+});
