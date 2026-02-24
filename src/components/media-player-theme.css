@@ -396,61 +396,122 @@ media-controller media-fullscreen-button[mediaisfullscreen] .fs-exit {
 	@apply scale-100 opacity-100;
 }
 
-/* ─── Audio mode overrides ─────────────────────────────────────────────── */
-media-controller[audio] {
-	--video-base: 16px;
-	--video-accent: #1a1a1a;
-	--video-track-bg: rgb(0 0 0 / 15%);
-	--video-track-hover: rgb(0 0 0 / 30%);
-	--video-buffered: rgb(0 0 0 / 25%);
+/* ═══════════════════════════════════════════════════════════════════════ */
 
-	/* Allow volume / settings popups to escape the pill shape */
-	overflow: visible;
-}
+/* Audio waveform player: volume popup                                    */
 
-/* Smaller, transparent buttons for compact audio bar */
-media-controller[audio] media-play-button,
-media-controller[audio] media-playback-rate-menu-button,
-media-controller[audio] media-mute-button {
-	--media-control-background: transparent;
-	--media-control-hover-background: rgb(0 0 0 / 6%);
+/* Mirrors the video player's mute-group / vol-wrap pattern               */
 
-	@apply size-9;
+/* ═══════════════════════════════════════════════════════════════════════ */
 
-	background: transparent;
-}
+/* stylelint-disable no-descending-specificity -- separate component scope */
 
-media-controller[audio] media-play-button:hover,
-media-controller[audio] media-playback-rate-menu-button:hover,
-media-controller[audio] media-mute-button:hover,
-media-controller[audio] media-play-button:focus-visible,
-media-controller[audio] media-playback-rate-menu-button:focus-visible,
-media-controller[audio] media-mute-button:focus-visible {
-	background: rgb(0 0 0 / 6%);
-}
-
-/* Match inner wrappers to smaller button size */
-media-controller[audio] .mute-group-inner,
-media-controller[audio] .settings-group-inner {
-	@apply size-9;
-}
-
-/* Volume popup: dark menu for light audio bar */
-media-controller[audio] .vol-wrap media-volume-range {
-	@apply bg-black/60;
-}
-
-/* Settings popup: dark menu for light audio bar */
-media-controller[audio] .settings-menu-wrap media-playback-rate-menu {
-	--media-menu-background: #292929;
-	--media-primary-color: #fff;
-}
-
-/* Always show combined time format (e.g. "1:23 / 4:56") */
-media-controller[audio] media-time-display:not([showduration]) {
-	@apply hidden;
-}
-
-media-controller[audio] media-time-display[showduration] {
+.waveform-player .mute-group {
 	@apply flex;
+}
+
+.waveform-player .mute-group-inner {
+	@apply relative size-7 shrink-0;
+}
+
+.waveform-player .mute-btn {
+	@apply relative flex size-7 items-center justify-center rounded-full;
+	@apply text-gray-600 transition-colors;
+}
+
+.waveform-player .mute-btn:hover {
+	@apply text-gray-900;
+}
+
+.dark .waveform-player .mute-btn {
+	@apply text-gray-400;
+}
+
+.dark .waveform-player .mute-btn:hover {
+	@apply text-gray-100;
+}
+
+/* ─── Popup container ──────────────────────────────────────────────────── */
+.waveform-player .vol-wrap {
+	@apply invisible absolute left-1/2 flex items-end justify-center opacity-0;
+
+	z-index: 10;
+	bottom: calc(100% + 8px);
+	transform-origin: center bottom;
+	transform: translateX(-50%);
+
+	width: 40px;
+	height: 110px;
+}
+
+/* Invisible bridge covering the gap between the mute button and the popup */
+.waveform-player .vol-wrap::before {
+	content: "";
+
+	position: absolute;
+	right: -8px;
+	bottom: -16px;
+	left: -8px;
+
+	height: 16px;
+}
+
+/* ─── Slider track container (dark pill, frosted glass) ────────────────── */
+.waveform-player .vol-track {
+	@apply flex items-center justify-center overflow-hidden rounded-full;
+
+	width: 32px;
+	height: 100px;
+	background: rgb(0 0 0 / 65%);
+	backdrop-filter: blur(8px);
+}
+
+/* ─── Native range input rotated vertical ──────────────────────────────── */
+.waveform-player .vol-range {
+	cursor: pointer;
+
+	transform-origin: center;
+	transform: rotate(-90deg);
+
+	width: 80px;
+	height: 4px;
+	border-radius: 9999px;
+
+	appearance: none;
+	background: linear-gradient(
+		to right,
+		rgb(255 255 255 / 80%) var(--vol-fill, 100%),
+		rgb(255 255 255 / 20%) var(--vol-fill, 100%)
+	);
+}
+
+.waveform-player .vol-range::-webkit-slider-thumb {
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+
+	appearance: none;
+	background: #fff;
+}
+
+.waveform-player .vol-range::-moz-range-thumb {
+	width: 14px;
+	height: 14px;
+	border: none;
+	border-radius: 50%;
+
+	background: #fff;
+}
+
+/* ─── Show/hide animations (reuse video keyframes) ─────────────────────── */
+.waveform-player .vol-wrap:not(:hover, :focus-within) {
+	animation: video-volume-out 0.3s ease-out;
+}
+
+.waveform-player .vol-wrap:hover,
+.waveform-player .vol-wrap:focus-within,
+.waveform-player .mute-group-inner .mute-btn:hover ~ .vol-wrap,
+.waveform-player .mute-group-inner .mute-btn:focus ~ .vol-wrap,
+.waveform-player .mute-group-inner .mute-btn:focus-within ~ .vol-wrap {
+	animation: video-volume-in 0.3s ease-out forwards;
 }

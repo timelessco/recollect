@@ -115,6 +115,7 @@ export const AudioSlide = ({ bookmark, isActive }: SlideProps) => (
 			isActive={isActive}
 			mediaType="audio"
 			src={bookmark?.url ?? ""}
+			title={bookmark?.title}
 		/>
 	</div>
 );
@@ -128,6 +129,7 @@ export const SpotifySlide = ({ bookmark, isActive }: SlideProps) => (
 			isActive={isActive}
 			mediaType="spotify"
 			src={bookmark?.url ?? ""}
+			title={bookmark?.title}
 		/>
 	</div>
 );

@@ -28,9 +28,8 @@ import {
 	PlayPauseIcon,
 	SettingsIcon,
 } from "./media-player-icons";
+import { AudioWaveformPlayer } from "./AudioWaveformPlayer";
 import {
-	AUDIO_CONTROL_BAR_STYLE,
-	AUDIO_CONTROLLER_STYLE,
 	CONTROL_BAR_STYLE,
 	CONTROLLER_STYLE,
 	MEDIA_STYLE,
@@ -47,17 +46,14 @@ export interface MediaPlayerProps {
 	mediaType: MediaType;
 	onError?: () => void;
 	src: string;
+	title?: string;
 }
 
-function isAudioType(mediaType: MediaType): boolean {
+function isAudioType(mediaType: MediaType): mediaType is "audio" | "spotify" {
 	return mediaType === "audio" || mediaType === "spotify";
 }
 
-function getControllerStyle(mediaType: MediaType) {
-	if (isAudioType(mediaType)) {
-		return AUDIO_CONTROLLER_STYLE;
-	}
-
+function getControllerStyle(mediaType: "video" | "youtube") {
 	if (mediaType === "youtube") {
 		return YOUTUBE_CONTROLLER_STYLE;
 	}
@@ -65,23 +61,27 @@ function getControllerStyle(mediaType: MediaType) {
 	return CONTROLLER_STYLE;
 }
 
-/* ---- Main player ---- */
+/* ---- Video/YouTube player (media-chrome) ---- */
 
-function MediaPlayerInner({
+interface VideoPlayerProps {
+	isActive?: boolean;
+	mediaType: "video" | "youtube";
+	onError?: () => void;
+	src: string;
+}
+
+function VideoPlayerInner({
 	isActive,
 	mediaType,
 	onError,
 	src,
-}: MediaPlayerProps) {
+}: VideoPlayerProps) {
 	const mediaRef = useMediaRef();
 	const mediaElRef = useRef<HTMLElement | null>(null);
 	const onErrorRef = useRef(onError);
 	onErrorRef.current = onError;
 	const [loading, setLoading] = useState(true);
 	const [youTubeReady, setYouTubeReady] = useState(false);
-	const [spotifyReady, setSpotifyReady] = useState(false);
-
-	const isAudio = isAudioType(mediaType);
 
 	useEffect(() => {
 		if (mediaType !== "youtube") {
@@ -92,21 +92,6 @@ function MediaPlayerInner({
 			try {
 				await import("youtube-video-element");
 				setYouTubeReady(true);
-			} catch {
-				onErrorRef.current?.();
-			}
-		})();
-	}, [mediaType]);
-
-	useEffect(() => {
-		if (mediaType !== "spotify") {
-			return;
-		}
-
-		void (async () => {
-			try {
-				await import("spotify-audio-element");
-				setSpotifyReady(true);
 			} catch {
 				onErrorRef.current?.();
 			}
@@ -129,8 +114,6 @@ function MediaPlayerInner({
 	const ref = useCallback(
 		(el: HTMLElement | null) => {
 			mediaElRef.current = el;
-			// Custom elements (spotify-audio) implement the HTMLMediaElement API
-			// at runtime but extend HTMLElement, so cast for media-chrome
 			mediaRef(el as HTMLMediaElement | null);
 
 			if (!el) {
@@ -162,23 +145,6 @@ function MediaPlayerInner({
 			break;
 		}
 
-		case "spotify": {
-			if (spotifyReady) {
-				mediaElement = <spotify-audio ref={ref} slot="media" src={src} />;
-			}
-
-			break;
-		}
-
-		case "audio": {
-			mediaElement = (
-				<audio ref={ref} slot="media" src={src}>
-					<track default kind="captions" label="No captions" srcLang="en" />
-				</audio>
-			);
-			break;
-		}
-
 		case "video": {
 			mediaElement = (
 				<video ref={ref} slot="media" src={src} style={MEDIA_STYLE}>
@@ -189,35 +155,26 @@ function MediaPlayerInner({
 		}
 	}
 
-	// Audio types don't need the loading gate — the <audio> element and
-	// spotify-audio custom element may never fire "loadeddata", so show
-	// the control bar immediately.
-	const showLoading = loading && !isAudio;
-
 	return (
 		<>
-			{showLoading && (
+			{loading && (
 				<div className="flex items-center justify-center py-16">
 					<Spinner className="size-3" />
 				</div>
 			)}
 			<MediaController
-				audio={isAudio || undefined}
-				autohide={isAudio ? "-1" : undefined}
 				breakpoints="pip:400 sm:384 md:576 lg:768 xl:960"
 				onPointerDown={(event) => event.stopPropagation()}
 				style={{
 					...getControllerStyle(mediaType),
-					...(showLoading ? { position: "absolute", opacity: 0 } : undefined),
+					...(loading ? { position: "absolute", opacity: 0 } : undefined),
 				}}
 			>
 				{mediaElement}
 
-				{!isAudio && <div className="video-gradient-bottom" />}
+				<div className="video-gradient-bottom" />
 
-				<MediaControlBar
-					style={isAudio ? AUDIO_CONTROL_BAR_STYLE : CONTROL_BAR_STYLE}
-				>
+				<MediaControlBar style={CONTROL_BAR_STYLE}>
 					<MediaPlayButton>
 						<PlayPauseIcon />
 					</MediaPlayButton>
@@ -237,32 +194,26 @@ function MediaPlayerInner({
 					<MediaTimeDisplay showDuration />
 
 					<MediaTimeRange>
-						{!isAudio && (
-							<>
-								<MediaPreviewThumbnail slot="preview" />
-								<MediaPreviewChapterDisplay slot="preview" />
-							</>
-						)}
+						<MediaPreviewThumbnail slot="preview" />
+						<MediaPreviewChapterDisplay slot="preview" />
 						<MediaPreviewTimeDisplay slot="preview" />
 					</MediaTimeRange>
 
-					{mediaType !== "spotify" && (
-						<div className="settings-group">
-							<div className="settings-group-inner">
-								<MediaPlaybackRateMenuButton>
-									<span
-										className="flex size-full items-center justify-center"
-										slot="icon"
-									>
-										<SettingsIcon />
-									</span>
-								</MediaPlaybackRateMenuButton>
-								<div className="settings-menu-wrap">
-									<MediaPlaybackRateMenu hidden />
-								</div>
+					<div className="settings-group">
+						<div className="settings-group-inner">
+							<MediaPlaybackRateMenuButton>
+								<span
+									className="flex size-full items-center justify-center"
+									slot="icon"
+								>
+									<SettingsIcon />
+								</span>
+							</MediaPlaybackRateMenuButton>
+							<div className="settings-menu-wrap">
+								<MediaPlaybackRateMenu hidden />
 							</div>
 						</div>
-					)}
+					</div>
 
 					{mediaType === "video" && (
 						<MediaPipButton>
@@ -270,11 +221,9 @@ function MediaPlayerInner({
 						</MediaPipButton>
 					)}
 
-					{!isAudio && (
-						<MediaFullscreenButton>
-							<FullscreenIcon />
-						</MediaFullscreenButton>
-					)}
+					<MediaFullscreenButton>
+						<FullscreenIcon />
+					</MediaFullscreenButton>
 				</MediaControlBar>
 			</MediaController>
 		</>
@@ -282,9 +231,26 @@ function MediaPlayerInner({
 }
 
 export function MediaPlayer(props: MediaPlayerProps) {
+	if (isAudioType(props.mediaType)) {
+		return (
+			<AudioWaveformPlayer
+				isActive={props.isActive}
+				mediaType={props.mediaType}
+				onError={props.onError}
+				src={props.src}
+				title={props.title}
+			/>
+		);
+	}
+
 	return (
 		<MediaProvider>
-			<MediaPlayerInner {...props} />
+			<VideoPlayerInner
+				isActive={props.isActive}
+				mediaType={props.mediaType}
+				onError={props.onError}
+				src={props.src}
+			/>
 		</MediaProvider>
 	);
 }
