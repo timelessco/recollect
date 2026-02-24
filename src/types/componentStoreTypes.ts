@@ -30,7 +30,6 @@ export type MiscellaneousStoreState = {
 		| "delete"
 		| "main"
 		| "import";
-	currentSliderDropdownSlide: string | null;
 	deleteBookmarkId: number[] | undefined;
 	isCardDragging: boolean;
 	isCollectionChanged: boolean;
@@ -45,7 +44,6 @@ export type MiscellaneousStoreState = {
 	setCurrentSettingsPage: (
 		value: MiscellaneousStoreState["currentSettingsPage"],
 	) => void;
-	setCurrentSliderDropdownSlide: (value: string | null) => void;
 	setDeleteBookmarkId: (bookmarkIds: number[]) => void;
 	setIsCardDragging: (value: boolean) => void;
 	setIsCollectionChanged: (value: boolean) => void;
