@@ -49,7 +49,7 @@ jobs:
 
       - if: steps.guard.outputs.skip != 'true'
         name: Install oasdiff
-        run: go install github.com/tufin/oasdiff@latest
+        run: go install github.com/oasdiff/oasdiff@latest
 
       - if: steps.guard.outputs.skip != 'true'
         name: Generate API changelog
