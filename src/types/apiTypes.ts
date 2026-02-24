@@ -49,7 +49,7 @@ export type SingleListData = {
 	trash: string | null;
 	type: string;
 	url: string;
-	user_id: ProfilesTableTypes;
+	user_id: Pick<ProfilesTableTypes, "id" | "profile_pic">;
 };
 
 export type BookmarksCountTypes = {
@@ -165,8 +165,12 @@ export type CategoriesData = {
 	icon: string | null;
 	icon_color: string;
 	id: number;
+	is_favorite: boolean;
 	is_public: boolean;
-	user_id: ProfilesTableTypes;
+	user_id: Pick<
+		ProfilesTableTypes,
+		"id" | "email" | "profile_pic" | "user_name"
+	>;
 };
 
 export type FetchCategoriesDataResponse = {

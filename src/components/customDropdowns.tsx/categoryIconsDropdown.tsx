@@ -11,7 +11,6 @@ import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 import { useUpdateCategoryOptimisticMutation } from "../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import SearchIconSmallGray from "../../icons/searchIconSmallGray";
 import { iconOptions } from "../../utils/commonData";
-import { colorPickerColors } from "../../utils/constants";
 import Button from "../atoms/button";
 import { CollectionIcon } from "../collectionIcon";
 import { ColorPicker } from "../colorPicker";
@@ -216,7 +215,6 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownTypes) => {
 				</div>
 				<div className="icon-color-container overflow-x-scroll pt-2">
 					<ColorPicker
-						colorsList={colorPickerColors}
 						onChange={(sliderColor) => {
 							setColor(sliderColor);
 							handleIconColorChange(sliderColor);

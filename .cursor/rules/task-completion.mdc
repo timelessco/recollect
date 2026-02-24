@@ -107,7 +107,7 @@ The following runs automatically on `git commit`:
 
 ```bash
 # Quick validation before committing
-pnpm fix && pnpm lint:types && pnpm lint:eslint
+pnpm fix && pnpm lint:types && pnpm lint:knip
 ```
 
 ## Common Issues & Solutions

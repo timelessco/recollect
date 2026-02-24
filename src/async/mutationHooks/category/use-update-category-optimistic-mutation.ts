@@ -6,7 +6,7 @@ import { produce } from "immer";
 import {
 	type UpdateCategoryPayload,
 	type UpdateCategoryResponse,
-} from "@/app/api/category/update-user-category/route";
+} from "@/app/api/category/update-user-category/schema";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { useSupabaseSession } from "@/store/componentStore";
@@ -61,6 +61,10 @@ export function useUpdateCategoryOptimisticMutation() {
 
 				if (updateData.icon_color !== undefined) {
 					category.icon_color = updateData.icon_color;
+				}
+
+				if (updateData.is_favorite !== undefined) {
+					category.is_favorite = updateData.is_favorite;
 				}
 
 				if (updateData.is_public !== undefined) {

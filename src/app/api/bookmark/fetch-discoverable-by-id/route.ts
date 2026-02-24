@@ -1,5 +1,8 @@
-import { z } from "zod";
-
+import {
+	FetchDiscoverableByIdQuerySchema,
+	FetchDiscoverableByIdResponseSchema,
+	type FetchDiscoverableByIdResponse,
+} from "./schema";
 import { createGetApiHandler } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { createApiClient } from "@/lib/supabase/api";
@@ -12,93 +15,6 @@ import { HttpStatus } from "@/utils/error-utils/common";
 
 const ROUTE = "fetch-discoverable-by-id";
 
-const FetchDiscoverableByIdQuerySchema = z.object({
-	id: z.coerce.number().int().positive(),
-});
-
-const MetadataSchema = z.object({
-	coverImage: z.string().nullable().optional(),
-	favIcon: z.string().nullable().optional(),
-	height: z.number().nullable().optional(),
-	iframeAllowed: z.boolean().nullable().optional(),
-	img_caption: z.string().nullable().optional(),
-	image_keywords: z.array(z.string()).optional(),
-	isOgImagePreferred: z.boolean().optional(),
-	isPageScreenshot: z.boolean().nullable().optional(),
-	mediaType: z.string().nullable().optional(),
-	ocr: z.string().nullable().optional(),
-	ogImgBlurUrl: z.string().nullable().optional(),
-	screenshot: z.string().nullable().optional(),
-	twitter_avatar_url: z.string().nullable().optional(),
-	video_url: z.string().nullable().optional(),
-	width: z.number().nullable().optional(),
-});
-
-// Simplified schemas for what's actually returned
-const TagSchema = z.object({
-	id: z.number(),
-	name: z.string(),
-});
-
-const CategorySchema = z.object({
-	id: z.number(),
-	category_name: z.string(),
-	category_slug: z.string(),
-	icon: z.string().nullable(),
-	icon_color: z.string(),
-});
-
-/**
- * Single-page view config (BookmarkViewDataTypes). Used for both legacy flat
- * bookmarks_view and as values in the keyed record.
- */
-const BookmarkViewDataTypesSchema = z.object({
-	bookmarksView: z.string(),
-	cardContentViewArray: z.array(z.string()),
-	moodboardColumns: z.array(z.number()),
-	sortBy: z.string(),
-});
-
-/**
- * Profile bookmarks_view at runtime: keyed (ProfilesBookmarksView) or legacy
- * flat (BookmarkViewDataTypes). Validates ProfilesBookmarksViewOrLegacy.
- */
-const ProfilesBookmarksViewSchema = z.union([
-	z.record(z.string(), BookmarkViewDataTypesSchema),
-	BookmarkViewDataTypesSchema,
-]);
-
-const ProfilesTableTypesSchema = z.object({
-	bookmarks_view: ProfilesBookmarksViewSchema,
-	category_order: z.array(z.number()),
-	display_name: z.string(),
-	id: z.string(),
-	preferred_og_domains: z.array(z.string()).nullable().optional(),
-	profile_pic: z.string(),
-	user_name: z.string(),
-});
-
-const DiscoverableBookmarkSchema = z.object({
-	id: z.number(),
-	inserted_at: z.string(),
-	title: z.string().nullable(),
-	url: z.string().nullable(),
-	description: z.string().nullable(),
-	ogImage: z.string().nullable(),
-	screenshot: z.string().nullable(),
-	category_id: z.number(),
-	trash: z.string().nullable(),
-	type: z.string().nullable(),
-	meta_data: MetadataSchema.nullable(),
-	sort_index: z.string().nullable(),
-	make_discoverable: z.string().nullable(),
-	addedTags: z.array(TagSchema).optional(),
-	addedCategories: z.array(CategorySchema).optional(),
-	user_id: ProfilesTableTypesSchema.nullable(),
-});
-
-const FetchDiscoverableByIdResponseSchema = DiscoverableBookmarkSchema;
-
 export const GET = createGetApiHandler({
 	inputSchema: FetchDiscoverableByIdQuerySchema,
 	outputSchema: FetchDiscoverableByIdResponseSchema,
@@ -109,7 +25,7 @@ export const GET = createGetApiHandler({
 		console.log("[route] API called:", { id });
 		const { supabase } = await createApiClient();
 
-		// Fetch the main bookmark data with user profile
+		// Fetch the main bookmark data
 		const { data, error } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.select(
@@ -126,16 +42,7 @@ export const GET = createGetApiHandler({
 				type,
 				meta_data,
 				sort_index,
-				make_discoverable,
-				user_id (
-					bookmarks_view,
-					category_order,
-					display_name,
- 					id,
-					preferred_og_domains,
-					profile_pic,
- 					user_name
-				)
+				make_discoverable
 			`,
 			)
 			.eq("id", id)
@@ -261,7 +168,7 @@ export const GET = createGetApiHandler({
 			...data,
 			addedTags,
 			addedCategories,
-		} as z.infer<typeof DiscoverableBookmarkSchema>;
+		} as FetchDiscoverableByIdResponse;
 
 		return response;
 	},

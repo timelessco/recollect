@@ -10,7 +10,6 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 
 import imageToText from "../../../async/ai/imageToText";
-import ocr from "../../../async/ai/ocr";
 import { getMediaType } from "../../../async/supabaseCrudHelpers";
 import {
 	type ImgMetadataType,
@@ -71,7 +70,7 @@ const videoLogic = async (
 	const ogImage = thumbnailUrl?.publicUrl;
 
 	let imgData;
-	let ocrData;
+	let ocrData: string | null = null;
 	let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
 	let imageCaption: string | null = null;
 	let imageKeywords: string[] = [];
@@ -90,25 +89,6 @@ const videoLogic = async (
 			imgData = {};
 		}
 
-		// Handle OCR processing
-		// OCR returns { text, status } object
-		try {
-			const ocrResult = await ocr(thumbnailUrl?.publicUrl, supabase, userId);
-			ocrData = ocrResult.text;
-			ocrStatus = ocrResult.status;
-		} catch (error) {
-			console.error("OCR processing failed:", error);
-			Sentry.captureException(error, {
-				tags: {
-					operation: "ocr_processing",
-					thumbnailUrl: thumbnailUrl?.publicUrl,
-				},
-			});
-			ocrData = null;
-			ocrStatus = "no_text";
-		}
-
-		// Handle image caption generation
 		try {
 			const imageToTextResult = await imageToText(
 				thumbnailUrl?.publicUrl,
@@ -117,6 +97,8 @@ const videoLogic = async (
 			);
 			imageCaption = imageToTextResult?.sentence ?? null;
 			imageKeywords = imageToTextResult?.image_keywords ?? [];
+			ocrData = imageToTextResult?.ocr_text ?? null;
+			ocrStatus = imageToTextResult?.ocr_text ? "success" : "no_text";
 		} catch (error) {
 			console.error("Image caption generation failed:", error);
 			Sentry.captureException(error, {

@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
 
-import { getApikeyAndBookmarkCount } from "./ocr";
+import { getApikeyAndBookmarkCount, incrementBookmarkCount } from "./api-key";
 
 export type UserCollection = {
 	id: number;
@@ -12,7 +12,6 @@ export type UserCollection = {
 export type ImageToTextContextProps = {
 	collections: UserCollection[];
 	description?: string | null;
-	ocrText?: string | null;
 	title?: string | null;
 	url?: string | null;
 };
@@ -20,6 +19,7 @@ export type ImageToTextContextProps = {
 export type ImageToTextResult = {
 	image_keywords: string[];
 	matched_collection_ids: number[];
+	ocr_text: string | null;
 	sentence: string | null;
 };
 
@@ -111,10 +111,18 @@ export const imageToText = async (
 		const collections = context?.collections ?? [];
 		const hasCollections = collections.length > 0;
 
+		const ocrSection = [
+			"",
+			"PART 3 - OCR TEXT:",
+			"Extract all visible, readable text from this image exactly as it appears.",
+			"If no text is visible, write NONE.",
+			"Do NOT paraphrase or summarize — copy the text verbatim.",
+		];
+
 		const collectionsSection = hasCollections
 			? [
 					"",
-					"PART 3 - COLLECTIONS:",
+					"PART 4 - COLLECTIONS:",
 					"Given the image AND the additional bookmark context below, determine which of the user's existing collections this bookmark belongs to.",
 					"Return up to 3 best matches with a confidence percentage (0-100%). If nothing fits, return NONE.",
 					"Rules:",
@@ -132,14 +140,11 @@ export const imageToText = async (
 						? [`Description: ${context.description}`]
 						: []),
 					...(context?.url ? [`URL: ${context.url}`] : []),
-					...(context?.ocrText
-						? [`OCR text: ${context.ocrText.slice(0, 500)}`]
-						: []),
 				]
 			: [];
 
 		const captionPrompt = [
-			"Describe this image in two parts. Do NOT include any readable text — text extraction is handled separately.",
+			"Analyze this image and provide the following parts.",
 			"",
 			"PART 1 - SENTENCE:",
 			websiteInstruction,
@@ -147,11 +152,13 @@ export const imageToText = async (
 			"",
 			"PART 2 - KEYWORDS:",
 			keywordsInstruction,
+			...ocrSection,
 			...collectionsSection,
 			"",
 			"Respond in exactly this format:",
 			"SENTENCE: [your sentence here]",
 			"KEYWORDS: [keyword1, keyword2, keyword3, ...]",
+			"OCR_TEXT: [extracted text, or NONE]",
 			...(hasCollections
 				? ["COLLECTIONS: <name> (<confidence>%) per line, or NONE"]
 				: []),
@@ -175,16 +182,22 @@ export const imageToText = async (
 		const sentenceMatch = /SENTENCE:\s*(.+)/su.exec(sentencePart ?? "");
 		let sentence = sentenceMatch?.[1]?.trim() ?? null;
 
-		// Parse keywords — stop at COLLECTIONS: marker if present
 		const keywordsPart = text.includes("KEYWORDS:")
 			? text.split("KEYWORDS:")[1]
 			: "";
-		const keywordsBeforeCollections = keywordsPart?.split("COLLECTIONS:")[0];
-		const keywordsStr = keywordsBeforeCollections?.trim() ?? "";
+		const keywordsBeforeOcr = keywordsPart
+			?.split("OCR_TEXT:")[0]
+			?.split("COLLECTIONS:")[0];
+		const keywordsStr = keywordsBeforeOcr?.trim() ?? "";
 		const image_keywords = keywordsStr
 			.split(/,\s*/u)
 			.map((keyword) => keyword.trim())
 			.filter(Boolean);
+
+		const ocrPart = text.includes("OCR_TEXT:")
+			? text.split("OCR_TEXT:")[1]?.split("COLLECTIONS:")[0]?.trim()
+			: null;
+		const ocr_text = ocrPart && !/^none$/iu.test(ocrPart) ? ocrPart : null;
 
 		// Parse collections — each line is "CollectionName (XX%)", filter >= 90%
 		const CONFIDENCE_THRESHOLD = 90;
@@ -223,7 +236,11 @@ export const imageToText = async (
 			sentence = text.trim();
 		}
 
-		return { sentence, image_keywords, matched_collection_ids };
+		if (!userApiKey && (ocr_text || sentence)) {
+			await incrementBookmarkCount(supabase, userId);
+		}
+
+		return { sentence, image_keywords, matched_collection_ids, ocr_text };
 	} catch (error) {
 		console.error("Image caption error", error);
 		throw error;

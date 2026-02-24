@@ -17,6 +17,8 @@ import {
 } from "../../../utils/commonClassNames";
 import ShareContent from "../share/shareContent";
 
+import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
+
 export type CollectionItemTypes = {
 	count?: number;
 	current: boolean;
@@ -26,6 +28,7 @@ export type CollectionItemTypes = {
 	iconValue?: string | null;
 	id: number;
 	isCollab?: boolean;
+	isFavorite?: boolean;
 	isPublic?: boolean;
 	name: string;
 	responsiveIcon?: boolean;
@@ -51,6 +54,8 @@ export type listPropsTypes = {
 const SingleListItemComponent = (listProps: listPropsTypes) => {
 	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
 	const [activeMenu, setActiveMenu] = useState<string | null>(null);
+	const { updateCategoryOptimisticMutation } =
+		useUpdateCategoryOptimisticMutation();
 
 	const {
 		item,
@@ -111,6 +116,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 							/>
 						) : (
 							<AriaDropdown
+								isOpen={openedMenuId === item?.id}
 								menuButton={
 									<div
 										className={
@@ -149,14 +155,31 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 								{!activeMenu ? (
 									<>
 										{[
+											{
+												label: item.isFavorite
+													? "Remove from Favorites"
+													: "Add to Favorites",
+												value: "toggle-favorite",
+											},
 											{ label: "Share", value: "share" },
 											{ label: "Delete", value: "delete" },
 										].map((dropdownItem) => (
 											<AriaDropdownMenu
 												key={dropdownItem?.value}
-												onClick={async (event) => {
+												onClick={(event) => {
 													event.preventDefault();
 													event.stopPropagation();
+
+													if (dropdownItem?.value === "toggle-favorite") {
+														updateCategoryOptimisticMutation.mutate({
+															category_id: item.id,
+															updateData: {
+																is_favorite: !item.isFavorite,
+															},
+														});
+														setOpenedMenuId(null);
+														return;
+													}
 
 													if (dropdownItem?.value === "share") {
 														setActiveMenu("share");

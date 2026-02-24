@@ -1,5 +1,7 @@
-import { z } from "zod";
-
+import {
+	DeleteCategoryInputSchema,
+	DeleteCategoryResponseSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { sendCollectionDeletedNotification } from "@/lib/email/send-collection-deleted-notification";
@@ -15,27 +17,6 @@ import {
 } from "@/utils/constants";
 
 const ROUTE = "delete-user-category";
-
-const DeleteCategoryInputSchema = z.object({
-	category_id: z.number(),
-});
-
-const DeleteCategoryResponseSchema = z
-	.array(
-		z.object({
-			category_name: z.string().nullable(),
-			category_slug: z.string(),
-			category_views: z.unknown().nullable(),
-			created_at: z.string().nullable(),
-			icon: z.string().nullable(),
-			icon_color: z.string().nullable(),
-			id: z.number(),
-			is_public: z.boolean(),
-			order_index: z.number().nullable(),
-			user_id: z.string().nullable(),
-		}),
-	)
-	.nonempty();
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

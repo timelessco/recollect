@@ -1,5 +1,7 @@
-import { z } from "zod";
-
+import {
+	SetBookmarkCategoriesPayloadSchema,
+	SetBookmarkCategoriesResponseSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
@@ -12,37 +14,6 @@ import {
 } from "@/utils/constants";
 
 const ROUTE = "set-bookmark-categories";
-
-const SetBookmarkCategoriesPayloadSchema = z.object({
-	bookmark_id: z
-		.int({ error: "Bookmark ID must be a whole number" })
-		.positive({ error: "Bookmark ID must be a positive number" }),
-	category_ids: z
-		.array(
-			z
-				.int({ error: "Collection ID must be a whole number" })
-				.min(0, { error: "Collection ID must be non-negative" }),
-		)
-		.max(100, { error: "Cannot add more than 100 collections to a bookmark" })
-		.refine((ids) => new Set(ids).size === ids.length, {
-			error: "Duplicate collection IDs not allowed",
-		}),
-});
-
-export type SetBookmarkCategoriesPayload = z.infer<
-	typeof SetBookmarkCategoriesPayloadSchema
->;
-
-const SetBookmarkCategoriesResponseSchema = z.array(
-	z.object({
-		bookmark_id: z.number(),
-		category_id: z.number(),
-	}),
-);
-
-export type SetBookmarkCategoriesResponse = z.infer<
-	typeof SetBookmarkCategoriesResponseSchema
->;
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

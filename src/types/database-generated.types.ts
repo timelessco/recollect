@@ -155,6 +155,7 @@ export type Database = {
 					icon: string | null;
 					icon_color: string | null;
 					id: number;
+					is_favorite: boolean;
 					is_public: boolean;
 					order_index: number | null;
 					user_id: string | null;
@@ -167,6 +168,7 @@ export type Database = {
 					icon?: string | null;
 					icon_color?: string | null;
 					id?: number;
+					is_favorite?: boolean;
 					is_public?: boolean;
 					order_index?: number | null;
 					user_id?: string | null;
@@ -179,6 +181,7 @@ export type Database = {
 					icon?: string | null;
 					icon_color?: string | null;
 					id?: number;
+					is_favorite?: boolean;
 					is_public?: boolean;
 					order_index?: number | null;
 					user_id?: string | null;

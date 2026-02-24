@@ -7,7 +7,6 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 import imageToText, {
 	type UserCollection,
 } from "../../../async/ai/imageToText";
-import ocr from "../../../async/ai/ocr";
 import {
 	type ImgMetadataType,
 	type NextApiRequest,
@@ -46,26 +45,19 @@ const notVideoLogic = async (
 
 	if (ogImage) {
 		try {
-			// Get OCR using the centralized function
-			// Returns { text, status } object
-			const ocrResult = await ocr(ogImage, supabase, userId);
-			imageOcrValue = ocrResult.text;
-			ocrStatus = ocrResult.status;
-
-			// Get image caption and keywords using the centralized function
 			const imageToTextResult = await imageToText(
 				ogImage,
 				supabase,
 				userId,
 				null,
-				userCollections.length > 0
-					? { collections: userCollections, ocrText: imageOcrValue }
-					: null,
+				userCollections.length > 0 ? { collections: userCollections } : null,
 			);
 			if (imageToTextResult) {
 				imageCaption = imageToTextResult.sentence;
 				imageKeywords = imageToTextResult.image_keywords ?? [];
 				matchedCollectionIds = imageToTextResult.matched_collection_ids;
+				imageOcrValue = imageToTextResult.ocr_text;
+				ocrStatus = imageToTextResult.ocr_text ? "success" : "no_text";
 			}
 		} catch (error) {
 			console.warn("Gemini AI processing error", error);

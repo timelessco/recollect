@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { find } from "lodash";
 import { Button } from "@base-ui/react/button";
 
+import { EditPopover } from "@/pageComponents/dashboard/cardSection/edit-popover";
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import BackIcon from "@/icons/actionIcons/backIcon";
@@ -14,8 +14,6 @@ import { TRASH_URL, viewValues } from "@/utils/constants";
 import { isBookmarkOwner, isUserInACategory } from "@/utils/helpers";
 import { cn } from "@/utils/tailwind-merge";
 import { getCategorySlugFromRouter } from "@/utils/url";
-
-import { EditPopover } from "./edit-popover";
 
 export type EditAndDeleteIconsProps = {
 	cardTypeCondition: string;
@@ -42,7 +40,7 @@ export function EditAndDeleteIcons({
 
 	const isCategoryOwner =
 		!isUserInACategory(categorySlug as string) ||
-		find(allCategories?.data, (item) => item?.category_slug === categorySlug)
+		allCategories?.data?.find((item) => item?.category_slug === categorySlug)
 			?.user_id?.id === userId;
 
 	const isListView = cardTypeCondition === viewValues.list;
