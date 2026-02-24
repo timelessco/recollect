@@ -23,3 +23,7 @@ error	[response-required-property-removed] at .oasdiff/openapi-new.json
 ## 2026-02-24 [`2e17d24`](https://github.com/timelessco/recollect/commit/2e17d2492032f9a97d4b3a98d6ca00bb0f574739)
 
 No changelog changes
+
+## 2026-02-24 [`d243918`](https://github.com/timelessco/recollect/commit/d2439182c53f63b892ad73b73d9471fa4cd8b6e2)
+
+No changelog changes
