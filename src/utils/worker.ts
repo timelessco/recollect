@@ -62,10 +62,27 @@ export const processImageQueue = async (
 						{ msg_id: message.msg_id, url },
 					);
 
-					await supabase.schema("pgmq_public").rpc("delete", {
-						queue_name,
-						message_id: message.msg_id,
-					});
+					const { error: deleteError } = await supabase
+						.schema("pgmq_public")
+						.rpc("delete", { queue_name, message_id: message.msg_id });
+
+					if (deleteError) {
+						console.error(
+							"[process-image-queue] Final-retry delete failed, skipping:",
+							{ msg_id: message.msg_id, url, queue_name, deleteError },
+						);
+						Sentry.captureException(
+							new Error("Final-retry queue delete failed"),
+							{
+								tags: {
+									operation: "final_retry_delete_failed",
+									userId: user_id,
+								},
+								extra: { msg_id: message.msg_id, url, queue_name },
+							},
+						);
+						continue;
+					}
 
 					// Fall through to processing below
 				}
