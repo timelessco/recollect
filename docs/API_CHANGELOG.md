@@ -19,3 +19,7 @@ info	[response-required-property-added] at .oasdiff/openapi-new.json
 error	[response-required-property-removed] at .oasdiff/openapi-new.json	
 	in API GET /bookmarks/check-url
 		removed the required property 'data/oneOf[subschema #1]/test_field' from the response with the '200' status
+
+## 2026-02-24 [`2e17d24`](https://github.com/timelessco/recollect/commit/2e17d2492032f9a97d4b3a98d6ca00bb0f574739)
+
+No changelog changes
