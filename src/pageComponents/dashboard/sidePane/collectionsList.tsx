@@ -573,7 +573,7 @@ const CollectionsList = () => {
 
 	const allSorted = sortedList() ?? [];
 	const favoriteCollections = allSorted.filter((item) => item.isFavorite);
-	const nonFavoriteCollections = allSorted.filter((item) => !item.isFavorite);
+	const nonFavoriteCollections = allSorted;
 
 	const bookmarkCount =
 		bookmarksCountData?.data?.categoryCount?.find(
@@ -728,22 +728,13 @@ const CollectionsList = () => {
 		</div>
 	);
 	return (
-		<div className="pt-3">
+		<>
 			{favoriteCollections.length > 0 && (
-				<AriaDisclosure renderDisclosureButton={favoritesHeader}>
-					<div id="favorites-wrapper">
-						<ListBoxDrop
-							aria-label="Favorites-drop"
-							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-							onItemDrop={(event: any) => {
-								void handleBookmarksDrop(event);
-							}}
-							onReorder={onReorder}
-							selectionBehavior="replace"
-							selectionMode="multiple"
-						>
+				<div className="py-4">
+					<AriaDisclosure renderDisclosureButton={favoritesHeader}>
+						<ul className="flex flex-col gap-px" id="favorites-wrapper">
 							{favoriteCollections.map((item) => (
-								<Item key={item?.id} textValue={item?.name}>
+								<li key={item?.id}>
 									<SingleListItemComponent
 										extendedClassname="py-[6px]"
 										item={item}
@@ -756,11 +747,11 @@ const CollectionsList = () => {
 												?.category_id === item?.id
 										}
 									/>
-								</Item>
+								</li>
 							))}
-						</ListBoxDrop>
-					</div>
-				</AriaDisclosure>
+						</ul>
+					</AriaDisclosure>
+				</div>
 			)}
 
 			<AriaDisclosure renderDisclosureButton={collectionsHeader}>
@@ -846,7 +837,7 @@ const CollectionsList = () => {
 					</button>
 				</div>
 			</Modal>
-		</div>
+		</>
 	);
 };
 
