@@ -1,0 +1,18 @@
+### Retry specific archived items (by msg_id)
+# Returns: { data: { requeued: number, requested: number }, error: null }
+# Items are re-queued with is_final_retry flag — permanently deleted if they fail again
+POST {{$dotenv API_BASE_URL}}/v1/queue/archives/retry
+Content-Type: application/json
+
+{
+  "msg_ids": [1, 2, 3]
+}
+
+### Retry ALL archived items
+# Returns: { data: { requeued: number, requested: null }, error: null }
+POST {{$dotenv API_BASE_URL}}/v1/queue/archives/retry
+Content-Type: application/json
+
+{
+  "retry_all": true
+}

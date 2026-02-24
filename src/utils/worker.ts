@@ -16,7 +16,7 @@ type ProcessParameters = { batchSize: number; queue_name: string };
 const SLEEP_SECONDS = 30;
 
 // max retries for a message
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 2;
 export const processImageQueue = async (
 	supabase: SupabaseClient,
 	parameters: ProcessParameters,
@@ -52,8 +52,26 @@ export const processImageQueue = async (
 
 				// this is the number of retries
 				const read_ct = message.read_ct;
+				const isFinalRetry = message.message?.is_final_retry === true;
 
-				if (read_ct > MAX_RETRIES) {
+				// Final retry: delete from queue before processing (one-shot)
+				// Whether the API succeeds or fails, the message is already gone
+				if (isFinalRetry) {
+					console.log(
+						"[process-image-queue] Final retry — deleting from queue before processing:",
+						{ msg_id: message.msg_id, url },
+					);
+
+					await supabase.schema("pgmq_public").rpc("delete", {
+						queue_name,
+						message_id: message.msg_id,
+					});
+
+					// Fall through to processing below
+				}
+
+				// Normal items: archive after max retries exhausted
+				if (!isFinalRetry && read_ct > MAX_RETRIES) {
 					const rawLastError: unknown = message.message?.last_error;
 					const lastError =
 						typeof rawLastError === "string" ? rawLastError : undefined;
