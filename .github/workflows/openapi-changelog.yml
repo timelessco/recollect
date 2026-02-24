@@ -25,22 +25,23 @@ jobs:
       - if: steps.guard.outputs.skip != 'true'
         name: Generate spec from current commit
         run: |
+          mkdir -p .oasdiff
           npx tsx scripts/generate-openapi.ts
-          cp public/openapi.json /tmp/openapi-new.json
+          cp public/openapi.json .oasdiff/openapi-new.json
 
       - if: steps.guard.outputs.skip != 'true'
         name: Generate spec from previous commit
         run: |
           git worktree add /tmp/prev-commit HEAD~1
           if [ ! -f /tmp/prev-commit/scripts/generate-openapi.ts ]; then
-            echo '{"openapi":"3.0.3","info":{"title":"Recollect API","version":"0.0.0"},"paths":{}}' > /tmp/openapi-old.json
+            echo '{"openapi":"3.0.3","info":{"title":"Recollect API","version":"0.0.0"},"paths":{}}' > .oasdiff/openapi-old.json
           else
             cd /tmp/prev-commit
             if pnpm install --frozen-lockfile --prefer-offline && npx tsx scripts/generate-openapi.ts; then
-              cp public/openapi.json /tmp/openapi-old.json
+              cp public/openapi.json "$GITHUB_WORKSPACE/.oasdiff/openapi-old.json"
             else
               echo "Prev-commit generation failed — falling back to empty spec"
-              echo '{"openapi":"3.0.3","info":{"title":"Recollect API","version":"0.0.0"},"paths":{}}' > /tmp/openapi-old.json
+              echo '{"openapi":"3.0.3","info":{"title":"Recollect API","version":"0.0.0"},"paths":{}}' > "$GITHUB_WORKSPACE/.oasdiff/openapi-old.json"
             fi
             cd -
           fi
@@ -51,14 +52,13 @@ jobs:
         name: Generate API changelog
         uses: oasdiff/oasdiff-action/changelog@1c611ffb1253a72924624aa4fb662e302b3565d3 # v0.0.21
         with:
-          base: /tmp/openapi-old.json
-          format: markdown
-          output-to-file: /tmp/changelog-entry.md
-          revision: /tmp/openapi-new.json
+          base: .oasdiff/openapi-old.json
+          output-to-file: .oasdiff/changelog-entry.md
+          revision: .oasdiff/openapi-new.json
       - if: steps.guard.outputs.skip != 'true'
         name: Append changelog entry
         run: |
-          if [ -s /tmp/changelog-entry.md ]; then
+          if [ -s .oasdiff/changelog-entry.md ]; then
             DATE=$(date -u +"%Y-%m-%d")
             SHORT_SHA="${{ github.sha }}"
             SHORT_SHA="${SHORT_SHA:0:7}"
@@ -67,7 +67,7 @@ jobs:
               echo ""
               echo "## ${DATE} [\`${SHORT_SHA}\`](https://github.com/${REPO}/commit/${{ github.sha }})"
               echo ""
-              cat /tmp/changelog-entry.md
+              cat .oasdiff/changelog-entry.md
             } >> docs/API_CHANGELOG.md
           else
             echo "No API changes detected — skipping changelog update"
