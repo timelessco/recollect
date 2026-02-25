@@ -22,12 +22,6 @@ export type LoadersStoreState = {
 export type MiscellaneousStoreState = {
 	addScreenshotBookmarkId: number | undefined;
 	currentBookmarkView: BookmarksViewTypes;
-	currentSettingsPage:
-		| "ai-features"
-		| "change-email"
-		| "delete"
-		| "main"
-		| "import";
 	deleteBookmarkId: number[] | undefined;
 	isCardDragging: boolean;
 	isCollectionChanged: boolean;
@@ -39,9 +33,6 @@ export type MiscellaneousStoreState = {
 	selectedVideoId: number | null;
 	setAddScreenshotBookmarkId: (value: number | undefined) => void;
 	setCurrentBookmarkView: (value: BookmarksViewTypes) => void;
-	setCurrentSettingsPage: (
-		value: MiscellaneousStoreState["currentSettingsPage"],
-	) => void;
 	setDeleteBookmarkId: (bookmarkIds: number[]) => void;
 	setIsCardDragging: (value: boolean) => void;
 	setIsCollectionChanged: (value: boolean) => void;

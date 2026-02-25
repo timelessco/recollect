@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -9,19 +10,16 @@ import {
 	BOOKMARKS_COUNT_KEY,
 	menuListItemName,
 } from "../../../utils/constants";
-import SettingsModal from "../modals/settings-modal";
+import SettingsModal, { type SettingsPage } from "../modals/settings-modal";
 
 import SingleListItemComponent from "./singleListItemComponent";
 import { Dialog } from "@/components/ui/recollect/dialog";
-import { useMiscellaneousStore } from "@/store/componentStore";
 
 const SidePaneOptionsMenu = () => {
 	const currentPath = useGetCurrentUrlPath();
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
-	const setCurrentSettingsPage = useMiscellaneousStore(
-		(state) => state.setCurrentSettingsPage,
-	);
+	const [settingsPage, setSettingsPage] = useState<SettingsPage>("main");
 
 	const bookmarksCountData = queryClient.getQueryData([
 		BOOKMARKS_COUNT_KEY,
@@ -55,8 +53,8 @@ const SidePaneOptionsMenu = () => {
 					<Dialog.Root
 						key={item.id}
 						onOpenChange={(open) => {
-							if (!open) {
-								setCurrentSettingsPage("main");
+							if (open) {
+								setSettingsPage("main");
 							}
 						}}
 					>
@@ -68,7 +66,10 @@ const SidePaneOptionsMenu = () => {
 								showIconDropdown={false}
 							/>
 						</Dialog.Trigger>
-						<SettingsModal />
+						<SettingsModal
+							currentPage={settingsPage}
+							onNavigate={setSettingsPage}
+						/>
 					</Dialog.Root>
 				) : (
 					<SingleListItemComponent

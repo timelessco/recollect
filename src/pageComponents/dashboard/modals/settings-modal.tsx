@@ -2,7 +2,6 @@ import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { AvatarIcon } from "../../../icons/avatarIcon";
 import { ImportIcon } from "../../../icons/importIcon";
 import { SettingsAiIcon } from "../../../icons/settingsAiIcon";
-import { useMiscellaneousStore } from "../../../store/componentStore";
 import Settings from "../../settings";
 import { AiFeatures } from "../../settings/aiFeatures";
 import ChangeEmail from "../../settings/changeEmail";
@@ -12,19 +11,24 @@ import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
 import { Dialog } from "@/components/ui/recollect/dialog";
 
-const SettingsModal = () => {
+export type SettingsPage =
+	| "ai-features"
+	| "change-email"
+	| "delete"
+	| "import"
+	| "main";
+
+type SettingsModalProps = {
+	currentPage: SettingsPage;
+	onNavigate: (page: SettingsPage) => void;
+};
+
+const SettingsModal = ({ currentPage, onNavigate }: SettingsModalProps) => {
 	const { isDesktop } = useIsMobileView();
 
-	const currentSettingsPage = useMiscellaneousStore(
-		(state) => state.currentSettingsPage,
-	);
-	const setCurrentSettingsPage = useMiscellaneousStore(
-		(state) => state.setCurrentSettingsPage,
-	);
-
-	// Derive selectedMenuItem from currentSettingsPage
+	// Derive selectedMenuItem from currentPage
 	const getSelectedMenuItemId = () => {
-		switch (currentSettingsPage) {
+		switch (currentPage) {
 			case "main":
 			case "change-email":
 			case "delete":
@@ -83,17 +87,17 @@ const SettingsModal = () => {
 	];
 
 	const renderMainContent = () => {
-		switch (currentSettingsPage) {
+		switch (currentPage) {
 			case "main":
-				return <Settings />;
+				return <Settings onNavigate={onNavigate} />;
 			case "change-email":
-				return <ChangeEmail />;
+				return <ChangeEmail onNavigate={onNavigate} />;
 			case "delete":
-				return <DeleteAccount />;
+				return <DeleteAccount onNavigate={onNavigate} />;
 			case "ai-features":
 				return <AiFeatures />;
 			case "import":
-				return <ImportBookmarks />;
+				return <ImportBookmarks onNavigate={onNavigate} />;
 			default:
 				return null;
 		}
@@ -123,13 +127,13 @@ const SettingsModal = () => {
 									onClick={() => {
 										switch (item.id) {
 											case 0:
-												setCurrentSettingsPage("main");
+												onNavigate("main");
 												break;
 											case 1:
-												setCurrentSettingsPage("ai-features");
+												onNavigate("ai-features");
 												break;
 											case 2:
-												setCurrentSettingsPage("import");
+												onNavigate("import");
 												break;
 											default:
 												break;
