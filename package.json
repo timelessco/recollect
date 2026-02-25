@@ -84,8 +84,6 @@
 	},
 	"dependencies": {
 		"@adaptui/react": "1.0.0-alpha.9",
-		"@ariakit/react": "0.3.7",
-		"@ariakit/react-core": "0.3.7",
 		"@aws-sdk/client-s3": "3.975.0",
 		"@aws-sdk/s3-request-presigner": "3.975.0",
 		"@base-ui/react": "1.1.0",
@@ -233,6 +231,7 @@
 			"canvas",
 			"core-js-pure",
 			"cypress",
+			"deno",
 			"esbuild",
 			"protobufjs",
 			"sharp",

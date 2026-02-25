@@ -15,12 +15,6 @@ importers:
       '@adaptui/react':
         specifier: 1.0.0-alpha.9
         version: 1.0.0-alpha.9(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@ariakit/react':
-        specifier: 0.3.7
-        version: 0.3.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@ariakit/react-core':
-        specifier: 0.3.7
-        version: 0.3.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@aws-sdk/client-s3':
         specifier: 3.975.0
         version: 3.975.0
@@ -442,21 +436,6 @@ packages:
 
   '@apm-js-collab/tracing-hooks@0.3.1':
     resolution: {integrity: sha512-Vu1CbmPURlN5fTboVuKMoJjbO5qcq9fA5YXpskx3dXe/zTBvjODFoerw+69rVBlRLrJpwPqSDqEuJDEKIrTldw==}
-
-  '@ariakit/core@0.3.6':
-    resolution: {integrity: sha512-Mh+goslCo4XhjLnruhuU8kg8IyR+frEVDgKXXTmj1KqnZpi7CQH/NEc5/SHZhukQhVzc8xogc5r8x+HJNdoMOw==}
-
-  '@ariakit/react-core@0.3.7':
-    resolution: {integrity: sha512-Z2bICFdYL+Bu2FSUDdBWvzzKyFj1TRMTIsPrUskpJio6EtPtxUE/2E3fPDWvfevsTA3n8kYP2CLODsPpNeAGjw==}
-    peerDependencies:
-      react: ^17.0.0 || ^18.0.0
-      react-dom: ^17.0.0 || ^18.0.0
-
-  '@ariakit/react@0.3.7':
-    resolution: {integrity: sha512-Rb8tn6Rb8zVbUdwfkf7+tSOFY59woosFgCgMHIalLceBlkcB8mOlq6pfowDSSuvFa+VPAIdLe89MXvFr8AJqtQ==}
-    peerDependencies:
-      react: ^17.0.0 || ^18.0.0
-      react-dom: ^17.0.0 || ^18.0.0
 
   '@asteasolutions/zod-to-openapi@8.4.1':
     resolution: {integrity: sha512-WmJUsFINbnWxGvHSd16aOjgKf+5GsfdxruO2YDLcgplsidakCauik1lhlk83YDH06265Yd1XtUyF24o09uygpw==}
@@ -9701,22 +9680,6 @@ snapshots:
       module-details-from-path: 1.0.4
     transitivePeerDependencies:
       - supports-color
-
-  '@ariakit/core@0.3.6': {}
-
-  '@ariakit/react-core@0.3.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
-    dependencies:
-      '@ariakit/core': 0.3.6
-      '@floating-ui/dom': 1.7.4
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
-      use-sync-external-store: 1.6.0(react@19.2.4)
-
-  '@ariakit/react@0.3.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
-    dependencies:
-      '@ariakit/react-core': 0.3.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
 
   '@asteasolutions/zod-to-openapi@8.4.1(zod@4.3.6)':
     dependencies:
