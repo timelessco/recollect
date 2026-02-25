@@ -15,8 +15,8 @@ const RpcResultSchema = z.object({
 
 const InputSchema = z.union([
 	z.object({ retry_all: z.literal(true) }),
-	z.object({ count: z.int().min(1).max(1000) }),
-	z.object({ msg_ids: z.array(z.number()).min(1).max(100) }),
+	z.object({ count: z.number().min(1).max(1000) }),
+	z.object({ msg_ids: z.array(z.int()).min(1).max(100) }),
 ]);
 
 async function handlePost(request: NextRequest) {
