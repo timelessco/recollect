@@ -27,15 +27,7 @@ function Trigger(props: CollapsiblePrimitive.Trigger.Props) {
 }
 
 function Panel(props: CollapsiblePrimitive.Panel.Props) {
-	const { className, ...rest } = props;
-
-	return (
-		<CollapsiblePrimitive.Panel
-			keepMounted
-			className={cn(className)}
-			{...rest}
-		/>
-	);
+	return <CollapsiblePrimitive.Panel keepMounted {...props} />;
 }
 
 export const Collapsible = {
