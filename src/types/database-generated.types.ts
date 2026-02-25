@@ -401,6 +401,10 @@ export type Database = {
 					user_id: string;
 				}>;
 			};
+			admin_retry_ai_embeddings_archives: {
+				Args: { p_count?: number };
+				Returns: Json;
+			};
 			admin_retry_all_instagram_archives: { Args: never; Returns: Json };
 			admin_retry_all_twitter_archives: { Args: never; Returns: Json };
 			admin_retry_instagram_import: {
@@ -511,6 +515,10 @@ export type Database = {
 					added_uncategorized: boolean;
 					deleted_category_id: number;
 				}>;
+			};
+			retry_ai_embeddings_archive: {
+				Args: { p_msg_ids: number[] };
+				Returns: Json;
 			};
 			retry_all_instagram_imports: {
 				Args: { p_user_id: string };
