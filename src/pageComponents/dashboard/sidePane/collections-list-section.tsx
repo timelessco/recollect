@@ -201,6 +201,7 @@ function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
 					autoFocus
 					className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! placeholder:text-plain-reverse focus:ring-0! focus:ring-offset-0! focus:outline-hidden!"
 					id="add-category-input"
+					aria-label="New collection name"
 					onBlur={async (event) => {
 						const inputValue = (event.target as HTMLInputElement)?.value;
 						if (inputValue) {
