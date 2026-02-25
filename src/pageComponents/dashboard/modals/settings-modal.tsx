@@ -127,7 +127,7 @@ const SettingsModal = () => {
 			<Dialog.Portal>
 				<Dialog.Backdrop />
 				<Dialog.Popup
-					className="skip-global-paste w-full max-w-[740px] rounded-[20px] p-0"
+					className="skip-global-paste w-full max-w-[740px] rounded-[20px]"
 					aria-label="Settings"
 				>
 					<div className="flex h-[700px] rounded-[20px] bg-gray-0">

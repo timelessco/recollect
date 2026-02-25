@@ -2,8 +2,10 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 
 import { cn } from "@/utils/tailwind-merge";
 
-function Root({ modal = "trap-focus", ...props }: DialogPrimitive.Root.Props) {
-	return <DialogPrimitive.Root modal={modal} {...props} />;
+/* adding z-102 to have z-index in modal so that nothing overlaps the modal */
+
+function Root({ ...props }: DialogPrimitive.Root.Props) {
+	return <DialogPrimitive.Root {...props} />;
 }
 
 function Portal(props: DialogPrimitive.Portal.Props) {
@@ -11,10 +13,14 @@ function Portal(props: DialogPrimitive.Portal.Props) {
 }
 
 function Backdrop(props: DialogPrimitive.Backdrop.Props) {
+	const { className, ...rest } = props;
 	return (
 		<DialogPrimitive.Backdrop
-			className={cn("fixed inset-0 z-101 bg-black/36 backdrop-blur-sm")}
-			{...props}
+			className={cn(
+				"fixed inset-0 z-102 bg-black/36 backdrop-blur-sm",
+				className,
+			)}
+			{...rest}
 		/>
 	);
 }
@@ -35,30 +41,27 @@ function Popup(props: DialogPrimitive.Popup.Props) {
 }
 
 function Title(props: DialogPrimitive.Title.Props) {
+	const { className, ...rest } = props;
 	return (
 		<DialogPrimitive.Title
-			className={cn("text-lg font-semibold text-gray-900")}
-			{...props}
+			className={cn("text-lg font-semibold text-gray-900", className)}
+			{...rest}
 		/>
 	);
 }
 
 function Description(props: DialogPrimitive.Description.Props) {
+	const { className, ...rest } = props;
 	return (
 		<DialogPrimitive.Description
-			className={cn("mt-2 text-sm text-gray-600")}
-			{...props}
+			className={cn("mt-2 text-sm text-gray-600", className)}
+			{...rest}
 		/>
 	);
 }
 
-function Close(props: DialogPrimitive.Close.Props) {
-	return <DialogPrimitive.Close {...props} />;
-}
-
 export const Dialog = {
 	Backdrop,
-	Close,
 	Description,
 	Popup,
 	Portal,

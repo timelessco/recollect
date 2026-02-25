@@ -44,7 +44,6 @@ import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
-import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
@@ -75,12 +74,12 @@ import {
 import { errorToast } from "../../../utils/toastMessages";
 
 import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
+import { DeleteCollectionModal } from "./delete-collection-modal";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
 import { useAddCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-optimistic-mutation";
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
-import { Dialog } from "@/components/ui/recollect/dialog";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { handleClientError } from "@/utils/error-utils/client";
 
@@ -320,7 +319,6 @@ const CollectionsList = () => {
 	const { allCategories, isLoadingCategories } = useFetchCategories();
 	const { userProfileData } = useFetchUserProfile();
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-	const { onDeleteCollection } = useDeleteCollection();
 	const { everythingData, isEverythingDataLoading } =
 		useFetchPaginatedBookmarks();
 	const { flattenedSearchData } = useSearchBookmarks();
@@ -358,33 +356,7 @@ const CollectionsList = () => {
 		}
 	};
 
-	const handleConfirmDelete = async () => {
-		if (deleteConfirmation.categoryId !== null) {
-			try {
-				await onDeleteCollection(
-					deleteConfirmation.isCurrent,
-					deleteConfirmation.categoryId,
-				);
-				setDeleteConfirmation({
-					isOpen: false,
-					categoryId: null,
-					isCurrent: false,
-				});
-			} catch {
-				// Modal stays open on error; mutation hook handles error toast
-			}
-
-			return;
-		}
-
-		setDeleteConfirmation({
-			isOpen: false,
-			categoryId: null,
-			isCurrent: false,
-		});
-	};
-
-	const handleCancelDelete = () => {
+	const handleCloseDeleteModal = () => {
 		setDeleteConfirmation({
 			isOpen: false,
 			categoryId: null,
@@ -574,11 +546,6 @@ const CollectionsList = () => {
 	const allSorted = sortedList() ?? [];
 	const favoriteCollections = allSorted.filter((item) => item.isFavorite);
 	const nonFavoriteCollections = allSorted;
-
-	const bookmarkCount =
-		bookmarksCountData?.data?.categoryCount?.find(
-			(item) => item?.category_id === deleteConfirmation.categoryId,
-		)?.count ?? 0;
 
 	const onReorder = (event: DroppableCollectionReorderEvent) => {
 		const apiOrder = userProfileData?.data?.[0].category_order;
@@ -806,43 +773,10 @@ const CollectionsList = () => {
 				</div>
 			</AriaDisclosure>
 
-			{/* Delete Collection Confirmation Modal */}
-			<Dialog.Root
-				open={deleteConfirmation.isOpen}
-				onOpenChange={(open) => {
-					if (!open) {
-						handleCancelDelete();
-					}
-				}}
-			>
-				<Dialog.Portal>
-					<Dialog.Backdrop />
-					<Dialog.Popup className="max-w-md min-w-[448px] rounded-xl p-6">
-						<Dialog.Title>Delete Collection</Dialog.Title>
-						{bookmarkCount > 0 && (
-							<Dialog.Description>
-								You have {bookmarkCount} bookmarks in this collection.
-							</Dialog.Description>
-						)}
-						<div className="mt-4 flex justify-end gap-3">
-							<button
-								className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-								onClick={handleCancelDelete}
-								type="button"
-							>
-								Cancel
-							</button>
-							<button
-								className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-								onClick={handleConfirmDelete}
-								type="button"
-							>
-								Delete
-							</button>
-						</div>
-					</Dialog.Popup>
-				</Dialog.Portal>
-			</Dialog.Root>
+			<DeleteCollectionModal
+				deleteConfirmation={deleteConfirmation}
+				onClose={handleCloseDeleteModal}
+			/>
 		</>
 	);
 };
