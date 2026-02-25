@@ -15,9 +15,9 @@ import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
 } from "../../../utils/commonClassNames";
+import { DeleteCollectionModal } from "../modals/delete-collection-modal";
 import ShareContent from "../share/shareContent";
 
-import { DeleteCollectionModal } from "./delete-collection-modal";
 import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
 import { Dialog } from "@/components/ui/recollect/dialog";
 
