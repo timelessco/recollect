@@ -27,26 +27,20 @@ const SidePaneTypesList = () => {
 		error: PostgrestError;
 	};
 
-	const optionsMenuList = optionsMenuListArray(currentPath, bookmarksCountData)
-		.filter((item) => {
-			if (
-				item.name === menuListItemName.links ||
-				item.name === menuListItemName.image ||
-				item.name === menuListItemName.videos ||
-				item.name === menuListItemName.documents ||
-				item.name === menuListItemName.tweets ||
-				item.name === menuListItemName.instagram ||
-				item.name === menuListItemName.audio
-			) {
-				return item;
-			} else {
-				return null;
-			}
-		})
-		.map((item, index) => ({
-			...item,
-			id: index,
-		}));
+	const optionsMenuList = optionsMenuListArray(
+		currentPath,
+		bookmarksCountData,
+	).filter((item) =>
+		[
+			menuListItemName.links,
+			menuListItemName.image,
+			menuListItemName.videos,
+			menuListItemName.documents,
+			menuListItemName.tweets,
+			menuListItemName.instagram,
+			menuListItemName.audio,
+		].includes(item.name),
+	);
 
 	return (
 		<div className="pt-4">

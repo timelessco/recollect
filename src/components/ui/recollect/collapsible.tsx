@@ -1,5 +1,3 @@
-"use client";
-
 import { Collapsible as CollapsiblePrimitive } from "@base-ui/react/collapsible";
 
 import { cn } from "@/utils/tailwind-merge";
@@ -22,6 +20,7 @@ function Trigger(props: CollapsiblePrimitive.Trigger.Props) {
 	return (
 		<CollapsiblePrimitive.Trigger
 			className={cn("aria-disclosure-button w-full cursor-pointer", className)}
+			type="button"
 			{...rest}
 		/>
 	);
