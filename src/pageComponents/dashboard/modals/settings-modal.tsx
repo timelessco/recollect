@@ -20,36 +20,6 @@ export type SettingsPage =
 	| "import"
 	| "main";
 
-function SettingsMainContent({
-	currentPage,
-	onNavigate,
-}: {
-	currentPage: SettingsPage;
-	onNavigate: (page: SettingsPage) => void;
-}) {
-	if (currentPage === "main") {
-		return <Settings onNavigate={onNavigate} />;
-	}
-
-	if (currentPage === "change-email") {
-		return <ChangeEmail onNavigate={onNavigate} />;
-	}
-
-	if (currentPage === "delete") {
-		return <DeleteAccount onNavigate={onNavigate} />;
-	}
-
-	if (currentPage === "ai-features") {
-		return <AiFeatures />;
-	}
-
-	if (currentPage === "import") {
-		return <ImportBookmarks onNavigate={onNavigate} />;
-	}
-
-	return null;
-}
-
 type SettingsModalProps = {
 	children: ReactNode;
 };
@@ -176,4 +146,34 @@ function SettingsModalContent() {
 			</div>
 		</div>
 	);
+}
+
+function SettingsMainContent({
+	currentPage,
+	onNavigate,
+}: {
+	currentPage: SettingsPage;
+	onNavigate: (page: SettingsPage) => void;
+}) {
+	if (currentPage === "main") {
+		return <Settings onNavigate={onNavigate} />;
+	}
+
+	if (currentPage === "change-email") {
+		return <ChangeEmail onNavigate={onNavigate} />;
+	}
+
+	if (currentPage === "delete") {
+		return <DeleteAccount onNavigate={onNavigate} />;
+	}
+
+	if (currentPage === "ai-features") {
+		return <AiFeatures />;
+	}
+
+	if (currentPage === "import") {
+		return <ImportBookmarks onNavigate={onNavigate} />;
+	}
+
+	return null;
 }

@@ -5,6 +5,40 @@ import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 
 import { Dialog } from "@/components/ui/recollect/dialog";
 
+type DeleteCollectionModalProps = {
+	categoryId: number;
+	children: ReactNode;
+	isCurrent: boolean;
+};
+
+export function DeleteCollectionModal({
+	categoryId,
+	children,
+	isCurrent,
+}: DeleteCollectionModalProps) {
+	return (
+		<Dialog.Root>
+			<Dialog.Trigger className="w-full text-left">{children}</Dialog.Trigger>
+			<Dialog.Portal>
+				<Dialog.Backdrop />
+				<Dialog.Popup className="w-[448px] rounded-xl p-6">
+					<Dialog.Title>Delete Collection</Dialog.Title>
+					<DeleteCollectionDescription categoryId={categoryId} />
+					<div className="mt-4 flex justify-end gap-3">
+						<Dialog.Close className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">
+							Cancel
+						</Dialog.Close>
+						<DeleteCollectionConfirmButton
+							categoryId={categoryId}
+							isCurrent={isCurrent}
+						/>
+					</div>
+				</Dialog.Popup>
+			</Dialog.Portal>
+		</Dialog.Root>
+	);
+}
+
 function DeleteCollectionDescription({ categoryId }: { categoryId: number }) {
 	const { bookmarksCountData } = useFetchBookmarksCount();
 	const bookmarkCount =
@@ -46,39 +80,5 @@ function DeleteCollectionConfirmButton({
 		>
 			Delete
 		</button>
-	);
-}
-
-type DeleteCollectionModalProps = {
-	categoryId: number;
-	children: ReactNode;
-	isCurrent: boolean;
-};
-
-export function DeleteCollectionModal({
-	categoryId,
-	children,
-	isCurrent,
-}: DeleteCollectionModalProps) {
-	return (
-		<Dialog.Root>
-			<Dialog.Trigger className="w-full text-left">{children}</Dialog.Trigger>
-			<Dialog.Portal>
-				<Dialog.Backdrop />
-				<Dialog.Popup className="w-[448px] rounded-xl p-6">
-					<Dialog.Title>Delete Collection</Dialog.Title>
-					<DeleteCollectionDescription categoryId={categoryId} />
-					<div className="mt-4 flex justify-end gap-3">
-						<Dialog.Close className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">
-							Cancel
-						</Dialog.Close>
-						<DeleteCollectionConfirmButton
-							categoryId={categoryId}
-							isCurrent={isCurrent}
-						/>
-					</div>
-				</Dialog.Popup>
-			</Dialog.Portal>
-		</Dialog.Root>
 	);
 }
