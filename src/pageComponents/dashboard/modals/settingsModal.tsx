@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import Modal from "../../../components/modal";
+import { Dialog } from "../../../components/ui/recollect/dialog";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { AvatarIcon } from "../../../icons/avatarIcon";
 import { ImportIcon } from "../../../icons/importIcon";
@@ -115,53 +115,59 @@ const SettingsModal = () => {
 	};
 
 	return (
-		<Modal
+		<Dialog.Root
 			open={showSettingsModal}
-			setOpen={() => toggleShowSettingsModal()}
-			// adding skip-global-paste to avoid global paste event in the modal
-			wrapperClassName="skip-global-paste w-full max-w-[740px] rounded-[20px] outline-hidden self-center"
+			onOpenChange={(open) => {
+				if (!open) {
+					toggleShowSettingsModal();
+				}
+			}}
 		>
-			{/* <div onClick={() => toggleShowSettingsModal()}>close</div> */}
-			<div className="flex h-[700px] rounded-[20px] bg-gray-0">
-				<div className="flex h-full min-w-fit flex-col rounded-l-[20px] border-r-[0.5px] border-r-gray-100 bg-gray-0 px-2 py-4 lg:min-w-[180px]">
-					{isDesktop && (
-						<div className="px-2 text-13 leading-[115%] font-medium tracking-[0.02em] text-gray-600">
-							Settings
+			<Dialog.Portal>
+				<Dialog.Backdrop />
+				<Dialog.Popup className="skip-global-paste w-full max-w-[740px] rounded-[20px] p-0">
+					<div className="flex h-[700px] rounded-[20px] bg-gray-0">
+						<div className="flex h-full min-w-fit flex-col rounded-l-[20px] border-r-[0.5px] border-r-gray-100 bg-gray-0 px-2 py-4 lg:min-w-[180px]">
+							{isDesktop && (
+								<div className="px-2 text-13 leading-[115%] font-medium tracking-[0.02em] text-gray-600">
+									Settings
+								</div>
+							)}
+							<div className="mt-3">
+								{optionsList?.map((item) => (
+									<SingleListItemComponent
+										extendedClassname="py-[6px]"
+										isLink={false}
+										item={item}
+										key={item.id}
+										onClick={() => {
+											switch (item.id) {
+												case 0:
+													setCurrentSettingsPage("main");
+													break;
+												case 1:
+													setCurrentSettingsPage("ai-features");
+													break;
+												case 2:
+													setCurrentSettingsPage("import");
+													break;
+												default:
+													break;
+											}
+										}}
+										responsiveIcon
+										showIconDropdown={false}
+									/>
+								))}
+							</div>
 						</div>
-					)}
-					<div className="mt-3">
-						{optionsList?.map((item) => (
-							<SingleListItemComponent
-								extendedClassname="py-[6px]"
-								isLink={false}
-								item={item}
-								key={item.id}
-								onClick={() => {
-									switch (item.id) {
-										case 0:
-											setCurrentSettingsPage("main");
-											break;
-										case 1:
-											setCurrentSettingsPage("ai-features");
-											break;
-										case 2:
-											setCurrentSettingsPage("import");
-											break;
-										default:
-											break;
-									}
-								}}
-								responsiveIcon
-								showIconDropdown={false}
-							/>
-						))}
+						<div className="hide-scrollbar h-full w-full overflow-auto rounded-[20px] px-12 pt-8">
+							{renderMainContent()}
+						</div>
 					</div>
-				</div>
-				<div className="hide-scrollbar h-full w-full overflow-auto rounded-[20px] px-12 pt-8">
-					{renderMainContent()}
-				</div>
-			</div>
-		</Modal>
+				</Dialog.Popup>
+			</Dialog.Portal>
+		</Dialog.Root>
 	);
 };
 

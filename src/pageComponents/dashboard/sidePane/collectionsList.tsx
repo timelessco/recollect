@@ -44,7 +44,7 @@ import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
-import Modal from "../../../components/modal";
+import { Dialog } from "@/components/ui/recollect/dialog";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
@@ -807,36 +807,44 @@ const CollectionsList = () => {
 			</AriaDisclosure>
 
 			{/* Delete Collection Confirmation Modal */}
-			<Modal
+			<Dialog.Root
 				open={deleteConfirmation.isOpen}
-				setOpen={handleCancelDelete}
-				wrapperClassName="min-w-[448px] max-w-md p-6 rounded-xl"
+				onOpenChange={(open) => {
+					if (!open) {
+						handleCancelDelete();
+					}
+				}}
 			>
-				<h2 className="text-lg font-semibold text-gray-900">
-					Delete Collection
-				</h2>
-				{bookmarkCount > 0 && (
-					<p className="mt-2 text-sm text-gray-600">
-						You have {bookmarkCount} bookmarks in this collection.
-					</p>
-				)}
-				<div className="mt-4 flex justify-end gap-3">
-					<button
-						className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-						onClick={handleCancelDelete}
-						type="button"
-					>
-						Cancel
-					</button>
-					<button
-						className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-						onClick={handleConfirmDelete}
-						type="button"
-					>
-						Delete
-					</button>
-				</div>
-			</Modal>
+				<Dialog.Portal>
+					<Dialog.Backdrop />
+					<Dialog.Popup className="max-w-md min-w-[448px] rounded-xl p-6">
+						<Dialog.Title className="text-gray-900">
+							Delete Collection
+						</Dialog.Title>
+						{bookmarkCount > 0 && (
+							<Dialog.Description className="mt-2">
+								You have {bookmarkCount} bookmarks in this collection.
+							</Dialog.Description>
+						)}
+						<div className="mt-4 flex justify-end gap-3">
+							<button
+								className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+								onClick={handleCancelDelete}
+								type="button"
+							>
+								Cancel
+							</button>
+							<button
+								className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+								onClick={handleConfirmDelete}
+								type="button"
+							>
+								Delete
+							</button>
+						</div>
+					</Dialog.Popup>
+				</Dialog.Portal>
+			</Dialog.Root>
 		</>
 	);
 };
