@@ -9,13 +9,13 @@ import { createServiceClient } from "@/utils/supabaseClient";
 const ROUTE = "cron/process-archived";
 
 const RpcResultSchema = z.object({
-	requeued: z.number(),
-	requested: z.number().optional(),
+	requeued: z.int(),
+	requested: z.int().optional(),
 });
 
 const InputSchema = z.union([
 	z.object({ retry_all: z.literal(true) }),
-	z.object({ count: z.number().min(1).max(1000) }),
+	z.object({ count: z.int().min(1).max(1000) }),
 	z.object({ msg_ids: z.array(z.int()).min(1).max(100) }),
 ]);
 
