@@ -1,5 +1,4 @@
 import { useMemo, useRef, useState, type Key, type ReactNode } from "react";
-import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
@@ -39,18 +38,10 @@ import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useF
 import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
-import {
-	AriaDropdown,
-	AriaDropdownMenu,
-} from "../../../components/ariaDropdown";
 import Modal from "../../../components/modal";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
-import { useIsMobileView } from "../../../hooks/useIsMobileView";
-import AddCategoryIcon from "../../../icons/addCategoryIcon";
-import DownArrowGray from "../../../icons/downArrowGray";
-import OptionsIcon from "../../../icons/optionsIcon";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
@@ -62,27 +53,18 @@ import {
 } from "../../../types/apiTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import {
-	dropdownMenuClassName,
-	dropdownMenuItemClassName,
-} from "../../../utils/commonClassNames";
-import {
 	BOOKMARKS_COUNT_KEY,
 	CATEGORIES_KEY,
-	MAX_TAG_COLLECTION_NAME_LENGTH,
-	MIN_TAG_COLLECTION_NAME_LENGTH,
 	SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
 import { errorToast } from "../../../utils/toastMessages";
 
-import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
+import { CollectionsListSection } from "./collections-list-section";
+import { FavoriteCollectionsList } from "./favorite-collections-list";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
-import { useAddCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-optimistic-mutation";
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
-import { Collapsible } from "@/components/ui/recollect/collapsible";
-import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
-import { handleClientError } from "@/utils/error-utils/client";
 
 type ListBoxDropTypes = ListProps<object> & {
 	getItems?: (keys: Set<Key>) => DragItem[];
@@ -299,20 +281,14 @@ const OptionDrop = ({
 };
 
 const CollectionsList = () => {
-	const router = useRouter();
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
-	const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
-	const [isCollectionHeaderMenuOpen, setIsCollectionHeaderMenuOpen] =
-		useState(false);
-	const { isDesktop } = useIsMobileView();
 	const [deleteConfirmation, setDeleteConfirmation] = useState<{
 		isOpen: boolean;
 		categoryId: number | null;
 		isCurrent: boolean;
 	}>({ isOpen: false, categoryId: null, isCurrent: false });
 
-	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
 	const { addCategoryToBookmarkOptimisticMutation } =
 		useAddCategoryToBookmarkOptimisticMutation();
 	const { updateCategoryOrderMutation } =
@@ -415,34 +391,6 @@ const CollectionsList = () => {
 	]) as {
 		data: BookmarksCountTypes;
 		error: PostgrestError;
-	};
-
-	const handleAddNewCategory = async (newCategoryName: string) => {
-		const result = tagCategoryNameSchema.safeParse(newCategoryName);
-
-		if (!result.success) {
-			handleClientError(
-				new Error(result.error.issues[0]?.message ?? "Invalid collection name"),
-				`Collection name must be between ${MIN_TAG_COLLECTION_NAME_LENGTH} and ${MAX_TAG_COLLECTION_NAME_LENGTH} characters`,
-			);
-			return;
-		}
-
-		if (userProfileData && !isNull(userProfileData.data)) {
-			addCategoryOptimisticMutation.mutate(
-				{
-					name: result.data,
-					category_order: (
-						userProfileData.data[0]?.category_order ?? []
-					).filter((id): id is number => id !== null),
-				},
-				{
-					onSuccess: (data) => {
-						void router.push(`/${data[0].category_slug}`);
-					},
-				},
-			);
-		}
 	};
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -614,203 +562,42 @@ const CollectionsList = () => {
 		}
 	};
 
-	const renderAddCategoryInput = showAddCategoryInput ? (
-		<div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-gray-100 px-2 py-[6px]">
-			<div className="flex items-center">
-				<figure className="mr-2 h-[18px] w-[18px]">
-					<svg
-						fill="var(--color-plain-reverse)"
-						height="16"
-						viewBox="0 0 18 18"
-						width="16"
-					>
-						<use href="/sprite.svg#star-04" />
-					</svg>
-				</figure>
-				<input
-					autoFocus
-					className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! placeholder:text-plain-reverse focus:ring-0! focus:ring-offset-0! focus:outline-hidden!"
-					id="add-category-input"
-					onBlur={(event) => {
-						const inputValue = (event.target as HTMLInputElement)?.value;
-						if (inputValue) {
-							void handleAddNewCategory(inputValue);
-						}
-
-						setShowAddCategoryInput(false);
-					}}
-					onKeyUp={(event) => {
-						if (event.key === "Enter") {
-							const inputValue = (event.target as HTMLInputElement)?.value;
-
-							if (inputValue) {
-								void handleAddNewCategory(inputValue);
-							}
-
-							setShowAddCategoryInput(false);
-						}
-					}}
-					placeholder="Collection Name"
-				/>
-			</div>
-		</div>
-	) : (
-		// we have ths as null | undefined is not accepted as AriaDisclosure children
-		<span className="hidden" />
-	);
-
-	const favoritesHeader = (
-		<div className="group flex w-full items-center justify-between px-1 py-[7px]">
-			<div className="flex items-center text-13 leading-[14.95px] font-medium tracking-[0.02em] text-gray-600">
-				<p className="mr-1">Favorites</p>
-				<DownArrowGray
-					className="collections-sidepane-down-arrow hidden pt-px text-gray-500 group-hover:block"
-					size={10}
-				/>
-			</div>
-		</div>
-	);
-
-	const collectionsHeader = (
-		<div className="group flex w-full items-center justify-between px-1 py-[7px]">
-			<div className="flex items-center text-13 leading-[14.95px] font-medium tracking-[0.02em] text-gray-600">
-				<p className="mr-1">Collections</p>
-				<DownArrowGray
-					className="collections-sidepane-down-arrow hidden pt-px text-gray-500 group-hover:block"
-					size={10}
-				/>
-			</div>
-			<AriaDropdown
-				menuButton={
-					<div
-						className={
-							isCollectionHeaderMenuOpen
-								? "block text-gray-500"
-								: "hidden text-gray-500 group-hover:block"
-						}
-					>
-						<OptionsIcon />
-					</div>
-				}
-				menuButtonClassName="h-4 w-4"
-				menuClassName={`${dropdownMenuClassName} z-10`}
-				menuOpenToggle={(value) => {
-					setIsCollectionHeaderMenuOpen(value);
-				}}
-				onButtonClick={(event) => event?.stopPropagation()}
-				portalElement={
-					!isDesktop
-						? () => {
-								if (typeof document === "undefined") {
-									return null;
-								}
-
-								return document.querySelector("#side-pane-dropdown-portal");
-							}
-						: undefined
-				}
-			>
-				{[{ label: "Add Collection", value: "add-category" }]?.map((item) => (
-					<AriaDropdownMenu
-						key={item?.value}
-						onClick={() => {
-							if (item?.value === "add-category") {
-								setShowAddCategoryInput(true);
-							}
-						}}
-					>
-						<div className={`text-justify ${dropdownMenuItemClassName}`}>
-							{item?.label}
-						</div>
-					</AriaDropdownMenu>
-				))}
-			</AriaDropdown>
-		</div>
-	);
 	return (
 		<>
-			{favoriteCollections.length > 0 && (
-				<div className="py-3">
-					<Collapsible.Root>
-						<Collapsible.Trigger>{favoritesHeader}</Collapsible.Trigger>
-						<Collapsible.Panel>
-							<ul className="flex flex-col gap-px" id="favorites-wrapper">
-								{favoriteCollections.map((item) => (
-									<li key={item?.id}>
-										<SingleListItemComponent
-											extendedClassname="py-[6px]"
-											item={item}
-											listNameId="favorite-collection-name"
-											onCategoryOptionClick={handleCategoryOptionClick}
-											showDropdown
-											showSpinner={
-												addCategoryToBookmarkOptimisticMutation.isPending &&
-												addCategoryToBookmarkOptimisticMutation.variables
-													?.category_id === item?.id
-											}
-										/>
-									</li>
-								))}
-							</ul>
-						</Collapsible.Panel>
-					</Collapsible.Root>
-				</div>
-			)}
+			<FavoriteCollectionsList
+				favoriteCollections={favoriteCollections}
+				onCategoryOptionClick={handleCategoryOptionClick}
+			/>
 
-			<Collapsible.Root defaultOpen>
-				<Collapsible.Trigger>{collectionsHeader}</Collapsible.Trigger>
-				<Collapsible.Panel>
-					<div id="collections-wrapper">
-						{isLoadingCategories ? (
-							<CollectionsListSkeleton />
-						) : (
-							<ListBoxDrop
-								aria-label="Categories-drop"
-								// eslint-disable-next-line @typescript-eslint/no-explicit-any
-								onItemDrop={(event: any) => {
-									void handleBookmarksDrop(event);
-								}}
-								onReorder={onReorder}
-								selectionBehavior="replace"
-								selectionMode="multiple"
-							>
-								{nonFavoriteCollections?.map((item) => (
-									<Item key={item?.id} textValue={item?.name}>
-										<SingleListItemComponent
-											extendedClassname="py-[6px]"
-											item={item}
-											listNameId="collection-name"
-											onCategoryOptionClick={handleCategoryOptionClick}
-											showDropdown
-											showSpinner={
-												addCategoryToBookmarkOptimisticMutation.isPending &&
-												addCategoryToBookmarkOptimisticMutation.variables
-													?.category_id === item?.id
-											}
-										/>
-									</Item>
-								))}
-							</ListBoxDrop>
-						)}
-					</div>
-					{renderAddCategoryInput}
-					<div
-						className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] hover:bg-gray-100"
-						id="add-category-button"
-						onClick={() => setShowAddCategoryInput(true)}
-						onKeyDown={() => {}}
-						role="button"
-						tabIndex={0}
-					>
-						<figure className="text-gray-500">
-							<AddCategoryIcon />
-						</figure>
-						<p className="ml-2 flex-1 truncate text-sm leading-[16px] font-450 text-gray-600">
-							Add Collection
-						</p>
-					</div>
-				</Collapsible.Panel>
-			</Collapsible.Root>
+			<CollectionsListSection isLoading={isLoadingCategories}>
+				<ListBoxDrop
+					aria-label="Categories-drop"
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					onItemDrop={(event: any) => {
+						void handleBookmarksDrop(event);
+					}}
+					onReorder={onReorder}
+					selectionBehavior="replace"
+					selectionMode="multiple"
+				>
+					{nonFavoriteCollections?.map((item) => (
+						<Item key={item?.id} textValue={item?.name}>
+							<SingleListItemComponent
+								extendedClassname="py-[6px]"
+								item={item}
+								listNameId="collection-name"
+								onCategoryOptionClick={handleCategoryOptionClick}
+								showDropdown
+								showSpinner={
+									addCategoryToBookmarkOptimisticMutation.isPending &&
+									addCategoryToBookmarkOptimisticMutation.variables
+										?.category_id === item?.id
+								}
+							/>
+						</Item>
+					))}
+				</ListBoxDrop>
+			</CollectionsListSection>
 
 			{/* Delete Collection Confirmation Modal */}
 			<Modal
