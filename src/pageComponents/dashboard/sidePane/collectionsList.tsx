@@ -730,7 +730,7 @@ const CollectionsList = () => {
 	return (
 		<>
 			{favoriteCollections.length > 0 && (
-				<div className="py-4">
+				<div className="py-3">
 					<AriaDisclosure renderDisclosureButton={favoritesHeader}>
 						<ul className="flex flex-col gap-px" id="favorites-wrapper">
 							{favoriteCollections.map((item) => (

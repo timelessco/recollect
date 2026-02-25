@@ -47,18 +47,29 @@ jobs:
           fi
           git worktree remove /tmp/prev-commit --force 2>/dev/null || true
 
-      - id: oasdiff
-        if: steps.guard.outputs.skip != 'true'
+      - if: steps.guard.outputs.skip != 'true'
+        name: Install oasdiff
+        run: |
+          go install github.com/oasdiff/oasdiff@latest
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - if: steps.guard.outputs.skip != 'true'
         name: Generate API changelog
-        uses: oasdiff/oasdiff-action/changelog@1c611ffb1253a72924624aa4fb662e302b3565d3 # v0.0.21
-        with:
-          base: .oasdiff/openapi-old.json
-          output-to-file: .oasdiff/changelog-entry.md
-          revision: .oasdiff/openapi-new.json
+        run: |
+          oasdiff changelog .oasdiff/openapi-old.json .oasdiff/openapi-new.json \
+            --format markdown > .oasdiff/changelog-entry.md || true
       - if: steps.guard.outputs.skip != 'true'
         name: Append changelog entry
         run: |
           if [ -s .oasdiff/changelog-entry.md ]; then
+            # Strip auto-generated heading and demote ## to ### (nest under date heading)
+            sed -i '1{/^# API Changelog/d}' .oasdiff/changelog-entry.md
+            sed -i 's/^## /### /' .oasdiff/changelog-entry.md
+            # Skip if only whitespace remains after stripping heading
+            if ! grep -q '[^[:space:]]' .oasdiff/changelog-entry.md; then
+              echo "No API changes detected — skipping changelog update"
+              exit 0
+            fi
             DATE=$(date -u +"%Y-%m-%d")
             SHORT_SHA="${{ github.sha }}"
             SHORT_SHA="${SHORT_SHA:0:7}"

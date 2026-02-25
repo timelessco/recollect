@@ -129,6 +129,8 @@ npx tsx scripts/generate-openapi.ts                   # Regenerate OpenAPI spec 
 oasdiff changelog old.json new.json --format markdown # Local changelog diff (brew install oasdiff)
 ```
 
+- **CI changelog workflow** (`.github/workflows/openapi-changelog.yml`): Uses `go install github.com/oasdiff/oasdiff@latest` + direct CLI (not the Docker action — it ignores `args`). Spec files go in `.oasdiff/` (Docker actions can't see `/tmp`). `docs/API_CHANGELOG.md` is CI-generated and ignored by Prettier + markdownlint.
+
 - **Spec version**: OpenAPI 3.0.3 (not 3.1) — required for oasdiff compatibility. Uses `OpenApiGeneratorV3`
 - **Response components**: `ValidationError` (400), `Unauthorized` (401), `InternalError` (500) — all registered as `$ref` in `generate-openapi.ts`. The merge script preserves `$ref` responses for non-400 status codes; 400 `$ref` is inlined when `additionalResponses` targets it (required for response400Examples pipeline)
 - **Two-pass generation**: (1) filesystem scanner auto-infers schemas from factory `.config` on route handlers, (2) `scripts/merge-openapi-supplements.ts` overlays human-authored metadata (tags, descriptions, examples)
