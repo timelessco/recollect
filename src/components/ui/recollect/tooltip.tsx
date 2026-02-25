@@ -1,10 +1,9 @@
-"use client";
-
+import { type ReactNode } from "react";
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 
 interface TooltipProps {
-	children: React.ReactNode;
-	content: React.ReactNode;
+	children: ReactNode;
+	content: ReactNode;
 }
 
 export function Tooltip(props: TooltipProps) {
@@ -13,7 +12,7 @@ export function Tooltip(props: TooltipProps) {
 	return (
 		<TooltipPrimitive.Provider>
 			<TooltipPrimitive.Root>
-				<TooltipPrimitive.Trigger className="cursor-pointer" render={<div />}>
+				<TooltipPrimitive.Trigger className="cursor-pointer">
 					{children}
 				</TooltipPrimitive.Trigger>
 				<TooltipPrimitive.Portal>
