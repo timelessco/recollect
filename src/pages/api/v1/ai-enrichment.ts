@@ -8,6 +8,7 @@ import {
 } from "../../../utils/constants";
 import {
 	enrichMetadata,
+	getValidatedVideoUrl,
 	validateInstagramMediaUrl,
 	validateTwitterMediaUrl,
 } from "../../../utils/helpers.server";
@@ -91,22 +92,19 @@ export default async function handler(
 			queue_name,
 		} = parseResult.data;
 
+		const rawVideoUrl = message.message.meta_data?.video_url;
+		const validatedVideoUrl = await getValidatedVideoUrl(rawVideoUrl);
+
 		if (isTwitterBookmark) {
 			try {
 				// Validate ogImage URL
 				validateTwitterMediaUrl(ogImageUrl);
 				console.log(`[${ROUTE}] ogImage URL validated:`, { ogImageUrl });
-
-				// Validate video URL if present
-				if (message.message.meta_data?.video_url) {
-					validateTwitterMediaUrl(message.message.meta_data.video_url);
-					console.log(`[${ROUTE}] Video URL validated`);
-				}
 			} catch (validationError) {
 				console.error(`[${ROUTE}] URL validation failed:`, {
 					error: validationError,
 					ogImageUrl,
-					videoUrl: message.message.meta_data?.video_url,
+					videoUrl: validatedVideoUrl,
 				});
 				Sentry.captureException(validationError, {
 					tags: {
@@ -117,7 +115,7 @@ export default async function handler(
 						bookmarkId: id,
 						url,
 						ogImageUrl,
-						videoUrl: message.message.meta_data?.video_url,
+						videoUrl: validatedVideoUrl,
 					},
 				});
 				await storeQueueError({
@@ -153,7 +151,7 @@ export default async function handler(
 				console.error(`[${ROUTE}] Instagram URL validation failed:`, {
 					error: validationError,
 					ogImageUrl,
-					videoUrl: message.message.meta_data?.video_url,
+					videoUrl: validatedVideoUrl,
 				});
 				Sentry.captureException(validationError, {
 					tags: {
@@ -164,7 +162,7 @@ export default async function handler(
 						bookmarkId: id,
 						url,
 						ogImageUrl,
-						videoUrl: message.message.meta_data?.video_url,
+						videoUrl: validatedVideoUrl,
 					},
 				});
 				await storeQueueError({
@@ -255,7 +253,7 @@ export default async function handler(
 			existingMetadata: message.message.meta_data,
 			ogImage,
 			isTwitterBookmark,
-			videoUrl: message.message.meta_data?.video_url,
+			videoUrl: validatedVideoUrl,
 			userId: user_id,
 			supabase,
 			url,
