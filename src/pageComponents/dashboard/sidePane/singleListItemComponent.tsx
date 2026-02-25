@@ -19,7 +19,6 @@ import { DeleteCollectionModal } from "../modals/delete-collection-modal";
 import ShareContent from "../share/shareContent";
 
 import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
-import { Dialog } from "@/components/ui/recollect/dialog";
 
 export type CollectionItemTypes = {
 	count?: number;
@@ -178,15 +177,12 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 										>
 											<div className={dropdownMenuItemClassName}>Share</div>
 										</AriaDropdownMenu>
-										<Dialog.Root>
-											<Dialog.Trigger className="w-full text-left">
-												<div className={dropdownMenuItemClassName}>Delete</div>
-											</Dialog.Trigger>
-											<DeleteCollectionModal
-												categoryId={item.id}
-												isCurrent={item.current}
-											/>
-										</Dialog.Root>
+										<DeleteCollectionModal
+											categoryId={item.id}
+											isCurrent={item.current}
+										>
+											<div className={dropdownMenuItemClassName}>Delete</div>
+										</DeleteCollectionModal>
 									</>
 								) : (
 									<div className="w-75 rounded-lg bg-gray-50">
