@@ -59,7 +59,12 @@ export function CollectionsListSection({
 					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] hover:bg-gray-100"
 					id="add-category-button"
 					onClick={() => setShowAddCategoryInput(true)}
-					onKeyDown={() => {}}
+					onKeyDown={(event) => {
+						if (event.key === "Enter" || event.key === " ") {
+							event.preventDefault();
+							setShowAddCategoryInput(true);
+						}
+					}}
 					role="button"
 					tabIndex={0}
 				>
@@ -176,8 +181,7 @@ function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
 	};
 
 	if (!show) {
-		// null | undefined is not accepted as AriaDisclosure children
-		return <span className="hidden" />;
+		return null;
 	}
 
 	return (
