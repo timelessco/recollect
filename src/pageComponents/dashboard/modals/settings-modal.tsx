@@ -1,13 +1,8 @@
-import { useEffect } from "react";
-
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { AvatarIcon } from "../../../icons/avatarIcon";
 import { ImportIcon } from "../../../icons/importIcon";
 import { SettingsAiIcon } from "../../../icons/settingsAiIcon";
-import {
-	useMiscellaneousStore,
-	useModalStore,
-} from "../../../store/componentStore";
+import { useMiscellaneousStore } from "../../../store/componentStore";
 import Settings from "../../settings";
 import { AiFeatures } from "../../settings/aiFeatures";
 import ChangeEmail from "../../settings/changeEmail";
@@ -18,11 +13,7 @@ import SingleListItemComponent from "../sidePane/singleListItemComponent";
 import { Dialog } from "@/components/ui/recollect/dialog";
 
 const SettingsModal = () => {
-	const showSettingsModal = useModalStore((state) => state.showSettingsModal);
 	const { isDesktop } = useIsMobileView();
-	const toggleShowSettingsModal = useModalStore(
-		(state) => state.toggleShowSettingsModal,
-	);
 
 	const currentSettingsPage = useMiscellaneousStore(
 		(state) => state.currentSettingsPage,
@@ -48,13 +39,6 @@ const SettingsModal = () => {
 	};
 
 	const selectedMenuItemId = getSelectedMenuItemId();
-
-	// reset useeffect
-	useEffect(() => {
-		if (!showSettingsModal) {
-			setCurrentSettingsPage("main");
-		}
-	}, [setCurrentSettingsPage, showSettingsModal]);
 
 	const optionsList = [
 		{
@@ -116,62 +100,53 @@ const SettingsModal = () => {
 	};
 
 	return (
-		<Dialog.Root
-			open={showSettingsModal}
-			onOpenChange={(open) => {
-				if (!open) {
-					toggleShowSettingsModal();
-				}
-			}}
-		>
-			<Dialog.Portal>
-				<Dialog.Backdrop />
-				<Dialog.Popup
-					className="skip-global-paste w-full max-w-[740px] rounded-[20px]"
-					aria-label="Settings"
-				>
-					<div className="flex h-[700px] rounded-[20px] bg-gray-0">
-						<div className="flex h-full min-w-fit flex-col rounded-l-[20px] border-r-[0.5px] border-r-gray-100 bg-gray-0 px-2 py-4 lg:min-w-[180px]">
-							{isDesktop && (
-								<div className="px-2 text-13 leading-[115%] font-medium tracking-[0.02em] text-gray-600">
-									Settings
-								</div>
-							)}
-							<div className="mt-3">
-								{optionsList?.map((item) => (
-									<SingleListItemComponent
-										extendedClassname="py-[6px]"
-										isLink={false}
-										item={item}
-										key={item.id}
-										onClick={() => {
-											switch (item.id) {
-												case 0:
-													setCurrentSettingsPage("main");
-													break;
-												case 1:
-													setCurrentSettingsPage("ai-features");
-													break;
-												case 2:
-													setCurrentSettingsPage("import");
-													break;
-												default:
-													break;
-											}
-										}}
-										responsiveIcon
-										showIconDropdown={false}
-									/>
-								))}
+		<Dialog.Portal>
+			<Dialog.Backdrop />
+			<Dialog.Popup
+				className="skip-global-paste w-full max-w-[740px] rounded-[20px]"
+				aria-label="Settings"
+			>
+				<div className="flex h-[700px] rounded-[20px] bg-gray-0">
+					<div className="flex h-full min-w-fit flex-col rounded-l-[20px] border-r-[0.5px] border-r-gray-100 bg-gray-0 px-2 py-4 lg:min-w-[180px]">
+						{isDesktop && (
+							<div className="px-2 text-13 leading-[115%] font-medium tracking-[0.02em] text-gray-600">
+								Settings
 							</div>
-						</div>
-						<div className="hide-scrollbar h-full w-full overflow-auto rounded-[20px] px-12 pt-8">
-							{renderMainContent()}
+						)}
+						<div className="mt-3">
+							{optionsList?.map((item) => (
+								<SingleListItemComponent
+									extendedClassname="py-[6px]"
+									isLink={false}
+									item={item}
+									key={item.id}
+									onClick={() => {
+										switch (item.id) {
+											case 0:
+												setCurrentSettingsPage("main");
+												break;
+											case 1:
+												setCurrentSettingsPage("ai-features");
+												break;
+											case 2:
+												setCurrentSettingsPage("import");
+												break;
+											default:
+												break;
+										}
+									}}
+									responsiveIcon
+									showIconDropdown={false}
+								/>
+							))}
 						</div>
 					</div>
-				</Dialog.Popup>
-			</Dialog.Portal>
-		</Dialog.Root>
+					<div className="hide-scrollbar h-full w-full overflow-auto rounded-[20px] px-12 pt-8">
+						{renderMainContent()}
+					</div>
+				</div>
+			</Dialog.Popup>
+		</Dialog.Portal>
 	);
 };
 

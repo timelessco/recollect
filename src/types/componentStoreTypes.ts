@@ -3,9 +3,7 @@ import { type User } from "@supabase/supabase-js";
 import { type SingleListData } from "./apiTypes";
 
 export type ModalStoreState = {
-	showSettingsModal: boolean;
 	showVideoModal: boolean;
-	toggleShowSettingsModal: () => void;
 	toggleShowVideoModal: () => void;
 };
 

@@ -10,11 +10,6 @@ import {
 } from "../types/componentStoreTypes";
 
 export const useModalStore = create<ModalStoreState>((set) => ({
-	showSettingsModal: false,
-	toggleShowSettingsModal: () =>
-		set((state) => ({
-			showSettingsModal: !state.showSettingsModal,
-		})),
 	showVideoModal: false,
 	toggleShowVideoModal: () =>
 		set((state) => ({

@@ -31,8 +31,7 @@ function Popup(props: DialogPrimitive.Popup.Props) {
 	return (
 		<DialogPrimitive.Popup
 			className={cn(
-				"fixed top-1/2 left-1/2 z-102 -translate-x-1/2 -translate-y-1/2 bg-gray-0",
-				"rounded-lg p-4 outline-hidden",
+				"fixed top-1/2 left-1/2 z-102 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-gray-0 outline-hidden",
 				className,
 			)}
 			{...rest}
@@ -60,6 +59,10 @@ function Description(props: DialogPrimitive.Description.Props) {
 	);
 }
 
+function Trigger(props: DialogPrimitive.Trigger.Props) {
+	return <DialogPrimitive.Trigger {...props} />;
+}
+
 export const Dialog = {
 	Backdrop,
 	Description,
@@ -67,4 +70,5 @@ export const Dialog = {
 	Portal,
 	Root,
 	Title,
+	Trigger,
 };

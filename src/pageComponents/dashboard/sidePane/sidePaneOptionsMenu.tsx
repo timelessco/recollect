@@ -2,23 +2,26 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
-import {
-	useModalStore,
-	useSupabaseSession,
-} from "../../../store/componentStore";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import { optionsMenuListArray } from "../../../utils/commonData";
 import {
 	BOOKMARKS_COUNT_KEY,
 	menuListItemName,
 } from "../../../utils/constants";
+import SettingsModal from "../modals/settings-modal";
 
 import SingleListItemComponent from "./singleListItemComponent";
+import { Dialog } from "@/components/ui/recollect/dialog";
+import { useMiscellaneousStore } from "@/store/componentStore";
 
 const SidePaneOptionsMenu = () => {
 	const currentPath = useGetCurrentUrlPath();
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
+	const setCurrentSettingsPage = useMiscellaneousStore(
+		(state) => state.setCurrentSettingsPage,
+	);
 
 	const bookmarksCountData = queryClient.getQueryData([
 		BOOKMARKS_COUNT_KEY,
@@ -27,10 +30,6 @@ const SidePaneOptionsMenu = () => {
 		data: BookmarksCountTypes;
 		error: PostgrestError;
 	};
-
-	const toggleShowSettingsModal = useModalStore(
-		(state) => state.toggleShowSettingsModal,
-	);
 
 	const optionsMenuList = optionsMenuListArray(
 		currentPath,
@@ -51,21 +50,36 @@ const SidePaneOptionsMenu = () => {
 
 	return (
 		<div className="flex flex-col gap-px pt-[10px]">
-			{optionsMenuList?.map((item) => (
-				<SingleListItemComponent
-					extendedClassname="py-[6px]"
-					isLink={item?.id !== 4}
-					item={item}
-					key={item.id}
-					onClick={() => {
-						if (item?.id === 4) {
-							// we clicked on settings
-							toggleShowSettingsModal();
-						}
-					}}
-					showIconDropdown={false}
-				/>
-			))}
+			{optionsMenuList?.map((item) =>
+				item?.id === 4 ? (
+					<Dialog.Root
+						key={item.id}
+						onOpenChange={(open) => {
+							if (!open) {
+								setCurrentSettingsPage("main");
+							}
+						}}
+					>
+						<Dialog.Trigger>
+							<SingleListItemComponent
+								extendedClassname="py-[6px]"
+								isLink={false}
+								item={item}
+								showIconDropdown={false}
+							/>
+						</Dialog.Trigger>
+						<SettingsModal />
+					</Dialog.Root>
+				) : (
+					<SingleListItemComponent
+						extendedClassname="py-[6px]"
+						isLink={item?.id !== 4}
+						item={item}
+						key={item.id}
+						showIconDropdown={false}
+					/>
+				),
+			)}
 		</div>
 	);
 };

@@ -25,7 +25,6 @@ import NotFoundPage from "../notFoundPage";
 
 import { BookmarkCards } from "./bookmarkCards";
 import { DiscoverBookmarkCards } from "./discoverBookmarkCards";
-import SettingsModal from "./modals/settings-modal";
 
 const DashboardLayout = dynamic(async () => await import("./dashboardLayout"), {
 	ssr: false,
@@ -157,8 +156,6 @@ const Dashboard = () => {
 	return (
 		<>
 			<DashboardLayout>{renderMainPaneContent()}</DashboardLayout>
-
-			<SettingsModal />
 
 			<ToastContainer />
 		</>
