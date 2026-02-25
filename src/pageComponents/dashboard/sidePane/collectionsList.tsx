@@ -44,7 +44,6 @@ import {
 	AriaDropdown,
 	AriaDropdownMenu,
 } from "../../../components/ariaDropdown";
-import { Dialog } from "@/components/ui/recollect/dialog";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
@@ -81,6 +80,7 @@ import SingleListItemComponent, {
 } from "./singleListItemComponent";
 import { useAddCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-optimistic-mutation";
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
+import { Dialog } from "@/components/ui/recollect/dialog";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { handleClientError } from "@/utils/error-utils/client";
 
@@ -818,11 +818,9 @@ const CollectionsList = () => {
 				<Dialog.Portal>
 					<Dialog.Backdrop />
 					<Dialog.Popup className="max-w-md min-w-[448px] rounded-xl p-6">
-						<Dialog.Title className="text-gray-900">
-							Delete Collection
-						</Dialog.Title>
+						<Dialog.Title>Delete Collection</Dialog.Title>
 						{bookmarkCount > 0 && (
-							<Dialog.Description className="mt-2">
+							<Dialog.Description>
 								You have {bookmarkCount} bookmarks in this collection.
 							</Dialog.Description>
 						)}

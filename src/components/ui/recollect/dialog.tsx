@@ -11,15 +11,10 @@ function Portal(props: DialogPrimitive.Portal.Props) {
 }
 
 function Backdrop(props: DialogPrimitive.Backdrop.Props) {
-	const { className, ...rest } = props;
-
 	return (
 		<DialogPrimitive.Backdrop
-			className={cn(
-				"fixed inset-0 z-101 bg-black/36 backdrop-blur-sm",
-				className,
-			)}
-			{...rest}
+			className={cn("fixed inset-0 z-101 bg-black/36 backdrop-blur-sm")}
+			{...props}
 		/>
 	);
 }
@@ -40,23 +35,19 @@ function Popup(props: DialogPrimitive.Popup.Props) {
 }
 
 function Title(props: DialogPrimitive.Title.Props) {
-	const { className, ...rest } = props;
-
 	return (
 		<DialogPrimitive.Title
-			className={cn("text-lg font-semibold", className)}
-			{...rest}
+			className={cn("text-lg font-semibold text-gray-900")}
+			{...props}
 		/>
 	);
 }
 
 function Description(props: DialogPrimitive.Description.Props) {
-	const { className, ...rest } = props;
-
 	return (
 		<DialogPrimitive.Description
-			className={cn("text-sm text-gray-600", className)}
-			{...rest}
+			className={cn("mt-2 text-sm text-gray-600")}
+			{...props}
 		/>
 	);
 }
