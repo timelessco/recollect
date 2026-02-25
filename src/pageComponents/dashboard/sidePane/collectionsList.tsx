@@ -74,7 +74,6 @@ import {
 import { errorToast } from "../../../utils/toastMessages";
 
 import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
-import { DeleteCollectionModal } from "./delete-collection-modal";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
@@ -305,11 +304,6 @@ const CollectionsList = () => {
 	const [isCollectionHeaderMenuOpen, setIsCollectionHeaderMenuOpen] =
 		useState(false);
 	const { isDesktop } = useIsMobileView();
-	const [deleteConfirmation, setDeleteConfirmation] = useState<{
-		isOpen: boolean;
-		categoryId: number | null;
-		isCurrent: boolean;
-	}>({ isOpen: false, categoryId: null, isCurrent: false });
 
 	const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
 	const { addCategoryToBookmarkOptimisticMutation } =
@@ -332,37 +326,6 @@ const CollectionsList = () => {
 		() => [...flattendPaginationBookmarkData, ...(flattenedSearchData ?? [])],
 		[flattendPaginationBookmarkData, flattenedSearchData],
 	);
-
-	const handleCategoryOptionClick = (
-		value: number | string,
-		current: boolean,
-		id: number,
-	) => {
-		switch (value) {
-			case "delete":
-				setDeleteConfirmation({
-					isOpen: true,
-					categoryId: id,
-					isCurrent: current,
-				});
-				break;
-
-			case "share":
-				// code block
-				break;
-
-			default:
-			// code block
-		}
-	};
-
-	const handleCloseDeleteModal = () => {
-		setDeleteConfirmation({
-			isOpen: false,
-			categoryId: null,
-			isCurrent: false,
-		});
-	};
 
 	const currentPath = useGetCurrentUrlPath();
 
@@ -706,7 +669,6 @@ const CollectionsList = () => {
 										extendedClassname="py-[6px]"
 										item={item}
 										listNameId="favorite-collection-name"
-										onCategoryOptionClick={handleCategoryOptionClick}
 										showDropdown
 										showSpinner={
 											addCategoryToBookmarkOptimisticMutation.isPending &&
@@ -742,7 +704,6 @@ const CollectionsList = () => {
 										extendedClassname="py-[6px]"
 										item={item}
 										listNameId="collection-name"
-										onCategoryOptionClick={handleCategoryOptionClick}
 										showDropdown
 										showSpinner={
 											addCategoryToBookmarkOptimisticMutation.isPending &&
@@ -772,11 +733,6 @@ const CollectionsList = () => {
 					</p>
 				</div>
 			</AriaDisclosure>
-
-			<DeleteCollectionModal
-				deleteConfirmation={deleteConfirmation}
-				onClose={handleCloseDeleteModal}
-			/>
 		</>
 	);
 };

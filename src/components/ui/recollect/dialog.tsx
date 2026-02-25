@@ -63,8 +63,13 @@ function Trigger(props: DialogPrimitive.Trigger.Props) {
 	return <DialogPrimitive.Trigger {...props} />;
 }
 
+function Close(props: DialogPrimitive.Close.Props) {
+	return <DialogPrimitive.Close {...props} />;
+}
+
 export const Dialog = {
 	Backdrop,
+	Close,
 	Description,
 	Popup,
 	Portal,
