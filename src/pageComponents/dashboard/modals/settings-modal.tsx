@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { AvatarIcon } from "../../../icons/avatarIcon";
@@ -19,6 +19,36 @@ export type SettingsPage =
 	| "delete"
 	| "import"
 	| "main";
+
+function SettingsMainContent({
+	currentPage,
+	onNavigate,
+}: {
+	currentPage: SettingsPage;
+	onNavigate: (page: SettingsPage) => void;
+}) {
+	if (currentPage === "main") {
+		return <Settings onNavigate={onNavigate} />;
+	}
+
+	if (currentPage === "change-email") {
+		return <ChangeEmail onNavigate={onNavigate} />;
+	}
+
+	if (currentPage === "delete") {
+		return <DeleteAccount onNavigate={onNavigate} />;
+	}
+
+	if (currentPage === "ai-features") {
+		return <AiFeatures />;
+	}
+
+	if (currentPage === "import") {
+		return <ImportBookmarks onNavigate={onNavigate} />;
+	}
+
+	return null;
+}
 
 type SettingsModalProps = {
 	children: ReactNode;
@@ -102,23 +132,6 @@ function SettingsModalContent() {
 		},
 	];
 
-	const renderMainContent = () => {
-		switch (currentPage) {
-			case "main":
-				return <Settings onNavigate={setCurrentPage} />;
-			case "change-email":
-				return <ChangeEmail onNavigate={setCurrentPage} />;
-			case "delete":
-				return <DeleteAccount onNavigate={setCurrentPage} />;
-			case "ai-features":
-				return <AiFeatures />;
-			case "import":
-				return <ImportBookmarks onNavigate={setCurrentPage} />;
-			default:
-				return null;
-		}
-	};
-
 	return (
 		<div className="flex h-[700px] rounded-[20px] bg-gray-0">
 			<div className="flex h-full min-w-fit flex-col rounded-l-[20px] border-r-[0.5px] border-r-gray-100 bg-gray-0 px-2 py-4 lg:min-w-[180px]">
@@ -156,7 +169,10 @@ function SettingsModalContent() {
 				</div>
 			</div>
 			<div className="hide-scrollbar h-full w-full overflow-auto rounded-[20px] px-12 pt-8">
-				{renderMainContent()}
+				<SettingsMainContent
+					currentPage={currentPage}
+					onNavigate={setCurrentPage}
+				/>
 			</div>
 		</div>
 	);
