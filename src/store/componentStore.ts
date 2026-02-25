@@ -95,9 +95,6 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 				[categoryId]: bookmarks,
 			},
 		})),
-	currentSliderDropdownSlide: null,
-	setCurrentSliderDropdownSlide: (value: string | null) =>
-		set(() => ({ currentSliderDropdownSlide: value })),
 	deleteBookmarkId: undefined,
 	setDeleteBookmarkId: (bookmarkIds: number[]) =>
 		set(() => ({ deleteBookmarkId: bookmarkIds })),

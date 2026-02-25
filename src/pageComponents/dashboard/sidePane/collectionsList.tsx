@@ -730,7 +730,7 @@ const CollectionsList = () => {
 	return (
 		<>
 			{favoriteCollections.length > 0 && (
-				<div className="py-4">
+				<div className="py-3">
 					<Collapsible.Root>
 						<Collapsible.Trigger>{favoritesHeader}</Collapsible.Trigger>
 						<Collapsible.Panel>

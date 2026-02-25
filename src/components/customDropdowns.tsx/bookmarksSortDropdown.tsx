@@ -116,28 +116,6 @@ const BookmarksSortDropdown = (props: BookmarksSortDropdownTypes) => {
 			})}
 		</div>
 	);
-
-	// : (
-	// 	<Menu
-	// 		onClick={() => setCurrentSliderDropdownSlide("sort")}
-	// 		renderButton={<div className=" flex items-center">{buttonContent}</div>}
-	// 	>
-	// {sortOptions?.map((item) => {
-	// 	const value = item?.label;
-	// 	return (
-	// 		<MenuItem
-	// 			key={value}
-	// 			label=""
-	// 			onClick={() =>
-	// 				setBookmarksView(item?.value as BookmarksSortByTypes, "sort")
-	// 			}
-	// 		>
-	// 			{selectItemContent(value)}
-	// 		</MenuItem>
-	// 	);
-	// })}
-	// 	</Menu>
-	// );
 };
 
 export default BookmarksSortDropdown;
