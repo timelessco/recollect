@@ -233,6 +233,7 @@
 			"canvas",
 			"core-js-pure",
 			"cypress",
+			"deno",
 			"esbuild",
 			"protobufjs",
 			"sharp",
