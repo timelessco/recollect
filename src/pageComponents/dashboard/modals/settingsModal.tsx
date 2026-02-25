@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 
-import { Dialog } from "../../../components/ui/recollect/dialog";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { AvatarIcon } from "../../../icons/avatarIcon";
 import { ImportIcon } from "../../../icons/importIcon";
@@ -15,6 +14,8 @@ import ChangeEmail from "../../settings/changeEmail";
 import { DeleteAccount } from "../../settings/deleteAccount";
 import { ImportBookmarks } from "../../settings/import";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
+
+import { Dialog } from "@/components/ui/recollect/dialog";
 
 const SettingsModal = () => {
 	const showSettingsModal = useModalStore((state) => state.showSettingsModal);
@@ -125,7 +126,10 @@ const SettingsModal = () => {
 		>
 			<Dialog.Portal>
 				<Dialog.Backdrop />
-				<Dialog.Popup className="skip-global-paste w-full max-w-[740px] rounded-[20px] p-0">
+				<Dialog.Popup
+					className="skip-global-paste w-full max-w-[740px] rounded-[20px] p-0"
+					aria-label="Settings"
+				>
 					<div className="flex h-[700px] rounded-[20px] bg-gray-0">
 						<div className="flex h-full min-w-fit flex-col rounded-l-[20px] border-r-[0.5px] border-r-gray-100 bg-gray-0 px-2 py-4 lg:min-w-[180px]">
 							{isDesktop && (
