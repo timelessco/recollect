@@ -10,11 +10,6 @@ import {
 } from "../types/componentStoreTypes";
 
 export const useModalStore = create<ModalStoreState>((set) => ({
-	showSettingsModal: false,
-	toggleShowSettingsModal: () =>
-		set((state) => ({
-			showSettingsModal: !state.showSettingsModal,
-		})),
 	showVideoModal: false,
 	toggleShowVideoModal: () =>
 		set((state) => ({
@@ -80,10 +75,6 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 	currentBookmarkView: "moodboard",
 	setCurrentBookmarkView: (value: BookmarksViewTypes) =>
 		set(() => ({ currentBookmarkView: value })),
-	currentSettingsPage: "main",
-	setCurrentSettingsPage: (
-		value: MiscellaneousStoreState["currentSettingsPage"],
-	) => set(() => ({ currentSettingsPage: value })),
 	selectedVideoId: null,
 	setSelectedVideoId: (value: number | null) =>
 		set(() => ({ selectedVideoId: value })),

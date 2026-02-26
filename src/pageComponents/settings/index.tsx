@@ -20,10 +20,7 @@ import { IframeIcon } from "../../icons/iframe-icon";
 import ImageIcon from "../../icons/imageIcon";
 import { InfoIcon } from "../../icons/info-icon";
 import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
-import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../store/componentStore";
+import { useSupabaseSession } from "../../store/componentStore";
 import { useIframeStore } from "../../store/iframeStore";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
@@ -42,6 +39,7 @@ import { errorToast, successToast } from "../../utils/toastMessages";
 
 import { SettingsToggleCard } from "./settingsToggleCard";
 import { ToggleDarkMode } from "@/components/toggleDarkMode";
+import { type SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
 
 type SettingsUsernameFormTypes = {
 	username: string;
@@ -51,13 +49,13 @@ type SettingsDisplaynameFormTypes = {
 	displayname: string;
 };
 
-const Settings = () => {
+type SettingsProps = {
+	onNavigate: (page: SettingsPage) => void;
+};
+
+const Settings = ({ onNavigate }: SettingsProps) => {
 	const inputFile = useRef<HTMLInputElement>(null);
 	const session = useSupabaseSession((state) => state.session);
-
-	const setCurrentSettingsPage = useMiscellaneousStore(
-		(state) => state.setCurrentSettingsPage,
-	);
 
 	const { userProfileData } = useFetchUserProfile();
 
@@ -375,7 +373,7 @@ const Settings = () => {
 						}
 						onClick={
 							session?.user?.app_metadata?.provider === "email"
-								? () => setCurrentSettingsPage("change-email")
+								? () => onNavigate("change-email")
 								: undefined
 						}
 					/>
@@ -442,7 +440,7 @@ const Settings = () => {
 						</p>
 						<Button
 							className={`w-full ${settingsDeleteButtonRedClassName}`}
-							onClick={() => setCurrentSettingsPage("delete")}
+							onClick={() => onNavigate("delete")}
 						>
 							<p className="flex w-full justify-center">
 								<span className="flex items-center justify-center gap-1.5 text-red-600">

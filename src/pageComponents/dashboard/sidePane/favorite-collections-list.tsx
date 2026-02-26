@@ -8,16 +8,10 @@ import { Collapsible } from "@/components/ui/recollect/collapsible";
 
 type FavoriteCollectionsListProps = {
 	favoriteCollections: CollectionItemTypes[];
-	onCategoryOptionClick: (
-		value: number | string,
-		current: boolean,
-		id: number,
-	) => void;
 };
 
 export function FavoriteCollectionsList({
 	favoriteCollections,
-	onCategoryOptionClick,
 }: FavoriteCollectionsListProps) {
 	const { addCategoryToBookmarkOptimisticMutation } =
 		useAddCategoryToBookmarkOptimisticMutation();
@@ -49,7 +43,6 @@ export function FavoriteCollectionsList({
 									extendedClassname="py-[6px]"
 									item={item}
 									listNameId="favorite-collection-name"
-									onCategoryOptionClick={onCategoryOptionClick}
 									showDropdown
 									showSpinner={
 										addCategoryToBookmarkOptimisticMutation.isPending &&

@@ -12,10 +12,7 @@ import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
 import { BackIconBlack } from "../../icons/actionIcons/backIconBlack";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
-import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../store/componentStore";
+import { useSupabaseSession } from "../../store/componentStore";
 import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
@@ -31,20 +28,22 @@ import { LOGIN_URL, USER_PROFILE } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
+import { type SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
+
 type SettingsFormTypes = {
 	confirmText: string;
 };
 
-export const DeleteAccount = () => {
+type DeleteAccountProps = {
+	onNavigate: (page: SettingsPage) => void;
+};
+
+export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
 	const session = useSupabaseSession((state) => state.session);
 	const setSession = useSupabaseSession((state) => state.setSession);
 	const queryClient = useQueryClient();
 	const router = useRouter();
 	const supabase = createClient();
-
-	const setCurrentSettingsPage = useMiscellaneousStore(
-		(state) => state.setCurrentSettingsPage,
-	);
 
 	const { deleteUserMutation } = useDeleteUserMutation();
 
@@ -91,7 +90,7 @@ export const DeleteAccount = () => {
 			<div className="relative mb-[34px] flex items-center">
 				<Button
 					className="absolute left-[-7px] rounded-full bg-gray-0 p-1 hover:bg-gray-100"
-					onClick={() => setCurrentSettingsPage("main")}
+					onClick={() => onNavigate("main")}
 				>
 					<figure className="text-gray-900">
 						<BackIconBlack />
