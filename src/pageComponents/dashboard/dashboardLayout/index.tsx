@@ -11,7 +11,7 @@ import Drawer from "react-modern-drawer";
 import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import Button from "../../../components/atoms/button";
 import BookmarksSortDropdown from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
-import BookmarksViewDropdown from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
+import { BookmarksViewDropdown } from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
 import ShareDropdown from "../../../components/customDropdowns.tsx/shareDropdown";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";

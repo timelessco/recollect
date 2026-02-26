@@ -9,16 +9,18 @@ type DeleteCollectionModalProps = {
 	categoryId: number;
 	children: ReactNode;
 	isCurrent: boolean;
+	triggerClassName?: string;
 };
 
 export function DeleteCollectionModal({
 	categoryId,
 	children,
 	isCurrent,
+	triggerClassName = "w-full text-left",
 }: DeleteCollectionModalProps) {
 	return (
 		<Dialog.Root>
-			<Dialog.Trigger className="w-full text-left">{children}</Dialog.Trigger>
+			<Dialog.Trigger className={triggerClassName}>{children}</Dialog.Trigger>
 			<Dialog.Portal>
 				<Dialog.Backdrop />
 				<Dialog.Popup className="w-[448px] rounded-xl p-6">
