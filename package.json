@@ -103,6 +103,7 @@
 		"axios": "1.13.4",
 		"base64-arraybuffer": "1.0.2",
 		"blurhash": "2.0.5",
+		"class-variance-authority": "0.7.1",
 		"classnames": "2.5.1",
 		"clsx": "2.1.1",
 		"crypto-js": "4.2.0",
