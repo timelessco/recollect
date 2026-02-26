@@ -165,6 +165,7 @@ const CardSection = ({
 			<BookmarkCard
 				categoryViewsFromProps={categoryViewsFromProps}
 				img={getImgForPost(item, preferredDomainsSet)}
+				isDiscoverPage={isDiscoverPage}
 				isPublicPage={isPublicPage}
 				onDeleteClick={onDeleteClick}
 				onMoveOutOfTrashClick={onMoveOutOfTrashClick}
@@ -174,6 +175,7 @@ const CardSection = ({
 		),
 		[
 			categoryViewsFromProps,
+			isDiscoverPage,
 			isPublicPage,
 			onDeleteClick,
 			onMoveOutOfTrashClick,

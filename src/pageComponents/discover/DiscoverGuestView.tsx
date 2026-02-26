@@ -48,7 +48,7 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 	const discoverCategoryViews: BookmarkViewDataTypes = {
 		bookmarksView: viewValues.moodboard as BookmarksViewTypes,
 		moodboardColumns,
-		cardContentViewArray: ["cover", "title", "description", "info"],
+		cardContentViewArray: ["cover", "title"],
 		sortBy: "date-sort-ascending",
 	};
 
