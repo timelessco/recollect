@@ -15,20 +15,21 @@ export const v2CheckGeminiApiKeySupplement = {
 	responseExamples: {
 		"has-api-key": {
 			summary: "User has a Gemini API key",
-			description: "The user has configured a Gemini API key in their profile.",
+			description:
+				"No parameters needed — authenticate as a user with a Gemini API key configured. Returns `true`.",
 			value: {
 				data: { hasApiKey: true },
 				error: null,
-			},
+			} as const,
 		},
 		"no-api-key": {
 			summary: "User has no Gemini API key",
 			description:
-				"The user has not configured a Gemini API key. AI features will be unavailable.",
+				"No parameters needed — authenticate as a user without a Gemini API key. Returns `false`.",
 			value: {
 				data: { hasApiKey: false },
 				error: null,
-			},
+			} as const,
 		},
 	},
 } satisfies EndpointSupplement;

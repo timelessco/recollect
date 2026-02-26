@@ -188,11 +188,13 @@ Create `src/app/api/v2/<path>/schema.ts` and `src/app/api/v2/<path>/route.ts` us
 - System failures → `apiError`
 - Sub-requests keep OLD URLs — updates happen in Phase 13
 
-### Step 3: Create OpenAPI Supplement
+### Step 3: Create OpenAPI Supplement (metadata only)
 
 **MANDATORY: Use the `/openapi-endpoints` skill for this step.** Do NOT create supplement files manually.
 
-Provide: supplement path, HTTP method, tags, examples, security.
+Provide: supplement path, HTTP method, tags, security, summary, description, `additionalResponses`.
+
+**Do NOT add named examples yet.** Examples are derived from real E2E results in Step 4c. Creating fabricated examples here wastes effort — they get replaced with verified data.
 
 ### Step 4: Verify
 
@@ -257,7 +259,54 @@ Every applicable category MUST appear.
 
 **4b-6. If ANY case fails:** Fix and re-run ALL cases.
 
-**4c. Sanity check:** `git diff src/pages/api/` must show no changes.
+**4c. Update supplement with E2E-derived named examples (MANDATORY)**
+
+After all E2E cases pass, update the supplement file with named examples from actual test results. Use the `/openapi-endpoints` skill to update the existing supplement — do not recreate it.
+
+**4c-1. Map each verification matrix row to a named example:**
+
+| Matrix column | Example field |
+|---|---|
+| Case name | Key (kebab-case) + `summary` |
+| How tested + result | `description` (click-to-test instruction) |
+| v2 response body | `value` (actual JSON from v2) |
+
+**4c-2. Write click-to-test `description` fields:**
+
+The `description` MUST tell the developer exactly how to reproduce the test in Scalar:
+
+- **GET query params**: ``"Send `?email=user@example.com` — returns Google OAuth provider"``
+- **POST body**: `"Send the shown request body — returns inserted: 1"` (Scalar auto-fills from `requestExamples`)
+- **Auth boundary**: `"Omit Authorization header and cookies — returns 401"`
+- **Validation (GET)**: ``"Omit the `email` query parameter — returns 400"``
+- **Validation (POST)**: ``"Send `{}` as body — returns 400: bookmarks: Required"``
+- **Seed-data note** (when example relies on seed): ``"Send `?email=user@example.com` — seed user has Google OAuth"``
+
+**PII rule**: Never use real email addresses, names, or user IDs in examples. Use placeholders: `user@example.com`, `another@example.com`, `550e8400-e29b-41d4-a716-446655440000`. The developer substitutes real values when testing.
+
+**4c-3. Categorize into supplement fields:**
+
+| v2 status | Supplement field |
+|---|---|
+| 200 | `responseExamples` |
+| 400 | `response400Examples` |
+| 401/403/404/405 | Not supported as named examples — document in `additionalResponses` only |
+
+**POST endpoints**: populate `requestExamples` with one entry per test case (Scalar auto-fills the body). Use matching keys between `requestExamples` and `responseExamples`.
+
+**GET endpoints with query params**: populate `parameterExamples` keyed by parameter name, with one entry per test case. This creates a Scalar dropdown on the query param field itself — selecting an example auto-fills the value.
+
+**4c-4. Ordering:** Happy paths first, edge cases, then validation errors. If supplement exceeds 250 lines after adding examples, extract to a colocated `-examples.ts` file.
+
+**4c-5. Verify updated supplement:**
+
+```bash
+npx tsx scripts/generate-openapi.ts
+```
+
+Open `/api-docs` via Chrome MCP and verify all named examples appear in the Scalar dropdown for this endpoint.
+
+**4d. Sanity check:** `git diff src/pages/api/` must show no changes.
 
 ### Step 5: Self-Update
 
@@ -478,6 +527,10 @@ return apiError({
 
 11. **Supplement example timestamps:** Use `+00:00` offset format in example data (e.g., `"2024-03-15T10:30:00+00:00"`), not Z-suffix (`"2024-03-15T10:30:00Z"`), to match actual Supabase output format.
 
+12. **Two-phase supplement creation:** Step 3 creates metadata-only (no examples). Step 4c adds examples after E2E. Do NOT fabricate examples in Step 3. If Chrome MCP is unavailable and E2E is skipped, the supplement will have no examples — document this in SUMMARY.
+
+13. **No PII in examples:** Never use real email addresses, names, or user IDs in supplement examples. Use placeholders: `user@example.com`, `another@example.com`, `550e8400-e29b-41d4-a716-446655440000`. The developer substitutes real values when testing in Scalar.
+
 ---
 
 ## Section 9: Output Format
@@ -554,6 +607,12 @@ None — plan executed exactly as written.
 |---|------|-----------|----------|-------|-------|
 | 1 | Happy path | 200 | 200 | ✓ | Identical JSON |
 | ... | ... | ... | ... | ... | ... |
+
+### Named examples in supplement
+| # | Key | Type | Source Case | Click-to-Test |
+|---|-----|------|-------------|---------------|
+| 1 | `google-provider` | 200 | Happy path | Send `?email=user@example.com` |
+| ... | ... | ... | ... | ... |
 
 ### DB schema verification
 | Column | DB Type | Nullable | Zod Schema | Match |

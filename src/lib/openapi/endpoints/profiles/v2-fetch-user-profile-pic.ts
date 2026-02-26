@@ -12,10 +12,30 @@ export const v2FetchUserProfilePicSupplement = {
 	description:
 		"Returns the profile picture URL for the user with the given email address. The profile_pic field is null when no picture has been set.",
 	security: [{ [bearerAuth.name]: [] }, {}],
+	parameterExamples: {
+		email: {
+			"with-profile-pic": {
+				summary: "User with avatar",
+				description: "Returns profile_pic URL.",
+				value: "user@example.com",
+			},
+			"no-profile-pic": {
+				summary: "User without avatar",
+				description: "Returns profile_pic: null.",
+				value: "another@example.com",
+			},
+			"no-match": {
+				summary: "Nonexistent email",
+				description: "Returns empty array.",
+				value: "nobody@example.com",
+			},
+		},
+	},
 	responseExamples: {
 		"with-profile-pic": {
 			summary: "User has a profile picture",
-			description: "Returns the profile picture URL for the matched user.",
+			description:
+				"Send `?email=user@example.com` where the user has an uploaded avatar.",
 			value: {
 				data: [
 					{
@@ -24,12 +44,12 @@ export const v2FetchUserProfilePicSupplement = {
 					},
 				],
 				error: null,
-			},
+			} as const,
 		},
 		"no-profile-pic": {
 			summary: "User has no profile picture",
 			description:
-				"Returns null for profile_pic when the user has not uploaded a picture.",
+				"Send `?email=user@example.com` where the user has no avatar — `profile_pic` is null.",
 			value: {
 				data: [
 					{
@@ -37,16 +57,16 @@ export const v2FetchUserProfilePicSupplement = {
 					},
 				],
 				error: null,
-			},
+			} as const,
 		},
 		"no-match": {
 			summary: "No user found for email",
 			description:
-				"Returns an empty array when no profile matches the queried email address.",
+				"Send `?email=nobody@example.com` — returns empty array when no profile matches.",
 			value: {
 				data: [],
 				error: null,
-			},
+			} as const,
 		},
 	},
 	additionalResponses: {
@@ -55,12 +75,11 @@ export const v2FetchUserProfilePicSupplement = {
 	response400Examples: {
 		"missing-email": {
 			summary: "Missing email parameter",
-			description:
-				"Returned when the required email query parameter is absent.",
+			description: "Omit the `email` query parameter entirely — returns 400.",
 			value: {
 				data: null,
 				error: "email: Required",
-			},
+			} as const,
 		},
 	},
 } satisfies EndpointSupplement;
