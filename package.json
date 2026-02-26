@@ -90,7 +90,6 @@
 		"@aws-sdk/s3-request-presigner": "3.975.0",
 		"@base-ui/react": "1.1.0",
 		"@google/generative-ai": "0.24.1",
-		"@headlessui/react": "2.2.9",
 		"@heroicons/react": "2.2.0",
 		"@react-hookz/web": "25.2.0",
 		"@scalar/nextjs-api-reference": "0.9.19",
