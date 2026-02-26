@@ -3,10 +3,8 @@ import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 
 import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserMutation";
 import { useDeleteApiKeyMutation } from "../../async/mutationHooks/user/useDeleteApiKeyMutation";
-import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
 import { useFetchCheckApiKey } from "../../async/queryHooks/ai/api-key/useFetchCheckGeminiApiKey";
 import useFetchGetApiKey from "../../async/queryHooks/ai/api-key/useFetchGetGeminiApiKey";
-import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -18,8 +16,7 @@ import {
 	settingsInputContainerClassName,
 } from "../../utils/commonClassNames";
 
-import { SettingsToggleCard } from "./settingsToggleCard";
-import { AutoAssignCollectionIcon } from "@/icons/auto-assign-collection-icon";
+import { AutoAssignCollectionsToggle } from "./auto-assign-collections-toggle";
 import { ShowEyeIcon } from "@/icons/show-eye-icon";
 import { SlashedEyeIcon } from "@/icons/slashed-eye-icon";
 import { handleClientError } from "@/utils/error-utils/client";
@@ -215,48 +212,5 @@ export const AiFeatures = () => {
 			</form>
 			<AutoAssignCollectionsToggle />
 		</>
-	);
-};
-
-const AutoAssignCollectionsToggle = () => {
-	const { userProfileData, isLoading } = useFetchUserProfile();
-	const { updateUserProfileOptimisticMutation } =
-		useUpdateUserProfileOptimisticMutation();
-
-	const userData = userProfileData?.data?.[0];
-	const aiFeatures = userData?.ai_features_toggle;
-	const enabled = aiFeatures?.auto_assign_collections;
-
-	return (
-		<div className="pt-10">
-			<p className="pb-[10px] text-[14px] leading-[115%] font-medium text-gray-900">
-				Features
-			</p>
-			<SettingsToggleCard
-				icon={
-					<figure className="text-gray-900">
-						<AutoAssignCollectionIcon className="h-5.5 w-5.5 text-gray-900" />
-					</figure>
-				}
-				title="Auto assign a collection to bookmarks"
-				description="Automatically assign bookmarks to collections"
-				isSwitch
-				enabled={isLoading ? false : enabled}
-				onToggle={
-					isLoading
-						? undefined
-						: () => {
-								updateUserProfileOptimisticMutation.mutate({
-									updateData: {
-										ai_features_toggle: {
-											...aiFeatures,
-											auto_assign_collections: !enabled,
-										},
-									},
-								});
-							}
-				}
-			/>
-		</div>
 	);
 };

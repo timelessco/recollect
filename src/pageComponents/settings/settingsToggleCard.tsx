@@ -1,11 +1,12 @@
 import React from "react";
 
 import Button from "../../components/atoms/button";
-import Switch from "../../components/switch";
 import {
 	settingsLightButtonClassName,
 	settingsParagraphClassName,
 } from "../../utils/commonClassNames";
+
+import { Switch } from "@/components/ui/recollect/switch";
 
 type SettingsCardProps = {
 	icon: React.ReactNode;
@@ -43,10 +44,10 @@ export const SettingsToggleCard: React.FC<SettingsCardProps> = ({
 		{isSwitch ? (
 			<div className="mr-[10px] flex items-center">
 				<Switch
-					enabled={enabled}
+					checked={enabled}
 					disabled={!onToggle}
 					size="medium"
-					setEnabled={onToggle || (() => {})}
+					onCheckedChange={onToggle || (() => {})}
 				/>
 			</div>
 		) : buttonLabel && onClick ? (
