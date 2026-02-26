@@ -160,3 +160,8 @@ oasdiff changelog old.json new.json --format markdown # Local changelog diff (br
 - Prefer `z.int()` over `z.number().int()` — linter may auto-transform the latter to the former
 - `z.iso.datetime()` rejects Supabase's `timestamptz` format (`+00:00` offset) — use `z.string()` for output schemas validating Supabase timestamp columns. Only use `z.iso.datetime()` for input schemas where the client sends `Z`-suffix timestamps via `toISOString()`
 - Never reference Zod internals (`z.url()`, `z.string()`) in OpenAPI example descriptions — use tool-agnostic phrasing like "fails URL schema validation"
+- Integer DB columns (`id`, `category_id`, etc.) must use `z.int()` in output schemas, not `z.number()`
+- Email input fields must use `z.email()`, not bare `z.string()`
+- When porting v1 null-coalescing patterns (`value ?? ""`), verify v1 actually uses `??` — don't add fallbacks that change behavior
+- `category_id` input schemas must include `.min(0)` per domain convention
+- Supabase FK joins (`.select("fk_col(col1, col2)")`) return `null` for the FK column when no match — always `.filter()` before `.map()` when accessing joined fields. Also verify unwanted `?.` optional checks — use strict types only

@@ -29,4 +29,8 @@ export interface EndpointSupplement {
 		{ summary?: string; description?: string; value: unknown }
 	>;
 	additionalResponses?: Record<number, { description: string }>;
+	parameterExamples?: Record<
+		string,
+		Record<string, { summary?: string; description?: string; value: unknown }>
+	>;
 }
