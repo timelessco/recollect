@@ -15,6 +15,7 @@ import {
 	dropdownMenuClassName,
 	dropdownMenuItemClassName,
 } from "../../../utils/commonClassNames";
+import { DeleteCollectionModal } from "../modals/delete-collection-modal";
 import ShareContent from "../share/shareContent";
 
 import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
@@ -39,11 +40,6 @@ export type listPropsTypes = {
 	isLink?: boolean;
 	item: CollectionItemTypes;
 	listNameId?: string;
-	onCategoryOptionClick?: (
-		value: number | string,
-		current: boolean,
-		id: number,
-	) => void;
 	onClick?: () => void;
 	responsiveIcon?: boolean;
 	showDropdown?: boolean;
@@ -63,7 +59,6 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 		showDropdown = false,
 		showIconDropdown = true,
 		listNameId = "",
-		onCategoryOptionClick = () => null,
 		showSpinner = false,
 		onClick = () => null,
 		isLink = true,
@@ -154,51 +149,40 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 							>
 								{!activeMenu ? (
 									<>
-										{[
-											{
-												label: item.isFavorite
+										<AriaDropdownMenu
+											onClick={(event) => {
+												event.preventDefault();
+												event.stopPropagation();
+												updateCategoryOptimisticMutation.mutate({
+													category_id: item.id,
+													updateData: {
+														is_favorite: !item.isFavorite,
+													},
+												});
+												setOpenedMenuId(null);
+											}}
+										>
+											<div className={dropdownMenuItemClassName}>
+												{item.isFavorite
 													? "Remove from Favorites"
-													: "Add to Favorites",
-												value: "toggle-favorite",
-											},
-											{ label: "Share", value: "share" },
-											{ label: "Delete", value: "delete" },
-										].map((dropdownItem) => (
-											<AriaDropdownMenu
-												key={dropdownItem?.value}
-												onClick={(event) => {
-													event.preventDefault();
-													event.stopPropagation();
-
-													if (dropdownItem?.value === "toggle-favorite") {
-														updateCategoryOptimisticMutation.mutate({
-															category_id: item.id,
-															updateData: {
-																is_favorite: !item.isFavorite,
-															},
-														});
-														setOpenedMenuId(null);
-														return;
-													}
-
-													if (dropdownItem?.value === "share") {
-														setActiveMenu("share");
-														return;
-													}
-
-													onCategoryOptionClick(
-														dropdownItem?.value,
-														item.current,
-														item.id,
-													);
-													setOpenedMenuId(null);
-												}}
-											>
-												<div className={dropdownMenuItemClassName}>
-													{dropdownItem?.label}
-												</div>
-											</AriaDropdownMenu>
-										))}
+													: "Add to Favorites"}
+											</div>
+										</AriaDropdownMenu>
+										<AriaDropdownMenu
+											onClick={(event) => {
+												event.preventDefault();
+												event.stopPropagation();
+												setActiveMenu("share");
+											}}
+										>
+											<div className={dropdownMenuItemClassName}>Share</div>
+										</AriaDropdownMenu>
+										<DeleteCollectionModal
+											categoryId={item.id}
+											isCurrent={item.current}
+										>
+											<div className={dropdownMenuItemClassName}>Delete</div>
+										</DeleteCollectionModal>
 									</>
 								) : (
 									<div className="w-75 rounded-lg bg-gray-50">

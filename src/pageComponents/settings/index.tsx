@@ -16,10 +16,6 @@ import { Spinner } from "../../components/spinner";
 import UserAvatar from "../../components/userAvatar";
 import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
 import ImageIcon from "../../icons/imageIcon";
-import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../store/componentStore";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
 	saveButtonClassName,
@@ -38,6 +34,8 @@ import { errorToast, successToast } from "../../utils/toastMessages";
 import { SettingsEmailCard } from "./settings-email-card";
 import { SettingsIframeToggle } from "./settings-iframe-toggle";
 import { ToggleDarkMode } from "@/components/toggleDarkMode";
+import { type SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
+import { useSupabaseSession } from "@/store/componentStore";
 
 type SettingsUsernameFormTypes = {
 	username: string;
@@ -47,13 +45,13 @@ type SettingsDisplaynameFormTypes = {
 	displayname: string;
 };
 
-const Settings = () => {
+type SettingsProps = {
+	onNavigate: (page: SettingsPage) => void;
+};
+
+const Settings = ({ onNavigate }: SettingsProps) => {
 	const inputFile = useRef<HTMLInputElement>(null);
 	const session = useSupabaseSession((state) => state.session);
-
-	const setCurrentSettingsPage = useMiscellaneousStore(
-		(state) => state.setCurrentSettingsPage,
-	);
 
 	const { userProfileData } = useFetchUserProfile();
 
@@ -346,7 +344,7 @@ const Settings = () => {
 						</LabelledComponent>
 					</form>
 				</div>
-				<SettingsEmailCard />
+				<SettingsEmailCard onNavigate={onNavigate} />
 				<SettingsIframeToggle />
 				<ToggleDarkMode />
 				{/*
@@ -383,7 +381,7 @@ const Settings = () => {
 						</p>
 						<Button
 							className={`w-full ${settingsDeleteButtonRedClassName}`}
-							onClick={() => setCurrentSettingsPage("delete")}
+							onClick={() => onNavigate("delete")}
 						>
 							<p className="flex w-full justify-center">
 								<span className="flex items-center justify-center gap-1.5 text-red-600">

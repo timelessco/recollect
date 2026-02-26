@@ -2,37 +2,38 @@ import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile
 import { GoogleLoginIcon } from "../../icons/googleLoginIcon";
 import { InfoIcon } from "../../icons/info-icon";
 import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
-import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../store/componentStore";
+import { useSupabaseSession } from "../../store/componentStore";
+import { type SettingsPage } from "../dashboard/modals/settings-modal";
 
 import { SettingsToggleCard } from "./settingsToggleCard";
 
-export function SettingsEmailCard() {
+interface SettingsEmailCardProps {
+	onNavigate: (page: SettingsPage) => void;
+}
+
+export function SettingsEmailCard({ onNavigate }: SettingsEmailCardProps) {
 	return (
 		<div className="pt-10">
 			<p className="pb-[10px] text-[14px] leading-[115%] font-medium text-gray-900">
 				Email
 			</p>
-			<SettingsEmailCardContent />
+			<SettingsEmailCardContent onNavigate={onNavigate} />
 		</div>
 	);
 }
 
-function SettingsEmailCardContent() {
+interface SettingsEmailCardContentProps {
+	onNavigate: (page: SettingsPage) => void;
+}
+
+function SettingsEmailCardContent({
+	onNavigate,
+}: SettingsEmailCardContentProps) {
 	const session = useSupabaseSession((state) => state.session);
-	const setCurrentSettingsPage = useMiscellaneousStore(
-		(state) => state.setCurrentSettingsPage,
-	);
 	const { userProfileData } = useFetchUserProfile();
 
 	const userData = userProfileData?.data?.[0];
 	const isEmailProvider = session?.user?.app_metadata?.provider === "email";
-
-	const handleChangeEmail = () => {
-		setCurrentSettingsPage("change-email");
-	};
 
 	return (
 		<>
@@ -47,7 +48,7 @@ function SettingsEmailCardContent() {
 				title={userData?.email ?? ""}
 				description="Current email"
 				buttonLabel={isEmailProvider ? "Change email" : undefined}
-				onClick={isEmailProvider ? handleChangeEmail : undefined}
+				onClick={isEmailProvider ? () => onNavigate("change-email") : undefined}
 			/>
 			{!isEmailProvider && (
 				<div className="mt-2 flex items-center gap-x-2 text-13 leading-[150%] font-normal text-gray-600">
