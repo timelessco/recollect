@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/utils/tailwind-merge";
 
 const rootVariants = cva(
-	"relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden focus-visible:ring-white data-disabled:opacity-40 data-checked:bg-gray-950 data-unchecked:bg-gray-300",
+	"relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white data-disabled:opacity-40 data-checked:bg-gray-950 data-unchecked:bg-gray-300",
 	{
 		variants: {
 			size: {
