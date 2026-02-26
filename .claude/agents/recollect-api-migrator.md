@@ -531,6 +531,8 @@ return apiError({
 
 13. **No PII in examples:** Never use real email addresses, names, or user IDs in supplement examples. Use placeholders: `user@example.com`, `another@example.com`, `550e8400-e29b-41d4-a716-446655440000`. The developer substitutes real values when testing in Scalar.
 
+14. **Lodash ESM incompatibility in scanner:** Importing from `@/utils/helpers` (which imports `{ isEmpty } from "lodash"`) causes the OpenAPI scanner (`tsx`) to fail with ESM named-export errors. Workaround: inline small utility functions in the route file or use the `Object.assign` pattern. This is a scanner limitation, not a runtime issue.
+
 ---
 
 ## Section 9: Output Format
