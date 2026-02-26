@@ -8,3 +8,4 @@ export * from "./profiles";
 export * from "./raindrop";
 export * from "./tags";
 export * from "./twitter";
+export * from "./user";
