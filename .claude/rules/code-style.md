@@ -18,6 +18,14 @@ This is a CRITICAL step that must NEVER be skipped when working on any code-rela
   - Split complex components into smaller, focused components
 - This ensures maintainability and better code organization
 
+## Variable Declarations & Control Flow
+
+- **Always use `const`** — never use `let` unless absolutely necessary (e.g., loop counters that genuinely need reassignment)
+- If you find yourself reaching for `let`, refactor: extract helper functions, use early returns, or restructure the data flow
+- `let` for reassignment is a code smell — prefer immutable data flow with `const` + composition
+- **Always use early returns** — never use `else` blocks when the `if` block returns. Reduces nesting, improves readability.
+- Prefer flat control flow: guard clause → early return → happy path
+
 ## Naming Conventions
 
 - **Components**: PascalCase (e.g., `HeaderNavigation.tsx`)
