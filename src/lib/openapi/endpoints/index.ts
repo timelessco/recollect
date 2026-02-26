@@ -6,6 +6,7 @@ export * from "./instagram";
 export * from "./iphone";
 export * from "./profiles";
 export * from "./raindrop";
+export * from "./share";
 export * from "./tags";
 export * from "./twitter";
 export * from "./user";

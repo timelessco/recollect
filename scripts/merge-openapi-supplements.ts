@@ -15,6 +15,7 @@ import * as instagramSupplements from "../src/lib/openapi/endpoints/instagram";
 import * as iphoneSupplements from "../src/lib/openapi/endpoints/iphone";
 import * as profilesSupplements from "../src/lib/openapi/endpoints/profiles";
 import * as raindropSupplements from "../src/lib/openapi/endpoints/raindrop";
+import * as shareSupplements from "../src/lib/openapi/endpoints/share";
 import * as tagsSupplements from "../src/lib/openapi/endpoints/tags";
 import * as twitterSupplements from "../src/lib/openapi/endpoints/twitter";
 import * as userSupplements from "../src/lib/openapi/endpoints/user";
@@ -243,6 +244,7 @@ export function collectSupplements(): EndpointSupplement[] {
 		iphoneSupplements,
 		profilesSupplements,
 		raindropSupplements,
+		shareSupplements,
 		tagsSupplements,
 		twitterSupplements,
 		userSupplements,
