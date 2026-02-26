@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const FetchUserProfilePicInputSchema = z.object({
-	email: z.string().meta({ description: "User email address" }),
+	email: z.email().meta({ description: "User email address" }),
 });
 
 export const FetchUserProfilePicOutputSchema = z.array(

@@ -6,7 +6,7 @@
 
 | File                                    | Purpose                                          |
 | --------------------------------------- | ------------------------------------------------ |
-| `src/lib/api-helpers/create-handler.ts` | `createSupabasePostApiHandler` factory           |
+| `src/lib/api-helpers/create-handler.ts` | `createGetApiHandler`, `createPostApiHandler`, `createGetApiHandlerWithAuth`, `createPostApiHandlerWithAuth` factories |
 | `src/lib/api-helpers/response.ts`       | `apiSuccess`, `apiError`, `apiWarn`, `parseBody` |
 | `src/lib/api-helpers/api.ts`            | `postApi` client helper                          |
 | `src/lib/supabase/api.ts`               | `requireAuth` authentication                     |

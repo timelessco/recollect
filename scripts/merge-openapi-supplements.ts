@@ -191,6 +191,7 @@ function applySupplementToOperation(
 		for (const param of op.parameters) {
 			const examples = supplement.parameterExamples[param.name];
 			if (examples !== undefined) {
+				delete param.example;
 				param.examples = examples;
 			}
 		}

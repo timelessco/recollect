@@ -54,13 +54,15 @@ export const GET = createGetApiHandlerWithAuth({
 			});
 		}
 
-		const addedCategories = categoriesData.map((item) => ({
-			category_name: item.category_id.category_name,
-			category_slug: item.category_id.category_slug,
-			icon: item.category_id.icon,
-			icon_color: item.category_id.icon_color,
-			id: item.category_id.id,
-		}));
+		const addedCategories = categoriesData
+			.filter((item) => item.category_id !== null)
+			.map((item) => ({
+				category_name: item.category_id.category_name,
+				category_slug: item.category_id.category_slug,
+				icon: item.category_id.icon,
+				icon_color: item.category_id.icon_color,
+				id: item.category_id.id,
+			}));
 
 		return bookmarks.map((bookmark) => ({
 			...bookmark,

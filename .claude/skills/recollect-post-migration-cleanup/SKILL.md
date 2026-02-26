@@ -44,7 +44,7 @@ If the v2 route uses a different payload/response shape, update the hook's optim
 Search for every file importing the old hook:
 
 ```bash
-ast-grep --lang tsx -p 'use$OLD_HOOK_NAME' src/
+ast-grep --lang tsx -p 'useOldHookName' src/  # Replace useOldHookName with the actual hook name
 ```
 
 Update each site:

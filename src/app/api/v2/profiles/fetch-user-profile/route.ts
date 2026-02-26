@@ -71,11 +71,14 @@ export const GET = createGetApiHandlerWithAuth({
 
 		async function assignUsername(email: string) {
 			const newUsername = getUserNameFromEmail(email);
+			if (!newUsername) {
+				return null;
+			}
 
 			const { data: existingUsers, error: checkError } = await supabase
 				.from(PROFILES)
 				.select("user_name")
-				.eq("user_name", newUsername ?? "");
+				.eq("user_name", newUsername);
 
 			if (checkError) {
 				return apiError({
@@ -90,7 +93,7 @@ export const GET = createGetApiHandlerWithAuth({
 			const usernameToSet =
 				existingUsers && existingUsers.length > 0
 					? `${newUsername}-${uniqid.time()}`
-					: (newUsername ?? "");
+					: newUsername;
 
 			const { data: usernameData, error: usernameError } = await supabase
 				.from(PROFILES)
@@ -120,8 +123,8 @@ export const GET = createGetApiHandlerWithAuth({
 		}
 
 		const usernameResult =
-			profile.user_name === null
-				? await assignUsername(profile.email ?? "")
+			profile.user_name === null && profile.email
+				? await assignUsername(profile.email)
 				: null;
 		if (usernameResult instanceof NextResponse) {
 			return usernameResult;
