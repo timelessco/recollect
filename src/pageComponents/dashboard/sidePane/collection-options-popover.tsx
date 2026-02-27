@@ -94,7 +94,7 @@ function CollectionMenuItems({
 		useUpdateCategoryOptimisticMutation();
 
 	const itemClassName =
-		"w-full text-left text-gray-800 font-450 text-13 leading-[115%] tracking-[0.01em] px-2 py-[5px] cursor-pointer rounded-lg hover:bg-gray-200 hover:text-gray-900 focus:outline-2 focus:outline-gray-200";
+		"w-full text-left text-gray-800 font-450 text-13 leading-[115%] tracking-[0.01em] px-2 py-[5px] cursor-pointer rounded-lg hover:bg-gray-200 hover:text-gray-900";
 
 	return (
 		<>
