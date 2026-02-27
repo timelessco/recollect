@@ -5,7 +5,7 @@ import { Popover } from "@base-ui/react/popover";
 import isNull from "lodash/isNull";
 
 import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
-import BookmarksSortDropdown from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
+import { BookmarksSortDropdown } from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
 import { BookmarksViewDropdown } from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
