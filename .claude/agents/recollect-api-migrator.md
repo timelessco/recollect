@@ -67,7 +67,10 @@ Four handler factories in `/src/lib/api-helpers/create-handler.ts`:
 | `createGetApiHandler`          | Public   | GET    | Public read endpoints  |
 | `createPostApiHandler`         | Public   | POST   | Public write endpoints |
 | `createGetApiHandlerWithAuth`  | Required | GET    | Authenticated reads    |
-| `createPostApiHandlerWithAuth` | Required | POST   | Authenticated writes   |
+| `createPostApiHandlerWithAuth` | Required | POST   | Authenticated creates  |
+| `createPatchApiHandlerWithAuth` | Required | PATCH  | Authenticated updates  |
+| `createPutApiHandlerWithAuth` | Required | PUT    | Authenticated upserts  |
+| `createDeleteApiHandlerWithAuth` | Required | DELETE | Authenticated deletes  |
 
 **Handler factory config:**
 
@@ -133,6 +136,31 @@ Auth error responses: `userError` → 400, `!user` → 401
 3. **Fail-Fast Pattern**: Check errors immediately, return early
 4. **Log Levels**: `console.log` for entry/success, `console.warn` for user issues, `console.error` for system errors
 5. **Sentry Integration**: Always include `tags: { operation, userId }` and optional `extra`
+
+---
+
+## Section 2b: HTTP Method Semantics (MANDATORY)
+
+When migrating a route, do NOT blindly copy the v1 HTTP method. v1 uses POST for everything. v2 must use the semantically correct HTTP method based on the operation:
+
+| Operation | Method | Body | Example |
+|-----------|--------|------|---------|
+| Read data (no side effects) | GET | Query params only | fetch-user-profile, fetch-user-tags |
+| Create new resource | POST | Required | (future: create-bookmark) |
+| Idempotent replace/upsert | PUT | Required | api-key (singleton upsert) |
+| Partial update | PATCH | Required | update-username, update-user-profile |
+| Delete resource | DELETE | Optional (ID) | remove-profile-pic, delete-shared-categories-user |
+
+**Decision rules:**
+
+1. Handler calls `.select()` only → **GET** (use `createGetApiHandlerWithAuth`)
+2. Handler calls `.insert()` → **POST** (use `createPostApiHandlerWithAuth`)
+3. Handler calls `.update()` → **PATCH** (use `createPatchApiHandlerWithAuth`)
+4. Handler calls `.upsert()` on singleton → **PUT** (use `createPutApiHandlerWithAuth`)
+5. Handler calls `.delete()` or nullifies + removes storage → **DELETE** (use `createDeleteApiHandlerWithAuth`)
+6. Empty input schema + auth-only = likely **GET** or **DELETE** (no body needed)
+
+**Quick check:** If v1 is POST but the handler never writes to the DB → it's a GET.
 
 ---
 
@@ -392,6 +420,8 @@ export const POST = Object.assign(handlePost, {
 | ------------------------------ | ------ | -------- | ---------------------------------------- |
 | `createGetApiHandlerWithAuth`  | GET    | User JWT | Standard GET with logged-in user         |
 | `createPostApiHandlerWithAuth` | POST   | User JWT | Standard POST with logged-in user        |
+| `createPatchApiHandlerWithAuth` | PATCH  | User JWT | Partial updates (`.update()`)            |
+| `createPutApiHandlerWithAuth` | PUT    | User JWT | Idempotent upsert/replace (`.upsert()`) |
 | `createGetApiHandler`          | GET    | None     | Public GET endpoint                      |
 | `createPostApiHandler`         | POST   | None     | No user JWT (service-role, cron, public) |
 
@@ -531,7 +561,9 @@ return apiError({
 
 13. **No PII in examples:** Never use real email addresses, names, or user IDs in supplement examples. Use placeholders: `user@example.com`, `another@example.com`, `550e8400-e29b-41d4-a716-446655440000`. The developer substitutes real values when testing in Scalar.
 
-14. **Lodash ESM incompatibility in scanner:** Importing from `@/utils/helpers` (which imports `{ isEmpty } from "lodash"`) causes the OpenAPI scanner (`tsx`) to fail with ESM named-export errors. Workaround: inline small utility functions in the route file or use the `Object.assign` pattern. This is a scanner limitation, not a runtime issue.
+14. **HTTP method semantics:** Never blindly copy v1's HTTP method. v1 uses POST for everything (reads, updates, deletes). v2 must use GET/POST/PUT/PATCH/DELETE based on the actual operation. See Section 2b for decision rules.
+
+15. **Lodash ESM incompatibility in scanner:** Importing from `@/utils/helpers` (which imports `{ isEmpty } from "lodash"`) causes the OpenAPI scanner (`tsx`) to fail with ESM named-export errors. Workaround: inline small utility functions in the route file or use the `Object.assign` pattern. This is a scanner limitation, not a runtime issue.
 
 ---
 

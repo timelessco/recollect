@@ -6,35 +6,36 @@ import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
 
 export const v2FetchBookmarksViewSupplement = {
 	path: "/v2/bookmark/fetch-bookmarks-view",
-	method: "post",
+	method: "get",
 	tags: ["Bookmarks"],
 	summary: "Fetch bookmark view settings for a category",
 	description:
-		"Returns the category_views column for the given category_id, scoped to the authenticated user. Reclassified from GET to POST because the original route read category_id from the request body.",
+		"Returns the category_views column for the given category_id, scoped to the authenticated user. Pass category_id as a query parameter.",
 	security: [{ [bearerAuth.name]: [] }, {}],
 	additionalResponses: {
 		401: { description: "Not authenticated" },
-		405: { description: "Method not allowed (only POST is accepted)" },
 	},
-	requestExamples: {
-		"with-view-data": {
-			summary: "Category with view settings",
-			description:
-				"Send the shown body with a valid category_id — returns the category_views object.",
-			value: { category_id: 724 },
-		},
-		"nonexistent-category": {
-			summary: "Nonexistent category ID",
-			description:
-				"Send a category_id that does not exist — returns an empty array.",
-			value: { category_id: 999999 },
+	parameterExamples: {
+		category_id: {
+			"with-view-data": {
+				summary: "Category with view settings",
+				description:
+					"Send `?category_id=724` (substitute a real category ID) — returns the category_views object.",
+				value: "724",
+			},
+			"nonexistent-category": {
+				summary: "Nonexistent category ID",
+				description:
+					"Send `?category_id=999999` — returns an empty data array.",
+				value: "999999",
+			},
 		},
 	},
 	responseExamples: {
 		"with-view-data": {
 			summary: "Category with view settings",
 			description:
-				"Send `{ category_id: 724 }` (substitute a real category ID) — returns the category_views JSON object.",
+				"Send `?category_id=724` (substitute a real category ID) — returns the category_views JSON object.",
 			value: {
 				data: [
 					{
@@ -51,8 +52,7 @@ export const v2FetchBookmarksViewSupplement = {
 		},
 		"null-views": {
 			summary: "Category with null view settings",
-			description:
-				"Send a category_id for a category with no view settings — category_views is null.",
+			description: "Category with no view settings — category_views is null.",
 			value: {
 				data: [{ category_views: null }],
 				error: null,
@@ -60,8 +60,7 @@ export const v2FetchBookmarksViewSupplement = {
 		},
 		"nonexistent-category": {
 			summary: "Nonexistent category ID",
-			description:
-				"Send `{ category_id: 999999 }` — returns an empty data array.",
+			description: "Send `?category_id=999999` — returns an empty data array.",
 			value: {
 				data: [],
 				error: null,
@@ -71,19 +70,18 @@ export const v2FetchBookmarksViewSupplement = {
 	response400Examples: {
 		"missing-category-id": {
 			summary: "Missing category_id",
-			description: "Send `{}` as body — returns 400: category_id is required.",
+			description: "Omit the `category_id` query parameter — returns 400.",
 			value: {
 				data: null,
-				error: "Invalid input: expected number, received undefined",
+				error: "Invalid input: expected number, received nan",
 			} as const,
 		},
 		"invalid-category-id-type": {
 			summary: "Invalid category_id type",
-			description:
-				'Send `{ "category_id": "abc" }` — returns 400: expected number.',
+			description: "Send `?category_id=abc` — returns 400: expected number.",
 			value: {
 				data: null,
-				error: "Invalid input: expected number, received string",
+				error: "Invalid input: expected number, received nan",
 			} as const,
 		},
 	},

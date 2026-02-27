@@ -1,5 +1,7 @@
+export * from "./api-key";
 export * from "./bookmarks";
 export * from "./categories";
+export * from "./category";
 export * from "./cron";
 export * from "./dev";
 export * from "./instagram";
