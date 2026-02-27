@@ -1,24 +1,12 @@
-import { useState } from "react";
 import Link from "next/link";
 
-import {
-	AriaDropdown,
-	AriaDropdownMenu,
-} from "../../../components/ariaDropdown";
 import CategoryIconsDropdown from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
 import { Spinner } from "../../../components/spinner";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
-import OptionsIcon from "../../../icons/optionsIcon";
 import { type CategoriesData } from "../../../types/apiTypes";
 import { type ChildrenTypes } from "../../../types/componentTypes";
-import {
-	dropdownMenuClassName,
-	dropdownMenuItemClassName,
-} from "../../../utils/commonClassNames";
-import { DeleteCollectionModal } from "../modals/delete-collection-modal";
-import ShareContent from "../share/shareContent";
 
-import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
+import { CollectionOptionsPopover } from "./collection-options-popover";
 
 export type CollectionItemTypes = {
 	count?: number;
@@ -48,11 +36,6 @@ export type listPropsTypes = {
 };
 
 const SingleListItemComponent = (listProps: listPropsTypes) => {
-	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
-	const [activeMenu, setActiveMenu] = useState<string | null>(null);
-	const { updateCategoryOptimisticMutation } =
-		useUpdateCategoryOptimisticMutation();
-
 	const {
 		item,
 		extendedClassname = "",
@@ -110,102 +93,8 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 								style={{ color: "var(--color-plain-reverse)" }}
 							/>
 						) : (
-							<AriaDropdown
-								isOpen={openedMenuId === item?.id}
-								menuButton={
-									<div
-										className={
-											openedMenuId === item?.id || activeMenu
-												? "flex text-gray-500"
-												: "hidden text-gray-500 group-hover:flex"
-										}
-									>
-										<OptionsIcon />
-									</div>
-								}
-								menuClassName={`${dropdownMenuClassName} ${activeMenu ? "w-auto" : ""} pointer-events-auto z-10`}
-								portalElement={
-									!isDesktop
-										? () => {
-												if (typeof document === "undefined") {
-													return null;
-												}
-
-												return document.querySelector(
-													"#side-pane-dropdown-portal",
-												);
-											}
-										: undefined
-								}
-								menuOpenToggle={(value) => {
-									if (value) {
-										setOpenedMenuId(item?.id);
-										setActiveMenu(null);
-									} else {
-										setOpenedMenuId(null);
-										setActiveMenu(null);
-									}
-								}}
-							>
-								{!activeMenu ? (
-									<>
-										<AriaDropdownMenu
-											onClick={(event) => {
-												event.preventDefault();
-												event.stopPropagation();
-												updateCategoryOptimisticMutation.mutate({
-													category_id: item.id,
-													updateData: {
-														is_favorite: !item.isFavorite,
-													},
-												});
-												setOpenedMenuId(null);
-											}}
-										>
-											<div className={dropdownMenuItemClassName}>
-												{item.isFavorite
-													? "Remove from Favorites"
-													: "Add to Favorites"}
-											</div>
-										</AriaDropdownMenu>
-										<AriaDropdownMenu
-											onClick={(event) => {
-												event.preventDefault();
-												event.stopPropagation();
-												setActiveMenu("share");
-											}}
-										>
-											<div className={dropdownMenuItemClassName}>Share</div>
-										</AriaDropdownMenu>
-										<DeleteCollectionModal
-											categoryId={item.id}
-											isCurrent={item.current}
-										>
-											<div className={dropdownMenuItemClassName}>Delete</div>
-										</DeleteCollectionModal>
-									</>
-								) : (
-									<div className="w-75 rounded-lg bg-gray-50">
-										<ShareContent categoryId={item?.id} />
-									</div>
-								)}
-							</AriaDropdown>
+							<CollectionOptionsPopover item={item} />
 						)}
-
-						{item?.count !== undefined &&
-							!showSpinner &&
-							activeMenu !== "share" &&
-							item?.current && (
-								<div className="flex w-full justify-end">
-									<p
-										className={`text-right text-[11px] leading-[115%] font-450 tracking-[0.03em] text-gray-600 ${
-											showDropdown ? "block group-hover:hidden" : "block"
-										} ${openedMenuId === item?.id ? "hidden" : ""}`}
-									>
-										{item?.count}
-									</p>
-								</div>
-							)}
 					</div>
 				)}
 				{item?.count !== undefined &&
@@ -214,11 +103,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					item?.name !== "Everything" &&
 					item?.name !== "Inbox" &&
 					item?.name !== "Trash" && (
-						<span
-							className={`text-[11px] leading-3 font-450 text-gray-600 ${
-								showDropdown ? "block group-hover:hidden" : "block"
-							}`}
-						>
+						<span className="block text-[11px] leading-3 font-450 text-gray-600">
 							{item?.count}
 						</span>
 					)}

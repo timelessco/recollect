@@ -1,4 +1,5 @@
-import { AriaDropdown, AriaDropdownMenu } from "./ariaDropdown";
+import { Popover } from "@base-ui/react/popover";
+
 import { ClearTrashContent } from "./clearTrashContent";
 import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 
@@ -11,7 +12,7 @@ interface ClearTrashDropdownProps {
 	menuOpenToggle?: (isOpen: boolean) => void;
 }
 
-export const ClearTrashDropdown = (props: ClearTrashDropdownProps) => {
+export function ClearTrashDropdown(props: ClearTrashDropdownProps) {
 	const {
 		onClearTrash,
 		isClearingTrash,
@@ -20,63 +21,51 @@ export const ClearTrashDropdown = (props: ClearTrashDropdownProps) => {
 		isOpen,
 		menuOpenToggle,
 	} = props;
+
 	return (
-		<AriaDropdown
-			isOpen={isOpen}
-			menuOpenToggle={menuOpenToggle}
-			menuButton={
-				isBottomBar ? (
-					<div
-						className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
-						role="button"
-						tabIndex={0}
-						onKeyDown={(event) => {
-							if (event.key === "Enter" || event.key === " ") {
-								event.preventDefault();
-							}
-						}}
-					>
-						Delete Forever
-					</div>
+		<Popover.Root
+			open={isOpen}
+			onOpenChange={(nextOpen) => {
+				menuOpenToggle?.(nextOpen);
+			}}
+		>
+			<Popover.Trigger
+				render={<button type="button" />}
+				className={
+					isBottomBar
+						? "mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
+						: "z-15 ml-2 rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs group-hover:flex"
+				}
+			>
+				{isBottomBar ? (
+					"Delete Forever"
 				) : (
-					<div
-						className="z-15 ml-2 rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs group-hover:flex"
-						onKeyDown={(event) => {
-							if (event.key === "Enter" || event.key === " ") {
-								event.preventDefault();
-							}
+					<figure
+						onPointerDown={(event) => {
+							event.stopPropagation();
 						}}
-						role="button"
-						tabIndex={0}
 					>
-						<figure
+						<TrashIconGray
 							onPointerDown={(event) => {
 								event.stopPropagation();
 							}}
-						>
-							<TrashIconGray
-								onPointerDown={(event) => {
-									event.stopPropagation();
-								}}
-							/>
-						</figure>
-					</div>
-				)
-			}
-		>
-			<AriaDropdownMenu onClick={() => {}}>
-				<div
-					className={`z-10 ${!isBottomBar ? "ml-2" : ""} w-[180px] rounded-xl bg-gray-50 p-1 leading-[20px] shadow-custom-3 outline-hidden focus-visible:outline-hidden`}
-				>
-					<ClearTrashContent
-						onClearTrash={() => {
-							onClearTrash();
-						}}
-						isClearingTrash={isClearingTrash}
-						label={label}
-					/>
-				</div>
-			</AriaDropdownMenu>
-		</AriaDropdown>
+						/>
+					</figure>
+				)}
+			</Popover.Trigger>
+			<Popover.Portal>
+				<Popover.Positioner align="start" className="z-10" sideOffset={1}>
+					<Popover.Popup
+						className={`${!isBottomBar ? "ml-2" : ""} w-[180px] rounded-xl bg-gray-50 p-1 leading-[20px] shadow-custom-3 outline-hidden`}
+					>
+						<ClearTrashContent
+							onClearTrash={onClearTrash}
+							isClearingTrash={isClearingTrash}
+							label={label}
+						/>
+					</Popover.Popup>
+				</Popover.Positioner>
+			</Popover.Portal>
+		</Popover.Root>
 	);
-};
+}
