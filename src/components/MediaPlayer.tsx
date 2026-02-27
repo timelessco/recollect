@@ -218,7 +218,7 @@ function MediaPlayerInner({
 				<MediaControlBar
 					style={isAudio ? AUDIO_CONTROL_BAR_STYLE : CONTROL_BAR_STYLE}
 				>
-					<MediaPlayButton>
+					<MediaPlayButton ref={(el) => el?.setAttribute("notooltip", "")}>
 						<PlayPauseIcon />
 					</MediaPlayButton>
 
@@ -249,7 +249,9 @@ function MediaPlayerInner({
 					{mediaType !== "spotify" && (
 						<div className="settings-group">
 							<div className="settings-group-inner">
-								<MediaPlaybackRateMenuButton>
+								<MediaPlaybackRateMenuButton
+									ref={(el) => el?.setAttribute("notooltip", "")}
+								>
 									<span
 										className="flex size-full items-center justify-center"
 										slot="icon"
@@ -265,13 +267,15 @@ function MediaPlayerInner({
 					)}
 
 					{mediaType === "video" && (
-						<MediaPipButton>
+						<MediaPipButton ref={(el) => el?.setAttribute("notooltip", "")}>
 							<PipIcon />
 						</MediaPipButton>
 					)}
 
 					{!isAudio && (
-						<MediaFullscreenButton>
+						<MediaFullscreenButton
+							ref={(el) => el?.setAttribute("notooltip", "")}
+						>
 							<FullscreenIcon />
 						</MediaFullscreenButton>
 					)}
