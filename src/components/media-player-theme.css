@@ -258,6 +258,7 @@ media-controller media-time-display {
 
 	@apply relative flex items-center rounded-[calc(var(--video-base)*0.5)] px-[calc(var(--video-base)*0.5)] py-[calc(var(--video-base)*0.5)];
 
+	font-family: var(--font-sans);
 	font-size: calc(0.7 * var(--video-base));
 }
 
@@ -311,6 +312,7 @@ media-controller media-preview-chapter-display {
 }
 
 media-controller media-preview-time-display {
+	font-family: var(--font-sans);
 	font-size: calc(0.65 * var(--video-base));
 
 	@apply pt-0;
