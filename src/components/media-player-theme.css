@@ -1,0 +1,458 @@
+/**
+ * Media Player Theme (media-chrome)
+ * Scoped to media-controller. Supports video, YouTube, audio, and Spotify.
+ */
+@reference "../styles/globals.css";
+
+/* ─── Design tokens ─────────────────────────────────────────────────────── */
+media-controller {
+	--video-base: 20px;
+	--video-accent: #fff;
+	--video-track-bg: rgb(255 255 255 / 20%);
+	--video-track-hover: rgb(255 255 255 / 50%);
+	--video-buffered: rgb(255 255 255 / 40%);
+	--media-tooltip-background: transparent;
+	--media-tooltip-background-color: transparent;
+	--media-tooltip-arrow-display: none;
+}
+
+/* ─── Bottom gradient (follows control auto-hide) ─────────────────────── */
+media-controller .video-gradient-bottom {
+	@apply pointer-events-none absolute bottom-0 left-0 w-full;
+
+	height: calc(8 * var(--video-base));
+	opacity: 1;
+	background: linear-gradient(
+		to bottom,
+		transparent 0%,
+		rgb(0 0 0 / 40%) 60%,
+		rgb(0 0 0 / 70%) 100%
+	);
+	transition: opacity 0.25s;
+}
+
+media-controller[userinactive]:not([mediapaused]) .video-gradient-bottom {
+	opacity: 0;
+}
+
+/* ─── Control bar ───────────────────────────────────────────────────────── */
+media-controller media-control-bar {
+	@apply items-center gap-3;
+
+	/* Prevent slider drags from triggering lightbox swipe navigation */
+	touch-action: none;
+}
+
+/* ─── Icon buttons (play, mute, seek, pip, fullscreen) ────────────────────── */
+media-controller media-play-button,
+media-controller media-playback-rate-menu-button,
+media-controller media-mute-button,
+media-controller media-pip-button,
+media-controller media-fullscreen-button {
+	--media-control-background: transparent;
+	--media-control-hover-background: rgb(0 0 0 / 35%);
+
+	@apply inline-flex size-10 items-center justify-center rounded-full opacity-90;
+
+	background: transparent;
+	transition:
+		background 0.15s ease,
+		opacity 0.15s ease,
+		transform 0.15s ease;
+}
+
+media-controller media-play-button:active,
+media-controller media-playback-rate-menu-button:active,
+media-controller media-mute-button:active,
+media-controller media-pip-button:active,
+media-controller media-fullscreen-button:active {
+	transform: scale(0.92);
+}
+
+media-controller media-play-button:hover,
+media-controller media-playback-rate-menu-button:hover,
+media-controller media-mute-button:hover,
+media-controller media-pip-button:hover,
+media-controller media-fullscreen-button:hover,
+media-controller media-play-button:focus-visible,
+media-controller media-playback-rate-menu-button:focus-visible,
+media-controller media-mute-button:focus-visible,
+media-controller media-pip-button:focus-visible,
+media-controller media-fullscreen-button:focus-visible {
+	background: rgb(0 0 0 / 35%);
+}
+
+/* Icon SVG size */
+media-controller media-play-button svg,
+media-controller media-mute-button svg,
+media-controller media-playback-rate-menu-button svg,
+media-controller media-pip-button svg,
+media-controller media-fullscreen-button svg {
+	@apply size-5;
+}
+
+/* ─── Play / Pause icon crossfade ───────────────────────────────────────── */
+media-controller .icon-state {
+	@apply transition-all duration-200 ease-in-out;
+}
+
+media-controller media-play-button[mediapaused] .icon-play {
+	@apply scale-100 opacity-100;
+}
+
+media-controller media-play-button[mediapaused] .icon-pause {
+	@apply scale-90 opacity-0;
+}
+
+media-controller media-play-button:not([mediapaused]) .icon-play {
+	@apply scale-90 opacity-0;
+}
+
+media-controller media-play-button:not([mediapaused]) .icon-pause {
+	@apply scale-100 opacity-100;
+}
+
+/* ─── Mute / Volume icon crossfade ──────────────────────────────────────── */
+media-controller[mediavolumeunavailable] .mute-group {
+	@apply hidden;
+}
+
+media-controller .mute-group {
+	@apply flex;
+}
+
+/* Inner wrapper: 40x40 to match button, establishes positioning for vol-wrap */
+media-controller .mute-group-inner {
+	@apply relative size-10 shrink-0;
+}
+
+media-controller media-mute-button {
+	@apply relative;
+}
+
+media-controller media-mute-button .vol-on {
+	@apply translate-x-0.5;
+}
+
+media-controller media-mute-button:not([mediavolumelevel="off"]) .vol-on {
+	@apply scale-100 opacity-100;
+}
+
+media-controller media-mute-button:not([mediavolumelevel="off"]) .vol-off {
+	@apply scale-90 opacity-0;
+}
+
+media-controller media-mute-button[mediavolumelevel="off"] .vol-on {
+	@apply scale-90 opacity-0;
+}
+
+media-controller media-mute-button[mediavolumelevel="off"] .vol-off {
+	@apply scale-100 opacity-100;
+}
+
+/* ─── Volume popup (appears on hover) ───────────────────────────────────── */
+media-controller media-volume-range {
+	--media-range-track-background: var(--video-track-bg);
+	--media-range-thumb-opacity: 0;
+}
+
+@keyframes video-volume-in {
+	0% {
+		transform: translate(calc(-50%), 8px);
+		visibility: hidden;
+		opacity: 0;
+	}
+
+	100% {
+		transform: translate(calc(-50%), 0);
+		visibility: visible;
+		opacity: 1;
+	}
+}
+
+@keyframes video-volume-out {
+	0% {
+		transform: translate(calc(-50%), 0);
+		visibility: visible;
+		opacity: 1;
+	}
+
+	100% {
+		transform: translate(calc(-50%), 8px);
+		visibility: hidden;
+		opacity: 0;
+	}
+}
+
+media-controller .vol-wrap {
+	@apply invisible absolute bottom-[calc(var(--video-base)*2+8px)] left-1/2 flex items-end justify-center opacity-0;
+
+	z-index: 10;
+	transform-origin: center bottom;
+	transform: translateX(calc(-50% + 4px));
+
+	width: calc(2.5 * var(--video-base));
+	height: calc(14 * var(--video-base));
+}
+
+/* Invisible bridge covering the gap between the mute button and the popup */
+media-controller .vol-wrap::before {
+	content: "";
+
+	position: absolute;
+	right: -8px;
+	bottom: -16px;
+	left: -8px;
+
+	height: 16px;
+}
+
+media-controller .vol-wrap media-volume-range {
+	--media-range-bar-color: var(--video-accent);
+	--media-range-padding-left: 0;
+	--media-range-padding-right: 0;
+	--media-range-track-width: calc(14 * var(--video-base));
+	--media-range-track-height: var(--video-base);
+	--media-range-track-border-radius: 9999px;
+	--media-range-track-backdrop-filter: brightness(80%);
+	--media-range-thumb-width: var(--video-base);
+	--media-range-thumb-border-radius: 9999px;
+
+	transform-origin: center;
+	transform: translateY(calc(-1 * var(--video-base))) rotate(-90deg);
+
+	width: calc(14 * var(--video-base));
+	height: var(--video-base);
+
+	transition: opacity 0s 1s;
+
+	@apply overflow-hidden rounded-full bg-black/20 px-0 opacity-0;
+}
+
+media-controller .vol-wrap media-volume-range[mediavolume] {
+	@apply opacity-100;
+}
+
+media-controller .vol-wrap:not(:hover, :focus-within) {
+	animation: video-volume-out 0.3s ease-out;
+}
+
+media-controller .vol-wrap:hover,
+media-controller .vol-wrap:focus,
+media-controller .vol-wrap:focus-within,
+media-controller .mute-group-inner media-mute-button:hover ~ .vol-wrap,
+media-controller .mute-group-inner media-mute-button:focus ~ .vol-wrap,
+media-controller .mute-group-inner media-mute-button:focus-within ~ .vol-wrap {
+	animation: video-volume-in 0.3s ease-out forwards;
+}
+
+media-controller[keyboardcontrol] .vol-wrap,
+media-controller[keyboardcontrol] .vol-wrap:focus-within,
+media-controller[keyboardcontrol] .vol-wrap:focus-within media-volume-range {
+	@apply visible;
+}
+
+/* ─── Time display ─────────────────────────────────────────────────────── */
+media-controller media-time-display {
+	--media-control-hover-background: var(--media-control-background);
+
+	@apply relative flex items-center rounded-[calc(var(--video-base)*0.5)] px-[calc(var(--video-base)*0.5)] py-[calc(var(--video-base)*0.5)];
+
+	font-family: var(--font-sans);
+	font-size: calc(0.7 * var(--video-base));
+}
+
+media-controller[breakpointmd] media-time-display:not([showduration]) {
+	@apply hidden;
+}
+
+media-controller:not([breakpointmd]) media-time-display[showduration] {
+	@apply hidden;
+}
+
+/* ─── Progress bar (time range) ─────────────────────────────────────────── */
+media-controller media-time-range {
+	--media-control-background: transparent;
+	--media-control-hover-background: transparent;
+	--media-range-track-height: 3px;
+	--media-range-track-background: var(--video-track-bg);
+	--media-range-track-pointer-background: var(--video-track-hover);
+	--media-time-range-buffered-color: var(--video-buffered);
+	--media-range-bar-color: var(--video-accent);
+	--media-range-thumb-background: var(--video-accent);
+	--media-range-thumb-transition: opacity 0.1s linear;
+	--media-range-thumb-opacity: 0;
+	--media-range-track-border-radius: calc(0.25 * var(--video-base));
+	--media-preview-thumbnail-border: calc(0.125 * var(--video-base)) solid #fff;
+	--media-preview-thumbnail-border-radius: calc(0.5 * var(--video-base));
+	--media-preview-thumbnail-min-width: calc(8 * var(--video-base));
+	--media-preview-thumbnail-max-width: calc(10 * var(--video-base));
+	--media-preview-thumbnail-min-height: calc(5 * var(--video-base));
+	--media-preview-thumbnail-max-height: calc(7 * var(--video-base));
+	--media-preview-box-margin: 0 0 -10px;
+
+	height: calc(2 * var(--video-base));
+
+	@apply min-w-0 flex-1 rounded-[calc(var(--video-base)*0.25)];
+}
+
+media-controller media-time-range:hover {
+	--media-range-thumb-opacity: 1;
+	--media-range-track-height: calc(0.25 * var(--video-base));
+}
+
+media-controller media-preview-thumbnail {
+	@apply mb-1;
+}
+
+media-controller media-preview-chapter-display {
+	font-size: calc(0.6 * var(--video-base));
+
+	@apply py-0;
+}
+
+media-controller media-preview-time-display {
+	font-family: var(--font-sans);
+	font-size: calc(0.65 * var(--video-base));
+
+	@apply pt-0;
+}
+
+/* ─── Settings group (playback rate menu, like mute-group) ────────────────── */
+media-controller .settings-group {
+	@apply flex;
+}
+
+/* Rotate icon when menu is open (indicator) */
+media-controller media-playback-rate-menu-button [slot="icon"] {
+	@apply transition-transform duration-200 ease-in-out;
+}
+
+media-controller
+	media-playback-rate-menu-button[aria-expanded="true"]
+	[slot="icon"] {
+	transform: rotate(30deg);
+}
+
+media-controller .settings-group-inner {
+	@apply relative size-10 shrink-0;
+}
+
+media-controller .settings-menu-wrap {
+	@apply invisible absolute bottom-[calc(var(--video-base)*2.5)] left-1/2 flex justify-center opacity-0;
+
+	z-index: 10;
+	transform-origin: center bottom;
+	transform: translateX(-50%);
+}
+
+media-controller .settings-menu-wrap media-playback-rate-menu {
+	--media-menu-background: #292929;
+	--media-control-padding: 0;
+
+	padding-block: 0;
+	border-radius: calc(0.5 * var(--video-base));
+}
+
+media-controller
+	.settings-menu-wrap:has(media-playback-rate-menu:not([hidden])) {
+	@apply visible opacity-100;
+}
+
+/* ─── PiP (hide when browser doesn't support it or width < 400px) ────── */
+media-controller[mediapipunavailable] media-pip-button,
+media-controller:not([breakpointpip]) media-pip-button {
+	@apply hidden;
+}
+
+/* ─── Fullscreen layout (override inline styles) ──────────────────────── */
+media-controller[mediaisfullscreen] {
+	width: 100% !important;
+	max-width: 100vw !important;
+	height: 100% !important;
+	max-height: 100vh !important;
+	border-radius: 0 !important;
+}
+
+media-controller[mediaisfullscreen] video {
+	width: 100% !important;
+	max-width: 100vw !important;
+	height: 100% !important;
+	max-height: 100vh !important;
+}
+
+/* ─── Fullscreen icon crossfade ─────────────────────────────────────────── */
+media-controller media-fullscreen-button:not([mediaisfullscreen]) .fs-enter {
+	@apply scale-100 opacity-100;
+}
+
+media-controller media-fullscreen-button:not([mediaisfullscreen]) .fs-exit {
+	@apply scale-90 opacity-0;
+}
+
+media-controller media-fullscreen-button[mediaisfullscreen] .fs-enter {
+	@apply scale-90 opacity-0;
+}
+
+media-controller media-fullscreen-button[mediaisfullscreen] .fs-exit {
+	@apply scale-100 opacity-100;
+}
+
+/* ─── Audio mode overrides ─────────────────────────────────────────────── */
+media-controller[audio] {
+	--video-base: 16px;
+	--video-accent: #1a1a1a;
+	--video-track-bg: rgb(0 0 0 / 15%);
+	--video-track-hover: rgb(0 0 0 / 30%);
+	--video-buffered: rgb(0 0 0 / 25%);
+
+	/* Allow volume / settings popups to escape the pill shape */
+	overflow: visible;
+}
+
+/* Smaller, transparent buttons for compact audio bar */
+media-controller[audio] media-play-button,
+media-controller[audio] media-playback-rate-menu-button,
+media-controller[audio] media-mute-button {
+	--media-control-background: transparent;
+	--media-control-hover-background: rgb(0 0 0 / 6%);
+
+	@apply size-9;
+
+	background: transparent;
+}
+
+media-controller[audio] media-play-button:hover,
+media-controller[audio] media-playback-rate-menu-button:hover,
+media-controller[audio] media-mute-button:hover,
+media-controller[audio] media-play-button:focus-visible,
+media-controller[audio] media-playback-rate-menu-button:focus-visible,
+media-controller[audio] media-mute-button:focus-visible {
+	background: rgb(0 0 0 / 6%);
+}
+
+/* Match inner wrappers to smaller button size */
+media-controller[audio] .mute-group-inner,
+media-controller[audio] .settings-group-inner {
+	@apply size-9;
+}
+
+/* Volume popup: dark menu for light audio bar */
+media-controller[audio] .vol-wrap media-volume-range {
+	@apply bg-black/60;
+}
+
+/* Settings popup: dark menu for light audio bar */
+media-controller[audio] .settings-menu-wrap media-playback-rate-menu {
+	--media-menu-background: #292929;
+	--media-primary-color: #fff;
+}
+
+/* Always show combined time format (e.g. "1:23 / 4:56") */
+media-controller[audio] media-time-display:not([showduration]) {
+	@apply hidden;
+}
+
+media-controller[audio] media-time-display[showduration] {
+	@apply flex;
+}

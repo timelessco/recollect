@@ -26,11 +26,16 @@ import {
 	AudioSlide,
 	ImageSlide,
 	PDFSlide,
+	SpotifySlide,
 	VideoSlide,
 	WebEmbedSlide,
 	YouTubeSlide,
 } from "./LightboxRenderers";
-import { isYouTubeVideo, type CustomSlide } from "./LightboxUtils";
+import {
+	isSpotifyLink,
+	isYouTubeVideo,
+	type CustomSlide,
+} from "./LightboxUtils";
 
 /**
  * CustomLightBox Component
@@ -134,11 +139,15 @@ export const CustomLightBox = ({
 
 			let content = null;
 
-			if (
+			// Spotify URL check — before generic audio, since Spotify URLs
+			// may have audio type but need the spotify-audio element
+			if (isSpotifyLink(bookmark?.url)) {
+				content = <SpotifySlide bookmark={bookmark} isActive={isActive} />;
+			} else if (
 				isBookmarkAudio(bookmark?.type) ||
 				bookmark?.meta_data?.mediaType?.startsWith("audio")
 			) {
-				content = <AudioSlide bookmark={bookmark} />;
+				content = <AudioSlide bookmark={bookmark} isActive={isActive} />;
 			}
 			// Check video - fallback to WebEmbedSlide if video failed to load
 			else if (
