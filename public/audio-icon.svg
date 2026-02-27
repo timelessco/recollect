@@ -1,0 +1,6 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <rect width="200" height="200" fill="white"/>
+  <g transform="translate(91, 91) scale(1)">
+    <path d="M3 8.167v2.5M6 5.667v7.5M9 2.667v13.5M12 3.667v11.5M15 6.667v5.5" stroke="currentColor" stroke-linecap="round"/>
+  </g>
+</svg>

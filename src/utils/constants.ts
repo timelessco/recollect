@@ -26,8 +26,8 @@ export const STORAGE_SCREENSHOT_VIDEOS_PATH =
 export const STORAGE_FILES_PATH = FILES_STORAGE_NAME + "/public";
 export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 
-// Fallback ogImage for audio bookmarks (no cover art)
-export const AUDIO_OG_IMAGE_FALLBACK_URL = `${BASE_URL}/audio-fallback.png`;
+// Fallback ogImage for audio bookmarks; matches waveform in @/icons/audio-icon.tsx
+export const AUDIO_OG_IMAGE_FALLBACK_URL = `${BASE_URL}/audio-icon.svg`;
 
 // Video upload limits
 export const VIDEO_DOWNLOAD_TIMEOUT_MS = 60_000;
