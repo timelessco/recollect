@@ -68,12 +68,13 @@ For detailed architecture, module guides, and data flows, see [`docs/CODEBASE_MA
 - Legacy Pages Router endpoints in `/src/pages/api/` - migrate don't modify
 - Mutation hooks follow naming pattern: `use-{action}-{resource}-mutation.ts` — do NOT include "optimistic" in the filename; optimistic behavior is an implementation detail
 - Test API changes via Scalar UI at `/api-docs` (cookie auth works automatically when logged in)
-- When adding or modifying an API route, update or create the corresponding OpenAPI endpoint definition in `src/lib/openapi/endpoints/`
+- When adding or modifying an API route, update the Zod schemas in the colocated `schema.ts` (auto-inferred) and the supplement metadata in `src/lib/openapi/endpoints/<domain>/`
 - The `/api/dev/session` endpoint requires a browser (not curl/CLI) — it relies on browser session cookies. When writing `.http` test file placeholders, never hardcode actual JWTs
-- After modifying an API route, check for and update corresponding `api-tests/*.http` files to reflect new validation behavior
+- After modifying an API route, update corresponding named examples in the endpoint's `-examples.ts` file (supplements only — schemas auto-infer)
 - For API endpoint validation during development, use Chrome MCP to navigate to `/api-docs` and test via Scalar's Try It client — not curl
 - When eliminating an API route via SSR refactor, (1) extract its Zod schemas to a shared module first, (2) verify the route is unused elsewhere before deleting
 - For constants shared across TypeScript (Next.js) and Deno Edge Functions, define in `src/utils/constants.ts` and add `// Keep in sync with src/utils/constants.ts` comment in Deno files — cross-imports are impossible
+- Always ground-truth CodeRabbit review suggestions against actual runtime behavior (use Chrome MCP to test endpoints) before implementing — suggestions can have the fix direction reversed
 
 ### Type Deduction
 
@@ -94,6 +95,7 @@ For detailed architecture, module guides, and data flows, see [`docs/CODEBASE_MA
 - [`docs/project_overview.md`](./docs/project_overview.md) - Tech stack, features, architecture
 - [`docs/project_structure.md`](./docs/project_structure.md) - Directory layout, file conventions
 - [`docs/suggested_commands.md`](./docs/suggested_commands.md)
+- [`docs/OPENAPI_GUIDE.md`](./docs/OPENAPI_GUIDE.md) - **How to add/update OpenAPI endpoint docs** (also available as `/openapi-endpoints` skill)
 
 ## Development Commands
 
@@ -123,19 +125,38 @@ pnpm db:types     # Generate Supabase types from local schema
 **OpenAPI:**
 
 ```bash
-npx tsx scripts/generate-openapi.ts # Regenerate OpenAPI spec (no pnpm alias)
+npx tsx scripts/generate-openapi.ts                   # Regenerate OpenAPI spec (no pnpm alias)
+oasdiff changelog old.json new.json --format markdown # Local changelog diff (brew install oasdiff)
 ```
 
-- Endpoint definitions in `src/lib/openapi/endpoints/` — one file per endpoint
+- **CI changelog workflow** (`.github/workflows/openapi-changelog.yml`): Uses `go install github.com/oasdiff/oasdiff@latest` + direct CLI (not the Docker action — it ignores `args`). Spec files go in `.oasdiff/` (Docker actions can't see `/tmp`). `docs/API_CHANGELOG.md` is CI-generated and ignored by Prettier + markdownlint.
+
+- **Spec version**: OpenAPI 3.0.3 (not 3.1) — required for oasdiff compatibility. Uses `OpenApiGeneratorV3`
+- **Response components**: `ValidationError` (400), `Unauthorized` (401), `InternalError` (500) — all registered as `$ref` in `generate-openapi.ts`. The merge script preserves `$ref` responses for non-400 status codes; 400 `$ref` is inlined when `additionalResponses` targets it (required for response400Examples pipeline)
+- **Two-pass generation**: (1) filesystem scanner auto-infers schemas from factory `.config` on route handlers, (2) `scripts/merge-openapi-supplements.ts` overlays human-authored metadata (tags, descriptions, examples)
+- **Supplement files** in `src/lib/openapi/endpoints/<domain>/` are data-only `EndpointSupplement` exports — NOT `registry.registerPath()` calls. They provide tags, summary, description, security, examples, `additionalResponses`, and `response400Examples`
+- Example data extracted to colocated `-examples.ts` files when endpoint exceeds 250 lines
+- **Edge functions** (3 `edge-process-imports.ts` files) are the ONLY files that still use `registry.registerPath()` — they use raw SchemaObject, not Zod
+- **Factory `.config`**: All 4 handler factories in `create-handler.ts` expose `.config` with `factoryName`, `inputSchema`, `outputSchema` — this is how the scanner discovers schemas
+- **Non-factory routes** can be scanner-discoverable via `Object.assign(handleGet, { config: { ... } satisfies HandlerConfig })` — rename the raw `export async function GET` to a private `handleGet` and export via `Object.assign`
+- `SKIP_PATHS` in `generate-openapi.ts` — remove entries when migrating routes to be scanner-discoverable
+- When adding a new App Router endpoint: create `route.ts` with factory handler + `schema.ts` with Zod schemas + supplement file with metadata — the scanner handles registration automatically
+- Named examples use kebab-case keys, `summary` + `description` on ALL examples (request, response, and 400), happy paths first then validation errors
 - Shared schemas in `src/lib/openapi/schemas/shared.ts` — registered as `$ref` entries
+- For raw `SchemaObject` schemas (non-Zod, edge functions only), register with `registry.registerComponent("schemas", "Name", { ... })` in `registry.ts` — not `registry.register()` which requires Zod
 - After modifying any endpoint or schema file, regenerate the spec and verify at `/api-docs`
 - `public/openapi.json` is gitignored — regenerated by `prebuild:next` on every build, never committed
-- New endpoints must be registered in `src/lib/openapi/endpoints/index.ts` barrel export
+- New supplement domain: (1) create `src/lib/openapi/endpoints/<domain>/` with supplement + barrel, (2) add `import * as <domain>Supplements` + `allModules` entry in `scripts/merge-openapi-supplements.ts`, (3) add `export * from "./<domain>"` in `src/lib/openapi/endpoints/index.ts`
+- Public (no-auth) endpoint supplements must include `security: []` to prevent inheriting global security
 - Security: `[{ [bearerAuth.name]: [] }, {}]` — empty `{}` means cookie auth also accepted (intentional, don't remove)
+- Edge function security: use `serviceRoleAuth` (not `bearerAuth`) — it's a service role key, not a user JWT
+- Edge function endpoints use per-path `servers` override (imported from `edge-function-servers.ts`) so Scalar sends requests to the correct Supabase host
 - When using Supabase `.like()` with user-derived strings, escape `%` and `_` wildcards before the query
 
 ### Zod + Supabase Gotchas
 
 - `z.looseObject` infers `{ [x: string]: unknown; ... }` — incompatible with Supabase's `Json` type. Use `z.object` for schemas consumed by route handlers returning Supabase data.
-- In OpenAPI raw schema objects, do NOT use `as const` on `required` arrays — creates `readonly` tuple incompatible with `SchemaObject`'s `string[]`
+- In OpenAPI raw schema objects, do NOT use `as const` on `required` arrays — creates `readonly` tuple incompatible with `SchemaObject`'s `string[]`. Example data objects (in `-examples.ts` files) SHOULD use `as const` per frontend rules.
 - Prefer `z.int()` over `z.number().int()` — linter may auto-transform the latter to the former
+- `z.iso.datetime()` rejects Supabase's `timestamptz` format (`+00:00` offset) — use `z.string()` for output schemas validating Supabase timestamp columns. Only use `z.iso.datetime()` for input schemas where the client sends `Z`-suffix timestamps via `toISOString()`
+- Never reference Zod internals (`z.url()`, `z.string()`) in OpenAPI example descriptions — use tool-agnostic phrasing like "fails URL schema validation"

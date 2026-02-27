@@ -5,7 +5,6 @@ import classNames from "classnames";
 import { find, isEmpty, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
-import { useUpdateCategoryOptimisticMutation } from "../../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
 import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/useSendCollaborationEmailInviteMutation";
 import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation";
@@ -14,7 +13,6 @@ import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfi
 import AriaSelect from "../../../components/ariaSelect";
 import Input from "../../../components/atoms/input";
 import { Spinner } from "../../../components/spinner";
-import Switch from "../../../components/switch";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import { CopyIcon } from "../../../icons/copy-icon";
 import DownArrowGray from "../../../icons/downArrowGray";
@@ -28,6 +26,8 @@ import { type CollabDataInCategory } from "../../../types/apiTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import { EMAIL_CHECK_PATTERN } from "../../../utils/constants";
 import { errorToast, successToast } from "../../../utils/toastMessages";
+
+import { SharePublicSwitch } from "./share-public-switch";
 
 const rightTextStyles = "text-13 font-medium leading-[15px] text-gray-600";
 
@@ -204,9 +204,6 @@ const ShareContent = (props: ShareContentProps) => {
 	// Priority: props.categoryId > shareCategoryId > currentCategoryId
 	const dynamicCategoryId =
 		props.categoryId ?? shareCategoryId ?? currentCategoryId;
-
-	const { updateCategoryOptimisticMutation } =
-		useUpdateCategoryOptimisticMutation();
 
 	const { sendCollaborationEmailInviteMutation } =
 		useSendCollaborationEmailInviteMutation();
@@ -401,23 +398,7 @@ const ShareContent = (props: ShareContentProps) => {
 						</figure>
 					</button>
 					{isUserTheCategoryOwner ? (
-						<Switch
-							disabled={false}
-							enabled={currentCategory?.is_public ?? false}
-							setEnabled={() => {
-								if (typeof dynamicCategoryId !== "number") {
-									return;
-								}
-
-								updateCategoryOptimisticMutation.mutate({
-									category_id: dynamicCategoryId,
-									updateData: {
-										is_public: !currentCategory?.is_public,
-									},
-								});
-							}}
-							size="small"
-						/>
+						<SharePublicSwitch categoryId={props.categoryId} />
 					) : (
 						<div className={rightTextStyles}>
 							{currentCategory?.is_public ? "View access" : "No access"}

@@ -15,16 +15,7 @@ import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
 import UserAvatar from "../../components/userAvatar";
 import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
-import { GoogleLoginIcon } from "../../icons/googleLoginIcon";
-import { IframeIcon } from "../../icons/iframe-icon";
 import ImageIcon from "../../icons/imageIcon";
-import { InfoIcon } from "../../icons/info-icon";
-import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
-import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../store/componentStore";
-import { useIframeStore } from "../../store/iframeStore";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
 	saveButtonClassName,
@@ -40,8 +31,11 @@ import {
 } from "../../utils/constants";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
-import { SettingsToggleCard } from "./settingsToggleCard";
+import { SettingsEmailCard } from "./settings-email-card";
+import { SettingsIframeToggle } from "./settings-iframe-toggle";
 import { ToggleDarkMode } from "@/components/toggleDarkMode";
+import { type SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
+import { useSupabaseSession } from "@/store/componentStore";
 
 type SettingsUsernameFormTypes = {
 	username: string;
@@ -51,13 +45,13 @@ type SettingsDisplaynameFormTypes = {
 	displayname: string;
 };
 
-const Settings = () => {
+type SettingsProps = {
+	onNavigate: (page: SettingsPage) => void;
+};
+
+const Settings = ({ onNavigate }: SettingsProps) => {
 	const inputFile = useRef<HTMLInputElement>(null);
 	const session = useSupabaseSession((state) => state.session);
-
-	const setCurrentSettingsPage = useMiscellaneousStore(
-		(state) => state.setCurrentSettingsPage,
-	);
 
 	const { userProfileData } = useFetchUserProfile();
 
@@ -70,9 +64,6 @@ const Settings = () => {
 	const { uploadProfilePicMutation } = useUploadProfilePicMutation();
 	const { deleteUserMutation } = useDeleteUserMutation();
 	const { removeProfilePic } = useRemoveUserProfilePicMutation();
-
-	const iframeEnabled = useIframeStore((state) => state.iframeEnabled);
-	const setIframeEnabled = useIframeStore((state) => state.setIframeEnabled);
 
 	const userData = userProfileData?.data?.[0];
 
@@ -353,60 +344,8 @@ const Settings = () => {
 						</LabelledComponent>
 					</form>
 				</div>
-				{/* <Switch /> */}
-				<div className="pt-10">
-					<p className="pb-[10px] text-[14px] leading-[115%] font-medium text-gray-900">
-						Email
-					</p>
-					<SettingsToggleCard
-						icon={
-							session?.user?.app_metadata?.provider === "email" ? (
-								<MailIconBlack className="h-5.5 w-5.5 text-gray-900" />
-							) : (
-								<GoogleLoginIcon className="h-5 w-5" />
-							)
-						}
-						title={userData?.email ?? ""}
-						description="Current email"
-						buttonLabel={
-							session?.user?.app_metadata?.provider === "email"
-								? "Change email"
-								: undefined
-						}
-						onClick={
-							session?.user?.app_metadata?.provider === "email"
-								? () => setCurrentSettingsPage("change-email")
-								: undefined
-						}
-					/>
-					{session?.user?.app_metadata?.provider !== "email" && (
-						<div className="mt-2 flex items-center gap-x-2 text-13 leading-[150%] font-normal text-gray-600">
-							<figure className="text-gray-900">
-								<InfoIcon className="h-4.5 w-4.5" />
-							</figure>
-							You have logged in with your Google account.
-						</div>
-					)}
-				</div>
-				<div className="pt-10">
-					<p className="pb-[10px] text-[14px] leading-[115%] font-medium text-gray-900">
-						Iframe
-					</p>
-					<SettingsToggleCard
-						icon={
-							<figure className="text-gray-900">
-								<IframeIcon className="h-5.5 w-5.5 text-gray-900" />
-							</figure>
-						}
-						title="Enable iframe in lightbox"
-						description="Allow embedding external content in lightbox view"
-						isSwitch
-						enabled={iframeEnabled}
-						onToggle={() => {
-							setIframeEnabled(!iframeEnabled);
-						}}
-					/>
-				</div>
+				<SettingsEmailCard onNavigate={onNavigate} />
+				<SettingsIframeToggle />
 				<ToggleDarkMode />
 				{/*
 				feature yet to implement
@@ -442,7 +381,7 @@ const Settings = () => {
 						</p>
 						<Button
 							className={`w-full ${settingsDeleteButtonRedClassName}`}
-							onClick={() => setCurrentSettingsPage("delete")}
+							onClick={() => onNavigate("delete")}
 						>
 							<p className="flex w-full justify-center">
 								<span className="flex items-center justify-center gap-1.5 text-red-600">

@@ -1,0 +1,137 @@
+import fs from "node:fs";
+import path from "node:path";
+import * as Sentry from "@sentry/nextjs";
+import { Resend } from "resend";
+
+const EMAIL_FROM = "admin@share.recollect.so";
+const LOG_PREFIX = "[send-collection-deleted-notification]";
+
+export interface SendCollectionDeletedNotificationProps {
+	categoryName: string;
+	collaboratorEmails: string[];
+	ownerDisplayName: string;
+}
+
+const filePath = path.join(process.cwd(), "public", "logo.png");
+const base64Logo = fs.readFileSync(filePath).toString("base64");
+
+export async function sendCollectionDeletedNotification(
+	props: SendCollectionDeletedNotificationProps,
+) {
+	if (process.env.NODE_ENV === "development") {
+		console.log(`${LOG_PREFIX} Dev mode - skipped:`, props);
+		return;
+	}
+
+	const { categoryName, collaboratorEmails, ownerDisplayName } = props;
+
+	const resendKey = process.env.RESEND_KEY;
+	if (!resendKey) {
+		console.warn(`${LOG_PREFIX} RESEND_KEY not configured, skipping`);
+		return;
+	}
+
+	const resend = new Resend(resendKey);
+
+	const subject = `Collection "${categoryName}" was deleted`;
+	const html = buildEmailHtml({ categoryName, ownerDisplayName });
+
+	const results = await Promise.allSettled(
+		collaboratorEmails.map((email) =>
+			resend.emails.send({
+				from: EMAIL_FROM,
+				to: email,
+				subject,
+				html,
+				attachments: [
+					{
+						filename: "logo.png",
+						content: base64Logo,
+						contentType: "image/png",
+						contentId: "logo",
+					},
+				],
+			}),
+		),
+	);
+
+	let failureCount = 0;
+
+	for (const result of results) {
+		if (result.status === "rejected") {
+			failureCount++;
+			const error =
+				result.reason instanceof Error
+					? result.reason
+					: new Error(String(result.reason));
+			console.error(`${LOG_PREFIX} Send error:`, error);
+			Sentry.captureException(error, {
+				tags: { operation: "send_collection_deleted_notification" },
+				extra: { categoryName },
+			});
+		} else if (result.value.error) {
+			failureCount++;
+			const apiError = new Error(result.value.error.message);
+			console.error(`${LOG_PREFIX} API error:`, result.value.error);
+			Sentry.captureException(apiError, {
+				tags: { operation: "send_collection_deleted_notification" },
+				extra: { categoryName },
+			});
+		}
+	}
+
+	console.log(`${LOG_PREFIX} Done:`, {
+		categoryName,
+		sent: collaboratorEmails.length - failureCount,
+		failed: failureCount,
+	});
+}
+
+interface BuildEmailHtmlProps {
+	categoryName: string;
+	ownerDisplayName: string;
+}
+
+function escapeHtml(text: string) {
+	return text
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;")
+		.replaceAll('"', "&quot;")
+		.replaceAll("'", "&#39;");
+}
+
+function buildEmailHtml(props: BuildEmailHtmlProps) {
+	const categoryName = escapeHtml(props.categoryName);
+	const ownerDisplayName = escapeHtml(props.ownerDisplayName);
+
+	return `<!DOCTYPE html>
+<html lang="en">
+	<body style="margin:0; background:#ececec; font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; text-align:center; -webkit-font-smoothing:antialiased;">
+		<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+			<tr>
+				<td align="center" style="padding:48px 16px;">
+					<div style="margin-bottom:24px;">
+						<img src="cid:logo" width="20" height="24" style="display:block;" alt="logo"/>
+					</div>
+					<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:640px; margin:0 auto; background:#ffffff; border-radius:20px; box-shadow:0 1px 12px rgba(0,0,0,0.06);">
+						<tr>
+							<td style="padding:56px 48px 48px 48px; text-align:center;">
+								<h1 style="font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; font-weight:600; font-size:20px; line-height:28px; color:#111111; margin:0 0 12px 0;">
+									A collection you collaborated on was deleted
+								</h1>
+								<p style="font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; font-weight:400; font-size:16px; line-height:24px; color:#6b6b6b; margin:0 0 32px 0;">
+									The collection <span style="color:#000000; font-weight:600;">${categoryName}</span> you were a collaborator on was deleted by <span style="color:#323232; font-weight:500;">${ownerDisplayName}</span>. Your bookmarks are no longer associated with this collection.
+								</p>
+							</td>
+						</tr>
+					</table>
+					<div style="color:#707070; font-size:14px; font-weight:500; margin-top:20px;">
+						recollect.so
+					</div>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>`;
+}

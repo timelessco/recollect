@@ -44,6 +44,7 @@ fetchs
 fgveraehgourpwwzlzhy
 fkey
 gclid
+GOPATH
 hcaptcha
 hnsw
 HNSW
@@ -113,11 +114,13 @@ sentryclirc
 Setof
 shhhhh
 SIWS
+slugified
 SQLERRM
 sslcert
 sslmode
 sslrootcert
 statio
+stefanzweifel
 Supavisor
 svgs
 syncer
@@ -143,6 +146,7 @@ uniqid
 unrs
 workos
 xact
+XVCJ
 yarl
 youtu
 YOUTU

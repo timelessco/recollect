@@ -1,7 +1,6 @@
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
-import AriaDisclosure from "../../../components/ariaDisclosure";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import DownArrowGray from "../../../icons/downArrowGray";
 import { useSupabaseSession } from "../../../store/componentStore";
@@ -13,6 +12,7 @@ import {
 } from "../../../utils/constants";
 
 import SingleListItemComponent from "./singleListItemComponent";
+import { Collapsible } from "@/components/ui/recollect/collapsible";
 
 const SidePaneTypesList = () => {
 	const currentPath = useGetCurrentUrlPath();
@@ -27,31 +27,25 @@ const SidePaneTypesList = () => {
 		error: PostgrestError;
 	};
 
-	const optionsMenuList = optionsMenuListArray(currentPath, bookmarksCountData)
-		.filter((item) => {
-			if (
-				item.name === menuListItemName.links ||
-				item.name === menuListItemName.image ||
-				item.name === menuListItemName.videos ||
-				item.name === menuListItemName.documents ||
-				item.name === menuListItemName.tweets ||
-				item.name === menuListItemName.instagram ||
-				item.name === menuListItemName.audio
-			) {
-				return item;
-			} else {
-				return null;
-			}
-		})
-		.map((item, index) => ({
-			...item,
-			id: index,
-		}));
+	const optionsMenuList = optionsMenuListArray(
+		currentPath,
+		bookmarksCountData,
+	).filter((item) =>
+		[
+			menuListItemName.links,
+			menuListItemName.image,
+			menuListItemName.videos,
+			menuListItemName.documents,
+			menuListItemName.tweets,
+			menuListItemName.instagram,
+			menuListItemName.audio,
+		].includes(item.name),
+	);
 
 	return (
 		<div className="pt-4">
-			<AriaDisclosure
-				renderDisclosureButton={
+			<Collapsible.Root>
+				<Collapsible.Trigger>
 					<div className="group flex items-center px-1 py-[7.5px] text-13 leading-[15px] font-medium tracking-[0.01em] text-gray-600">
 						<p className="mr-1">Types</p>
 						<DownArrowGray
@@ -59,19 +53,20 @@ const SidePaneTypesList = () => {
 							size={10}
 						/>
 					</div>
-				}
-			>
-				<div>
-					{optionsMenuList?.map((item) => (
-						<SingleListItemComponent
-							extendedClassname="py-[6px]"
-							item={item}
-							key={item.id}
-							showIconDropdown={false}
-						/>
-					))}
-				</div>
-			</AriaDisclosure>
+				</Collapsible.Trigger>
+				<Collapsible.Panel>
+					<div className="flex flex-col gap-px">
+						{optionsMenuList?.map((item) => (
+							<SingleListItemComponent
+								extendedClassname="py-[6px]"
+								item={item}
+								key={item.id}
+								showIconDropdown={false}
+							/>
+						))}
+					</div>
+				</Collapsible.Panel>
+			</Collapsible.Root>
 		</div>
 	);
 };

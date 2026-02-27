@@ -10,10 +10,7 @@ import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
 import { BackIconBlack } from "../../icons/actionIcons/backIconBlack";
 import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
-import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../store/componentStore";
+import { useSupabaseSession } from "../../store/componentStore";
 import { type ProfilesTableTypes } from "../../types/apiTypes";
 import {
 	settingsInputClassName,
@@ -26,19 +23,21 @@ import { EMAIL_CHECK_PATTERN, USER_PROFILE } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
+import { type SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
+
 type SettingsFormTypes = {
 	newEmail: string;
 };
 
-const ChangeEmail = () => {
+type ChangeEmailProps = {
+	onNavigate: (page: SettingsPage) => void;
+};
+
+const ChangeEmail = ({ onNavigate }: ChangeEmailProps) => {
 	const [changeEmailLoader, setChangeEmailLoader] = useState(false);
 
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
-	const setCurrentSettingsPage = useMiscellaneousStore(
-		(state) => state.setCurrentSettingsPage,
-	);
-
 	const supabase = createClient();
 
 	const userProfilesData = queryClient.getQueryData([
@@ -83,7 +82,7 @@ const ChangeEmail = () => {
 			<div className="relative mb-[30px] flex items-center">
 				<Button
 					className="absolute left-[-7px] rounded-full bg-gray-0 p-1 hover:bg-gray-100"
-					onClick={() => setCurrentSettingsPage("main")}
+					onClick={() => onNavigate("main")}
 				>
 					<figure className="text-gray-900">
 						<BackIconBlack />

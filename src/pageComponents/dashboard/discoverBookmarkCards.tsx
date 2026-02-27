@@ -120,7 +120,7 @@ export const DiscoverBookmarkCards = ({
 	const discoverCategoryViews = useMemo<BookmarkViewDataTypes>(
 		() => ({
 			bookmarksView: viewValues.moodboard as BookmarksViewTypes,
-			cardContentViewArray: ["cover", "title", "description", "info"],
+			cardContentViewArray: ["cover", "title"],
 			moodboardColumns: discoverMoodboardColumnsResponsive,
 			sortBy: "date-sort-ascending",
 		}),

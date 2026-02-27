@@ -22,6 +22,7 @@ import {
 import { viewValues } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
 import { getBaseUrl, isBookmarkOwner, isCurrentYear } from "@/utils/helpers";
+import { cn } from "@/utils/tailwind-merge";
 import { getCategorySlugFromRouter } from "@/utils/url";
 
 export function getImgForPost(
@@ -43,6 +44,7 @@ export function getImgForPost(
 export type BookmarkCardProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
 	img?: string;
+	isDiscoverPage?: boolean;
 	isPublicPage: boolean;
 	onDeleteClick?: (post: SingleListData[]) => void;
 	onMoveOutOfTrashClick?: (post: SingleListData) => void;
@@ -53,6 +55,7 @@ export type BookmarkCardProps = {
 const BookmarkCardInner = ({
 	categoryViewsFromProps,
 	img,
+	isDiscoverPage = false,
 	isPublicPage,
 	onDeleteClick,
 	onMoveOutOfTrashClick,
@@ -65,7 +68,6 @@ const BookmarkCardInner = ({
 	const userId = useSupabaseSession((state) => state.session)?.user?.id ?? "";
 	const categorySlug = getCategorySlugFromRouter(router);
 	const isUserInTweetsPage = useIsUserInTweetsPage();
-
 	const cardTypeCondition = useGetViewValue(
 		"bookmarksView",
 		"",
@@ -221,7 +223,12 @@ const BookmarkCardInner = ({
 					)}
 				>
 					{bookmarksInfoValue?.includes("title") && (
-						<p className="card-title truncate text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900">
+						<p
+							className={cn(
+								"card-title truncate text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900",
+								isDiscoverPage && "text-center",
+							)}
+						>
 							{post?.title}
 						</p>
 					)}

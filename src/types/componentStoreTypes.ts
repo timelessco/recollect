@@ -3,9 +3,7 @@ import { type User } from "@supabase/supabase-js";
 import { type SingleListData } from "./apiTypes";
 
 export type ModalStoreState = {
-	showSettingsModal: boolean;
 	showVideoModal: boolean;
-	toggleShowSettingsModal: () => void;
 	toggleShowVideoModal: () => void;
 };
 
@@ -24,13 +22,6 @@ export type LoadersStoreState = {
 export type MiscellaneousStoreState = {
 	addScreenshotBookmarkId: number | undefined;
 	currentBookmarkView: BookmarksViewTypes;
-	currentSettingsPage:
-		| "ai-features"
-		| "change-email"
-		| "delete"
-		| "main"
-		| "import";
-	currentSliderDropdownSlide: string | null;
 	deleteBookmarkId: number[] | undefined;
 	isCardDragging: boolean;
 	isCollectionChanged: boolean;
@@ -42,10 +33,6 @@ export type MiscellaneousStoreState = {
 	selectedVideoId: number | null;
 	setAddScreenshotBookmarkId: (value: number | undefined) => void;
 	setCurrentBookmarkView: (value: BookmarksViewTypes) => void;
-	setCurrentSettingsPage: (
-		value: MiscellaneousStoreState["currentSettingsPage"],
-	) => void;
-	setCurrentSliderDropdownSlide: (value: string | null) => void;
 	setDeleteBookmarkId: (bookmarkIds: number[]) => void;
 	setIsCardDragging: (value: boolean) => void;
 	setIsCollectionChanged: (value: boolean) => void;

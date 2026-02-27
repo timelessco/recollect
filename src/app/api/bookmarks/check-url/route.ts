@@ -26,6 +26,7 @@ export const GET = createGetApiHandlerWithAuth({
 			.from("everything")
 			.select("id, url")
 			.eq("user_id", user.id)
+			.is("trash", null)
 			.like("url", `${escapedBase}%`)
 			.limit(50);
 

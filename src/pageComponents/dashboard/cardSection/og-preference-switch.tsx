@@ -1,21 +1,47 @@
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useTogglePreferredOgDomainOptimisticMutation } from "@/async/mutationHooks/user/use-toggle-preferred-og-domain-optimistic-mutation";
-import Switch from "@/components/switch";
+import { Switch } from "@/components/ui/recollect/switch";
 import ImageIcon from "@/icons/imageIcon";
 import { type ProfilesTableTypes } from "@/types/apiTypes";
 import { USER_PROFILE } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
 
-type OgPreferenceSwitchProps = {
+interface OgPreferenceSwitchProps {
 	bookmarkUrl: string;
 	userId: string;
-};
+}
 
 export function OgPreferenceSwitch({
 	bookmarkUrl,
 	userId,
 }: OgPreferenceSwitchProps) {
+	return (
+		<div className="flex items-center justify-between gap-3 px-2 py-[7.5px]">
+			<div className="flex items-center gap-2">
+				<div className="flex h-4 w-4 items-center justify-center text-gray-800">
+					<ImageIcon size="16" />
+				</div>
+				<span className="text-13 leading-4 font-450 text-gray-800">
+					Use OG image for this site
+				</span>
+			</div>
+			<div className="flex shrink-0 items-center">
+				<OgPreferenceSwitchToggle bookmarkUrl={bookmarkUrl} userId={userId} />
+			</div>
+		</div>
+	);
+}
+
+interface OgPreferenceSwitchToggleProps {
+	bookmarkUrl: string;
+	userId: string;
+}
+
+function OgPreferenceSwitchToggle({
+	bookmarkUrl,
+	userId,
+}: OgPreferenceSwitchToggleProps) {
 	const queryClient = useQueryClient();
 	const { togglePreferredOgDomainOptimisticMutation } =
 		useTogglePreferredOgDomainOptimisticMutation();
@@ -48,24 +74,12 @@ export function OgPreferenceSwitch({
 	};
 
 	return (
-		<div className="flex items-center justify-between gap-3 px-2 py-[7.5px]">
-			<div className="flex items-center gap-2">
-				<div className="flex h-4 w-4 items-center justify-center text-gray-800">
-					<ImageIcon size="16" />
-				</div>
-				<span className="text-13 leading-4 font-450 text-gray-800">
-					Use OG image for this site
-				</span>
-			</div>
-			<div className="flex shrink-0 items-center">
-				<Switch
-					aria-label="Use OG image for this site"
-					enabled={isPreferred}
-					setEnabled={handleToggle}
-					disabled={false}
-					size="small"
-				/>
-			</div>
-		</div>
+		<Switch
+			aria-label="Use OG image for this site"
+			checked={isPreferred}
+			onCheckedChange={handleToggle}
+			disabled={false}
+			size="small"
+		/>
 	);
 }

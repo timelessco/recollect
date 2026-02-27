@@ -9,17 +9,14 @@ import useGetViewValue from "../../hooks/useGetViewValue";
 import CardIcon from "../../icons/viewIcons/cardIcon";
 import ListIcon from "../../icons/viewIcons/listIcon";
 import MoodboardIconGray from "../../icons/viewIcons/moodboardIconGray";
-import {
-	type BookmarksViewTypes,
-	type BookmarkViewCategories,
-} from "../../types/componentStoreTypes";
+import { type BookmarksViewTypes } from "../../types/componentStoreTypes";
 import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 import { singleInfoValues, viewValues } from "../../utils/constants";
-import { errorToast } from "../../utils/toastMessages";
 import Button from "../atoms/button";
 import RadioGroup from "../radioGroup";
 import Slider from "../slider";
-import Switch from "../switch";
+
+import { BookmarkCardContentSwitch } from "./bookmark-card-content-switch";
 
 type BookmarksViewDropdownProps = {
 	// based on this it is either rendered in dropdown or in the sliding menu component if its in responsive mobile page
@@ -33,10 +30,6 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 
 	const { setBookmarksView } = useBookmarksViewUpdate();
 
-	const bookmarksInfoValueRaw = useGetViewValue("cardContentViewArray", []);
-	const bookmarksInfoValue = Array.isArray(bookmarksInfoValueRaw)
-		? (bookmarksInfoValueRaw as string[])
-		: [];
 	const bookmarksColumns = useGetViewValue("moodboardColumns", [10]);
 	const bookmarksViewValue = useGetViewValue("bookmarksView", "");
 
@@ -98,85 +91,6 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		</div>
 	);
 
-	const renderViewsSwitch = (item: CardContentOptionsTypes) => {
-		const isEnabledLogic = () => {
-			if (
-				bookmarksViewValue === viewValues.moodboard ||
-				bookmarksViewValue === viewValues.card
-			) {
-				// if in moodboard or card only enable cover
-				if (item?.label === "Cover") {
-					return true;
-				} else {
-					return bookmarksInfoValue.includes(item.value);
-				}
-			}
-
-			if (bookmarksViewValue === viewValues.list) {
-				// if in list only enable title
-				if (item?.label === "Title") {
-					return true;
-				} else {
-					return bookmarksInfoValue.includes(item.value);
-				}
-			}
-
-			return bookmarksInfoValue.includes(item.value);
-		};
-
-		const isDisabledLogic = () => {
-			if (
-				bookmarksViewValue === viewValues.moodboard ||
-				bookmarksViewValue === viewValues.card
-			) {
-				// if moodboard or card disable cover
-				return item?.label === "Cover";
-			}
-
-			if (bookmarksViewValue === viewValues.list) {
-				// if in title disable title
-				return item?.label === "Title";
-			}
-
-			return false;
-		};
-
-		return (
-			<div
-				className="flex items-center justify-between px-2 py-[5.5px]"
-				key={item.label}
-			>
-				<p className="text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800">
-					{item?.label}
-				</p>
-				<Switch
-					disabled={isDisabledLogic()}
-					enabled={isEnabledLogic()}
-					setEnabled={() => {
-						if (bookmarksInfoValue.includes(item.value)) {
-							if (bookmarksInfoValue.length > 1) {
-								setBookmarksView(
-									bookmarksInfoValue.filter(
-										(viewItem) => viewItem !== item.value,
-									),
-									singleInfoValues.info as BookmarkViewCategories,
-								);
-							} else {
-								errorToast("Atleast one view option needs to be selected");
-							}
-						} else {
-							setBookmarksView(
-								[...bookmarksInfoValue, item.value],
-								singleInfoValues.info as BookmarkViewCategories,
-							);
-						}
-					}}
-					size="small"
-				/>
-			</div>
-		);
-	};
-
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const setColumnsCallback = useCallback(
 		debounce((value) => setBookmarksView(value as number[], "columns"), 200),
@@ -198,7 +112,9 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 				/>
 			</div>
 			{renderDropdownHeader("Show in Cards")}
-			<div>{cardContentOptions?.map((item) => renderViewsSwitch(item))}</div>
+			{cardContentOptions.map((option) => (
+				<BookmarkCardContentSwitch key={option.value} option={option} />
+			))}
 			{(bookmarksViewValue === viewValues.card ||
 				bookmarksViewValue === viewValues.moodboard) && (
 				<div className="flex items-center justify-between px-2 py-[5px]">
