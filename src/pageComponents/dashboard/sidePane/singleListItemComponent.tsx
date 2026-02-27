@@ -103,11 +103,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					item?.name !== "Everything" &&
 					item?.name !== "Inbox" &&
 					item?.name !== "Trash" && (
-						<span
-							className={`text-[11px] leading-3 font-450 text-gray-600 ${
-								showDropdown ? "block group-hover:hidden" : "block"
-							}`}
-						>
+						<span className="block text-[11px] leading-3 font-450 text-gray-600">
 							{item?.count}
 						</span>
 					)}

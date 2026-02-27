@@ -75,9 +75,9 @@ const SidePaneUserPopover = ({ children }: SidePaneUserPopoverProps) => (
 		>
 			<div className="flex w-full items-center justify-between">
 				<SidePaneUserTrigger />
-				<figure className="mt-px">
+				<span className="mt-px" aria-hidden="true">
 					<DownArrowGray />
-				</figure>
+				</span>
 			</div>
 		</Popover.Trigger>
 		<Popover.Portal>
