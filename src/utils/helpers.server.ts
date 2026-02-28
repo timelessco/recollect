@@ -10,6 +10,7 @@ import {
 } from "./constants";
 import { storageHelpers } from "./storageClient";
 import imageToText from "@/async/ai/imageToText";
+import { fetchUserCollections } from "@/utils/auto-assign-collections";
 import { blurhashFromURL } from "@/utils/getBlurHash";
 
 type EnrichMetadataParams = {
@@ -186,11 +187,17 @@ const processImageCaption = async (
 		url,
 		ogImage,
 	});
-	// Generate caption for the image
+	const userCollections = await fetchUserCollections({ supabase, userId });
 	try {
-		const result = await imageToText(ogImage, supabase, userId, {
-			isPageScreenshot: Boolean(existingMetadata?.isPageScreenshot),
-		});
+		const result = await imageToText(
+			ogImage,
+			supabase,
+			userId,
+			{
+				isPageScreenshot: Boolean(existingMetadata?.isPageScreenshot),
+			},
+			userCollections.length > 0 ? { collections: userCollections, url } : null,
+		);
 		if (!result?.sentence) {
 			console.error(
 				"[processImageCaption] imageToText returned empty result:",
