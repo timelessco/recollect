@@ -42,7 +42,7 @@ import { getCategorySlugFromRouter } from "../../../utils/url";
 import { BookmarkCard, getImgForPost } from "./bookmarkCard";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import ListBox from "./listBox";
-import { PublicMoodboard } from "./publicMoodboard";
+import { PublicMoodboardVirtualized } from "./publicMoodboardVirtualized";
 
 export type CardSectionProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
@@ -247,10 +247,10 @@ const CardSection = ({
 			return renderStatusMessage("No results found");
 		}
 
-		// Public page (and discover): use non-virtualized grid so pagination never resets scroll
+		// Public page (and discover): use virtualized grid
 		if (isPublicPage) {
 			return (
-				<PublicMoodboard
+				<PublicMoodboardVirtualized
 					bookmarksColumns={bookmarksColumns}
 					bookmarksList={bookmarksList}
 					renderCard={renderCard}
