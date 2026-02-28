@@ -1,8 +1,8 @@
-import { Icon } from "@/components/ui/recollect/icon";
+import { Icon, type IconProps } from "@/components/ui/recollect/icon";
 
-export function PlayPauseIcon() {
+export function PlayPauseIcon(props: IconProps) {
 	return (
-		<Icon slot="icon" viewBox="0 0 24 24">
+		<Icon slot="icon" viewBox="0 0 24 24" {...props}>
 			<g className="icon-state icon-play">
 				<path
 					d="M8.04074 2.32259C6.70797 1.51044 5 2.46975 5 4.03047V19.9696C5 21.5304 6.70798 22.4897 8.04074 21.6775L21.119 13.7079C22.398 12.9285 22.398 11.0716 21.119 10.2922L8.04074 2.32259Z"
@@ -53,18 +53,18 @@ function VolumeOffIcon() {
 	);
 }
 
-export function MuteIcon() {
+export function MuteIcon(props: IconProps) {
 	return (
-		<Icon slot="icon" viewBox="0 0 24 24">
+		<Icon slot="icon" viewBox="0 0 24 24" {...props}>
 			<VolumeOnIcon />
 			<VolumeOffIcon />
 		</Icon>
 	);
 }
 
-export function SettingsIcon() {
+export function SettingsIcon(props: IconProps) {
 	return (
-		<Icon viewBox="0 0 24 24">
+		<Icon viewBox="0 0 24 24" {...props}>
 			<path
 				d="M12 2C11.4477 2 11 2.44772 11 3V5C11 5.55228 11.4477 6 12 6C12.5523 6 13 5.55228 13 5V4.06189C16.9463 4.55399 20 7.92038 20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 11.0632 4.16061 10.166 4.45496 9.33325C4.639 8.81253 4.36608 8.24121 3.84536 8.05716C3.32465 7.87311 2.75332 8.14604 2.56928 8.66675C2.20032 9.71063 2 10.833 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z"
 				fill="currentColor"

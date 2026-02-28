@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	lazy,
+	Suspense,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import {
 	MediaControlBar,
 	MediaController,
@@ -28,17 +35,17 @@ import {
 	PlayPauseIcon,
 	SettingsIcon,
 } from "./media-player-icons";
-import {
-	AUDIO_CONTROL_BAR_STYLE,
-	AUDIO_CONTROLLER_STYLE,
-	CONTROL_BAR_STYLE,
-	CONTROLLER_STYLE,
-	MEDIA_STYLE,
-	YOUTUBE_CONTROLLER_STYLE,
-} from "./media-player-theme";
 import { Spinner } from "./spinner";
+import { SpotifyEmbed } from "./SpotifyEmbed";
+import { cn } from "@/utils/tailwind-merge";
 
 import "./media-player-theme.css";
+
+const AudioWaveformPlayer = lazy(async () => {
+	const mod = await import("./AudioWaveformPlayer");
+
+	return { default: mod.AudioWaveformPlayer };
+});
 
 export type MediaType = "audio" | "spotify" | "video" | "youtube";
 
@@ -47,41 +54,35 @@ export interface MediaPlayerProps {
 	mediaType: MediaType;
 	onError?: () => void;
 	src: string;
+	title?: string;
 }
 
-function isAudioType(mediaType: MediaType): boolean {
-	return mediaType === "audio" || mediaType === "spotify";
+const VIDEO_CONTROLLER_CLASS =
+	"max-h-[80vh] max-w-[1200px] rounded-2xl [--media-background-color:#000] [--media-control-background:transparent] [--media-control-hover-background:rgba(255,255,255,0.1)] [--media-primary-color:#fff]";
+
+const YOUTUBE_CONTROLLER_CLASS = `${VIDEO_CONTROLLER_CLASS} aspect-video w-full`;
+
+/* ---- Video / YouTube player (media-chrome) ---- */
+
+interface VideoPlayerProps {
+	isActive?: boolean;
+	mediaType: "video" | "youtube";
+	onError?: () => void;
+	src: string;
 }
 
-function getControllerStyle(mediaType: MediaType) {
-	if (isAudioType(mediaType)) {
-		return AUDIO_CONTROLLER_STYLE;
-	}
-
-	if (mediaType === "youtube") {
-		return YOUTUBE_CONTROLLER_STYLE;
-	}
-
-	return CONTROLLER_STYLE;
-}
-
-/* ---- Main player ---- */
-
-function MediaPlayerInner({
+function VideoPlayerInner({
 	isActive,
 	mediaType,
 	onError,
 	src,
-}: MediaPlayerProps) {
+}: VideoPlayerProps) {
 	const mediaRef = useMediaRef();
 	const mediaElRef = useRef<HTMLElement | null>(null);
 	const onErrorRef = useRef(onError);
 	onErrorRef.current = onError;
 	const [loading, setLoading] = useState(true);
 	const [youTubeReady, setYouTubeReady] = useState(false);
-	const [spotifyReady, setSpotifyReady] = useState(false);
-
-	const isAudio = isAudioType(mediaType);
 
 	useEffect(() => {
 		if (mediaType !== "youtube") {
@@ -92,21 +93,6 @@ function MediaPlayerInner({
 			try {
 				await import("youtube-video-element");
 				setYouTubeReady(true);
-			} catch {
-				onErrorRef.current?.();
-			}
-		})();
-	}, [mediaType]);
-
-	useEffect(() => {
-		if (mediaType !== "spotify") {
-			return;
-		}
-
-		void (async () => {
-			try {
-				await import("spotify-audio-element");
-				setSpotifyReady(true);
 			} catch {
 				onErrorRef.current?.();
 			}
@@ -129,8 +115,6 @@ function MediaPlayerInner({
 	const ref = useCallback(
 		(el: HTMLElement | null) => {
 			mediaElRef.current = el;
-			// Custom elements (spotify-audio) implement the HTMLMediaElement API
-			// at runtime but extend HTMLElement, so cast for media-chrome
 			mediaRef(el as HTMLMediaElement | null);
 
 			if (!el) {
@@ -139,10 +123,21 @@ function MediaPlayerInner({
 
 			const handleError = () => onErrorRef.current?.();
 			const handleLoaded = () => setLoading(false);
+
+			// Check if media is already loaded (event fired before listener attached)
+			if ((el as HTMLMediaElement).readyState >= 2) {
+				setLoading(false);
+			}
+
 			el.addEventListener("error", handleError);
+			// youtube-video-element may not fire `loadeddata`; listen for
+			// `loadedmetadata` as well so the spinner always clears.
+			el.addEventListener("loadedmetadata", handleLoaded);
 			el.addEventListener("loadeddata", handleLoaded);
+
 			return () => {
 				el.removeEventListener("error", handleError);
+				el.removeEventListener("loadedmetadata", handleLoaded);
 				el.removeEventListener("loadeddata", handleLoaded);
 				mediaRef(null);
 			};
@@ -162,26 +157,14 @@ function MediaPlayerInner({
 			break;
 		}
 
-		case "spotify": {
-			if (spotifyReady) {
-				mediaElement = <spotify-audio ref={ref} slot="media" src={src} />;
-			}
-
-			break;
-		}
-
-		case "audio": {
-			mediaElement = (
-				<audio ref={ref} slot="media" src={src}>
-					<track default kind="captions" label="No captions" srcLang="en" />
-				</audio>
-			);
-			break;
-		}
-
 		case "video": {
 			mediaElement = (
-				<video ref={ref} slot="media" src={src} style={MEDIA_STYLE}>
+				<video
+					ref={ref}
+					slot="media"
+					src={src}
+					className="h-auto max-h-[80vh] w-auto max-w-[min(1200px,90vw)]"
+				>
 					<track default kind="captions" label="No captions" srcLang="en" />
 				</video>
 			);
@@ -189,41 +172,34 @@ function MediaPlayerInner({
 		}
 	}
 
-	// Audio types don't need the loading gate — the <audio> element and
-	// spotify-audio custom element may never fire "loadeddata", so show
-	// the control bar immediately.
-	const showLoading = loading && !isAudio;
-
 	return (
 		<>
-			{showLoading && (
+			{loading && (
 				<div className="flex items-center justify-center py-16">
 					<Spinner className="size-3" />
 				</div>
 			)}
 			<MediaController
-				audio={isAudio || undefined}
-				autohide={isAudio ? "-1" : undefined}
 				breakpoints="pip:400 sm:384 md:576 lg:768 xl:960"
 				onPointerDown={(event) => event.stopPropagation()}
-				style={{
-					...getControllerStyle(mediaType),
-					...(showLoading ? { position: "absolute", opacity: 0 } : undefined),
-				}}
+				className={cn(
+					mediaType === "youtube"
+						? YOUTUBE_CONTROLLER_CLASS
+						: VIDEO_CONTROLLER_CLASS,
+					loading && "absolute opacity-0",
+				)}
 			>
 				{mediaElement}
 
-				{!isAudio && <div className="video-gradient-bottom" />}
+				<div className="video-gradient-bottom" />
 
-				<MediaControlBar
-					style={isAudio ? AUDIO_CONTROL_BAR_STYLE : CONTROL_BAR_STYLE}
-				>
+				<MediaControlBar className="flex items-center gap-3 px-3 pt-[60px] pb-2">
 					<MediaPlayButton ref={(el) => el?.setAttribute("notooltip", "")}>
 						<PlayPauseIcon />
 					</MediaPlayButton>
 
-					<div className="mute-group">
-						<div className="mute-group-inner">
+					<div className="mute-group flex">
+						<div className="mute-group-inner relative size-10 shrink-0">
 							<MediaMuteButton ref={(el) => el?.setAttribute("notooltip", "")}>
 								<MuteIcon />
 							</MediaMuteButton>
@@ -237,34 +213,23 @@ function MediaPlayerInner({
 					<MediaTimeDisplay showDuration />
 
 					<MediaTimeRange>
-						{!isAudio && (
-							<>
-								<MediaPreviewThumbnail slot="preview" />
-								<MediaPreviewChapterDisplay slot="preview" />
-							</>
-						)}
+						<MediaPreviewThumbnail slot="preview" />
+						<MediaPreviewChapterDisplay slot="preview" />
 						<MediaPreviewTimeDisplay slot="preview" />
 					</MediaTimeRange>
 
-					{mediaType !== "spotify" && (
-						<div className="settings-group">
-							<div className="settings-group-inner">
-								<MediaPlaybackRateMenuButton
-									ref={(el) => el?.setAttribute("notooltip", "")}
-								>
-									<span
-										className="flex size-full items-center justify-center"
-										slot="icon"
-									>
-										<SettingsIcon />
-									</span>
-								</MediaPlaybackRateMenuButton>
-								<div className="settings-menu-wrap">
-									<MediaPlaybackRateMenu hidden />
-								</div>
-							</div>
+					<div className="relative shrink-0">
+						<MediaPlaybackRateMenuButton
+							ref={(el) => el?.setAttribute("notooltip", "")}
+						>
+							<span className="flex items-center justify-center" slot="icon">
+								<SettingsIcon />
+							</span>
+						</MediaPlaybackRateMenuButton>
+						<div className="settings-menu-wrap">
+							<MediaPlaybackRateMenu hidden />
 						</div>
-					)}
+					</div>
 
 					{mediaType === "video" && (
 						<MediaPipButton ref={(el) => el?.setAttribute("notooltip", "")}>
@@ -272,23 +237,55 @@ function MediaPlayerInner({
 						</MediaPipButton>
 					)}
 
-					{!isAudio && (
-						<MediaFullscreenButton
-							ref={(el) => el?.setAttribute("notooltip", "")}
-						>
-							<FullscreenIcon />
-						</MediaFullscreenButton>
-					)}
+					<MediaFullscreenButton
+						ref={(el) => el?.setAttribute("notooltip", "")}
+					>
+						<FullscreenIcon />
+					</MediaFullscreenButton>
 				</MediaControlBar>
 			</MediaController>
 		</>
 	);
 }
 
-export function MediaPlayer(props: MediaPlayerProps) {
+export function MediaPlayer({
+	isActive,
+	mediaType,
+	onError,
+	src,
+	title,
+}: MediaPlayerProps) {
+	if (mediaType === "audio") {
+		return (
+			<Suspense
+				fallback={
+					<div className="flex items-center justify-center py-16">
+						<Spinner className="size-3" />
+					</div>
+				}
+			>
+				<AudioWaveformPlayer
+					isActive={isActive}
+					onError={onError}
+					src={src}
+					title={title}
+				/>
+			</Suspense>
+		);
+	}
+
+	if (mediaType === "spotify") {
+		return <SpotifyEmbed src={src} />;
+	}
+
 	return (
 		<MediaProvider>
-			<MediaPlayerInner {...props} />
+			<VideoPlayerInner
+				isActive={isActive}
+				mediaType={mediaType}
+				onError={onError}
+				src={src}
+			/>
 		</MediaProvider>
 	);
 }

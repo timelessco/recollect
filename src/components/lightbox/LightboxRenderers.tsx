@@ -106,18 +106,36 @@ export const VideoSlide = ({
 	);
 };
 
+interface AudioSlideProps extends SlideProps {
+	onAudioError?: (bookmarkId: number) => void;
+}
+
 /**
- * Renders an audio slide using the MediaPlayer component
+ * Renders an audio slide using the MediaPlayer component with waveform
  */
-export const AudioSlide = ({ bookmark, isActive }: SlideProps) => (
-	<div className="flex h-full w-full items-center justify-center">
-		<MediaPlayer
-			isActive={isActive}
-			mediaType="audio"
-			src={bookmark?.url ?? ""}
-		/>
-	</div>
-);
+export const AudioSlide = ({
+	bookmark,
+	isActive,
+	onAudioError,
+}: AudioSlideProps) => {
+	const handleError = useCallback(() => {
+		if (bookmark?.id && typeof bookmark.id === "number") {
+			onAudioError?.(bookmark.id);
+		}
+	}, [bookmark?.id, onAudioError]);
+
+	return (
+		<div className="flex h-full w-full items-center justify-center">
+			<MediaPlayer
+				isActive={isActive}
+				mediaType="audio"
+				onError={handleError}
+				src={bookmark?.url ?? ""}
+				title={bookmark?.title}
+			/>
+		</div>
+	);
+};
 
 /**
  * Renders a Spotify audio slide using the MediaPlayer component
