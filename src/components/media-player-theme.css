@@ -117,15 +117,6 @@ media-controller[mediavolumeunavailable] .mute-group {
 	@apply hidden;
 }
 
-media-controller .mute-group {
-	@apply flex;
-}
-
-/* Inner wrapper: 40x40 to match button, establishes positioning for vol-wrap */
-media-controller .mute-group-inner {
-	@apply relative size-10 shrink-0;
-}
-
 media-controller media-mute-button {
 	@apply relative;
 }
@@ -319,9 +310,6 @@ media-controller media-preview-time-display {
 }
 
 /* ─── Settings group (playback rate menu, like mute-group) ────────────────── */
-media-controller .settings-group {
-	@apply flex;
-}
 
 /* Rotate icon when menu is open (indicator) */
 media-controller media-playback-rate-menu-button [slot="icon"] {
@@ -332,10 +320,6 @@ media-controller
 	media-playback-rate-menu-button[aria-expanded="true"]
 	[slot="icon"] {
 	transform: rotate(30deg);
-}
-
-media-controller .settings-group-inner {
-	@apply relative size-10 shrink-0;
 }
 
 media-controller .settings-menu-wrap {
@@ -398,28 +382,10 @@ media-controller media-fullscreen-button[mediaisfullscreen] .fs-exit {
 	@apply scale-100 opacity-100;
 }
 
-/* ─── Audio mode overrides ─────────────────────────────────────────────── */
-media-controller[audio] {
-	--video-base: 16px;
-	--video-accent: #1a1a1a;
-	--video-track-bg: rgb(0 0 0 / 15%);
-	--video-track-hover: rgb(0 0 0 / 30%);
-	--video-buffered: rgb(0 0 0 / 25%);
-
-	/* Allow volume / settings popups to escape the pill shape */
-	overflow: visible;
-}
-
-/* Smaller, transparent buttons for compact audio bar */
 media-controller[audio] media-play-button,
 media-controller[audio] media-playback-rate-menu-button,
 media-controller[audio] media-mute-button {
-	--media-control-background: transparent;
-	--media-control-hover-background: rgb(0 0 0 / 6%);
-
-	@apply size-9;
-
-	background: transparent;
+	@apply size-6;
 }
 
 media-controller[audio] media-play-button:hover,
@@ -428,31 +394,38 @@ media-controller[audio] media-mute-button:hover,
 media-controller[audio] media-play-button:focus-visible,
 media-controller[audio] media-playback-rate-menu-button:focus-visible,
 media-controller[audio] media-mute-button:focus-visible {
-	background: rgb(0 0 0 / 6%);
+	background: var(--color-gray-alpha-100);
 }
 
-/* Match inner wrappers to smaller button size */
+/* Inner wrappers + icon SVGs (override generic size-10 / size-5) */
 media-controller[audio] .mute-group-inner,
-media-controller[audio] .settings-group-inner {
-	@apply size-9;
+media-controller[audio] media-play-button svg,
+media-controller[audio] media-mute-button svg,
+media-controller[audio] media-playback-rate-menu-button svg {
+	width: 24px;
+	min-width: 24px;
+	height: 24px;
+	min-height: 24px;
 }
 
-/* Volume popup: dark menu for light audio bar */
 media-controller[audio] .vol-wrap media-volume-range {
-	@apply bg-black/60;
+	--media-range-bar-color: var(--color-gray-900);
+	--media-range-track-background: var(--color-gray-alpha-200);
+
+	background: var(--color-gray-200);
 }
 
-/* Settings popup: dark menu for light audio bar */
 media-controller[audio] .settings-menu-wrap media-playback-rate-menu {
-	--media-menu-background: #292929;
-	--media-primary-color: #fff;
+	--media-menu-background: var(--color-gray-200);
+	--media-primary-color: var(--color-gray-900);
 }
 
-/* Always show combined time format (e.g. "1:23 / 4:56") */
-media-controller[audio] media-time-display:not([showduration]) {
-	@apply hidden;
-}
+media-controller[audio] media-control-bar media-time-display,
+media-controller[audio] media-control-bar media-time-display[showduration] {
+	@apply flex shrink-0 rounded-[9px] px-0 py-[5px];
 
-media-controller[audio] media-time-display[showduration] {
-	@apply flex;
+	font-size: 13px;
+	line-height: 1.15;
+	color: var(--color-gray-600);
+	letter-spacing: 0.26px;
 }

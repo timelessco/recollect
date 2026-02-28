@@ -76,11 +76,16 @@ export const CustomLightBox = ({
 	const [zoomLevel, setZoomLevel] = useState(1);
 	const isMobile = useMediaQuery("(max-width: 768px)");
 
-	// Track bookmark IDs that have video errors to render fallback image instead
+	// Track bookmark IDs that have video/audio errors to render fallback image instead
 	const [videoErrorIds, setVideoErrorIds] = useState<Set<number>>(new Set());
+	const [audioErrorIds, setAudioErrorIds] = useState<Set<number>>(new Set());
 
 	const handleVideoError = useCallback((bookmarkId: number) => {
 		setVideoErrorIds((previous) => new Set(previous).add(bookmarkId));
+	}, []);
+
+	const handleAudioError = useCallback((bookmarkId: number) => {
+		setAudioErrorIds((previous) => new Set(previous).add(bookmarkId));
 	}, []);
 
 	// Restore side panel state from local storage
@@ -147,7 +152,26 @@ export const CustomLightBox = ({
 				isBookmarkAudio(bookmark?.type) ||
 				bookmark?.meta_data?.mediaType?.startsWith("audio")
 			) {
-				content = <AudioSlide bookmark={bookmark} isActive={isActive} />;
+				const hasAudioError =
+					typeof bookmark.id === "number" && audioErrorIds.has(bookmark.id);
+
+				if (hasAudioError) {
+					content = (
+						<WebEmbedSlide
+							bookmark={bookmark}
+							isActive={isActive}
+							zoomRef={zoomRef}
+						/>
+					);
+				} else {
+					content = (
+						<AudioSlide
+							bookmark={bookmark}
+							isActive={isActive}
+							onAudioError={handleAudioError}
+						/>
+					);
+				}
 			}
 			// Check video - fallback to WebEmbedSlide if video failed to load
 			else if (
@@ -217,12 +241,14 @@ export const CustomLightBox = ({
 			);
 		},
 		[
-			bookmarks,
-			slides,
 			activeIndex,
+			audioErrorIds,
+			bookmarks,
+			handleAudioError,
 			handleClose,
-			videoErrorIds,
 			handleVideoError,
+			slides,
+			videoErrorIds,
 		],
 	);
 
