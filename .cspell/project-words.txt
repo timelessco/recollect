@@ -10,7 +10,6 @@ anthropics
 apng
 appl
 asteasolutions
-Atleast
 attrelid
 blks
 breakpointmd
@@ -116,6 +115,7 @@ Setof
 shhhhh
 SIWS
 slugified
+Slugifies
 SQLERRM
 sslcert
 sslmode
@@ -145,6 +145,7 @@ UMAMI
 uncategorised
 uniqid
 unrs
+upserts
 workos
 xact
 XVCJ

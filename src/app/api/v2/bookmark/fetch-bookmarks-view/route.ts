@@ -2,13 +2,13 @@ import {
 	FetchBookmarksViewInputSchema,
 	FetchBookmarksViewOutputSchema,
 } from "./schema";
-import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
+import { createGetApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { CATEGORIES_TABLE_NAME } from "@/utils/constants";
 
 const ROUTE = "v2-bookmark-fetch-bookmarks-view";
 
-export const POST = createPostApiHandlerWithAuth({
+export const GET = createGetApiHandlerWithAuth({
 	route: ROUTE,
 	inputSchema: FetchBookmarksViewInputSchema,
 	outputSchema: FetchBookmarksViewOutputSchema,
