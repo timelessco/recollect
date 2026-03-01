@@ -207,7 +207,7 @@ function AudioWaveformPlayerInner({
 			autohide="-1"
 			onPointerDown={(event) => event.stopPropagation()}
 			className={cn(
-				"flex max-h-none w-full max-w-[min(600px,90vw)] flex-col gap-1 overflow-visible rounded-2xl p-1",
+				"flex max-h-none w-full max-w-[min(600px,90vw)] flex-col overflow-visible rounded-2xl p-1",
 				"[--media-background-color:var(--color-gray-100)] [--media-control-background:transparent] [--media-control-hover-background:var(--color-gray-alpha-100)] [--media-primary-color:var(--color-gray-900)]",
 				"[--video-accent:var(--color-gray-900)] [--video-base:16px] [--video-buffered:var(--color-gray-alpha-200)] [--video-track-bg:var(--color-gray-alpha-200)] [--video-track-hover:var(--color-gray-alpha-300)]",
 			)}
@@ -239,7 +239,7 @@ function AudioWaveformPlayerInner({
 			<MediaControlBar className="flex w-full items-center gap-3 px-1 pt-[8.5px] pb-[4.5px]">
 				<div className="flex min-w-0 flex-1 items-center gap-2">
 					<MediaPlayButton ref={(el) => el?.setAttribute("notooltip", "")}>
-						<PlayPauseIcon className="h-6 w-6 text-gray-700" />
+						<PlayPauseIcon className="text-gray-700" />
 					</MediaPlayButton>
 
 					<span className="truncate text-[15px] leading-[1.15] font-normal tracking-[0.3px] text-gray-700">
@@ -250,9 +250,9 @@ function AudioWaveformPlayerInner({
 				<MediaTimeDisplay showDuration />
 
 				<div className="mute-group flex">
-					<div className="mute-group-inner relative size-6 shrink-0">
+					<div className="mute-group-inner relative size-10 shrink-0">
 						<MediaMuteButton ref={(el) => el?.setAttribute("notooltip", "")}>
-							<MuteIcon className="h-6 w-6 text-gray-700" />
+							<MuteIcon className="text-gray-700" />
 						</MediaMuteButton>
 						<div className="vol-wrap">
 							<MediaVolumeRange />
@@ -260,15 +260,12 @@ function AudioWaveformPlayerInner({
 					</div>
 				</div>
 
-				<div className="settings-group flex">
+				<div className="relative shrink-0">
 					<MediaPlaybackRateMenuButton
 						ref={(el) => el?.setAttribute("notooltip", "")}
 					>
-						<span
-							className="flex size-full items-center justify-center"
-							slot="icon"
-						>
-							<SettingsIcon className="h-6 w-6 text-gray-700" />
+						<span className="flex items-center justify-center" slot="icon">
+							<SettingsIcon className="text-gray-700" />
 						</span>
 					</MediaPlaybackRateMenuButton>
 					<div className="settings-menu-wrap">

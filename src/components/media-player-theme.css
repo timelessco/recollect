@@ -382,32 +382,6 @@ media-controller media-fullscreen-button[mediaisfullscreen] .fs-exit {
 	@apply scale-100 opacity-100;
 }
 
-media-controller[audio] media-play-button,
-media-controller[audio] media-playback-rate-menu-button,
-media-controller[audio] media-mute-button {
-	@apply size-6;
-}
-
-media-controller[audio] media-play-button:hover,
-media-controller[audio] media-playback-rate-menu-button:hover,
-media-controller[audio] media-mute-button:hover,
-media-controller[audio] media-play-button:focus-visible,
-media-controller[audio] media-playback-rate-menu-button:focus-visible,
-media-controller[audio] media-mute-button:focus-visible {
-	background: var(--color-gray-alpha-100);
-}
-
-/* Inner wrappers + icon SVGs (override generic size-10 / size-5) */
-media-controller[audio] .mute-group-inner,
-media-controller[audio] media-play-button svg,
-media-controller[audio] media-mute-button svg,
-media-controller[audio] media-playback-rate-menu-button svg {
-	width: 24px;
-	min-width: 24px;
-	height: 24px;
-	min-height: 24px;
-}
-
 media-controller[audio] .vol-wrap media-volume-range {
 	--media-range-bar-color: var(--color-gray-900);
 	--media-range-track-background: var(--color-gray-alpha-200);
