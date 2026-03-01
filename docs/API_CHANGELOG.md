@@ -42,3 +42,52 @@ Breaking changes are marked with :warning:.
 
 
 
+
+## 2026-03-01 [`1231c01`](https://github.com/timelessco/recollect/commit/1231c01c66e763f10014f3d96e1add4708317c51)
+
+
+### PUT /v2/api-key
+-  endpoint added
+
+
+### GET /v2/bookmark/fetch-bookmarks-view
+-  endpoint added
+
+
+### POST /v2/bookmark/fetch-bookmarks-view
+- :warning: api removed without deprecation
+
+
+### PATCH /v2/category/update-category-order
+-  endpoint added
+
+
+### DELETE /v2/delete-api-key
+-  endpoint added
+
+
+### GET /v2/get-gemini-api-key
+-  endpoint added
+
+
+### DELETE /v2/profiles/remove-profile-pic
+-  endpoint added
+
+
+### PATCH /v2/profiles/update-user-profile
+-  endpoint added
+
+
+### PATCH /v2/profiles/update-username
+-  endpoint added
+
+
+### DELETE /v2/share/delete-shared-categories-user
+-  endpoint added
+
+
+### PATCH /v2/share/update-shared-category-user-role
+-  endpoint added
+
+
+
