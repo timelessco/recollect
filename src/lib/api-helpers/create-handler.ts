@@ -60,7 +60,8 @@ async function parseInput<TInput>(
 	if (method === "query") {
 		return parseQuery({ request, schema, route });
 	}
-	return parseBody({ request, schema, route });
+
+	return await parseBody({ request, schema, route });
 }
 
 function createPublicHandlerInternal<TInput, TOutput>(
