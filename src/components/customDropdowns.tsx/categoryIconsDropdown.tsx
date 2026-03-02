@@ -24,7 +24,7 @@ type CategoryIconsDropdownProps = {
 	iconValue: string | null;
 };
 
-const CategoryIconsDropdown = (props: CategoryIconsDropdownProps) => {
+export const CategoryIconsDropdown = (props: CategoryIconsDropdownProps) => {
 	const { buttonIconSize = 20, iconColor, iconId, iconValue } = props;
 
 	const { updateCategoryOptimisticMutation } =
@@ -114,8 +114,6 @@ const CategoryIconsDropdown = (props: CategoryIconsDropdownProps) => {
 		</Popover.Root>
 	);
 };
-
-export default CategoryIconsDropdown;
 
 type IconPickerHeaderProps = {
 	searchValue: string;

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import CategoryIconsDropdown from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
+import { CategoryIconsDropdown } from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
 import { Spinner } from "../../../components/spinner";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { type CategoriesData } from "../../../types/apiTypes";
