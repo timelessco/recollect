@@ -30,7 +30,6 @@ export function ClearTrashDropdown(props: ClearTrashDropdownProps) {
 			}}
 		>
 			<Popover.Trigger
-				render={<button type="button" />}
 				className={
 					isBottomBar
 						? "mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"

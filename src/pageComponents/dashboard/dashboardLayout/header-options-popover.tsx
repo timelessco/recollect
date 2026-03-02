@@ -55,10 +55,7 @@ export function HeaderOptionsPopover() {
 				}
 			}}
 		>
-			<Popover.Trigger
-				className="rounded-lg bg-transparent p-[7px] text-gray-600 hover:bg-gray-100 hover:text-plain-reverse"
-				render={<button type="button" />}
-			>
+			<Popover.Trigger className="rounded-lg bg-transparent p-[7px] text-gray-600 hover:bg-gray-100 hover:text-plain-reverse">
 				<OptionsIcon />
 			</Popover.Trigger>
 			<Popover.Portal>

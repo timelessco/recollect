@@ -21,10 +21,7 @@ export function AddToCollectionPopover({
 }: AddToCollectionPopoverProps) {
 	return (
 		<Popover.Root>
-			<Popover.Trigger
-				className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 leading-4 font-450 text-gray-900"
-				render={<button type="button" />}
-			>
+			<Popover.Trigger className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 leading-4 font-450 text-gray-900">
 				<span className="mr-[6px] text-gray-1000" aria-hidden="true">
 					<MoveIcon />
 				</span>
