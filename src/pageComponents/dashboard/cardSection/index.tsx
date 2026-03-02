@@ -42,7 +42,7 @@ import { getCategorySlugFromRouter } from "../../../utils/url";
 import { BookmarkCard, getImgForPost } from "./bookmarkCard";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import ListBox from "./listBox";
-import { PublicMoodboardVirtualized } from "./public-moodboard-virtulized";
+import { PublicMoodboardVirtualized } from "./public-moodboard-virtualized";
 
 export type CardSectionProps = {
 	categoryViewsFromProps?: BookmarkViewDataTypes;
