@@ -6,6 +6,7 @@ import isNull from "lodash/isNull";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import Input from "../atoms/input";
+import { Button } from "../ui/recollect/button";
 
 import { useAddBookmark } from "@/hooks/useAddBookmark";
 import { useFileUploadDrop } from "@/hooks/useFileUploadDrop";
@@ -103,7 +104,7 @@ const AddBookmarkPopupContent = ({ onClose }: AddBookmarkPopupContentProps) => {
 				ref={fileUploadInputRef}
 				type="file"
 			/>
-			<button
+			<Button
 				className="flex items-center p-0 text-gray-600 hover:text-gray-900"
 				onClick={() => {
 					if (fileUploadInputRef.current) {
@@ -112,8 +113,8 @@ const AddBookmarkPopupContent = ({ onClose }: AddBookmarkPopupContentProps) => {
 				}}
 				type="button"
 			>
-				<AddBookmarkInputIcon className="absolute top-[11px] left-[14px] z-1 h-4 w-4" />
-			</button>
+				<AddBookmarkInputIcon className="absolute top-[7px] left-[10px] z-1 h-4 w-4" />
+			</Button>
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<Input
 					autoFocus
