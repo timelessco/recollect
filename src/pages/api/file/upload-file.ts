@@ -10,6 +10,11 @@ import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 
 import imageToText from "../../../async/ai/imageToText";
+import {
+	type AiToggles,
+	applyAiToggleMask,
+	fetchAiToggles,
+} from "../../../utils/ai-feature-toggles";
 import { getMediaType } from "../../../async/supabaseCrudHelpers";
 import {
 	type ImgMetadataType,
@@ -55,6 +60,7 @@ const videoLogic = async (
 	data: BodyDataType,
 	supabase: SupabaseClient,
 	userId: string,
+	aiToggles: AiToggles,
 ) => {
 	// Since thumbnails are now uploaded client-side, we just need to get the thumbnail URL
 	// The thumbnailPath in data should now be the actual path in R2
@@ -90,11 +96,14 @@ const videoLogic = async (
 		}
 
 		try {
-			const imageToTextResult = await imageToText(
+			const rawResult = await imageToText(
 				thumbnailUrl?.publicUrl,
 				supabase,
 				userId,
 			);
+			const imageToTextResult = rawResult
+				? applyAiToggleMask({ result: rawResult, toggles: aiToggles })
+				: null;
 			imageCaption = imageToTextResult?.sentence ?? null;
 			imageKeywords = imageToTextResult?.image_keywords ?? [];
 			ocrData = imageToTextResult?.ocr_text ?? null;
@@ -251,6 +260,8 @@ export default async (
 
 		const isAudio = fileType?.includes("audio");
 
+		const aiToggles = await fetchAiToggles({ supabase, userId });
+
 		let ogImage;
 
 		if (!isVideo) {
@@ -272,6 +283,7 @@ export default async (
 				data,
 				supabase,
 				userId ?? "",
+				aiToggles,
 			);
 
 			ogImage = image;

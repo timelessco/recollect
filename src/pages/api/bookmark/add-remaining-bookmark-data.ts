@@ -34,6 +34,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
+import { applyAiToggleMask, fetchAiToggles } from "@/utils/ai-feature-toggles";
 import {
 	autoAssignCollections,
 	fetchUserCollections,
@@ -138,7 +139,10 @@ export default async function handler(
 		return;
 	}
 
-	const userCollections = await fetchUserCollections({ supabase, userId });
+	const [userCollections, aiToggles] = await Promise.all([
+		fetchUserCollections({ supabase, userId }),
+		fetchAiToggles({ supabase, userId }),
+	]);
 	console.log(
 		"[add-remaining-bookmark-data] Fetched user collections for auto-assignment:",
 		{ bookmarkId: id, count: userCollections.length },
@@ -271,7 +275,7 @@ export default async function handler(
 		}
 
 		try {
-			const imageToTextResult = await imageToText(
+			const rawImageToTextResult = await imageToText(
 				currentData?.meta_data?.isOgImagePreferred
 					? ogImageMetaDataGeneration
 					: imageUrlForMetaDataGeneration,
@@ -290,6 +294,12 @@ export default async function handler(
 						}
 					: null,
 			);
+			const imageToTextResult = rawImageToTextResult
+				? applyAiToggleMask({
+						result: rawImageToTextResult,
+						toggles: aiToggles,
+					})
+				: null;
 			if (imageToTextResult) {
 				imageCaption = imageToTextResult.sentence;
 				imageKeywords = imageToTextResult.image_keywords ?? [];

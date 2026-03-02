@@ -10,6 +10,7 @@ import {
 } from "./constants";
 import { storageHelpers } from "./storageClient";
 import imageToText from "@/async/ai/imageToText";
+import { fetchAiToggles } from "@/utils/ai-feature-toggles";
 import { blurhashFromURL } from "@/utils/getBlurHash";
 
 type EnrichMetadataParams = {
@@ -62,6 +63,8 @@ export const enrichMetadata = async ({
 	supabase,
 	url,
 }: EnrichMetadataParams): Promise<EnrichMetadataResult> => {
+	const aiToggles = await fetchAiToggles({ supabase, userId });
+
 	// Run all AI operations in parallel
 	const [videoResult, captionResult, blurhashResult] = await Promise.allSettled(
 		[
@@ -114,21 +117,31 @@ export const enrichMetadata = async ({
 	const video_url =
 		videoResult.status === "fulfilled" ? videoResult.value : null;
 
+	const rawCaption =
+		captionResult.status === "fulfilled"
+			? captionResult.value
+			: {
+					isImageCaptionFailed: true,
+					image_caption: null,
+					image_keywords: [],
+					ocr: null,
+					ocr_status: "no_text" as const,
+				};
+
+	// Apply AI toggle mask — null out results for disabled features
 	const {
 		isImageCaptionFailed,
 		image_caption,
 		image_keywords,
 		ocr: ocrData,
 		ocr_status: ocrStatus,
-	} = captionResult.status === "fulfilled"
-		? captionResult.value
-		: {
-				isImageCaptionFailed: true,
-				image_caption: null,
-				image_keywords: [],
-				ocr: null,
-				ocr_status: "no_text" as const,
-			};
+	} = {
+		...rawCaption,
+		image_caption: aiToggles.aiSummary ? rawCaption.image_caption : null,
+		image_keywords: aiToggles.aiSummary ? rawCaption.image_keywords : [],
+		ocr: aiToggles.ocr ? rawCaption.ocr : null,
+		ocr_status: aiToggles.ocr ? rawCaption.ocr_status : ("no_text" as const),
+	};
 
 	// Extract blurhash result
 	const { isBlurhashFailed, blurhash } =

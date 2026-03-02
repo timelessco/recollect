@@ -16,7 +16,7 @@ import {
 	settingsInputContainerClassName,
 } from "../../utils/commonClassNames";
 
-import { AutoAssignCollectionsToggle } from "./auto-assign-collections-toggle";
+import { AiFeaturesToggleSection } from "./ai-features-toggles";
 import { ShowEyeIcon } from "@/icons/show-eye-icon";
 import { SlashedEyeIcon } from "@/icons/slashed-eye-icon";
 import { handleClientError } from "@/utils/error-utils/client";
@@ -210,7 +210,7 @@ export const AiFeatures = () => {
 					</div>
 				</LabelledComponent>
 			</form>
-			<AutoAssignCollectionsToggle />
+			<AiFeaturesToggleSection />
 		</>
 	);
 };

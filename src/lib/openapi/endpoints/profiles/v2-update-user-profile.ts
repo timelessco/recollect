@@ -34,7 +34,11 @@ export const v2UpdateUserProfileSupplement = {
 			value: {
 				data: [
 					{
-						ai_features_toggle: { auto_assign_collections: true },
+						ai_features_toggle: {
+							ai_summary: true,
+							auto_assign_collections: true,
+							ocr: true,
+						},
 						api_key: null,
 						bookmark_count: 42,
 						bookmarks_view: null,

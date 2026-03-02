@@ -207,7 +207,9 @@ export type CollabDataInCategory = {
 // profiles table
 
 export type AiFeaturesToggle = {
+	ai_summary?: boolean;
 	auto_assign_collections?: boolean;
+	ocr?: boolean;
 };
 
 export type ProfilesTableTypes = {

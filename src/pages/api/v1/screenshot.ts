@@ -5,6 +5,10 @@ import { z } from "zod";
 
 import imageToText from "../../../async/ai/imageToText";
 import {
+	applyAiToggleMask,
+	fetchAiToggles,
+} from "../../../utils/ai-feature-toggles";
+import {
 	MAIN_TABLE_NAME,
 	PDF_MIME_TYPE,
 	SCREENSHOT_API,
@@ -170,9 +174,16 @@ export default async function handler(
 		};
 
 		// ai-enrichment
-		const imageToTextResult = await imageToText(ogImage, supabase, user_id, {
+		const aiToggles = await fetchAiToggles({ supabase, userId: user_id });
+		const rawImageToTextResult = await imageToText(ogImage, supabase, user_id, {
 			isPageScreenshot: Boolean(isPageScreenshot),
 		});
+		const imageToTextResult = rawImageToTextResult
+			? applyAiToggleMask({
+					result: rawImageToTextResult,
+					toggles: aiToggles,
+				})
+			: null;
 		if (imageToTextResult) {
 			newMeta.image_caption = imageToTextResult.sentence;
 			if (imageToTextResult.image_keywords?.length) {
