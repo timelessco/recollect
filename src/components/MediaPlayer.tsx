@@ -199,7 +199,7 @@ function VideoPlayerInner({
 					</MediaPlayButton>
 
 					<div className="mute-group flex">
-						<div className="mute-group-inner relative size-10 shrink-0">
+						<div className="mute-group-inner relative shrink-0">
 							<MediaMuteButton ref={(el) => el?.setAttribute("notooltip", "")}>
 								<MuteIcon />
 							</MediaMuteButton>

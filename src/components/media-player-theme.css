@@ -50,7 +50,7 @@ media-controller media-mute-button,
 media-controller media-pip-button,
 media-controller media-fullscreen-button {
 	--media-control-background: transparent;
-	--media-control-hover-background: rgb(0 0 0 / 35%);
+	--media-control-hover-background: var(--color-gray-alpha-400);
 
 	@apply inline-flex size-10 items-center justify-center rounded-full opacity-90;
 
@@ -79,7 +79,7 @@ media-controller media-playback-rate-menu-button:focus-visible,
 media-controller media-mute-button:focus-visible,
 media-controller media-pip-button:focus-visible,
 media-controller media-fullscreen-button:focus-visible {
-	background: rgb(0 0 0 / 35%);
+	background: var(--color-gray-alpha-400);
 }
 
 /* Icon SVG size */
@@ -390,8 +390,7 @@ media-controller[audio] .vol-wrap media-volume-range {
 }
 
 media-controller[audio] .settings-menu-wrap media-playback-rate-menu {
-	--media-menu-background: var(--color-gray-200);
-	--media-primary-color: var(--color-gray-900);
+	--media-primary-color: #fff;
 }
 
 media-controller[audio] media-control-bar media-time-display,
