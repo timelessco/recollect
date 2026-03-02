@@ -21,28 +21,13 @@ type PublicMoodboardVirtualizedProps = {
 	bookmarksList: SingleListData[];
 	renderCard: (bookmark: SingleListData) => React.ReactNode;
 };
-
-const getScrollElement = (): HTMLElement | null => {
-	if (typeof document === "undefined") {
-		return null;
-	}
-
-	return document.querySelector("#scrollableDiv") as HTMLElement | null;
-};
-
-/**
- * Virtualized moodboard for public/discover pages. Uses @tanstack/react-virtual
- * with the same scroll container (#scrollableDiv) as InfiniteScroll.
- */
 export const PublicMoodboardVirtualized = ({
 	bookmarksColumns,
 	bookmarksList,
 	renderCard,
 }: PublicMoodboardVirtualizedProps) => {
-	const router = useRouter();
 	const mounted = useMounted();
 	const { isMobile, isTablet } = useIsMobileView();
-	const { setLightboxId, setLightboxOpen } = useMiscellaneousStore();
 
 	const lanes = getColumnCount(
 		mounted ? !isMobile && !isTablet : true,
@@ -93,38 +78,7 @@ export const PublicMoodboardVirtualized = ({
 						}}
 					>
 						<div className="group relative mb-6 flex rounded-lg outline-hidden duration-150 hover:shadow-lg">
-							<a
-								aria-label={bookmark.title ?? "Open bookmark"}
-								className="absolute inset-0 top-0 left-0 z-10 cursor-pointer rounded-lg"
-								href={bookmark.url ?? "#"}
-								onClick={(event) => {
-									event.preventDefault();
-									setLightboxId(String(bookmark.id));
-									setLightboxOpen(true);
-									const publicInfo = getPublicPageInfo(router);
-									if (publicInfo) {
-										const { pathname, query, as } = buildPublicPreviewUrl({
-											publicInfo,
-											bookmarkId: bookmark.id,
-										});
-										void router.push({ pathname, query }, as, {
-											shallow: true,
-										});
-									} else {
-										const categorySlug = getCategorySlugFromRouter(router);
-										if (categorySlug === DISCOVER_URL) {
-											const { pathname, query, as } =
-												buildAuthenticatedPreviewUrl({
-													categorySlug,
-													bookmarkId: bookmark.id,
-												});
-											void router.push({ pathname, query }, as, {
-												shallow: true,
-											});
-										}
-									}
-								}}
-							/>
+							<BookmarkCardOverlay bookmark={bookmark} />
 							{renderCard(bookmark)}
 						</div>
 					</div>
@@ -133,3 +87,50 @@ export const PublicMoodboardVirtualized = ({
 		</div>
 	);
 };
+
+const getScrollElement = (): HTMLElement | null => {
+	if (typeof document === "undefined") {
+		return null;
+	}
+
+	return document.querySelector("#scrollableDiv") as HTMLElement | null;
+};
+
+/**
+ * Overlay anchor — owns router + lightbox store so route changes
+ * only re-render this small component, not the whole virtualizer.
+ */
+function BookmarkCardOverlay({ bookmark }: { bookmark: SingleListData }) {
+	const router = useRouter();
+	const { setLightboxId, setLightboxOpen } = useMiscellaneousStore();
+
+	return (
+		<a
+			aria-label={bookmark.title ?? "Open bookmark"}
+			className="absolute inset-0 top-0 left-0 z-10 cursor-pointer rounded-lg"
+			href={bookmark.url ?? "#"}
+			onClick={(event) => {
+				event.preventDefault();
+				setLightboxId(String(bookmark.id));
+				setLightboxOpen(true);
+				const publicInfo = getPublicPageInfo(router);
+				if (publicInfo) {
+					const { pathname, query, as } = buildPublicPreviewUrl({
+						publicInfo,
+						bookmarkId: bookmark.id,
+					});
+					void router.push({ pathname, query }, as, { shallow: true });
+				} else {
+					const categorySlug = getCategorySlugFromRouter(router);
+					if (categorySlug === DISCOVER_URL) {
+						const { pathname, query, as } = buildAuthenticatedPreviewUrl({
+							categorySlug,
+							bookmarkId: bookmark.id,
+						});
+						void router.push({ pathname, query }, as, { shallow: true });
+					}
+				}
+			}}
+		/>
+	);
+}
