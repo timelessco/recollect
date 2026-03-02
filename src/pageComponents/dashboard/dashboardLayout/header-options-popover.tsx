@@ -27,14 +27,17 @@ import { ClearTrashContent } from "@/components/clearTrashContent";
 import { cn } from "@/utils/tailwind-merge";
 
 export function HeaderOptionsPopover() {
+	const [open, setOpen] = useState(false);
 	const [currentTab, setCurrentTab] = useState<string | null>(null);
 
-	const updateCurrentTab = useCallback(
-		(value: string) => {
-			setCurrentTab(value === "delete-collection" ? null : value);
-		},
-		[setCurrentTab],
-	);
+	const updateCurrentTab = useCallback((value: string) => {
+		if (value === "delete-collection" || value === "rename") {
+			setOpen(false);
+			return;
+		}
+
+		setCurrentTab(value);
+	}, []);
 
 	const popupClassName = cn(
 		dropdownMenuClassName,
@@ -44,14 +47,16 @@ export function HeaderOptionsPopover() {
 
 	return (
 		<Popover.Root
+			open={open}
 			onOpenChange={(nextOpen) => {
+				setOpen(nextOpen);
 				if (!nextOpen) {
 					setCurrentTab(null);
 				}
 			}}
 		>
 			<Popover.Trigger
-				className="bg-transparent p-[7px] text-gray-600 hover:text-plain-reverse"
+				className="rounded-lg bg-transparent p-[7px] text-gray-600 hover:bg-gray-100 hover:text-plain-reverse"
 				render={<button type="button" />}
 			>
 				<OptionsIcon />

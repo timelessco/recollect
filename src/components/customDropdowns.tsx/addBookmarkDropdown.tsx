@@ -45,7 +45,7 @@ const AddBookmarkDropdown = () => {
 			</Popover.Trigger>
 			<Popover.Portal>
 				<Popover.Positioner align="end" className="z-10" sideOffset={1}>
-					<Popover.Popup className="origin-(--transform-origin) leading-[20px] outline-hidden">
+					<Popover.Popup className="leading-5 outline-hidden">
 						<AddBookmarkPopupContent onClose={() => setOpen(false)} />
 					</Popover.Popup>
 				</Popover.Positioner>
