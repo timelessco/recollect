@@ -2,11 +2,11 @@ import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/us
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 
 import { SettingsToggleCard } from "./settingsToggleCard";
-
-import { type AiFeaturesToggle } from "@/types/apiTypes";
 import { AiSummaryIcon } from "@/icons/ai-summary-icon";
 import { AutoAssignCollectionIcon } from "@/icons/auto-assign-collection-icon";
+import { ImageKeywordsIcon } from "@/icons/image-keywords-icon";
 import { OcrIcon } from "@/icons/ocr-icon";
+import { type AiFeaturesToggle } from "@/types/apiTypes";
 
 interface AiToggleConfig {
 	description: string;
@@ -24,14 +24,20 @@ const TOGGLES: AiToggleConfig[] = [
 	},
 	{
 		key: "ai_summary",
-		title: "AI Summary",
-		description: "Generate descriptions and keywords for bookmarks",
+		title: "Auto summarise all webpages",
+		description: "Generate descriptions for bookmarks",
 		icon: <AiSummaryIcon className="h-5.5 w-5.5 text-gray-900" />,
 	},
 	{
+		key: "image_keywords",
+		title: "Bookmark Keywords",
+		description: "Generate searchable keywords from bookmarks",
+		icon: <ImageKeywordsIcon className="h-5.5 w-5.5 text-gray-900" />,
+	},
+	{
 		key: "ocr",
-		title: "OCR",
-		description: "Extract readable text from bookmark images",
+		title: "Extract text from all screenshots and images",
+		description: "So you can search all your memes by text",
 		icon: <OcrIcon className="h-5.5 w-5.5 text-gray-900" />,
 	},
 ];

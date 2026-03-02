@@ -20,11 +20,7 @@ import {
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-import {
-	type AiToggles,
-	applyAiToggleMask,
-	fetchAiToggles,
-} from "@/utils/ai-feature-toggles";
+import { type AiToggles, fetchAiToggles } from "@/utils/ai-feature-toggles";
 import {
 	autoAssignCollections,
 	fetchUserCollections,
@@ -51,16 +47,14 @@ const notVideoLogic = async (
 
 	if (ogImage) {
 		try {
-			const rawResult = await imageToText(
+			const imageToTextResult = await imageToText(
 				ogImage,
 				supabase,
 				userId,
 				null,
 				userCollections.length > 0 ? { collections: userCollections } : null,
+				aiToggles,
 			);
-			const imageToTextResult = rawResult
-				? applyAiToggleMask({ result: rawResult, toggles: aiToggles })
-				: null;
 			if (imageToTextResult) {
 				imageCaption = imageToTextResult.sentence;
 				imageKeywords = imageToTextResult.image_keywords ?? [];

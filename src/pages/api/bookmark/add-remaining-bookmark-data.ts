@@ -34,7 +34,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
-import { applyAiToggleMask, fetchAiToggles } from "@/utils/ai-feature-toggles";
+import { fetchAiToggles } from "@/utils/ai-feature-toggles";
 import {
 	autoAssignCollections,
 	fetchUserCollections,
@@ -275,7 +275,7 @@ export default async function handler(
 		}
 
 		try {
-			const rawImageToTextResult = await imageToText(
+			const imageToTextResult = await imageToText(
 				currentData?.meta_data?.isOgImagePreferred
 					? ogImageMetaDataGeneration
 					: imageUrlForMetaDataGeneration,
@@ -293,13 +293,8 @@ export default async function handler(
 							url,
 						}
 					: null,
+				aiToggles,
 			);
-			const imageToTextResult = rawImageToTextResult
-				? applyAiToggleMask({
-						result: rawImageToTextResult,
-						toggles: aiToggles,
-					})
-				: null;
 			if (imageToTextResult) {
 				imageCaption = imageToTextResult.sentence;
 				imageKeywords = imageToTextResult.image_keywords ?? [];

@@ -209,6 +209,7 @@ export type CollabDataInCategory = {
 export type AiFeaturesToggle = {
 	ai_summary?: boolean;
 	auto_assign_collections?: boolean;
+	image_keywords?: boolean;
 	ocr?: boolean;
 };
 

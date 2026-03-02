@@ -1,12 +1,12 @@
 import { type SupabaseClient } from "@supabase/supabase-js";
 
-import { type ImageToTextResult } from "@/async/ai/imageToText";
 import { type AiFeaturesToggle } from "@/types/apiTypes";
 import { PROFILES } from "@/utils/constants";
 
 export interface AiToggles {
 	aiSummary: boolean;
 	autoAssignCollections: boolean;
+	imageKeywords: boolean;
 	ocr: boolean;
 }
 
@@ -35,30 +35,7 @@ export async function fetchAiToggles(
 	return {
 		aiSummary: toggles?.ai_summary !== false,
 		autoAssignCollections: toggles?.auto_assign_collections !== false,
+		imageKeywords: toggles?.image_keywords !== false,
 		ocr: toggles?.ocr !== false,
-	};
-}
-
-export interface ApplyAiToggleMaskProps {
-	result: ImageToTextResult;
-	toggles: AiToggles;
-}
-
-/**
- * Nulls out disabled AI feature results based on user toggles.
- * The full Gemini call is always made; this filters the output before saving.
- */
-export function applyAiToggleMask(
-	props: ApplyAiToggleMaskProps,
-): ImageToTextResult {
-	const { result, toggles } = props;
-
-	return {
-		sentence: toggles.aiSummary ? result.sentence : null,
-		image_keywords: toggles.aiSummary ? result.image_keywords : [],
-		ocr_text: toggles.ocr ? result.ocr_text : null,
-		matched_collection_ids: toggles.autoAssignCollections
-			? result.matched_collection_ids
-			: [],
 	};
 }

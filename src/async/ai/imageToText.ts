@@ -3,6 +3,7 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
 
 import { getApikeyAndBookmarkCount, incrementBookmarkCount } from "./api-key";
+import { type AiToggles } from "@/utils/ai-feature-toggles";
 
 export type UserCollection = {
 	id: number;
@@ -28,12 +29,9 @@ export type ImageToTextOptions = {
 };
 
 /**
- * Generates the image description using Gemini AI
- * @param imageUrl the image url
- * @param supabase supabase client
- * @param userId the user id
- * @param options optional - isPageScreenshot when true, describes the website/service; when false/undefined, describes the subject
- * @returns sentence (detailed description) and image_keywords (nouns for search)
+ * Generates the image description using Gemini AI.
+ * Prompt sections are dynamically included based on active AI toggles.
+ * Returns null without calling Gemini when all toggles are off.
  */
 export const imageToText = async (
 	imageUrl: string,
@@ -41,6 +39,7 @@ export const imageToText = async (
 	userId: string,
 	options?: ImageToTextOptions | null,
 	context?: ImageToTextContextProps | null,
+	toggles?: AiToggles | null,
 ): Promise<ImageToTextResult | null> => {
 	try {
 		const { userApiKey, isLimitReached } = await getApikeyAndBookmarkCount(
@@ -51,6 +50,28 @@ export const imageToText = async (
 		if (!userApiKey && isLimitReached) {
 			console.warn("Monthly free limit reached — skipping caption generation.");
 			return null;
+		}
+
+		// Skip API call entirely when all toggles are off
+		const activeToggles = toggles ?? {
+			aiSummary: true,
+			autoAssignCollections: true,
+			imageKeywords: true,
+			ocr: true,
+		};
+		const hasAnyToggle =
+			activeToggles.aiSummary ||
+			activeToggles.imageKeywords ||
+			activeToggles.ocr ||
+			activeToggles.autoAssignCollections;
+
+		if (!hasAnyToggle) {
+			return {
+				sentence: null,
+				image_keywords: [],
+				matched_collection_ids: [],
+				ocr_text: null,
+			};
 		}
 
 		// Fetch the image
@@ -77,92 +98,116 @@ export const imageToText = async (
 			"- NORMAL WEBSITE (landing, app, dashboard) → key text/headlines, colors, gist of what the site does, UI elements (nav, sidebar, forms, charts), site type or purpose.",
 		];
 
-		const websiteInstruction = isPageScreenshot
-			? [
-					"This image may be from a website. Try to recognize which website or service it is (by logo, branding, layout, visible URL, or distinctive UI) and use that as context.",
-					"",
-					"Use your judgment and focus on:",
-					...siteCategories,
-					"",
-					"Start as if describing the content directly. Do NOT say 'screenshot of', 'this appears to be a screenshot', 'the image shows', or meta-labels for website type (e.g. 'a normal website', 'an ecommerce page', 'a documentation page', 'an article') — describe what the page shows (e.g. 'A landing page for...', 'A product listing for...', 'A page titled...').",
-					'Do not start with "The image shows" or "This is a picture of".',
-				].join("\n")
-			: [
-					"Describe what you see. Focus on: colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place, objects.",
-				].join("\n");
-
-		const keywordsInstruction = isPageScreenshot
-			? [
-					"List 20 nouns and short descriptive terms. If you can identify the website or service (e.g. Amazon, GitHub, Notion), include it as a keyword. For recognizable characters: include both the person/character name AND the show, movie, or franchise. Only add the source if confident. Match the image type to one below and include the relevant keywords:",
-					...siteCategories,
-					"",
-					"Describe only what is in the image. Do NOT include readable text or words from the image.",
-				].join("\n")
-			: [
-					"List 20 nouns and short descriptive terms. MUST include:",
-					"- Objects",
-					"- People (name if recognizable: celebrity, actor, fictional character; otherwise man/woman/person)",
-					"- Place/setting",
-					"- Style, mood, composition type (photo, illustration, diagram, etc.)",
-					"For recognizable characters (actors, fictional characters): include both the person/character name AND the show, movie, or franchise they are from. Only add the source if you are confident.",
-					"Describe only what is in the image. Do NOT include readable text.",
-				].join("\n");
-
-		const collections = context?.collections ?? [];
-		const hasCollections = collections.length > 0;
-
-		const ocrSection = [
-			"",
-			"PART 3 - OCR TEXT:",
-			"Extract all visible, readable text from this image exactly as it appears.",
-			"If no text is visible, write NONE.",
-			"Do NOT paraphrase or summarize — copy the text verbatim.",
-		];
-
-		const collectionsSection = hasCollections
-			? [
-					"",
-					"PART 4 - COLLECTIONS:",
-					"Given the image AND the additional bookmark context below, determine which of the user's existing collections this bookmark belongs to.",
-					"Return up to 3 best matches with a confidence percentage (0-100%). If nothing fits, return NONE.",
-					"Rules:",
-					"- ONLY use collection names from the exact list below — never invent names",
-					"- Be strict — a vague or tangential connection should get a LOW score (below 50%)",
-					"- Only give 90%+ when the bookmark's primary topic is a direct, obvious match for the collection",
-					"- When nothing fits well, return NONE",
-					"",
-					"User's collections:",
-					collections.map((collection) => `- ${collection.name}`).join("\n"),
-					"",
-					"Additional bookmark context:",
-					...(context?.title ? [`Title: ${context.title}`] : []),
-					...(context?.description
-						? [`Description: ${context.description}`]
-						: []),
-					...(context?.url ? [`URL: ${context.url}`] : []),
-				]
-			: [];
-
-		const captionPrompt = [
+		// Build prompt sections dynamically based on active toggles
+		const promptParts: string[] = [
 			"Analyze this image and provide the following parts.",
-			"",
-			"PART 1 - SENTENCE:",
-			websiteInstruction,
-			"For people: always try to identify and name if recognizable — include celebrities, actors, fictional characters, politicians, historical figures; otherwise use man, woman, person.",
-			"",
-			"PART 2 - KEYWORDS:",
-			keywordsInstruction,
-			...ocrSection,
-			...collectionsSection,
-			"",
-			"Respond in exactly this format:",
-			"SENTENCE: [your sentence here]",
-			"KEYWORDS: [keyword1, keyword2, keyword3, ...]",
-			"OCR_TEXT: [extracted text, or NONE]",
-			...(hasCollections
-				? ["COLLECTIONS: <name> (<confidence>%) per line, or NONE"]
-				: []),
-		].join("\n");
+		];
+		const formatLines: string[] = [];
+
+		// SENTENCE section (controlled by aiSummary toggle)
+		if (activeToggles.aiSummary) {
+			const websiteInstruction = isPageScreenshot
+				? [
+						"This image may be from a website. Try to recognize which website or service it is (by logo, branding, layout, visible URL, or distinctive UI) and use that as context.",
+						"",
+						"Use your judgment and focus on:",
+						...siteCategories,
+						"",
+						"Start as if describing the content directly. Do NOT say 'screenshot of', 'this appears to be a screenshot', 'the image shows', or meta-labels for website type (e.g. 'a normal website', 'an ecommerce page', 'a documentation page', 'an article') — describe what the page shows (e.g. 'A landing page for...', 'A product listing for...', 'A page titled...').",
+						'Do not start with "The image shows" or "This is a picture of".',
+					].join("\n")
+				: [
+						"Describe what you see. Focus on: colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place, objects.",
+					].join("\n");
+
+			promptParts.push(
+				"",
+				"SENTENCE:",
+				websiteInstruction,
+				"For people: always try to identify and name if recognizable — include celebrities, actors, fictional characters, politicians, historical figures; otherwise use man, woman, person.",
+			);
+			formatLines.push("SENTENCE: <your sentence here>");
+		}
+
+		// KEYWORDS section (controlled by imageKeywords toggle)
+		if (activeToggles.imageKeywords) {
+			const keywordsInstruction = isPageScreenshot
+				? [
+						"List 20 nouns and short descriptive terms. If you can identify the website or service (e.g. Amazon, GitHub, Notion), include it as a keyword. For recognizable characters: include both the person/character name AND the show, movie, or franchise. Only add the source if confident. Match the image type to one below and include the relevant keywords:",
+						...siteCategories,
+						"",
+						"Describe only what is in the image. Do NOT include readable text or words from the image.",
+					].join("\n")
+				: [
+						"List 20 nouns and short descriptive terms. MUST include:",
+						"- Objects",
+						"- People (name if recognizable: celebrity, actor, fictional character; otherwise man/woman/person)",
+						"- Place/setting",
+						"- Style, mood, composition type (photo, illustration, diagram, etc.)",
+						"For recognizable characters (actors, fictional characters): include both the person/character name AND the show, movie, or franchise they are from. Only add the source if you are confident.",
+						"Describe only what is in the image. Do NOT include readable text.",
+					].join("\n");
+
+			promptParts.push("", "KEYWORDS:", keywordsInstruction);
+			formatLines.push("KEYWORDS: keyword1, keyword2, keyword3, ...");
+		}
+
+		// OCR section (controlled by ocr toggle)
+		if (activeToggles.ocr) {
+			promptParts.push(
+				"",
+				"OCR_TEXT:",
+				"Extract all visible, readable text from this image exactly as it appears.",
+				"If no text is visible, write NONE.",
+				"Do NOT paraphrase or summarize — copy the text verbatim.",
+			);
+			formatLines.push("OCR_TEXT: <extracted text, or NONE>");
+		}
+
+		// COLLECTIONS section (controlled by autoAssignCollections toggle + having collections)
+		const collections = context?.collections ?? [];
+		const includeCollections =
+			activeToggles.autoAssignCollections && collections.length > 0;
+
+		if (includeCollections) {
+			promptParts.push(
+				"",
+				"COLLECTIONS:",
+				"Given the image AND the additional bookmark context below, determine which of the user's existing collections this bookmark belongs to.",
+				"Return up to 3 best matches with a confidence percentage (0-100%). If nothing fits, return NONE.",
+				"Rules:",
+				"- ONLY use collection names from the exact list below — never invent names",
+				"- Be strict — a vague or tangential connection should get a LOW score (below 50%)",
+				"- Only give 90%+ when the bookmark's primary topic is a direct, obvious match for the collection",
+				"- When nothing fits well, return NONE",
+				"",
+				"User's collections:",
+				collections.map((collection) => `- ${collection.name}`).join("\n"),
+				"",
+				"Additional bookmark context:",
+				...(context?.title ? [`Title: ${context.title}`] : []),
+				...(context?.description
+					? [`Description: ${context.description}`]
+					: []),
+				...(context?.url ? [`URL: ${context.url}`] : []),
+			);
+			formatLines.push("COLLECTIONS: <name> (<confidence>%) per line, or NONE");
+		}
+
+		// Skip API call if no prompt sections were added (e.g., only autoAssignCollections on with no collections)
+		if (formatLines.length === 0) {
+			return {
+				sentence: null,
+				image_keywords: [],
+				matched_collection_ids: [],
+				ocr_text: null,
+			};
+		}
+
+		// Add response format instructions
+		promptParts.push("", "Respond in exactly this format:", ...formatLines);
+
+		const captionPrompt = promptParts.join("\n");
 		const captionResult = await model.generateContent([
 			captionPrompt,
 			{
@@ -173,36 +218,57 @@ export const imageToText = async (
 			},
 		]);
 
-		const text = captionResult.response.text();
-		if (!text?.trim()) {
+		const rawText = captionResult.response.text();
+		if (!rawText?.trim()) {
 			return null;
 		}
 
-		const sentencePart = text.split("KEYWORDS:")[0];
-		const sentenceMatch = /SENTENCE:\s*(.+)/su.exec(sentencePart ?? "");
-		let sentence = sentenceMatch?.[1]?.trim() ?? null;
+		// Normalize marker variants Gemini may produce
+		const text = rawText.replaceAll(/OCR[ _]TEXT:/gu, "OCR_TEXT:");
 
-		const keywordsPart = text.includes("KEYWORDS:")
-			? text.split("KEYWORDS:")[1]
-			: "";
-		const keywordsBeforeOcr = keywordsPart
-			?.split("OCR_TEXT:")[0]
-			?.split("COLLECTIONS:")[0];
-		const keywordsStr = keywordsBeforeOcr?.trim() ?? "";
-		const image_keywords = keywordsStr
-			.split(/,\s*/u)
-			.map((keyword) => keyword.trim())
-			.filter(Boolean);
+		// Parse response — only extract sections that were requested
+		let sentence: string | null = null;
+		if (activeToggles.aiSummary) {
+			const sentencePart = text
+				.split("KEYWORDS:")[0]
+				?.split("OCR_TEXT:")[0]
+				?.split("COLLECTIONS:")[0];
+			const sentenceMatch = /SENTENCE:\s*(.+)/su.exec(sentencePart ?? "");
+			const rawSentence = sentenceMatch?.[1]?.trim() ?? null;
+			// Strip brackets Gemini may copy from format template
+			sentence = rawSentence?.replace(/^\[(.+)\]$/su, "$1")?.trim() ?? null;
+		}
 
-		const ocrPart = text.includes("OCR_TEXT:")
-			? text.split("OCR_TEXT:")[1]?.split("COLLECTIONS:")[0]?.trim()
-			: null;
-		const ocr_text = ocrPart && !/^none$/iu.test(ocrPart) ? ocrPart : null;
+		let image_keywords: string[] = [];
+		if (activeToggles.imageKeywords && text.includes("KEYWORDS:")) {
+			const keywordsPart = text.split("KEYWORDS:")[1];
+			const keywordsBeforeNext = keywordsPart
+				?.split("OCR_TEXT:")[0]
+				?.split("COLLECTIONS:")[0];
+			const rawKeywords = keywordsBeforeNext?.trim() ?? "";
+			// Strip outer brackets Gemini may copy from format template
+			const keywordsStr = rawKeywords.replace(/^\[(.+)\]$/su, "$1").trim();
+			image_keywords = keywordsStr
+				.split(/,\s*/u)
+				.map((keyword) => keyword.trim())
+				.filter(Boolean);
+		}
+
+		let ocr_text: string | null = null;
+		if (activeToggles.ocr && text.includes("OCR_TEXT:")) {
+			const rawOcr = text
+				.split("OCR_TEXT:")[1]
+				?.split("COLLECTIONS:")[0]
+				?.trim();
+			// Strip brackets Gemini may copy from format template
+			const ocrPart = rawOcr?.replace(/^\[(.+)\]$/su, "$1")?.trim();
+			ocr_text = ocrPart && !/^none$/iu.test(ocrPart) ? ocrPart : null;
+		}
 
 		// Parse collections — each line is "CollectionName (XX%)", filter >= 90%
 		const CONFIDENCE_THRESHOLD = 90;
 		const matched_collection_ids: number[] = [];
-		if (hasCollections && text.includes("COLLECTIONS:")) {
+		if (includeCollections && text.includes("COLLECTIONS:")) {
 			const collectionsPart = text.split("COLLECTIONS:")[1]?.trim() ?? "";
 
 			if (!/^none$/iu.test(collectionsPart.split("\n")[0]?.trim() ?? "")) {
@@ -232,8 +298,11 @@ export const imageToText = async (
 			}
 		}
 
-		if (!sentence && text.trim()) {
-			sentence = text.trim();
+		if (!sentence && text.trim() && activeToggles.aiSummary) {
+			sentence = text
+				.trim()
+				.replace(/^\[(.+)\]$/su, "$1")
+				.trim();
 		}
 
 		if (!userApiKey && (ocr_text || sentence)) {
