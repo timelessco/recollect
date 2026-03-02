@@ -46,6 +46,7 @@
 		"./*.ts",
 		"./.*.ts",
 		".next/types/**/*.ts",
-		".next/dev/types/**/*.ts"
+		".next/dev/types/**/*.ts",
+		".next/dev/dev/types/**/*.ts"
 	]
 }
