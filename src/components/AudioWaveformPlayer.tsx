@@ -231,7 +231,7 @@ function AudioWaveformPlayerInner({
 					)}
 					onKeyDown={handleWaveformKeyDown}
 					role="slider"
-					tabIndex={0}
+					tabIndex={isReady ? 0 : -1}
 				/>
 			</div>
 

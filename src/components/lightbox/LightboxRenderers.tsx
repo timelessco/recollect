@@ -119,7 +119,7 @@ export const AudioSlide = ({
 	onAudioError,
 }: AudioSlideProps) => {
 	const handleError = useCallback(() => {
-		if (bookmark?.id && typeof bookmark.id === "number") {
+		if (typeof bookmark?.id === "number") {
 			onAudioError?.(bookmark.id);
 		}
 	}, [bookmark?.id, onAudioError]);

@@ -116,34 +116,36 @@ function VideoPlayerInner({
 		(el: HTMLElement | null) => {
 			mediaElRef.current = el;
 			mediaRef(el as HTMLMediaElement | null);
-
-			if (!el) {
-				return undefined;
-			}
-
-			const handleError = () => onErrorRef.current?.();
-			const handleLoaded = () => setLoading(false);
-
-			// Check if media is already loaded (event fired before listener attached)
-			if ((el as HTMLMediaElement).readyState >= 2) {
-				setLoading(false);
-			}
-
-			el.addEventListener("error", handleError);
-			// youtube-video-element may not fire `loadeddata`; listen for
-			// `loadedmetadata` as well so the spinner always clears.
-			el.addEventListener("loadedmetadata", handleLoaded);
-			el.addEventListener("loadeddata", handleLoaded);
-
-			return () => {
-				el.removeEventListener("error", handleError);
-				el.removeEventListener("loadedmetadata", handleLoaded);
-				el.removeEventListener("loadeddata", handleLoaded);
-				mediaRef(null);
-			};
 		},
 		[mediaRef],
 	);
+
+	useEffect(() => {
+		const el = mediaElRef.current;
+		if (!el) {
+			return undefined;
+		}
+
+		const handleError = () => onErrorRef.current?.();
+		const handleLoaded = () => setLoading(false);
+
+		// Check if media is already loaded (event fired before listener attached)
+		if ((el as HTMLMediaElement).readyState >= 2) {
+			setLoading(false);
+		}
+
+		el.addEventListener("error", handleError);
+		// youtube-video-element may not fire `loadeddata`; listen for
+		// `loadedmetadata` as well so the spinner always clears.
+		el.addEventListener("loadedmetadata", handleLoaded);
+		el.addEventListener("loadeddata", handleLoaded);
+
+		return () => {
+			el.removeEventListener("error", handleError);
+			el.removeEventListener("loadedmetadata", handleLoaded);
+			el.removeEventListener("loadeddata", handleLoaded);
+		};
+	}, [mediaType, youTubeReady]);
 
 	let mediaElement: React.ReactNode = null;
 	switch (mediaType) {
