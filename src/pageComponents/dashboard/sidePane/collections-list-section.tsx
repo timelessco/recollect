@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import router from "next/router";
+import { Button } from "@base-ui/react/button";
 import { Popover } from "@base-ui/react/popover";
 import { isNull } from "lodash";
 
@@ -126,7 +127,7 @@ function CollectionsHeaderOptionsPopover({
 					<Popover.Popup
 						className={`${dropdownMenuClassName} leading-[20px] outline-hidden`}
 					>
-						<button
+						<Button
 							className="w-full cursor-pointer rounded-lg px-2 py-[5px] text-left text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800 hover:bg-gray-200"
 							onClick={(event) => {
 								event.stopPropagation();
@@ -136,7 +137,7 @@ function CollectionsHeaderOptionsPopover({
 							type="button"
 						>
 							Add Collection
-						</button>
+						</Button>
 					</Popover.Popup>
 				</Popover.Positioner>
 			</Popover.Portal>

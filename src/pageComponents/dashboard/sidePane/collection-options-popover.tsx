@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Button } from "@base-ui/react/button";
 import { Popover } from "@base-ui/react/popover";
 
 import { DeleteCollectionModal } from "../modals/delete-collection-modal";
@@ -98,7 +99,7 @@ function CollectionMenuItems({
 
 	return (
 		<>
-			<button
+			<Button
 				className={itemClassName}
 				onClick={(event) => {
 					event.preventDefault();
@@ -114,8 +115,8 @@ function CollectionMenuItems({
 				type="button"
 			>
 				{item.isFavorite ? "Remove from Favorites" : "Add to Favorites"}
-			</button>
-			<button
+			</Button>
+			<Button
 				className={itemClassName}
 				onClick={(event) => {
 					event.preventDefault();
@@ -125,7 +126,7 @@ function CollectionMenuItems({
 				type="button"
 			>
 				Share
-			</button>
+			</Button>
 			<DeleteCollectionModal
 				categoryId={item.id}
 				isCurrent={item.current}

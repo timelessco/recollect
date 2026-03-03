@@ -1,3 +1,4 @@
+import { Button } from "@base-ui/react/button";
 import find from "lodash/find";
 
 import { useBookmarksViewUpdate } from "../../hooks/useBookmarksViewUpdate";
@@ -64,20 +65,19 @@ function BookmarksSortItems() {
 				Sort by
 			</div>
 			{sortOptions.map((item) => (
-				<button
+				<Button
 					className={`w-full text-left ${dropdownMenuItemClassName}`}
 					key={item.value}
 					onClick={() =>
 						setBookmarksView(item.value as BookmarksSortByTypes, "sort")
 					}
-					type="button"
 				>
 					<SortItemContent
 						icon={item.icon}
 						isSelected={item.value === sortBy}
 						label={item.label}
 					/>
-				</button>
+				</Button>
 			))}
 		</div>
 	);
