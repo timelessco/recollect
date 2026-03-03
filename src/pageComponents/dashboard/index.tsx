@@ -5,10 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 import isNull from "lodash/isNull";
-import { ToastContainer } from "react-toastify";
-
-import "react-toastify/dist/ReactToastify.css";
-
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/useFetchBookmarksView";
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
@@ -153,13 +149,7 @@ const Dashboard = () => {
 		return null;
 	}
 
-	return (
-		<>
-			<DashboardLayout>{renderMainPaneContent()}</DashboardLayout>
-
-			<ToastContainer />
-		</>
-	);
+	return <DashboardLayout>{renderMainPaneContent()}</DashboardLayout>;
 };
 
 export default Dashboard;

@@ -14,6 +14,7 @@ import { getBaseUrl } from "../utils/constants";
 
 import { MutationIndicator } from "@/components/ui/recollect/mutation-indicator";
 import { TailwindIndicator } from "@/components/ui/recollect/tailwind-indicator";
+import { ToastSetup } from "@/components/ui/recollect/toast";
 
 import "../styles/globals.css";
 
@@ -83,6 +84,7 @@ const MyApp = ({
 
 					<Component {...pageProps} />
 				</HydrationBoundary>
+				<ToastSetup />
 				<ReactQueryDevtools />
 				<TailwindIndicator />
 				<MutationIndicator />
