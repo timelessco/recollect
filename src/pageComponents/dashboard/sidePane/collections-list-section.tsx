@@ -105,6 +105,7 @@ function CollectionsHeaderOptionsPopover({
 	return (
 		<Popover.Root open={isOpen} onOpenChange={setIsOpen}>
 			<Popover.Trigger
+				aria-label="Collection options"
 				className={
 					isOpen
 						? "visible text-gray-500"
