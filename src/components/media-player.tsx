@@ -36,13 +36,13 @@ import {
 	SettingsIcon,
 } from "./media-player-icons";
 import { Spinner } from "./spinner";
-import { SpotifyEmbed } from "./SpotifyEmbed";
+import { SpotifyEmbed } from "./spotify-embed";
 import { cn } from "@/utils/tailwind-merge";
 
 import "./media-player-theme.css";
 
 const AudioWaveformPlayer = lazy(async () => {
-	const mod = await import("./AudioWaveformPlayer");
+	const mod = await import("./audio-waveform-player");
 
 	return { default: mod.AudioWaveformPlayer };
 });

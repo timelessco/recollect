@@ -13,7 +13,7 @@ import {
 	tweetType,
 } from "../../utils/constants";
 import { useBookmarkImageSources } from "../../utils/getBookmarkImageSource";
-import { MediaPlayer } from "../MediaPlayer";
+import { MediaPlayer } from "../media-player";
 
 interface SlideProps {
 	bookmark: SingleListData | undefined;
