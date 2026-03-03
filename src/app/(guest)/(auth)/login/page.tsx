@@ -2,6 +2,7 @@ import { type Metadata } from "next";
 
 import {
 	ContinueWithEmailLink,
+	SignInWithAppleForm,
 	SignInWithGoogleForm,
 } from "@/components/guest/login-client-components";
 import { BASE_URL } from "@/site-config";
@@ -18,6 +19,7 @@ export default function LoginPage() {
 		<>
 			<ContinueWithEmailLink />
 			<SignInWithGoogleForm />
+			<SignInWithAppleForm />
 		</>
 	);
 }

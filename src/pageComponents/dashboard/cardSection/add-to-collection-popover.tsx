@@ -4,6 +4,7 @@ import isEmpty from "lodash/isEmpty";
 
 import { useAddCategoryToBookmarksOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmarks-optimistic-mutation";
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
+import { Button } from "@/components/ui/recollect/button";
 import MoveIcon from "@/icons/moveIcon";
 import {
 	dropdownMenuClassName,
@@ -68,7 +69,7 @@ function AddToCollectionMenu({
 	return (
 		<>
 			{categories.map((item) => (
-				<button
+				<Button
 					className={`w-full truncate text-left ${dropdownMenuItemClassName}`}
 					key={item.value}
 					onClick={() => {
@@ -84,7 +85,7 @@ function AddToCollectionMenu({
 					type="button"
 				>
 					{item.label}
-				</button>
+				</Button>
 			))}
 		</>
 	);

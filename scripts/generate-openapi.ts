@@ -104,15 +104,22 @@ function getApiPath(routeFilePath: string): string {
 	return `/${rel.replace(/\/route\.ts$/u, "")}`;
 }
 
+const METHOD_MAP: Record<string, "get" | "post" | "delete" | "patch" | "put"> =
+	{
+		Get: "get",
+		Post: "post",
+		Delete: "delete",
+		Patch: "patch",
+		Put: "put",
+	};
+
 function getMethodFromFactoryName(
 	factoryName: string,
-): "get" | "post" | undefined {
-	if (factoryName.includes("Get")) {
-		return "get";
-	}
-
-	if (factoryName.includes("Post")) {
-		return "post";
+): "get" | "post" | "delete" | "patch" | "put" | undefined {
+	for (const [token, method] of Object.entries(METHOD_MAP)) {
+		if (factoryName.includes(token)) {
+			return method;
+		}
 	}
 
 	return undefined;
@@ -152,7 +159,13 @@ async function scanAndRegisterRoutes() {
 		}
 
 		for (const [exportName, exported] of Object.entries(mod)) {
-			if (exportName !== "GET" && exportName !== "POST") {
+			if (
+				exportName !== "GET" &&
+				exportName !== "POST" &&
+				exportName !== "DELETE" &&
+				exportName !== "PATCH" &&
+				exportName !== "PUT"
+			) {
 				continue;
 			}
 
@@ -178,8 +191,13 @@ async function scanAndRegisterRoutes() {
 			const inputSchema = config.inputSchema;
 			const outputSchema = config.outputSchema;
 
-			const hasInput =
+			const isBodyMethod =
 				method === "post" ||
+				method === "delete" ||
+				method === "patch" ||
+				method === "put";
+			const hasInput =
+				isBodyMethod ||
 				(inputSchema instanceof z.ZodObject &&
 					Object.keys(inputSchema.shape).length > 0);
 
@@ -207,7 +225,7 @@ async function scanAndRegisterRoutes() {
 				pathRegistration.security = security;
 			}
 
-			if (method === "post") {
+			if (isBodyMethod) {
 				pathRegistration.request = {
 					body: {
 						required: true,

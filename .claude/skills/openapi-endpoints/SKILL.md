@@ -181,6 +181,27 @@ additionalResponses: {
 
 When the supplement file exceeds 250 lines, extract examples to `<endpoint-name>-examples.ts`.
 
+**Parameter examples** (GET query param dropdown in Scalar):
+
+```typescript
+parameterExamples: {
+  email: {
+    "valid-user": {
+      summary: "Valid user email",
+      description: "Returns user data for this email.",
+      value: "user@example.com",
+    },
+    "unknown-email": {
+      summary: "Nonexistent email",
+      description: "Returns null/empty result.",
+      value: "nobody@example.com",
+    },
+  },
+},
+```
+
+Outer key = parameter name (must match `name` in the generated spec). Inner map = standard named examples. Creates a dropdown per query param in Scalar's "Try It" panel.
+
 ## Supplement Reference
 
 ### EndpointSupplement fields
@@ -200,6 +221,7 @@ When the supplement file exceeds 250 lines, extract examples to `<endpoint-name>
 | `response400Example`  | `Record<string, unknown>`         | Single 400 error example                 |
 | `response400Examples` | Named examples object             | Multiple 400 error examples              |
 | `additionalResponses` | `Record<number, { description }>` | Extra response codes (400, 403, 404)     |
+| `parameterExamples`   | `Record<string, NamedExamples>`   | Per-param named examples (GET dropdown)  |
 
 ### Naming conventions
 
@@ -235,6 +257,10 @@ The scanner registers 3 `$ref` response components for every endpoint:
 ### Add 400 error examples
 
 > Add `response400Examples` to the `<endpoint-name>` supplement. Include examples for: [list validation errors]. Also add `additionalResponses: { 400: { description: "<custom description>" } }`. Regenerate and verify.
+
+### Add parameter examples for a GET endpoint
+
+> Add `parameterExamples` to the `<endpoint-name>` supplement for each query parameter. Include examples for: [list test scenarios per param]. Regenerate the spec and verify the dropdown appears in Scalar's "Try It" panel.
 
 ### Document a new edge function
 

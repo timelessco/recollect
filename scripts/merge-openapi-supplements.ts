@@ -7,16 +7,20 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 
+import * as apiKeySupplements from "../src/lib/openapi/endpoints/api-key";
 import * as bookmarksSupplements from "../src/lib/openapi/endpoints/bookmarks";
 import * as categoriesSupplements from "../src/lib/openapi/endpoints/categories";
+import * as categorySupplements from "../src/lib/openapi/endpoints/category";
 import * as cronSupplements from "../src/lib/openapi/endpoints/cron";
 import * as devSupplements from "../src/lib/openapi/endpoints/dev";
 import * as instagramSupplements from "../src/lib/openapi/endpoints/instagram";
 import * as iphoneSupplements from "../src/lib/openapi/endpoints/iphone";
 import * as profilesSupplements from "../src/lib/openapi/endpoints/profiles";
 import * as raindropSupplements from "../src/lib/openapi/endpoints/raindrop";
+import * as shareSupplements from "../src/lib/openapi/endpoints/share";
 import * as tagsSupplements from "../src/lib/openapi/endpoints/tags";
 import * as twitterSupplements from "../src/lib/openapi/endpoints/twitter";
+import * as userSupplements from "../src/lib/openapi/endpoints/user";
 import { type EndpointSupplement } from "../src/lib/openapi/supplement-types";
 
 type OpenApiJsonContent = {
@@ -181,6 +185,19 @@ function applySupplementToOperation(
 			}
 		}
 	}
+
+	if (
+		supplement.parameterExamples !== undefined &&
+		op.parameters !== undefined
+	) {
+		for (const param of op.parameters) {
+			const examples = supplement.parameterExamples[param.name];
+			if (examples !== undefined) {
+				delete param.example;
+				param.examples = examples;
+			}
+		}
+	}
 }
 
 export function mergeSupplements(
@@ -222,16 +239,20 @@ export function mergeSupplements(
 
 export function collectSupplements(): EndpointSupplement[] {
 	const allModules = [
+		apiKeySupplements,
 		bookmarksSupplements,
 		categoriesSupplements,
+		categorySupplements,
 		cronSupplements,
 		devSupplements,
 		instagramSupplements,
 		iphoneSupplements,
 		profilesSupplements,
 		raindropSupplements,
+		shareSupplements,
 		tagsSupplements,
 		twitterSupplements,
+		userSupplements,
 	];
 
 	const supplements: EndpointSupplement[] = [];

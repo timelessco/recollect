@@ -48,16 +48,183 @@ type HandlerFn = ((request: NextRequest) => Promise<NextResponse>) & {
 };
 
 // ============================================================
+// Internal helpers
+// ============================================================
+
+async function parseInput<TInput>(
+	request: NextRequest,
+	schema: z.ZodType<TInput>,
+	route: string,
+	method: "body" | "query",
+) {
+	if (method === "query") {
+		return parseQuery({ request, schema, route });
+	}
+
+	return await parseBody({ request, schema, route });
+}
+
+function createPublicHandlerInternal<TInput, TOutput>(
+	config: PublicHandlerConfig<TInput, TOutput>,
+	factoryName: string,
+	method: "body" | "query",
+): HandlerFn {
+	const { route, inputSchema, outputSchema, handler } = config;
+
+	const fn = async (request: NextRequest) => {
+		try {
+			const parsed = await parseInput(request, inputSchema, route, method);
+			if (parsed.errorResponse) {
+				return parsed.errorResponse;
+			}
+
+			const result = await handler({ input: parsed.data, route });
+
+			if (result instanceof NextResponse) {
+				return result;
+			}
+
+			return apiSuccess({ route, data: result, schema: outputSchema });
+		} catch (error) {
+			return apiError({
+				route,
+				message: "An unexpected error occurred",
+				error,
+				operation: `${route}_unexpected`,
+			});
+		}
+	};
+
+	fn.config = { factoryName, inputSchema, outputSchema, route };
+
+	return fn;
+}
+
+function createAuthHandlerInternal<TInput, TOutput>(
+	config: AuthHandlerConfig<TInput, TOutput>,
+	factoryName: string,
+	method: "body" | "query",
+): HandlerFn {
+	const { route, inputSchema, outputSchema, handler } = config;
+
+	const fn = async (request: NextRequest) => {
+		try {
+			const auth = await requireAuth(route);
+			if (auth.errorResponse) {
+				return auth.errorResponse;
+			}
+
+			const parsed = await parseInput(request, inputSchema, route, method);
+			if (parsed.errorResponse) {
+				return parsed.errorResponse;
+			}
+
+			const { supabase, user } = auth;
+			const result = await handler({
+				data: parsed.data,
+				supabase,
+				user,
+				route,
+			});
+
+			if (result instanceof NextResponse) {
+				return result;
+			}
+
+			return apiSuccess({ route, data: result, schema: outputSchema });
+		} catch (error) {
+			return apiError({
+				route,
+				message: "An unexpected error occurred",
+				error,
+				operation: `${route}_unexpected`,
+			});
+		}
+	};
+
+	fn.config = { factoryName, inputSchema, outputSchema, route };
+
+	return fn;
+}
+
+// ============================================================
 // Public Handlers (no auth)
 // ============================================================
 
 export const createGetApiHandler = <TInput, TOutput>(
 	config: PublicHandlerConfig<TInput, TOutput>,
+): HandlerFn =>
+	createPublicHandlerInternal(config, "createGetApiHandler", "query");
+
+export const createPostApiHandler = <TInput, TOutput>(
+	config: PublicHandlerConfig<TInput, TOutput>,
+): HandlerFn =>
+	createPublicHandlerInternal(config, "createPostApiHandler", "body");
+
+// ============================================================
+// Authenticated Handlers (with auth)
+// ============================================================
+
+export const createGetApiHandlerWithAuth = <TInput, TOutput>(
+	config: AuthHandlerConfig<TInput, TOutput>,
+): HandlerFn =>
+	createAuthHandlerInternal(config, "createGetApiHandlerWithAuth", "query");
+
+export const createPostApiHandlerWithAuth = <TInput, TOutput>(
+	config: AuthHandlerConfig<TInput, TOutput>,
+): HandlerFn =>
+	createAuthHandlerInternal(config, "createPostApiHandlerWithAuth", "body");
+
+export const createPatchApiHandlerWithAuth = <TInput, TOutput>(
+	config: AuthHandlerConfig<TInput, TOutput>,
+): HandlerFn =>
+	createAuthHandlerInternal(config, "createPatchApiHandlerWithAuth", "body");
+
+export const createPutApiHandlerWithAuth = <TInput, TOutput>(
+	config: AuthHandlerConfig<TInput, TOutput>,
+): HandlerFn =>
+	createAuthHandlerInternal(config, "createPutApiHandlerWithAuth", "body");
+
+export const createDeleteApiHandlerWithAuth = <TInput, TOutput>(
+	config: AuthHandlerConfig<TInput, TOutput>,
+): HandlerFn =>
+	createAuthHandlerInternal(config, "createDeleteApiHandlerWithAuth", "body");
+
+// ============================================================
+// Secret-authenticated Handlers
+// ============================================================
+
+type SecretHandlerConfig<TInput, TOutput> = PublicHandlerConfig<
+	TInput,
+	TOutput
+> & {
+	secretEnvVar: string;
+};
+
+export const createGetApiHandlerWithSecret = <TInput, TOutput>(
+	config: SecretHandlerConfig<TInput, TOutput>,
 ): HandlerFn => {
-	const { route, inputSchema, outputSchema, handler } = config;
+	const { route, inputSchema, outputSchema, handler, secretEnvVar } = config;
 
 	const fn = async (request: NextRequest) => {
 		try {
+			const secret = process.env[secretEnvVar];
+			if (!secret) {
+				console.error(`[${route}] ${secretEnvVar} is not configured`);
+				return NextResponse.json(
+					{ data: null, error: "Server configuration error" },
+					{ status: 500 },
+				);
+			}
+
+			const authHeader = request.headers.get("authorization");
+			if (authHeader !== `Bearer ${secret}`) {
+				return NextResponse.json(
+					{ data: null, error: "Unauthorized" },
+					{ status: 401 },
+				);
+			}
+
 			const query = parseQuery({ request, schema: inputSchema, route });
 			if (query.errorResponse) {
 				return query.errorResponse;
@@ -81,140 +248,7 @@ export const createGetApiHandler = <TInput, TOutput>(
 	};
 
 	fn.config = {
-		factoryName: "createGetApiHandler",
-		inputSchema,
-		outputSchema,
-		route,
-	};
-
-	return fn;
-};
-
-export const createPostApiHandler = <TInput, TOutput>(
-	config: PublicHandlerConfig<TInput, TOutput>,
-): HandlerFn => {
-	const { route, inputSchema, outputSchema, handler } = config;
-
-	const fn = async (request: NextRequest) => {
-		try {
-			const body = await parseBody({ request, schema: inputSchema, route });
-			if (body.errorResponse) {
-				return body.errorResponse;
-			}
-
-			const result = await handler({ input: body.data, route });
-
-			if (result instanceof NextResponse) {
-				return result;
-			}
-
-			return apiSuccess({ route, data: result, schema: outputSchema });
-		} catch (error) {
-			return apiError({
-				route,
-				message: "An unexpected error occurred",
-				error,
-				operation: `${route}_unexpected`,
-			});
-		}
-	};
-
-	fn.config = {
-		factoryName: "createPostApiHandler",
-		inputSchema,
-		outputSchema,
-		route,
-	};
-
-	return fn;
-};
-
-// ============================================================
-// Authenticated Handlers (with auth)
-// ============================================================
-
-export const createGetApiHandlerWithAuth = <TInput, TOutput>(
-	config: AuthHandlerConfig<TInput, TOutput>,
-): HandlerFn => {
-	const { route, inputSchema, outputSchema, handler } = config;
-
-	const fn = async (request: NextRequest) => {
-		try {
-			const auth = await requireAuth(route);
-			if (auth.errorResponse) {
-				return auth.errorResponse;
-			}
-
-			const query = parseQuery({ request, schema: inputSchema, route });
-			if (query.errorResponse) {
-				return query.errorResponse;
-			}
-
-			const { supabase, user } = auth;
-			const result = await handler({ data: query.data, supabase, user, route });
-
-			if (result instanceof NextResponse) {
-				return result;
-			}
-
-			return apiSuccess({ route, data: result, schema: outputSchema });
-		} catch (error) {
-			return apiError({
-				route,
-				message: "An unexpected error occurred",
-				error,
-				operation: `${route}_unexpected`,
-			});
-		}
-	};
-
-	fn.config = {
-		factoryName: "createGetApiHandlerWithAuth",
-		inputSchema,
-		outputSchema,
-		route,
-	};
-
-	return fn;
-};
-
-export const createPostApiHandlerWithAuth = <TInput, TOutput>(
-	config: AuthHandlerConfig<TInput, TOutput>,
-): HandlerFn => {
-	const { route, inputSchema, outputSchema, handler } = config;
-
-	const fn = async (request: NextRequest) => {
-		try {
-			const auth = await requireAuth(route);
-			if (auth.errorResponse) {
-				return auth.errorResponse;
-			}
-
-			const body = await parseBody({ request, schema: inputSchema, route });
-			if (body.errorResponse) {
-				return body.errorResponse;
-			}
-
-			const { supabase, user } = auth;
-			const result = await handler({ data: body.data, supabase, user, route });
-
-			if (result instanceof NextResponse) {
-				return result;
-			}
-
-			return apiSuccess({ route, data: result, schema: outputSchema });
-		} catch (error) {
-			return apiError({
-				route,
-				message: "An unexpected error occurred",
-				error,
-				operation: `${route}_unexpected`,
-			});
-		}
-	};
-
-	fn.config = {
-		factoryName: "createPostApiHandlerWithAuth",
+		factoryName: "createGetApiHandlerWithSecret",
 		inputSchema,
 		outputSchema,
 		route,

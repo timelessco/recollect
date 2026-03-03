@@ -6,3 +6,5 @@ export { fetchDiscoverableByIdSupplement } from "./fetch-discoverable-by-id";
 export { fetchPublicBookmarkByIdSupplement } from "./fetch-public-bookmark-by-id";
 export { moveBookmarkToTrashSupplement } from "./move-bookmark-to-trash";
 export { toggleDiscoverableOnBookmarkSupplement } from "./toggle-discoverable-on-bookmark";
+export { v2FetchBookmarksViewSupplement } from "./v2-fetch-bookmarks-view";
+export { v2FetchByIdSupplement } from "./v2-fetch-by-id";
