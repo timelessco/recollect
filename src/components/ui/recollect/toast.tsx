@@ -29,7 +29,7 @@ function Viewport(props: ToastPrimitive.Viewport.Props) {
 	return (
 		<ToastPrimitive.Viewport
 			className={cn(
-				"fixed right-4 bottom-4 z-[9999] flex w-[202px] flex-col gap-2",
+				"fixed right-4 bottom-4 z-9999 flex w-fit flex-col items-end gap-4",
 				className,
 			)}
 			{...rest}
@@ -42,11 +42,7 @@ function Root(props: ToastPrimitive.Root.Props) {
 	return (
 		<ToastPrimitive.Root
 			className={cn(
-				"min-h-0 rounded-2xl bg-gray-950 px-4 py-3",
-				"[transition:transform_0.4s_cubic-bezier(0.22,1,0.36,1),opacity_0.4s]",
-				"data-[starting-style]:[transform:translateX(calc(100%+1rem))]",
-				"data-[ending-style]:[transform:translateX(calc(100%+1rem))]",
-				"data-[ending-style]:opacity-0",
+				"toast-root min-h-0 w-[320px] rounded-2xl bg-gray-950 px-4 py-3",
 				className,
 			)}
 			style={{ boxShadow: TOAST_SHADOW }}

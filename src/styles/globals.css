@@ -1110,6 +1110,55 @@
 		@apply z-50 snap-x snap-mandatory snap-always overflow-scroll scroll-smooth rounded-xl border border-solid;
 	}
 
+	.toast-root {
+		animation: toast-bounce-in 0.5s both;
+	}
+
+	.toast-root[data-ending-style] {
+		animation: toast-bounce-out 0.5s both;
+	}
+
+	@keyframes toast-bounce-in {
+		0% {
+			transform: translate3d(3000px, 0, 0);
+			opacity: 0;
+			animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+		}
+
+		60% {
+			transform: translate3d(-25px, 0, 0);
+			opacity: 1;
+			animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+		}
+
+		75% {
+			transform: translate3d(10px, 0, 0);
+			animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+		}
+
+		90% {
+			transform: translate3d(-5px, 0, 0);
+			animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+		}
+
+		100% {
+			transform: none;
+			animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+		}
+	}
+
+	@keyframes toast-bounce-out {
+		20% {
+			transform: translate3d(-20px, 0, 0);
+			opacity: 1;
+		}
+
+		100% {
+			transform: translate3d(2000px, 0, 0);
+			opacity: 0;
+		}
+	}
+
 	.search-bar__input:focus {
 		@apply text-gray-900;
 	}
