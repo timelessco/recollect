@@ -2,12 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Popover } from "@base-ui/react/popover";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
-import isNull from "lodash/isNull";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import Input from "../atoms/input";
-import { Button } from "../ui/recollect/button";
 
+import { Button } from "@/components/ui/recollect/button";
 import { useAddBookmark } from "@/hooks/useAddBookmark";
 import { useFileUploadDrop } from "@/hooks/useFileUploadDrop";
 import { AddBookmarkInputIcon } from "@/icons/miscellaneousIcons/add-bookmark-input-icon";
@@ -105,15 +104,15 @@ const AddBookmarkPopupContent = ({ onClose }: AddBookmarkPopupContentProps) => {
 				type="file"
 			/>
 			<Button
-				className="flex items-center p-0 text-gray-600 hover:text-gray-900"
+				aria-label="Upload file"
+				className="absolute top-[11px] left-[14px] z-1 flex h-4 w-4 items-center justify-center p-0 text-gray-600 hover:text-gray-900"
 				onClick={() => {
 					if (fileUploadInputRef.current) {
 						fileUploadInputRef.current.click();
 					}
 				}}
-				type="button"
 			>
-				<AddBookmarkInputIcon className="absolute top-[7px] left-[10px] z-1 h-4 w-4" />
+				<AddBookmarkInputIcon className="h-4 w-4" />
 			</Button>
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<Input
@@ -126,9 +125,7 @@ const AddBookmarkPopupContent = ({ onClose }: AddBookmarkPopupContentProps) => {
 					placeholder="Add a link or drop a file anywhere"
 					ref={(event) => {
 						ref(event);
-						if (!isNull(inputRef)) {
-							inputRef.current = event;
-						}
+						inputRef.current = event;
 					}}
 				/>
 			</form>
