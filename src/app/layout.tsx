@@ -1,13 +1,12 @@
 import "@/styles/globals.css";
-import "react-toastify/dist/ReactToastify.css";
 
 import { type Metadata, type Viewport } from "next";
-import { ToastContainer } from "react-toastify";
 
 import { Providers } from "@/components/providers";
 import { AnalyticsScript } from "@/components/scripts/analytics-script";
 import { ReactGrabScript } from "@/components/scripts/react-grab-script";
 import { TailwindIndicator } from "@/components/ui/recollect/tailwind-indicator";
+import { ToastSetup } from "@/components/ui/recollect/toast";
 import { rootMetaData, rootViewport } from "@/utils/metadata-utils";
 
 type RootLayoutProps = {
@@ -30,7 +29,7 @@ export default async function RootLayout(props: RootLayoutProps) {
 				<AnalyticsScript />
 				<ReactGrabScript />
 
-				<ToastContainer />
+				<ToastSetup />
 				<TailwindIndicator />
 			</body>
 		</html>
