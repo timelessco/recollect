@@ -61,7 +61,8 @@ export function SignInWithGoogleForm() {
 		<form onSubmit={handleSocialLogin} className="w-full">
 			<Button
 				type="submit"
-				className="w-full gap-2 rounded-lg bg-gray-950 p-2 text-13 leading-[15px] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
+				aria-label="Sign in with Google"
+				className="w-full rounded-lg bg-gray-950 p-2 text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
 				pending={extendedIsPending}
 				pendingSlot={
 					<ButtonDefaultPendingComp>
@@ -69,9 +70,7 @@ export function SignInWithGoogleForm() {
 					</ButtonDefaultPendingComp>
 				}
 			>
-				<GoogleIcon className="mr-1.5" />
-
-				<span>Continue with Google</span>
+				<GoogleIcon />
 			</Button>
 		</form>
 	);
@@ -121,7 +120,8 @@ export function SignInWithAppleForm() {
 		<form onSubmit={handleSocialLogin} className="w-full">
 			<Button
 				type="submit"
-				className="w-full gap-2 rounded-lg bg-gray-950 p-2 text-13 leading-[15px] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
+				aria-label="Sign in with Apple"
+				className="w-full rounded-lg bg-gray-950 p-2 text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
 				pending={extendedIsPending}
 				pendingSlot={
 					<ButtonDefaultPendingComp>
@@ -129,9 +129,7 @@ export function SignInWithAppleForm() {
 					</ButtonDefaultPendingComp>
 				}
 			>
-				<AppleIcon className="mr-1.5" />
-
-				<span>Continue with Apple</span>
+				<AppleIcon />
 			</Button>
 		</form>
 	);

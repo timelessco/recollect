@@ -18,8 +18,10 @@ export default function LoginPage() {
 	return (
 		<>
 			<ContinueWithEmailLink />
-			<SignInWithGoogleForm />
-			<SignInWithAppleForm />
+			<div className="flex w-full gap-3">
+				<SignInWithGoogleForm />
+				<SignInWithAppleForm />
+			</div>
 		</>
 	);
 }

@@ -1,4 +1,5 @@
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
+import { AppleIcon } from "../../icons/apple-icon";
 import { GoogleLoginIcon } from "../../icons/googleLoginIcon";
 import { InfoIcon } from "../../icons/info-icon";
 import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
@@ -33,7 +34,8 @@ function SettingsEmailCardContent({
 	const { userProfileData } = useFetchUserProfile();
 
 	const userData = userProfileData?.data?.[0];
-	const isEmailProvider = session?.user?.app_metadata?.provider === "email";
+	const provider = session?.user?.app_metadata?.provider;
+	const isEmailProvider = provider === "email";
 
 	return (
 		<>
@@ -41,6 +43,8 @@ function SettingsEmailCardContent({
 				icon={
 					isEmailProvider ? (
 						<MailIconBlack className="h-5.5 w-5.5 text-gray-900" />
+					) : provider === "apple" ? (
+						<AppleIcon className="h-5 w-5" />
 					) : (
 						<GoogleLoginIcon className="h-5 w-5" />
 					)
@@ -55,7 +59,8 @@ function SettingsEmailCardContent({
 					<figure className="text-gray-900">
 						<InfoIcon className="h-4.5 w-4.5" />
 					</figure>
-					You have logged in with your Google account.
+					You have logged in with your{" "}
+					{provider === "apple" ? "Apple" : "Google"} account.
 				</div>
 			)}
 		</>
