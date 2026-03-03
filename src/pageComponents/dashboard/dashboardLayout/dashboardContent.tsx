@@ -1,6 +1,7 @@
 import classNames from "classnames";
 
 import AddBookmarkDropdown from "../../../components/customDropdowns.tsx/addBookmarkDropdown";
+import { useMiscellaneousStore } from "../../../store/componentStore";
 import { type CategoriesData } from "../../../types/apiTypes";
 import { type CategoryIdUrlTypes } from "../../../types/componentTypes";
 import { DISCOVER_URL, TRASH_URL } from "../../../utils/constants";
@@ -22,7 +23,6 @@ type DashboardContentProps = {
 	optionsMenuList: Array<{ current?: boolean; icon?: React.ReactNode }>;
 	showSearchBar: boolean;
 	showSidePane: boolean;
-	triggerHeadingEdit: boolean;
 };
 
 export const DashboardContent = (props: DashboardContentProps) => {
@@ -39,8 +39,11 @@ export const DashboardContent = (props: DashboardContentProps) => {
 		optionsMenuList,
 		showSearchBar,
 		showSidePane,
-		triggerHeadingEdit,
 	} = props;
+
+	const triggerHeadingEdit = useMiscellaneousStore(
+		(state) => state.triggerHeadingEdit,
+	);
 
 	return (
 		<div className="relative w-full">

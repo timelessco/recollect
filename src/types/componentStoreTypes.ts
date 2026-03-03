@@ -31,6 +31,7 @@ export type MiscellaneousStoreState = {
 	renderedBookmarks: Record<string, SingleListData[]>;
 	searchText: string;
 	selectedVideoId: number | null;
+	triggerHeadingEdit: boolean;
 	setAddScreenshotBookmarkId: (value: number | undefined) => void;
 	setCurrentBookmarkView: (value: BookmarksViewTypes) => void;
 	setDeleteBookmarkId: (bookmarkIds: number[]) => void;
@@ -46,6 +47,7 @@ export type MiscellaneousStoreState = {
 	setSearchText: (value: string) => void;
 	setSelectedVideoId: (id: number | null) => void;
 	setShareCategoryId: (id: number | undefined) => void;
+	setTriggerHeadingEdit: (value: boolean) => void;
 	shareCategoryId: number | undefined;
 };
 

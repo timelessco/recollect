@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
+import { Popover } from "@base-ui/react/popover";
 import { Bars4Icon } from "@heroicons/react/20/solid";
-import { Menu, MenuButton, useMenuState } from "ariakit/menu";
 import debounce from "lodash/debounce";
 import find from "lodash/find";
 
@@ -12,7 +12,6 @@ import MoodboardIconGray from "../../icons/viewIcons/moodboardIconGray";
 import { type BookmarksViewTypes } from "../../types/componentStoreTypes";
 import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 import { singleInfoValues, viewValues } from "../../utils/constants";
-import Button from "../atoms/button";
 import RadioGroup from "../radioGroup";
 import Slider from "../slider";
 
@@ -25,7 +24,7 @@ type BookmarksViewDropdownProps = {
 };
 
 // This renders the view options
-const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
+export const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	const { isDropdown = true, renderOnlyButton = false } = props;
 
 	const { setBookmarksView } = useBookmarksViewUpdate();
@@ -82,7 +81,6 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 			icon: <Bars4Icon className="h-4 w-4" />,
 		},
 	];
-	const menu = useMenuState({ gutter: 8 });
 	const radio0ref = useRef<HTMLInputElement>(null);
 
 	const renderDropdownHeader = (text: string) => (
@@ -172,24 +170,36 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	}
 
 	return isDropdown ? (
-		<>
-			<MenuButton as="div" className="outline-hidden" state={menu}>
-				<Button isActive={menu.open} title="views" type="light">
-					{dropdownButtonContent}
-				</Button>
-			</MenuButton>
-			<Menu
-				className="z-20 w-[195px] origin-top-left rounded-xl bg-white px-[6px] pt-[6px] pb-3 shadow-custom-1 ring-1 ring-black/5"
-				// @ts-expect-error - TODO: fix this
-				initialFocusRef={radio0ref}
-				state={menu}
-			>
-				{dropdownContent}
-			</Menu>
-		</>
+		<BookmarksViewPopover trigger={dropdownButtonContent}>
+			{dropdownContent}
+		</BookmarksViewPopover>
 	) : (
 		<div>{dropdownContent}</div>
 	);
 };
 
-export default BookmarksViewDropdown;
+interface BookmarksViewPopoverProps {
+	trigger: React.ReactNode;
+	children: React.ReactNode;
+}
+
+const BookmarksViewPopover = ({
+	trigger,
+	children,
+}: BookmarksViewPopoverProps) => (
+	<Popover.Root>
+		<Popover.Trigger
+			className="flex items-center rounded-lg bg-transparent px-2 py-[5px] text-13 leading-[14px] font-medium outline-hidden hover:bg-gray-100 data-popup-open:bg-gray-100"
+			title="views"
+		>
+			{trigger}
+		</Popover.Trigger>
+		<Popover.Portal>
+			<Popover.Positioner sideOffset={8}>
+				<Popover.Popup className="z-20 w-[195px] origin-(--transform-origin) rounded-xl bg-white px-[6px] pt-[6px] pb-3 shadow-custom-1 ring-1 ring-black/5">
+					{children}
+				</Popover.Popup>
+			</Popover.Positioner>
+		</Popover.Portal>
+	</Popover.Root>
+);

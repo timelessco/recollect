@@ -1,19 +1,10 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { Allotment, type AllotmentHandle } from "allotment";
-import classNames from "classnames";
 import find from "lodash/find";
 import Drawer from "react-modern-drawer";
 
-import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
-import Button from "../../../components/atoms/button";
-import BookmarksSortDropdown from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
-import BookmarksViewDropdown from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
-import ShareDropdown from "../../../components/customDropdowns.tsx/shareDropdown";
-import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
@@ -23,14 +14,8 @@ import {
 	type BookmarksCountTypes,
 	type CategoriesData,
 } from "../../../types/apiTypes";
-import { mutationApiCall } from "../../../utils/apiHelpers";
 import { optionsMenuListArray } from "../../../utils/commonData";
-import {
-	BOOKMARKS_COUNT_KEY,
-	CATEGORIES_KEY,
-	DISCOVER_URL,
-	TRASH_URL,
-} from "../../../utils/constants";
+import { BOOKMARKS_COUNT_KEY, CATEGORIES_KEY } from "../../../utils/constants";
 import SidePane from "../sidePane";
 
 import {
@@ -42,22 +27,7 @@ import { DashboardContent } from "./dashboardContent";
 
 import "react-modern-drawer/dist/index.css";
 
-import isNull from "lodash/isNull";
-
-import {
-	AriaDropdown,
-	AriaDropdownMenu,
-} from "../../../components/ariaDropdown";
-import RenameIcon from "../../../icons/actionIcons/renameIcon";
-import TrashIconRed from "../../../icons/actionIcons/trashIconRed";
-import OptionsIcon from "../../../icons/optionsIcon";
-import {
-	dropdownMenuClassName,
-	dropdownMenuItemClassName,
-} from "../../../utils/commonClassNames";
-import ShareContent from "../share/shareContent";
-
-import { ClearTrashContent } from "@/components/clearTrashContent";
+import { HeaderOptionsPopover } from "./header-options-popover";
 
 type DashboardLayoutProps = {
 	children: React.ReactNode;
@@ -69,12 +39,8 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 	const session = useSupabaseSession((state) => state.session);
 	const userId = session?.user?.id ?? "";
 	const { category_id: categoryId } = useGetCurrentCategoryId();
-	const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
-		useClearBookmarksInTrashMutation();
-	const { onDeleteCollection } = useDeleteCollection();
 
 	const [showSearchBar, setShowSearchBar] = useState(true);
-	const [triggerHeadingEdit, setTriggerHeadingEdit] = useState(false);
 
 	const allotmentRef = useRef<AllotmentHandle>(null);
 	const sidePaneRef = useRef<HTMLDivElement>(null);
@@ -118,148 +84,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		currentCategoryData?.category_name ??
 		find(optionsMenuList, (item) => item?.current === true)?.name;
 
-	const [headerOptionsCurrentTab, setHeaderOptionsCurrentTab] = useState<
-		string | null
-	>(null);
-
-	const updateHeaderOptionCurrentTab = useCallback(
-		(value: string) => {
-			setHeaderOptionsCurrentTab(value === "delete-collection" ? null : value);
-		},
-		[setHeaderOptionsCurrentTab],
-	);
-
-	const renderViewBasedHeaderOptions = () => {
-		const optionsData = [
-			{
-				show: true,
-				value: "view",
-				render: <BookmarksViewDropdown renderOnlyButton />,
-			},
-			{
-				show: currentPath !== DISCOVER_URL && currentPath !== TRASH_URL,
-				value: "sort",
-				render: <BookmarksSortDropdown renderOnlyButton />,
-			},
-			{
-				show: currentPath === TRASH_URL,
-				value: "trash",
-				render: (
-					<div
-						className={`flex items-center ${dropdownMenuItemClassName} text-red-600 hover:text-red-600 focus:text-red-600`}
-					>
-						<TrashIconRed />
-						<p className="ml-[6px]">Clear Trash</p>
-					</div>
-				),
-			},
-			{
-				show: typeof categoryId === "number",
-				value: "share",
-				render: <ShareDropdown renderOnlyButton />,
-			},
-			{
-				show: typeof categoryId === "number",
-				value: "rename",
-				render: (
-					<div
-						className={`flex items-center ${dropdownMenuItemClassName}`}
-						onClick={() => {
-							setTriggerHeadingEdit(true);
-							setTimeout(() => setTriggerHeadingEdit(false), 0);
-						}}
-					>
-						<RenameIcon />
-						<p className="ml-[6px]">Rename</p>
-					</div>
-				),
-			},
-			{
-				show: typeof categoryId === "number",
-				value: "delete-collection",
-				render: (
-					// using AriaDropdownMenu as we want the dropdown to close on click
-					<AriaDropdownMenu
-						className={`flex items-center ${dropdownMenuItemClassName} text-red-600 hover:text-red-600 focus:text-red-600`}
-						onClick={async () =>
-							await onDeleteCollection(true, categoryId as number)
-						}
-					>
-						<TrashIconRed />
-						<p className="ml-[6px]">Delete collection</p>
-					</AriaDropdownMenu>
-				),
-			},
-		];
-
-		const optionsList = optionsData
-			?.filter((optionItem) => optionItem?.show === true)
-			?.map((item) => (
-				<div
-					key={item?.value}
-					onClick={() => updateHeaderOptionCurrentTab(item?.value)}
-				>
-					{item?.render}
-				</div>
-			));
-
-		let content = null;
-
-		// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
-		switch (headerOptionsCurrentTab) {
-			case "trash":
-				content = (
-					<ClearTrashContent
-						onClearTrash={() => {
-							void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
-						}}
-						isClearingTrash={isClearingTrash}
-					/>
-				);
-				break;
-			case "view":
-				content = <BookmarksViewDropdown isDropdown={false} />;
-				break;
-			case "sort":
-				content = <BookmarksSortDropdown isDropdown={false} />;
-				break;
-			case "share":
-				content = (
-					<div className="w-[300px]">
-						<ShareContent />
-					</div>
-				);
-				break;
-			default:
-				break;
-		}
-
-		const dropdownClassNames = classNames({
-			"z-10": true,
-			"w-full": headerOptionsCurrentTab === "share",
-			"w-[180px]": headerOptionsCurrentTab !== "share",
-			[dropdownMenuClassName]: true,
-		});
-
-		return (
-			<AriaDropdown
-				menuButton={
-					<Button className="bg-transparent p-[7px] text-gray-600 hover:text-plain-reverse">
-						<OptionsIcon />
-					</Button>
-				}
-				menuClassName={dropdownClassNames}
-				menuOpenToggle={(value) => {
-					if (!value) {
-						setHeaderOptionsCurrentTab(null);
-					}
-				}}
-			>
-				{isNull(headerOptionsCurrentTab) ? optionsList : content}
-			</AriaDropdown>
-		);
-	};
-
 	const dashboardContentElement = () => {
 		const onExpandSidePane = () => {
 			if (isDesktop) {
@@ -279,14 +103,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				currentCategoryData={currentCategoryData}
 				currentPath={currentPath}
 				headerName={headerName}
-				headerOptions={renderViewBasedHeaderOptions()}
+				headerOptions={<HeaderOptionsPopover />}
 				isDesktop={isDesktop}
 				onExpandSidePane={onExpandSidePane}
 				onShowSearchBar={setShowSearchBar}
 				optionsMenuList={optionsMenuList}
 				showSearchBar={showSearchBar}
 				showSidePane={showSidePane}
-				triggerHeadingEdit={triggerHeadingEdit}
 			>
 				{children}
 			</DashboardContent>

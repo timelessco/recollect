@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef, type Key } from "react";
 import { useRouter } from "next/router";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import classNames from "classnames";
 import find from "lodash/find";
@@ -19,41 +17,25 @@ import {
 	type ListProps,
 } from "react-stately";
 
-import {
-	AriaDropdown,
-	AriaDropdownMenu,
-} from "../../../components/ariaDropdown";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
-import MoveIcon from "../../../icons/moveIcon";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
 } from "../../../store/componentStore";
-import {
-	type CategoriesData,
-	type SingleListData,
-} from "../../../types/apiTypes";
-import {
-	dropdownMenuClassName,
-	dropdownMenuItemClassName,
-} from "../../../utils/commonClassNames";
-import {
-	CATEGORIES_KEY,
-	TRASH_URL,
-	viewValues,
-} from "../../../utils/constants";
+import { type SingleListData } from "../../../types/apiTypes";
+import { TRASH_URL, viewValues } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 import { handleBulkBookmarkDelete } from "../handleBookmarkDelete";
 
+import { AddToCollectionPopover } from "./add-to-collection-popover";
 import { CardViewVirtualized } from "./cardViewVirtualized";
 import { SingleRowViewVirtualized } from "./listViewVirtualized";
 import { MoodboardViewVirtualized } from "./moodboardViewVirtualized";
 import Option from "./option";
 import { useMoveBookmarkToTrashOptimisticMutation } from "@/async/mutationHooks/bookmarks/use-move-bookmark-to-trash-optimistic-mutation";
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
-import { useAddCategoryToBookmarksOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmarks-optimistic-mutation";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import { Checkbox } from "@/components/ui/recollect/checkbox";
@@ -81,9 +63,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 		isPublicPage,
 	} = props;
 
-	const { addCategoryToBookmarksOptimisticMutation } =
-		useAddCategoryToBookmarksOptimisticMutation();
-
 	const deleteBookmarkId = useMiscellaneousStore(
 		(state) => state.deleteBookmarkId,
 	);
@@ -95,7 +74,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 		(store) => store.setIsCardDragging,
 	);
 
-	const queryClient = useQueryClient();
 	const session = useSupabaseSession((storeState) => storeState.session);
 	const searchText = useMiscellaneousStore((state) => state.searchText);
 
@@ -108,13 +86,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 	// Determine if we're currently searching
 	const isSearching = !isEmpty(searchText);
 
-	const categoryData = queryClient.getQueryData([
-		CATEGORIES_KEY,
-		session?.user?.id,
-	]) as {
-		data: CategoriesData[];
-		error: PostgrestError;
-	};
 	const { isMobile, isTablet } = useIsMobileView();
 
 	// this ref is for react-aria listbox
@@ -306,12 +277,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 		);
 	};
 
-	const categoryDataMapper =
-		categoryData?.data?.map((item) => ({
-			label: item?.category_name,
-			value: item?.id,
-		})) || [];
-
 	return (
 		<>
 			<ul {...listBoxProps} className={ulClassName} ref={ariaRef}>
@@ -447,47 +412,11 @@ const ListBox = (props: ListBoxDropTypes) => {
 								Recover
 							</div>
 						)}
-						{!isEmpty(categoryData?.data) && !isTrashPage && (
-							<AriaDropdown
-								menuButton={
-									<div className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 leading-4 font-450 text-gray-900">
-										<figure className="mr-[6px] text-gray-1000">
-											<MoveIcon />
-										</figure>
-										<p>Add to</p>
-									</div>
-								}
-								menuClassName={dropdownMenuClassName}
-							>
-								{categoryDataMapper?.map((dropdownItem) => (
-									<AriaDropdownMenu
-										key={dropdownItem?.value}
-										onClick={() => {
-											const selectedIds = Array.from(
-												state.selectionManager.selectedKeys.keys(),
-											).map(Number);
-
-											addCategoryToBookmarksOptimisticMutation.mutate(
-												{
-													bookmark_ids: selectedIds,
-													category_id: dropdownItem?.value,
-												},
-												{
-													onSuccess: () => {
-														state.selectionManager.clearSelection();
-													},
-												},
-											);
-										}}
-									>
-										<div
-											className={`w-full truncate ${dropdownMenuItemClassName}`}
-										>
-											{dropdownItem?.label}
-										</div>
-									</AriaDropdownMenu>
-								))}
-							</AriaDropdown>
+						{!isTrashPage && (
+							<AddToCollectionPopover
+								onSuccess={() => state.selectionManager.clearSelection()}
+								selectedKeys={state.selectionManager.selectedKeys}
+							/>
 						)}
 					</div>
 				</div>
