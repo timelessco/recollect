@@ -37,31 +37,7 @@ export interface AudioWaveformPlayerProps {
 const SEEK_STEP_SECONDS = 5;
 
 const WAVEFORM_PROGRESS_COLOR = "#FC541C";
-
-function getWaveColor(): string {
-	const isDark = document.documentElement.classList.contains("dark");
-
-	// Figma: gray-500 (#999) at 40% opacity
-	return isDark ? "rgba(153, 153, 153, 0.3)" : "rgba(153, 153, 153, 0.4)";
-}
-
-function useWaveformColors(): { progress: string; wave: string } {
-	const [wave, setWave] = useState("rgba(153, 153, 153, 0.4)");
-
-	useEffect(() => {
-		setWave(getWaveColor());
-
-		const root = document.documentElement;
-		const observer = new MutationObserver(() => {
-			setWave(getWaveColor());
-		});
-		observer.observe(root, { attributeFilter: ["class"] });
-
-		return () => observer.disconnect();
-	}, []);
-
-	return { progress: WAVEFORM_PROGRESS_COLOR, wave };
-}
+const WAVEFORM_WAVE_COLOR = "#999";
 
 function WaveformSkeleton() {
 	return (
@@ -85,8 +61,6 @@ function AudioWaveformPlayerInner({
 	const [isReady, setIsReady] = useState(false);
 	const [duration, setDuration] = useState(0);
 	const [currentTime, setCurrentTime] = useState(0);
-
-	const colors = useWaveformColors();
 
 	// Shared ref callback for the <audio> element: register with media-chrome + store locally
 	const audioRef = useCallback(
@@ -127,7 +101,7 @@ function AudioWaveformPlayerInner({
 					media: audio,
 					normalize: true,
 					progressColor: WAVEFORM_PROGRESS_COLOR,
-					waveColor: getWaveColor(),
+					waveColor: WAVEFORM_WAVE_COLOR,
 				});
 
 				wsRef.current = ws;
@@ -159,14 +133,6 @@ function AudioWaveformPlayerInner({
 			setIsReady(false);
 		};
 	}, []);
-
-	// Update waveform colors dynamically for dark mode without recreating instance
-	useEffect(() => {
-		wsRef.current?.setOptions({
-			progressColor: colors.progress,
-			waveColor: colors.wave,
-		});
-	}, [colors.progress, colors.wave]);
 
 	// Auto-play/pause based on slide visibility
 	useEffect(() => {
@@ -207,8 +173,8 @@ function AudioWaveformPlayerInner({
 			autohide="-1"
 			onPointerDown={(event) => event.stopPropagation()}
 			className={cn(
-				"flex max-h-none w-full max-w-[min(600px,90vw)] flex-col overflow-visible rounded-2xl p-1",
-				"[--media-background-color:var(--color-gray-75)] [--media-control-background:transparent] [--media-control-hover-background:var(--color-gray-alpha-100)] [--media-primary-color:var(--color-gray-900)]",
+				"flex max-h-none w-full max-w-[min(600px,90vw)] flex-col overflow-visible rounded-2xl bg-gray-75 p-1",
+				"[--media-background-color:transparent] [--media-control-background:transparent] [--media-control-hover-background:var(--color-gray-alpha-100)] [--media-primary-color:var(--color-gray-900)]",
 				"[--video-accent:var(--color-gray-900)] [--video-base:16px] [--video-buffered:var(--color-gray-alpha-200)] [--video-track-bg:var(--color-gray-alpha-200)] [--video-track-hover:var(--color-gray-alpha-300)]",
 			)}
 		>

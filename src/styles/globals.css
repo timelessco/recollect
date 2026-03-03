@@ -477,6 +477,7 @@
 	/* Gray colors */
 	--color-gray-0: var(--color-gray-0);
 	--color-gray-50: var(--color-gray-50);
+	--color-gray-75: var(--color-gray-75);
 	--color-gray-90: var(--color-gray-90);
 	--color-gray-100: var(--color-gray-100);
 	--color-gray-200: var(--color-gray-200);
