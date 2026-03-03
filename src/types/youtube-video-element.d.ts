@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-unassigned-import -- required for module augmentation
-import "react";
+import { type DetailedHTMLProps, type VideoHTMLAttributes } from "react";
 
 declare module "react" {
 	namespace JSX {
