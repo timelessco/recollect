@@ -114,7 +114,7 @@ function CollectionMenuItems({
 				}}
 				type="button"
 			>
-				{item.isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+				{item.isFavorite ? "Unfavorite" : "Favorite"}
 			</Button>
 			<Button
 				className={itemClassName}

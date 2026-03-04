@@ -1,17 +1,10 @@
-import { useRef } from "react";
 import { Popover } from "@base-ui/react/popover";
-import { Bars4Icon } from "@heroicons/react/20/solid";
 import find from "lodash/find";
 
-import { useBookmarksViewUpdate } from "../../hooks/useBookmarksViewUpdate";
 import useGetViewValue from "../../hooks/useGetViewValue";
-import CardIcon from "../../icons/viewIcons/cardIcon";
-import ListIcon from "../../icons/viewIcons/listIcon";
-import MoodboardIconGray from "../../icons/viewIcons/moodboardIconGray";
-import { type BookmarksViewTypes } from "../../types/componentStoreTypes";
 import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 import { singleInfoValues, viewValues } from "../../utils/constants";
-import RadioGroup from "../radioGroup";
+import { bookmarksViewOptions, RadioGroup } from "../radioGroup";
 
 import { BookmarkCardContentSwitch } from "./bookmark-card-content-switch";
 import { BookmarksViewSlider } from "./bookmarks-view-slider";
@@ -26,60 +19,7 @@ type BookmarksViewDropdownProps = {
 export const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	const { isDropdown = true, renderOnlyButton = false } = props;
 
-	const { setBookmarksView } = useBookmarksViewUpdate();
-
 	const bookmarksViewValue = useGetViewValue("bookmarksView", "");
-
-	type CardContentOptionsTypes = {
-		label: string;
-		value: string;
-	};
-	const cardContentOptions: CardContentOptionsTypes[] = [
-		{
-			label: "Cover",
-			value: singleInfoValues.cover,
-		},
-		{
-			label: "Title",
-			value: singleInfoValues.title,
-		},
-		{
-			label: "Description",
-			value: singleInfoValues.description,
-		},
-		{
-			label: "Tags",
-			value: singleInfoValues.tags,
-		},
-		{
-			label: "Info",
-			value: singleInfoValues.info,
-		},
-	];
-
-	const bookmarksViewOptions = [
-		{
-			label: "Moodboard",
-			value: viewValues.moodboard,
-			icon: <MoodboardIconGray />,
-		},
-		{
-			label: "List",
-			value: viewValues.list,
-			icon: <ListIcon />,
-		},
-		{
-			label: "Card",
-			value: viewValues.card,
-			icon: <CardIcon />,
-		},
-		{
-			label: "Timeline",
-			value: viewValues.timeline,
-			icon: <Bars4Icon className="h-4 w-4" />,
-		},
-	];
-	const radio0ref = useRef<HTMLInputElement>(null);
 
 	const renderDropdownHeader = (text: string) => (
 		<div className="px-2 py-[6px] text-xs leading-[14px] font-450 text-gray-600">
@@ -90,17 +30,7 @@ export const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	const dropdownContent = (
 		<>
 			{renderDropdownHeader("View as")}
-			<div>
-				<RadioGroup
-					disabled={false}
-					initialRadioRef={radio0ref}
-					onChange={(value) => {
-						setBookmarksView(value as BookmarksViewTypes, "view");
-					}}
-					radioList={bookmarksViewOptions}
-					value={bookmarksViewValue as string}
-				/>
-			</div>
+			<RadioGroup />
 			{renderDropdownHeader("Show in Cards")}
 			{cardContentOptions.map((option) => (
 				<BookmarkCardContentSwitch key={option.value} option={option} />
@@ -182,3 +112,30 @@ const BookmarksViewPopover = ({
 		</Popover.Portal>
 	</Popover.Root>
 );
+
+type CardContentOptionsTypes = {
+	label: string;
+	value: string;
+};
+const cardContentOptions: CardContentOptionsTypes[] = [
+	{
+		label: "Cover",
+		value: singleInfoValues.cover,
+	},
+	{
+		label: "Title",
+		value: singleInfoValues.title,
+	},
+	{
+		label: "Description",
+		value: singleInfoValues.description,
+	},
+	{
+		label: "Tags",
+		value: singleInfoValues.tags,
+	},
+	{
+		label: "Info",
+		value: singleInfoValues.info,
+	},
+];

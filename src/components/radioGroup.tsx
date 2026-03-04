@@ -1,80 +1,71 @@
-import { type RefObject } from "react";
-import {
-	RadioGroup as AriaRadioGroup,
-	Radio,
-	useRadioState,
-} from "ariakit/radio";
-import classNames from "classnames";
+import { Radio } from "@base-ui/react/radio";
+import { RadioGroup as BaseRadioGroup } from "@base-ui/react/radio-group";
+import { Bars4Icon } from "@heroicons/react/20/solid";
 
+import { useBookmarksViewUpdate } from "../hooks/useBookmarksViewUpdate";
+import useGetViewValue from "../hooks/useGetViewValue";
+import CardIcon from "../icons/viewIcons/cardIcon";
+import ListIcon from "../icons/viewIcons/listIcon";
+import MoodboardIconGray from "../icons/viewIcons/moodboardIconGray";
 import { TickIcon } from "../icons/tickIcon";
-import { type ChildrenTypes } from "../types/componentTypes";
+import { type BookmarksViewTypes } from "../types/componentStoreTypes";
+import { viewValues } from "../utils/constants";
 
-type RadioGroupProps = {
-	disabled?: boolean;
-	initialRadioRef?:
-		| RefObject<HTMLInputElement | null>
-		| ((instance: HTMLInputElement | null) => void)
-		| null
-		| undefined;
-	onChange: (value: string) => void;
-	radioList: Array<{ icon: ChildrenTypes; label: string; value: string }>;
-	value: string;
-};
+export const bookmarksViewOptions = [
+	{
+		label: "Moodboard",
+		value: viewValues.moodboard,
+		icon: <MoodboardIconGray />,
+	},
+	{
+		label: "List",
+		value: viewValues.list,
+		icon: <ListIcon />,
+	},
+	{
+		label: "Card",
+		value: viewValues.card,
+		icon: <CardIcon />,
+	},
+	{
+		label: "Timeline",
+		value: viewValues.timeline,
+		icon: <Bars4Icon className="h-4 w-4" />,
+	},
+];
 
-const RadioGroup = (props: RadioGroupProps) => {
-	const {
-		radioList,
-		onChange,
-		value,
-		initialRadioRef,
-		disabled = false,
-	} = props;
-	const radio = useRadioState();
-
-	const radioGroupClassNames = classNames("dropdown-container flex flex-col", {
-		"opacity-40": disabled,
-	});
-
-	const radioClassNames = classNames(
-		"flex items-center justify-between rounded-lg px-2 py-[5.5px] text-sm leading-4 text-gray-800 hover:bg-gray-alpha-100 text-gray-800 hover:text-gray-900 focus:text-gray-900",
-		{
-			"cursor-not-allowed": disabled,
-			"cursor-pointer": !disabled,
-		},
-	);
+export const RadioGroup = () => {
+	const { setBookmarksView } = useBookmarksViewUpdate();
+	const bookmarksViewValue = useGetViewValue("bookmarksView", "") as string;
 
 	return (
-		<AriaRadioGroup
-			className={radioGroupClassNames}
-			disabled={disabled}
-			state={radio}
+		<BaseRadioGroup
+			className="dropdown-container flex flex-col"
+			value={bookmarksViewValue}
+			onValueChange={(newValue) =>
+				setBookmarksView(newValue as BookmarksViewTypes, "view")
+			}
 		>
-			{radioList?.map((item) => {
-				const isRadioSelected = value === item?.value;
+			{bookmarksViewOptions.map((item) => {
+				const isRadioSelected = bookmarksViewValue === item.value;
 				return (
-					<label className={radioClassNames} key={item?.value}>
+					<label
+						className="flex cursor-pointer items-center justify-between rounded-lg px-2 py-[5.5px] text-sm leading-4 text-gray-800 hover:bg-gray-alpha-100 hover:text-gray-900 focus:text-gray-900"
+						key={item.value}
+					>
 						<div className="flex items-center text-13 leading-[115%] font-450 tracking-[0.01em]">
 							<figure className="mr-2 flex h-4 w-4 items-center justify-center text-plain-reverse">
-								{item?.icon}
+								{item.icon}
 							</figure>
-							<Radio
-								checked={isRadioSelected}
-								onChange={(event) =>
-									onChange((event.target as HTMLInputElement).value)
-								}
-								ref={isRadioSelected ? initialRadioRef : null}
-								value={item?.value}
-							/>
-							{item?.label}
+							<Radio.Root value={item.value} className="hidden" />
+							{item.label}
 						</div>
 						{isRadioSelected && <TickIcon className="text-gray-800" />}
 					</label>
 				);
 			})}
-		</AriaRadioGroup>
+		</BaseRadioGroup>
 	);
 };
 
 RadioGroup.displayName = "RadioGroup";
-
-export default RadioGroup;
