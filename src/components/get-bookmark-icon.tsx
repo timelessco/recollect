@@ -17,7 +17,7 @@ import {
 } from "../utils/helpers";
 
 import { AudioIcon } from "@/icons/audio-icon";
-import { LinkIcon } from "@/icons/link-icon";
+import { GlobeLinkIcon } from "@/icons/globe-link-icon";
 
 export type GetBookmarkIconProps = {
 	/**
@@ -76,7 +76,7 @@ export const GetBookmarkIcon = ({
 		item?.meta_data?.mediaType?.startsWith("audio");
 	// Favicon error fallback
 	if (favIconErrorIds.includes(item.id)) {
-		return <LinkIcon />;
+		return <GlobeLinkIcon className="text-gray-1000" />;
 	}
 
 	// Twitter avatar (if in tweets page)
@@ -131,5 +131,5 @@ export const GetBookmarkIcon = ({
 	}
 
 	// Default fallback
-	return <LinkIcon className={`h-[${size}px] w-[${size}px]`} />;
+	return <GlobeLinkIcon className={`h-[${size}px] w-[${size}px]`} />;
 };
