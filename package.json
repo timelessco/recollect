@@ -85,7 +85,7 @@
 	"dependencies": {
 		"@aws-sdk/client-s3": "3.975.0",
 		"@aws-sdk/s3-request-presigner": "3.975.0",
-		"@base-ui/react": "1.1.0",
+		"@base-ui/react": "1.2.0",
 		"@google/generative-ai": "0.24.1",
 		"@heroicons/react": "2.2.0",
 		"@react-hookz/web": "25.2.0",
@@ -130,7 +130,6 @@
 		"react-hook-form": "7.71.1",
 		"react-infinite-scroll-component": "6.1.1",
 		"react-mentions": "4.4.10",
-		"react-modern-drawer": "1.4.0",
 		"react-stately": "3.43.0",
 		"resend": "6.9.1",
 		"slugify": "1.6.6",
