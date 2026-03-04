@@ -237,13 +237,18 @@ const ShareContent = (props: ShareContentProps) => {
 					errorText={errors.email ? "Enter valid email" : ""}
 					isDisabled={!isUserTheCategoryOwner}
 					isError={!isEmpty(errors)}
+					onKeyDown={(event: React.KeyboardEvent) => {
+						if (event.key === "Enter") {
+							event.preventDefault();
+							void handleSubmit(onSubmit)();
+						}
+					}}
 					placeholder="Enter emails or names"
 					rendedRightSideElement={
 						sendCollaborationEmailInviteMutation?.isPending ? (
-							<Spinner
-								className="mx-2 my-[7.5px] h-3 w-3 animate-spin"
-								style={{ color: "var(--color-plain-reverse)" }}
-							/>
+							<div className="my-[9.5px] flex items-center px-2">
+								<Spinner className="h-3 w-3 animate-spin text-gray-0" />
+							</div>
 						) : (
 							<InviteRoleSelect
 								value={inviteUserEditAccess}
