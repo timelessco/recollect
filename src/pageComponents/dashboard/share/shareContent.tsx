@@ -7,15 +7,12 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 
 import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
 import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/useSendCollaborationEmailInviteMutation";
-import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
-import AriaSelect from "../../../components/ariaSelect";
 import Input from "../../../components/atoms/input";
 import { Spinner } from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import { CopyIcon } from "../../../icons/copy-icon";
-import DownArrowGray from "../../../icons/downArrowGray";
 import { GlobeIcon } from "../../../icons/globe-icon";
 import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
 import {
@@ -28,6 +25,7 @@ import { EMAIL_CHECK_PATTERN } from "../../../utils/constants";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 
 import { SharePublicSwitch } from "./share-public-switch";
+import { AccessRoleSelect, InviteRoleSelect } from "./share-role-selects";
 
 const rightTextStyles = "text-13 font-medium leading-[15px] text-gray-600";
 
@@ -38,9 +36,6 @@ const AccessUserInfo = (props: {
 	const { item, isLoggedinUserTheOwner } = props;
 	const [imageError, setImageError] = useState(false);
 	const [imageLoading, setImageLoading] = useState(true);
-
-	const { updateSharedCategoriesUserAccessMutation } =
-		useUpdateSharedCategoriesUserAccessMutation();
 
 	const { deleteSharedCategoriesUserMutation } =
 		useDeleteSharedCategoriesUserMutation();
@@ -74,67 +69,15 @@ const AccessUserInfo = (props: {
 			);
 		}
 
-		const renderSelectOption = () => {
-			if (isLoggedinUserTheOwner) {
-				return (
-					<AriaSelect
-						defaultValue={item.edit_access ? "Editor" : "Viewer"}
-						onOptionClick={async (value) => {
-							if (value !== "No Access") {
-								const response = (await mutationApiCall(
-									updateSharedCategoriesUserAccessMutation.mutateAsync({
-										id: item.share_id as number,
-										updateData: {
-											edit_access: Boolean(
-												Number.parseInt(value === "Editor" ? "1" : "0", 10),
-											),
-										},
-									}),
-								)) as { error: Error };
-
-								if (isNull(response?.error)) {
-									successToast("User role changed");
-								}
-							} else {
-								void mutationApiCall(
-									deleteSharedCategoriesUserMutation.mutateAsync({
-										id: item.share_id as number,
-									}),
-								);
-							}
-						}}
-						options={[
-							{ label: "Editor", value: "Editor" },
-							{ label: "Viewer", value: "Viewer" },
-							{ label: "No Access", value: "No Access" },
-						]}
-						renderCustomSelectButton={() => (
-							<div className="flex items-center">
-								<p className="mr-1 text-gray-800">
-									{item.edit_access ? "Editor" : "Viewer"}
-								</p>
-								<figure>
-									<DownArrowGray />
-								</figure>
-							</div>
-						)}
-					/>
-				);
-			} else {
-				return (
-					<div className={rightTextStyles}>
-						{item.edit_access ? "Editor" : "Viewer"}
-					</div>
-				);
-			}
-		};
-
 		return (
 			<>
 				{item.isOwner ? (
 					<p className={rightTextStyles}>Owner</p>
 				) : (
-					renderSelectOption()
+					<AccessRoleSelect
+						item={item}
+						isLoggedinUserTheOwner={isLoggedinUserTheOwner}
+					/>
 				)}
 			</>
 		);
@@ -294,37 +237,29 @@ const ShareContent = (props: ShareContentProps) => {
 					errorText={errors.email ? "Enter valid email" : ""}
 					isDisabled={!isUserTheCategoryOwner}
 					isError={!isEmpty(errors)}
+					onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+						if (event.nativeEvent.isComposing || event.key !== "Enter") {
+							return;
+						}
+
+						event.preventDefault();
+						if (sendCollaborationEmailInviteMutation.isPending) {
+							return;
+						}
+
+						void handleSubmit(onSubmit)();
+					}}
 					placeholder="Enter emails or names"
 					rendedRightSideElement={
 						sendCollaborationEmailInviteMutation?.isPending ? (
-							<Spinner
-								className="mx-2 my-[7.5px] h-3 w-3 animate-spin"
-								style={{ color: "var(--color-plain-reverse)" }}
-							/>
+							<div className="my-[9.5px] flex items-center px-2">
+								<Spinner className="h-3 w-3 animate-spin text-gray-0" />
+							</div>
 						) : (
-							<AriaSelect
-								defaultValue="Viewer"
+							<InviteRoleSelect
+								value={inviteUserEditAccess}
+								onChange={setInviteUserEditAccess}
 								disabled={!isUserTheCategoryOwner}
-								onOptionClick={(value) =>
-									setInviteUserEditAccess(value === "Editor")
-								}
-								options={[
-									{ label: "Editor", value: "Editor" },
-									{ label: "Viewer", value: "Viewer" },
-								]}
-								// disabled
-								renderCustomSelectButton={(isOpen) => (
-									<div
-										className={`flex items-center rounded-[6px] px-2 py-[5.5px] text-gray-alpha-600 hover:bg-gray-50 ${isOpen ? "bg-gray-50" : ""}`}
-									>
-										<p className="mr-1">
-											{inviteUserEditAccess ? "Editor" : "Viewer"}
-										</p>
-										<figure>
-											<DownArrowGray />
-										</figure>
-									</div>
-								)}
 							/>
 						)
 					}
