@@ -1,17 +1,13 @@
 import { useCallback } from "react";
 import { Popover } from "@base-ui/react/popover";
-import { Bars4Icon } from "@heroicons/react/20/solid";
 import debounce from "lodash/debounce";
 import find from "lodash/find";
 
 import { useBookmarksViewUpdate } from "../../hooks/useBookmarksViewUpdate";
 import useGetViewValue from "../../hooks/useGetViewValue";
-import CardIcon from "../../icons/viewIcons/cardIcon";
-import ListIcon from "../../icons/viewIcons/listIcon";
-import MoodboardIconGray from "../../icons/viewIcons/moodboardIconGray";
 import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 import { singleInfoValues, viewValues } from "../../utils/constants";
-import { RadioGroup } from "../radioGroup";
+import { bookmarksViewOptions, RadioGroup } from "../radioGroup";
 import Slider from "../slider";
 
 import { BookmarkCardContentSwitch } from "./bookmark-card-content-switch";
@@ -141,29 +137,6 @@ const BookmarksViewPopover = ({
 		</Popover.Portal>
 	</Popover.Root>
 );
-
-export const bookmarksViewOptions = [
-	{
-		label: "Moodboard",
-		value: viewValues.moodboard,
-		icon: <MoodboardIconGray />,
-	},
-	{
-		label: "List",
-		value: viewValues.list,
-		icon: <ListIcon />,
-	},
-	{
-		label: "Card",
-		value: viewValues.card,
-		icon: <CardIcon />,
-	},
-	{
-		label: "Timeline",
-		value: viewValues.timeline,
-		icon: <Bars4Icon className="h-4 w-4" />,
-	},
-];
 
 type CardContentOptionsTypes = {
 	label: string;
