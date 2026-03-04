@@ -55,7 +55,7 @@ export function AiFeaturesToggleSection() {
 			<p className="pb-[10px] text-[14px] leading-[115%] font-medium text-gray-900">
 				Features
 			</p>
-			<div className="space-y-2">
+			<div className="space-y-2.5">
 				{TOGGLES.map((toggle) => {
 					const enabled = aiFeatures?.[toggle.key] !== false;
 
