@@ -8,14 +8,14 @@ last_updated: 2026-03-04T00:00:00Z
 
 ## Quick Reference
 
-| Content Type | Primary API | Secondary API | Secondary Called By |
-|--------------|-------------|---------------|---------------------|
-| **Images** | `POST /api/file/upload-file` | `POST /api/file/upload-file-remaining-data` | Backend (internal) |
-| **Videos** | `POST /api/file/upload-file` | *(none - stops after upload)* | - |
-| **Audio** | `POST /api/file/upload-file` | `POST /api/file/upload-file-remaining-data` | Backend (internal) |
-| **PDFs** | `POST /api/file/upload-file` | *(client-side PDF thumbnail handler)* | Frontend |
-| **Links (website)** | `POST /api/bookmark/add-bookmark-min-data` | `add-url-screenshot` then `add-remaining-bookmark-data` | Frontend then Backend |
-| **Links (direct media)** | `POST /api/bookmark/add-bookmark-min-data` | `POST /api/bookmark/add-remaining-bookmark-data` | Backend (internal) |
+| Content Type             | Primary API                                | Secondary API                                           | Secondary Called By   |
+| ------------------------ | ------------------------------------------ | ------------------------------------------------------- | --------------------- |
+| **Images**               | `POST /api/file/upload-file`               | `POST /api/file/upload-file-remaining-data`             | Backend (internal)    |
+| **Videos**               | `POST /api/file/upload-file`               | _(none - stops after upload)_                           | -                     |
+| **Audio**                | `POST /api/file/upload-file`               | `POST /api/file/upload-file-remaining-data`             | Backend (internal)    |
+| **PDFs**                 | `POST /api/file/upload-file`               | _(client-side PDF thumbnail handler)_                   | Frontend              |
+| **Links (website)**      | `POST /api/bookmark/add-bookmark-min-data` | `add-url-screenshot` then `add-remaining-bookmark-data` | Frontend then Backend |
+| **Links (direct media)** | `POST /api/bookmark/add-bookmark-min-data` | `POST /api/bookmark/add-remaining-bookmark-data`        | Backend (internal)    |
 
 ---
 
@@ -80,9 +80,9 @@ graph TB
 
 ## File Upload Flow (Images, Videos, Audio, Documents)
 
-### Architecture
+### File Upload Architecture
 
-```
+```text
 User selects file from computer
         │
         ▼
@@ -159,11 +159,11 @@ User selects file from computer
 
 ```typescript
 interface UploadFilePayload {
-  category_id: string;
-  name: string;
-  type: string;              // MIME type: "image/png", "video/mp4", etc.
-  uploadFileNamePath: string; // R2 path where file was uploaded
-  thumbnailPath?: string;     // R2 path for video thumbnail (video only)
+	category_id: string;
+	name: string;
+	type: string; // MIME type: "image/png", "video/mp4", etc.
+	uploadFileNamePath: string; // R2 path where file was uploaded
+	thumbnailPath?: string; // R2 path for video thumbnail (video only)
 }
 ```
 
@@ -171,29 +171,29 @@ interface UploadFilePayload {
 
 ```typescript
 interface UploadFileRemainingPayload {
-  id: number;         // Bookmark ID from upload-file response
-  publicUrl: string;  // Public R2 URL
-  mediaType: string;  // MIME type
+	id: number; // Bookmark ID from upload-file response
+	publicUrl: string; // Public R2 URL
+	mediaType: string; // MIME type
 }
 ```
 
 ### Media Type Decision Matrix
 
-| MIME Type | Calls remaining-data? | Reason |
-|-----------|----------------------|--------|
-| `image/*` | Yes | Needs AI caption, OCR, blurhash |
-| `video/*` | No | Thumbnail processed in upload-file |
-| `audio/*` | Yes | Metadata enrichment |
-| `application/pdf` | No | PDF thumbnail handled client-side |
-| `application/msword` | Yes | Document metadata |
+| MIME Type            | Calls remaining-data? | Reason                             |
+| -------------------- | --------------------- | ---------------------------------- |
+| `image/*`            | Yes                   | Needs AI caption, OCR, blurhash    |
+| `video/*`            | No                    | Thumbnail processed in upload-file |
+| `audio/*`            | Yes                   | Metadata enrichment                |
+| `application/pdf`    | No                    | PDF thumbnail handled client-side  |
+| `application/msword` | Yes                   | Document metadata                  |
 
 ---
 
 ## URL Bookmark Flow (Links)
 
-### Architecture
+### URL Bookmark Architecture
 
-```
+```text
 User enters URL
         │
         ▼
@@ -274,15 +274,15 @@ User enters URL
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Request/Response Shapes
+### URL Bookmark Request/Response Shapes
 
 **add-bookmark-min-data Request:**
 
 ```typescript
 interface AddBookmarkMinDataPayload {
-  url: string;
-  category_id?: number | "null" | string;
-  update_access: boolean;
+	url: string;
+	category_id?: number | "null" | string;
+	update_access: boolean;
 }
 ```
 
@@ -290,8 +290,8 @@ interface AddBookmarkMinDataPayload {
 
 ```typescript
 interface AddBookmarkScreenshotPayload {
-  url: string;
-  id: number;  // Bookmark ID from add-bookmark-min-data
+	url: string;
+	id: number; // Bookmark ID from add-bookmark-min-data
 }
 ```
 
@@ -299,21 +299,21 @@ interface AddBookmarkScreenshotPayload {
 
 ```typescript
 interface AddBookmarkRemainingPayload {
-  url: string;
-  id: number;
-  favIcon?: string;
+	url: string;
+	id: number;
+	favIcon?: string;
 }
 ```
 
 ### URL Type Decision Matrix
 
-| URL Type | Example | Screenshot API? | Remaining API? |
-|----------|---------|-----------------|----------------|
-| Direct image | `cdn.com/photo.png` | No | Yes (backend) |
-| Direct video | `cdn.com/video.mp4` | No | Yes (backend) |
-| Direct audio | `cdn.com/song.mp3` | No | No (has fallback) |
-| Direct PDF | `cdn.com/doc.pdf` | No | Yes (backend) |
-| Regular website | `google.com` | Yes | Yes (from screenshot API) |
+| URL Type        | Example             | Screenshot API? | Remaining API?            |
+| --------------- | ------------------- | --------------- | ------------------------- |
+| Direct image    | `cdn.com/photo.png` | No              | Yes (backend)             |
+| Direct video    | `cdn.com/video.mp4` | No              | Yes (backend)             |
+| Direct audio    | `cdn.com/song.mp3`  | No              | No (has fallback)         |
+| Direct PDF      | `cdn.com/doc.pdf`   | No              | Yes (backend)             |
+| Regular website | `google.com`        | Yes             | Yes (from screenshot API) |
 
 ---
 
@@ -321,14 +321,14 @@ interface AddBookmarkRemainingPayload {
 
 ### For Local File Upload (Images, Videos, Audio, Documents)
 
-**Step 1: Upload file to R2**
+#### Step 1: Upload file to R2
 
 ```bash
 # Get presigned URL (implementation specific to your R2 setup)
 # PUT file to presigned URL
 ```
 
-**Step 2: Call upload-file API**
+#### Step 2: Call upload-file API
 
 ```bash
 POST /api/file/upload-file
@@ -343,7 +343,7 @@ Authorization: Bearer <token>
 }
 ```
 
-**Step 3: For Images/Audio only - call remaining-data API**
+#### Step 3: For Images/Audio only - call remaining-data API
 
 ```bash
 POST /api/file/upload-file-remaining-data
@@ -390,35 +390,60 @@ Authorization: Bearer <token>
 
 ## Helper Functions
 
-| Function | File | Purpose |
-|----------|------|---------|
-| `checkIfUrlAnImage(url)` | `src/utils/helpers.ts` | Returns true if MIME type includes "image/" |
-| `checkIfUrlAnMedia(url)` | `src/utils/helpers.ts` | Returns true if MIME type is in acceptedFileTypes |
-| `getMediaType(url)` | `src/async/supabaseCrudHelpers/index.ts` | Fetches MIME type from URL |
-| `generateVideoThumbnail()` | `src/utils/helpers.ts` | Creates thumbnail from video first frame |
-| `handlePdfThumbnailAndUpload()` | `src/utils/helpers.ts` | Generates PDF first page as thumbnail |
-| `acceptedFileTypes` | `src/utils/constants.ts` | Array of supported MIME types |
+| Function                        | File                                     | Purpose                                           |
+| ------------------------------- | ---------------------------------------- | ------------------------------------------------- |
+| `checkIfUrlAnImage(url)`        | `src/utils/helpers.ts`                   | Returns true if MIME type includes "image/"       |
+| `checkIfUrlAnMedia(url)`        | `src/utils/helpers.ts`                   | Returns true if MIME type is in acceptedFileTypes |
+| `getMediaType(url)`             | `src/async/supabaseCrudHelpers/index.ts` | Fetches MIME type from URL                        |
+| `generateVideoThumbnail()`      | `src/utils/helpers.ts`                   | Creates thumbnail from video first frame          |
+| `handlePdfThumbnailAndUpload()` | `src/utils/helpers.ts`                   | Generates PDF first page as thumbnail             |
+| `acceptedFileTypes`             | `src/utils/constants.ts`                 | Array of supported MIME types                     |
 
 ### Accepted File Types
 
 ```typescript
 // From src/utils/constants.ts
 const acceptedFileTypes = [
-  // Images (13 types)
-  "image/gif", "image/jpeg", "image/png", "image/webp", "image/svg+xml",
-  "image/tiff", "image/bmp", "image/avif", "image/apng",
-  "image/vnd.microsoft.icon", "image/x-icon", "image/ico", "image/jpg",
+	// Images (13 types)
+	"image/gif",
+	"image/jpeg",
+	"image/png",
+	"image/webp",
+	"image/svg+xml",
+	"image/tiff",
+	"image/bmp",
+	"image/avif",
+	"image/apng",
+	"image/vnd.microsoft.icon",
+	"image/x-icon",
+	"image/ico",
+	"image/jpg",
 
-  // Audio (10 types)
-  "audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg", "audio/webm",
-  "audio/aac", "audio/midi", "audio/x-midi", "audio/3gpp", "audio/3gpp2",
+	// Audio (10 types)
+	"audio/mpeg",
+	"audio/mp3",
+	"audio/wav",
+	"audio/ogg",
+	"audio/webm",
+	"audio/aac",
+	"audio/midi",
+	"audio/x-midi",
+	"audio/3gpp",
+	"audio/3gpp2",
 
-  // Video (8 types)
-  "video/mp4", "video/webm", "video/mpeg", "video/ogg",
-  "video/mp2t", "video/3gpp", "video/3gpp2", "video/x-msvideo",
+	// Video (8 types)
+	"video/mp4",
+	"video/webm",
+	"video/mpeg",
+	"video/ogg",
+	"video/mp2t",
+	"video/3gpp",
+	"video/3gpp2",
+	"video/x-msvideo",
 
-  // Documents (2 types)
-  "application/pdf", "application/msword"
+	// Documents (2 types)
+	"application/pdf",
+	"application/msword",
 ];
 ```
 
