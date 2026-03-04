@@ -10,7 +10,7 @@ import {
 } from "./constants";
 import { storageHelpers } from "./storageClient";
 import imageToText, { type UserCollection } from "@/async/ai/imageToText";
-import { type AiToggles, fetchAiToggles } from "@/utils/ai-feature-toggles";
+import { fetchAiToggles, type AiToggles } from "@/utils/ai-feature-toggles";
 import { fetchUserCollections } from "@/utils/auto-assign-collections";
 import { blurhashFromURL } from "@/utils/getBlurHash";
 
@@ -217,28 +217,37 @@ const processImageCaption = async (
 			aiToggles,
 		);
 		if (!result?.sentence) {
-			console.error(
-				"[processImageCaption] imageToText returned empty result:",
-				{ url, ogImage },
-			);
-			Sentry.captureMessage("Image caption generation returned empty result", {
-				level: "error",
-				tags: {
-					operation: "image_caption_empty",
-					userId,
-				},
-				extra: {
-					url,
-					ogImage,
-				},
-			});
+			// When aiSummary is OFF, null sentence is expected — not a failure
+			if (aiToggles.aiSummary) {
+				console.error(
+					"[processImageCaption] imageToText returned empty result:",
+					{ url, ogImage },
+				);
+				Sentry.captureMessage(
+					"Image caption generation returned empty result",
+					{
+						level: "error",
+						tags: {
+							operation: "image_caption_empty",
+							userId,
+						},
+						extra: {
+							url,
+							ogImage,
+						},
+					},
+				);
+			}
+
 			return {
-				isImageCaptionFailed: true,
+				isImageCaptionFailed: aiToggles.aiSummary,
 				image_caption: null,
-				image_keywords: [],
+				image_keywords: result?.image_keywords ?? [],
 				matchedCollectionIds: result?.matched_collection_ids ?? [],
-				ocr: null,
-				ocr_status: "no_text" as const,
+				ocr: result?.ocr_text ?? null,
+				ocr_status: result?.ocr_text
+					? ("success" as const)
+					: ("no_text" as const),
 			};
 		} else {
 			console.log(
