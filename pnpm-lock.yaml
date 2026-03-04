@@ -4316,32 +4316,6 @@ packages:
     resolution: {integrity: sha512-COROpnaoap1E2F000S62r6A60uHZnmlvomhfyT2DlTcrY1OrBKn2UhH7qn5wTC9zMvD0AY7csdPSNwKP+7WiQw==}
     engines: {node: '>= 0.4'}
 
-<<<<<<< HEAD
-  ariakit-react-utils@0.17.0-next.27:
-    resolution: {integrity: sha512-YyL3sEowwaw6r8wRjENB9S4Hjz/ppyv5nJNeFkb6xaEX/QYUYmqL+lQch50LW04vj9oa8RGHlY2SmyQX3d7g3w==}
-    peerDependencies:
-      '@types/react': 19.2.10
-      react: ^17.0.0 || ^18.0.0
-
-  ariakit-utils@0.17.0-next.27:
-    resolution: {integrity: sha512-IcjtuHl7FZP5mGrpvTSXqPUj+jRuIuBHlJAlxr3y4pxRgYpsYVpyZOClU3yrOoG7KUVApfmJjPOGWy00y+Gi+Q==}
-
-  ariakit@2.0.0-next.43:
-    resolution: {integrity: sha512-CatNgIMyurefYTEvp8aF3aQQGR5m9bZxYQXuqyw/MKwxJ/aJ295SSSY5pXyTHbbsgDI28GOKFYa5pfUBvkd7cQ==}
-=======
-  ariakit-utils@0.17.0-next.23:
-    resolution: {integrity: sha512-r6a8rvjTBNbdNVWhGm4XL8hTlpIlP0G+yJf3No48kK6QpR1JN9QinLI/wMwWwJnxDYfwnBhkbcROCqF7iT/4ig==}
-    peerDependencies:
-      react: ^17.0.0 || ^18.0.0
-
-  ariakit@2.0.0-next.36:
-    resolution: {integrity: sha512-H/ZqRgy5tGGKOcOsZ24lc5cBoQ83vgCFd+mC87UWdIEdYqhKNPPjFZona/V/l0SRtn9Mar+t93QbggyThOw6Qg==}
->>>>>>> dev
-    deprecated: The ariakit package has been renamed to @ariakit/react. Visit https://ariakit.org for more info.
-    peerDependencies:
-      react: ^17.0.0 || ^18.0.0
-      react-dom: ^17.0.0 || ^18.0.0
-
   array-buffer-byte-length@1.0.2:
     resolution: {integrity: sha512-LHE+8BuR7RYGDKvnrmcuSq3tDcKv9OFEXQt/HpbZhY7V6h0zlUXutnAD82GiFx9rdieCMjkvtcsPqBwgUl1Iiw==}
     engines: {node: '>= 0.4'}
@@ -14251,37 +14225,6 @@ snapshots:
   argparse@2.0.1: {}
 
   aria-query@5.3.2: {}
-
-<<<<<<< HEAD
-  ariakit-react-utils@0.17.0-next.27(@types/react@19.2.10)(react@19.2.4):
-    dependencies:
-      '@types/react': 19.2.10
-      ariakit-utils: 0.17.0-next.27
-      react: 19.2.4
-
-  ariakit-utils@0.17.0-next.27: {}
-
-  ariakit@2.0.0-next.43(@types/react@19.2.10)(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
-    dependencies:
-      '@floating-ui/dom': 1.7.4
-      ariakit-react-utils: 0.17.0-next.27(@types/react@19.2.10)(react@19.2.4)
-      ariakit-utils: 0.17.0-next.27
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
-    transitivePeerDependencies:
-      - '@types/react'
-=======
-  ariakit-utils@0.17.0-next.23(react@19.2.4):
-    dependencies:
-      react: 19.2.4
-
-  ariakit@2.0.0-next.36(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
-    dependencies:
-      '@floating-ui/dom': 1.7.4
-      ariakit-utils: 0.17.0-next.23(react@19.2.4)
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
->>>>>>> dev
 
   array-buffer-byte-length@1.0.2:
     dependencies:
