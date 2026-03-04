@@ -237,11 +237,17 @@ const ShareContent = (props: ShareContentProps) => {
 					errorText={errors.email ? "Enter valid email" : ""}
 					isDisabled={!isUserTheCategoryOwner}
 					isError={!isEmpty(errors)}
-					onKeyDown={(event: React.KeyboardEvent) => {
-						if (event.key === "Enter") {
-							event.preventDefault();
-							void handleSubmit(onSubmit)();
+					onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+						if (event.nativeEvent.isComposing || event.key !== "Enter") {
+							return;
 						}
+
+						event.preventDefault();
+						if (sendCollaborationEmailInviteMutation.isPending) {
+							return;
+						}
+
+						void handleSubmit(onSubmit)();
 					}}
 					placeholder="Enter emails or names"
 					rendedRightSideElement={
