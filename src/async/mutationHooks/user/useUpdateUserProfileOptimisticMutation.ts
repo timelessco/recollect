@@ -57,7 +57,10 @@ export default function useUpdateUserProfileOptimisticMutation() {
 							...old,
 							data: old.data.map((item) => ({
 								...item,
-								ai_features_toggle: data.updateData.ai_features_toggle,
+								ai_features_toggle: {
+									...item.ai_features_toggle,
+									...data.updateData.ai_features_toggle,
+								},
 							})),
 						};
 					},

@@ -37,6 +37,7 @@ export const v2UpdateUserProfileSupplement = {
 						ai_features_toggle: {
 							ai_summary: true,
 							auto_assign_collections: true,
+							image_keywords: true,
 							ocr: true,
 						},
 						api_key: null,

@@ -24,11 +24,18 @@ export async function fetchAiToggles(
 ): Promise<AiToggles> {
 	const { supabase, userId } = props;
 
-	const { data } = await supabase
+	const { data, error } = await supabase
 		.from(PROFILES)
 		.select("ai_features_toggle")
 		.eq("id", userId)
 		.single();
+
+	if (error) {
+		console.error("[fetchAiToggles] Failed to fetch toggles:", {
+			userId,
+			error: error.message,
+		});
+	}
 
 	const toggles = data?.ai_features_toggle as AiFeaturesToggle | null;
 
