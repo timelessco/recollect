@@ -16,7 +16,6 @@ function Trigger({
 }: SelectPrimitive.Trigger.Props) {
 	return (
 		<SelectPrimitive.Trigger
-			data-slot="select-trigger"
 			className={cn(
 				"flex items-center rounded-lg text-13 font-medium outline-hidden",
 				className,
@@ -56,7 +55,6 @@ function Positioner({
 function Popup({ className, children, ...props }: SelectPrimitive.Popup.Props) {
 	return (
 		<SelectPrimitive.Popup
-			data-slot="select-popup"
 			className={cn(
 				"origin-(--transform-origin) rounded-xl bg-gray-50 p-1 shadow-custom-3 ring-1 ring-black/5 outline-hidden transition-[transform,scale,opacity] data-starting-style:scale-98 data-starting-style:opacity-0",
 				className,
@@ -74,11 +72,7 @@ const ScrollDownArrow = SelectPrimitive.ScrollDownArrow;
 
 function List({ className, children, ...props }: SelectPrimitive.List.Props) {
 	return (
-		<SelectPrimitive.List
-			data-slot="select-list"
-			className={cn("py-0", className)}
-			{...props}
-		>
+		<SelectPrimitive.List className={cn("py-0", className)} {...props}>
 			{children}
 		</SelectPrimitive.List>
 	);
@@ -108,7 +102,6 @@ function ItemIndicator({
 	return (
 		<SelectPrimitive.ItemIndicator
 			keepMounted
-			data-slot="select-item-indicator"
 			className={cn(
 				"ml-auto flex shrink-0 items-center justify-center pl-2 opacity-0 data-selected:opacity-100",
 				className,
