@@ -25,6 +25,19 @@ type AiFeaturesFormTypes = {
 	apiKey: string;
 };
 
+const ToggleCardSkeleton = () => (
+	<div className="flex items-center justify-between rounded-xl bg-gray-100 py-2">
+		<div className="ml-2 flex items-center gap-2">
+			<div className="size-[38px] rounded-md bg-gray-200" />
+			<div>
+				<div className="h-3 w-32 rounded-sm bg-gray-200" />
+				<div className="mt-2 h-3 w-48 rounded-sm bg-gray-200" />
+			</div>
+		</div>
+		<div className="mr-[10px] h-5 w-9 rounded-full bg-gray-200" />
+	</div>
+);
+
 const AiFeaturesSkeleton = () => (
 	<div className="space-y-6">
 		<div className="relative mb-6 flex items-center">
@@ -36,6 +49,18 @@ const AiFeaturesSkeleton = () => (
 		<div className="animate-pulse">
 			<div className="mb-2 h-3 w-24 rounded-sm bg-gray-200" />
 			<div className="h-10 rounded-md bg-gray-100" />
+		</div>
+
+		<div className="animate-pulse pt-10">
+			<div className="pb-[10px]">
+				<div className="h-3 w-16 rounded-sm bg-gray-200" />
+			</div>
+			<div className="space-y-2">
+				<ToggleCardSkeleton />
+				<ToggleCardSkeleton />
+				<ToggleCardSkeleton />
+				<ToggleCardSkeleton />
+			</div>
 		</div>
 	</div>
 );
