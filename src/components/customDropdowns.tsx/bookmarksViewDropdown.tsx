@@ -1,16 +1,13 @@
-import { useCallback } from "react";
 import { Popover } from "@base-ui/react/popover";
-import debounce from "lodash/debounce";
 import find from "lodash/find";
 
-import { useBookmarksViewUpdate } from "../../hooks/useBookmarksViewUpdate";
 import useGetViewValue from "../../hooks/useGetViewValue";
 import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 import { singleInfoValues, viewValues } from "../../utils/constants";
 import { bookmarksViewOptions, RadioGroup } from "../radioGroup";
-import Slider from "../slider";
 
 import { BookmarkCardContentSwitch } from "./bookmark-card-content-switch";
+import { BookmarksViewSlider } from "./bookmarks-view-slider";
 
 type BookmarksViewDropdownProps = {
 	// based on this it is either rendered in dropdown or in the sliding menu component if its in responsive mobile page
@@ -22,21 +19,12 @@ type BookmarksViewDropdownProps = {
 export const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	const { isDropdown = true, renderOnlyButton = false } = props;
 
-	const { setBookmarksView } = useBookmarksViewUpdate();
-
-	const bookmarksColumns = useGetViewValue("moodboardColumns", [10]);
 	const bookmarksViewValue = useGetViewValue("bookmarksView", "");
 
 	const renderDropdownHeader = (text: string) => (
 		<div className="px-2 py-[6px] text-xs leading-[14px] font-450 text-gray-600">
 			{text}
 		</div>
-	);
-
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	const setColumnsCallback = useCallback(
-		debounce((value) => setBookmarksView(value as number[], "columns"), 200),
-		[setBookmarksView],
 	);
 
 	const dropdownContent = (
@@ -54,20 +42,7 @@ export const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 						Columns
 					</p>
 					<div className="mt-px w-[90px]">
-						<Slider
-							defaultValue={bookmarksColumns as unknown as number}
-							label="moodboard-cols-slider"
-							maxValue={50}
-							minValue={10}
-							onChangeEnd={(value) => {
-								const columValue = value as number[];
-								// do not fire api if the new value is the same as previous value
-								if (columValue?.[0] !== bookmarksColumns?.[0]) {
-									setColumnsCallback(value);
-								}
-							}}
-							step={10}
-						/>
+						<BookmarksViewSlider />
 					</div>
 				</div>
 			)}
