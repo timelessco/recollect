@@ -373,7 +373,7 @@ function List({ children, ...props }: ComboboxPrimitive.List.Props) {
 	return (
 		<ComboboxPrimitive.List
 			data-slot="combobox-list"
-			className="p-1"
+			className="p-1 empty:hidden"
 			{...props}
 		>
 			{wrappedRenderItem}

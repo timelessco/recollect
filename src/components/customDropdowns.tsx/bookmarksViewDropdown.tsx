@@ -1,22 +1,13 @@
-import { useCallback, useRef } from "react";
-import { Bars4Icon } from "@heroicons/react/20/solid";
-import { Menu, MenuButton, useMenuState } from "ariakit/menu";
-import debounce from "lodash/debounce";
+import { Popover } from "@base-ui/react/popover";
 import find from "lodash/find";
 
-import { useBookmarksViewUpdate } from "../../hooks/useBookmarksViewUpdate";
 import useGetViewValue from "../../hooks/useGetViewValue";
-import CardIcon from "../../icons/viewIcons/cardIcon";
-import ListIcon from "../../icons/viewIcons/listIcon";
-import MoodboardIconGray from "../../icons/viewIcons/moodboardIconGray";
-import { type BookmarksViewTypes } from "../../types/componentStoreTypes";
 import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 import { singleInfoValues, viewValues } from "../../utils/constants";
-import Button from "../atoms/button";
-import RadioGroup from "../radioGroup";
-import Slider from "../slider";
+import { bookmarksViewOptions, RadioGroup } from "../radioGroup";
 
 import { BookmarkCardContentSwitch } from "./bookmark-card-content-switch";
+import { BookmarksViewSlider } from "./bookmarks-view-slider";
 
 type BookmarksViewDropdownProps = {
 	// based on this it is either rendered in dropdown or in the sliding menu component if its in responsive mobile page
@@ -25,65 +16,10 @@ type BookmarksViewDropdownProps = {
 };
 
 // This renders the view options
-const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
+export const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	const { isDropdown = true, renderOnlyButton = false } = props;
 
-	const { setBookmarksView } = useBookmarksViewUpdate();
-
-	const bookmarksColumns = useGetViewValue("moodboardColumns", [10]);
 	const bookmarksViewValue = useGetViewValue("bookmarksView", "");
-
-	type CardContentOptionsTypes = {
-		label: string;
-		value: string;
-	};
-	const cardContentOptions: CardContentOptionsTypes[] = [
-		{
-			label: "Cover",
-			value: singleInfoValues.cover,
-		},
-		{
-			label: "Title",
-			value: singleInfoValues.title,
-		},
-		{
-			label: "Description",
-			value: singleInfoValues.description,
-		},
-		{
-			label: "Tags",
-			value: singleInfoValues.tags,
-		},
-		{
-			label: "Info",
-			value: singleInfoValues.info,
-		},
-	];
-
-	const bookmarksViewOptions = [
-		{
-			label: "Moodboard",
-			value: viewValues.moodboard,
-			icon: <MoodboardIconGray />,
-		},
-		{
-			label: "List",
-			value: viewValues.list,
-			icon: <ListIcon />,
-		},
-		{
-			label: "Card",
-			value: viewValues.card,
-			icon: <CardIcon />,
-		},
-		{
-			label: "Timeline",
-			value: viewValues.timeline,
-			icon: <Bars4Icon className="h-4 w-4" />,
-		},
-	];
-	const menu = useMenuState({ gutter: 8 });
-	const radio0ref = useRef<HTMLInputElement>(null);
 
 	const renderDropdownHeader = (text: string) => (
 		<div className="px-2 py-[6px] text-xs leading-[14px] font-450 text-gray-600">
@@ -91,26 +27,10 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 		</div>
 	);
 
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	const setColumnsCallback = useCallback(
-		debounce((value) => setBookmarksView(value as number[], "columns"), 200),
-		[setBookmarksView],
-	);
-
 	const dropdownContent = (
 		<>
 			{renderDropdownHeader("View as")}
-			<div>
-				<RadioGroup
-					disabled={false}
-					initialRadioRef={radio0ref}
-					onChange={(value) => {
-						setBookmarksView(value as BookmarksViewTypes, "view");
-					}}
-					radioList={bookmarksViewOptions}
-					value={bookmarksViewValue as string}
-				/>
-			</div>
+			<RadioGroup />
 			{renderDropdownHeader("Show in Cards")}
 			{cardContentOptions.map((option) => (
 				<BookmarkCardContentSwitch key={option.value} option={option} />
@@ -122,20 +42,7 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 						Columns
 					</p>
 					<div className="mt-px w-[90px]">
-						<Slider
-							defaultValue={bookmarksColumns as unknown as number}
-							label="moodboard-cols-slider"
-							maxValue={50}
-							minValue={10}
-							onChangeEnd={(value) => {
-								const columValue = value as number[];
-								// do not fire api if the new value is the same as previous value
-								if (columValue?.[0] !== bookmarksColumns?.[0]) {
-									setColumnsCallback(value);
-								}
-							}}
-							step={10}
-						/>
+						<BookmarksViewSlider />
 					</div>
 				</div>
 			)}
@@ -172,24 +79,63 @@ const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 	}
 
 	return isDropdown ? (
-		<>
-			<MenuButton as="div" className="outline-hidden" state={menu}>
-				<Button isActive={menu.open} title="views" type="light">
-					{dropdownButtonContent}
-				</Button>
-			</MenuButton>
-			<Menu
-				className="z-20 w-[195px] origin-top-left rounded-xl bg-white px-[6px] pt-[6px] pb-3 shadow-custom-1 ring-1 ring-black/5"
-				// @ts-expect-error - TODO: fix this
-				initialFocusRef={radio0ref}
-				state={menu}
-			>
-				{dropdownContent}
-			</Menu>
-		</>
+		<BookmarksViewPopover trigger={dropdownButtonContent}>
+			{dropdownContent}
+		</BookmarksViewPopover>
 	) : (
 		<div>{dropdownContent}</div>
 	);
 };
 
-export default BookmarksViewDropdown;
+interface BookmarksViewPopoverProps {
+	trigger: React.ReactNode;
+	children: React.ReactNode;
+}
+
+const BookmarksViewPopover = ({
+	trigger,
+	children,
+}: BookmarksViewPopoverProps) => (
+	<Popover.Root>
+		<Popover.Trigger
+			className="flex items-center rounded-lg bg-transparent px-2 py-[5px] text-13 leading-[14px] font-medium outline-hidden hover:bg-gray-100 data-popup-open:bg-gray-100"
+			title="views"
+		>
+			{trigger}
+		</Popover.Trigger>
+		<Popover.Portal>
+			<Popover.Positioner sideOffset={8}>
+				<Popover.Popup className="z-20 w-[195px] origin-(--transform-origin) rounded-xl bg-white px-[6px] pt-[6px] pb-3 shadow-custom-1 ring-1 ring-black/5">
+					{children}
+				</Popover.Popup>
+			</Popover.Positioner>
+		</Popover.Portal>
+	</Popover.Root>
+);
+
+type CardContentOptionsTypes = {
+	label: string;
+	value: string;
+};
+const cardContentOptions: CardContentOptionsTypes[] = [
+	{
+		label: "Cover",
+		value: singleInfoValues.cover,
+	},
+	{
+		label: "Title",
+		value: singleInfoValues.title,
+	},
+	{
+		label: "Description",
+		value: singleInfoValues.description,
+	},
+	{
+		label: "Tags",
+		value: singleInfoValues.tags,
+	},
+	{
+		label: "Info",
+		value: singleInfoValues.info,
+	},
+];

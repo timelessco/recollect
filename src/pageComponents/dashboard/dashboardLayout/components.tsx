@@ -1,6 +1,6 @@
 import find from "lodash/find";
 
-import CategoryIconsDropdown from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
+import { CategoryIconsDropdown } from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
 import { type CategoriesData } from "../../../types/apiTypes";
 
 type SidePaneCollapseButtonProps = {

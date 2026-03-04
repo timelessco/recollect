@@ -32,7 +32,7 @@ export function FavoriteCollectionsList({
 	);
 
 	return (
-		<div className="py-3">
+		<div className="pt-3">
 			<Collapsible.Root>
 				<Collapsible.Trigger>{favoritesHeader}</Collapsible.Trigger>
 				<Collapsible.Panel>

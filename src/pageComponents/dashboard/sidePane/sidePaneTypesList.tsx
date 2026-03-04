@@ -43,7 +43,7 @@ const SidePaneTypesList = () => {
 	);
 
 	return (
-		<div className="pt-4">
+		<div className="pt-3">
 			<Collapsible.Root>
 				<Collapsible.Trigger>
 					<div className="group flex items-center px-1 py-[7.5px] text-13 leading-[15px] font-medium tracking-[0.01em] text-gray-600">

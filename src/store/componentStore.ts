@@ -67,6 +67,9 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 		set(() => ({ lightboxShowSidepane: value })),
 	searchText: "",
 	setSearchText: (value: string) => set(() => ({ searchText: value })),
+	triggerHeadingEdit: false,
+	setTriggerHeadingEdit: (value: boolean) =>
+		set(() => ({ triggerHeadingEdit: value })),
 	addScreenshotBookmarkId: undefined,
 	setAddScreenshotBookmarkId: (value: number | undefined) =>
 		set(() => ({ addScreenshotBookmarkId: value })),

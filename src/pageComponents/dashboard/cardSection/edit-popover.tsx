@@ -204,6 +204,7 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 							hideScrollbar
 							className="rounded-lg bg-gray-90"
 						>
+							<Combobox.Empty>No tags found</Combobox.Empty>
 							<Combobox.List>
 								{(item: UserTagsData) => (
 									<Combobox.Item key={item.id} value={item}>

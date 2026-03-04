@@ -1,18 +1,13 @@
 import { useState, type ReactNode } from "react";
 import router from "next/router";
+import { Button } from "@base-ui/react/button";
+import { Popover } from "@base-ui/react/popover";
 import { isNull } from "lodash";
 
-import {
-	AriaDropdown,
-	AriaDropdownMenu,
-} from "../../../components/ariaDropdown";
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
 import OptionsIcon from "../../../icons/optionsIcon";
-import {
-	dropdownMenuClassName,
-	dropdownMenuItemClassName,
-} from "../../../utils/commonClassNames";
+import { dropdownMenuClassName } from "../../../utils/commonClassNames";
 
 import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
 import { useAddCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-optimistic-mutation";
@@ -42,11 +37,22 @@ export function CollectionsListSection({
 
 	return (
 		<Collapsible.Root>
-			<Collapsible.Trigger>
-				<CollectionsListSectionHeader
-					onAddCollectionClick={() => setShowAddCategoryInput(true)}
-				/>
-			</Collapsible.Trigger>
+			<div className="pt-3">
+				<div className="group flex w-full items-center justify-between px-1 py-[7px]">
+					<Collapsible.Trigger>
+						<div className="flex items-center text-13 leading-[14.95px] font-medium tracking-[0.02em] text-gray-600">
+							<p className="mr-1">Collections</p>
+							<DownArrowGray
+								className="collections-sidepane-down-arrow hidden pt-px text-gray-500 group-hover:block"
+								size={10}
+							/>
+						</div>
+					</Collapsible.Trigger>
+					<CollectionsHeaderOptionsPopover
+						onAddCollectionClick={() => setShowAddCategoryInput(true)}
+					/>
+				</div>
+			</div>
 			<Collapsible.Panel>
 				<div id="collections-wrapper">
 					{isLoading ? <CollectionsListSkeleton /> : children}
@@ -80,66 +86,57 @@ export function CollectionsListSection({
 	);
 }
 
-function CollectionsListSectionHeader({
+function CollectionsHeaderOptionsPopover({
 	onAddCollectionClick,
 }: CollectionsListSectionHeaderProps) {
 	const { isDesktop } = useIsMobileView();
-	const [isCollectionHeaderMenuOpen, setIsCollectionHeaderMenuOpen] =
-		useState(false);
+	const [isOpen, setIsOpen] = useState(false);
 
 	return (
-		<div className="group flex w-full items-center justify-between px-1 py-[7px]">
-			<div className="flex items-center text-13 leading-[14.95px] font-medium tracking-[0.02em] text-gray-600">
-				<p className="mr-1">Collections</p>
-				<DownArrowGray
-					className="collections-sidepane-down-arrow hidden pt-px text-gray-500 group-hover:block"
-					size={10}
-				/>
-			</div>
-			<AriaDropdown
-				menuButton={
-					<div
-						className={
-							isCollectionHeaderMenuOpen
-								? "block text-gray-500"
-								: "hidden text-gray-500 group-hover:block"
-						}
-					>
-						<OptionsIcon />
-					</div>
+		<Popover.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Popover.Trigger
+				aria-label="Collection options"
+				className={
+					isOpen
+						? "visible text-gray-500"
+						: "invisible text-gray-500 group-hover:visible"
 				}
-				menuButtonClassName="h-4 w-4"
-				menuClassName={`${dropdownMenuClassName} z-10`}
-				menuOpenToggle={setIsCollectionHeaderMenuOpen}
-				onButtonClick={(event) => event?.stopPropagation()}
-				portalElement={
+				onClick={(event) => event.stopPropagation()}
+			>
+				<OptionsIcon />
+			</Popover.Trigger>
+			<Popover.Portal
+				container={
 					!isDesktop
-						? () => {
-								if (typeof document === "undefined") {
-									return null;
-								}
-
-								return document.querySelector("#side-pane-dropdown-portal");
-							}
+						? (document.querySelector("#side-pane-dropdown-portal") as
+								| HTMLElement
+								| undefined)
 						: undefined
 				}
 			>
-				{[{ label: "Add Collection", value: "add-category" }]?.map((item) => (
-					<AriaDropdownMenu
-						key={item?.value}
-						onClick={() => {
-							if (item?.value === "add-category") {
-								onAddCollectionClick();
-							}
-						}}
+				<Popover.Positioner
+					align="start"
+					className="pointer-events-auto z-10"
+					sideOffset={1}
+				>
+					<Popover.Popup
+						className={`${dropdownMenuClassName} leading-[20px] outline-hidden`}
 					>
-						<div className={`text-justify ${dropdownMenuItemClassName}`}>
-							{item?.label}
-						</div>
-					</AriaDropdownMenu>
-				))}
-			</AriaDropdown>
-		</div>
+						<Button
+							className="w-full cursor-pointer rounded-lg px-2 py-[5px] text-left text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800 hover:bg-gray-200"
+							onClick={(event) => {
+								event.stopPropagation();
+								setIsOpen(false);
+								onAddCollectionClick();
+							}}
+							type="button"
+						>
+							Add Collection
+						</Button>
+					</Popover.Popup>
+				</Popover.Positioner>
+			</Popover.Portal>
+		</Popover.Root>
 	);
 }
 

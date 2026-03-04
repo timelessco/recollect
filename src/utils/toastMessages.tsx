@@ -1,71 +1,39 @@
-import { type JSX } from "react";
-import { toast } from "react-toastify";
+import { toastManager } from "@/components/ui/recollect/toast";
 
 import File from "../icons/toastIcons/file";
 import User from "../icons/toastIcons/user";
 
-const ToastBody = ({
-	icon,
-	message,
-	description,
-}: {
-	description?: string;
-	icon?: JSX.Element;
-	message: string;
-}) => (
-	<div className="flex">
-		{icon && icon}
-		<div className="ml-2">
-			<p className="text-sm leading-[18px] font-450 tracking-[0.14px] text-gray-0 not-italic">
-				{message}
-			</p>
-			{description && (
-				<p className="mt-[4px] text-13 leading-[14px] font-450 tracking-[0.13px] text-gray-500 not-italic">
-					{description}
-				</p>
-			)}
-		</div>
-	</div>
-);
-
-export const errorToast = (error: string, type?: "fileSizeError") => {
-	let toastBody = <ToastBody message={error} />;
+export function errorToast(error: string, type?: "fileSizeError") {
+	if (!error) {
+		return;
+	}
 
 	if (type === "fileSizeError") {
-		toastBody = (
-			<ToastBody
-				description="Max file size is 10MB"
-				icon={<File />}
-				message="Unable to add item"
-			/>
-		);
+		toastManager.add({
+			title: "Unable to add item",
+			description: "Max file size is 10MB",
+			type: "error",
+			data: { icon: <File /> },
+		});
+		return;
 	}
 
-	return (
-		error &&
-		toast.error(toastBody, {
-			position: "bottom-right",
-			closeButton: () => null,
-			icon: () => null,
-			hideProgressBar: true,
-		})
-	);
-};
+	toastManager.add({ title: error, type: "error" });
+}
 
-export const successToast = (message: string, type?: "userInvite") => {
-	let toastBody = <ToastBody message={message} />;
+export function successToast(message: string, type?: "userInvite") {
+	if (!message) {
+		return;
+	}
 
 	if (type === "userInvite") {
-		toastBody = <ToastBody icon={<User />} message="Share invitation sent" />;
+		toastManager.add({
+			title: "Share invitation sent",
+			type: "success",
+			data: { icon: <User /> },
+		});
+		return;
 	}
 
-	return (
-		message &&
-		toast.success(toastBody, {
-			position: "bottom-right",
-			closeButton: () => null,
-			icon: () => null,
-			hideProgressBar: true,
-		})
-	);
-};
+	toastManager.add({ title: message, type: "success" });
+}
