@@ -24,7 +24,7 @@ const TOGGLES: AiToggleConfig[] = [
 	},
 	{
 		key: "ai_summary",
-		title: "Auto summarise all webpages",
+		title: "Auto summarise all bookmarks",
 		description: "Generate descriptions for bookmarks",
 		icon: <AiSummaryIcon className="h-5.5 w-5.5 text-gray-900" />,
 	},
