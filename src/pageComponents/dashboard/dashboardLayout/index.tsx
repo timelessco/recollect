@@ -1,9 +1,9 @@
 import { useRef, useState } from "react";
+import { DrawerPreview as Drawer } from "@base-ui/react/drawer";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { Allotment, type AllotmentHandle } from "allotment";
 import find from "lodash/find";
-import Drawer from "react-modern-drawer";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
@@ -24,9 +24,6 @@ import {
 	SIDE_PANE_DEFAULT_WIDTH,
 } from "./allotmentWrapper";
 import { DashboardContent } from "./dashboardContent";
-
-import "react-modern-drawer/dist/index.css";
-
 import { HeaderOptionsPopover } from "./header-options-popover";
 
 type DashboardLayoutProps = {
@@ -149,13 +146,21 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	return (
 		<div className="flex">
-			<Drawer
-				direction="left"
-				onClose={() => setShowSidePane(false)}
+			<Drawer.Root
+				modal
+				onOpenChange={(open) => setShowSidePane(open)}
 				open={showSidePane}
+				swipeDirection="left"
 			>
-				<SidePane />
-			</Drawer>
+				<Drawer.Portal keepMounted>
+					<Drawer.Backdrop className="fixed inset-0 z-50 bg-black opacity-[calc(0.2*(1-var(--drawer-swipe-progress)))] transition-opacity duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:opacity-0 data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-starting-style:opacity-0 data-swiping:duration-0" />
+					<Drawer.Viewport className="fixed inset-0 z-50 flex">
+						<Drawer.Popup className="h-full w-[250px] transform-[translateX(var(--drawer-swipe-movement-x))] bg-white shadow-[0_0_10px_5px_rgb(0_0_0/10%)] outline-hidden transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:transform-[translateX(-100%)] data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-starting-style:transform-[translateX(-100%)] data-swiping:duration-0 data-swiping:select-none">
+							<SidePane />
+						</Drawer.Popup>
+					</Drawer.Viewport>
+				</Drawer.Portal>
+			</Drawer.Root>
 
 			{dashboardContentElement()}
 

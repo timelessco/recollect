@@ -5,6 +5,7 @@ import isNull from "lodash/isNull";
 import { signOut } from "../../../async/supabaseCrudHelpers";
 import UserAvatar from "../../../components/userAvatar";
 import DownArrowGray from "../../../icons/downArrowGray";
+import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { useSupabaseSession } from "../../../store/componentStore";
 import {
 	dropdownMenuClassName,
@@ -66,31 +67,46 @@ interface SidePaneUserPopoverProps {
 	children: React.ReactNode;
 }
 
-const SidePaneUserPopover = ({ children }: SidePaneUserPopoverProps) => (
-	<Popover.Root>
-		<Popover.Trigger
-			className="text-text-color w-full rounded-lg px-1.5 py-[3px] text-gray-800 outline-hidden hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-hidden data-popup-open:rounded-lg data-popup-open:bg-gray-100 data-popup-open:text-gray-900"
-			nativeButton={false}
-			title="User menu"
-		>
-			<div className="flex w-full items-center justify-between">
-				<SidePaneUserTrigger />
-				<span className="mt-px" aria-hidden="true">
-					<DownArrowGray />
-				</span>
-			</div>
-		</Popover.Trigger>
-		<Popover.Portal>
-			<Popover.Positioner align="start" sideOffset={1}>
-				<Popover.Popup
-					className={`z-20 leading-[20px] outline-hidden focus-visible:outline-hidden ${dropdownMenuClassName}`}
+const SidePaneUserPopover = ({ children }: SidePaneUserPopoverProps) => {
+	const { isDesktop } = useIsMobileView();
+
+	return (
+		<Popover.Root>
+			<Popover.Trigger
+				className="text-text-color w-full rounded-lg px-1.5 py-[3px] text-gray-800 outline-hidden hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-hidden data-popup-open:rounded-lg data-popup-open:bg-gray-100 data-popup-open:text-gray-900"
+				title="User menu"
+			>
+				<div className="flex w-full items-center justify-between">
+					<SidePaneUserTrigger />
+					<span className="mt-px" aria-hidden="true">
+						<DownArrowGray />
+					</span>
+				</div>
+			</Popover.Trigger>
+			<Popover.Portal
+				container={
+					!isDesktop
+						? (document.querySelector("#side-pane-dropdown-portal") as
+								| HTMLElement
+								| undefined)
+						: undefined
+				}
+			>
+				<Popover.Positioner
+					align="start"
+					className="pointer-events-auto"
+					sideOffset={1}
 				>
-					{children}
-				</Popover.Popup>
-			</Popover.Positioner>
-		</Popover.Portal>
-	</Popover.Root>
-);
+					<Popover.Popup
+						className={`z-20 leading-[20px] outline-hidden focus-visible:outline-hidden ${dropdownMenuClassName}`}
+					>
+						{children}
+					</Popover.Popup>
+				</Popover.Positioner>
+			</Popover.Portal>
+		</Popover.Root>
+	);
+};
 
 const SidePaneUserTrigger = () => {
 	const { userProfileData, isLoading } = useFetchUserProfile();

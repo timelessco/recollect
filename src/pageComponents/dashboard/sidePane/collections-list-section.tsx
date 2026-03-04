@@ -37,13 +37,22 @@ export function CollectionsListSection({
 
 	return (
 		<Collapsible.Root>
-			<Collapsible.Trigger>
-				<div className="pt-3">
-					<CollectionsListSectionHeader
+			<div className="pt-3">
+				<div className="group flex w-full items-center justify-between px-1 py-[7px]">
+					<Collapsible.Trigger>
+						<div className="flex items-center text-13 leading-[14.95px] font-medium tracking-[0.02em] text-gray-600">
+							<p className="mr-1">Collections</p>
+							<DownArrowGray
+								className="collections-sidepane-down-arrow hidden pt-px text-gray-500 group-hover:block"
+								size={10}
+							/>
+						</div>
+					</Collapsible.Trigger>
+					<CollectionsHeaderOptionsPopover
 						onAddCollectionClick={() => setShowAddCategoryInput(true)}
 					/>
 				</div>
-			</Collapsible.Trigger>
+			</div>
 			<Collapsible.Panel>
 				<div id="collections-wrapper">
 					{isLoading ? <CollectionsListSkeleton /> : children}
@@ -77,25 +86,6 @@ export function CollectionsListSection({
 	);
 }
 
-function CollectionsListSectionHeader({
-	onAddCollectionClick,
-}: CollectionsListSectionHeaderProps) {
-	return (
-		<div className="group flex w-full items-center justify-between px-1 py-[7px]">
-			<div className="flex items-center text-13 leading-[14.95px] font-medium tracking-[0.02em] text-gray-600">
-				<p className="mr-1">Collections</p>
-				<DownArrowGray
-					className="collections-sidepane-down-arrow hidden pt-px text-gray-500 group-hover:block"
-					size={10}
-				/>
-			</div>
-			<CollectionsHeaderOptionsPopover
-				onAddCollectionClick={onAddCollectionClick}
-			/>
-		</div>
-	);
-}
-
 function CollectionsHeaderOptionsPopover({
 	onAddCollectionClick,
 }: CollectionsListSectionHeaderProps) {
@@ -124,7 +114,11 @@ function CollectionsHeaderOptionsPopover({
 						: undefined
 				}
 			>
-				<Popover.Positioner align="start" className="z-10" sideOffset={1}>
+				<Popover.Positioner
+					align="start"
+					className="pointer-events-auto z-10"
+					sideOffset={1}
+				>
 					<Popover.Popup
 						className={`${dropdownMenuClassName} leading-[20px] outline-hidden`}
 					>
