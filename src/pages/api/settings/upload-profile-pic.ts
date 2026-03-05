@@ -83,12 +83,27 @@ export const deleteLogic = async (
  * Converts the Node.js IncomingMessage stream to a Web Request to use native formData().
  */
 async function parseFormData(request: NextApiRequest) {
+	const headers: Array<[string, string]> = [];
+	for (const [name, value] of Object.entries(request.headers)) {
+		if (value === null || value === undefined) {
+			continue;
+		}
+
+		if (Array.isArray(value)) {
+			for (const item of value) {
+				headers.push([name, item]);
+			}
+		} else {
+			headers.push([name, value]);
+		}
+	}
+
 	const webStream = Readable.toWeb(request) as ReadableStream<
 		Uint8Array<ArrayBuffer>
 	>;
 	const webRequest = new Request("http://localhost", {
 		method: request.method,
-		headers: request.headers as HeadersInit,
+		headers,
 		body: webStream,
 		// @ts-expect-error -- Node.js supports duplex but types don't expose it
 		duplex: "half",
@@ -125,10 +140,9 @@ export default async (
 		contents = Buffer.from(arrayBuffer).toString("base64");
 	}
 
-	const fileName =
-		file instanceof File && file.name
-			? parseUploadFileName(file.name)
-			: `${uniqid.time()}`;
+	const parsedFileName =
+		file instanceof File && file.name ? parseUploadFileName(file.name) : "";
+	const fileName = parsedFileName || `${uniqid.time()}`;
 	const fileType = file instanceof File ? file.type : undefined;
 
 	if (contents) {
