@@ -1,5 +1,5 @@
 import Image from "next/image";
-import classNames from "classnames";
+import { cn } from "@/utils/tailwind-merge";
 import { isNil } from "lodash";
 
 import { CategoryBadges } from "@/components/categoryBadges";
@@ -17,11 +17,11 @@ export function BookmarkAvatar({
 	isListView: boolean;
 	post: SingleListData;
 }) {
-	const className = classNames({
-		"absolute h-[26px] w-[26px] rounded-full hidden group-hover:flex": true,
-		"right-[65px] top-0": isCreatedByLoggedInUser,
+	const className = cn({
+		"absolute hidden h-[26px] w-[26px] rounded-full group-hover:flex": true,
+		"top-0 right-[65px]": isCreatedByLoggedInUser,
 		"right-[100px]": isListView,
-		"right-0 top-0": !isCreatedByLoggedInUser,
+		"top-0 right-0": !isCreatedByLoggedInUser,
 	});
 
 	if (!isNil(post?.user_id?.profile_pic)) {
@@ -77,7 +77,7 @@ export function BookmarkFavIcon({
 
 	return (
 		<figure
-			className={classNames("card-icon rounded-sm text-gray-1000", {
+			className={cn("card-icon rounded-sm text-gray-1000", {
 				rounded: isImageMediaType,
 			})}
 		>

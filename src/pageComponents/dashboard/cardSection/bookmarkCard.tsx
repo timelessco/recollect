@@ -1,6 +1,5 @@
 import { memo, useState } from "react";
 import { useRouter } from "next/router";
-import classNames from "classnames";
 import { format } from "date-fns";
 import { isEmpty, isNull } from "lodash";
 
@@ -91,7 +90,7 @@ const BookmarkCardInner = ({
 	const tags = bookmarksInfoValue?.includes("tags") &&
 		!isEmpty(post?.addedTags) && (
 			<div
-				className={classNames(
+				className={cn(
 					"flex items-center",
 					isListView
 						? "mt-[6px] space-x-px max-sm:mt-px"
@@ -111,7 +110,7 @@ const BookmarkCardInner = ({
 
 	const infoSection = bookmarksInfoValue?.includes("info") && (
 		<div
-			className={classNames(
+			className={cn(
 				"flex flex-wrap items-center",
 				isListView ? "mt-[6px] max-sm:mt-px max-sm:space-x-1" : "gap-1",
 			)}
@@ -136,7 +135,7 @@ const BookmarkCardInner = ({
 			</div>
 			{post?.inserted_at && (
 				<p
-					className={classNames(
+					className={cn(
 						"relative text-13 font-450 text-gray-600",
 						isListView
 							? "leading-4 before:absolute before:top-[8px] before:left-[-4px] before:h-[2px] before:w-[2px] before:rounded-full before:bg-gray-600 before:content-['']"
@@ -217,7 +216,7 @@ const BookmarkCardInner = ({
 			/>
 			{coverOnly ? null : (
 				<div
-					className={classNames(
+					className={cn(
 						"card-moodboard-info-wrapper space-y-[6px] rounded-b-lg px-2 py-3 transition-all duration-150 dark:group-hover:bg-gray-alpha-100",
 						cardTypeCondition === viewValues.card && "grow",
 					)}

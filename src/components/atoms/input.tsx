@@ -1,6 +1,6 @@
 import { forwardRef, type InputHTMLAttributes } from "react";
 import { ExclamationCircleIcon } from "@heroicons/react/20/solid";
-import classNames from "classnames";
+import { cn } from "@/utils/tailwind-merge";
 import omit from "lodash/omit";
 
 import { type ChildrenTypes } from "../../types/componentTypes";
@@ -48,21 +48,21 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 		showError = true,
 	} = props;
 
-	const inputClass = classNames(className, {
-		"block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-hidden focus:ring-red-500 focus:border-red-500":
-			isError,
-		"block w-full border-gray-300": !isError,
-		// "disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none":
-		// 	isDisabled,
-	});
+	const inputClass = cn(
+		{
+			"block w-full border-red-300 pr-10 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 focus:outline-hidden":
+				isError,
+			"block w-full border-gray-300": !isError,
+		},
+		className,
+	);
 
-	const errorClass = classNames(errorClassName, {
-		"text-xs text-red-600": true,
-	});
+	const errorClass = cn("text-xs text-red-600", errorClassName);
 
-	const errorIconClass = classNames(errorIconClassName, {
-		"pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3": true,
-	});
+	const errorIconClass = cn(
+		"pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3",
+		errorIconClassName,
+	);
 
 	return (
 		<div className={isFullWidth ? "w-full" : ""}>

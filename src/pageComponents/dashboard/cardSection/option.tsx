@@ -3,7 +3,6 @@ import "yet-another-react-lightbox/styles.css";
 import { type CardSectionProps } from ".";
 import { useRef, type ReactNode } from "react";
 import { useRouter } from "next/router";
-import classNames from "classnames";
 import { pick } from "lodash";
 import omit from "lodash/omit";
 import {
@@ -70,8 +69,8 @@ const Option = ({
 	);
 	// Merge option props and dnd props, and render the item.
 
-	const liClassName = classNames(
-		"single-bookmark dark:group relative flex group rounded-lg duration-150 outline-hidden",
+	const liClassName = cn(
+		"single-bookmark dark:group group relative flex rounded-lg outline-hidden duration-150",
 		{
 			"": cardTypeCondition === viewValues.card,
 			// "hover:shadow-custom-4":
@@ -82,17 +81,17 @@ const Option = ({
 				cardTypeCondition === viewValues.moodboard ||
 				cardTypeCondition === viewValues.card ||
 				cardTypeCondition === viewValues.timeline,
-			"hover:bg-gray-100 mb-1":
+			"mb-1 hover:bg-gray-100":
 				cardTypeCondition === viewValues.list && !isSelected,
 
-			"mb-1 list-wrapper": cardTypeCondition === viewValues.list,
+			"list-wrapper mb-1": cardTypeCondition === viewValues.list,
 		},
 	);
 
 	return (
 		<li
 			aria-selected={isSelected}
-			className={classNames(liClassName, {
+			className={cn(liClassName, {
 				"rounded-t-3xl rounded-b-lg":
 					isSelected &&
 					(cardTypeCondition === viewValues.moodboard ||

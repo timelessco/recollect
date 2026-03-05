@@ -1,4 +1,4 @@
-import classNames from "classnames";
+import { cn } from "@/utils/tailwind-merge";
 import { useTheme } from "next-themes";
 
 import { colorPickerColors } from "@/utils/constants";
@@ -8,7 +8,7 @@ type ColorPickerProps = {
 	selectedColor: string;
 };
 
-const colorBlockWrapper = classNames(
+const colorBlockWrapper = cn(
 	"flex",
 	"cursor-pointer",
 	"items-center",
@@ -22,12 +22,12 @@ const colorBlockSelected = ({
 	colorItem: string;
 	selectedColor: string;
 }) =>
-	classNames("rounded-md", "p-1", "hover:bg-gray-200", {
+	cn("rounded-md", "p-1", "hover:bg-gray-200", {
 		"bg-gray-200": colorItem === selectedColor,
 	});
 
 const colorBlockItemBorder = (colorItem: string, baseLightColor: string) =>
-	classNames(
+	cn(
 		"h-4",
 		"w-4",
 		"rounded-full",

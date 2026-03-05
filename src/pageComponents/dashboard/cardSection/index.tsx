@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import classNames from "classnames";
+import { cn } from "@/utils/tailwind-merge";
 import { find, flatten, isEmpty, type Many } from "lodash";
 import { Item } from "react-stately";
 
@@ -184,13 +184,13 @@ const CardSection = ({
 		],
 	);
 
-	const listWrapperClass = classNames({
+	const listWrapperClass = cn({
 		"mt-[47px]": !isPublicPage || (isDiscoverPage && Boolean(userId)),
 		"px-4 py-2":
 			cardTypeCondition === viewValues.list ||
 			cardTypeCondition === viewValues.timeline,
 
-		"py-2 px-3":
+		"px-3 py-2":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.card,
 	});
