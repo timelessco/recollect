@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "@/utils/tailwind-merge";
 
 type TabsProps = {
 	onTabClick: (value: number | string) => void;
@@ -31,7 +31,7 @@ const Tabs = (props: TabsProps) => {
 						{tabs.map((tab) => (
 							<div
 								aria-current={tab.current ? "page" : undefined}
-								className={clsx(
+								className={cn(
 									tab.current
 										? "border-gray-500 text-gray-600"
 										: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",

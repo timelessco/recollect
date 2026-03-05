@@ -1,5 +1,5 @@
 import { useState } from "react";
-import classNames from "classnames";
+import { cn } from "@/utils/tailwind-merge";
 
 type ReadMoreTypes = {
 	children: string;
@@ -15,7 +15,7 @@ const ReadMore = ({
 }: ReadMoreTypes) => {
 	const [more, setMore] = useState(false);
 
-	const wrapperClassNames = classNames({
+	const wrapperClassNames = cn({
 		[className]: className,
 		"line-clamp-3 overflow-hidden break-all": !more,
 	});

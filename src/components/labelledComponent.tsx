@@ -1,4 +1,4 @@
-import classNames from "classnames";
+import { cn } from "@/utils/tailwind-merge";
 import { isEmpty } from "lodash";
 
 import { type ChildrenTypes } from "../types/componentTypes";
@@ -12,7 +12,7 @@ type LabelledComponentProps = {
 
 const LabelledComponent = (props: LabelledComponentProps) => {
 	const { children, label, labelClassName = "" } = props;
-	const labelClass = classNames({
+	const labelClass = cn({
 		"mb-2 block text-sm font-medium text-gray-800 max-sm:mt-px max-sm:pt-2":
 			isEmpty(labelClassName),
 		[labelClassName]: !isEmpty(label),

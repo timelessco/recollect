@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import classNames from "classnames";
+import { cn } from "@/utils/tailwind-merge";
 import { isNil, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
@@ -150,8 +150,8 @@ const Settings = ({ onNavigate }: SettingsProps) => {
 		displaynameReset({ displayname: userData?.display_name });
 	}, [displaynameReset, userData?.display_name]);
 
-	const profilePicClassName = classNames({
-		[`rounded-full w-11.5 h-11.5 object-contain bg-black`]: true,
+	const profilePicClassName = cn({
+		[`h-11.5 w-11.5 rounded-full bg-black object-contain`]: true,
 		"opacity-50":
 			uploadProfilePicMutation?.isPending || removeProfilePic?.isPending,
 	});

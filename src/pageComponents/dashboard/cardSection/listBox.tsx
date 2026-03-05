@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, type Key } from "react";
 import { useRouter } from "next/router";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import classNames from "classnames";
+import { cn } from "@/utils/tailwind-merge";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
@@ -213,9 +213,9 @@ const ListBox = (props: ListBoxDropTypes) => {
 	// IMPORTANT: ariaRef is passed here so listeners attach properly
 	useDraggableCollection(props, dragState, ariaRef);
 
-	const ulClassName = classNames("outline-hidden focus:outline-hidden", {
+	const ulClassName = cn("outline-hidden focus:outline-hidden", {
 		block: cardTypeCondition === viewValues.list,
-		"max-w-[600px] mx-auto space-y-4":
+		"mx-auto max-w-[600px] space-y-4":
 			cardTypeCondition === viewValues.timeline,
 	});
 

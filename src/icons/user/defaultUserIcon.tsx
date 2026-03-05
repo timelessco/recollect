@@ -1,7 +1,7 @@
-import classNames from "classnames";
+import { cn } from "@/utils/tailwind-merge";
 
 const DefaultUserIcon = ({ className = "h-6 w-6 " }) => {
-	const iconClassName = classNames(
+	const iconClassName = cn(
 		{
 			"flex items-center justify-center rounded-full bg-slate-200": true,
 		},

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import classNames from "classnames";
+import { cn } from "@/utils/tailwind-merge";
 
 import { ImgLogic } from "./imageCard";
 import PlayIcon from "@/icons/actionIcons/playIcon";
@@ -40,20 +40,20 @@ export function BookmarkOgImage({
 	const isVideo = isBookmarkVideo(post.type);
 	const isAudio = isBookmarkAudio(post.type);
 
-	const figureClassName = classNames({
+	const figureClassName = cn({
 		"relative z-[-1]": isAudio || isVideo,
-		"h-[48px] w-[80px] mr-3": cardTypeCondition === viewValues.list,
-		"w-full shadow-custom-8 rounded-lg group-hover:rounded-b-none":
+		"mr-3 h-[48px] w-[80px]": cardTypeCondition === viewValues.list,
+		"w-full rounded-lg shadow-custom-8 group-hover:rounded-b-none":
 			cardTypeCondition === viewValues.card ||
 			cardTypeCondition === viewValues.moodboard,
 		"aspect-[1.8]":
 			cardTypeCondition === viewValues.moodboard && img === undefined,
 	});
 
-	const playSvgClassName = classNames({
-		"hover:fill-slate-500 transition ease-in-out fill-gray-800": true,
+	const playSvgClassName = cn({
+		"fill-gray-800 transition ease-in-out hover:fill-slate-500": true,
 		absolute: true,
-		"bottom-[9px] left-[7px] ":
+		"bottom-[9px] left-[7px]":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.card ||
 			cardTypeCondition === viewValues.timeline,

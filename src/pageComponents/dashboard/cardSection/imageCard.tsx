@@ -9,7 +9,7 @@ import { memo, useState } from "react";
 import Image from "next/image";
 import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
-import classNames from "classnames";
+import { cn } from "@/utils/tailwind-merge";
 import { isEmpty, isNil } from "lodash";
 
 // Assets and utilities
@@ -55,12 +55,12 @@ const ImgLogicComponent = ({
 	isPublicPage,
 }: ImgLogicProps) => {
 	// image class name for all views
-	const imgClassName = classNames({
-		"min-h-[48px] min-w-[80px] max-h-[48px] max-w-[80px] object-cover rounded-sm":
+	const imgClassName = cn({
+		"max-h-[48px] min-h-[48px] max-w-[80px] min-w-[80px] rounded-sm object-cover":
 			cardTypeCondition === viewValues.list,
-		" w-full object-cover rounded-lg group-hover:rounded-b-none  duration-150 moodboard-card-img aspect-[1.9047]":
+		"moodboard-card-img aspect-[1.9047] w-full rounded-lg object-cover duration-150 group-hover:rounded-b-none":
 			cardTypeCondition === viewValues.card,
-		"w-full rounded-lg group-hover:rounded-b-none duration-150  moodboard-card-img min-h-[192px] object-cover max-h-[900px]":
+		"moodboard-card-img max-h-[900px] min-h-[192px] w-full rounded-lg object-cover duration-150 group-hover:rounded-b-none":
 			cardTypeCondition === viewValues.moodboard ||
 			cardTypeCondition === viewValues.timeline,
 		"relative z-[-1]":
@@ -156,13 +156,13 @@ const LoaderImgPlaceholder = ({
 	const { loadingBookmarkIds } = useLoadersStore();
 	const isLoading = loadingBookmarkIds.has(id);
 	// loader class name for all views
-	const loaderClassName = classNames({
-		"h-[48px] w-[80px] flex items-center justify-center bg-gray-100 rounded-lg":
+	const loaderClassName = cn({
+		"flex h-[48px] w-[80px] items-center justify-center rounded-lg bg-gray-100":
 			cardTypeCondition === viewValues.list,
-		"w-full aspect-[1.9047] flex items-center justify-center bg-gray-100 rounded-lg flex-col gap-2 text-center  group-hover:rounded-b-none duration-150 ":
+		"flex aspect-[1.9047] w-full flex-col items-center justify-center gap-2 rounded-lg bg-gray-100 text-center duration-150 group-hover:rounded-b-none":
 			cardTypeCondition === viewValues.card ||
 			cardTypeCondition === viewValues.timeline,
-		"w-full aspect-[1.8] flex items-center justify-center bg-gray-100 rounded-lg flex-col gap-2 text-center  group-hover:rounded-b-none duration-150 ":
+		"flex aspect-[1.8] w-full flex-col items-center justify-center gap-2 rounded-lg bg-gray-100 text-center duration-150 group-hover:rounded-b-none":
 			cardTypeCondition === viewValues.moodboard,
 	});
 	return (

@@ -1,4 +1,4 @@
-import classNames from "classnames";
+import { cn } from "@/utils/tailwind-merge";
 
 import AddBookmarkDropdown from "../../../components/customDropdowns.tsx/addBookmarkDropdown";
 import { useMiscellaneousStore } from "../../../store/componentStore";
@@ -49,7 +49,7 @@ export const DashboardContent = (props: DashboardContentProps) => {
 		<div className="relative w-full">
 			<header className="absolute top-0 z-5 flex w-full items-center justify-between bg-[rgb(255_255_255/90%)] py-[6.5px] pr-3 pl-[13px] shadow-[0_0.5px_0.5px_rgba(0,0,0,0.06)] backdrop-blur-[20.5px] dark:bg-[rgb(16_16_16/90%)]">
 				<div
-					className={classNames(
+					className={cn(
 						"flex items-center py-[3px] pl-[9px]",
 						(isDesktop || !showSearchBar) && "w-1/5 max-lg:w-3/4",
 					)}
@@ -76,7 +76,7 @@ export const DashboardContent = (props: DashboardContentProps) => {
 				</div>
 
 				<div
-					className={classNames({
+					className={cn({
 						"flex w-4/5 items-center justify-between max-lg:justify-end max-sm:mt-0": true,
 						"max-lg:w-full": showSearchBar,
 						"max-lg:w-1/4": !showSearchBar,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { TrashIcon } from "@heroicons/react/20/solid";
-import classNames from "classnames";
+import { cn } from "@/utils/tailwind-merge";
 import { find, isEmpty, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
@@ -213,8 +213,8 @@ const ShareContent = (props: ShareContentProps) => {
 	const isUserTheCategoryOwner =
 		currentCategory?.user_id?.id === session?.user?.id;
 
-	const inputClassName = classNames({
-		"rounded-none bg-transparent text-sm leading-4 shadow-none outline-none text-gray-800 placeholder:text-gray-alpha-600": true,
+	const inputClassName = cn({
+		"rounded-none bg-transparent text-sm leading-4 text-gray-800 shadow-none outline-none placeholder:text-gray-alpha-600": true,
 		"cursor-not-allowed": !isUserTheCategoryOwner,
 	});
 
