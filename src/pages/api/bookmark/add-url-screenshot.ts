@@ -2,7 +2,6 @@ import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
-import { type VerifyErrors } from "jsonwebtoken";
 
 import {
 	type AddBookmarkScreenshotPayloadTypes,
@@ -25,7 +24,7 @@ import { vet } from "@/utils/try";
 
 type Data = {
 	data: SingleListData[] | null;
-	error: PostgrestError | VerifyErrors | string | null;
+	error: PostgrestError | string | null;
 };
 
 const MAX_LENGTH = 1_300;
@@ -241,7 +240,7 @@ export default async function handler(
 			error,
 		}: {
 			data: SingleListData[] | null;
-			error: PostgrestError | VerifyErrors | string | null;
+			error: PostgrestError | string | null;
 		} = await supabase
 			.from(MAIN_TABLE_NAME)
 			// since we now have screenshot , we add that in ogImage as this will now be our primary image, and the existing ogImage (which is the scrapper data image) will be our cover image in meta_data

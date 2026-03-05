@@ -9,7 +9,6 @@ import {
 	type SupabaseClient,
 	type User,
 } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil } from "lodash";
 import isNull from "lodash/isNull";
 
@@ -35,7 +34,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 // this api deletes user
 
 type DataResponse = { user: User | null } | null;
-type ErrorResponse = AuthError | PostgrestError | VerifyErrors | string | null;
+type ErrorResponse = AuthError | PostgrestError | string | null;
 
 type Data = {
 	data: DataResponse;

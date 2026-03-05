@@ -1,7 +1,6 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 
 import {
@@ -44,7 +43,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 type Data = {
 	count: BookmarksCountTypes | null;
 	data: SingleListData[] | null;
-	error: PostgrestError | VerifyErrors | { message: string } | null;
+	error: PostgrestError | { message: string } | null;
 };
 
 export default async function handler(

@@ -308,6 +308,7 @@ export type Database = {
 					edit_access: boolean;
 					email: string | null;
 					id: number;
+					invite_token: string | null;
 					is_accept_pending: boolean | null;
 					user_id: string;
 				};
@@ -318,6 +319,7 @@ export type Database = {
 					edit_access?: boolean;
 					email?: string | null;
 					id?: number;
+					invite_token?: string | null;
 					is_accept_pending?: boolean | null;
 					user_id: string;
 				};
@@ -328,6 +330,7 @@ export type Database = {
 					edit_access?: boolean;
 					email?: string | null;
 					id?: number;
+					invite_token?: string | null;
 					is_accept_pending?: boolean | null;
 					user_id?: string;
 				};

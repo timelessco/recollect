@@ -1,7 +1,6 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 import { z } from "zod";
 
@@ -37,7 +36,7 @@ import {
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type DataResponse = SingleListData[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | { message: string } | null;
+type ErrorResponse = PostgrestError | { message: string } | null;
 
 type Data = {
 	data: DataResponse;

@@ -3,7 +3,6 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 
 import { type FetchSharedCategoriesData } from "../../../types/apiTypes";
 import { SHARED_CATEGORIES_TABLE_NAME } from "../../../utils/constants";
@@ -12,7 +11,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 // fetches shared categories
 
 type DataResponse = FetchSharedCategoriesData[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | string | null;
+type ErrorResponse = PostgrestError | string | null;
 type Data = {
 	data: DataResponse;
 	error: ErrorResponse;

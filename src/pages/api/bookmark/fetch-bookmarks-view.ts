@@ -1,6 +1,5 @@
 import { type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import isNull from "lodash/isNull";
 
 import {
@@ -14,7 +13,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = {
 	data: Array<{ category_views: BookmarkViewDataTypes }> | null;
-	error: PostgrestError | VerifyErrors | string | null;
+	error: PostgrestError | string | null;
 };
 
 export default async function handler(

@@ -3,7 +3,6 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil } from "lodash";
 import uniqid from "uniqid";
 
@@ -18,7 +17,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 // we are doing this because in auth triggers we do not get the oauth profile pic
 
 type DataResponse = ProfilesTableTypes[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | string | null;
+type ErrorResponse = PostgrestError | string | null;
 
 type Data = {
 	data: DataResponse;

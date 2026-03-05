@@ -3,7 +3,6 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 
 import { type UserProfilePicTypes } from "../../../types/apiTypes";
@@ -11,12 +10,7 @@ import { PROFILES } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type DataResponse = UserProfilePicTypes[] | null;
-type ErrorResponse =
-	| PostgrestError
-	| VerifyErrors
-	| string
-	| { message: string }
-	| null;
+type ErrorResponse = PostgrestError | string | { message: string } | null;
 
 type Data = {
 	data: DataResponse;

@@ -1,6 +1,5 @@
 import { type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import isNull from "lodash/isNull";
 
 import {
@@ -16,7 +15,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
  */
 
 type DataResponse = CategoriesData[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | string | null;
+type ErrorResponse = PostgrestError | string | null;
 
 type Data = {
 	data: DataResponse;

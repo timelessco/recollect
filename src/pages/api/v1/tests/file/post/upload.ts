@@ -3,7 +3,6 @@ import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
 
@@ -246,7 +245,7 @@ export default async (
 		])
 		.select(`id`)) as unknown as {
 		data: Array<{ id: SingleListData["id"] }>;
-		error: PostgrestError | VerifyErrors | string | null;
+		error: PostgrestError | string | null;
 	};
 
 	// Add category association via junction table

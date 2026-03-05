@@ -2,7 +2,6 @@
 
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import isNull from "lodash/isNull";
 
 import { type UserProfilePicTypes } from "../../../types/apiTypes";
@@ -13,7 +12,7 @@ import { deleteLogic } from "../settings/upload-profile-pic";
 // removes user profile pic
 
 type DataResponse = UserProfilePicTypes[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | string | null;
+type ErrorResponse = PostgrestError | string | null;
 
 type Data = {
 	data: DataResponse;

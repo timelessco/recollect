@@ -3,8 +3,6 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { jwtDecode } from "jwt-decode";
-import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
 import {
@@ -24,103 +22,83 @@ type Data = {
 	success: string | null;
 };
 
-type InviteTokenData = {
-	category_id: number;
-	edit_access: boolean;
-	email: string;
-	userId: string;
-};
-
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse<Data>,
 ) {
+	const token = request?.query?.token as string | undefined;
+
+	if (!token) {
+		response.status(400).json({ success: null, error: "Missing invite token" });
+		return;
+	}
+
 	// using service client as this api should work irrespective of user auth
 	const supabase = createServiceClient();
 
-	if (request?.query?.token) {
-		const tokenData: InviteTokenData = jwtDecode(
-			request?.query?.token as string,
-		);
+	// Look up the invite directly by token
+	const { data, error } = await supabase
+		.from(SHARED_CATEGORIES_TABLE_NAME)
+		.select("*")
+		.eq("invite_token", token)
+		.maybeSingle();
 
-		const insertData = {
-			email: tokenData?.email,
-			category_id: tokenData?.category_id,
-			// edit_access: tokenData?.edit_access,
-			// userId: tokenData?.userId,
-		};
-
-		// check if user with category Id is already there in DB
-		const { data, error } = await supabase
-			.from(SHARED_CATEGORIES_TABLE_NAME)
-			.select("*")
-			.eq("category_id", insertData?.category_id)
-			.eq("email", insertData?.email);
-
-		// if data is empty then the user invite was deleted
-		if (isEmpty(data) && isNull(error)) {
-			response.status(500).json({
-				success: null,
-				error: `This user invite has been deleted , error: ${
-					isNull(error) ? "db error null" : error
-				}`,
-			});
-			Sentry.captureException(
-				`This user invite has been deleted , error: ${
-					isNull(error) ? "db error null" : error
-				}`,
-			);
-			return;
-		}
-
-		// the data will be present as it will be added with is_accept_pending true when invite is sent
-		if (!isNull(data) && data[0]?.is_accept_pending === true) {
-			// const { error: catError } = await supabase
-			//   .from(SHARED_CATEGORIES_TABLE_NAME)
-			//   .insert({
-			//     category_id: insertData?.category_id,
-			//     email: insertData?.email,
-			//     edit_access: false,
-			//     user_id: insertData?.userId,
-			//   })
-			//   .select();
-
-			const { error: catError } = await supabase
-				.from(SHARED_CATEGORIES_TABLE_NAME)
-				.update({
-					is_accept_pending: false,
-				})
-				.eq("email", insertData?.email)
-				.eq("category_id", insertData?.category_id);
-
-			if (isNull(catError)) {
-				// User has been added as a colaborator to the category
-				response?.redirect(`/${EVERYTHING_URL}`);
-			} else if (catError?.code === "23503") {
-				// if collab user does not have an existing account
-				response.status(500).json({
-					success: null,
-					error: `You do not have an existing account , please create one and visit this invite lint again ! error : ${catError?.message}`,
-				});
-			} else {
-				response.status(500).json({
-					success: null,
-					error: catError?.message,
-				});
-				Sentry.captureException(`Min bookmark data is empty`);
-			}
-		} else {
-			response.status(500).json({
-				success: null,
-				error: isNull(error)
-					? "The user is already a colaborator of this category"
-					: error,
-			});
-			Sentry.captureException(
-				isNull(error)
-					? "The user is already a colaborator of this category"
-					: error,
-			);
-		}
+	if (error) {
+		Sentry.captureException(error, {
+			tags: { operation: "invite_lookup" },
+		});
+		response
+			.status(500)
+			.json({ success: null, error: "Error looking up invite" });
+		return;
 	}
+
+	// if data is null then the invite token is invalid or was deleted
+	if (isNull(data)) {
+		response.status(404).json({
+			success: null,
+			error: "This invite is invalid or has been deleted",
+		});
+		return;
+	}
+
+	if (data.is_accept_pending !== true) {
+		response.status(409).json({
+			success: null,
+			error: "The user is already a colaborator of this category",
+		});
+		return;
+	}
+
+	// Accept the invite: mark as accepted and clear the token
+	const { error: catError } = await supabase
+		.from(SHARED_CATEGORIES_TABLE_NAME)
+		.update({
+			is_accept_pending: false,
+			invite_token: null,
+		})
+		.eq("id", data.id);
+
+	if (isNull(catError)) {
+		// User has been added as a colaborator to the category
+		response.redirect(`/${EVERYTHING_URL}`);
+		return;
+	}
+
+	if (catError.code === "23503") {
+		// if collab user does not have an existing account
+		response.status(500).json({
+			success: null,
+			error: `You do not have an existing account, please create one and visit this invite link again! error: ${catError.message}`,
+		});
+		return;
+	}
+
+	Sentry.captureException(catError, {
+		tags: { operation: "invite_accept" },
+	});
+	response.status(500).json({
+		success: null,
+		error: catError.message,
+	});
 }

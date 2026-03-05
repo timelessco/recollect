@@ -1,8 +1,9 @@
+import crypto from "node:crypto";
+
 import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
-import { sign, type VerifyErrors } from "jsonwebtoken";
 import isNull from "lodash/isNull";
 
 import {
@@ -21,7 +22,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { vet } from "@/utils/try";
 
 type Data = {
-	error: PostgrestError | VerifyErrors | string | null;
+	error: PostgrestError | string | null;
 	message?: string;
 	url: string | null;
 };
@@ -85,12 +86,15 @@ export default async function handler(
 			return;
 		}
 
+		const inviteToken = crypto.randomUUID();
+
 		const { error } = await supabase.from(SHARED_CATEGORIES_TABLE_NAME).insert({
 			category_id: categoryId,
 			email: emailList[0],
 			edit_access: editAccess,
 			user_id: userId,
 			is_accept_pending: true,
+			invite_token: inviteToken,
 		});
 
 		if (!isNull(error)) {
@@ -106,16 +110,7 @@ export default async function handler(
 			return;
 		}
 
-		const token = sign(
-			{
-				email: emailList[0],
-				category_id: categoryId,
-				edit_access: editAccess,
-				userId,
-			},
-			"shhhhh",
-		);
-		const url = `${hostUrl}/api/invite?token=${token}`;
+		const url = `${hostUrl}/api/invite?token=${inviteToken}`;
 
 		const { data } = await supabase
 			.from(CATEGORIES_TABLE_NAME)

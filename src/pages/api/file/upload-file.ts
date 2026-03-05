@@ -6,7 +6,6 @@ import {
 	type SupabaseClient,
 } from "@supabase/supabase-js";
 import axios from "axios";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 
 import imageToText, {
@@ -338,7 +337,7 @@ export default async (
 			])
 			.select(`id`)) as unknown as {
 			data: Array<{ id: SingleListData["id"] }>;
-			error: PostgrestError | VerifyErrors | string | null;
+			error: PostgrestError | string | null;
 		};
 
 		console.log("Database insert result:", {

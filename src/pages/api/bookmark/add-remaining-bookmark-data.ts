@@ -5,7 +5,6 @@ import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
@@ -42,7 +41,7 @@ import {
 
 type Data = {
 	data: SingleListData[] | null;
-	error: PostgrestError | VerifyErrors | string | null;
+	error: PostgrestError | string | null;
 	message: string | null;
 };
 
@@ -342,7 +341,7 @@ export default async function handler(
 		error: databaseError,
 	}: {
 		data: SingleListData[] | null;
-		error: PostgrestError | VerifyErrors | string | null;
+		error: PostgrestError | string | null;
 	} = await supabase
 		.from(MAIN_TABLE_NAME)
 		.update({

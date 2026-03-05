@@ -5,7 +5,6 @@ import {
 	type SupabaseClient,
 } from "@supabase/supabase-js";
 import axios from "axios";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
 
@@ -45,7 +44,7 @@ import { vet } from "@/utils/try";
 // this api get the scrapper data, checks for duplicate bookmarks and then adds it to the DB
 type Data = {
 	data: SingleListData[] | null;
-	error: PostgrestError | VerifyErrors | string | null;
+	error: PostgrestError | string | null;
 	message: string | null;
 };
 
@@ -325,7 +324,7 @@ export default async function handler(
 			error,
 		}: {
 			data: SingleListData[] | null;
-			error: PostgrestError | VerifyErrors | string | null;
+			error: PostgrestError | string | null;
 		} = await supabase
 			.from(MAIN_TABLE_NAME)
 			.insert([

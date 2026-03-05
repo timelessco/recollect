@@ -3,7 +3,6 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNull from "lodash/isNull";
 
@@ -14,7 +13,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 // fetches tags for a perticular user
 
 type DataResponse = UserTagsData[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | string | null;
+type ErrorResponse = PostgrestError | string | null;
 
 type Data = {
 	data: DataResponse;
