@@ -50,7 +50,7 @@ export async function revalidatePublicCategoryPage(
 
 	const revalidationPromise = (async () => {
 		try {
-			const revalidateUrl = `${getBaseUrl()}${NEXT_API_URL}/revalidate`;
+			const revalidateUrl = `${getBaseUrl()}${NEXT_API_URL}/v2/revalidate`;
 			const secret = process.env.REVALIDATE_SECRET_TOKEN;
 
 			if (!secret) {
