@@ -103,7 +103,17 @@ export default async (
 ) => {
 	const supabase = apiSupabaseClient(request, response);
 
-	const formData = await parseFormData(request);
+	let formData: FormData;
+	try {
+		formData = await parseFormData(request);
+	} catch {
+		response.status(400).json({
+			success: false,
+			error: "Invalid or missing multipart form data",
+		});
+		return;
+	}
+
 	const file = formData.get("file");
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
