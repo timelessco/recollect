@@ -59,13 +59,15 @@ export const imageToText = async (
 			imageKeywords: true,
 			ocr: true,
 		};
-		const hasAnyToggle =
+		const hasAnyPromptToggle =
 			activeToggles.aiSummary ||
 			activeToggles.imageKeywords ||
-			activeToggles.ocr ||
-			activeToggles.autoAssignCollections;
+			activeToggles.ocr;
+		const hasCollectionsToggle =
+			activeToggles.autoAssignCollections &&
+			(context?.collections ?? []).length > 0;
 
-		if (!hasAnyToggle) {
+		if (!hasAnyPromptToggle && !hasCollectionsToggle) {
 			return {
 				sentence: null,
 				image_keywords: [],
