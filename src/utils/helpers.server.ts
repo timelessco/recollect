@@ -9,7 +9,9 @@ import {
 	VIDEO_DOWNLOAD_TIMEOUT_MS,
 } from "./constants";
 import { storageHelpers } from "./storageClient";
-import imageToText from "@/async/ai/imageToText";
+import imageToText, { type UserCollection } from "@/async/ai/imageToText";
+import { fetchAiToggles, type AiToggles } from "@/utils/ai-feature-toggles";
+import { fetchUserCollections } from "@/utils/auto-assign-collections";
 import { blurhashFromURL } from "@/utils/getBlurHash";
 
 type EnrichMetadataParams = {
@@ -25,6 +27,7 @@ type EnrichMetadataParams = {
 
 type EnrichMetadataResult = {
 	metadata: Record<string, unknown>;
+	matchedCollectionIds: number[];
 	isFailed: boolean;
 	error: string | null;
 };
@@ -62,6 +65,13 @@ export const enrichMetadata = async ({
 	supabase,
 	url,
 }: EnrichMetadataParams): Promise<EnrichMetadataResult> => {
+	const aiToggles = await fetchAiToggles({ supabase, userId });
+	const userCollections = await fetchUserCollections({
+		autoAssignEnabled: aiToggles.autoAssignCollections,
+		supabase,
+		userId,
+	});
+
 	// Run all AI operations in parallel
 	const [videoResult, captionResult, blurhashResult] = await Promise.allSettled(
 		[
@@ -104,7 +114,15 @@ export const enrichMetadata = async ({
 					})()
 				: Promise.resolve(null),
 			// Image caption + OCR generation (single Gemini call)
-			processImageCaption(ogImage, supabase, userId, url, existingMetadata),
+			processImageCaption(
+				ogImage,
+				supabase,
+				userId,
+				url,
+				existingMetadata,
+				aiToggles,
+				userCollections,
+			),
 			// Blurhash generation
 			processBlurhash(ogImage, url, userId),
 		],
@@ -118,6 +136,7 @@ export const enrichMetadata = async ({
 		isImageCaptionFailed,
 		image_caption,
 		image_keywords,
+		matchedCollectionIds,
 		ocr: ocrData,
 		ocr_status: ocrStatus,
 	} = captionResult.status === "fulfilled"
@@ -125,7 +144,8 @@ export const enrichMetadata = async ({
 		: {
 				isImageCaptionFailed: true,
 				image_caption: null,
-				image_keywords: [],
+				image_keywords: [] as string[],
+				matchedCollectionIds: [] as number[],
 				ocr: null,
 				ocr_status: "no_text" as const,
 			};
@@ -172,7 +192,7 @@ export const enrichMetadata = async ({
 		hasVideo: Boolean(metadata.video_url),
 	});
 
-	return { metadata, isFailed, error };
+	return { metadata, matchedCollectionIds, isFailed, error };
 };
 
 const processImageCaption = async (
@@ -181,6 +201,8 @@ const processImageCaption = async (
 	userId: string,
 	url: string,
 	existingMetadata: Record<string, unknown>,
+	aiToggles: AiToggles,
+	userCollections: UserCollection[],
 ) => {
 	console.log("[processImageCaption] Generating image caption:", {
 		url,
@@ -188,31 +210,46 @@ const processImageCaption = async (
 	});
 	// Generate caption for the image
 	try {
-		const result = await imageToText(ogImage, supabase, userId, {
-			isPageScreenshot: Boolean(existingMetadata?.isPageScreenshot),
-		});
+		const result = await imageToText(
+			ogImage,
+			supabase,
+			userId,
+			{ isPageScreenshot: Boolean(existingMetadata?.isPageScreenshot) },
+			userCollections.length > 0 ? { collections: userCollections } : null,
+			aiToggles,
+		);
 		if (!result?.sentence) {
-			console.error(
-				"[processImageCaption] imageToText returned empty result:",
-				{ url, ogImage },
-			);
-			Sentry.captureMessage("Image caption generation returned empty result", {
-				level: "error",
-				tags: {
-					operation: "image_caption_empty",
-					userId,
-				},
-				extra: {
-					url,
-					ogImage,
-				},
-			});
+			// When aiSummary is OFF, null sentence is expected — not a failure
+			if (aiToggles.aiSummary) {
+				console.error(
+					"[processImageCaption] imageToText returned empty result:",
+					{ url, ogImage },
+				);
+				Sentry.captureMessage(
+					"Image caption generation returned empty result",
+					{
+						level: "error",
+						tags: {
+							operation: "image_caption_empty",
+							userId,
+						},
+						extra: {
+							url,
+							ogImage,
+						},
+					},
+				);
+			}
+
 			return {
-				isImageCaptionFailed: true,
+				isImageCaptionFailed: aiToggles.aiSummary,
 				image_caption: null,
-				image_keywords: [],
-				ocr: null,
-				ocr_status: "no_text" as const,
+				image_keywords: result?.image_keywords ?? [],
+				matchedCollectionIds: result?.matched_collection_ids ?? [],
+				ocr: result?.ocr_text ?? null,
+				ocr_status: result?.ocr_text
+					? ("success" as const)
+					: ("no_text" as const),
 			};
 		} else {
 			console.log(
@@ -223,6 +260,7 @@ const processImageCaption = async (
 				isImageCaptionFailed: false,
 				image_caption: result.sentence,
 				image_keywords: result.image_keywords ?? [],
+				matchedCollectionIds: result.matched_collection_ids ?? [],
 				ocr: result.ocr_text,
 				ocr_status: result.ocr_text
 					? ("success" as const)
@@ -249,6 +287,7 @@ const processImageCaption = async (
 			isImageCaptionFailed: true,
 			image_caption: null,
 			image_keywords: [],
+			matchedCollectionIds: [],
 			ocr: null,
 			ocr_status: "no_text" as const,
 		};

@@ -10,6 +10,7 @@ import {
 } from "@/utils/constants";
 
 export interface FetchUserCollectionsProps {
+	autoAssignEnabled?: boolean;
 	supabase: SupabaseClient;
 	userId: string;
 }
@@ -21,23 +22,30 @@ export interface FetchUserCollectionsProps {
 export async function fetchUserCollections(
 	props: FetchUserCollectionsProps,
 ): Promise<UserCollection[]> {
-	const { supabase, userId } = props;
+	const { autoAssignEnabled, supabase, userId } = props;
 
 	try {
-		// Check if user has auto-assign enabled
-		const { data: profileData } = await supabase
-			.from(PROFILES)
-			.select("ai_features_toggle")
-			.eq("id", userId)
-			.single();
+		// When pre-fetched toggle is provided, use it directly to avoid duplicate query
+		if (autoAssignEnabled !== undefined) {
+			if (!autoAssignEnabled) {
+				return [];
+			}
+		} else {
+			// Fallback: fetch toggle from DB (legacy callers)
+			const { data: profileData } = await supabase
+				.from(PROFILES)
+				.select("ai_features_toggle")
+				.eq("id", userId)
+				.single();
 
-		const aiFeatures = profileData?.ai_features_toggle as Record<
-			string,
-			unknown
-		> | null;
+			const aiFeatures = profileData?.ai_features_toggle as Record<
+				string,
+				unknown
+			> | null;
 
-		if (aiFeatures?.auto_assign_collections === false) {
-			return [];
+			if (aiFeatures?.auto_assign_collections === false) {
+				return [];
+			}
 		}
 
 		const { data: categoriesData } = await supabase

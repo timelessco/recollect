@@ -15,6 +15,7 @@ import { createServiceClient } from "../../../utils/supabaseClient";
 import { upload } from "../bookmark/add-remaining-bookmark-data";
 
 import { storeQueueError } from "@/lib/api-helpers/queue";
+import { autoAssignCollections } from "@/utils/auto-assign-collections";
 
 const requestBodySchema = z.object({
 	id: z.number(),
@@ -249,6 +250,7 @@ export default async function handler(
 		// Enrich metadata with AI-generated content
 		const {
 			metadata: newMeta,
+			matchedCollectionIds,
 			isFailed,
 			error,
 		} = await enrichMetadata({
@@ -302,6 +304,13 @@ export default async function handler(
 		}
 
 		console.log(`[${ROUTE}] Bookmark updated successfully:`, { url });
+
+		await autoAssignCollections({
+			bookmarkId: id,
+			matchedCollectionIds,
+			route: ROUTE,
+			userId: user_id,
+		});
 
 		// Delete message from queue on success
 		if (!isFailed) {

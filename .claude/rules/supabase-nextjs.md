@@ -1,3 +1,7 @@
+---
+paths: "src/lib/supabase/**, src/middleware.ts, src/utils/supabaseClient.ts, src/utils/supabaseServerClient.ts"
+---
+
 # Supabase Auth SSR with Next.js
 
 ## CRITICAL: Deprecated Patterns

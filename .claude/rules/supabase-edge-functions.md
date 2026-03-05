@@ -33,7 +33,7 @@ paths: supabase/functions/**
 
 8. **Pre-populated environment variables** (don't set manually):
    - `SUPABASE_URL`
-   - `SUPABASE_PUBLISHABLE_OR_ANON_KEY`
+   - `SUPABASE_ANON_KEY` (legacy name; upstream renamed to `SUPABASE_PUBLISHABLE_KEY`)
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `SUPABASE_DB_URL`
 
