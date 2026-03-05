@@ -60,7 +60,7 @@ You are a Recollect API migration agent. You migrate Pages Router API routes to 
 
 ## Section 2: App Router Handler Patterns
 
-Four handler factories in `/src/lib/api-helpers/create-handler.ts`:
+Handler factories in `/src/lib/api-helpers/create-handler.ts`:
 
 | Function                       | Auth     | Method | Use Case               |
 | ------------------------------ | -------- | ------ | ---------------------- |
@@ -71,6 +71,8 @@ Four handler factories in `/src/lib/api-helpers/create-handler.ts`:
 | `createPatchApiHandlerWithAuth` | Required | PATCH  | Authenticated updates  |
 | `createPutApiHandlerWithAuth` | Required | PUT    | Authenticated upserts  |
 | `createDeleteApiHandlerWithAuth` | Required | DELETE | Authenticated deletes  |
+| `createGetApiHandlerWithSecret` | Secret   | GET    | Secret-token protected GETs (cron)  |
+| `createPostApiHandlerWithSecret` | Secret  | POST   | Secret-token protected POSTs (ISR, cron) |
 
 **Handler factory config:**
 
@@ -96,6 +98,15 @@ Four handler factories in `/src/lib/api-helpers/create-handler.ts`:
 | ------- | -------- | ---------------------------- |
 | `input` | `TInput` | Validated request body/query |
 | `route` | `string` | Route name                   |
+
+**Handler context for secret handlers:**
+
+| Prop    | Type     | Description                  |
+| ------- | -------- | ---------------------------- |
+| `input` | `TInput` | Validated request body/query |
+| `route` | `string` | Route name                   |
+
+Secret handlers check `Authorization: Bearer <secret>` against `process.env[secretEnvVar]`. The handler does NOT receive a Supabase client — create one internally if needed.
 
 **Handler return behavior:**
 
@@ -386,7 +397,60 @@ export const MyOutputSchema = z.object({
 
 **`ROUTE` naming:** `"v2-<domain>-<endpoint>"` in kebab-case.
 
-**Object.assign template (for non-standard routes):**
+**Secret-token POST handler template (`route.ts`):**
+
+```typescript
+import { createPostApiHandlerWithSecret } from "@/lib/api-helpers/create-handler";
+import { MyInputSchema, MyOutputSchema } from "./schema";
+
+const ROUTE = "v2-domain-endpoint";
+
+export const POST = createPostApiHandlerWithSecret({
+	route: ROUTE,
+	inputSchema: MyInputSchema,
+	outputSchema: MyOutputSchema,
+	secretEnvVar: "MY_SECRET_TOKEN",
+	handler: async ({ input, route }) => {
+		// No supabase client provided — create service client if needed
+		// const supabase = createServiceClient();
+		return result;
+	},
+});
+```
+
+**Binary response template (Object.assign for scanner, returns raw Response):**
+
+```typescript
+import { type NextRequest } from "next/server";
+import { z } from "zod";
+import { type HandlerConfig } from "@/lib/api-helpers/create-handler";
+
+const ROUTE = "v2-domain-endpoint";
+
+const InputSchema = z.object({ url: z.url() });
+const OutputSchema = z.any(); // Binary — no JSON output schema
+
+async function handleGet(request: NextRequest) {
+	const url = new URL(request.url);
+	const pdfUrl = url.searchParams.get("url");
+	// ... fetch and return binary
+	const buffer = await result.arrayBuffer();
+	return new Response(buffer, {
+		headers: { "Content-Type": "application/pdf" },
+	});
+}
+
+export const GET = Object.assign(handleGet, {
+	config: {
+		factoryName: "createGetApiHandler",
+		inputSchema: InputSchema,
+		outputSchema: OutputSchema,
+		route: ROUTE,
+	} satisfies HandlerConfig,
+});
+```
+
+**Object.assign template (for other non-standard routes):**
 
 ```typescript
 import { NextResponse, type NextRequest } from "next/server";
@@ -422,25 +486,35 @@ export const POST = Object.assign(handlePost, {
 | `createPostApiHandlerWithAuth` | POST   | User JWT | Standard POST with logged-in user        |
 | `createPatchApiHandlerWithAuth` | PATCH  | User JWT | Partial updates (`.update()`)            |
 | `createPutApiHandlerWithAuth` | PUT    | User JWT | Idempotent upsert/replace (`.upsert()`) |
+| `createDeleteApiHandlerWithAuth` | DELETE | User JWT | Authenticated deletes                   |
 | `createGetApiHandler`          | GET    | None     | Public GET endpoint                      |
 | `createPostApiHandler`         | POST   | None     | No user JWT (service-role, cron, public) |
+| `createGetApiHandlerWithSecret` | GET   | Secret   | Secret-token protected GETs (cron)       |
+| `createPostApiHandlerWithSecret` | POST  | Secret   | Secret-token protected POSTs (ISR)       |
 
 **factoryName decision table:**
 
 | Route Pattern           | factoryName                                                        | Why                         |
 | ----------------------- | ------------------------------------------------------------------ | --------------------------- |
 | User JWT auth           | `"createGetApiHandlerWithAuth"` / `"createPostApiHandlerWithAuth"` | Scanner adds `bearerAuth`   |
-| Service-role key        | `"createPostApiHandler"`                                           | No user auth                |
-| CRON_SECRET / ISR token | `"createPostApiHandler"`                                           | Custom secret               |
-| Multipart + user auth   | `"createPostApiHandler"`                                           | Call `requireAuth` manually |
-| Public                  | `"createGetApiHandler"`                                            | No auth                     |
+| Secret token (GET)      | `"createGetApiHandlerWithSecret"`                                  | Secret env var auth         |
+| Secret token (POST)     | `"createPostApiHandlerWithSecret"`                                 | Secret env var auth (ISR)   |
+| Service-role (no auth)  | `"createPostApiHandler"` + internal `createServiceClient()`        | Handler creates own client  |
+| Multipart + user auth   | `"createPostApiHandler"` + `requireAuth` manually                  | Custom auth flow            |
+| Public                  | `"createGetApiHandler"` / `"createPostApiHandler"`                 | No auth                     |
+| Binary response         | Object.assign with `"createGetApiHandler"` factoryName             | Returns `new Response(buffer)` |
 
 **Non-standard route taxonomy (Waves 3-6):**
 
-| Route                         | Wave | Pattern       | Notes                     |
-| ----------------------------- | ---- | ------------- | ------------------------- |
-| `revalidate`                  | 3    | Object.assign | REVALIDATE_SECRET_TOKEN   |
-| `v1/process-queue`            | 3    | Object.assign | Service-role client       |
+| Route                         | Wave | Pattern       | Notes                                |
+| ----------------------------- | ---- | ------------- | ------------------------------------ |
+| `revalidate`                  | 3    | Secret factory | `createPostApiHandlerWithSecret` + `revalidatePath()` |
+| `get-media-type`              | 3    | Public factory | `createGetApiHandler` + CORS headers |
+| `get-pdf-buffer`              | 3    | Object.assign | Binary PDF response, no JSON factory |
+| `bookmarks/insert`            | 3    | Auth factory   | Batch insert, `createPostApiHandlerWithAuth` |
+| `bookmarks/delete/non-cascade`| 3    | Auth factory   | `createDeleteApiHandlerWithAuth`, test-only |
+| `v1/process-queue`            | 3    | Public factory | `createPostApiHandler` + internal service client |
+| `fetch-public-category-bookmarks` | 3 | Public factory | `createGetApiHandler` + service client, complex query |
 | `settings/upload-profile-pic` | 4    | Object.assign | Multipart + user auth     |
 | `v1/screenshot`               | 6    | Object.assign | Service-role queue worker |
 | `v1/ai-enrichment`            | 6    | Object.assign | Service-role queue worker |
@@ -520,10 +594,13 @@ return apiError({
 
 **Utility Patterns (Phase 9):**
 
-- **Secret-token**: Valid → 200; invalid → 401/403; missing → 401/403.
-- **Service-role**: Valid key → 200; invalid → 401/403; user JWT → 401/403.
-- **Public no-auth**: `credentials: 'omit'` works; valid → results; no data → empty.
-- **Proxy**: Valid URL → correct response; invalid → error; compare content-type headers.
+- **Secret-token POST**: Valid token → 200; invalid token → 401; missing Authorization → 401; wrong method (GET) → 405.
+- **ISR revalidate**: Valid path + valid token → revalidated; invalid path → 400; also update `revalidation-helpers.ts` URL and test server-to-self call.
+- **Public GET proxy (HEAD)**: Valid URL → media type; invalid URL → 400; timeout → graceful error; verify CORS headers in response.
+- **Binary proxy (PDF)**: Valid PDF URL → `Content-Type: application/pdf` + binary body; invalid URL → error; verify response is NOT JSON-wrapped.
+- **Batch insert**: Array of bookmarks → inserted; empty array → error; single item → works; verify DB rows created.
+- **Public complex query**: Pagination (page + limit params); all 4 sort modes; junction table join; no-auth (`credentials: 'omit'` works); username mismatch → appropriate response.
+- **Service-role (no auth)**: Endpoint callable without auth; verify service client operations work; verify Sentry captures errors.
 
 **Complex Patterns (Phase 10-12):**
 
@@ -564,6 +641,18 @@ return apiError({
 14. **HTTP method semantics:** Never blindly copy v1's HTTP method. v1 uses POST for everything (reads, updates, deletes). v2 must use GET/POST/PUT/PATCH/DELETE based on the actual operation. See Section 2b for decision rules.
 
 15. **Lodash ESM incompatibility in scanner:** Importing from `@/utils/helpers` (which imports `{ isEmpty } from "lodash"`) causes the OpenAPI scanner (`tsx`) to fail with ESM named-export errors. Workaround: inline small utility functions in the route file or use the `Object.assign` pattern. This is a scanner limitation, not a runtime issue.
+
+16. **Binary responses bypass factory JSON wrapping:** Routes returning `new Response(buffer)` (e.g., PDF streaming) cannot use JSON factories — the factory wraps all returns in `apiSuccess({ data, schema })`. Use `Object.assign` with `factoryName: "createGetApiHandler"` for scanner discoverability, but return raw `Response` objects directly.
+
+17. **ISR revalidation in App Router:** `res.revalidate(path)` is Pages Router only. App Router equivalent is `revalidatePath(path)` from `next/cache`. The revalidate v2 route must import from `next/cache`, not call `res.revalidate()`.
+
+18. **CORS headers in App Router:** Unlike Pages Router's `res.setHeader()`, App Router returns `new NextResponse()` or `Response()` with headers in the constructor. When preserving CORS headers from v1, set them on the Response object: `NextResponse.json(data, { headers: { 'Access-Control-Allow-Origin': '*' } })`.
+
+19. **Service-role client in public factory handlers:** `createGetApiHandler` / `createPostApiHandler` don't provide a Supabase client — the handler must create its own via `createServiceClient()` from `@/utils/supabaseClient` or `createServerServiceClient()` from `@/lib/supabase/service`. This is correct for endpoints needing service-role access without user auth (e.g., process-queue, fetch-public-category-bookmarks).
+
+20. **Caller URL exceptions:** `revalidation-helpers.ts` is updated to v2 URL in Phase 9 (not Phase 13) because it's a server-to-self internal call. Document this exception in the SUMMARY so Phase 13 doesn't double-update. All other callers (Chrome extension, Cypress tests, frontend hooks) wait for Phase 13.
+
+21. **Drop lodash in v2 migrations:** Replace `isNull`/`isNil` with `isNullable()` from `@/utils/`, replace `isEmpty` with `array.length === 0`, replace `omit` with destructuring rest `const { removed, ...rest } = obj`.
 
 ---
 
