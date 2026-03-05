@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { type SupabaseClient } from "@supabase/supabase-js";
 
 import { type AiFeaturesToggle } from "@/types/apiTypes";
@@ -35,6 +36,15 @@ export async function fetchAiToggles(
 			userId,
 			error: error.message,
 		});
+		Sentry.captureException(error, {
+			tags: { operation: "fetch_ai_toggles", userId },
+		});
+		return {
+			aiSummary: false,
+			autoAssignCollections: false,
+			imageKeywords: false,
+			ocr: false,
+		};
 	}
 
 	const toggles = data?.ai_features_toggle as AiFeaturesToggle | null;
