@@ -70,35 +70,49 @@ export default async function handler(
 		return;
 	}
 
-	// Accept the invite: mark as accepted and clear the token
-	const { error: catError } = await supabase
+	// Accept the invite atomically: match token + pending state to prevent replay races
+	const { data: acceptedInvite, error: catError } = await supabase
 		.from(SHARED_CATEGORIES_TABLE_NAME)
 		.update({
 			is_accept_pending: false,
 			invite_token: null,
 		})
-		.eq("id", data.id);
+		.eq("id", data.id)
+		.eq("invite_token", token)
+		.eq("is_accept_pending", true)
+		.select("id")
+		.maybeSingle();
 
-	if (isNull(catError)) {
+	if (isNull(catError) && !isNull(acceptedInvite)) {
 		// User has been added as a colaborator to the category
 		response.redirect(`/${EVERYTHING_URL}`);
 		return;
 	}
 
-	if (catError.code === "23503") {
-		// if collab user does not have an existing account
-		response.status(500).json({
+	if (isNull(catError) && isNull(acceptedInvite)) {
+		response.status(409).json({
 			success: null,
-			error: `You do not have an existing account, please create one and visit this invite link again! error: ${catError.message}`,
+			error: "This invite is no longer pending",
 		});
 		return;
 	}
 
+	if (catError?.code === "23503") {
+		// if collab user does not have an existing account
+		response.status(500).json({
+			success: null,
+			error:
+				"You do not have an existing account. Please create one and open the invite link again.",
+		});
+		return;
+	}
+
+	console.error("Error accepting invite:", catError);
 	Sentry.captureException(catError, {
 		tags: { operation: "invite_accept" },
 	});
 	response.status(500).json({
 		success: null,
-		error: catError.message,
+		error: "Failed to accept invite",
 	});
 }

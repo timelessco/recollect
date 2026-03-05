@@ -50,7 +50,9 @@ export default async function handler(
 		const { data, error }: { data: DataResponse; error: ErrorResponse } =
 			await supabase
 				.from(SHARED_CATEGORIES_TABLE_NAME)
-				.select()
+				.select(
+					"id, category_id, category_views, created_at, edit_access, email, is_accept_pending, user_id",
+				)
 				.or(`email.eq.${email},user_id.eq.${userId}`);
 
 		// Handle database error
