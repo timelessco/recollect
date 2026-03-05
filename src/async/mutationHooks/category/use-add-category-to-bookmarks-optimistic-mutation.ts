@@ -1,5 +1,3 @@
-import { produce } from "immer";
-
 import {
 	type AddCategoryToBookmarksPayload,
 	type AddCategoryToBookmarksResponse,
@@ -75,41 +73,45 @@ export function useAddCategoryToBookmarksOptimisticMutation() {
 				const isAddingRealCategory =
 					variables.category_id !== UNCATEGORIZED_CATEGORY_ID;
 
-				return produce(currentData, (draft) => {
-					for (const page of draft.pages) {
+				return {
+					...currentData,
+					pages: currentData.pages.map((page) => {
 						if (!page?.data) {
-							continue;
+							return page;
 						}
 
-						for (const bookmark of page.data) {
-							// Skip if not in selection
-							if (!bookmarkIdSet.has(bookmark.id)) {
-								continue;
-							}
+						return {
+							...page,
+							data: page.data.map((bookmark) => {
+								// Skip if not in selection
+								if (!bookmarkIdSet.has(bookmark.id)) {
+									return bookmark;
+								}
 
-							// Check if already has category
-							const existingCategories = bookmark.addedCategories ?? [];
-							const alreadyHasCategory = existingCategories.some(
-								(cat) => cat.id === variables.category_id,
-							);
-							if (alreadyHasCategory) {
-								continue;
-							}
+								// Check if already has category
+								const existingCategories = bookmark.addedCategories ?? [];
+								const alreadyHasCategory = existingCategories.some(
+									(cat) => cat.id === variables.category_id,
+								);
+								if (alreadyHasCategory) {
+									return bookmark;
+								}
 
-							// EXCLUSIVE MODEL: When adding a real category, filter out category 0
-							const filteredCategories = isAddingRealCategory
-								? existingCategories.filter(
-										(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
-									)
-								: existingCategories;
+								// EXCLUSIVE MODEL: When adding a real category, filter out category 0
+								const filteredCategories = isAddingRealCategory
+									? existingCategories.filter(
+											(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
+										)
+									: existingCategories;
 
-							bookmark.addedCategories = [
-								...filteredCategories,
-								newCategoryEntry,
-							];
-						}
-					}
-				});
+								return {
+									...bookmark,
+									addedCategories: [...filteredCategories, newCategoryEntry],
+								};
+							}),
+						};
+					}),
+				};
 			},
 			onSettled: (_data, error) => {
 				if (error) {

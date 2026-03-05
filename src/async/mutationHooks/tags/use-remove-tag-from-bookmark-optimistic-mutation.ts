@@ -41,11 +41,12 @@ export function useRemoveTagFromBookmarkOptimisticMutation() {
 					updateBookmarkInPaginatedData(
 						currentData,
 						variables.bookmarkId,
-						(bookmark) => {
-							bookmark.addedTags = bookmark.addedTags?.filter(
+						(bookmark) => ({
+							...bookmark,
+							addedTags: bookmark.addedTags?.filter(
 								(tag) => tag.id !== variables.tagId,
-							);
-						},
+							),
+						}),
 					) ?? currentData
 				);
 			},

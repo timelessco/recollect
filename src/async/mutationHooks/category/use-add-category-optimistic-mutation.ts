@@ -1,5 +1,4 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { produce } from "immer";
 
 import {
 	type CreateCategoryPayload,
@@ -49,9 +48,10 @@ export function useAddCategoryOptimisticMutation() {
 				icon_color: "#000000",
 			} as unknown as CategoriesData;
 
-			return produce(currentData, (draft) => {
-				draft.data.push(optimisticCategory);
-			});
+			return {
+				...currentData,
+				data: [...currentData.data, optimisticCategory],
+			};
 		},
 		onSettled: (_data, error) => {
 			if (error) {

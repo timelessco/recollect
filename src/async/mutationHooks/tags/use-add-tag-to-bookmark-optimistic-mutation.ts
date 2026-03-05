@@ -70,13 +70,16 @@ export function useAddTagToBookmarkOptimisticMutation() {
 							(tag) => tag.id === variables.tagId,
 						);
 						if (alreadyHasTag) {
-							return;
+							return bookmark;
 						}
 
-						bookmark.addedTags = [
-							...(bookmark.addedTags ?? []),
-							{ id: variables.tagId, name: tagInfo.name } as UserTagsData,
-						];
+						return {
+							...bookmark,
+							addedTags: [
+								...(bookmark.addedTags ?? []),
+								{ id: variables.tagId, name: tagInfo.name } as UserTagsData,
+							],
+						};
 					},
 				) ?? currentData
 			);

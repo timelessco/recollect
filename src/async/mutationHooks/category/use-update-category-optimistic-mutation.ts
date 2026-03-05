@@ -1,7 +1,6 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { produce } from "immer";
 
 import {
 	type UpdateCategoryPayload,
@@ -37,40 +36,39 @@ export function useUpdateCategoryOptimisticMutation() {
 				return currentData;
 			}
 
-			return produce(currentData, (draft) => {
-				const category = draft.data.find(
-					(item) => item.id === variables.category_id,
-				);
-				if (!category) {
-					return;
-				}
+			const { updateData } = variables;
 
-				const { updateData } = variables;
-				if (updateData.category_name !== undefined) {
-					category.category_name = updateData.category_name;
-				}
+			return {
+				...currentData,
+				data: currentData.data.map((item) => {
+					if (item.id !== variables.category_id) {
+						return item;
+					}
 
-				if (updateData.category_views !== undefined) {
-					category.category_views =
-						updateData.category_views as CategoriesData["category_views"];
-				}
-
-				if (updateData.icon !== undefined) {
-					category.icon = updateData.icon;
-				}
-
-				if (updateData.icon_color !== undefined) {
-					category.icon_color = updateData.icon_color;
-				}
-
-				if (updateData.is_favorite !== undefined) {
-					category.is_favorite = updateData.is_favorite;
-				}
-
-				if (updateData.is_public !== undefined) {
-					category.is_public = updateData.is_public;
-				}
-			});
+					return {
+						...item,
+						...(updateData.category_name !== undefined && {
+							category_name: updateData.category_name,
+						}),
+						...(updateData.category_views !== undefined && {
+							category_views:
+								updateData.category_views as CategoriesData["category_views"],
+						}),
+						...(updateData.icon !== undefined && {
+							icon: updateData.icon,
+						}),
+						...(updateData.icon_color !== undefined && {
+							icon_color: updateData.icon_color,
+						}),
+						...(updateData.is_favorite !== undefined && {
+							is_favorite: updateData.is_favorite,
+						}),
+						...(updateData.is_public !== undefined && {
+							is_public: updateData.is_public,
+						}),
+					};
+				}),
+			};
 		},
 		onSettled: (_data, error) => {
 			if (error) {

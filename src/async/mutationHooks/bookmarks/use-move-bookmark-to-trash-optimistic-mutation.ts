@@ -1,5 +1,3 @@
-import { produce } from "immer";
-
 import { moveBookmarkToTrash } from "../../supabaseCrudHelpers";
 
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
@@ -49,17 +47,21 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
 			);
 
 			// Remove the bookmarks from the current page
-			return produce(currentData, (draft) => {
-				for (const page of draft.pages) {
+			return {
+				...currentData,
+				pages: currentData.pages.map((page) => {
 					if (!page?.data) {
-						continue;
+						return page;
 					}
 
-					page.data = page.data.filter(
-						(bookmark) => !bookmarkIdsToRemove.has(bookmark.id),
-					);
-				}
-			});
+					return {
+						...page,
+						data: page.data.filter(
+							(bookmark) => !bookmarkIdsToRemove.has(bookmark.id),
+						),
+					};
+				}),
+			};
 		},
 
 		// Add to trash page when moving TO trash, or add to category when restoring FROM trash
@@ -91,22 +93,28 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
 					}
 
 					// Add bookmarks to the beginning of the first page for immediate visibility
-					return produce(data, (draft) => {
-						if (draft.pages[0]?.data) {
-							// Create a Set of existing bookmark IDs for efficient lookup
-							const existingIds = new Set(
-								draft.pages[0].data.map((bookmark) => bookmark.id),
-							);
+					if (!data.pages[0]?.data) {
+						return data;
+					}
 
-							// Add new bookmarks that don't already exist (avoid duplicates)
-							const newBookmarks = variables.data.filter(
-								(bookmark) => !existingIds.has(bookmark.id),
-							);
+					// Create a Set of existing bookmark IDs for efficient lookup
+					const existingIds = new Set(
+						data.pages[0].data.map((bookmark) => bookmark.id),
+					);
 
-							// Add all new bookmarks to the beginning
-							draft.pages[0].data.unshift(...newBookmarks);
-						}
-					});
+					// Add new bookmarks that don't already exist (avoid duplicates)
+					const newBookmarks = variables.data.filter(
+						(bookmark) => !existingIds.has(bookmark.id),
+					);
+
+					return {
+						...data,
+						pages: data.pages.map((page, index) =>
+							index === 0
+								? { ...page, data: [...newBookmarks, ...page.data] }
+								: page,
+						),
+					};
 				},
 			},
 		],

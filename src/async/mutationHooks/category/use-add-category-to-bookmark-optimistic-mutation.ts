@@ -1,5 +1,3 @@
-import { produce } from "immer";
-
 import {
 	type AddCategoryToBookmarkPayload,
 	type AddCategoryToBookmarkResponse,
@@ -86,7 +84,7 @@ export function useAddCategoryToBookmarkOptimisticMutation({
 								(cat) => cat.id === variables.category_id,
 							);
 							if (alreadyHasCategory) {
-								return;
+								return bookmark;
 							}
 
 							// EXCLUSIVE MODEL: When adding a real category, filter out category 0
@@ -98,10 +96,10 @@ export function useAddCategoryToBookmarkOptimisticMutation({
 									)
 								: existingCategories;
 
-							bookmark.addedCategories = [
-								...filteredCategories,
-								newCategoryEntry,
-							];
+							return {
+								...bookmark,
+								addedCategories: [...filteredCategories, newCategoryEntry],
+							};
 						},
 					) ?? currentData
 				);
@@ -164,14 +162,13 @@ export function useAddCategoryToBookmarkOptimisticMutation({
 									)
 								: existingCategories;
 
-						return produce(data, (draft) => {
-							for (const bookmark of draft.data) {
-								bookmark.addedCategories = [
-									...filteredCategories,
-									newCategoryEntry,
-								];
-							}
-						});
+						return {
+							...data,
+							data: data.data.map((bookmark) => ({
+								...bookmark,
+								addedCategories: [...filteredCategories, newCategoryEntry],
+							})),
+						};
 					},
 				},
 			],

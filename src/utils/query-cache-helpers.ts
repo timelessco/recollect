@@ -1,5 +1,3 @@
-import { produce, type Draft } from "immer";
-
 import {
 	type PaginatedBookmarks,
 	type SingleListData,
@@ -8,16 +6,16 @@ import {
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 
 /**
- * Update a specific bookmark within paginated infinite query data using Immer.
+ * Update a specific bookmark within paginated infinite query data.
  * Returns new data with the bookmark updated, or unchanged if not found.
  * @param data - The paginated bookmarks data
  * @param bookmarkId - The ID of the bookmark to update
- * @param updater - Function that mutates the bookmark (Immer handles immutability)
+ * @param updater - Function that returns a new bookmark object
  */
 export function updateBookmarkInPaginatedData(
 	data: PaginatedBookmarks | undefined,
 	bookmarkId: number,
-	updater: (bookmark: Draft<SingleListData>) => void,
+	updater: (bookmark: SingleListData) => SingleListData,
 ): PaginatedBookmarks | undefined {
 	if (!data?.pages) {
 		return data;
@@ -25,21 +23,23 @@ export function updateBookmarkInPaginatedData(
 
 	let bookmarkFound = false;
 
-	const result = produce(data, (draft) => {
-		for (const page of draft.pages) {
-			// Skip undefined pages or pages without data array
-			if (!page?.data) {
-				continue;
-			}
-
-			const bookmark = page.data.find((bm) => bm.id === bookmarkId);
-			if (bookmark) {
-				updater(bookmark);
-				bookmarkFound = true;
-				// Early exit after bookmark found and updated
-				return;
-			}
+	const pages = data.pages.map((page) => {
+		if (bookmarkFound || !page?.data) {
+			return page;
 		}
+
+		const bookmarkIndex = page.data.findIndex((bm) => bm.id === bookmarkId);
+		if (bookmarkIndex === -1) {
+			return page;
+		}
+
+		bookmarkFound = true;
+		return {
+			...page,
+			data: page.data.map((bm, index) =>
+				index === bookmarkIndex ? updater(bm) : bm,
+			),
+		};
 	});
 
 	if (!bookmarkFound) {
@@ -49,42 +49,49 @@ export function updateBookmarkInPaginatedData(
 		});
 	}
 
-	return result;
+	return bookmarkFound ? { ...data, pages } : data;
 }
 
 /**
  * Swap a temp tag ID with the real tag from server response.
- * Use inside an Immer updater function.
- * @param bookmark - Draft bookmark from Immer
+ * Returns a new bookmark with the temp tag replaced by the real tag.
+ * @param bookmark - The bookmark containing the temp tag
  * @param tempId - The temporary ID used for optimistic update
  * @param realTag - The real tag data from server response
  * @param realTag.id - The real tag ID
  * @param realTag.name - The real tag name
- * @returns true if temp tag was found and swapped, false otherwise
  */
 export function swapTempTagId(
-	bookmark: Draft<SingleListData>,
+	bookmark: SingleListData,
 	tempId: number,
 	realTag: { id: number; name: string | null },
-): boolean {
-	const tag = bookmark.addedTags?.find((existing) => existing.id === tempId);
-	if (tag) {
-		tag.id = realTag.id;
-		tag.name = realTag.name ?? tag.name;
-		return true;
+): SingleListData {
+	const tagIndex = bookmark.addedTags?.findIndex(
+		(existing) => existing.id === tempId,
+	);
+
+	if (tagIndex === undefined || tagIndex === -1) {
+		logCacheMiss("Cache Update", "Temp tag not found in bookmark", {
+			bookmarkId: bookmark.id,
+			tempId,
+			realTagId: realTag.id,
+			existingTagIds: bookmark.addedTags?.map((tag) => tag.id) ?? [],
+		});
+		return bookmark;
 	}
 
-	logCacheMiss("Cache Update", "Temp tag not found in bookmark", {
-		bookmarkId: bookmark.id,
-		tempId,
-		realTagId: realTag.id,
-		existingTagIds: bookmark.addedTags?.map((tag) => tag.id) ?? [],
-	});
-	return false;
+	return {
+		...bookmark,
+		addedTags: bookmark.addedTags?.map((tag) =>
+			tag.id === tempId
+				? { ...tag, id: realTag.id, name: realTag.name ?? tag.name }
+				: tag,
+		),
+	};
 }
 
 /**
- * Update user tags cache with Immer.
+ * Update user tags cache.
  * Replaces a temp tag with real tag data from server.
  * @param data - The user tags cache data
  * @param tempId - The temporary ID to replace
@@ -108,24 +115,29 @@ export function swapTempTagInUserTagsCache(
 		return data;
 	}
 
-	return produce(data, (draft) => {
-		const tag = draft.data.find((existing) => existing.id === tempId);
-		if (!tag) {
-			logCacheMiss("Cache Update", "Temp tag not found in user tags cache", {
-				tempId,
-				tagCount: draft.data.length,
-			});
-			return;
-		}
+	const tagExists = data.data.some((existing) => existing.id === tempId);
+	if (!tagExists) {
+		logCacheMiss("Cache Update", "Temp tag not found in user tags cache", {
+			tempId,
+			tagCount: data.data.length,
+		});
+		return data;
+	}
 
-		tag.id = realTag.id;
-		tag.name = realTag.name ?? tag.name;
-		if (realTag.user_id) {
-			tag.user_id = realTag.user_id;
-		}
+	return {
+		...data,
+		data: data.data.map((tag) => {
+			if (tag.id !== tempId) {
+				return tag;
+			}
 
-		if (realTag.created_at) {
-			tag.created_at = realTag.created_at;
-		}
-	});
+			return {
+				...tag,
+				id: realTag.id,
+				name: realTag.name ?? tag.name,
+				...(realTag.user_id && { user_id: realTag.user_id }),
+				...(realTag.created_at && { created_at: realTag.created_at }),
+			};
+		}),
+	};
 }

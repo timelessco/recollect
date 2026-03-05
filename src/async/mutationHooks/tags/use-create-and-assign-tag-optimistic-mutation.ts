@@ -1,5 +1,3 @@
-import { produce } from "immer";
-
 import {
 	type CreateAndAssignTagPayload,
 	type CreateAndAssignTagResponse,
@@ -78,7 +76,10 @@ export function useCreateAndAssignTagOptimisticMutation() {
 							id: variables._tempId,
 							name: variables.name,
 						};
-						bookmark.addedTags = [...(bookmark.addedTags || []), tempTag];
+						return {
+							...bookmark,
+							addedTags: [...(bookmark.addedTags || []), tempTag],
+						};
 					},
 				) ?? currentData
 			);
@@ -108,9 +109,10 @@ export function useCreateAndAssignTagOptimisticMutation() {
 						user_id: session?.user?.id,
 					};
 
-					return produce(data, (draft) => {
-						draft.data.push(tempTag as UserTagsData);
-					});
+					return {
+						...data,
+						data: [...data.data, tempTag as UserTagsData],
+					};
 				},
 			},
 		],
@@ -128,9 +130,7 @@ export function useCreateAndAssignTagOptimisticMutation() {
 				updateBookmarkInPaginatedData(
 					current,
 					variables.bookmarkId,
-					(bookmark) => {
-						swapTempTagId(bookmark, tempId, realTag);
-					},
+					(bookmark) => swapTempTagId(bookmark, tempId, realTag),
 				),
 			);
 
@@ -142,9 +142,7 @@ export function useCreateAndAssignTagOptimisticMutation() {
 						updateBookmarkInPaginatedData(
 							current,
 							variables.bookmarkId,
-							(bookmark) => {
-								swapTempTagId(bookmark, tempId, realTag);
-							},
+							(bookmark) => swapTempTagId(bookmark, tempId, realTag),
 						),
 				);
 			}

@@ -124,7 +124,6 @@ export const CREATE_USER_CATEGORIES_API = "/category/create-user-category";
 export const DELETE_USER_CATEGORIES_API = "/category/delete-user-category";
 export const UPDATE_USER_CATEGORIES_API = "/category/update-user-category";
 export const UPDATE_CATEGORY_ORDER_API = "/category/update-category-order";
-export const SET_BOOKMARK_CATEGORIES_API = "/category/set-bookmark-categories";
 export const ADD_CATEGORY_TO_BOOKMARK_API =
 	"/category/add-category-to-bookmark";
 export const ADD_CATEGORY_TO_BOOKMARKS_API =

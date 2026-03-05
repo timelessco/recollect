@@ -35,11 +35,10 @@ export function useToggleDiscoverableOptimisticMutation() {
 			updateBookmarkInPaginatedData(
 				currentData,
 				variables.bookmark_id,
-				(bookmark) => {
-					bookmark.make_discoverable = variables.make_discoverable
-						? "pending"
-						: null;
-				},
+				(bookmark) => ({
+					...bookmark,
+					make_discoverable: variables.make_discoverable ? "pending" : null,
+				}),
 			) as BookmarksPaginatedDataTypes,
 		invalidates: [BOOKMARKS_KEY, DISCOVER_URL],
 	});

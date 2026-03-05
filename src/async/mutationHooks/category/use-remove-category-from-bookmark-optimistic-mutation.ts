@@ -1,5 +1,3 @@
-import { produce } from "immer";
-
 import {
 	type RemoveCategoryFromBookmarkPayload,
 	type RemoveCategoryFromBookmarkResponse,
@@ -72,23 +70,29 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
 					(cat) => cat.id === UNCATEGORIZED_CATEGORY_ID,
 				);
 
-				return produce(currentData, (draft) => {
-					for (const page of draft.pages) {
-						if (!page?.data) {
-							continue;
+				let found = false;
+				return {
+					...currentData,
+					pages: currentData.pages.map((page) => {
+						if (found || !page?.data) {
+							return page;
 						}
 
 						const bookmarkIndex = page.data.findIndex(
 							(b) => b.id === variables.bookmark_id,
 						);
 						if (bookmarkIndex === -1) {
-							continue;
+							return page;
 						}
+
+						found = true;
 
 						// Remove bookmark from list if removing current collection
 						if (shouldRemoveFromList) {
-							page.data.splice(bookmarkIndex, 1);
-							return;
+							return {
+								...page,
+								data: page.data.filter((_, index) => index !== bookmarkIndex),
+							};
 						}
 
 						// Update categories
@@ -102,8 +106,9 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
 							(cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
 						);
 
+						let newCategories: CategoriesData[];
 						if (!hasNonZeroCategories && uncategorizedEntry) {
-							bookmark.addedCategories = [uncategorizedEntry];
+							newCategories = [uncategorizedEntry];
 						} else if (!hasNonZeroCategories) {
 							// Uncategorized not in cache - log warning
 							logCacheMiss(
@@ -114,14 +119,21 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
 									categoryId: variables.category_id,
 								},
 							);
-							bookmark.addedCategories = filteredCategories;
+							newCategories = filteredCategories;
 						} else {
-							bookmark.addedCategories = filteredCategories;
+							newCategories = filteredCategories;
 						}
 
-						return;
-					}
-				});
+						return {
+							...page,
+							data: page.data.map((bm, index) =>
+								index === bookmarkIndex
+									? { ...bm, addedCategories: newCategories }
+									: bm,
+							),
+						};
+					}),
+				};
 			},
 
 			// Additional optimistic update for single bookmark cache (preview route support)
@@ -177,11 +189,13 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
 							}
 						}
 
-						return produce(data, (draft) => {
-							for (const bookmark of draft.data) {
-								bookmark.addedCategories = finalCategories;
-							}
-						});
+						return {
+							...data,
+							data: data.data.map((bookmark) => ({
+								...bookmark,
+								addedCategories: finalCategories,
+							})),
+						};
 					},
 				},
 			],
