@@ -1,3 +1,7 @@
+---
+paths: src/**/*.{ts,tsx}
+---
+
 # Sentry Monitoring Guidelines
 
 Patterns for error tracking and debugging with Sentry in this project.

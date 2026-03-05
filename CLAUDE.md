@@ -1,167 +1,46 @@
-# CLAUDE.md
+# Recollect
 
-Project-specific guidance for Claude Code. Generic rules are in `~/.claude/CLAUDE.md` and `.claude/rules/`.
+Bookmark management app with AI enrichment -- organize, search, and collaborate on web bookmarks.
 
-## Codebase Overview
+**Stack**: Next.js 16 (App + Pages Router), Supabase, React Query, Zustand, Tailwind v4, Base UI
 
-Recollect is a **bookmark management application** for organizing, searching, and collaborating on web bookmarks with AI enrichment.
+**Architecture**: Hybrid routing (App Router for new APIs, Pages Router for dashboard), optimistic mutations, pgmq queues for async processing. See [`docs/CODEBASE_MAP.md`](./docs/CODEBASE_MAP.md).
 
-**Stack**: Next.js 16 (App + Pages Router), Supabase (Auth, PostgreSQL, Storage, Edge Functions), React Query, Zustand, Tailwind v4, Base UI
+## UI Components
 
-**Architecture**: Hybrid routing (App Router for auth/new APIs, Pages Router for dashboard), optimistic mutations with React Query, pgmq queues for async processing (Instagram imports, AI enrichment)
-
-For detailed architecture, module guides, and data flows, see [`docs/CODEBASE_MAP.md`](./docs/CODEBASE_MAP.md).
-
-## Development Guidelines
-
-### React & State
-
-- Prefer `useQuery`, `zustand` over `useEffect` for data fetching and state
-- Colocate code that changes together
-- Compose smaller components instead of massive JSX blocks
-
-### UI Components
-
-- **Base UI** (`@base-ui/react`): Primary library for new components
-  - Forms (Field, Form), combobox/select, accessible primitives
-  - **Combobox pattern**: See `/src/components/ui/recollect/combobox` - context for state, match-sorter filtering
-  - **ScrollArea**: `/src/components/ui/recollect/scroll-area.tsx` with fade/gutter support
-- **React Aria** (`react-aria`): Legacy - still in dashboard and lightbox (4 files)
-- **Ariakit** (`@ariakit/react`): Specialized use cases
+- **Base UI** (`@base-ui/react`): Primary library. Combobox pattern in `/src/components/ui/recollect/combobox`, ScrollArea in `scroll-area.tsx`
+- **React Aria**: Legacy (dashboard + lightbox, 4 files)
+- **Ariakit**: Specialized use cases
 - **Multi-select**: `use-category-multi-select` hook with Base UI Combobox + match-sorter
 
-### TypeScript
+## Domain Conventions
 
-- Use `knip` to remove unused code when making large changes
-- **Optimistic mutations**: Add Sentry breadcrumbs for cache misses and state inconsistencies
+- `category_id: 0` = Uncategorized (auto-managed) -- keep `.min(0)` in schemas
+- `ogImage` (camelCase) -- not `og_image`
+- OpenAPI tags are capitalized: `"Bookmarks"`, `"Categories"`, `"iPhone"`
+- `knip` for detecting unused code when making large changes
 
-### Next.js
+## Rules
 
-- Prefer fetching data in RSC (page can still be static)
-- Use next/font and next/script when applicable
-- next/image above the fold: use `sync`/`eager`/`priority` sparingly
-- Be mindful of serialized prop size for RSC to child components
-
-## Project-Specific Guidelines
-
-### Supabase & Migrations
-
-- NEVER add database indexes without explicit user approval - may conflict with production
-- NEVER create a new migration file when the user wants changes merged into an existing one — check for existing PR migrations first
-- NEVER modify an already-committed migration file — it breaks remote/cloud sync. Only add new migrations with later timestamps for additive fixes
-- NEVER put production-specific setup (vault secrets, pg_cron jobs) in migration files — these belong in `docs/setup-production-*.sql`
-- NEVER reference columns in diagnostic SQL without first verifying them in `src/types/database-generated.types.ts`
-- NEVER assume local migration files reflect prod state — this project has 3 environments (local / dev `cjsdfdveobrpffjbkpca` / prod `fgveraehgourpwwzlzhy`). Verify actual DB state before diagnosing
-- NEVER hardcode the Supabase service role key in seed.sql or migrations — it rotates on each local restart; fetch dynamically via `docker exec supabase_edge_runtime_recollect printenv SUPABASE_SERVICE_ROLE_KEY`
-- When creating migrations, consider: local dev, seed data, AND production differences
-- Vault secrets differ between environments - document which secrets need manual setup
-- pg_cron jobs NOT included in migrations - require post-deployment setup; local cron setup goes in `seed.sql` so `pnpm db:reset` configures the full dev environment
-- Before writing SQL for any app table, verify column names from `src/types/database-generated.types.ts`
-- Before writing SQL that references a pgmq queue name, verify the canonical name by reading the migration that calls `pgmq.create()` and cross-checking with any constants file
-- `CREATE INDEX CONCURRENTLY` cannot run inside a `BEGIN/COMMIT` transaction — create a separate migration file outside any transaction for concurrent indexes
-- SQL migrations must follow: `BEGIN/COMMIT`, PART separators, numbered steps, pre-flight `DO $$` validation, explicit `GRANT/REVOKE` on functions, post-migration verification, and `COMMENT ON`
-- When seeding conflicts with migrations on fresh start (`npx supabase start`), use Supabase's `sql_paths` in `config.toml` with a cleanup pre-seed file — not a custom reset script
-
-### API Patterns
-
-- App Router endpoints go in `/src/app/api/`
-- Legacy Pages Router endpoints in `/src/pages/api/` - migrate don't modify
-- Mutation hooks follow naming pattern: `use-{action}-{resource}-mutation.ts` — do NOT include "optimistic" in the filename; optimistic behavior is an implementation detail
-- Test API changes via Scalar UI at `/api-docs` (cookie auth works automatically when logged in)
-- When adding or modifying an API route, update the Zod schemas in the colocated `schema.ts` (auto-inferred) and the supplement metadata in `src/lib/openapi/endpoints/<domain>/`
-- The `/api/dev/session` endpoint requires a browser (not curl/CLI) — it relies on browser session cookies. When writing `.http` test file placeholders, never hardcode actual JWTs
-- After modifying an API route, update corresponding named examples in the endpoint's `-examples.ts` file (supplements only — schemas auto-infer)
-- For API endpoint validation during development, use Chrome MCP to navigate to `/api-docs` and test via Scalar's Try It client — not curl
-- When eliminating an API route via SSR refactor, (1) extract its Zod schemas to a shared module first, (2) verify the route is unused elsewhere before deleting
-- For constants shared across TypeScript (Next.js) and Deno Edge Functions, define in `src/utils/constants.ts` and add `// Keep in sync with src/utils/constants.ts` comment in Deno files — cross-imports are impossible
-- Always ground-truth CodeRabbit review suggestions against actual runtime behavior (use Chrome MCP to test endpoints) before implementing — suggestions can have the fix direction reversed
-
-### Type Deduction
-
-- **Type Hierarchy**: Use types from immediate parent only, never skip to grandparents
-- **Type Alias**: When child props = parent props, use `type Child = Parent`
-- **Export Discipline**: Only export types used in other files (check with grep first)
-- **Utility Types**: Use `Parameters<>`, `ReturnType<>`, `Pick<>`, `Awaited<>`
-
-### Domain Conventions
-
-- `category_id: 0` = Uncategorized collection (auto-managed) — keep `.min(0)` in schemas, don't change to `.positive()`
-- `ogImage` (camelCase) is the established convention across codebase — not `og_image` (snake_case)
-- OpenAPI tags are capitalized: `"Bookmarks"`, `"Categories"`, `"iPhone"` etc.
+- [Code Style](/.claude/rules/code-style.md) -- React, TypeScript, naming, file organization
+- [Frontend](/.claude/rules/frontend.md) -- Accessibility, CSS, compound components
+- [API Routes](/.claude/rules/api-logging.md) -- Handler factories, response helpers
+- [Sentry](/.claude/rules/sentry.md) -- Error tracking patterns
+- [OpenAPI](/.claude/rules/openapi.md) -- Spec generation, supplements, edge functions
+- [Zod + Supabase](/.claude/rules/zod-supabase.md) -- Schema gotchas
+- [Supabase CLI](/.claude/rules/supabase-cli.md) -- Local dev, migrations, safety rules
+- [Supabase Auth SSR](/.claude/rules/supabase-nextjs.md) -- Auth patterns (getAll/setAll only)
+- [Supabase Functions](/.claude/rules/supabase-functions.md) -- PG function templates
+- [Supabase RLS](/.claude/rules/supabase-rls.md) -- Row-level security policies
+- [Supabase Schema](/.claude/rules/supabase-schema.md) -- Declarative schema management
+- [Supabase SQL](/.claude/rules/supabase-sql.md) -- SQL style guide
+- [Supabase Edge Functions](/.claude/rules/supabase-edge-functions.md) -- Deno edge functions
+- [Supabase Migrations](/.claude/rules/supabase-migrations.md) -- File naming, RLS
+- [Task Completion](/.claude/rules/task-completion.md) -- Verification commands
 
 ## References
 
-- [`docs/CODEBASE_MAP.md`](./docs/CODEBASE_MAP.md) - **Complete architecture map, module guides, data flows**
-- [`docs/project_overview.md`](./docs/project_overview.md) - Tech stack, features, architecture
-- [`docs/project_structure.md`](./docs/project_structure.md) - Directory layout, file conventions
-- [`docs/suggested_commands.md`](./docs/suggested_commands.md)
-- [`docs/OPENAPI_GUIDE.md`](./docs/OPENAPI_GUIDE.md) - **How to add/update OpenAPI endpoint docs** (also available as `/openapi-endpoints` skill)
-
-## Development Commands
-
-**Core:**
-
-```bash
-pnpm install # Install dependencies
-pnpm dev     # Start dev server (Turbopack) - DO NOT RUN, already running
-pnpm build   # Production build via Turbo
-pnpm start   # Start production server
-```
-
-**Quality:**
-
-```bash
-pnpm lint         # Run ALL quality checks
-pnpm fix          # Auto-fix all (spelling → css → md → prettier → eslint via turbo deps)
-pnpm fix:prettier # Fix Prettier formatting (run separately)
-pnpm fix:css      # Fix CSS/Stylelint issues (run separately)
-pnpm fix:spelling # Fix cspell dictionary (run separately)
-pnpm fix:md       # Fix markdown issues (run separately)
-pnpm lint:types   # TypeScript strict checks
-pnpm lint:knip    # Check for unused code
-pnpm db:types     # Generate Supabase types from local schema
-```
-
-**OpenAPI:**
-
-```bash
-npx tsx scripts/generate-openapi.ts                   # Regenerate OpenAPI spec (no pnpm alias)
-oasdiff changelog old.json new.json --format markdown # Local changelog diff (brew install oasdiff)
-```
-
-- **CI changelog workflow** (`.github/workflows/openapi-changelog.yml`): Uses `go install github.com/oasdiff/oasdiff@latest` + direct CLI (not the Docker action — it ignores `args`). Spec files go in `.oasdiff/` (Docker actions can't see `/tmp`). `docs/API_CHANGELOG.md` is CI-generated and ignored by Prettier + markdownlint.
-
-- **Spec version**: OpenAPI 3.0.3 (not 3.1) — required for oasdiff compatibility. Uses `OpenApiGeneratorV3`
-- **Response components**: `ValidationError` (400), `Unauthorized` (401), `InternalError` (500) — all registered as `$ref` in `generate-openapi.ts`. The merge script preserves `$ref` responses for non-400 status codes; 400 `$ref` is inlined when `additionalResponses` targets it (required for response400Examples pipeline)
-- **Two-pass generation**: (1) filesystem scanner auto-infers schemas from factory `.config` on route handlers, (2) `scripts/merge-openapi-supplements.ts` overlays human-authored metadata (tags, descriptions, examples)
-- **Supplement files** in `src/lib/openapi/endpoints/<domain>/` are data-only `EndpointSupplement` exports — NOT `registry.registerPath()` calls. They provide tags, summary, description, security, examples, `additionalResponses`, and `response400Examples`
-- Example data extracted to colocated `-examples.ts` files when endpoint exceeds 250 lines
-- **Edge functions** (3 `edge-process-imports.ts` files) are the ONLY files that still use `registry.registerPath()` — they use raw SchemaObject, not Zod
-- **Factory `.config`**: All 4 handler factories in `create-handler.ts` expose `.config` with `factoryName`, `inputSchema`, `outputSchema` — this is how the scanner discovers schemas
-- **Non-factory routes** can be scanner-discoverable via `Object.assign(handleGet, { config: { ... } satisfies HandlerConfig })` — rename the raw `export async function GET` to a private `handleGet` and export via `Object.assign`
-- `SKIP_PATHS` in `generate-openapi.ts` — remove entries when migrating routes to be scanner-discoverable
-- When adding a new App Router endpoint: create `route.ts` with factory handler + `schema.ts` with Zod schemas + supplement file with metadata — the scanner handles registration automatically
-- Named examples use kebab-case keys, `summary` + `description` on ALL examples (request, response, and 400), happy paths first then validation errors
-- Shared schemas in `src/lib/openapi/schemas/shared.ts` — registered as `$ref` entries
-- For raw `SchemaObject` schemas (non-Zod, edge functions only), register with `registry.registerComponent("schemas", "Name", { ... })` in `registry.ts` — not `registry.register()` which requires Zod
-- After modifying any endpoint or schema file, regenerate the spec and verify at `/api-docs`
-- `public/openapi.json` is gitignored — regenerated by `prebuild:next` on every build, never committed
-- New supplement domain: (1) create `src/lib/openapi/endpoints/<domain>/` with supplement + barrel, (2) add `import * as <domain>Supplements` + `allModules` entry in `scripts/merge-openapi-supplements.ts`, (3) add `export * from "./<domain>"` in `src/lib/openapi/endpoints/index.ts`
-- Public (no-auth) endpoint supplements must include `security: []` to prevent inheriting global security
-- Security: `[{ [bearerAuth.name]: [] }, {}]` — empty `{}` means cookie auth also accepted (intentional, don't remove)
-- Edge function security: use `serviceRoleAuth` (not `bearerAuth`) — it's a service role key, not a user JWT
-- Edge function endpoints use per-path `servers` override (imported from `edge-function-servers.ts`) so Scalar sends requests to the correct Supabase host
-- When using Supabase `.like()` with user-derived strings, escape `%` and `_` wildcards before the query
-
-### Zod + Supabase Gotchas
-
-- `z.looseObject` infers `{ [x: string]: unknown; ... }` — incompatible with Supabase's `Json` type. Use `z.object` for schemas consumed by route handlers returning Supabase data.
-- In OpenAPI raw schema objects, do NOT use `as const` on `required` arrays — creates `readonly` tuple incompatible with `SchemaObject`'s `string[]`. Example data objects (in `-examples.ts` files) SHOULD use `as const` per frontend rules.
-- Prefer `z.int()` over `z.number().int()` — linter may auto-transform the latter to the former
-- `z.iso.datetime()` rejects Supabase's `timestamptz` format (`+00:00` offset) — use `z.string()` for output schemas validating Supabase timestamp columns. Only use `z.iso.datetime()` for input schemas where the client sends `Z`-suffix timestamps via `toISOString()`
-- Never reference Zod internals (`z.url()`, `z.string()`) in OpenAPI example descriptions — use tool-agnostic phrasing like "fails URL schema validation"
-- Integer DB columns (`id`, `category_id`, etc.) must use `z.int()` in output schemas, not `z.number()`
-- Email input fields must use `z.email()`, not bare `z.string()`
-- When porting v1 null-coalescing patterns (`value ?? ""`), verify v1 actually uses `??` — don't add fallbacks that change behavior
-- `category_id` input schemas must include `.min(0)` per domain convention
-- Supabase FK joins (`.select("fk_col(col1, col2)")`) return `null` for the FK column when no match — always `.filter()` before `.map()` when accessing joined fields. Also verify unwanted `?.` optional checks — use strict types only
+- [`docs/CODEBASE_MAP.md`](./docs/CODEBASE_MAP.md) -- Architecture map, module guides, data flows
+- [`docs/OPENAPI_GUIDE.md`](./docs/OPENAPI_GUIDE.md) -- OpenAPI endpoint docs (`/openapi-endpoints` skill)
+- [`docs/project_overview.md`](./docs/project_overview.md) -- Tech stack, features
+- [`docs/project_structure.md`](./docs/project_structure.md) -- Directory layout
