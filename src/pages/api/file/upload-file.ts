@@ -134,6 +134,92 @@ const videoLogic = async (
 	return { ogImage, meta_data };
 };
 
+/*
+If the uploaded file is a PDF with a client-uploaded thumbnail (mobile flow)
+This gets the public URL from the thumbnail path uploaded by the client
+Then it generates the meta_data for the thumbnail, including blurHash, width, height
+*/
+const pdfLogic = async (
+	data: BodyDataType,
+	supabase: SupabaseClient,
+	userId: string,
+) => {
+	const thumbnailPath = data?.thumbnailPath;
+
+	if (!thumbnailPath) {
+		throw new Error("ERROR: thumbnailPath is missing for PDF file");
+	}
+
+	// Get the public URL for the uploaded thumbnail
+	const { data: thumbnailUrl } = storageHelpers.getPublicUrl(thumbnailPath);
+
+	const ogImage = thumbnailUrl?.publicUrl;
+
+	let imgData;
+	let ocrData: string | null = null;
+	let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
+	let imageCaption: string | null = null;
+	let imageKeywords: string[] = [];
+	if (thumbnailUrl?.publicUrl) {
+		// Handle blurhash generation
+		try {
+			imgData = await blurhashFromURL(thumbnailUrl.publicUrl);
+		} catch (error) {
+			console.error("PDF thumbnail blur hash generation failed:", error);
+			Sentry.captureException(error, {
+				tags: {
+					operation: "blurhash_generation_pdf",
+					thumbnailUrl: thumbnailUrl.publicUrl,
+				},
+			});
+			imgData = {};
+		}
+
+		try {
+			const imageToTextResult = await imageToText(
+				thumbnailUrl.publicUrl,
+				supabase,
+				userId,
+			);
+			imageCaption = imageToTextResult?.sentence ?? null;
+			imageKeywords = imageToTextResult?.image_keywords ?? [];
+			ocrData = imageToTextResult?.ocr_text ?? null;
+			ocrStatus = imageToTextResult?.ocr_text ? "success" : "no_text";
+		} catch (error) {
+			console.error("PDF thumbnail caption generation failed:", error);
+			Sentry.captureException(error, {
+				tags: {
+					operation: "image_caption_generation_pdf",
+					thumbnailUrl: thumbnailUrl.publicUrl,
+				},
+			});
+			imageCaption = null;
+		}
+	}
+
+	const meta_data: ImgMetadataType = {
+		img_caption: imageCaption ?? null,
+		image_caption: imageCaption ?? null,
+		image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
+		width: imgData?.width ?? null,
+		height: imgData?.height ?? null,
+		ogImgBlurUrl: imgData?.encoded ?? null,
+		favIcon: null,
+		twitter_avatar_url: null,
+		ocr: ocrData ?? null,
+		ocr_status: ocrStatus,
+		coverImage: null,
+		screenshot: null,
+		isOgImagePreferred: false,
+		mediaType: PDF_MIME_TYPE,
+		iframeAllowed: false,
+		isPageScreenshot: null,
+		video_url: null,
+	};
+
+	return { ogImage, meta_data };
+};
+
 export default async (
 	request: NextApiRequest,
 	response: NextApiResponse<UploadFileApiResponse>,
@@ -250,6 +336,7 @@ export default async (
 		const isVideo = fileType?.includes("video");
 
 		const isAudio = fileType?.includes("audio");
+		const isPdf = fileType === PDF_MIME_TYPE;
 
 		let ogImage;
 
@@ -261,6 +348,20 @@ export default async (
 					fileType,
 				});
 				ogImage = AUDIO_OG_IMAGE_FALLBACK_URL;
+			} else if (isPdf && data.thumbnailPath) {
+				// Process PDF thumbnail similar to video (mobile flow)
+				console.log("Processing PDF thumbnail:", {
+					thumbnailPath: data.thumbnailPath,
+				});
+
+				const { ogImage: image, meta_data: metaData } = await pdfLogic(
+					data,
+					supabase,
+					userId ?? "",
+				);
+
+				ogImage = image;
+				meta_data = metaData;
 			}
 		} else {
 			// if file is a video
