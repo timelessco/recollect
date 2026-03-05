@@ -1,16 +1,14 @@
 // TODO: Fix this in priority
 /* eslint-disable @typescript-eslint/no-base-to-string */
 
-import { promises as fileSystem } from "node:fs";
+import { Readable } from "node:stream";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { decode } from "base64-arraybuffer";
-import { IncomingForm } from "formidable";
 import { isEmpty, isNull } from "lodash";
 import isNil from "lodash/isNil";
 import uniqid from "uniqid";
 
 import {
-	type ParsedFormDataType,
 	type ProfilesTableTypes,
 	type UploadProfilePicApiResponse,
 } from "../../../types/apiTypes";
@@ -80,46 +78,48 @@ export const deleteLogic = async (
 	}
 };
 
+/**
+ * Parses multipart form data from a Pages Router request using the Web Request API.
+ * Converts the Node.js IncomingMessage stream to a Web Request to use native formData().
+ */
+async function parseFormData(request: NextApiRequest) {
+	const webStream = Readable.toWeb(request) as ReadableStream<
+		Uint8Array<ArrayBuffer>
+	>;
+	const webRequest = new Request("http://localhost", {
+		method: request.method,
+		headers: request.headers as HeadersInit,
+		body: webStream,
+		// @ts-expect-error -- Node.js supports duplex but types don't expose it
+		duplex: "half",
+	});
+
+	return await webRequest.formData();
+}
+
 export default async (
 	request: NextApiRequest,
 	response: NextApiResponse<UploadProfilePicApiResponse>,
 ) => {
 	const supabase = apiSupabaseClient(request, response);
 
-	// parse form with a Promise wrapper
-	const data = (await new Promise((resolve, reject) => {
-		const form = new IncomingForm();
-
-		form.parse(request, (error, fields, files) => {
-			if (error) {
-				reject(error);
-				return;
-			}
-
-			resolve({ fields, files });
-		});
-	})) as {
-		fields: {
-			category_id?: ParsedFormDataType["fields"]["category_id"];
-			user_id?: ParsedFormDataType["fields"]["user_id"];
-		};
-		files: ParsedFormDataType["files"];
-	};
+	const formData = await parseFormData(request);
+	const file = formData.get("file");
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
-	let contents;
+	let contents: string | undefined;
 
-	if (data?.files?.file?.[0]?.filepath) {
-		contents = await fileSystem.readFile(data?.files?.file[0]?.filepath, {
-			encoding: "base64",
-		});
+	if (file instanceof File) {
+		const arrayBuffer = await file.arrayBuffer();
+		contents = Buffer.from(arrayBuffer).toString("base64");
 	}
 
-	const fileName = data?.files?.file?.[0]?.originalFilename
-		? parseUploadFileName(data?.files?.file?.[0]?.originalFilename)
-		: `${uniqid.time()}`;
-	const fileType = data?.files?.file?.[0]?.mimetype;
+	const fileName =
+		file instanceof File && file.name
+			? parseUploadFileName(file.name)
+			: `${uniqid.time()}`;
+	const fileType = file instanceof File ? file.type : undefined;
 
 	if (contents) {
 		await deleteLogic(response, userId);
