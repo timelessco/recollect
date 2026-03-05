@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 import { GetMediaTypeInputSchema, GetMediaTypeOutputSchema } from "./schema";
 import { createGetApiHandler } from "@/lib/api-helpers/create-handler";
@@ -14,7 +14,7 @@ const CORS_HEADERS = {
 const USER_AGENT =
 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
 
-export const GET = createGetApiHandler({
+const baseGet = createGetApiHandler({
 	route: ROUTE,
 	inputSchema: GetMediaTypeInputSchema,
 	outputSchema: GetMediaTypeOutputSchema,
@@ -64,3 +64,19 @@ export const GET = createGetApiHandler({
 		}
 	},
 });
+
+export const GET = Object.assign(
+	async (request: NextRequest) => {
+		const response = await baseGet(request);
+		for (const [key, value] of Object.entries(CORS_HEADERS)) {
+			response.headers.set(key, value);
+		}
+
+		return response;
+	},
+	{ config: baseGet.config },
+);
+
+export function OPTIONS() {
+	return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}

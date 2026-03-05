@@ -35,8 +35,6 @@ async function handleGet(request: NextRequest) {
 			signal: controller.signal,
 		});
 
-		clearTimeout(timeoutId);
-
 		if (!result.ok) {
 			return Response.json(
 				{ data: null, error: "Failed to fetch PDF" },
@@ -50,11 +48,12 @@ async function handleGet(request: NextRequest) {
 			headers: { "Content-Type": PDF_MIME_TYPE },
 		});
 	} catch {
-		clearTimeout(timeoutId);
 		return Response.json(
 			{ data: null, error: "Failed to fetch PDF" },
 			{ status: 500 },
 		);
+	} finally {
+		clearTimeout(timeoutId);
 	}
 }
 
