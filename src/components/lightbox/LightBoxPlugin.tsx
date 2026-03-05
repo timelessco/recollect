@@ -248,7 +248,8 @@ const MyComponent = () => {
 					{(currentBookmark?.addedTags?.length > 0 ||
 						metaData?.img_caption ||
 						metaData?.ocr ||
-						metaData?.image_caption) && (
+						metaData?.image_caption ||
+						(metaData?.image_keywords?.length ?? 0) > 0) && (
 						<motion.div
 							animate={{
 								y: isExpanded ? 0 : `calc(100% - ${collapsedOffset}px)`,
@@ -283,7 +284,8 @@ const MyComponent = () => {
 							)}
 							{(metaData?.img_caption ||
 								metaData?.ocr ||
-								metaData?.image_caption) && (
+								metaData?.image_caption ||
+								(metaData?.image_keywords?.length ?? 0) > 0) && (
 								<motion.div
 									className={`relative px-5 py-3 text-sm ${
 										hasAIOverflowContent ? "cursor-pointer" : ""
@@ -322,6 +324,18 @@ const MyComponent = () => {
 											{(metaData?.img_caption || metaData?.image_caption) &&
 												metaData?.ocr && <br />}
 											{highlightSearch(metaData?.ocr ?? "", trimmedSearchText)}
+											{(metaData?.image_keywords?.length ?? 0) > 0 && (
+												<>
+													{(metaData?.img_caption ||
+														metaData?.image_caption ||
+														metaData?.ocr) && <br />}
+													<span className="font-450">Keywords: </span>
+													{highlightSearch(
+														metaData?.image_keywords?.join(", ") ?? "",
+														trimmedSearchText,
+													)}
+												</>
+											)}
 										</p>
 									</div>
 								</motion.div>

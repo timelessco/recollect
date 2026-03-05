@@ -45,6 +45,28 @@ export default function useUpdateUserProfileOptimisticMutation() {
 				);
 			}
 
+			if (data?.updateData?.ai_features_toggle !== undefined) {
+				queryClient.setQueryData(
+					[USER_PROFILE, session?.user?.id],
+					(old: { data: ProfilesTableTypes[] } | undefined) => {
+						if (!old?.data) {
+							return old;
+						}
+
+						return {
+							...old,
+							data: old.data.map((item) => ({
+								...item,
+								ai_features_toggle: {
+									...item.ai_features_toggle,
+									...data.updateData.ai_features_toggle,
+								},
+							})),
+						};
+					},
+				);
+			}
+
 			// Return a context object with the snapshotted value
 			return { previousData };
 		},

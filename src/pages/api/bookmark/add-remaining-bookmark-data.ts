@@ -34,6 +34,7 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
+import { fetchAiToggles } from "@/utils/ai-feature-toggles";
 import {
 	autoAssignCollections,
 	fetchUserCollections,
@@ -138,7 +139,12 @@ export default async function handler(
 		return;
 	}
 
-	const userCollections = await fetchUserCollections({ supabase, userId });
+	const aiToggles = await fetchAiToggles({ supabase, userId });
+	const userCollections = await fetchUserCollections({
+		autoAssignEnabled: aiToggles.autoAssignCollections,
+		supabase,
+		userId,
+	});
 	console.log(
 		"[add-remaining-bookmark-data] Fetched user collections for auto-assignment:",
 		{ bookmarkId: id, count: userCollections.length },
@@ -289,6 +295,7 @@ export default async function handler(
 							url,
 						}
 					: null,
+				aiToggles,
 			);
 			if (imageToTextResult) {
 				imageCaption = imageToTextResult.sentence;

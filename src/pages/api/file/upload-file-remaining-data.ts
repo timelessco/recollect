@@ -20,6 +20,7 @@ import {
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
+import { type AiToggles, fetchAiToggles } from "@/utils/ai-feature-toggles";
 import {
 	autoAssignCollections,
 	fetchUserCollections,
@@ -33,6 +34,7 @@ const notVideoLogic = async (
 	supabase: SupabaseClient,
 	userId: string,
 	userCollections: UserCollection[],
+	aiToggles: AiToggles,
 ) => {
 	const ogImage = mediaType?.includes("audio")
 		? AUDIO_OG_IMAGE_FALLBACK_URL
@@ -51,6 +53,7 @@ const notVideoLogic = async (
 				userId,
 				null,
 				userCollections.length > 0 ? { collections: userCollections } : null,
+				aiToggles,
 			);
 			if (imageToTextResult) {
 				imageCaption = imageToTextResult.sentence;
@@ -158,7 +161,12 @@ export default async function handler(
 			video_url: null,
 		};
 
-		const userCollections = await fetchUserCollections({ supabase, userId });
+		const aiToggles = await fetchAiToggles({ supabase, userId });
+		const userCollections = await fetchUserCollections({
+			autoAssignEnabled: aiToggles.autoAssignCollections,
+			supabase,
+			userId,
+		});
 
 		const {
 			matchedCollectionIds,
@@ -170,6 +178,7 @@ export default async function handler(
 			supabase,
 			userId,
 			userCollections,
+			aiToggles,
 		);
 
 		// Fetch existing metadata

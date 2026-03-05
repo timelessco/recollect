@@ -4,6 +4,7 @@ import axios from "axios";
 import { z } from "zod";
 
 import imageToText from "../../../async/ai/imageToText";
+import { fetchAiToggles } from "../../../utils/ai-feature-toggles";
 import {
 	MAIN_TABLE_NAME,
 	PDF_MIME_TYPE,
@@ -14,6 +15,10 @@ import { createServiceClient } from "../../../utils/supabaseClient";
 
 import { storeQueueError } from "@/lib/api-helpers/queue";
 import { upload } from "@/lib/storage/media-upload";
+import {
+	autoAssignCollections,
+	fetchUserCollections,
+} from "@/utils/auto-assign-collections";
 
 const ScreenshotPayloadSchema = z.object({
 	id: z.union([z.string(), z.number()]),
@@ -170,9 +175,20 @@ export default async function handler(
 		};
 
 		// ai-enrichment
-		const imageToTextResult = await imageToText(ogImage, supabase, user_id, {
-			isPageScreenshot: Boolean(isPageScreenshot),
+		const aiToggles = await fetchAiToggles({ supabase, userId: user_id });
+		const userCollections = await fetchUserCollections({
+			autoAssignEnabled: aiToggles.autoAssignCollections,
+			supabase,
+			userId: user_id,
 		});
+		const imageToTextResult = await imageToText(
+			ogImage,
+			supabase,
+			user_id,
+			{ isPageScreenshot: Boolean(isPageScreenshot) },
+			userCollections.length > 0 ? { collections: userCollections } : null,
+			aiToggles,
+		);
 		if (imageToTextResult) {
 			newMeta.image_caption = imageToTextResult.sentence;
 			if (imageToTextResult.image_keywords?.length) {
@@ -207,6 +223,14 @@ export default async function handler(
 			.update({ meta_data: newMeta })
 			.eq("url", url)
 			.eq("user_id", user_id);
+
+		// Auto-assign collections (non-critical, handled internally)
+		await autoAssignCollections({
+			bookmarkId: typeof id === "string" ? Number.parseInt(id, 10) : id,
+			matchedCollectionIds: imageToTextResult?.matched_collection_ids ?? [],
+			route: ROUTE,
+			userId: user_id,
+		});
 
 		console.log(
 			`######################## ${mediaType && mediaType === PDF_MIME_TYPE ? "PDF Thumbnail Generated" : "Screenshot Success"} ########################`,
