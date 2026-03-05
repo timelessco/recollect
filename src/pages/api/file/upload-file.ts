@@ -268,10 +268,12 @@ export default async (
 
 		const isAudio = fileType?.includes("audio");
 
-		const [aiToggles, userCollections] = await Promise.all([
-			fetchAiToggles({ supabase, userId }),
-			fetchUserCollections({ supabase, userId }),
-		]);
+		const aiToggles = await fetchAiToggles({ supabase, userId });
+		const userCollections = await fetchUserCollections({
+			autoAssignEnabled: aiToggles.autoAssignCollections,
+			supabase,
+			userId,
+		});
 
 		let ogImage;
 		let videoMatchedCollectionIds: number[] = [];

@@ -139,10 +139,12 @@ export default async function handler(
 		return;
 	}
 
-	const [userCollections, aiToggles] = await Promise.all([
-		fetchUserCollections({ supabase, userId }),
-		fetchAiToggles({ supabase, userId }),
-	]);
+	const aiToggles = await fetchAiToggles({ supabase, userId });
+	const userCollections = await fetchUserCollections({
+		autoAssignEnabled: aiToggles.autoAssignCollections,
+		supabase,
+		userId,
+	});
 	console.log(
 		"[add-remaining-bookmark-data] Fetched user collections for auto-assignment:",
 		{ bookmarkId: id, count: userCollections.length },

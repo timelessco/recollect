@@ -175,10 +175,12 @@ export default async function handler(
 		};
 
 		// ai-enrichment
-		const [aiToggles, userCollections] = await Promise.all([
-			fetchAiToggles({ supabase, userId: user_id }),
-			fetchUserCollections({ supabase, userId: user_id }),
-		]);
+		const aiToggles = await fetchAiToggles({ supabase, userId: user_id });
+		const userCollections = await fetchUserCollections({
+			autoAssignEnabled: aiToggles.autoAssignCollections,
+			supabase,
+			userId: user_id,
+		});
 		const imageToTextResult = await imageToText(
 			ogImage,
 			supabase,
