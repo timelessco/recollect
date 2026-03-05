@@ -268,6 +268,8 @@ export default async (
 
 		const isAudio = fileType?.includes("audio");
 
+		const isPdf = fileType === PDF_MIME_TYPE;
+
 		const aiToggles = await fetchAiToggles({ supabase, userId });
 		const userCollections = await fetchUserCollections({
 			autoAssignEnabled: aiToggles.autoAssignCollections,
@@ -286,6 +288,17 @@ export default async (
 					fileType,
 				});
 				ogImage = AUDIO_OG_IMAGE_FALLBACK_URL;
+			} else if (isPdf && data.thumbnailPath) {
+				// Use client-uploaded thumbnail for PDFs (mobile flow)
+				console.log("Using client-uploaded PDF thumbnail:", {
+					thumbnailPath: data.thumbnailPath,
+				});
+				const { data: thumbData } = storageHelpers.getPublicUrl(
+					data.thumbnailPath,
+				);
+				if (thumbData?.publicUrl) {
+					ogImage = thumbData.publicUrl;
+				}
 			}
 		} else {
 			// if file is a video
