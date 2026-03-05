@@ -48,14 +48,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 		showError = true,
 	} = props;
 
-	const inputClass = cn(
-		{
-			"block w-full border-red-300 pr-10 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 focus:outline-hidden":
-				isError,
-			"block w-full border-gray-300": !isError,
-		},
-		className,
-	);
+	const inputClass = cn(className, {
+		"block w-full border-red-300 pr-10 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 focus:outline-hidden":
+			isError,
+		"block w-full border-gray-300": !isError,
+		// "disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none":
+		// 	isDisabled,
+	});
 
 	const errorClass = cn(errorClassName, {
 		"text-xs text-red-600": true,
