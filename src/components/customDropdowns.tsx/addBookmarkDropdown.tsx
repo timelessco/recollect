@@ -117,7 +117,7 @@ const AddBookmarkPopupContent = ({ onClose }: AddBookmarkPopupContentProps) => {
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<Input
 					autoFocus
-					className={`rounded-[11px] pl-[32px] ${grayInputClassName}`}
+					className={`${grayInputClassName} rounded-[11px] pl-[32px]`}
 					errorClassName="ml-2"
 					{...rest}
 					errorText="Enter valid URL"
