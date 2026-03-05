@@ -131,19 +131,22 @@ export default async (
 
 	const file = formData.get("file");
 
-	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
-
-	let contents: string | undefined;
-
-	if (file instanceof File) {
-		const arrayBuffer = await file.arrayBuffer();
-		contents = Buffer.from(arrayBuffer).toString("base64");
+	if (!(file instanceof File)) {
+		response.status(400).json({
+			success: false,
+			error: "No file provided",
+		});
+		return;
 	}
 
-	const parsedFileName =
-		file instanceof File && file.name ? parseUploadFileName(file.name) : "";
+	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+
+	const arrayBuffer = await file.arrayBuffer();
+	const contents = Buffer.from(arrayBuffer).toString("base64");
+
+	const parsedFileName = file.name ? parseUploadFileName(file.name) : "";
 	const fileName = parsedFileName || `${uniqid.time()}`;
-	const fileType = file instanceof File ? file.type : undefined;
+	const fileType = file.type || undefined;
 
 	if (contents) {
 		await deleteLogic(response, userId);
