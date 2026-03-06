@@ -82,8 +82,8 @@ export const CategoryIconsDropdown = (props: CategoryIconsDropdownProps) => {
 				/>
 			</Popover.Trigger>
 			<Popover.Portal>
-				<Popover.Positioner className="z-10" sideOffset={8}>
-					<Popover.Popup className="h-[368px] w-[310px] rounded-xl bg-gray-50 px-3 shadow-custom-1 ring-1 ring-black/5 outline-hidden">
+				<Popover.Positioner className="z-103" sideOffset={8}>
+					<Popover.Popup className="h-[368px] w-[310px] rounded-xl bg-gray-50 px-1 shadow-custom-1 ring-1 ring-black/5 outline-hidden">
 						<IconPickerHeader
 							searchValue={searchValue}
 							setSearchValue={setSearchValue}
@@ -125,11 +125,8 @@ function IconPickerHeader({
 	setSearchValue,
 }: IconPickerHeaderProps) {
 	return (
-		<div className="flex items-center justify-between border-b border-b-gray-200 py-3">
-			<span className="text-sm leading-4 font-medium text-gray-800">
-				Choose an icon
-			</span>
-			<div className="flex w-[139px] items-center rounded-lg bg-gray-100 px-[10px] py-[7px]">
+		<div className="flex items-center justify-between border-b border-b-gray-200 py-1">
+			<div className="flex w-full items-center rounded-lg bg-gray-100 px-[10px] py-[7px]">
 				<figure className="mr-[6px] h-3 w-3 text-gray-600">
 					<SearchIconSmallGray />
 				</figure>
@@ -164,7 +161,7 @@ function IconGrid({ labels, onSelect }: IconGridProps) {
 	return (
 		<>
 			{rows.map((row) => (
-				<div className="flex justify-start" key={row[0]}>
+				<div className="flex justify-center" key={row[0]}>
 					{row.map((label) => (
 						<IconGridItem key={label} label={label} onSelect={onSelect} />
 					))}
