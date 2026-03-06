@@ -126,13 +126,13 @@ function IconPickerHeader({
 }: IconPickerHeaderProps) {
 	return (
 		<div className="flex items-center justify-between border-b border-b-gray-200 py-1">
-			<div className="flex w-full items-center rounded-lg bg-gray-100 px-[10px] py-[7px]">
+			<div className="flex w-full items-center rounded-lg bg-gray-alpha-100 px-[10px] py-[7px]">
 				<figure className="mr-[6px] h-3 w-3 text-gray-600">
 					<SearchIconSmallGray />
 				</figure>
 				<input
 					aria-label="Search icons"
-					className="w-full bg-gray-100 text-sm leading-4 font-normal text-gray-600 outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200"
+					className="w-full bg-transparent text-sm leading-4 font-normal text-gray-600 outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200"
 					onChange={(event) => setSearchValue(event.target.value)}
 					placeholder="Search..."
 					type="text"
@@ -159,15 +159,15 @@ function IconGrid({ labels, onSelect }: IconGridProps) {
 	}, [labels]);
 
 	return (
-		<>
+		<div className="mx-auto w-full max-w-[286px]">
 			{rows.map((row) => (
-				<div className="flex justify-center" key={row[0]}>
+				<div className="flex justify-start" key={row[0]}>
 					{row.map((label) => (
 						<IconGridItem key={label} label={label} onSelect={onSelect} />
 					))}
 				</div>
 			))}
-		</>
+		</div>
 	);
 }
 
