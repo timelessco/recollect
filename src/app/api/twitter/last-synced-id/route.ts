@@ -1,38 +1,41 @@
 import { z } from "zod";
 
-import { createGetApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
+import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { PROFILES } from "@/utils/constants";
 
 const ROUTE = "twitter-last-synced-id";
 
-const InputSchema = z.object({});
-
-const OutputSchema = z.object({
-	last_synced_twitter_id: z.string().nullable(),
+const InputSchema = z.object({
+	last_synced_twitter_id: z.string(),
 });
 
-export const GET = createGetApiHandlerWithAuth({
+const OutputSchema = z.object({
+	last_synced_twitter_id: z.string(),
+});
+
+export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
 	inputSchema: InputSchema,
 	outputSchema: OutputSchema,
-	handler: async ({ supabase, user, route }) => {
-		const { data, error } = await supabase
+	handler: async ({ data, supabase, user, route }) => {
+		const { data: profile, error } = await supabase
 			.from(PROFILES)
+			.update({ last_synced_twitter_id: data.last_synced_twitter_id })
+			.match({ id: user.id })
 			.select("last_synced_twitter_id")
-			.eq("id", user.id)
 			.single();
 
 		if (error) {
 			return apiError({
 				route,
-				message: "Failed to fetch last synced Twitter ID",
+				message: "Failed to update last synced Twitter ID",
 				error,
-				operation: "fetch_last_synced_twitter_id",
+				operation: "update_last_synced_twitter_id",
 				userId: user.id,
 			});
 		}
 
-		return { last_synced_twitter_id: data.last_synced_twitter_id };
+		return { last_synced_twitter_id: profile.last_synced_twitter_id };
 	},
 });
