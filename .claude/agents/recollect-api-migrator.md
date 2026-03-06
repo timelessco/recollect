@@ -418,39 +418,32 @@ export const POST = createPostApiHandlerWithSecret({
 });
 ```
 
-**Binary response template (Object.assign for scanner, returns raw Response):**
+**Binary response template (factory with NextResponse passthrough):**
 
 ```typescript
-import { type NextRequest } from "next/server";
-import { z } from "zod";
-import { type HandlerConfig } from "@/lib/api-helpers/create-handler";
+import { NextResponse } from "next/server";
+import { createGetApiHandler } from "@/lib/api-helpers/create-handler";
+import { InputSchema, OutputSchema } from "./schema";
 
 const ROUTE = "v2-domain-endpoint";
 
-const InputSchema = z.object({ url: z.url() });
-const OutputSchema = z.any(); // Binary — no JSON output schema
-
-async function handleGet(request: NextRequest) {
-	const url = new URL(request.url);
-	const pdfUrl = url.searchParams.get("url");
-	// ... fetch and return binary
-	const buffer = await result.arrayBuffer();
-	return new Response(buffer, {
-		headers: { "Content-Type": "application/pdf" },
-	});
-}
-
-export const GET = Object.assign(handleGet, {
-	config: {
-		factoryName: "createGetApiHandler",
-		inputSchema: InputSchema,
-		outputSchema: OutputSchema,
-		route: ROUTE,
-	} satisfies HandlerConfig,
+export const GET = createGetApiHandler({
+	route: ROUTE,
+	inputSchema: InputSchema,
+	outputSchema: OutputSchema,
+	handler: async ({ input }) => {
+		const buffer = await result.arrayBuffer();
+		// Return NextResponse (not Response) — factory passes it through unchanged
+		return new NextResponse(buffer, {
+			headers: { "Content-Type": "application/pdf" },
+		});
+	},
 });
 ```
 
-**Object.assign template (for other non-standard routes):**
+Factory handles input validation and error wrapping. Handler returns `NextResponse` for binary data — factory detects `instanceof NextResponse` and passes through without JSON wrapping.
+
+**Object.assign template (for routes that genuinely can't use a factory, e.g., multipart, SSE streaming):**
 
 ```typescript
 import { NextResponse, type NextRequest } from "next/server";
@@ -502,7 +495,7 @@ export const POST = Object.assign(handlePost, {
 | Service-role (no auth)  | `"createPostApiHandler"` + internal `createServiceClient()`        | Handler creates own client  |
 | Multipart + user auth   | `"createPostApiHandler"` + `requireAuth` manually                  | Custom auth flow            |
 | Public                  | `"createGetApiHandler"` / `"createPostApiHandler"`                 | No auth                     |
-| Binary response         | Object.assign with `"createGetApiHandler"` factoryName             | Returns `new Response(buffer)` |
+| Binary response         | `"createGetApiHandler"` with `NextResponse` passthrough            | Returns `new NextResponse(buffer)` |
 
 **Non-standard route taxonomy (Waves 3-6):**
 
@@ -510,7 +503,7 @@ export const POST = Object.assign(handlePost, {
 | ----------------------------- | ---- | ------------- | ------------------------------------ |
 | `revalidate`                  | 3    | Secret factory | `createPostApiHandlerWithSecret` + `revalidatePath()` |
 | `get-media-type`              | 3    | Public factory | `createGetApiHandler` + CORS headers |
-| `get-pdf-buffer`              | 3    | Object.assign | Binary PDF response, no JSON factory |
+| `get-pdf-buffer`              | 3    | Public factory | Binary PDF via NextResponse passthrough |
 | `bookmarks/insert`            | 3    | Auth factory   | Batch insert, `createPostApiHandlerWithAuth` |
 | `bookmarks/delete/non-cascade`| 3    | Auth factory   | `createDeleteApiHandlerWithAuth`, test-only |
 | `v1/process-queue`            | 3    | Public factory | `createPostApiHandler` + internal service client |
@@ -642,7 +635,7 @@ return apiError({
 
 15. **Lodash ESM incompatibility in scanner:** Importing from `@/utils/helpers` (which imports `{ isEmpty } from "lodash"`) causes the OpenAPI scanner (`tsx`) to fail with ESM named-export errors. Workaround: inline small utility functions in the route file or use the `Object.assign` pattern. This is a scanner limitation, not a runtime issue.
 
-16. **Binary responses bypass factory JSON wrapping:** Routes returning `new Response(buffer)` (e.g., PDF streaming) cannot use JSON factories — the factory wraps all returns in `apiSuccess({ data, schema })`. Use `Object.assign` with `factoryName: "createGetApiHandler"` for scanner discoverability, but return raw `Response` objects directly.
+16. **Binary responses use factory with NextResponse passthrough:** Routes returning binary data (e.g., PDF streaming) CAN use factories. Return `new NextResponse(buffer, { headers })` (not `Response`) — the factory detects `instanceof NextResponse` and passes through without JSON wrapping. Only use `Object.assign` for routes that genuinely can't use a factory (multipart, SSE).
 
 17. **ISR revalidation in App Router:** `res.revalidate(path)` is Pages Router only. App Router equivalent is `revalidatePath(path)` from `next/cache`. The revalidate v2 route must import from `next/cache`, not call `res.revalidate()`.
 
