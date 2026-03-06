@@ -2,7 +2,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { isEmpty, isNil } from "lodash";
 
-import DefaultUserIcon from "../icons/user/defaultUserIcon";
+import { DefaultUserIcon } from "../icons/user/defaultUserIcon";
 import { defaultBlur } from "../utils/constants";
 
 type UserAvatarTypes = {

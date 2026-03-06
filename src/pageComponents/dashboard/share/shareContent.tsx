@@ -14,7 +14,7 @@ import { Spinner } from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import { CopyIcon } from "../../../icons/copy-icon";
 import { GlobeIcon } from "../../../icons/globe-icon";
-import DefaultUserIcon from "../../../icons/user/defaultUserIcon";
+import { DefaultUserIcon } from "../../../icons/user/defaultUserIcon";
 import {
 	useMiscellaneousStore,
 	useSupabaseSession,
