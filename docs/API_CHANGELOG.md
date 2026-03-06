@@ -124,3 +124,16 @@ Breaking changes are marked with :warning:.
 
 
 
+
+## 2026-03-06 [`288921a`](https://github.com/timelessco/recollect/commit/288921a20ef3dd9c46f4038481bf60b42a13fe20)
+
+
+### POST /instagram/last-synced-id
+-  endpoint added
+
+
+### POST /twitter/last-synced-id
+-  endpoint added
+
+
+
