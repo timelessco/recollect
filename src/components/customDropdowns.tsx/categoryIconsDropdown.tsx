@@ -132,7 +132,7 @@ function IconPickerHeader({
 				</figure>
 				<input
 					aria-label="Search icons"
-					className="w-[101px] bg-gray-100 text-sm leading-4 font-normal text-gray-600 focus:outline-hidden"
+					className="w-full bg-gray-100 text-sm leading-4 font-normal text-gray-600 focus:outline-hidden"
 					onChange={(event) => setSearchValue(event.target.value)}
 					placeholder="Search..."
 					type="text"
