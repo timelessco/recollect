@@ -91,3 +91,36 @@ Breaking changes are marked with :warning:.
 
 
 
+
+## 2026-03-06 [`a331548`](https://github.com/timelessco/recollect/commit/a331548ede7b50dea5962a6d0ba2488aa710e4b7)
+
+
+### DELETE /v2/bookmarks/delete/non-cascade
+-  endpoint added
+
+
+### GET /v2/bookmarks/get/get-media-type
+-  endpoint added
+
+
+### GET /v2/bookmarks/get/get-pdf-buffer
+-  endpoint added
+
+
+### POST /v2/bookmarks/insert
+-  endpoint added
+
+
+### GET /v2/fetch-public-category-bookmarks
+-  endpoint added
+
+
+### POST /v2/process-queue
+-  endpoint added
+
+
+### POST /v2/revalidate
+-  endpoint added
+
+
+
