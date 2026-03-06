@@ -62,7 +62,7 @@ export function CollectionsListSection({
 					show={showAddCategoryInput}
 				/>
 				<div
-					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] outline-hidden hover:bg-gray-100 focus-visible:ring-1 focus-visible:ring-gray-200"
+					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] outline-hidden hover:bg-gray-100 focus-visible:ring-1 focus-visible:ring-gray-200 focus-visible:ring-inset"
 					id="add-category-button"
 					onClick={() => setShowAddCategoryInput(true)}
 					onKeyDown={(event) => {

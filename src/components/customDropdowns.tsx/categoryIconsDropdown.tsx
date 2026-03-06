@@ -71,7 +71,7 @@ export const CategoryIconsDropdown = (props: CategoryIconsDropdownProps) => {
 
 	return (
 		<Popover.Root onOpenChange={handleOpenChange}>
-			<Popover.Trigger className="cursor-pointer outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200">
+			<Popover.Trigger className="cursor-pointer rounded-full outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200">
 				<CollectionIcon
 					bookmarkCategoryData={{
 						icon: iconValue,
