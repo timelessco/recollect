@@ -110,7 +110,7 @@ function SettingsModalContent() {
 						Settings
 					</div>
 				)}
-				<div className="mt-3">
+				<div className="mt-3 flex flex-col gap-px">
 					{optionsList.map((item) => (
 						<SingleListItemComponent
 							extendedClassname="py-[6px]"
