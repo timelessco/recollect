@@ -62,7 +62,7 @@ export function CollectionsListSection({
 					show={showAddCategoryInput}
 				/>
 				<div
-					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] hover:bg-gray-100"
+					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] outline-hidden hover:bg-gray-100 focus-visible:ring-1 focus-visible:ring-gray-200"
 					id="add-category-button"
 					onClick={() => setShowAddCategoryInput(true)}
 					onKeyDown={(event) => {
@@ -98,8 +98,8 @@ function CollectionsHeaderOptionsPopover({
 				aria-label="Collection options"
 				className={
 					isOpen
-						? "visible text-gray-500"
-						: "invisible text-gray-500 group-hover:visible"
+						? "visible text-gray-500 outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200"
+						: "invisible text-gray-500 outline-hidden group-hover:visible focus-visible:ring-1 focus-visible:ring-gray-200"
 				}
 				onClick={(event) => event.stopPropagation()}
 			>
@@ -123,7 +123,7 @@ function CollectionsHeaderOptionsPopover({
 						className={`${dropdownMenuClassName} leading-[20px] outline-hidden`}
 					>
 						<Button
-							className="w-full cursor-pointer rounded-lg px-2 py-[5px] text-left text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800 hover:bg-gray-200"
+							className="w-full cursor-pointer rounded-lg px-2 py-[5px] text-left text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800 outline-hidden hover:bg-gray-200 focus-visible:ring-1 focus-visible:ring-gray-200"
 							onClick={(event) => {
 								event.stopPropagation();
 								setIsOpen(false);
@@ -196,7 +196,7 @@ function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
 				</figure>
 				<input
 					autoFocus
-					className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! placeholder:text-plain-reverse focus:ring-0! focus:ring-offset-0! focus:outline-hidden!"
+					className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! outline-hidden! placeholder:text-plain-reverse focus-visible:ring-1! focus-visible:ring-gray-200!"
 					id="add-category-input"
 					aria-label="New collection name"
 					onBlur={async (event) => {

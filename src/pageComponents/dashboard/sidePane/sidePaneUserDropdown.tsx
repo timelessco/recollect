@@ -37,7 +37,7 @@ const SidePaneUserDropdown = () => {
 			{menuItems.map((item) => (
 				<div
 					key={item.value}
-					className={`rounded-lg focus:bg-transparent focus:text-gray-800 focus-visible:outline-hidden ${dropdownMenuItemClassName} hover:bg-gray-200 hover:text-gray-900`}
+					className={`rounded-lg outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200 ${dropdownMenuItemClassName} hover:bg-gray-200 hover:text-gray-900`}
 					onClick={() => {
 						void handleSignOut();
 					}}
@@ -73,7 +73,7 @@ const SidePaneUserPopover = ({ children }: SidePaneUserPopoverProps) => {
 	return (
 		<Popover.Root>
 			<Popover.Trigger
-				className="text-text-color w-full rounded-lg px-1.5 py-[3px] text-gray-800 outline-hidden hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-hidden data-popup-open:rounded-lg data-popup-open:bg-gray-100 data-popup-open:text-gray-900"
+				className="text-text-color w-full rounded-lg px-1.5 py-[3px] text-gray-800 outline-hidden hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-1 focus-visible:ring-gray-200 data-popup-open:rounded-lg data-popup-open:bg-gray-100 data-popup-open:text-gray-900"
 				title="User menu"
 			>
 				<div className="flex w-full items-center justify-between">

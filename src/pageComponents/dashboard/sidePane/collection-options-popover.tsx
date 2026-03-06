@@ -33,8 +33,8 @@ export function CollectionOptionsPopover({
 				<Popover.Trigger
 					className={
 						open
-							? "flex text-gray-500"
-							: "hidden text-gray-500 group-hover:flex"
+							? "flex text-gray-500 outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200"
+							: "hidden text-gray-500 outline-hidden group-hover:flex focus-visible:ring-1 focus-visible:ring-gray-200"
 					}
 				>
 					<OptionsIcon />
@@ -95,7 +95,7 @@ function CollectionMenuItems({
 		useUpdateCategoryOptimisticMutation();
 
 	const itemClassName =
-		"w-full text-left text-gray-800 font-450 text-13 leading-[115%] tracking-[0.01em] px-2 py-[5px] cursor-pointer rounded-lg hover:bg-gray-200 hover:text-gray-900";
+		"w-full text-left text-gray-800 font-450 text-13 leading-[115%] tracking-[0.01em] px-2 py-[5px] cursor-pointer rounded-lg outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200 hover:bg-gray-200 hover:text-gray-900";
 
 	return (
 		<>

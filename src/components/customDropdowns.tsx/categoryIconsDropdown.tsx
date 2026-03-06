@@ -71,7 +71,7 @@ export const CategoryIconsDropdown = (props: CategoryIconsDropdownProps) => {
 
 	return (
 		<Popover.Root onOpenChange={handleOpenChange}>
-			<Popover.Trigger className="cursor-pointer">
+			<Popover.Trigger className="cursor-pointer outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200">
 				<CollectionIcon
 					bookmarkCategoryData={{
 						icon: iconValue,
@@ -132,7 +132,7 @@ function IconPickerHeader({
 				</figure>
 				<input
 					aria-label="Search icons"
-					className="w-full bg-gray-100 text-sm leading-4 font-normal text-gray-600 focus:outline-hidden"
+					className="w-full bg-gray-100 text-sm leading-4 font-normal text-gray-600 outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200"
 					onChange={(event) => setSearchValue(event.target.value)}
 					placeholder="Search..."
 					type="text"

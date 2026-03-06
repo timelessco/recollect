@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
+import omit from "lodash/omit";
 import {
 	DragPreview,
 	ListDropTargetDelegate,
@@ -123,7 +124,6 @@ const ListBoxDrop = (props: ListBoxDropTypes) => {
 	const { collectionProps } = useDroppableCollection(
 		{
 			...props,
-			// Provide drop targets for keyboard and pointer-based drag and drop.
 			keyboardDelegate: new ListKeyboardDelegate(
 				state.collection,
 				state.disabledKeys,
@@ -159,12 +159,15 @@ const ListBoxDrop = (props: ListBoxDropTypes) => {
 	useDraggableCollection(props, dragState, ref);
 
 	// Merge listbox props and dnd props, and render the items as normal.
+	const ulProps = omit(mergeProps(listBoxProps, collectionProps), [
+		"onKeyDown",
+		"onKeyDownCapture",
+		"onKeyUp",
+		"onKeyUpCapture",
+	]);
+
 	return (
-		<ul
-			{...mergeProps(listBoxProps, collectionProps)}
-			className="flex flex-col gap-px"
-			ref={ref}
-		>
+		<ul {...ulProps} className="flex flex-col gap-px" ref={ref}>
 			{[...state.collection].map((item) => (
 				<OptionDrop
 					dragState={dragState}
@@ -252,6 +255,11 @@ const OptionDrop = ({
 	);
 
 	// Merge option props and dnd props, and render the item.
+	const mergedProps = omit(
+		mergeProps(optionProps, dropProps, focusProps, dragProps),
+		["onKeyDown", "onKeyDownCapture", "onKeyUp", "onKeyUpCapture"],
+	);
+
 	return (
 		<>
 			<DropIndicator
@@ -259,9 +267,9 @@ const OptionDrop = ({
 				target={{ type: "item", key: item.key, dropPosition: "before" }}
 			/>
 			<li
-				{...mergeProps(optionProps, dropProps, focusProps, dragProps)}
+				{...mergedProps}
 				// Apply a class when the item is the active drop target.
-				className={`option-drop ${isFocusVisible ? "focus-visible" : ""} ${
+				className={`option-drop outline-hidden ${isFocusVisible ? "ring-1 ring-gray-200" : ""} ${
 					isDropTarget && isCardDragging ? "drop-target" : ""
 				}`}
 				ref={ref}
