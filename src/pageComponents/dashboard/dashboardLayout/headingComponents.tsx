@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import isEmpty from "lodash/isEmpty";
 
 import { useUpdateCategoryOptimisticMutation } from "../../../async/mutationHooks/category/use-update-category-optimistic-mutation";
-import ToolTip from "../../../components/tooltip";
-import GlobeIcon from "../../../icons/globeIcon";
+import { Tooltip } from "@/components/ui/recollect/tooltip";
+import { GlobeIcon } from "../../../icons/globe-icon";
 import UsersCollabIcon from "../../../icons/usersCollabIcon";
 import { type CategoriesData } from "../../../types/apiTypes";
 
@@ -156,20 +156,20 @@ const CollectionStatusIcons = (props: CollectionStatusIconsProps) => {
 	}
 
 	return (
-		<div className="ml-2 flex space-x-2">
+		<div className="ml-2 flex items-center justify-center space-x-2">
 			{showPublicIcon && (
-				<ToolTip toolTipContent="Public collection">
+				<Tooltip content="Public collection">
 					<figure className="text-gray-1000">
 						<GlobeIcon />
 					</figure>
-				</ToolTip>
+				</Tooltip>
 			)}
 			{showSharedIcon && (
-				<ToolTip toolTipContent="Shared collection">
+				<Tooltip content="Shared collection">
 					<figure className="text-gray-1000">
 						<UsersCollabIcon />
 					</figure>
-				</ToolTip>
+				</Tooltip>
 			)}
 		</div>
 	);

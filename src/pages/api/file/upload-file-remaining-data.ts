@@ -4,8 +4,9 @@ import { type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type SupabaseClient } from "@supabase/supabase-js";
 
-import imageToText from "../../../async/ai/imageToText";
-import ocr from "../../../async/ai/ocr";
+import imageToText, {
+	type UserCollection,
+} from "../../../async/ai/imageToText";
 import {
 	type ImgMetadataType,
 	type NextApiRequest,
@@ -19,6 +20,12 @@ import {
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
+import { type AiToggles, fetchAiToggles } from "@/utils/ai-feature-toggles";
+import {
+	autoAssignCollections,
+	fetchUserCollections,
+} from "@/utils/auto-assign-collections";
+
 type Data = UploadFileApiResponse;
 
 const notVideoLogic = async (
@@ -26,24 +33,35 @@ const notVideoLogic = async (
 	mediaType: string | null,
 	supabase: SupabaseClient,
 	userId: string,
+	userCollections: UserCollection[],
+	aiToggles: AiToggles,
 ) => {
 	const ogImage = mediaType?.includes("audio")
 		? AUDIO_OG_IMAGE_FALLBACK_URL
 		: publicUrl;
-	let imageCaption = null;
+	let imageCaption: string | null = null;
+	let imageKeywords: string[] = [];
 	let imageOcrValue = null;
 	let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
+	let matchedCollectionIds: number[] = [];
 
 	if (ogImage) {
 		try {
-			// Get OCR using the centralized function
-			// Returns { text, status } object
-			const ocrResult = await ocr(ogImage, supabase, userId);
-			imageOcrValue = ocrResult.text;
-			ocrStatus = ocrResult.status;
-
-			// Get image caption using the centralized function
-			imageCaption = await imageToText(ogImage, supabase, userId);
+			const imageToTextResult = await imageToText(
+				ogImage,
+				supabase,
+				userId,
+				null,
+				userCollections.length > 0 ? { collections: userCollections } : null,
+				aiToggles,
+			);
+			if (imageToTextResult) {
+				imageCaption = imageToTextResult.sentence;
+				imageKeywords = imageToTextResult.image_keywords ?? [];
+				matchedCollectionIds = imageToTextResult.matched_collection_ids;
+				imageOcrValue = imageToTextResult.ocr_text;
+				ocrStatus = imageToTextResult.ocr_text ? "success" : "no_text";
+			}
 		} catch (error) {
 			console.warn("Gemini AI processing error", error);
 		}
@@ -63,6 +81,7 @@ const notVideoLogic = async (
 	const meta_data = {
 		img_caption: imageCaption,
 		image_caption: imageCaption,
+		image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
 		width: imgData?.width ?? null,
 		height: imgData?.height ?? null,
 		ogImgBlurUrl: imgData?.encoded ?? null,
@@ -79,7 +98,7 @@ const notVideoLogic = async (
 		video_url: null,
 	};
 
-	return { ogImage, meta_data };
+	return { matchedCollectionIds, ogImage, meta_data };
 };
 
 export default async function handler(
@@ -142,11 +161,24 @@ export default async function handler(
 			video_url: null,
 		};
 
-		const { ogImage, meta_data: metaData } = await notVideoLogic(
+		const aiToggles = await fetchAiToggles({ supabase, userId });
+		const userCollections = await fetchUserCollections({
+			autoAssignEnabled: aiToggles.autoAssignCollections,
+			supabase,
+			userId,
+		});
+
+		const {
+			matchedCollectionIds,
+			ogImage,
+			meta_data: metaData,
+		} = await notVideoLogic(
 			publicUrl,
 			mediaType,
 			supabase,
 			userId,
+			userCollections,
+			aiToggles,
 		);
 
 		// Fetch existing metadata
@@ -217,6 +249,14 @@ export default async function handler(
 			});
 			return;
 		}
+
+		// Auto-assign collections (non-critical, handled internally)
+		await autoAssignCollections({
+			bookmarkId: id,
+			matchedCollectionIds,
+			route: "upload-file-remaining-data",
+			userId,
+		});
 
 		// Success
 		console.log("File metadata updated successfully:", { bookmarkId: id });

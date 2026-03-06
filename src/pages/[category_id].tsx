@@ -113,23 +113,12 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
 					type,
 					meta_data,
 					sort_index,
-					make_discoverable,
-					user_id (
-						bookmarks_view,
-						category_order,
-						display_name,
-						email,
-						id,
-						preferred_og_domains,
-						profile_pic,
-						provider,
-						user_name
-					)
+					make_discoverable
 				`,
 				)
 				.is("trash", null)
 				.not("make_discoverable", "is", null)
-				.order("make_discoverable", { ascending: false })
+				.order("make_discoverable", { ascending: true })
 				.range(rangeStart, rangeEnd);
 
 			if (error) {

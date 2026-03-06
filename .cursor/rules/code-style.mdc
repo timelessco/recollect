@@ -48,14 +48,18 @@ This is a CRITICAL step that must NEVER be skipped when working on any code-rela
   - Server components by default
   - Client components explicitly marked with `"use client"`
   - Separate files for server/client versions (e.g., `Component.tsx` and `ComponentClient.tsx`)
-- **Props**: Always define TypeScript interfaces
+- **Props**: Use `interface` when 2+ props, `type` when 1 prop
 
   ```typescript
   interface ComponentProps {
   	title: string;
   	isActive?: boolean;
   }
+
+  type SingleProp = { id: number };
   ```
+
+- **Component order**: Entry point (exported component) first, then helpers in the order they are used
 
 ## Styling Guidelines
 

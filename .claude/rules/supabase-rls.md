@@ -14,6 +14,8 @@ paths: supabase/**/*.sql
 ## Required Patterns
 
 - Always use `auth.uid()` instead of `current_user`
+- `auth.jwt()->>'email'` for email-based sharing checks -- always wrap in `(SELECT ...)`:
+  `(select auth.jwt()->>'email') = email`
 - Don't use `FOR ALL` - create separate policies per operation
 - Always specify role with `TO` clause (`anon`, `authenticated`)
 - Use descriptive policy names in double quotes

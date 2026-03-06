@@ -1,37 +1,14 @@
-import { z } from "zod";
-
+import {
+	ToggleBookmarkDiscoverablePayloadSchema,
+	ToggleBookmarkDiscoverableResponseSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { isNonEmptyArray, isNullable } from "@/utils/assertion-utils";
+import { isNonEmptyArray } from "@/utils/assertion-utils";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
 import { HttpStatus } from "@/utils/error-utils/common";
 
 const ROUTE = "toggle-discoverable-on-bookmark";
-
-const ToggleBookmarkDiscoverablePayloadSchema = z.object({
-	bookmark_id: z
-		.int({ error: "Bookmark ID must be a whole number" })
-		.positive({ error: "Bookmark ID must be a positive number" }),
-	make_discoverable: z.boolean({
-		error: (issue) =>
-			isNullable(issue.input)
-				? "make_discoverable is required"
-				: "make_discoverable must be a boolean",
-	}),
-});
-
-export type ToggleBookmarkDiscoverablePayload = z.infer<
-	typeof ToggleBookmarkDiscoverablePayloadSchema
->;
-
-const ToggleBookmarkDiscoverableResponseSchema = z.object({
-	id: z.number(),
-	make_discoverable: z.string().nullable(),
-});
-
-export type ToggleBookmarkDiscoverableResponse = z.infer<
-	typeof ToggleBookmarkDiscoverableResponseSchema
->;
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

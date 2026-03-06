@@ -1,37 +1,21 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { DrawerPreview as Drawer } from "@base-ui/react/drawer";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { Allotment, type AllotmentHandle } from "allotment";
-import classNames from "classnames";
 import find from "lodash/find";
-import Drawer from "react-modern-drawer";
 
-import Button from "../../../components/atoms/button";
-import BookmarksSortDropdown from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
-import BookmarksViewDropdown from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
-import ShareDropdown from "../../../components/customDropdowns.tsx/shareDropdown";
+import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { useSidePaneStore } from "../../../store/sidePaneStore";
 import {
 	type BookmarksCountTypes,
 	type CategoriesData,
 } from "../../../types/apiTypes";
-import {
-	type BookmarksSortByTypes,
-	type BookmarksViewTypes,
-	type BookmarkViewCategories,
-} from "../../../types/componentStoreTypes";
-import { type CategoryIdUrlTypes } from "../../../types/componentTypes";
 import { optionsMenuListArray } from "../../../utils/commonData";
-import {
-	BOOKMARKS_COUNT_KEY,
-	CATEGORIES_KEY,
-	DISCOVER_URL,
-	TRASH_URL,
-} from "../../../utils/constants";
+import { BOOKMARKS_COUNT_KEY, CATEGORIES_KEY } from "../../../utils/constants";
 import SidePane from "../sidePane";
 
 import {
@@ -40,57 +24,20 @@ import {
 	SIDE_PANE_DEFAULT_WIDTH,
 } from "./allotmentWrapper";
 import { DashboardContent } from "./dashboardContent";
-
-import "react-modern-drawer/dist/index.css";
-
-import { isNull } from "lodash";
-
-import {
-	AriaDropdown,
-	AriaDropdownMenu,
-} from "../../../components/ariaDropdown";
-import { type AddBookmarkDropdownTypes } from "../../../components/customDropdowns.tsx/addBookmarkDropdown";
-import RenameIcon from "../../../icons/actionIcons/renameIcon";
-import TrashIconRed from "../../../icons/actionIcons/trashIconRed";
-import OptionsIcon from "../../../icons/optionsIcon";
-import {
-	dropdownMenuClassName,
-	dropdownMenuItemClassName,
-} from "../../../utils/commonClassNames";
-import ShareContent from "../share/shareContent";
-
-import { ClearTrashContent } from "@/components/clearTrashContent";
+import { HeaderOptionsPopover } from "./header-options-popover";
 
 type DashboardLayoutProps = {
-	categoryId: CategoryIdUrlTypes;
-	onAddBookmark: AddBookmarkDropdownTypes["onAddBookmark"];
-	onClearTrash: () => void;
-	onDeleteCollectionClick: () => void;
-	setBookmarksView: (
-		value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
-		type: BookmarkViewCategories,
-	) => void;
-	uploadFileFromAddDropdown: AddBookmarkDropdownTypes["uploadFile"];
-	userId: string;
-	isClearingTrash?: boolean;
 	children: React.ReactNode;
 };
 
 const DashboardLayout = (props: DashboardLayoutProps) => {
-	const {
-		categoryId,
-		children,
-		userId,
-		onClearTrash,
-		setBookmarksView,
-		onAddBookmark,
-		uploadFileFromAddDropdown,
-		onDeleteCollectionClick,
-		isClearingTrash,
-	} = props;
+	const { children } = props;
+
+	const session = useSupabaseSession((state) => state.session);
+	const userId = session?.user?.id ?? "";
+	const { category_id: categoryId } = useGetCurrentCategoryId();
 
 	const [showSearchBar, setShowSearchBar] = useState(true);
-	const [triggerHeadingEdit, setTriggerHeadingEdit] = useState(false);
 
 	const allotmentRef = useRef<AllotmentHandle>(null);
 	const sidePaneRef = useRef<HTMLDivElement>(null);
@@ -101,13 +48,11 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	const { isDesktop } = useIsMobileView();
 
-	useEffect(() => {
-		if (isDesktop) {
-			setShowSearchBar(true);
-		} else {
-			setShowSearchBar(false);
-		}
-	}, [isDesktop]);
+	const [prevIsDesktop, setPrevIsDesktop] = useState(isDesktop);
+	if (prevIsDesktop !== isDesktop) {
+		setPrevIsDesktop(isDesktop);
+		setShowSearchBar(isDesktop);
+	}
 
 	const queryClient = useQueryClient();
 
@@ -136,164 +81,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 		currentCategoryData?.category_name ??
 		find(optionsMenuList, (item) => item?.current === true)?.name;
 
-	const [headerOptionsCurrentTab, setHeaderOptionsCurrentTab] = useState<
-		string | null
-	>(null);
-
-	const updateHeaderOptionCurrentTab = useCallback(
-		(value: string) => {
-			setHeaderOptionsCurrentTab(value === "delete-collection" ? null : value);
-		},
-		[setHeaderOptionsCurrentTab],
-	);
-
-	const renderViewBasedHeaderOptions = () => {
-		const optionsData = [
-			{
-				show: true,
-				value: "view",
-				render: (
-					<BookmarksViewDropdown
-						renderOnlyButton
-						setBookmarksView={setBookmarksView}
-					/>
-				),
-			},
-			{
-				show: currentPath !== DISCOVER_URL && currentPath !== TRASH_URL,
-				value: "sort",
-				render: (
-					<BookmarksSortDropdown
-						renderOnlyButton
-						setBookmarksView={setBookmarksView}
-					/>
-				),
-			},
-			{
-				show: currentPath === TRASH_URL,
-				value: "trash",
-				render: (
-					<div
-						className={`flex items-center text-red-700 hover:text-red-700 ${dropdownMenuItemClassName}`}
-					>
-						<TrashIconRed />
-						<p className="ml-[6px]">Clear Trash</p>
-					</div>
-				),
-			},
-			{
-				show: typeof categoryId === "number",
-				value: "share",
-				render: <ShareDropdown renderOnlyButton />,
-			},
-			{
-				show: typeof categoryId === "number",
-				value: "rename",
-				render: (
-					<div
-						className={`flex items-center ${dropdownMenuItemClassName}`}
-						onClick={() => {
-							setTriggerHeadingEdit(true);
-							setTimeout(() => setTriggerHeadingEdit(false), 0);
-						}}
-					>
-						<RenameIcon />
-						<p className="ml-[6px]">Rename</p>
-					</div>
-				),
-			},
-			{
-				show: typeof categoryId === "number",
-				value: "delete-collection",
-				render: (
-					// using AriaDropdownMenu as we want the dropdown to close on click
-					<AriaDropdownMenu
-						className={`flex items-center text-red-700 hover:text-red-700 ${dropdownMenuItemClassName}`}
-						onClick={onDeleteCollectionClick}
-					>
-						<TrashIconRed />
-						<p className="ml-[6px]">Delete collection</p>
-					</AriaDropdownMenu>
-				),
-			},
-		];
-
-		const optionsList = optionsData
-			?.filter((optionItem) => optionItem?.show === true)
-			?.map((item) => (
-				<div
-					key={item?.value}
-					onClick={() => updateHeaderOptionCurrentTab(item?.value)}
-				>
-					{item?.render}
-				</div>
-			));
-
-		let content = <div />;
-
-		// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
-		switch (headerOptionsCurrentTab) {
-			case "trash":
-				content = (
-					<ClearTrashContent
-						onClearTrash={onClearTrash}
-						isClearingTrash={isClearingTrash ?? false}
-					/>
-				);
-				break;
-			case "view":
-				content = (
-					<BookmarksViewDropdown
-						isDropdown={false}
-						setBookmarksView={setBookmarksView}
-					/>
-				);
-				break;
-			case "sort":
-				content = (
-					<BookmarksSortDropdown
-						isDropdown={false}
-						setBookmarksView={setBookmarksView}
-					/>
-				);
-				break;
-			case "share":
-				content = (
-					<div className="w-[300px]">
-						<ShareContent />
-					</div>
-				);
-				break;
-			default:
-				break;
-		}
-
-		const dropdownClassNames = classNames({
-			"z-10": true,
-			"w-full": headerOptionsCurrentTab === "share",
-			"w-[180px]": headerOptionsCurrentTab !== "share",
-			[dropdownMenuClassName]: true,
-		});
-
-		return (
-			<AriaDropdown
-				menuButton={
-					<Button className="bg-transparent p-[7px] text-gray-600 hover:text-plain-reverse">
-						<OptionsIcon />
-					</Button>
-				}
-				menuClassName={dropdownClassNames}
-				menuOpenToggle={(value) => {
-					if (!value) {
-						setHeaderOptionsCurrentTab(null);
-					}
-				}}
-			>
-				{isNull(headerOptionsCurrentTab) ? optionsList : content}
-			</AriaDropdown>
-		);
-	};
-
 	const dashboardContentElement = () => {
 		const onExpandSidePane = () => {
 			if (isDesktop) {
@@ -313,16 +100,13 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				currentCategoryData={currentCategoryData}
 				currentPath={currentPath}
 				headerName={headerName}
-				headerOptions={renderViewBasedHeaderOptions()}
+				headerOptions={<HeaderOptionsPopover />}
 				isDesktop={isDesktop}
-				onAddBookmark={onAddBookmark}
 				onExpandSidePane={onExpandSidePane}
 				onShowSearchBar={setShowSearchBar}
 				optionsMenuList={optionsMenuList}
 				showSearchBar={showSearchBar}
 				showSidePane={showSidePane}
-				triggerHeadingEdit={triggerHeadingEdit}
-				uploadFileFromAddDropdown={uploadFileFromAddDropdown}
 			>
 				{children}
 			</DashboardContent>
@@ -362,15 +146,29 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
 	return (
 		<div className="flex">
-			<Drawer
-				direction="left"
-				onClose={() => setShowSidePane(false)}
+			<Drawer.Root
+				modal
+				onOpenChange={(open) => setShowSidePane(open)}
 				open={showSidePane}
+				swipeDirection="left"
 			>
-				<SidePane />
-			</Drawer>
+				<Drawer.Portal keepMounted>
+					<Drawer.Backdrop className="fixed inset-0 z-50 bg-black opacity-[calc(0.2*(1-var(--drawer-swipe-progress)))] transition-opacity duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:opacity-0 data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-starting-style:opacity-0 data-swiping:duration-0" />
+					<Drawer.Viewport className="fixed inset-0 z-50 flex">
+						<Drawer.Popup className="h-full w-[250px] transform-[translateX(var(--drawer-swipe-movement-x))] bg-white shadow-[0_0_10px_5px_rgb(0_0_0/10%)] outline-hidden transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:transform-[translateX(-100%)] data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-starting-style:transform-[translateX(-100%)] data-swiping:duration-0 data-swiping:select-none">
+							<SidePane />
+						</Drawer.Popup>
+					</Drawer.Viewport>
+				</Drawer.Portal>
+			</Drawer.Root>
 
 			{dashboardContentElement()}
+
+			{/* Portal container so side-pane dropdowns render above the Drawer on small screens */}
+			<div
+				className="pointer-events-none fixed inset-0 z-9999"
+				id="side-pane-dropdown-portal"
+			/>
 		</div>
 	);
 };

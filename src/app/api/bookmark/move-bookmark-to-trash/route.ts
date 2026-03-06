@@ -1,6 +1,9 @@
 import * as Sentry from "@sentry/nextjs";
-import { z } from "zod";
 
+import {
+	MoveBookmarkToTrashInputSchema,
+	MoveBookmarkToTrashOutputSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
@@ -10,34 +13,6 @@ import {
 } from "@/utils/constants";
 
 const ROUTE = "move-bookmark-to-trash";
-
-// Input schema - array of bookmark objects with id
-const BookmarkDataSchema = z.object({
-	id: z.number({ error: "Bookmark ID must be a number" }),
-});
-
-const MoveBookmarkToTrashInputSchema = z.object({
-	data: z
-		.array(BookmarkDataSchema)
-		.min(1, { message: "At least one bookmark is required" }),
-	isTrash: z.boolean({ error: "isTrash must be a boolean" }),
-});
-
-export type MoveBookmarkToTrashInput = z.infer<
-	typeof MoveBookmarkToTrashInputSchema
->;
-
-// Output schema - array of updated bookmark records
-const MoveBookmarkToTrashOutputSchema = z.array(
-	z.object({
-		id: z.number(),
-		trash: z.string().nullable(),
-	}),
-);
-
-export type MoveBookmarkToTrashOutput = z.infer<
-	typeof MoveBookmarkToTrashOutputSchema
->;
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

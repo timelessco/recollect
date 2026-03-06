@@ -1,41 +1,66 @@
-import { useEffect, useRef, useState } from "react";
-import { isEmpty, isNil, isNull } from "lodash";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Popover } from "@base-ui/react/popover";
+import isEmpty from "lodash/isEmpty";
+import isNil from "lodash/isNil";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
-import AddBoomarkInputIcon from "../../icons/miscellaneousIcons/addBoomarkInputIcon";
-import PlusIconWhite from "../../icons/plusIconWhite";
-import { type FileType } from "../../types/componentTypes";
+import Input from "../atoms/input";
+
+import { Button } from "@/components/ui/recollect/button";
+import { useAddBookmark } from "@/hooks/useAddBookmark";
+import { useFileUploadDrop } from "@/hooks/useFileUploadDrop";
+import { AddBookmarkInputIcon } from "@/icons/miscellaneousIcons/add-bookmark-input-icon";
+import PlusIconWhite from "@/icons/plusIconWhite";
+import { type FileType } from "@/types/componentTypes";
 import {
 	dropdownMenuClassName,
 	grayInputClassName,
-} from "../../utils/commonClassNames";
-import { URL_PATTERN } from "../../utils/constants";
-import { AriaDropdown } from "../ariaDropdown";
-import Button from "../atoms/button";
-import Input from "../atoms/input";
+} from "@/utils/commonClassNames";
+import { URL_PATTERN } from "@/utils/constants";
 
-export type AddBookmarkDropdownTypes = {
-	onAddBookmark: (url: string) => void;
-	uploadFile: (file: FileType[]) => void;
-};
-
-const AddBookmarkDropdown = ({
-	onAddBookmark,
-	uploadFile,
-}: AddBookmarkDropdownTypes) => {
-	const [openDropdown, setOpenDropdown] = useState(false);
+const AddBookmarkDropdown = () => {
+	const [open, setOpen] = useState(false);
 
 	useEffect(() => {
 		const down = (event: KeyboardEvent) => {
 			if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
 				event.preventDefault();
-				setOpenDropdown(true);
+				setOpen(true);
 			}
 		};
 
 		document.addEventListener("keydown", down);
 		return () => document.removeEventListener("keydown", down);
 	}, []);
+
+	return (
+		<Popover.Root open={open} onOpenChange={setOpen}>
+			<Popover.Trigger
+				className="flex items-center rounded-full bg-gray-950 p-[7px] text-white outline-hidden filter-[drop-shadow(0_3px_6px_rgba(0,0,0,0.07))_drop-shadow(0_11px_11px_rgba(0,0,0,0.06))] hover:bg-gray-800"
+				title="create"
+			>
+				<figure className="h-4 w-4 text-gray-0">
+					<PlusIconWhite />
+				</figure>
+			</Popover.Trigger>
+			<Popover.Portal>
+				<Popover.Positioner align="end" className="z-10" sideOffset={1}>
+					<Popover.Popup className="leading-5 outline-hidden">
+						<AddBookmarkPopupContent onClose={() => setOpen(false)} />
+					</Popover.Popup>
+				</Popover.Positioner>
+			</Popover.Portal>
+		</Popover.Root>
+	);
+};
+
+interface AddBookmarkPopupContentProps {
+	onClose: () => void;
+}
+
+const AddBookmarkPopupContent = ({ onClose }: AddBookmarkPopupContentProps) => {
+	const { onAddBookmark } = useAddBookmark();
+	const { onDrop } = useFileUploadDrop();
 
 	const {
 		register,
@@ -44,10 +69,15 @@ const AddBookmarkDropdown = ({
 		reset,
 		clearErrors,
 	} = useForm<{ url: string }>();
-	const onSubmit: SubmitHandler<{ url: string }> = (data) => {
-		onAddBookmark(data.url);
-		reset({ url: "" });
-	};
+
+	const onSubmit: SubmitHandler<{ url: string }> = useCallback(
+		(data) => {
+			onAddBookmark(data.url);
+			reset({ url: "" });
+			onClose();
+		},
+		[onAddBookmark, onClose, reset],
+	);
 
 	const inputRef = useRef<HTMLInputElement>(null);
 	const fileUploadInputRef = useRef<HTMLInputElement>(null);
@@ -55,73 +85,51 @@ const AddBookmarkDropdown = ({
 	const { ref, ...rest } = register("url", {
 		required: true,
 		pattern: URL_PATTERN,
+		onChange: () => {
+			if (!isEmpty(errors)) {
+				clearErrors();
+			}
+		},
 	});
 
 	return (
-		<>
+		<div className={`relative w-[326px] ${dropdownMenuClassName}`}>
 			<input
 				className="hidden"
 				onChange={(event) =>
 					!isNil(event.target.files) &&
-					uploadFile(event.target.files as unknown as FileType[])
+					onDrop(event.target.files as unknown as FileType[])
 				}
 				ref={fileUploadInputRef}
 				type="file"
 			/>
-			<AriaDropdown
-				initialFocusRef={inputRef}
-				isOpen={openDropdown}
-				menuButton={
-					<Button
-						className="rounded-full p-[7px] filter-[drop-shadow(0_3px_6px_rgba(0,0,0,0.07))_drop-shadow(0_11px_11px_rgba(0,0,0,0.06))]"
-						title="create"
-						type="dark"
-					>
-						<figure className="h-4 w-4 text-gray-0">
-							<PlusIconWhite />
-						</figure>
-					</Button>
-				}
-				menuOpenToggle={(value) => {
-					setOpenDropdown(value);
-					if (value === false) {
-						reset({ url: "" });
-						clearErrors();
+			<Button
+				aria-label="Upload file"
+				className="absolute top-[11px] left-[14px] z-1 flex h-4 w-4 items-center justify-center p-0 text-gray-600 hover:text-gray-900"
+				onClick={() => {
+					if (fileUploadInputRef.current) {
+						fileUploadInputRef.current.click();
 					}
 				}}
-				menuClassName="z-5"
 			>
-				<div className={`relative w-[326px] ${dropdownMenuClassName}`}>
-					<Button
-						className="p-0 text-gray-600 hover:text-gray-900"
-						onClick={() => {
-							if (fileUploadInputRef.current) {
-								fileUploadInputRef.current.click();
-							}
-						}}
-					>
-						<AddBoomarkInputIcon className="absolute top-[11px] left-[14px] z-1" />
-					</Button>
-					<form onSubmit={handleSubmit(onSubmit)}>
-						<Input
-							autoFocus
-							className={`rounded-[11px] pl-[32px] ${grayInputClassName}`}
-							errorClassName="ml-2"
-							{...rest}
-							errorText="Enter valid URL"
-							isError={!isEmpty(errors)}
-							placeholder="Add a link or drop a file anywhere"
-							ref={(event) => {
-								ref(event);
-								if (!isNull(inputRef)) {
-									inputRef.current = event;
-								}
-							}}
-						/>
-					</form>
-				</div>
-			</AriaDropdown>
-		</>
+				<AddBookmarkInputIcon className="h-4 w-4" />
+			</Button>
+			<form onSubmit={handleSubmit(onSubmit)}>
+				<Input
+					autoFocus
+					className={`${grayInputClassName} rounded-[11px] pl-[32px]`}
+					errorClassName="ml-2"
+					{...rest}
+					errorText="Enter valid URL"
+					isError={!isEmpty(errors)}
+					placeholder="Add a link or drop a file anywhere"
+					ref={(event) => {
+						ref(event);
+						inputRef.current = event;
+					}}
+				/>
+			</form>
+		</div>
 	);
 };
 

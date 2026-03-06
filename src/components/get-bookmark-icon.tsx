@@ -2,7 +2,6 @@ import Image from "next/image";
 
 import FolderIcon from "../icons/folderIcon";
 import ImageIcon from "../icons/imageIcon";
-import LinkIcon from "../icons/linkIcon";
 import VideoIcon from "../icons/videoIcon";
 import { type SingleListData } from "../types/apiTypes";
 import {
@@ -18,6 +17,7 @@ import {
 } from "../utils/helpers";
 
 import { AudioIcon } from "@/icons/audio-icon";
+import { GlobeLinkIcon } from "@/icons/globe-link-icon";
 
 export type GetBookmarkIconProps = {
 	/**
@@ -76,11 +76,11 @@ export const GetBookmarkIcon = ({
 		item?.meta_data?.mediaType?.startsWith("audio");
 	// Favicon error fallback
 	if (favIconErrorIds.includes(item.id)) {
-		return <LinkIcon />;
+		return <GlobeLinkIcon className="text-gray-1000" />;
 	}
 
 	// Twitter avatar (if in tweets page)
-	if (isUserInTweetsPage && item.meta_data.twitter_avatar_url) {
+	if (isUserInTweetsPage && item.meta_data?.twitter_avatar_url) {
 		return (
 			<Image
 				alt={item.title ? `${item.title} favicon` : "Bookmark favicon"}
@@ -127,9 +127,9 @@ export const GetBookmarkIcon = ({
 	}
 
 	if (isAudio) {
-		return <AudioIcon className="h-[15px] w-[15px]" />;
+		return <AudioIcon className={`h-[${size}px] w-[${size}px]`} />;
 	}
 
 	// Default fallback
-	return <LinkIcon />;
+	return <GlobeLinkIcon className={`h-[${size}px] w-[${size}px]`} />;
 };

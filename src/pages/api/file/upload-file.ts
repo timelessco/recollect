@@ -9,8 +9,13 @@ import axios from "axios";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 
-import imageToText from "../../../async/ai/imageToText";
-import ocr from "../../../async/ai/ocr";
+import imageToText, {
+	type UserCollection,
+} from "../../../async/ai/imageToText";
+import {
+	type AiToggles,
+	fetchAiToggles,
+} from "../../../utils/ai-feature-toggles";
 import { getMediaType } from "../../../async/supabaseCrudHelpers";
 import {
 	type ImgMetadataType,
@@ -36,6 +41,10 @@ import {
 import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { vet } from "../../../utils/try";
+import {
+	autoAssignCollections,
+	fetchUserCollections,
+} from "../../../utils/auto-assign-collections";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
 
 type BodyDataType = {
@@ -56,6 +65,8 @@ const videoLogic = async (
 	data: BodyDataType,
 	supabase: SupabaseClient,
 	userId: string,
+	aiToggles: AiToggles,
+	userCollections: UserCollection[],
 ) => {
 	// Since thumbnails are now uploaded client-side, we just need to get the thumbnail URL
 	// The thumbnailPath in data should now be the actual path in R2
@@ -71,9 +82,11 @@ const videoLogic = async (
 	const ogImage = thumbnailUrl?.publicUrl;
 
 	let imgData;
-	let ocrData;
+	let ocrData: string | null = null;
 	let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
-	let imageCaption;
+	let imageCaption: string | null = null;
+	let imageKeywords: string[] = [];
+	let matchedCollectionIds: number[] = [];
 	if (thumbnailUrl?.publicUrl) {
 		// Handle blurhash generation
 		try {
@@ -89,31 +102,20 @@ const videoLogic = async (
 			imgData = {};
 		}
 
-		// Handle OCR processing
-		// OCR returns { text, status } object
 		try {
-			const ocrResult = await ocr(thumbnailUrl?.publicUrl, supabase, userId);
-			ocrData = ocrResult.text;
-			ocrStatus = ocrResult.status;
-		} catch (error) {
-			console.error("OCR processing failed:", error);
-			Sentry.captureException(error, {
-				tags: {
-					operation: "ocr_processing",
-					thumbnailUrl: thumbnailUrl?.publicUrl,
-				},
-			});
-			ocrData = null;
-			ocrStatus = "no_text";
-		}
-
-		// Handle image caption generation
-		try {
-			imageCaption = await imageToText(
+			const imageToTextResult = await imageToText(
 				thumbnailUrl?.publicUrl,
 				supabase,
 				userId,
+				null,
+				userCollections.length > 0 ? { collections: userCollections } : null,
+				aiToggles,
 			);
+			imageCaption = imageToTextResult?.sentence ?? null;
+			imageKeywords = imageToTextResult?.image_keywords ?? [];
+			matchedCollectionIds = imageToTextResult?.matched_collection_ids ?? [];
+			ocrData = imageToTextResult?.ocr_text ?? null;
+			ocrStatus = imageToTextResult?.ocr_text ? "success" : "no_text";
 		} catch (error) {
 			console.error("Image caption generation failed:", error);
 			Sentry.captureException(error, {
@@ -126,9 +128,10 @@ const videoLogic = async (
 		}
 	}
 
-	const meta_data = {
+	const meta_data: ImgMetadataType = {
 		img_caption: imageCaption ?? null,
 		image_caption: imageCaption ?? null,
+		image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
 		width: imgData?.width ?? null,
 		height: imgData?.height ?? null,
 		ogImgBlurUrl: imgData?.encoded ?? null,
@@ -145,7 +148,7 @@ const videoLogic = async (
 		video_url: null,
 	};
 
-	return { ogImage, meta_data };
+	return { ogImage, meta_data, matchedCollectionIds };
 };
 
 export default async (
@@ -265,7 +268,16 @@ export default async (
 
 		const isAudio = fileType?.includes("audio");
 
+		const isPdf = fileType === PDF_MIME_TYPE;
+
+		const aiToggles = await fetchAiToggles({ supabase, userId });
+		const userCollections = await fetchUserCollections({
+			autoAssignEnabled: aiToggles.autoAssignCollections,
+			supabase,
+			userId,
+		});
 		let ogImage;
+		let videoMatchedCollectionIds: number[] = [];
 
 		if (!isVideo) {
 			// if file is not a video
@@ -275,6 +287,17 @@ export default async (
 					fileType,
 				});
 				ogImage = AUDIO_OG_IMAGE_FALLBACK_URL;
+			} else if (isPdf && data.thumbnailPath) {
+				// Use client-uploaded thumbnail for PDFs (mobile flow)
+				console.log("Using client-uploaded PDF thumbnail:", {
+					thumbnailPath: data.thumbnailPath,
+				});
+				const { data: thumbData } = storageHelpers.getPublicUrl(
+					data.thumbnailPath,
+				);
+				if (thumbData?.publicUrl) {
+					ogImage = thumbData.publicUrl;
+				}
 			}
 		} else {
 			// if file is a video
@@ -282,14 +305,21 @@ export default async (
 				thumbnailPath: data.thumbnailPath,
 			});
 
-			const { ogImage: image, meta_data: metaData } = await videoLogic(
+			const {
+				ogImage: image,
+				meta_data: metaData,
+				matchedCollectionIds,
+			} = await videoLogic(
 				data,
 				supabase,
 				userId ?? "",
+				aiToggles,
+				userCollections,
 			);
 
 			ogImage = image;
 			meta_data = metaData;
+			videoMatchedCollectionIds = matchedCollectionIds;
 		}
 
 		// we upload the final data in DB
@@ -366,6 +396,16 @@ export default async (
 
 		// Skip remaining upload API for videos or empty data
 		if (isEmpty(DatabaseData) || isVideo) {
+			// Auto-assign collections for video files (non-critical)
+			if (isVideo && DatabaseData?.[0]?.id) {
+				await autoAssignCollections({
+					bookmarkId: DatabaseData[0].id,
+					matchedCollectionIds: videoMatchedCollectionIds,
+					route: "upload-file",
+					userId,
+				});
+			}
+
 			console.log(
 				"File type is video or no data, so not calling the remaining upload api",
 			);

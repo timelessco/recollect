@@ -300,8 +300,8 @@ export const addBookmarkScreenshot = async ({
 export const deleteData = async (item: DeleteBookmarkPayload) => {
 	try {
 		const response = await axios.post(
-			`${getBaseUrl()}${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
-			{ data: { deleteData: item?.deleteData } },
+			`${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
+			{ deleteData: item?.deleteData },
 		);
 
 		return response;
@@ -333,6 +333,7 @@ export const clearBookmarksInTrash = async () => {
 	try {
 		const response = await axios.post(
 			`${NEXT_API_URL}${CLEAR_BOOKMARK_TRASH_API}`,
+			{},
 		);
 
 		return response;
@@ -360,7 +361,7 @@ export const searchBookmarks = async (
 			category_id: String(categoryId ?? ""),
 			is_shared_category: String(isSharedCategory ?? ""),
 			offset: String(offset ?? 0),
-			limit: String(limit ?? 10),
+			limit: String(limit ?? PAGINATION_LIMIT),
 		});
 
 		try {

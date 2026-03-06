@@ -3,7 +3,7 @@ import { produce } from "immer";
 import {
 	type CreateAndAssignTagPayload,
 	type CreateAndAssignTagResponse,
-} from "@/app/api/tags/create-and-assign-tag/route";
+} from "@/app/api/tags/create-and-assign-tag/schema";
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";

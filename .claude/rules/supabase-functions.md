@@ -97,3 +97,19 @@ as $$
   select first_name || ' ' || last_name;
 $$;
 ```
+
+### Error Handling
+
+Use `RAISE EXCEPTION` for auth guards, input validation, and business rules. In queue-processing functions, use the `RAISE WARNING` + bare `RAISE` pattern for observability before triggering rollback:
+
+```sql
+-- Auth/input guard pattern
+if not found then
+  raise exception 'Bookmark not found or not owned by user';
+end if;
+
+-- Queue processing: log then re-raise for pgmq retry
+exception when others then
+  raise warning 'process failed: % (SQLSTATE: %)', SQLERRM, SQLSTATE;
+  raise;  -- re-raise to trigger rollback and pgmq retry
+```

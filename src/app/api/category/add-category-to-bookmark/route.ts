@@ -1,5 +1,8 @@
-import { z } from "zod";
-
+import {
+	AddCategoryToBookmarkPayloadSchema,
+	AddCategoryToBookmarkResponseSchema,
+	type AddCategoryToBookmarkResponse,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { revalidateCategoryIfPublic } from "@/lib/revalidation-helpers";
@@ -11,30 +14,6 @@ import {
 } from "@/utils/constants";
 
 const ROUTE = "add-category-to-bookmark";
-
-const AddCategoryToBookmarkPayloadSchema = z.object({
-	bookmark_id: z
-		.int({ error: "Bookmark ID must be a whole number" })
-		.positive({ error: "Bookmark ID must be a positive number" }),
-	category_id: z
-		.int({ error: "Collection ID must be a whole number" })
-		.min(0, { error: "Collection ID must be non-negative" }),
-});
-
-export type AddCategoryToBookmarkPayload = z.infer<
-	typeof AddCategoryToBookmarkPayloadSchema
->;
-
-const AddCategoryToBookmarkResponseSchema = z.array(
-	z.object({
-		bookmark_id: z.number(),
-		category_id: z.number(),
-	}),
-);
-
-export type AddCategoryToBookmarkResponse = z.infer<
-	typeof AddCategoryToBookmarkResponseSchema
->;
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

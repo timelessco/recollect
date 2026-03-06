@@ -1,32 +1,13 @@
-import { z } from "zod";
-
+import {
+	RaindropImportInputSchema,
+	RaindropImportOutputSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { type Json } from "@/types/database.types";
 
 const ROUTE = "raindrop-import";
-
-const RaindropImportInputSchema = z.object({
-	bookmarks: z
-		.array(
-			z.object({
-				title: z.string().nullable(),
-				description: z.string().nullable(),
-				url: z.string().url(),
-				ogImage: z.string().nullable(),
-				category_name: z.string().nullable(),
-				inserted_at: z.string().datetime().nullable().or(z.literal("")),
-			}),
-		)
-		.min(1, "At least one bookmark required")
-		.max(500, "Maximum 500 bookmarks per request"),
-});
-
-const RaindropImportOutputSchema = z.object({
-	queued: z.number(),
-	skipped: z.number(),
-});
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

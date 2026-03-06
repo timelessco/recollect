@@ -1,19 +1,11 @@
-import { z } from "zod";
-
+import {
+	RaindropImportRetryInputSchema as RetryInputSchema,
+	RaindropImportRetryOutputSchema as RetryOutputSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 
 const ROUTE = "raindrop-import-retry";
-
-const RetryInputSchema = z.union([
-	z.object({ msg_ids: z.array(z.number()).min(1).max(100) }).strict(),
-	z.object({ all: z.literal(true) }).strict(),
-]);
-
-const RetryOutputSchema = z.object({
-	requeued: z.number(),
-	requested: z.number().optional(),
-});
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

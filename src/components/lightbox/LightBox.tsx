@@ -26,11 +26,16 @@ import {
 	AudioSlide,
 	ImageSlide,
 	PDFSlide,
+	SpotifySlide,
 	VideoSlide,
 	WebEmbedSlide,
 	YouTubeSlide,
 } from "./LightboxRenderers";
-import { isYouTubeVideo, type CustomSlide } from "./LightboxUtils";
+import {
+	isSpotifyLink,
+	isYouTubeVideo,
+	type CustomSlide,
+} from "./LightboxUtils";
 
 /**
  * CustomLightBox Component
@@ -71,11 +76,16 @@ export const CustomLightBox = ({
 	const [zoomLevel, setZoomLevel] = useState(1);
 	const isMobile = useMediaQuery("(max-width: 768px)");
 
-	// Track bookmark IDs that have video errors to render fallback image instead
+	// Track bookmark IDs that have video/audio errors to render fallback image instead
 	const [videoErrorIds, setVideoErrorIds] = useState<Set<number>>(new Set());
+	const [audioErrorIds, setAudioErrorIds] = useState<Set<number>>(new Set());
 
 	const handleVideoError = useCallback((bookmarkId: number) => {
 		setVideoErrorIds((previous) => new Set(previous).add(bookmarkId));
+	}, []);
+
+	const handleAudioError = useCallback((bookmarkId: number) => {
+		setAudioErrorIds((previous) => new Set(previous).add(bookmarkId));
 	}, []);
 
 	// Restore side panel state from local storage
@@ -134,11 +144,34 @@ export const CustomLightBox = ({
 
 			let content = null;
 
-			if (
+			// Spotify URL check — before generic audio, since Spotify URLs
+			// may have audio type but need the spotify-audio element
+			if (isSpotifyLink(bookmark?.url)) {
+				content = <SpotifySlide bookmark={bookmark} isActive={isActive} />;
+			} else if (
 				isBookmarkAudio(bookmark?.type) ||
 				bookmark?.meta_data?.mediaType?.startsWith("audio")
 			) {
-				content = <AudioSlide bookmark={bookmark} />;
+				const hasAudioError =
+					typeof bookmark.id === "number" && audioErrorIds.has(bookmark.id);
+
+				if (hasAudioError) {
+					content = (
+						<WebEmbedSlide
+							bookmark={bookmark}
+							isActive={isActive}
+							zoomRef={zoomRef}
+						/>
+					);
+				} else {
+					content = (
+						<AudioSlide
+							bookmark={bookmark}
+							isActive={isActive}
+							onAudioError={handleAudioError}
+						/>
+					);
+				}
 			}
 			// Check video - fallback to WebEmbedSlide if video failed to load
 			else if (
@@ -208,12 +241,14 @@ export const CustomLightBox = ({
 			);
 		},
 		[
-			bookmarks,
-			slides,
 			activeIndex,
+			audioErrorIds,
+			bookmarks,
+			handleAudioError,
 			handleClose,
-			videoErrorIds,
 			handleVideoError,
+			slides,
+			videoErrorIds,
 		],
 	);
 
@@ -289,12 +324,12 @@ export const CustomLightBox = ({
 				// Left: Close button
 				<div className="flex items-center" key="left-section">
 					<button
-						className="group mt-1.5 ml-4 flex h-7 w-7 items-center justify-center rounded-full text-gray-alpha-600 opacity-50 hover:opacity-100"
+						className="group mt-1.5 ml-4 flex h-7 w-7 items-center justify-center rounded-full"
 						onClick={handleClose}
 						type="button"
 						aria-label="Close lightbox"
 					>
-						<LightboxCloseIcon className="h-5 w-5" />
+						<LightboxCloseIcon className="h-5 w-5 text-gray-alpha-600 transition-colors duration-150 hover:text-gray-alpha-800" />
 					</button>
 				</div>,
 
@@ -321,7 +356,7 @@ export const CustomLightBox = ({
 
 				// Right: Side pane toggle button
 				<div
-					className="group flex h-7 w-7 items-center justify-center pt-[7px] pr-4"
+					className="group mt-[7px] mr-4 flex h-7 w-7 items-center justify-center"
 					key="right-section"
 				>
 					<button
@@ -339,7 +374,7 @@ export const CustomLightBox = ({
 						}}
 						type="button"
 					>
-						<ShowSidePaneButton className="h-5 w-5 stroke-current text-gray-alpha-600 opacity-50 transition-colors duration-200 group-hover:opacity-100" />
+						<ShowSidePaneButton className="h-5 w-5 text-gray-alpha-600 transition-colors duration-150 group-hover:text-gray-alpha-800" />
 					</button>
 				</div>,
 			],

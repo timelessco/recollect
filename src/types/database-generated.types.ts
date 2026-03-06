@@ -155,6 +155,7 @@ export type Database = {
 					icon: string | null;
 					icon_color: string | null;
 					id: number;
+					is_favorite: boolean;
 					is_public: boolean;
 					order_index: number | null;
 					user_id: string | null;
@@ -167,6 +168,7 @@ export type Database = {
 					icon?: string | null;
 					icon_color?: string | null;
 					id?: number;
+					is_favorite?: boolean;
 					is_public?: boolean;
 					order_index?: number | null;
 					user_id?: string | null;
@@ -179,6 +181,7 @@ export type Database = {
 					icon?: string | null;
 					icon_color?: string | null;
 					id?: number;
+					is_favorite?: boolean;
 					is_public?: boolean;
 					order_index?: number | null;
 					user_id?: string | null;
@@ -254,6 +257,7 @@ export type Database = {
 			};
 			profiles: {
 				Row: {
+					ai_features_toggle: Json;
 					api_key: string | null;
 					bookmark_count: number | null;
 					bookmarks_view: Json | null;
@@ -269,6 +273,7 @@ export type Database = {
 					user_name: string | null;
 				};
 				Insert: {
+					ai_features_toggle?: Json;
 					api_key?: string | null;
 					bookmark_count?: number | null;
 					bookmarks_view?: Json | null;
@@ -284,6 +289,7 @@ export type Database = {
 					user_name?: string | null;
 				};
 				Update: {
+					ai_features_toggle?: Json;
 					api_key?: string | null;
 					bookmark_count?: number | null;
 					bookmarks_view?: Json | null;
@@ -401,6 +407,10 @@ export type Database = {
 					user_id: string;
 				}>;
 			};
+			admin_retry_ai_embeddings_archives: {
+				Args: { p_count?: number };
+				Returns: Json;
+			};
 			admin_retry_all_instagram_archives: { Args: never; Returns: Json };
 			admin_retry_all_twitter_archives: { Args: never; Returns: Json };
 			admin_retry_instagram_import: {
@@ -415,6 +425,15 @@ export type Database = {
 				Args: { p_msg_id: number; p_queue_name: string; p_reason: string };
 				Returns: boolean;
 			};
+			auto_assign_collections: {
+				Args: {
+					p_bookmark_id: number;
+					p_category_ids: number[];
+					p_user_id: string;
+				};
+				Returns: undefined;
+			};
+			check_bookmarks_view_keyed_shape: { Args: { v: Json }; Returns: boolean };
 			create_and_assign_tag: {
 				Args: { p_bookmark_id: number; p_tag_name: string };
 				Returns: Array<{
@@ -428,6 +447,10 @@ export type Database = {
 					tag_name: string;
 					tag_user_id: string;
 				}>;
+			};
+			enqueue_instagram_bookmarks: {
+				Args: { p_bookmarks: Json; p_user_id: string };
+				Returns: Json;
 			};
 			enqueue_raindrop_bookmarks: {
 				Args: { p_bookmarks: Json; p_user_id: string };
@@ -472,15 +495,9 @@ export type Database = {
 			};
 			process_instagram_bookmark: {
 				Args: {
+					p_bookmark_id: number;
 					p_collection_names?: string[];
-					p_description?: string;
-					p_meta_data?: Json;
 					p_msg_id?: number;
-					p_og_image?: string;
-					p_saved_at?: string;
-					p_title?: string;
-					p_type: string;
-					p_url: string;
 					p_user_id: string;
 				};
 				Returns: Json;
@@ -504,6 +521,10 @@ export type Database = {
 					added_uncategorized: boolean;
 					deleted_category_id: number;
 				}>;
+			};
+			retry_ai_embeddings_archive: {
+				Args: { p_msg_ids: number[] };
+				Returns: Json;
 			};
 			retry_all_instagram_imports: {
 				Args: { p_user_id: string };

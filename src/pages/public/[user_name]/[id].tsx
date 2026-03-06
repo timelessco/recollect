@@ -71,19 +71,15 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
 								</p>
 							}
 							hasMore={hasNextPage}
-							loader={<div />}
+							loader={null}
 							next={fetchNextPage}
 							scrollableTarget="scrollableDiv"
 							style={{ overflow: "unset" }}
 						>
 							<CardSection
 								categoryViewsFromProps={metadata.categoryViews ?? undefined}
-								isBookmarkLoading={false}
-								isOgImgLoading={false}
 								isPublicPage
 								listData={flattenedData}
-								showAvatar={false}
-								userId=""
 							/>
 						</InfiniteScroll>
 					</div>

@@ -3,7 +3,7 @@ import { produce } from "immer";
 import {
 	type SetBookmarkCategoriesPayload,
 	type SetBookmarkCategoriesResponse,
-} from "@/app/api/category/set-bookmark-categories/route";
+} from "@/app/api/category/set-bookmark-categories/schema";
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";

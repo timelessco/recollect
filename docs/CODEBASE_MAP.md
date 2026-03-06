@@ -391,34 +391,14 @@ API → pgmq.send() → Queue → Edge Function → RPC → Bookmark Created
 
 ## Data Flow
 
-### Bookmark Creation
+### Bookmark/File Upload
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant Dashboard
-    participant Mutation
-    participant API
-    participant DB
-    participant Queue
-    participant Worker
+See [`docs/UPLOAD_FLOW.md`](./UPLOAD_FLOW.md) for detailed upload flow documentation including:
 
-    User->>Dashboard: Paste URL / Drop file
-    Dashboard->>Mutation: addBookmarkMinDataMutation
-    Mutation->>Mutation: Optimistic update cache
-    Mutation->>API: POST /api/bookmark/add-bookmark-min-data
-    API->>DB: Insert bookmark
-    DB-->>API: Bookmark ID
-    API->>Queue: pgmq.send('ai-embeddings')
-    API-->>Mutation: Success
-    Mutation-->>Dashboard: UI updated
-
-    Note over Queue,Worker: Async processing
-    Worker->>Queue: Read message
-    Worker->>Worker: Screenshot, OCR, captions
-    Worker->>DB: Update bookmark
-    Worker->>Queue: Delete message
-```
+- File upload (Images, Videos, Audio, Documents)
+- URL bookmark flow (websites vs direct media)
+- Mobile/external client API requirements
+- Media type decision matrices
 
 ### Collaboration Flow
 

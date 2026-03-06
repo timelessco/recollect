@@ -1,5 +1,9 @@
-import { z } from "zod";
+import { type z } from "zod";
 
+import {
+	TogglePreferredOgDomainPayloadSchema,
+	TogglePreferredOgDomainResponseSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { normalizeDomain } from "@/utils/domain";
@@ -7,28 +11,9 @@ import { HttpStatus } from "@/utils/error-utils/common";
 
 const ROUTE = "toggle-preferred-og-domain";
 
-const TogglePreferredOgDomainPayloadSchema = z.object({
-	domain: z
-		.string()
-		.trim()
-		.min(1, "Domain cannot be empty")
-		.max(253, "Domain too long")
-		.regex(/^[\da-z][\d.a-z-]*[\da-z]$/iu, "Invalid domain format")
-		.refine(
-			(domain) => !/^(?:\d{1,3}\.){3}\d{1,3}$/u.test(domain),
-			"IP addresses not allowed",
-		)
-		.refine((domain) => domain !== "localhost", "localhost not allowed"),
-});
-
 export type TogglePreferredOgDomainPayload = z.infer<
 	typeof TogglePreferredOgDomainPayloadSchema
 >;
-
-const TogglePreferredOgDomainResponseSchema = z.object({
-	id: z.string(),
-	preferred_og_domains: z.array(z.string()).nullable(),
-});
 
 export type TogglePreferredOgDomainResponse = z.infer<
 	typeof TogglePreferredOgDomainResponseSchema

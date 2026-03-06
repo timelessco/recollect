@@ -67,32 +67,15 @@ export default async function handler(
 	const isUncategorized = category_id === UNCATEGORIZED_URL;
 	let data;
 
-	// Base select - will be modified for category/uncategorized views
-	const baseSelect = `*, user_id, user_id (*)`;
-	// Junction select for filtering only - full category data fetched separately
-	const junctionSelect = `*, user_id, user_id (*), ${BOOKMARK_CATEGORIES_TABLE_NAME}!inner(bookmark_id, category_id)`;
-	// Track if we're using junction select for category filtering
-	const usedJunctionSelect = categoryCondition || isUncategorized;
-
-	// get all bookmarks - use junction JOIN for category filtering
-	const isTrashPage = category_id === TRASH_URL;
-	let query = supabase
-		.from(MAIN_TABLE_NAME)
-		.select(usedJunctionSelect ? junctionSelect : baseSelect)
-		.range(from === 0 ? from : from + 1, from + PAGINATION_LIMIT);
-
-	// Filter by trash status: trash IS NULL for non-trash, trash IS NOT NULL for trash page
-	if (isTrashPage) {
-		query = query.not("trash", "is", null);
-	} else {
-		query = query.is("trash", null);
-	}
+	// Determine if this is a shared category (needs profile join for per-bookmark avatars)
+	let isSharedCategory = false;
+	let isUserCollaboratorInCategoryValue = false;
+	let isUserOwnerOfCategory = false;
 
 	if (categoryCondition) {
-		// check if user is user is a collaborator for the category_id
 		const {
 			success: isUserCollaboratorInCategorySuccess,
-			isCollaborator: isUserCollaboratorInCategoryValue,
+			isCollaborator,
 			error: isUserCollaboratorInCategoryError,
 		} = await isUserCollaboratorInCategory(
 			supabase,
@@ -127,7 +110,7 @@ export default async function handler(
 
 		const {
 			success: isUserOwnerOfCategorySuccess,
-			isOwner: isUserOwnerOfCategory,
+			isOwner,
 			error: isUserOwnerOfCategoryError,
 		} = await checkIsUserOwnerOfCategory(
 			supabase,
@@ -160,6 +143,40 @@ export default async function handler(
 			return;
 		}
 
+		isUserCollaboratorInCategoryValue = isCollaborator;
+		isUserOwnerOfCategory = isOwner;
+		isSharedCategory =
+			isUserCollaboratorInCategoryValue || isUserOwnerOfCategory;
+	}
+
+	// Only join profile data for shared categories (need per-bookmark avatars)
+	const needsJunction = categoryCondition || isUncategorized;
+	const baseSelect = `*`;
+	const junctionSelect = `*, ${BOOKMARK_CATEGORIES_TABLE_NAME}!inner(bookmark_id, category_id)`;
+	const sharedJunctionSelect = `*, user_id (id, profile_pic), ${BOOKMARK_CATEGORIES_TABLE_NAME}!inner(bookmark_id, category_id)`;
+
+	let selectString;
+	if (needsJunction) {
+		selectString = isSharedCategory ? sharedJunctionSelect : junctionSelect;
+	} else {
+		selectString = baseSelect;
+	}
+
+	// get all bookmarks - use junction JOIN for category filtering
+	const isTrashPage = category_id === TRASH_URL;
+	let query = supabase
+		.from(MAIN_TABLE_NAME)
+		.select(selectString)
+		.range(from, from + PAGINATION_LIMIT - 1);
+
+	// Filter by trash status: trash IS NULL for non-trash, trash IS NOT NULL for trash page
+	if (isTrashPage) {
+		query = query.not("trash", "is", null);
+	} else {
+		query = query.is("trash", null);
+	}
+
+	if (categoryCondition) {
 		// Use JOIN filter for category - handles unlimited bookmarks efficiently
 		const numericCategoryId = Number.parseInt(category_id as string, 10);
 		query = query.eq(
@@ -167,7 +184,7 @@ export default async function handler(
 			numericCategoryId,
 		);
 
-		if (isUserCollaboratorInCategoryValue || isUserOwnerOfCategory) {
+		if (isSharedCategory) {
 			// User is collaborator or owner - access all items in the category (no user filter needed)
 		} else {
 			// User is not collaborator - only access items they created
@@ -229,22 +246,22 @@ export default async function handler(
 	// Sort by trash timestamp for trash page (most recently trashed first)
 	if (isTrashPage) {
 		query = query.order("trash", { ascending: false });
-	} else if (sortValue === "date-sort-acending") {
+	} else if (sortValue === "date-sort-ascending") {
 		// newest first
 		query = query.order("inserted_at", { ascending: false });
-	} else if (sortValue === "date-sort-decending") {
+	} else if (sortValue === "date-sort-descending") {
 		// oldest first
 		query = query.order("inserted_at", { ascending: true });
-	} else if (sortValue === "alphabetical-sort-acending") {
+	} else if (sortValue === "alphabetical-sort-ascending") {
 		// title A-Z
 		query = query.order("title", { ascending: true });
-	} else if (sortValue === "alphabetical-sort-decending") {
+	} else if (sortValue === "alphabetical-sort-descending") {
 		// title Z-A
 		query = query.order("title", { ascending: false });
-	} else if (sortValue === "url-sort-acending") {
+	} else if (sortValue === "url-sort-ascending") {
 		// url A-Z
 		query = query.order("url", { ascending: true });
-	} else if (sortValue === "url-sort-decending") {
+	} else if (sortValue === "url-sort-descending") {
 		// url Z-A
 		query = query.order("url", { ascending: false });
 	} else if (category_id === TWEETS_URL) {

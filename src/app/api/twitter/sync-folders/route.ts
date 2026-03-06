@@ -1,27 +1,12 @@
 import slugify from "slugify";
 import uniqid from "uniqid";
-import { z } from "zod";
 
+import { SyncFoldersInputSchema, SyncFoldersOutputSchema } from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { CATEGORIES_TABLE_NAME, PROFILES } from "@/utils/constants";
 
 const ROUTE = "twitter-sync-folders";
-
-const SyncFoldersInputSchema = z.object({
-	categories: z
-		.array(
-			z.object({
-				name: z.string().trim().min(1, "Category name is required"),
-			}),
-		)
-		.min(1, "At least one category required"),
-});
-
-const SyncFoldersOutputSchema = z.object({
-	created: z.number(),
-	skipped: z.number(),
-});
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

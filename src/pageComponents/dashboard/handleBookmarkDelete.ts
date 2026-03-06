@@ -1,6 +1,6 @@
 import { find } from "lodash";
 
-import { type ImgMetadataType, type SingleListData } from "@/types/apiTypes";
+import { type SingleListData } from "@/types/apiTypes";
 import { isBookmarkOwner } from "@/utils/helpers";
 
 type BulkDeleteBookmarkParams = {
@@ -21,13 +21,7 @@ type BulkDeleteBookmarkParams = {
 	};
 	deleteBookmarkOptismicMutation: {
 		mutateAsync: (data: {
-			deleteData: Array<{
-				id: number;
-				title: string;
-				ogImage: string;
-				url: string;
-				meta_data: ImgMetadataType;
-			}>;
+			deleteData: Array<{ id: number }>;
 		}) => Promise<unknown>;
 	};
 	clearSelection: () => void;
@@ -115,17 +109,7 @@ export const handleBulkBookmarkDelete = ({
 						return null;
 					}
 
-					const delBookmarkTitle = delBookmarkData.title ?? "";
-					const delBookmarkImgLink = delBookmarkData.ogImage ?? "";
-					const delBookmarkUrl = delBookmarkData.url ?? "";
-
-					return {
-						id: idAsNumber,
-						title: delBookmarkTitle,
-						ogImage: delBookmarkImgLink,
-						url: delBookmarkUrl,
-						meta_data: delBookmarkData?.meta_data as ImgMetadataType,
-					};
+					return { id: idAsNumber };
 				})
 				.filter(Boolean);
 

@@ -1,6 +1,10 @@
 import * as Sentry from "@sentry/nextjs";
-import { z } from "zod";
 
+import {
+	AddCategoryToBookmarksPayloadSchema,
+	AddCategoryToBookmarksResponseSchema,
+	type AddCategoryToBookmarksResponse,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { revalidateCategoryIfPublic } from "@/lib/revalidation-helpers";
@@ -12,35 +16,6 @@ import {
 } from "@/utils/constants";
 
 const ROUTE = "add-category-to-bookmarks";
-
-const AddCategoryToBookmarksPayloadSchema = z.object({
-	bookmark_ids: z
-		.array(
-			z
-				.int({ error: "Bookmark ID must be a whole number" })
-				.positive({ error: "Bookmark ID must be a positive number" }),
-		)
-		.min(1, { error: "At least one bookmark ID is required" })
-		.max(100, { error: "Cannot process more than 100 bookmarks at once" }),
-	category_id: z
-		.int({ error: "Collection ID must be a whole number" })
-		.min(0, { error: "Collection ID must be non-negative" }),
-});
-
-export type AddCategoryToBookmarksPayload = z.infer<
-	typeof AddCategoryToBookmarksPayloadSchema
->;
-
-const AddCategoryToBookmarksResponseSchema = z.array(
-	z.object({
-		bookmark_id: z.number(),
-		category_id: z.number(),
-	}),
-);
-
-export type AddCategoryToBookmarksResponse = z.infer<
-	typeof AddCategoryToBookmarksResponseSchema
->;
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

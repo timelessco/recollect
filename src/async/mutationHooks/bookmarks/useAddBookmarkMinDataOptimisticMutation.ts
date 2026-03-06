@@ -41,11 +41,13 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 	// We'll initialize the mutation with a default value and update it when we have the actual ID
 	const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
 	const { sortBy } = useGetSortBy();
-	const { addLoadingBookmarkId, removeLoadingBookmarkId } = useLoadersStore();
+	const { addLoadingBookmarkId, removeLoadingBookmarkId, setIsBookmarkAdding } =
+		useLoadersStore();
 
 	const addBookmarkMinDataOptimisticMutation = useMutation({
 		mutationFn: addBookmarkMinData,
 		onMutate: async (data) => {
+			setIsBookmarkAdding(true);
 			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
 			await queryClient.cancelQueries({
 				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
@@ -130,6 +132,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 		},
 		// Always refetch after error or success:
 		onSettled: async (apiResponse: unknown) => {
+			setIsBookmarkAdding(false);
 			const response = apiResponse as { data: { data: SingleListData[] } };
 			void queryClient.invalidateQueries({
 				queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],

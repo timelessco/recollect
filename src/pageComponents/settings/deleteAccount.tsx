@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { isNull } from "lodash";
+import isNull from "lodash/isNull";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
@@ -12,10 +12,7 @@ import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
 import { BackIconBlack } from "../../icons/actionIcons/backIconBlack";
 import TrashIconRed from "../../icons/actionIcons/trashIconRed";
-import {
-	useMiscellaneousStore,
-	useSupabaseSession,
-} from "../../store/componentStore";
+import { useSupabaseSession } from "../../store/componentStore";
 import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
@@ -31,20 +28,22 @@ import { LOGIN_URL, USER_PROFILE } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
+import { type SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
+
 type SettingsFormTypes = {
 	confirmText: string;
 };
 
-export const DeleteAccount = () => {
+type DeleteAccountProps = {
+	onNavigate: (page: SettingsPage) => void;
+};
+
+export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
 	const session = useSupabaseSession((state) => state.session);
 	const setSession = useSupabaseSession((state) => state.setSession);
 	const queryClient = useQueryClient();
 	const router = useRouter();
 	const supabase = createClient();
-
-	const setCurrentSettingsPage = useMiscellaneousStore(
-		(state) => state.setCurrentSettingsPage,
-	);
 
 	const { deleteUserMutation } = useDeleteUserMutation();
 
@@ -91,7 +90,7 @@ export const DeleteAccount = () => {
 			<div className="relative mb-[34px] flex items-center">
 				<Button
 					className="absolute left-[-7px] rounded-full bg-gray-0 p-1 hover:bg-gray-100"
-					onClick={() => setCurrentSettingsPage("main")}
+					onClick={() => onNavigate("main")}
 				>
 					<figure className="text-gray-900">
 						<BackIconBlack />
@@ -135,24 +134,26 @@ export const DeleteAccount = () => {
 						/>
 					</div>
 				</LabelledComponent>
-				<div className="mt-2 flex w-1/2 justify-start sm:mt-0 sm:justify-end">
+				<div className="flex w-1/2 justify-start sm:mt-0 sm:justify-end">
 					<Button
-						className={`${settingsDeleteButtonRedClassName}`}
+						className={` ${settingsDeleteButtonRedClassName} ${deleteUserMutation.isPending ? "py-[9px]" : ""}`}
 						isDisabled={deleteUserMutation.isPending}
 						buttonType="submit"
 						onClick={handleSubmit(onSubmit)}
 					>
-						<div className="flex w-full items-center justify-center">
-							<figure className="mr-2">
-								<TrashIconRed />
-							</figure>
-							<p className="flex justify-center">
+						<div className="flex w-full min-w-[125px] items-center justify-center">
+							<div className="flex justify-center text-red-600">
 								{deleteUserMutation.isPending ? (
-									<Spinner className="h-3 w-3 animate-spin text-red-600" />
+									<Spinner className="h-3 w-3 animate-spin" />
 								) : (
-									"Confirm delete"
+									<>
+										<figure className="mr-2">
+											<TrashIconRed />
+										</figure>
+										Confirm delete
+									</>
 								)}
-							</p>
+							</div>
 						</div>
 					</Button>
 				</div>

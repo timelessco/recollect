@@ -18,10 +18,12 @@ export type ImgMetadataType = {
 	iframeAllowed: boolean | null;
 	img_caption: string | null;
 	image_caption: string | null;
+	image_keywords?: string[];
 	isOgImagePreferred: boolean;
 	isPageScreenshot: boolean | null;
 	mediaType: string | null;
 	ocr: string | null;
+	ocr_status?: "success" | "limit_reached" | "no_text";
 	ogImgBlurUrl: string | null;
 	screenshot: string | null;
 	twitter_avatar_url: string | null;
@@ -47,7 +49,7 @@ export type SingleListData = {
 	trash: string | null;
 	type: string;
 	url: string;
-	user_id: ProfilesTableTypes;
+	user_id: Pick<ProfilesTableTypes, "id" | "profile_pic">;
 };
 
 export type BookmarksCountTypes = {
@@ -163,8 +165,12 @@ export type CategoriesData = {
 	icon: string | null;
 	icon_color: string;
 	id: number;
+	is_favorite: boolean;
 	is_public: boolean;
-	user_id: ProfilesTableTypes;
+	user_id: Pick<
+		ProfilesTableTypes,
+		"id" | "email" | "profile_pic" | "user_name"
+	>;
 };
 
 export type FetchCategoriesDataResponse = {
@@ -200,7 +206,15 @@ export type CollabDataInCategory = {
 
 // profiles table
 
+export type AiFeaturesToggle = {
+	ai_summary?: boolean;
+	auto_assign_collections?: boolean;
+	image_keywords?: boolean;
+	ocr?: boolean;
+};
+
 export type ProfilesTableTypes = {
+	ai_features_toggle: AiFeaturesToggle;
 	bookmarks_view: ProfilesBookmarksViewOrLegacy;
 	category_order: number[];
 	display_name: string;
@@ -215,6 +229,7 @@ export type ProfilesTableTypes = {
 };
 
 export type ProfilesTableForPayloadTypes = {
+	ai_features_toggle?: AiFeaturesToggle;
 	bookmarks_view?: ProfilesBookmarksView;
 	category_order?: number[];
 	display_name?: string;
@@ -283,8 +298,6 @@ export type AddBookmarkRemainingDataPayloadTypes = {
 
 export type AddBookmarkScreenshotPayloadTypes = { id: number; url: string };
 
-export type ClearBookmarksInTrashApiPayloadTypes = {};
-
 export type DeleteDataApiPayload = { id: number; session: SupabaseSessionType };
 
 export type MoveBookmarkToTrashApiPayload = {
@@ -343,10 +356,6 @@ export type UploadFileApiPayload = {
 export type DeleteBookmarkPayload = {
 	deleteData: Array<{
 		id: SingleListData["id"];
-		meta_data: SingleListData["meta_data"];
-		ogImage: SingleListData["ogImage"];
-		title: SingleListData["title"];
-		url: SingleListData["url"];
 	}>;
 };
 

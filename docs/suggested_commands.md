@@ -27,7 +27,7 @@ pnpm start           # Start production server
 
 ```bash
 pnpm lint # Run ALL linting checks via Turbo
-pnpm fix  # Fix all auto-fixable ESLint issues
+pnpm fix  # Auto-fix all (spelling → css → md → prettier → eslint via turbo deps)
 ```
 
 ### Individual Linting Commands

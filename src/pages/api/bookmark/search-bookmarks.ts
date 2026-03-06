@@ -141,7 +141,7 @@ export default async function handler(
 				tag_scope: tagName,
 				category_scope: isDiscoverPage ? null : categoryScope,
 			})
-			.range(offset, offset + limit);
+			.range(offset, offset + limit - 1);
 
 		// Filter by trash status: trash IS NULL for non-trash, trash IS NOT NULL for trash page
 		if (isTrashPage) {

@@ -9,8 +9,9 @@ import {
 	VIDEO_DOWNLOAD_TIMEOUT_MS,
 } from "./constants";
 import { storageHelpers } from "./storageClient";
-import imageToText from "@/async/ai/imageToText";
-import ocr from "@/async/ai/ocr";
+import imageToText, { type UserCollection } from "@/async/ai/imageToText";
+import { fetchAiToggles, type AiToggles } from "@/utils/ai-feature-toggles";
+import { fetchUserCollections } from "@/utils/auto-assign-collections";
 import { blurhashFromURL } from "@/utils/getBlurHash";
 
 type EnrichMetadataParams = {
@@ -26,7 +27,9 @@ type EnrichMetadataParams = {
 
 type EnrichMetadataResult = {
 	metadata: Record<string, unknown>;
+	matchedCollectionIds: number[];
 	isFailed: boolean;
+	error: string | null;
 };
 
 /**
@@ -62,9 +65,16 @@ export const enrichMetadata = async ({
 	supabase,
 	url,
 }: EnrichMetadataParams): Promise<EnrichMetadataResult> => {
+	const aiToggles = await fetchAiToggles({ supabase, userId });
+	const userCollections = await fetchUserCollections({
+		autoAssignEnabled: aiToggles.autoAssignCollections,
+		supabase,
+		userId,
+	});
+
 	// Run all AI operations in parallel
-	const [videoResult, ocrResult, captionResult, blurhashResult] =
-		await Promise.allSettled([
+	const [videoResult, captionResult, blurhashResult] = await Promise.allSettled(
+		[
 			// Video upload (conditional)
 			(isTwitterBookmark || isInstagramBookmark) &&
 			videoUrl &&
@@ -103,32 +113,42 @@ export const enrichMetadata = async ({
 						return videoUrl;
 					})()
 				: Promise.resolve(null),
-			// OCR extraction
-			processOcr(ogImage, supabase, userId, url),
-			// Image caption generation
-			processImageCaption(ogImage, supabase, userId, url),
+			// Image caption + OCR generation (single Gemini call)
+			processImageCaption(
+				ogImage,
+				supabase,
+				userId,
+				url,
+				existingMetadata,
+				aiToggles,
+				userCollections,
+			),
 			// Blurhash generation
 			processBlurhash(ogImage, url, userId),
-		]);
+		],
+	);
 
 	// Extract video URL from result
 	const video_url =
 		videoResult.status === "fulfilled" ? videoResult.value : null;
 
-	// Extract OCR result
 	const {
-		isOcrFailed,
-		ocrResult: ocrData,
-		ocrStatus,
-	} = ocrResult.status === "fulfilled"
-		? ocrResult.value
-		: { isOcrFailed: true, ocrResult: null, ocrStatus: "no_text" };
-
-	// Extract caption result
-	const { isImageCaptionFailed, image_caption } =
-		captionResult.status === "fulfilled"
-			? captionResult.value
-			: { isImageCaptionFailed: true, image_caption: null };
+		isImageCaptionFailed,
+		image_caption,
+		image_keywords,
+		matchedCollectionIds,
+		ocr: ocrData,
+		ocr_status: ocrStatus,
+	} = captionResult.status === "fulfilled"
+		? captionResult.value
+		: {
+				isImageCaptionFailed: true,
+				image_caption: null,
+				image_keywords: [] as string[],
+				matchedCollectionIds: [] as number[],
+				ocr: null,
+				ocr_status: "no_text" as const,
+			};
 
 	// Extract blurhash result
 	const { isBlurhashFailed, blurhash } =
@@ -141,85 +161,38 @@ export const enrichMetadata = async ({
 		ocr: ocrData,
 		ocr_status: ocrStatus,
 		image_caption,
+		image_keywords: image_keywords?.length ? image_keywords : undefined,
 		width: blurhash?.width,
 		height: blurhash?.height,
 		ogImgBlurUrl: blurhash?.encoded,
 		video_url,
 	};
 
-	const isFailed = isOcrFailed || isImageCaptionFailed || isBlurhashFailed;
+	const isFailed = isImageCaptionFailed || isBlurhashFailed;
+
+	const failedOperations: string[] = [];
+
+	if (isImageCaptionFailed) {
+		failedOperations.push("image_caption");
+	}
+
+	if (isBlurhashFailed) {
+		failedOperations.push("blurhash");
+	}
+
+	const error = failedOperations.length > 0 ? failedOperations.join(",") : null;
 
 	console.log("[enrichMetadata] Enrichment completed:", {
 		url,
 		isFailed,
+		error,
 		hasImageCaption: Boolean(metadata.image_caption),
 		hasOcr: Boolean(metadata.ocr),
 		hasBlurhash: Boolean(metadata.ogImgBlurUrl),
 		hasVideo: Boolean(metadata.video_url),
 	});
 
-	return { metadata, isFailed };
-};
-
-const processOcr = async (
-	ogImage: string,
-	supabase: SupabaseClient,
-	userId: string,
-	url: string,
-) => {
-	console.log("[processOcr] Extracting text via OCR:", { url, ogImage });
-	// Extract text from the image
-	// OCR returns { text, status } object
-	try {
-		const ocrResult = await ocr(ogImage, supabase, userId);
-
-		if (ocrResult.status !== "success" && ocrResult.status !== "no_text") {
-			console.error("[processOcr] OCR returned empty result:", {
-				url,
-				ogImage,
-				status: ocrResult.status,
-			});
-			Sentry.captureMessage("OCR returned empty result", {
-				level: "error",
-				tags: {
-					operation: "ocr_empty",
-					userId,
-				},
-				extra: {
-					url,
-					ogImage,
-					status: ocrResult.status,
-				},
-			});
-			return {
-				isOcrFailed: true,
-				ocrResult: null,
-				ocrStatus: ocrResult.status,
-			};
-		} else {
-			console.log("[processOcr] OCR extraction completed successfully:", {
-				url,
-			});
-			return {
-				isOcrFailed: false,
-				ocrResult: ocrResult.text,
-				ocrStatus: ocrResult.status,
-			};
-		}
-	} catch (error) {
-		console.error("[processOcr] OCR threw error:", { url, ogImage, error });
-		Sentry.captureException(error, {
-			tags: {
-				operation: "ocr_extraction",
-				userId,
-			},
-			extra: {
-				url,
-				ogImage,
-			},
-		});
-		return { isOcrFailed: true, ocrResult: null, ocrStatus: "no_text" };
-	}
+	return { metadata, matchedCollectionIds, isFailed, error };
 };
 
 const processImageCaption = async (
@@ -227,6 +200,9 @@ const processImageCaption = async (
 	supabase: SupabaseClient,
 	userId: string,
 	url: string,
+	existingMetadata: Record<string, unknown>,
+	aiToggles: AiToggles,
+	userCollections: UserCollection[],
 ) => {
 	console.log("[processImageCaption] Generating image caption:", {
 		url,
@@ -234,30 +210,62 @@ const processImageCaption = async (
 	});
 	// Generate caption for the image
 	try {
-		const caption = await imageToText(ogImage, supabase, userId);
-		if (!caption) {
-			console.error(
-				"[processImageCaption] imageToText returned empty result:",
-				{ url, ogImage },
-			);
-			Sentry.captureMessage("Image caption generation returned empty result", {
-				level: "error",
-				tags: {
-					operation: "image_caption_empty",
-					userId,
-				},
-				extra: {
-					url,
-					ogImage,
-				},
-			});
-			return { isImageCaptionFailed: true, image_caption: null };
+		const result = await imageToText(
+			ogImage,
+			supabase,
+			userId,
+			{ isPageScreenshot: Boolean(existingMetadata?.isPageScreenshot) },
+			userCollections.length > 0 ? { collections: userCollections } : null,
+			aiToggles,
+		);
+		if (!result?.sentence) {
+			// When aiSummary is OFF, null sentence is expected — not a failure
+			if (aiToggles.aiSummary) {
+				console.error(
+					"[processImageCaption] imageToText returned empty result:",
+					{ url, ogImage },
+				);
+				Sentry.captureMessage(
+					"Image caption generation returned empty result",
+					{
+						level: "error",
+						tags: {
+							operation: "image_caption_empty",
+							userId,
+						},
+						extra: {
+							url,
+							ogImage,
+						},
+					},
+				);
+			}
+
+			return {
+				isImageCaptionFailed: aiToggles.aiSummary,
+				image_caption: null,
+				image_keywords: result?.image_keywords ?? [],
+				matchedCollectionIds: result?.matched_collection_ids ?? [],
+				ocr: result?.ocr_text ?? null,
+				ocr_status: result?.ocr_text
+					? ("success" as const)
+					: ("no_text" as const),
+			};
 		} else {
 			console.log(
 				"[processImageCaption] Image caption generated successfully:",
 				{ url },
 			);
-			return { isImageCaptionFailed: false, image_caption: caption };
+			return {
+				isImageCaptionFailed: false,
+				image_caption: result.sentence,
+				image_keywords: result.image_keywords ?? [],
+				matchedCollectionIds: result.matched_collection_ids ?? [],
+				ocr: result.ocr_text,
+				ocr_status: result.ocr_text
+					? ("success" as const)
+					: ("no_text" as const),
+			};
 		}
 	} catch (error) {
 		console.error("[processImageCaption] imageToText threw error:", {
@@ -275,7 +283,14 @@ const processImageCaption = async (
 				ogImage,
 			},
 		});
-		return { isImageCaptionFailed: true, image_caption: null };
+		return {
+			isImageCaptionFailed: true,
+			image_caption: null,
+			image_keywords: [],
+			matchedCollectionIds: [],
+			ocr: null,
+			ocr_status: "no_text" as const,
+		};
 	}
 };
 

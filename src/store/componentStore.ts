@@ -10,11 +10,6 @@ import {
 } from "../types/componentStoreTypes";
 
 export const useModalStore = create<ModalStoreState>((set) => ({
-	showSettingsModal: false,
-	toggleShowSettingsModal: () =>
-		set((state) => ({
-			showSettingsModal: !state.showSettingsModal,
-		})),
 	showVideoModal: false,
 	toggleShowVideoModal: () =>
 		set((state) => ({
@@ -28,6 +23,11 @@ export const useLoadersStore = create<LoadersStoreState>((set) => ({
 	toggleIsSortByLoading: () =>
 		set((state) => ({
 			isSortByLoading: !state.isSortByLoading,
+		})),
+	isBookmarkAdding: false,
+	setIsBookmarkAdding: (value: boolean) =>
+		set(() => ({
+			isBookmarkAdding: value,
 		})),
 	isSearchLoading: false,
 	toggleIsSearchLoading: (value: boolean) =>
@@ -67,6 +67,9 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 		set(() => ({ lightboxShowSidepane: value })),
 	searchText: "",
 	setSearchText: (value: string) => set(() => ({ searchText: value })),
+	triggerHeadingEdit: false,
+	setTriggerHeadingEdit: (value: boolean) =>
+		set(() => ({ triggerHeadingEdit: value })),
 	addScreenshotBookmarkId: undefined,
 	setAddScreenshotBookmarkId: (value: number | undefined) =>
 		set(() => ({ addScreenshotBookmarkId: value })),
@@ -75,10 +78,6 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 	currentBookmarkView: "moodboard",
 	setCurrentBookmarkView: (value: BookmarksViewTypes) =>
 		set(() => ({ currentBookmarkView: value })),
-	currentSettingsPage: "main",
-	setCurrentSettingsPage: (
-		value: MiscellaneousStoreState["currentSettingsPage"],
-	) => set(() => ({ currentSettingsPage: value })),
 	selectedVideoId: null,
 	setSelectedVideoId: (value: number | null) =>
 		set(() => ({ selectedVideoId: value })),
@@ -90,9 +89,6 @@ export const useMiscellaneousStore = create<MiscellaneousStoreState>((set) => ({
 				[categoryId]: bookmarks,
 			},
 		})),
-	currentSliderDropdownSlide: null,
-	setCurrentSliderDropdownSlide: (value: string | null) =>
-		set(() => ({ currentSliderDropdownSlide: value })),
 	deleteBookmarkId: undefined,
 	setDeleteBookmarkId: (bookmarkIds: number[]) =>
 		set(() => ({ deleteBookmarkId: bookmarkIds })),

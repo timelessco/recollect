@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { isNull } from "lodash";
+import isNull from "lodash/isNull";
 
 import { EVERYTHING_URL } from "../utils/constants";
 import { getCategorySlugFromRouter } from "../utils/url";

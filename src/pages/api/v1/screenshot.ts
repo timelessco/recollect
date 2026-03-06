@@ -4,7 +4,7 @@ import axios from "axios";
 import { z } from "zod";
 
 import imageToText from "../../../async/ai/imageToText";
-import ocr from "../../../async/ai/ocr";
+import { fetchAiToggles } from "../../../utils/ai-feature-toggles";
 import {
 	MAIN_TABLE_NAME,
 	PDF_MIME_TYPE,
@@ -13,7 +13,12 @@ import {
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { createServiceClient } from "../../../utils/supabaseClient";
 
+import { storeQueueError } from "@/lib/api-helpers/queue";
 import { upload } from "@/lib/storage/media-upload";
+import {
+	autoAssignCollections,
+	fetchUserCollections,
+} from "@/utils/auto-assign-collections";
 
 const ScreenshotPayloadSchema = z.object({
 	id: z.union([z.string(), z.number()]),
@@ -28,6 +33,8 @@ const ScreenshotPayloadSchema = z.object({
 
 type ScreenshotPayload = z.infer<typeof ScreenshotPayloadSchema>;
 
+const ROUTE = "screenshot";
+
 export default async function handler(
 	request: NextApiRequest,
 	response: NextApiResponse,
@@ -37,9 +44,22 @@ export default async function handler(
 		return;
 	}
 
+	// Extract queue info early for error tracking (before full validation)
+	const rawQueueName = request.body?.queue_name as string | undefined;
+	const rawMsgId: number | undefined =
+		typeof request.body?.message?.msg_id === "number"
+			? request.body.message.msg_id
+			: undefined;
+
 	const parsed = ScreenshotPayloadSchema.safeParse(request.body);
 	if (!parsed.success) {
 		const errors = parsed.error.flatten().fieldErrors;
+		await storeQueueError({
+			queueName: rawQueueName,
+			msgId: rawMsgId,
+			errorReason: "screenshot: validation_failed",
+			route: ROUTE,
+		});
 		response.status(400).json({ error: "Invalid input", details: errors });
 		return;
 	}
@@ -121,7 +141,19 @@ export default async function handler(
 
 		if (updateError) {
 			console.error("Error updating bookmark:", updateError);
-			Sentry.captureException(updateError);
+			Sentry.captureException(updateError, {
+				tags: {
+					operation: "screenshot_db_update",
+					userId: user_id,
+				},
+				extra: { bookmarkId: id, url },
+			});
+			await storeQueueError({
+				queueName: queue_name,
+				msgId: message.msg_id,
+				errorReason: "screenshot: db_update_failed",
+				route: ROUTE,
+			});
 			response.status(500).json({ error: "Error updating bookmark" });
 			return;
 		}
@@ -143,23 +175,35 @@ export default async function handler(
 		};
 
 		// ai-enrichment
-		const caption = await imageToText(ogImage, supabase, user_id);
-		if (caption) {
-			newMeta.image_caption = caption;
-		} else {
-			console.error("imageToText returned empty result", url);
-		}
+		const aiToggles = await fetchAiToggles({ supabase, userId: user_id });
+		const userCollections = await fetchUserCollections({
+			autoAssignEnabled: aiToggles.autoAssignCollections,
+			supabase,
+			userId: user_id,
+		});
+		const imageToTextResult = await imageToText(
+			ogImage,
+			supabase,
+			user_id,
+			{ isPageScreenshot: Boolean(isPageScreenshot) },
+			userCollections.length > 0 ? { collections: userCollections } : null,
+			aiToggles,
+		);
+		if (imageToTextResult) {
+			newMeta.image_caption = imageToTextResult.sentence;
+			if (imageToTextResult.image_keywords?.length) {
+				newMeta.image_keywords = imageToTextResult.image_keywords;
+			}
 
-		// OCR returns { text, status } object
-		const ocrResult = await ocr(ogImage, supabase, user_id);
-
-		if (ocrResult.text) {
-			newMeta.ocr = ocrResult.text;
-			newMeta.ocr_status = ocrResult.status;
+			newMeta.ocr = imageToTextResult.ocr_text;
+			newMeta.ocr_status = imageToTextResult.ocr_text ? "success" : "no_text";
 		} else {
+			console.warn(
+				"imageToText returned empty result (quota may be reached)",
+				url,
+			);
 			newMeta.ocr = null;
-			newMeta.ocr_status = ocrResult.status;
-			console.error("ocr returned empty result", url);
+			newMeta.ocr_status = "no_text";
 		}
 
 		const { width, height, encoded } = await blurhashFromURL(ogImage);
@@ -179,6 +223,14 @@ export default async function handler(
 			.update({ meta_data: newMeta })
 			.eq("url", url)
 			.eq("user_id", user_id);
+
+		// Auto-assign collections (non-critical, handled internally)
+		await autoAssignCollections({
+			bookmarkId: typeof id === "string" ? Number.parseInt(id, 10) : id,
+			matchedCollectionIds: imageToTextResult?.matched_collection_ids ?? [],
+			route: ROUTE,
+			userId: user_id,
+		});
 
 		console.log(
 			`######################## ${mediaType && mediaType === PDF_MIME_TYPE ? "PDF Thumbnail Generated" : "Screenshot Success"} ########################`,
@@ -205,7 +257,26 @@ export default async function handler(
 		});
 	} catch (error) {
 		console.error("Error in screenshot handler:", error);
-		Sentry.captureException(error);
+		Sentry.captureException(error, {
+			tags: {
+				operation: "screenshot_unexpected",
+				userId: user_id,
+			},
+			extra: {
+				bookmarkId: id,
+				url,
+				queueName: queue_name,
+				msgId: message.msg_id,
+			},
+		});
+		const errorMessage =
+			error instanceof Error ? error.message : "unknown_error";
+		await storeQueueError({
+			queueName: queue_name,
+			msgId: message.msg_id,
+			errorReason: `screenshot: ${errorMessage}`,
+			route: ROUTE,
+		});
 		response.status(500).json({ error: "Internal server error" });
 	}
 }

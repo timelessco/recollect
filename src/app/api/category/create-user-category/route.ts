@@ -1,10 +1,12 @@
 import slugify from "slugify";
 import uniqid from "uniqid";
-import { z } from "zod";
 
+import {
+	CreateCategoryPayloadSchema,
+	CreateCategoryResponseSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { isNonEmptyArray, isNonNullable } from "@/utils/assertion-utils";
 import {
 	CATEGORIES_TABLE_NAME,
@@ -13,35 +15,6 @@ import {
 } from "@/utils/constants";
 
 const ROUTE = "create-user-category";
-
-const CreateCategoryPayloadSchema = z.object({
-	name: tagCategoryNameSchema,
-	category_order: z.array(z.number()).nullish(),
-});
-
-export type CreateCategoryPayload = z.infer<typeof CreateCategoryPayloadSchema>;
-
-const CreateCategoryResponseSchema = z
-	.array(
-		z.object({
-			id: z.number(),
-			category_name: z.string().nullable(),
-			category_slug: z.string(),
-			category_views: z.unknown().nullable(),
-			created_at: z.string().nullable(),
-			icon: z.string().nullable(),
-			icon_color: z.string().nullable(),
-			is_public: z.boolean(),
-			order_index: z.number().nullable(),
-			user_id: z.string().nullable(),
-		}),
-	)
-	.nonempty();
-
-export type CreateCategoryResponse = [
-	z.infer<typeof CreateCategoryResponseSchema>[number],
-	...z.infer<typeof CreateCategoryResponseSchema>,
-];
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

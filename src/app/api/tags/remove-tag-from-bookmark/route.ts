@@ -1,5 +1,7 @@
-import { z } from "zod";
-
+import {
+	RemoveTagFromBookmarkPayloadSchema,
+	RemoveTagFromBookmarkResponseSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
@@ -10,32 +12,6 @@ import {
 } from "@/utils/constants";
 
 const ROUTE = "remove-tag-from-bookmark";
-
-const RemoveTagFromBookmarkPayloadSchema = z.object({
-	bookmarkId: z.number(),
-	tagId: z.number(),
-});
-
-export type RemoveTagFromBookmarkPayload = z.infer<
-	typeof RemoveTagFromBookmarkPayloadSchema
->;
-
-const RemoveTagFromBookmarkResponseSchema = z
-	.array(
-		z.object({
-			id: z.number(),
-			bookmark_id: z.number(),
-			tag_id: z.number(),
-			user_id: z.string().nullable(),
-			created_at: z.string().nullable(),
-		}),
-	)
-	.nonempty();
-
-export type RemoveTagFromBookmarkResponse = [
-	z.infer<typeof RemoveTagFromBookmarkResponseSchema>[number],
-	...z.infer<typeof RemoveTagFromBookmarkResponseSchema>,
-];
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

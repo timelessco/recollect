@@ -1,35 +1,10 @@
-import { z } from "zod";
-
+import { TwitterSyncInputSchema, TwitterSyncOutputSchema } from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { type Json } from "@/types/database.types";
-import { tweetType } from "@/utils/constants";
 
 const ROUTE = "twitter-sync";
-
-const TwitterSyncInputSchema = z.object({
-	bookmarks: z
-		.array(
-			z.object({
-				url: z.string().url(),
-				title: z.string().default(""),
-				description: z.string().default(""),
-				ogImage: z.string().nullish(),
-				type: z.literal(tweetType).default(tweetType),
-				meta_data: z.record(z.string(), z.unknown()).default({}),
-				sort_index: z.string().default(""),
-				inserted_at: z.string().datetime().optional(),
-			}),
-		)
-		.min(1, "At least one bookmark required")
-		.max(500, "Maximum 500 bookmarks per request"),
-});
-
-const TwitterSyncOutputSchema = z.object({
-	inserted: z.number(),
-	skipped: z.number(),
-});
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,

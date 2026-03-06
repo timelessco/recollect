@@ -3,18 +3,18 @@ import { type User } from "@supabase/supabase-js";
 import { type SingleListData } from "./apiTypes";
 
 export type ModalStoreState = {
-	showSettingsModal: boolean;
 	showVideoModal: boolean;
-	toggleShowSettingsModal: () => void;
 	toggleShowVideoModal: () => void;
 };
 
 export type LoadersStoreState = {
 	addLoadingBookmarkId: (id: number) => void;
+	isBookmarkAdding: boolean;
 	isSearchLoading: boolean;
 	isSortByLoading: boolean;
 	loadingBookmarkIds: Set<number>;
 	removeLoadingBookmarkId: (id: number) => void;
+	setIsBookmarkAdding: (value: boolean) => void;
 	toggleIsSearchLoading: (value: boolean) => void;
 	toggleIsSortByLoading: () => void;
 };
@@ -22,13 +22,6 @@ export type LoadersStoreState = {
 export type MiscellaneousStoreState = {
 	addScreenshotBookmarkId: number | undefined;
 	currentBookmarkView: BookmarksViewTypes;
-	currentSettingsPage:
-		| "ai-features"
-		| "change-email"
-		| "delete"
-		| "main"
-		| "import";
-	currentSliderDropdownSlide: string | null;
 	deleteBookmarkId: number[] | undefined;
 	isCardDragging: boolean;
 	isCollectionChanged: boolean;
@@ -38,12 +31,9 @@ export type MiscellaneousStoreState = {
 	renderedBookmarks: Record<string, SingleListData[]>;
 	searchText: string;
 	selectedVideoId: number | null;
+	triggerHeadingEdit: boolean;
 	setAddScreenshotBookmarkId: (value: number | undefined) => void;
 	setCurrentBookmarkView: (value: BookmarksViewTypes) => void;
-	setCurrentSettingsPage: (
-		value: MiscellaneousStoreState["currentSettingsPage"],
-	) => void;
-	setCurrentSliderDropdownSlide: (value: string | null) => void;
 	setDeleteBookmarkId: (bookmarkIds: number[]) => void;
 	setIsCardDragging: (value: boolean) => void;
 	setIsCollectionChanged: (value: boolean) => void;
@@ -57,6 +47,7 @@ export type MiscellaneousStoreState = {
 	setSearchText: (value: string) => void;
 	setSelectedVideoId: (id: number | null) => void;
 	setShareCategoryId: (id: number | undefined) => void;
+	setTriggerHeadingEdit: (value: boolean) => void;
 	shareCategoryId: number | undefined;
 };
 
@@ -66,14 +57,14 @@ export type SupabaseSessionStore = {
 };
 
 export type BookmarksViewTypes = "card" | "list" | "moodboard" | "timeline";
-export type BookmarkViewCategories = "colums" | "info" | "sort" | "view";
+export type BookmarkViewCategories = "columns" | "info" | "sort" | "view";
 export type BookmarksSortByTypes =
-	| "alphabetical-sort-acending"
-	| "alphabetical-sort-decending"
-	| "date-sort-acending"
-	| "date-sort-decending"
-	| "url-sort-acending"
-	| "url-sort-decending";
+	| "alphabetical-sort-ascending"
+	| "alphabetical-sort-descending"
+	| "date-sort-ascending"
+	| "date-sort-descending"
+	| "url-sort-ascending"
+	| "url-sort-descending";
 
 // export interface BookmarkCardViewState {
 //   moodboardColumns: number[] | number;

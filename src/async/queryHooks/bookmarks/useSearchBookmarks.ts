@@ -3,7 +3,6 @@ import { type PostgrestError } from "@supabase/supabase-js";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty } from "lodash";
 
-import useDebounce from "../../../hooks/useDebounce";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import {
 	useLoadersStore,
@@ -38,8 +37,6 @@ export default function useSearchBookmarks(
 
 	const queryClient = useQueryClient();
 
-	const debouncedSearch = useDebounce(searchText, 500);
-
 	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
 	const sharedCategoriesData = queryClient.getQueryData([
@@ -63,15 +60,15 @@ export default function useSearchBookmarks(
 				BOOKMARKS_KEY,
 				session?.user?.id,
 				CATEGORY_ID,
-				debouncedSearch,
+				searchText,
 			] as const,
-			enabled: enabled && !isEmpty(debouncedSearch),
+			enabled: enabled && !isEmpty(searchText),
 			refetchOnWindowFocus: false,
 			initialPageParam: 0,
 			queryFn: async ({ pageParam: pageParameter }) => {
-				if (debouncedSearch) {
+				if (searchText) {
 					const result = await searchBookmarks(
-						debouncedSearch,
+						searchText,
 						CATEGORY_ID,
 						isSharedCategory,
 						pageParameter,
@@ -95,12 +92,12 @@ export default function useSearchBookmarks(
 		});
 
 	useEffect(() => {
-		if (!isEmpty(debouncedSearch)) {
+		if (!isEmpty(searchText)) {
 			toggleIsSearchLoading(isLoading);
 		} else {
 			toggleIsSearchLoading(false);
 		}
-	}, [toggleIsSearchLoading, isLoading, debouncedSearch]);
+	}, [toggleIsSearchLoading, isLoading, searchText]);
 
 	// Flatten the search results to match the expected data structure
 	return {

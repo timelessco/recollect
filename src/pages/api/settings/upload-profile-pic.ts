@@ -1,16 +1,14 @@
 // TODO: Fix this in priority
 /* eslint-disable @typescript-eslint/no-base-to-string */
 
-import { promises as fileSystem } from "node:fs";
+import { Readable } from "node:stream";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { decode } from "base64-arraybuffer";
-import { IncomingForm } from "formidable";
 import { isEmpty, isNull } from "lodash";
 import isNil from "lodash/isNil";
 import uniqid from "uniqid";
 
 import {
-	type ParsedFormDataType,
 	type ProfilesTableTypes,
 	type UploadProfilePicApiResponse,
 } from "../../../types/apiTypes";
@@ -80,46 +78,75 @@ export const deleteLogic = async (
 	}
 };
 
+/**
+ * Parses multipart form data from a Pages Router request using the Web Request API.
+ * Converts the Node.js IncomingMessage stream to a Web Request to use native formData().
+ */
+async function parseFormData(request: NextApiRequest) {
+	const headers: Array<[string, string]> = [];
+	for (const [name, value] of Object.entries(request.headers)) {
+		if (value === null || value === undefined) {
+			continue;
+		}
+
+		if (Array.isArray(value)) {
+			for (const item of value) {
+				headers.push([name, item]);
+			}
+		} else {
+			headers.push([name, value]);
+		}
+	}
+
+	const webStream = Readable.toWeb(request) as ReadableStream<
+		Uint8Array<ArrayBuffer>
+	>;
+	const webRequest = new Request("http://localhost", {
+		method: request.method,
+		headers,
+		body: webStream,
+		// @ts-expect-error -- Node.js supports duplex but types don't expose it
+		duplex: "half",
+	});
+
+	return await webRequest.formData();
+}
+
 export default async (
 	request: NextApiRequest,
 	response: NextApiResponse<UploadProfilePicApiResponse>,
 ) => {
 	const supabase = apiSupabaseClient(request, response);
 
-	// parse form with a Promise wrapper
-	const data = (await new Promise((resolve, reject) => {
-		const form = new IncomingForm();
-
-		form.parse(request, (error, fields, files) => {
-			if (error) {
-				reject(error);
-				return;
-			}
-
-			resolve({ fields, files });
+	let formData: FormData;
+	try {
+		formData = await parseFormData(request);
+	} catch {
+		response.status(400).json({
+			success: false,
+			error: "Invalid or missing multipart form data",
 		});
-	})) as {
-		fields: {
-			category_id?: ParsedFormDataType["fields"]["category_id"];
-			user_id?: ParsedFormDataType["fields"]["user_id"];
-		};
-		files: ParsedFormDataType["files"];
-	};
+		return;
+	}
+
+	const file = formData.get("file");
+
+	if (!(file instanceof File)) {
+		response.status(400).json({
+			success: false,
+			error: "No file provided",
+		});
+		return;
+	}
 
 	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
-	let contents;
+	const arrayBuffer = await file.arrayBuffer();
+	const contents = Buffer.from(arrayBuffer).toString("base64");
 
-	if (data?.files?.file?.[0]?.filepath) {
-		contents = await fileSystem.readFile(data?.files?.file[0]?.filepath, {
-			encoding: "base64",
-		});
-	}
-
-	const fileName = data?.files?.file?.[0]?.originalFilename
-		? parseUploadFileName(data?.files?.file?.[0]?.originalFilename)
-		: `${uniqid.time()}`;
-	const fileType = data?.files?.file?.[0]?.mimetype;
+	const parsedFileName = file.name ? parseUploadFileName(file.name) : "";
+	const fileName = parsedFileName || `${uniqid.time()}`;
+	const fileType = file.type || undefined;
 
 	if (contents) {
 		await deleteLogic(response, userId);

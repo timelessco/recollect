@@ -1,14 +1,10 @@
 import { useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/router";
 import { useMediaQuery } from "@react-hookz/web";
 import isEmpty from "lodash/isEmpty";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
-import useDebounce from "../../hooks/useDebounce";
-import useGetSortBy from "../../hooks/useGetSortBy";
-import useGetViewValue from "../../hooks/useGetViewValue";
 import { useIsMobileView } from "../../hooks/useIsMobileView";
 import {
 	useLoadersStore,
@@ -18,15 +14,11 @@ import {
 	type BookmarkViewDataTypes,
 	type SingleListData,
 } from "../../types/apiTypes";
-import {
-	type BookmarksSortByTypes,
-	type BookmarksViewTypes,
-} from "../../types/componentStoreTypes";
-import { DISCOVER_URL, viewValues } from "../../utils/constants";
+import { type BookmarksViewTypes } from "../../types/componentStoreTypes";
+import { viewValues } from "../../utils/constants";
 
 import { BookmarksSkeletonLoader } from "./cardSection/bookmarksSkeleton";
 import { useFetchDiscoverBookmarks } from "@/async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
-import { getCategorySlugFromRouter } from "@/utils/url";
 
 const CardSection = dynamic(async () => await import("./cardSection"), {
 	ssr: false,
@@ -45,7 +37,6 @@ type DiscoverProps = {
 	hasNextPage: boolean;
 	fetchNextPage: () => void;
 	isLoading: boolean;
-	isFetching: boolean;
 	dataLength: number;
 };
 
@@ -60,22 +51,25 @@ export const useDiscoverDataSource = (
 				hasMore: searchProps.hasNextPage,
 				fetchNext: searchProps.fetchNextPage,
 				isLoading: searchProps.isLoading && searchProps.dataLength === 0,
-				isOgImgLoading: false,
 			}
 		: {
 				displayData: discoverProps.data,
 				hasMore: discoverProps.hasNextPage,
 				fetchNext: discoverProps.fetchNextPage,
 				isLoading: discoverProps.isLoading && discoverProps.dataLength === 0,
-				isOgImgLoading: discoverProps.isFetching,
 			};
 
-export const DiscoverBookmarkCards = () => {
+type DiscoverBookmarkCardsProps = {
+	isDiscoverPage: boolean;
+};
+
+export const DiscoverBookmarkCards = ({
+	isDiscoverPage,
+}: DiscoverBookmarkCardsProps) => {
 	const infiniteScrollRef = useRef<HTMLDivElement>(null);
 
 	// Search functionality
 	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const debouncedSearchText = useDebounce(searchText, 500);
 	const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
 
 	const {
@@ -83,8 +77,6 @@ export const DiscoverBookmarkCards = () => {
 		fetchNextPage: fetchNextSearchPage,
 		hasNextPage: searchHasNextPage,
 	} = useSearchBookmarks();
-	const router = useRouter();
-	const isDiscoverPage = getCategorySlugFromRouter(router) === DISCOVER_URL;
 	const { isMobile } = useIsMobileView();
 	const isDesktopMedium = useMediaQuery(
 		"(min-width: 1024px) and (max-width: 1280px)",
@@ -113,75 +105,50 @@ export const DiscoverBookmarkCards = () => {
 		discoverData,
 		fetchNextPage: fetchNextDiscoverPage,
 		hasNextPage: discoverHasNextPage,
-		isFetchingNextPage: isFetchingNextDiscoverPage,
 		isLoading: isDiscoverLoading,
 	} = useFetchDiscoverBookmarks({ enabled: isDiscoverPage });
 
-	// Determine if we're currently searching (use debounced to match when query runs)
-	const isSearching = !isEmpty(debouncedSearchText);
+	// Determine if we're currently searching (searchText is debounced at source)
+	const isSearching = !isEmpty(searchText);
 
 	const flattenedDiscoverData = useMemo(
 		() => discoverData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
 		[discoverData],
 	);
 
-	// Get user's view preferences for discover page
-	const discoverBookmarksView = useGetViewValue(
-		"bookmarksView",
-		viewValues.card,
-		false,
-	);
-	const discoverCardContentViewArray = useGetViewValue(
-		"cardContentViewArray",
-		[],
-		false,
-	) as string[];
-	const { sortBy: discoverSortBy } = useGetSortBy();
-
-	// Build categoryViewsFromProps for discover page (responsive columns like DiscoverGuestView)
+	// Hardcoded view configuration for discover (same as DiscoverGuestView)
 	const discoverCategoryViews = useMemo<BookmarkViewDataTypes>(
 		() => ({
-			bookmarksView:
-				(discoverBookmarksView as BookmarksViewTypes) ||
-				(viewValues.card as BookmarksViewTypes),
-			cardContentViewArray: discoverCardContentViewArray || [],
+			bookmarksView: viewValues.moodboard as BookmarksViewTypes,
+			cardContentViewArray: ["cover", "title"],
 			moodboardColumns: discoverMoodboardColumnsResponsive,
-			sortBy:
-				(discoverSortBy as BookmarksSortByTypes) ||
-				("date-sort-acending" as BookmarksSortByTypes),
+			sortBy: "date-sort-ascending",
 		}),
-		[
-			discoverBookmarksView,
-			discoverCardContentViewArray,
-			discoverMoodboardColumnsResponsive,
-			discoverSortBy,
-		],
+		[discoverMoodboardColumnsResponsive],
 	);
 
 	// Use search results when searching, otherwise use discover data
-	const { displayData, hasMore, fetchNext, isLoading, isOgImgLoading } =
-		useDiscoverDataSource(
-			isSearching,
-			{
-				data: flattenedSearchData,
-				hasNextPage: searchHasNextPage,
-				fetchNextPage: () => {
-					void fetchNextSearchPage();
-				},
-				isLoading: isSearchLoading,
-				dataLength: flattenedSearchData.length,
+	const { displayData, hasMore, fetchNext, isLoading } = useDiscoverDataSource(
+		isSearching,
+		{
+			data: flattenedSearchData,
+			hasNextPage: searchHasNextPage,
+			fetchNextPage: () => {
+				void fetchNextSearchPage();
 			},
-			{
-				data: flattenedDiscoverData,
-				hasNextPage: discoverHasNextPage,
-				fetchNextPage: () => {
-					void fetchNextDiscoverPage();
-				},
-				isLoading: isDiscoverLoading,
-				isFetching: isFetchingNextDiscoverPage,
-				dataLength: flattenedDiscoverData.length,
+			isLoading: isSearchLoading,
+			dataLength: flattenedSearchData.length,
+		},
+		{
+			data: flattenedDiscoverData,
+			hasNextPage: discoverHasNextPage,
+			fetchNextPage: () => {
+				void fetchNextDiscoverPage();
 			},
-		);
+			isLoading: isDiscoverLoading,
+			dataLength: flattenedDiscoverData.length,
+		},
+	);
 
 	if (isDiscoverLoading) {
 		const cols = discoverMoodboardColumnsResponsive[0];
@@ -189,7 +156,7 @@ export const DiscoverBookmarkCards = () => {
 		return (
 			<BookmarksSkeletonLoader
 				count={skeletonCount}
-				type={discoverBookmarksView}
+				type={viewValues.moodboard}
 				colCount={cols}
 			/>
 		);
@@ -216,13 +183,10 @@ export const DiscoverBookmarkCards = () => {
 			>
 				<CardSection
 					categoryViewsFromProps={discoverCategoryViews}
-					isBookmarkLoading={false}
+					isDiscoverPage
 					isLoading={isLoading}
-					isOgImgLoading={isOgImgLoading}
 					isPublicPage
 					listData={displayData}
-					showAvatar={false}
-					userId=""
 				/>
 			</InfiniteScroll>
 		</div>

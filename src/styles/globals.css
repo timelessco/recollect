@@ -11,6 +11,8 @@
 	/* Light Gray Shades (from figma variables) */
 	--color-gray-0: #fff;
 	--color-gray-50: #fff;
+	--color-gray-75: #f5f5f5;
+	--color-gray-90: #fff;
 	--color-gray-100: #f5f5f5;
 	--color-gray-200: #ededed;
 	--color-gray-300: #e0e0e0;
@@ -76,7 +78,7 @@
 	--color-red-300: #fdc2c2;
 	--color-red-400: #f79596;
 	--color-red-500: #e03636;
-	--color-red-600: #cc2929;
+	--color-red-600: #cd2b31;
 	--color-red-700: #b52a2a;
 	--color-red-800: #941f1f;
 	--color-red-900: #6b1515;
@@ -220,6 +222,8 @@
 	/* Dark Gray Shades (from figma variables) */
 	--color-gray-0: #121212;
 	--color-gray-50: #1c1c1c;
+	--color-gray-75: #0d0d0d;
+	--color-gray-90: #2d2d2d;
 	--color-gray-100: #212121;
 	--color-gray-200: #292929;
 	--color-gray-300: #3d3d3d;
@@ -285,7 +289,7 @@
 	--color-red-300: #661717;
 	--color-red-400: #862020;
 	--color-red-500: #b01f1f;
-	--color-red-600: #d73232;
+	--color-red-600: #cd2b31;
 	--color-red-700: #eb4d52;
 	--color-red-800: #fe7c7c;
 	--color-red-900: #ffc1c1;
@@ -473,6 +477,8 @@
 	/* Gray colors */
 	--color-gray-0: var(--color-gray-0);
 	--color-gray-50: var(--color-gray-50);
+	--color-gray-75: var(--color-gray-75);
+	--color-gray-90: var(--color-gray-90);
 	--color-gray-100: var(--color-gray-100);
 	--color-gray-200: var(--color-gray-200);
 	--color-gray-300: var(--color-gray-300);
@@ -921,84 +927,6 @@
 		@apply mb-[30px] bg-gray-100;
 	}
 
-	/* slider */
-
-	.chakra-slider-group {
-		@apply relative flex w-full;
-	}
-
-	.chakra-slider-group .slider-label {
-		@apply mb-2 flex self-stretch;
-	}
-
-	.chakra-slider-group .label {
-		@apply text-gray-50;
-	}
-
-	.chakra-slider-group .value {
-		@apply ml-auto text-gray-50;
-	}
-
-	.chakra-slider-group .slider {
-		@apply relative inline-block w-full touch-none outline-0 select-none;
-	}
-
-	.chakra-slider-group .slider.vertical {
-		@apply h-[320px];
-	}
-
-	.chakra-slider-group .slider-track-container {
-		@apply relative w-full cursor-pointer px-0 py-[7px];
-	}
-
-	.chakra-slider-group .vertical .slider-track-container {
-		@apply h-full w-fit px-[7px] py-0;
-	}
-
-	.chakra-slider-group .slider-track {
-		@apply h-1 w-full rounded-xs bg-gray-300;
-	}
-
-	.chakra-slider-group .vertical .slider-track {
-		@apply h-full w-1;
-	}
-
-	.chakra-slider-group .slider-filled-track {
-		@apply absolute top-[50%] h-1 -translate-y-2/4 rounded-xs bg-gray-950;
-	}
-
-	.chakra-slider-group .vertical .slider-filled-track {
-		@apply bottom-0 left-[50%] w-1 -translate-x-2/4 bg-gray-950;
-	}
-
-	.chakra-slider-group .slider-thumb {
-		@apply absolute top-[50%] z-1 flex flex-col items-center;
-	}
-
-	.chakra-slider-group .vertical .slider-thumb {
-		@apply left-[2px] flex-row items-center;
-	}
-
-	.chakra-slider-group .slider-thumb:focus-within {
-		@apply z-10;
-	}
-
-	.chakra-slider-group .slider-thumb .slider-thumb-handle {
-		@apply flex h-4 w-4 cursor-pointer touch-none items-center justify-center rounded-full bg-gray-0 shadow-md select-none;
-	}
-
-	.chakra-slider-group .slider-thumb-handle:focus-within {
-		box-shadow: 0 0 0 2px var(--color-gray-900);
-	}
-
-	.chakra-slider-group .slider-thumb-tip {
-		@apply mt-2;
-	}
-
-	.chakra-slider-group .vertical .slider-thumb-tip {
-		@apply ml-2;
-	}
-
 	/* for icon dropdown */
 	.custom-select[aria-selected="true"] {
 		@apply bg-gray-200; /* Apply your desired styles here */
@@ -1097,49 +1025,59 @@
 		@apply hidden;
 	}
 
-	#modal-parent-portal div[role="presentation"] {
-		/* adding this to have z-index in modal so that nothing overlaps the modal */
-
-		/* adding important as the modal library does not give access to this div and the div already has z-index: auto so we are overriding it */
-		@apply z-102!;
-	}
-
 	.menu-wrapper {
 		scrollbar-width: none;
 
 		@apply z-50 snap-x snap-mandatory snap-always overflow-scroll scroll-smooth rounded-xl border border-solid;
 	}
 
-	/* toast styles */
-	.Toastify__toast-container.Toastify__toast-container--bottom-right {
-		@apply w-[202px]!;
+	.toast-root {
+		animation: toast-bounce-in 0.5s both;
 	}
 
-	.Toastify__toast.Toastify__toast-theme--light.Toastify__toast--error {
-		box-shadow:
-			0 64px 18px 0 rgb(0 0 0 / 0%),
-			0 41px 16px 0 rgb(0 0 0 / 2%),
-			0 23px 14px 0 rgb(0 0 0 / 6%),
-			0 10px 10px 0 rgb(0 0 0 / 11%),
-			0 3px 6px 0 rgb(0 0 0 / 13%);
-
-		@apply min-h-0! rounded-2xl! bg-gray-950! px-4! py-3!;
+	.toast-root[data-ending-style] {
+		animation: toast-bounce-out 0.5s both;
 	}
 
-	.Toastify__toast.Toastify__toast-theme--light.Toastify__toast--success {
-		box-shadow:
-			0 64px 18px 0 rgb(0 0 0 / 0%),
-			0 41px 16px 0 rgb(0 0 0 / 2%),
-			0 23px 14px 0 rgb(0 0 0 / 6%),
-			0 10px 10px 0 rgb(0 0 0 / 11%),
-			0 3px 6px 0 rgb(0 0 0 / 13%);
+	@keyframes toast-bounce-in {
+		0% {
+			transform: translate3d(3000px, 0, 0);
+			opacity: 0;
+			animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+		}
 
-		@apply min-h-0! rounded-2xl! bg-gray-950! px-4! py-3!;
+		60% {
+			transform: translate3d(-25px, 0, 0);
+			opacity: 1;
+			animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+		}
+
+		75% {
+			transform: translate3d(10px, 0, 0);
+			animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+		}
+
+		90% {
+			transform: translate3d(-5px, 0, 0);
+			animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+		}
+
+		100% {
+			transform: none;
+			animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+		}
 	}
 
-	.Toastify__toast-body {
-		/* adding  important to override the default toast styles */
-		@apply m-0! p-0!;
+	@keyframes toast-bounce-out {
+		20% {
+			transform: translate3d(-20px, 0, 0);
+			opacity: 1;
+		}
+
+		100% {
+			transform: translate3d(2000px, 0, 0);
+			opacity: 0;
+		}
 	}
 
 	.search-bar__input:focus {

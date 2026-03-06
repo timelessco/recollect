@@ -1,5 +1,5 @@
 import { type ComponentPropsWithoutRef, type FC } from "react";
-import clsx from "clsx";
+import { cn } from "@/utils/tailwind-merge";
 
 export type IconProps = ComponentPropsWithoutRef<"svg"> & {
 	label?: string;
@@ -9,7 +9,7 @@ export const Icon: FC<IconProps> = ({ label, ...props }) => {
 	const _viewBox = props.viewBox ?? fallbackIcon.viewBox;
 	const _path = (props.children ?? fallbackIcon.path) as string;
 
-	const className = clsx(props.className);
+	const className = cn(props.className);
 
 	// eslint-disable-next-line no-param-reassign
 	props = { ...props, viewBox: _viewBox, children: _path, className };

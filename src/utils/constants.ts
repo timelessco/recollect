@@ -26,8 +26,8 @@ export const STORAGE_SCREENSHOT_VIDEOS_PATH =
 export const STORAGE_FILES_PATH = FILES_STORAGE_NAME + "/public";
 export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
 
-// Fallback ogImage for audio bookmarks (no cover art)
-export const AUDIO_OG_IMAGE_FALLBACK_URL = `${BASE_URL}/audio-fallback.png`;
+// Fallback ogImage for audio bookmarks; matches waveform in @/icons/audio-icon.tsx
+export const AUDIO_OG_IMAGE_FALLBACK_URL = `${BASE_URL}/audio-icon.svg`;
 
 // Video upload limits
 export const VIDEO_DOWNLOAD_TIMEOUT_MS = 60_000;
@@ -447,12 +447,6 @@ export const springConfig = {
 } as const;
 
 /**
- * Array of public paths that don't require authentication
- * Dynamically generated from PAGE_SLUGS
- */
-// export const PUBLIC_PATHS = new Set(["/"]);
-
-/**
  * Array of guest paths that require authentication
  */
 export const GUEST_PATHS = new Set([
@@ -466,9 +460,15 @@ export const isGuestPath = (pathname: string) =>
 /**
  * Array of public paths that don't require authentication
  */
-export const PUBLIC_PATHS = new Set(["/discover", "/error", "/public"]);
+const PUBLIC_PATHS = [
+	"/api-docs",
+	"/discover",
+	"/error",
+	"/openapi.json",
+	"/public",
+] as const;
 export const isPublicPath = (pathname: string) =>
-	[...PUBLIC_PATHS].some((path) => pathname.startsWith(path));
+	PUBLIC_PATHS.some((path) => pathname.startsWith(path));
 
 export const MAX_TAG_COLLECTION_NAME_LENGTH = 20;
 export const MIN_TAG_COLLECTION_NAME_LENGTH = 1;

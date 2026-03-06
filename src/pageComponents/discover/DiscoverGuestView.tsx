@@ -30,7 +30,7 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 		useFetchDiscoverBookmarks({ initialData: discoverData });
 
 	// Stable default for SSR + hydration, then update after mount (same breakpoints as discoverBookmarkCards)
-	const [moodboardColumns, setMoodboardColumns] = useState<number[]>([30]);
+	const [moodboardColumns, setMoodboardColumns] = useState<number[]>([50]);
 
 	useEffect(() => {
 		if (isMobile) {
@@ -48,8 +48,8 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 	const discoverCategoryViews: BookmarkViewDataTypes = {
 		bookmarksView: viewValues.moodboard as BookmarksViewTypes,
 		moodboardColumns,
-		cardContentViewArray: ["cover", "title", "description", "info"],
-		sortBy: "date-sort-acending",
+		cardContentViewArray: ["cover", "title"],
+		sortBy: "date-sort-ascending",
 	};
 
 	return (
@@ -80,22 +80,18 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
 								</p>
 							}
 							hasMore={hasNextPage}
-							loader={<div />}
+							loader={null}
 							next={fetchNextPage}
 							scrollableTarget="scrollableDiv"
 							style={{ overflow: "unset" }}
 						>
 							<CardSection
 								categoryViewsFromProps={discoverCategoryViews}
-								isBookmarkLoading={false}
 								isDiscoverPage
-								isOgImgLoading={false}
 								isPublicPage
 								listData={flattenedData}
 								onDeleteClick={() => {}}
 								onMoveOutOfTrashClick={() => {}}
-								showAvatar={false}
-								userId=""
 							/>
 						</InfiniteScroll>
 					</div>

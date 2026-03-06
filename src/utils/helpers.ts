@@ -160,7 +160,7 @@ export const getBaseUrl = (href: string): string => {
 
 		return baseUrl;
 	} catch (error) {
-		console.error("Error parsing URL:", error);
+		console.warn("Error parsing URL:", error);
 		return "";
 	}
 };

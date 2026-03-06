@@ -6,7 +6,7 @@ import Button from "../../components/atoms/button";
 import { Spinner } from "../../components/spinner";
 import { InfoIcon } from "../../icons/info-icon";
 import { RaindropIcon } from "../../icons/raindrop-icon";
-import { useMiscellaneousStore } from "../../store/componentStore";
+import { type SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
 
 import { useImportBookmarksMutation } from "@/async/mutationHooks/bookmarks/use-import-bookmarks-mutation";
 import { saveButtonClassName } from "@/utils/commonClassNames";
@@ -14,16 +14,16 @@ import { handleClientError } from "@/utils/error-utils/client";
 
 const REQUIRED_CSV_COLUMNS = ["url"] as const;
 
-export const ImportBookmarks = () => {
+type ImportBookmarksProps = {
+	onNavigate: (page: SettingsPage) => void;
+};
+
+export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [bookmarkCount, setBookmarkCount] = useState<number | null>(null);
 	const [parseError, setParseError] = useState<string | null>(null);
 	const [dragActive, setDragActive] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
-
-	const setCurrentSettingsPage = useMiscellaneousStore(
-		(state) => state.setCurrentSettingsPage,
-	);
 
 	const { importBookmarksMutation } = useImportBookmarksMutation();
 	const { isPending, isSuccess } = importBookmarksMutation;
@@ -249,7 +249,7 @@ export const ImportBookmarks = () => {
 							<span>Please add your own AI</span>
 							<button
 								className="ml-1 underline"
-								onClick={() => setCurrentSettingsPage("ai-features")}
+								onClick={() => onNavigate("ai-features")}
 								type="button"
 							>
 								API key

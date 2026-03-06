@@ -33,13 +33,17 @@ paths: supabase/functions/**
 
 8. **Pre-populated environment variables** (don't set manually):
    - `SUPABASE_URL`
-   - `SUPABASE_PUBLISHABLE_OR_ANON_KEY`
+   - `SUPABASE_ANON_KEY` (legacy name; upstream renamed to `SUPABASE_PUBLISHABLE_KEY`)
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `SUPABASE_DB_URL`
 
 9. **File writes** - ONLY `/tmp` directory allowed
 
 10. **Background tasks** - use `EdgeRuntime.waitUntil(promise)`
+
+11. **Deno Edge Functions cannot use Zod** — use manual type guards only. Zod is available in Next.js API routes but NOT in `supabase/functions/`
+
+12. **The Edge Runtime uses an older Deno version** that cannot read lockfile v5 — the fix is `lock: false` in `deno.json`; do not delete the lockfile as a workaround
 
 ## Example Function
 

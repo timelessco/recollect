@@ -1,10 +1,15 @@
-import { z } from "zod";
+import { after } from "next/server";
 
+import {
+	DeleteCategoryInputSchema,
+	DeleteCategoryResponseSchema,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { sendCollectionDeletedNotification } from "@/lib/email/send-collection-deleted-notification";
 import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
-import { isNonEmptyArray } from "@/utils/assertion-utils";
+import { isNonEmptyArray, isNonNullable } from "@/utils/assertion-utils";
 import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	CATEGORIES_TABLE_NAME,
@@ -14,27 +19,6 @@ import {
 } from "@/utils/constants";
 
 const ROUTE = "delete-user-category";
-
-const DeleteCategoryInputSchema = z.object({
-	category_id: z.number(),
-});
-
-const DeleteCategoryResponseSchema = z
-	.array(
-		z.object({
-			category_name: z.string().nullable(),
-			category_slug: z.string(),
-			category_views: z.unknown().nullable(),
-			created_at: z.string().nullable(),
-			icon: z.string().nullable(),
-			icon_color: z.string().nullable(),
-			id: z.number(),
-			is_public: z.boolean(),
-			order_index: z.number().nullable(),
-			user_id: z.string().nullable(),
-		}),
-	)
-	.nonempty();
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
@@ -86,6 +70,25 @@ export const POST = createPostApiHandlerWithAuth({
 
 		// Use service client to bypass RLS for cross-user cleanup
 		const serviceClient = await createServerServiceClient();
+
+		// Query accepted collaborator emails before deleting shared_categories
+		const { data: collaborators, error: collaboratorsError } =
+			await serviceClient
+				.from(SHARED_CATEGORIES_TABLE_NAME)
+				.select("email")
+				.eq("category_id", categoryId)
+				.eq("is_accept_pending", false);
+
+		if (collaboratorsError) {
+			console.error(
+				`[${route}] Failed to fetch collaborator emails, skipping notification:`,
+				{ error: collaboratorsError, categoryId },
+			);
+		}
+
+		const collaboratorEmails: string[] = (collaborators ?? [])
+			.map((collaborator) => collaborator.email)
+			.filter(isNonNullable);
 
 		// Delete shared category associations
 		const { error: sharedCategoryError } = await serviceClient
@@ -294,6 +297,35 @@ export const POST = createPostApiHandlerWithAuth({
 					},
 				);
 			}
+		}
+
+		// Notify collaborators about the deletion - run after response is sent
+		if (isNonEmptyArray(collaboratorEmails)) {
+			after(async () => {
+				const { data: ownerProfile, error: ownerProfileError } = await supabase
+					.from(PROFILES)
+					.select("display_name, user_name")
+					.eq("id", userId)
+					.single();
+
+				if (ownerProfileError) {
+					console.error(
+						`[${route}] Failed to fetch owner profile for notification:`,
+						{ error: ownerProfileError, userId },
+					);
+				}
+
+				const ownerDisplayName =
+					ownerProfile?.display_name ||
+					ownerProfile?.user_name ||
+					"the collection owner";
+
+				await sendCollectionDeletedNotification({
+					categoryName: deletedCategory[0].category_name ?? "Untitled",
+					collaboratorEmails,
+					ownerDisplayName,
+				});
+			});
 		}
 
 		return deletedCategory;
