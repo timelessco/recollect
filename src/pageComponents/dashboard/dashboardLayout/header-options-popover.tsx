@@ -23,7 +23,7 @@ import {
 import { DISCOVER_URL, TRASH_URL } from "../../../utils/constants";
 import ShareContent from "../share/shareContent";
 
-import { ClearTrashContent } from "@/components/clearTrashContent";
+import { DestructiveConfirmContent } from "@/components/destructive-confirm-content";
 import { cn } from "@/utils/tailwind-merge";
 
 export function HeaderOptionsPopover() {
@@ -31,7 +31,7 @@ export function HeaderOptionsPopover() {
 	const [currentTab, setCurrentTab] = useState<string | null>(null);
 
 	const updateCurrentTab = useCallback((value: string) => {
-		if (value === "delete-collection" || value === "rename") {
+		if (value === "rename") {
 			setOpen(false);
 			return;
 		}
@@ -163,17 +163,27 @@ function RenameOption() {
 }
 
 function DeleteCollectionOption() {
-	const { category_id: categoryId } = useGetCurrentCategoryId();
-	const { onDeleteCollection } = useDeleteCollection();
-
 	return (
 		<div
 			className={`flex items-center ${dropdownMenuItemClassName} text-red-600 hover:text-red-600 focus:text-red-600`}
-			onClick={async () => await onDeleteCollection(true, categoryId as number)}
 		>
 			<TrashIconRed />
 			<p className="ml-[6px]">Delete collection</p>
 		</div>
+	);
+}
+
+function DeleteCollectionTabContent() {
+	const { category_id: categoryId } = useGetCurrentCategoryId();
+	const { onDeleteCollection } = useDeleteCollection();
+
+	return (
+		<DestructiveConfirmContent
+			onConfirm={() => {
+				void onDeleteCollection(true, categoryId as number);
+			}}
+			label="Delete Collection"
+		/>
 	);
 }
 
@@ -202,6 +212,10 @@ function HeaderTabContent({ currentTab }: HeaderTabContentProps) {
 		);
 	}
 
+	if (currentTab === "delete-collection") {
+		return <DeleteCollectionTabContent />;
+	}
+
 	return null;
 }
 
@@ -210,11 +224,12 @@ function ClearTrashTabContent() {
 		useClearBookmarksInTrashMutation();
 
 	return (
-		<ClearTrashContent
-			onClearTrash={() => {
+		<DestructiveConfirmContent
+			onConfirm={() => {
 				void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
 			}}
-			isClearingTrash={isClearingTrash}
+			pending={isClearingTrash}
+			label="Clear All Trash"
 		/>
 	);
 }

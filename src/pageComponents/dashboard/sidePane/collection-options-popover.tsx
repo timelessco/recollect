@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Button } from "@base-ui/react/button";
 import { Popover } from "@base-ui/react/popover";
 
-import { DeleteCollectionModal } from "../modals/delete-collection-modal";
 import ShareContent from "../share/shareContent";
 
 import { type CollectionItemTypes } from "./singleListItemComponent";
 import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
+import { DestructiveConfirmContent } from "@/components/destructive-confirm-content";
+import { useDeleteCollection } from "@/hooks/useDeleteCollection";
 import { useIsMobileView } from "@/hooks/useIsMobileView";
 import OptionsIcon from "@/icons/optionsIcon";
 import { dropdownMenuClassName } from "@/utils/commonClassNames";
@@ -18,7 +19,9 @@ type CollectionOptionsPopoverProps = {
 export function CollectionOptionsPopover({
 	item,
 }: CollectionOptionsPopoverProps) {
-	const [view, setView] = useState<"closed" | "menu" | "share">("closed");
+	const [view, setView] = useState<"closed" | "menu" | "share" | "delete">(
+		"closed",
+	);
 	const { isDesktop } = useIsMobileView();
 	const open = view !== "closed";
 
@@ -57,6 +60,12 @@ export function CollectionOptionsPopover({
 									item={item}
 									onClose={() => setView("closed")}
 									onShare={() => setView("share")}
+									onDelete={() => setView("delete")}
+								/>
+							) : view === "delete" ? (
+								<DeleteCollectionConfirm
+									categoryId={item.id}
+									isCurrent={item.current}
 								/>
 							) : (
 								<div className="w-75 rounded-lg bg-gray-50">
@@ -84,12 +93,14 @@ type CollectionMenuItemsProps = {
 	item: CollectionItemTypes;
 	onClose: () => void;
 	onShare: () => void;
+	onDelete: () => void;
 };
 
 function CollectionMenuItems({
 	item,
 	onClose,
 	onShare,
+	onDelete,
 }: CollectionMenuItemsProps) {
 	const { updateCategoryOptimisticMutation } =
 		useUpdateCategoryOptimisticMutation();
@@ -127,13 +138,38 @@ function CollectionMenuItems({
 			>
 				Share
 			</Button>
-			<DeleteCollectionModal
-				categoryId={item.id}
-				isCurrent={item.current}
-				triggerClassName={itemClassName}
+			<Button
+				className={itemClassName}
+				onClick={(event) => {
+					event.preventDefault();
+					event.stopPropagation();
+					onDelete();
+				}}
+				type="button"
 			>
 				Delete
-			</DeleteCollectionModal>
+			</Button>
 		</>
+	);
+}
+
+interface DeleteCollectionConfirmProps {
+	categoryId: number;
+	isCurrent: boolean;
+}
+
+function DeleteCollectionConfirm({
+	categoryId,
+	isCurrent,
+}: DeleteCollectionConfirmProps) {
+	const { onDeleteCollection } = useDeleteCollection();
+
+	return (
+		<DestructiveConfirmContent
+			onConfirm={() => {
+				void onDeleteCollection(isCurrent, categoryId);
+			}}
+			label="Delete Collection"
+		/>
 	);
 }
