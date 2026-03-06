@@ -19,6 +19,7 @@ function Provider(props: ToastPrimitive.Provider.Props) {
 		<ToastPrimitive.Provider
 			toastManager={toastManager}
 			timeout={5000}
+			limit={3}
 			{...props}
 		/>
 	);
@@ -29,7 +30,8 @@ function Viewport(props: ToastPrimitive.Viewport.Props) {
 	return (
 		<ToastPrimitive.Viewport
 			className={cn(
-				"fixed right-4 bottom-4 z-9999 flex w-fit flex-col items-end gap-4",
+				"fixed right-4 bottom-4 z-9999 w-[320px] list-none outline-0",
+				"data-[expanded]:pt-[300px]",
 				className,
 			)}
 			{...rest}
@@ -41,11 +43,40 @@ function Root(props: ToastPrimitive.Root.Props) {
 	const { className, ...rest } = props;
 	return (
 		<ToastPrimitive.Root
+			data-toast-root=""
 			className={cn(
-				"toast-root min-h-0 w-[320px] rounded-2xl bg-gray-950 px-4 py-3",
+				[
+					"absolute right-0 bottom-0 w-full rounded-2xl bg-gray-950",
+					"transition-[transform,opacity] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]",
+					"[transform-origin:bottom_center]",
+					"[z-index:calc(1000-var(--toast-index))]",
+					"[transform:scale(calc(1-0.05*var(--toast-index)))_translateX(var(--toast-swipe-movement-x,0px))_translateY(calc(var(--toast-swipe-movement-y,0px)+var(--toast-index)*-8px))]",
+					"data-[expanded]:[transform:scale(1)_translateY(calc((var(--toast-offset-y)+var(--toast-index)*8px)*-1))_translateX(var(--toast-swipe-movement-x,0px))]",
+					"data-[starting-style]:translate-y-[calc(100%+16px)] data-[starting-style]:opacity-0",
+					"data-[ending-style]:opacity-0",
+					"data-[ending-style]:data-[swipe-direction=down]:[transform:translateY(calc(var(--toast-swipe-movement-y,0px)+150%))]",
+					"data-[ending-style]:data-[swipe-direction=right]:[transform:translateX(calc(var(--toast-swipe-movement-x,0px)+150%))_translateY(calc(var(--toast-index)*-8px+var(--toast-swipe-movement-y,0px)))]",
+					"data-[ending-style]:data-[swipe-direction=up]:[transform:translateY(calc(var(--toast-swipe-movement-y,0px)-150%))]",
+					"data-[ending-style]:data-[swipe-direction=left]:[transform:translateX(calc(var(--toast-swipe-movement-x,0px)-150%))_translateY(calc(var(--toast-index)*-8px+var(--toast-swipe-movement-y,0px)))]",
+				],
 				className,
 			)}
 			style={{ boxShadow: TOAST_SHADOW }}
+			{...rest}
+		/>
+	);
+}
+
+function Content(props: ToastPrimitive.Content.Props) {
+	const { className, ...rest } = props;
+	return (
+		<ToastPrimitive.Content
+			className={cn(
+				"[max-height:var(--toast-height)] overflow-hidden px-4 py-3 transition-opacity duration-250",
+				"data-[behind]:opacity-0",
+				"data-[expanded]:opacity-100",
+				className,
+			)}
 			{...rest}
 		/>
 	);
@@ -85,13 +116,15 @@ function List() {
 	const { toasts } = ToastPrimitive.useToastManager();
 	return toasts.map((toast) => (
 		<Root key={toast.id} toast={toast}>
-			<div className="flex">
-				{toast.data?.icon}
-				<div className="ml-2">
-					<Title />
-					{toast.description && <Description />}
+			<Content>
+				<div className="flex">
+					{toast.data?.icon}
+					<div className="ml-2">
+						<Title />
+						{toast.description && <Description />}
+					</div>
 				</div>
-			</div>
+			</Content>
 		</Root>
 	));
 }
@@ -103,15 +136,18 @@ function List() {
 export function ToastSetup() {
 	return (
 		<Provider>
-			<Viewport>
-				<List />
-			</Viewport>
+			<ToastPrimitive.Portal>
+				<Viewport>
+					<List />
+				</Viewport>
+			</ToastPrimitive.Portal>
 		</Provider>
 	);
 }
 
 export const Toast = {
 	Close,
+	Content,
 	Description,
 	List,
 	Provider,
