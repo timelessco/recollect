@@ -4,7 +4,7 @@ import {
 } from "./schema";
 import { createDeleteApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { SHARED_CATEGORIES_TABLE_NAME } from "@/utils/constants";
+import { PROFILES, SHARED_CATEGORIES_TABLE_NAME } from "@/utils/constants";
 
 const ROUTE = "v2-share-delete-shared-categories-user";
 
@@ -41,6 +41,32 @@ export const DELETE = createDeleteApiHandlerWithAuth({
 				status: 404,
 				context: { id: data.id, userId },
 			});
+		}
+
+		// Clean up favorite_categories for the departing user
+		const categoryId = deleted[0].category_id;
+		const { data: profileData } = await supabase
+			.from(PROFILES)
+			.select("favorite_categories")
+			.match({ id: userId })
+			.single();
+
+		if (profileData?.favorite_categories?.includes(categoryId)) {
+			const { error: favCleanupError } = await supabase
+				.from(PROFILES)
+				.update({
+					favorite_categories: profileData.favorite_categories.filter(
+						(id: number) => id !== categoryId,
+					),
+				})
+				.match({ id: userId });
+
+			if (favCleanupError) {
+				console.warn(
+					`[${route}] Failed to clean up favorite_categories:`,
+					favCleanupError,
+				);
+			}
 		}
 
 		return deleted;

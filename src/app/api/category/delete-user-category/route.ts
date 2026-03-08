@@ -249,6 +249,19 @@ export const POST = createPostApiHandlerWithAuth({
 			}
 		}
 
+		// Clean up favorite_categories for ALL users who favorited this category
+		const { error: favoritesCleanupError } = await supabase.rpc(
+			"remove_category_from_all_favorites",
+			{ p_category_id: deletedCategory[0].id },
+		);
+
+		if (favoritesCleanupError) {
+			console.warn(
+				`[${route}] Failed to clean up favorite_categories:`,
+				favoritesCleanupError,
+			);
+		}
+
 		console.log(`[${route}] Category deleted:`, {
 			categoryId: deletedCategory[0].id,
 			categoryName: deletedCategory[0].category_name,

@@ -6,8 +6,9 @@ import { DeleteCollectionModal } from "../modals/delete-collection-modal";
 import ShareContent from "../share/shareContent";
 
 import { type CollectionItemTypes } from "./singleListItemComponent";
-import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
+import { useToggleFavoriteCategoryOptimisticMutation } from "@/async/mutationHooks/user/use-toggle-favorite-category-optimistic-mutation";
 import { useIsMobileView } from "@/hooks/useIsMobileView";
+import { UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
 import OptionsIcon from "@/icons/optionsIcon";
 import { dropdownMenuClassName } from "@/utils/commonClassNames";
 
@@ -91,31 +92,30 @@ function CollectionMenuItems({
 	onClose,
 	onShare,
 }: CollectionMenuItemsProps) {
-	const { updateCategoryOptimisticMutation } =
-		useUpdateCategoryOptimisticMutation();
+	const { toggleFavoriteCategoryOptimisticMutation } =
+		useToggleFavoriteCategoryOptimisticMutation();
 
 	const itemClassName =
 		"w-full text-left text-gray-800 font-450 text-13 leading-[115%] tracking-[0.01em] px-2 py-[5px] cursor-pointer rounded-lg outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200 hover:bg-gray-200 hover:text-gray-900";
 
 	return (
 		<>
-			<Button
-				className={itemClassName}
-				onClick={(event) => {
-					event.preventDefault();
-					event.stopPropagation();
-					updateCategoryOptimisticMutation.mutate({
-						category_id: item.id,
-						updateData: {
-							is_favorite: !item.isFavorite,
-						},
-					});
-					onClose();
-				}}
-				type="button"
-			>
-				{item.isFavorite ? "Unfavorite" : "Favorite"}
-			</Button>
+			{item.id !== UNCATEGORIZED_CATEGORY_ID && (
+				<Button
+					className={itemClassName}
+					onClick={(event) => {
+						event.preventDefault();
+						event.stopPropagation();
+						toggleFavoriteCategoryOptimisticMutation.mutate({
+							category_id: item.id,
+						});
+						onClose();
+					}}
+					type="button"
+				>
+					{item.isFavorite ? "Unfavorite" : "Favorite"}
+				</Button>
+			)}
 			<Button
 				className={itemClassName}
 				onClick={(event) => {

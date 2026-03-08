@@ -152,6 +152,8 @@ export const DELETE_USER_API = "/profiles/delete-user";
 export const REMOVE_PROFILE_PIC_API = "/profiles/remove-profile-pic";
 export const TOGGLE_PREFERRED_OG_DOMAIN_API =
 	"/profiles/toggle-preferred-og-domain";
+export const TOGGLE_FAVORITE_CATEGORY_API =
+	"/profiles/toggle-favorite-category";
 
 // settings profile api
 export const UPLOAD_PROFILE_PIC_API = "/settings/upload-profile-pic";

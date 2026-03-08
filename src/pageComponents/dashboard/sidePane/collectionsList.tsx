@@ -394,13 +394,16 @@ const CollectionsList = () => {
 		}
 	};
 
+	const favoriteCategories =
+		userProfileData?.data?.[0]?.favorite_categories ?? [];
+
 	const collectionsList = session
 		? categoryData?.data?.map((item) => ({
 				name: item?.category_name,
 				href: `/${item?.category_slug}`,
 				id: item?.id,
 				current: currentPath === item?.category_slug,
-				isFavorite: item?.is_favorite,
+				isFavorite: favoriteCategories.includes(item?.id),
 				isPublic: item?.is_public,
 				isCollab: !isEmpty(
 					find(
