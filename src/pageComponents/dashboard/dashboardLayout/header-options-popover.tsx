@@ -34,7 +34,9 @@ export function HeaderOptionsPopover() {
 		setView((current) => (current === "menu" ? "closed" : current));
 	};
 
-	const dismiss = () => setView("closed");
+	const dismiss = () => {
+		setView((current) => (current === "menu" ? current : "closed"));
+	};
 
 	return (
 		<>

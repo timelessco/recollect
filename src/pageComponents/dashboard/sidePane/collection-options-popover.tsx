@@ -7,7 +7,6 @@ import ShareContent from "../share/shareContent";
 import { type CollectionItemTypes } from "./singleListItemComponent";
 import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
 import { Menu } from "@/components/ui/recollect/menu";
-
 import OptionsIcon from "@/icons/optionsIcon";
 
 type CollectionOptionsPopoverProps = {
@@ -32,7 +31,10 @@ export function CollectionOptionsPopover({
 		setView((current) => (current === "menu" ? "closed" : current));
 	};
 
-	const dismiss = () => setView("closed");
+	const dismiss = () => {
+		setView((current) => (current === "menu" ? current : "closed"));
+	};
+
 	const isOpen = view !== "closed";
 
 	return (
@@ -158,7 +160,7 @@ function SharePopover({
 				<Popover.Positioner
 					anchor={anchor}
 					align="start"
-					className="z-[51]"
+					className="z-51"
 					sideOffset={1}
 				>
 					<Popover.Popup className="rounded-xl bg-gray-50 p-1 leading-[20px] shadow-custom-3 outline-hidden">
