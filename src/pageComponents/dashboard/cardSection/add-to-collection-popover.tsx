@@ -1,16 +1,14 @@
 import { useState, type Key } from "react";
-import { Popover } from "@base-ui/react/popover";
 import isEmpty from "lodash/isEmpty";
 
 import { useAddCategoryToBookmarksOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmarks-optimistic-mutation";
 import { useRemoveCategoryFromBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-remove-category-from-bookmark-optimistic-mutation";
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import { CollectionIcon } from "@/components/collectionIcon";
-import { Button } from "@/components/ui/recollect/button";
+import { Menu } from "@/components/ui/recollect/menu";
 import { ScrollArea } from "@/components/ui/recollect/scroll-area";
 import MoveIcon from "@/icons/moveIcon";
 import { TickIcon } from "@/icons/tickIcon";
-import { dropdownMenuClassName } from "@/utils/commonClassNames";
 
 interface AddToCollectionPopoverProps {
 	onSuccess: () => void;
@@ -38,41 +36,39 @@ export function AddToCollectionPopover({
 	};
 
 	return (
-		<Popover.Root onOpenChange={handleOpenChange}>
-			<Popover.Trigger className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 leading-4 font-450 text-gray-900">
+		<Menu.Root onOpenChange={handleOpenChange}>
+			<Menu.Trigger className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 leading-4 font-450 text-gray-900">
 				<span className="mr-[6px] text-gray-1000" aria-hidden="true">
 					<MoveIcon />
 				</span>
 				<p>Add to</p>
-			</Popover.Trigger>
-			<Popover.Portal>
-				<Popover.Positioner align="end" className="z-10" sideOffset={1}>
-					<Popover.Popup
-						className={`${dropdownMenuClassName} leading-[20px] outline-hidden`}
-					>
-						<AddToCollectionMenu
+			</Menu.Trigger>
+			<Menu.Portal>
+				<Menu.Positioner align="end">
+					<Menu.Popup className="leading-[20px]">
+						<AddToCollectionMenuItems
 							addedCategoryIds={addedCategoryIds}
 							onToggle={setAddedCategoryIds}
 							selectedKeys={selectedKeys}
 						/>
-					</Popover.Popup>
-				</Popover.Positioner>
-			</Popover.Portal>
-		</Popover.Root>
+					</Menu.Popup>
+				</Menu.Positioner>
+			</Menu.Portal>
+		</Menu.Root>
 	);
 }
 
-interface AddToCollectionMenuProps {
+interface AddToCollectionMenuItemsProps {
 	addedCategoryIds: Set<number>;
 	onToggle: React.Dispatch<React.SetStateAction<Set<number>>>;
 	selectedKeys: Set<Key>;
 }
 
-function AddToCollectionMenu({
+function AddToCollectionMenuItems({
 	addedCategoryIds,
 	onToggle,
 	selectedKeys,
-}: AddToCollectionMenuProps) {
+}: AddToCollectionMenuItemsProps) {
 	const { allCategories } = useFetchCategories();
 	const { addCategoryToBookmarksOptimisticMutation } =
 		useAddCategoryToBookmarksOptimisticMutation();
@@ -85,11 +81,10 @@ function AddToCollectionMenu({
 
 	const categories = allCategories?.data ?? [];
 
-	const handleToggle = (categoryId: number) => {
+	const handleToggle = (categoryId: number, checked: boolean) => {
 		const selectedIds = Array.from(selectedKeys).map(Number);
-		const isAdded = addedCategoryIds.has(categoryId);
 
-		if (isAdded) {
+		if (!checked) {
 			for (const bookmarkId of selectedIds) {
 				removeCategoryFromBookmarkOptimisticMutation.mutate({
 					bookmark_id: bookmarkId,
@@ -106,7 +101,7 @@ function AddToCollectionMenu({
 		onToggle((previous) => {
 			const next = new Set(previous);
 
-			if (isAdded) {
+			if (!checked) {
 				next.delete(categoryId);
 			} else {
 				next.add(categoryId);
@@ -118,31 +113,20 @@ function AddToCollectionMenu({
 
 	return (
 		<ScrollArea scrollbarGutter scrollFade scrollHeight={220} hideScrollbar>
-			{categories.map((item, index) => {
-				const isSelected = addedCategoryIds.has(item.id);
-
-				return (
-					<Button
-						autoFocus={index === 0}
-						className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-left text-13 leading-[15px] font-450 tracking-[0.01em] text-gray-900 transition-colors select-none hover:bg-gray-200 [&:focus:not(:hover)]:bg-transparent [&:focus:not(:hover)]:ring-2 [&:focus:not(:hover)]:ring-gray-200 [&:focus:not(:hover)]:ring-inset"
-						key={item.id}
-						onClick={() => handleToggle(item.id)}
-						type="button"
-					>
-						<CollectionIcon
-							bookmarkCategoryData={item}
-							iconSize="10"
-							size="16"
-						/>
-						<span className="flex-1 truncate">{item.category_name}</span>
-						<span
-							className={`ml-auto flex size-4 shrink-0 items-center justify-center transition-opacity ${isSelected ? "opacity-100" : "opacity-0"}`}
-						>
-							<TickIcon className="text-gray-800" />
-						</span>
-					</Button>
-				);
-			})}
+			{categories.map((item) => (
+				<Menu.CheckboxItem
+					checked={addedCategoryIds.has(item.id)}
+					className="gap-2"
+					key={item.id}
+					onCheckedChange={(checked) => handleToggle(item.id, checked)}
+				>
+					<CollectionIcon bookmarkCategoryData={item} iconSize="10" size="16" />
+					<span className="flex-1 truncate">{item.category_name}</span>
+					<Menu.CheckboxItemIndicator className="ml-auto flex size-4 shrink-0 items-center justify-center">
+						<TickIcon className="text-gray-800" />
+					</Menu.CheckboxItemIndicator>
+				</Menu.CheckboxItem>
+			))}
 		</ScrollArea>
 	);
 }
