@@ -1,5 +1,4 @@
 import { useRouter } from "next/router";
-import { Popover } from "@base-ui/react/popover";
 import isNull from "lodash/isNull";
 
 import { signOut } from "../../../async/supabaseCrudHelpers";
@@ -7,20 +6,16 @@ import UserAvatar from "../../../components/userAvatar";
 import DownArrowGray from "../../../icons/downArrowGray";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { useSupabaseSession } from "../../../store/componentStore";
-import {
-	dropdownMenuClassName,
-	dropdownMenuItemClassName,
-} from "../../../utils/commonClassNames";
+import { Menu } from "@/components/ui/recollect/menu";
 import { LOGIN_URL } from "../../../utils/constants";
 import { createClient } from "../../../utils/supabaseClient";
 
 import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 
-const menuItems = [{ label: "Sign Out", value: "sign-out" }];
-
 const SidePaneUserDropdown = () => {
 	const setSession = useSupabaseSession((state) => state.setSession);
 	const router = useRouter();
+	const { isDesktop } = useIsMobileView();
 
 	const supabase = createClient();
 
@@ -32,79 +27,43 @@ const SidePaneUserDropdown = () => {
 		void router.push(`/${LOGIN_URL}`);
 	};
 
-	const dropdownContent = (
-		<>
-			{menuItems.map((item) => (
-				<div
-					key={item.value}
-					className={`rounded-lg outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200 ${dropdownMenuItemClassName} hover:bg-gray-200 hover:text-gray-900`}
-					onClick={() => {
-						void handleSignOut();
-					}}
-					onKeyDown={(event) => {
-						if (event.key === "Enter" || event.key === " ") {
-							event.preventDefault();
-							void handleSignOut();
-						}
-					}}
-					role="menuitem"
-					tabIndex={-1}
-				>
-					{item.label}
-				</div>
-			))}
-		</>
-	);
-
 	return (
 		<div className="flex justify-between">
-			<SidePaneUserPopover>{dropdownContent}</SidePaneUserPopover>
-		</div>
-	);
-};
-
-interface SidePaneUserPopoverProps {
-	children: React.ReactNode;
-}
-
-const SidePaneUserPopover = ({ children }: SidePaneUserPopoverProps) => {
-	const { isDesktop } = useIsMobileView();
-
-	return (
-		<Popover.Root>
-			<Popover.Trigger
-				className="text-text-color w-full rounded-lg px-1.5 py-[3px] text-gray-800 outline-hidden hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-1 focus-visible:ring-gray-200 data-popup-open:rounded-lg data-popup-open:bg-gray-100 data-popup-open:text-gray-900"
-				title="User menu"
-			>
-				<div className="flex w-full items-center justify-between">
-					<SidePaneUserTrigger />
-					<span className="mt-px" aria-hidden="true">
-						<DownArrowGray />
-					</span>
-				</div>
-			</Popover.Trigger>
-			<Popover.Portal
-				container={
-					!isDesktop
-						? (document.querySelector("#side-pane-dropdown-portal") as
-								| HTMLElement
-								| undefined)
-						: undefined
-				}
-			>
-				<Popover.Positioner
-					align="start"
-					className="pointer-events-auto"
-					sideOffset={1}
+			<Menu.Root modal={false}>
+				<Menu.Trigger
+					className="text-text-color w-full rounded-lg px-1.5 py-[3px] text-gray-800 outline-hidden hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-1 focus-visible:ring-gray-200 data-popup-open:rounded-lg data-popup-open:bg-gray-100 data-popup-open:text-gray-900"
+					title="User menu"
 				>
-					<Popover.Popup
-						className={`z-20 leading-[20px] outline-hidden focus-visible:outline-hidden ${dropdownMenuClassName}`}
-					>
-						{children}
-					</Popover.Popup>
-				</Popover.Positioner>
-			</Popover.Portal>
-		</Popover.Root>
+					<div className="flex w-full items-center justify-between">
+						<SidePaneUserTrigger />
+						<span className="mt-px" aria-hidden="true">
+							<DownArrowGray />
+						</span>
+					</div>
+				</Menu.Trigger>
+				<Menu.Portal
+					container={
+						!isDesktop
+							? (document.querySelector("#side-pane-dropdown-portal") as
+									| HTMLElement
+									| undefined)
+							: undefined
+					}
+				>
+					<Menu.Positioner align="start" className="pointer-events-auto">
+						<Menu.Popup className="z-20 leading-[20px]">
+							<Menu.Item
+								onClick={() => {
+									void handleSignOut();
+								}}
+							>
+								Sign Out
+							</Menu.Item>
+						</Menu.Popup>
+					</Menu.Positioner>
+				</Menu.Portal>
+			</Menu.Root>
+		</div>
 	);
 };
 

@@ -5,22 +5,28 @@ import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
 
 import { Dialog } from "@/components/ui/recollect/dialog";
 
-type DeleteCollectionModalProps = {
+interface DeleteCollectionModalProps {
 	categoryId: number;
-	children: ReactNode;
+	children?: ReactNode;
 	isCurrent: boolean;
+	onOpenChange?: (open: boolean) => void;
+	open?: boolean;
 	triggerClassName?: string;
-};
+}
 
 export function DeleteCollectionModal({
 	categoryId,
 	children,
 	isCurrent,
+	onOpenChange,
+	open,
 	triggerClassName = "w-full text-left",
 }: DeleteCollectionModalProps) {
 	return (
-		<Dialog.Root>
-			<Dialog.Trigger className={triggerClassName}>{children}</Dialog.Trigger>
+		<Dialog.Root open={open} onOpenChange={onOpenChange}>
+			{children !== undefined && (
+				<Dialog.Trigger className={triggerClassName}>{children}</Dialog.Trigger>
+			)}
 			<Dialog.Portal>
 				<Dialog.Backdrop />
 				<Dialog.Popup className="w-[448px] rounded-xl p-6">
