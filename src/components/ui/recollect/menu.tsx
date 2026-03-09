@@ -23,7 +23,7 @@ function Positioner({
 }: MenuPrimitive.Positioner.Props) {
 	return (
 		<MenuPrimitive.Positioner
-			className={cn("z-10", className)}
+			className={cn("z-[51]", className)}
 			sideOffset={sideOffset}
 			{...props}
 		/>

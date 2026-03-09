@@ -3,7 +3,7 @@ import isNull from "lodash/isNull";
 
 import { signOut } from "../../../async/supabaseCrudHelpers";
 import UserAvatar from "../../../components/userAvatar";
-import { useIsMobileView } from "../../../hooks/useIsMobileView";
+
 import DownArrowGray from "../../../icons/downArrowGray";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { LOGIN_URL } from "../../../utils/constants";
@@ -15,8 +15,6 @@ import { Menu } from "@/components/ui/recollect/menu";
 const SidePaneUserDropdown = () => {
 	const setSession = useSupabaseSession((state) => state.setSession);
 	const router = useRouter();
-	const { isDesktop } = useIsMobileView();
-
 	const supabase = createClient();
 
 	const handleSignOut = async () => {
@@ -29,7 +27,7 @@ const SidePaneUserDropdown = () => {
 
 	return (
 		<div className="flex justify-between">
-			<Menu.Root modal={false}>
+			<Menu.Root>
 				<Menu.Trigger
 					className="text-text-color w-full rounded-lg px-1.5 py-[3px] text-gray-800 outline-hidden hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-1 focus-visible:ring-gray-200 data-popup-open:rounded-lg data-popup-open:bg-gray-100 data-popup-open:text-gray-900"
 					title="User menu"
@@ -41,17 +39,9 @@ const SidePaneUserDropdown = () => {
 						</span>
 					</div>
 				</Menu.Trigger>
-				<Menu.Portal
-					container={
-						!isDesktop
-							? (document.querySelector("#side-pane-dropdown-portal") as
-									| HTMLElement
-									| undefined)
-							: undefined
-					}
-				>
-					<Menu.Positioner align="start" className="pointer-events-auto">
-						<Menu.Popup className="z-20 leading-[20px]">
+				<Menu.Portal>
+					<Menu.Positioner align="start">
+						<Menu.Popup className="leading-[20px]">
 							<Menu.Item
 								onClick={() => {
 									void handleSignOut();

@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode, type RefObject } from "react";
+import { useRef, useState, type RefObject } from "react";
 import { Popover } from "@base-ui/react/popover";
 
 import { DeleteCollectionModal } from "../modals/delete-collection-modal";
@@ -7,7 +7,7 @@ import ShareContent from "../share/shareContent";
 import { type CollectionItemTypes } from "./singleListItemComponent";
 import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
 import { Menu } from "@/components/ui/recollect/menu";
-import { useIsMobileView } from "@/hooks/useIsMobileView";
+
 import OptionsIcon from "@/icons/optionsIcon";
 
 type CollectionOptionsPopoverProps = {
@@ -37,11 +37,7 @@ export function CollectionOptionsPopover({
 
 	return (
 		<>
-			<Menu.Root
-				modal={false}
-				open={view === "menu"}
-				onOpenChange={handleMenuOpenChange}
-			>
+			<Menu.Root open={view === "menu"} onOpenChange={handleMenuOpenChange}>
 				<Menu.Trigger
 					ref={triggerRef}
 					aria-label="Collection options"
@@ -53,9 +49,9 @@ export function CollectionOptionsPopover({
 				>
 					<OptionsIcon />
 				</Menu.Trigger>
-				<SidePaneMenuPortal>
+				<Menu.Portal>
 					<Menu.Positioner align="start">
-						<Menu.Popup className="pointer-events-auto leading-[20px]">
+						<Menu.Popup className="leading-[20px]">
 							<FavoriteMenuItem
 								categoryId={item.id}
 								isFavorite={item.isFavorite}
@@ -78,7 +74,7 @@ export function CollectionOptionsPopover({
 							</Menu.Item>
 						</Menu.Popup>
 					</Menu.Positioner>
-				</SidePaneMenuPortal>
+				</Menu.Portal>
 			</Menu.Root>
 
 			<SharePopover
@@ -136,24 +132,6 @@ function FavoriteMenuItem({ categoryId, isFavorite }: FavoriteMenuItemProps) {
 	);
 }
 
-function SidePaneMenuPortal({ children }: { children: ReactNode }) {
-	const { isDesktop } = useIsMobileView();
-
-	return (
-		<Menu.Portal
-			container={
-				!isDesktop
-					? (document.querySelector<HTMLElement>(
-							"#side-pane-dropdown-portal",
-						) ?? undefined)
-					: undefined
-			}
-		>
-			{children}
-		</Menu.Portal>
-	);
-}
-
 interface SharePopoverProps {
 	anchor: RefObject<HTMLButtonElement | null>;
 	categoryId: number;
@@ -176,38 +154,20 @@ function SharePopover({
 				}
 			}}
 		>
-			<SidePanePopoverPortal>
+			<Popover.Portal>
 				<Popover.Positioner
 					anchor={anchor}
 					align="start"
-					className="z-10"
+					className="z-[51]"
 					sideOffset={1}
 				>
-					<Popover.Popup className="pointer-events-auto rounded-xl bg-gray-50 p-1 leading-[20px] shadow-custom-3 outline-hidden">
+					<Popover.Popup className="rounded-xl bg-gray-50 p-1 leading-[20px] shadow-custom-3 outline-hidden">
 						<div className="w-75 rounded-lg bg-gray-50">
 							<ShareContent categoryId={categoryId} />
 						</div>
 					</Popover.Popup>
 				</Popover.Positioner>
-			</SidePanePopoverPortal>
+			</Popover.Portal>
 		</Popover.Root>
-	);
-}
-
-function SidePanePopoverPortal({ children }: { children: ReactNode }) {
-	const { isDesktop } = useIsMobileView();
-
-	return (
-		<Popover.Portal
-			container={
-				!isDesktop
-					? (document.querySelector<HTMLElement>(
-							"#side-pane-dropdown-portal",
-						) ?? undefined)
-					: undefined
-			}
-		>
-			{children}
-		</Popover.Portal>
 	);
 }

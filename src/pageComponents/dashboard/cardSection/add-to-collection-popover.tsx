@@ -16,7 +16,7 @@ export function AddToCollectionPopover({
 	selectedKeys,
 }: AddToCollectionPopoverProps) {
 	return (
-		<Menu.Root modal={false}>
+		<Menu.Root>
 			<Menu.Trigger className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 leading-4 font-450 text-gray-900">
 				<span className="mr-[6px] text-gray-1000" aria-hidden="true">
 					<MoveIcon />

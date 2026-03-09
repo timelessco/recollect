@@ -38,11 +38,7 @@ export function HeaderOptionsPopover() {
 
 	return (
 		<>
-			<Menu.Root
-				modal={false}
-				open={view === "menu"}
-				onOpenChange={handleMenuOpenChange}
-			>
+			<Menu.Root open={view === "menu"} onOpenChange={handleMenuOpenChange}>
 				<Menu.Trigger
 					ref={triggerRef}
 					aria-label="Page options"

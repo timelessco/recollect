@@ -11,7 +11,7 @@ import { useAddCategoryOptimisticMutation } from "@/async/mutationHooks/category
 import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 import { Collapsible } from "@/components/ui/recollect/collapsible";
 import { Menu } from "@/components/ui/recollect/menu";
-import { useIsMobileView } from "@/hooks/useIsMobileView";
+
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import {
 	MAX_TAG_COLLECTION_NAME_LENGTH,
@@ -87,10 +87,8 @@ export function CollectionsListSection({
 function CollectionsHeaderOptionsPopover({
 	onAddCollectionClick,
 }: CollectionsListSectionHeaderProps) {
-	const { isDesktop } = useIsMobileView();
-
 	return (
-		<Menu.Root modal={false}>
+		<Menu.Root>
 			<Menu.Trigger
 				aria-label="Collection options"
 				className="invisible text-gray-500 outline-hidden group-hover:visible focus-visible:ring-1 focus-visible:ring-gray-200 data-popup-open:visible"
@@ -98,16 +96,8 @@ function CollectionsHeaderOptionsPopover({
 			>
 				<OptionsIcon />
 			</Menu.Trigger>
-			<Menu.Portal
-				container={
-					!isDesktop
-						? (document.querySelector("#side-pane-dropdown-portal") as
-								| HTMLElement
-								| undefined)
-						: undefined
-				}
-			>
-				<Menu.Positioner align="start" className="pointer-events-auto">
+			<Menu.Portal>
+				<Menu.Positioner align="start">
 					<Menu.Popup className="leading-[20px]">
 						<Menu.Item
 							onClick={(event) => {
