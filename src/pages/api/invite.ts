@@ -41,7 +41,15 @@ export default async function handler(
 	if (request?.query?.token) {
 		const tokenData = decode(
 			request?.query?.token as string,
-		) as InviteTokenData;
+		) as InviteTokenData | null;
+
+		if (!tokenData) {
+			response.status(400).json({
+				success: null,
+				error: "Invalid invite token",
+			});
+			return;
+		}
 
 		const insertData = {
 			email: tokenData?.email,
