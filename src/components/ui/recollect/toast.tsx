@@ -31,7 +31,6 @@ function Viewport(props: ToastPrimitive.Viewport.Props) {
 		<ToastPrimitive.Viewport
 			className={cn(
 				"fixed right-4 bottom-4 z-9999 w-[320px] list-none outline-0",
-				"data-[expanded]:pt-[300px]",
 				className,
 			)}
 			{...rest}
@@ -46,18 +45,34 @@ function Root(props: ToastPrimitive.Root.Props) {
 			data-toast-root=""
 			className={cn(
 				[
-					"absolute right-0 bottom-0 w-full rounded-2xl bg-gray-950",
-					"transition-[transform,opacity] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]",
-					"[transform-origin:bottom_center]",
-					"[z-index:calc(1000-var(--toast-index))]",
-					"[transform:scale(calc(1-0.05*var(--toast-index)))_translateX(var(--toast-swipe-movement-x,0px))_translateY(calc(var(--toast-swipe-movement-y,0px)+var(--toast-index)*-8px))]",
-					"data-[expanded]:[transform:scale(1)_translateY(calc((var(--toast-offset-y)+var(--toast-index)*8px)*-1))_translateX(var(--toast-swipe-movement-x,0px))]",
-					"data-[starting-style]:translate-y-[calc(100%+16px)] data-[starting-style]:opacity-0",
-					"data-[ending-style]:opacity-0",
-					"data-[ending-style]:data-[swipe-direction=down]:[transform:translateY(calc(var(--toast-swipe-movement-y,0px)+150%))]",
-					"data-[ending-style]:data-[swipe-direction=right]:[transform:translateX(calc(var(--toast-swipe-movement-x,0px)+150%))_translateY(calc(var(--toast-index)*-8px+var(--toast-swipe-movement-y,0px)))]",
-					"data-[ending-style]:data-[swipe-direction=up]:[transform:translateY(calc(var(--toast-swipe-movement-y,0px)-150%))]",
-					"data-[ending-style]:data-[swipe-direction=left]:[transform:translateX(calc(var(--toast-swipe-movement-x,0px)-150%))_translateY(calc(var(--toast-index)*-8px+var(--toast-swipe-movement-y,0px)))]",
+					"absolute right-0 bottom-0 box-border w-full rounded-2xl bg-gray-950 select-none",
+					"cursor-default",
+					"origin-[bottom_center]",
+					"z-[calc(1000-var(--toast-index))]",
+					// Height: use frontmost height when collapsed, own height when expanded
+					"h-(--toast-frontmost-height,var(--toast-height))",
+					"transition-[transform,opacity,height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+					// Stacking transform: scale down + peek offset
+					"[--scale:max(0,calc(1-var(--toast-index)*0.1))]",
+					"[--shrink:calc(1-var(--scale))]",
+					"[--height:var(--toast-frontmost-height,var(--toast-height))]",
+					"transform-[translateX(var(--toast-swipe-movement-x,0px))_translateY(calc(var(--toast-swipe-movement-y,0px)-var(--toast-index)*0.75rem-var(--shrink)*var(--height)))_scale(var(--scale))]",
+					// Expanded: fan out
+					"data-expanded:h-(--toast-height)",
+					"data-expanded:transform-[translateX(var(--toast-swipe-movement-x,0px))_translateY(calc((var(--toast-offset-y)+var(--toast-index)*0.75rem)*-1+var(--toast-swipe-movement-y,0px)))]",
+					// Enter
+					"data-starting-style:transform-[translateY(150%)]",
+					// Exit (default)
+					"data-ending-style:transform-[translateY(150%)] data-ending-style:opacity-0",
+					// Exit (swipe directions)
+					"data-ending-style:data-[swipe-direction=up]:transform-[translateY(calc(var(--toast-swipe-movement-y,0px)-150%))]",
+					"data-ending-style:data-[swipe-direction=down]:transform-[translateY(calc(var(--toast-swipe-movement-y,0px)+150%))]",
+					"data-ending-style:data-[swipe-direction=left]:transform-[translateX(calc(var(--toast-swipe-movement-x,0px)-150%))_translateY(calc((var(--toast-offset-y)+var(--toast-index)*0.75rem)*-1+var(--toast-swipe-movement-y,0px)))]",
+					"data-ending-style:data-[swipe-direction=right]:transform-[translateX(calc(var(--toast-swipe-movement-x,0px)+150%))_translateY(calc((var(--toast-offset-y)+var(--toast-index)*0.75rem)*-1+var(--toast-swipe-movement-y,0px)))]",
+					// Beyond limit
+					"data-limited:opacity-0",
+					// Gap hitbox for hover expansion
+					"after:absolute after:top-full after:left-0 after:h-[calc(0.75rem+1px)] after:w-full after:content-['']",
 				],
 				className,
 			)}
@@ -72,9 +87,9 @@ function Content(props: ToastPrimitive.Content.Props) {
 	return (
 		<ToastPrimitive.Content
 			className={cn(
-				"[max-height:var(--toast-height)] overflow-hidden px-4 py-3 transition-opacity duration-250",
-				"data-[behind]:opacity-0",
-				"data-[expanded]:opacity-100",
+				"overflow-hidden px-4 py-3 transition-opacity duration-250",
+				"data-behind:opacity-0",
+				"data-expanded:opacity-100",
 				className,
 			)}
 			{...rest}

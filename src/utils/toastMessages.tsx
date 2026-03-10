@@ -1,7 +1,7 @@
-import { toastManager } from "@/components/ui/recollect/toast";
-
 import File from "../icons/toastIcons/file";
 import User from "../icons/toastIcons/user";
+
+import { toastManager } from "@/components/ui/recollect/toast";
 
 const PULSE_DURATION = 200;
 
@@ -10,20 +10,12 @@ let pulseTimeout: ReturnType<typeof setTimeout> | null = null;
 // Track active toast titles to detect duplicates on the frontmost toast
 const activeTitles: Array<{ id: string; title: string }> = [];
 
-toastManager[" subscribe"]((event) => {
-	if (event.action === "add") {
-		const { id, title } = event.options as { id: string; title: string };
-		activeTitles.push({ id, title });
+function removeActiveTitle(id: string) {
+	const index = activeTitles.findIndex((toast) => toast.id === id);
+	if (index !== -1) {
+		activeTitles.splice(index, 1);
 	}
-
-	if (event.action === "close") {
-		const { id } = event.options as { id: string };
-		const index = activeTitles.findIndex((toast) => toast.id === id);
-		if (index !== -1) {
-			activeTitles.splice(index, 1);
-		}
-	}
-});
+}
 
 function getFrontmostTitle(): string | null {
 	if (activeTitles.length === 0) {
@@ -73,7 +65,13 @@ function addOrPulse(
 		return;
 	}
 
-	toastManager.add(options);
+	// Use onClose to clean up tracking — subscribe events only fire for
+	// explicit toastManager.close() calls, not auto-dismiss via timeout.
+	const id: string = toastManager.add({
+		...options,
+		onClose: (): void => removeActiveTitle(id),
+	});
+	activeTitles.push({ id, title });
 }
 
 export function errorToast(error: string, type?: "fileSizeError") {
