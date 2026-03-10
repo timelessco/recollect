@@ -127,7 +127,7 @@ export function HeaderOptionsPopover() {
 										exit={{ opacity: 0 }}
 										transition={fade}
 									>
-										<ClearTrashTabContent />
+										<ClearTrashTabContent onClose={() => setView("closed")} />
 									</motion.div>
 								)}
 								{view === "delete-collection" && (
@@ -235,7 +235,7 @@ function RenameMenuItem() {
 	);
 }
 
-function ClearTrashTabContent() {
+function ClearTrashTabContent({ onClose }: { onClose: () => void }) {
 	const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
 		useClearBookmarksInTrashMutation();
 	const { bookmarksCountData } = useFetchBookmarksCount();
@@ -243,8 +243,9 @@ function ClearTrashTabContent() {
 
 	return (
 		<DestructiveConfirmContent
-			onConfirm={() => {
-				void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
+			onConfirm={async () => {
+				await mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
+				onClose();
 			}}
 			pending={isClearingTrash}
 			label="Clear All Trash"
