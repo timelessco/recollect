@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Popover } from "@base-ui/react/popover";
 import { matchSorter } from "match-sorter";
 
 import { useUpdateCategoryOptimisticMutation } from "../../async/mutationHooks/category/use-update-category-optimistic-mutation";
@@ -9,6 +8,7 @@ import Button from "../atoms/button";
 import { CollectionIcon } from "../collectionIcon";
 import { ColorPicker } from "../colorPicker";
 
+import { Popover } from "@/components/ui/recollect/popover";
 import { type CategoriesData } from "@/types/apiTypes";
 
 const ICONS_PER_PAGE = 99;
@@ -83,7 +83,7 @@ export const CategoryIconsDropdown = (props: CategoryIconsDropdownProps) => {
 			</Popover.Trigger>
 			<Popover.Portal>
 				<Popover.Positioner className="z-103" sideOffset={8}>
-					<Popover.Popup className="h-[368px] w-[310px] rounded-xl bg-gray-50 px-1 shadow-custom-1 ring-1 ring-black/5 outline-hidden">
+					<Popover.Popup className="h-[368px] w-[310px] p-0 px-1 shadow-custom-1 ring-1 ring-black/5">
 						<IconPickerHeader
 							searchValue={searchValue}
 							setSearchValue={setSearchValue}
@@ -125,7 +125,7 @@ function IconPickerHeader({
 	setSearchValue,
 }: IconPickerHeaderProps) {
 	return (
-		<div className="flex items-center justify-between border-b border-b-gray-200 py-1">
+		<div className="flex items-center justify-between py-1">
 			<div className="flex w-full items-center rounded-lg bg-gray-alpha-100 px-[10px] py-[7px]">
 				<figure className="mr-[6px] h-3 w-3 text-gray-600">
 					<SearchIconSmallGray />

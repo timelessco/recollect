@@ -1,5 +1,5 @@
-import { useRef, useState, type RefObject } from "react";
-import { Popover } from "@base-ui/react/popover";
+import { useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import { BookmarksSortDropdown } from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
@@ -17,6 +17,7 @@ import { DISCOVER_URL, TRASH_URL } from "../../../utils/constants";
 import ShareContent from "../share/shareContent";
 
 import { DestructiveConfirmContent } from "@/components/destructive-confirm-content";
+import { AnimatedSize } from "@/components/ui/recollect/animated-size";
 import { Menu } from "@/components/ui/recollect/menu";
 
 type ViewState =
@@ -30,7 +31,11 @@ type ViewState =
 
 export function HeaderOptionsPopover() {
 	const [view, setView] = useState<ViewState>("closed");
-	const triggerRef = useRef<HTMLButtonElement>(null);
+	const shouldReduceMotion = useReducedMotion();
+	const isItemClickRef = useRef(false);
+
+	const popoverOpen = view !== "closed";
+	const fade = shouldReduceMotion ? { duration: 0 } : { duration: 0.15 };
 
 	const handleMenuOpenChange = (nextOpen: boolean) => {
 		if (nextOpen) {
@@ -38,40 +43,122 @@ export function HeaderOptionsPopover() {
 			return;
 		}
 
-		setView((current) => (current === "menu" ? "closed" : current));
-	};
+		if (isItemClickRef.current) {
+			isItemClickRef.current = false;
+			return;
+		}
 
-	const dismiss = () => {
-		setView((current) => (current === "menu" ? current : "closed"));
+		setView("closed");
 	};
 
 	return (
-		<>
-			<Menu.Root open={view === "menu"} onOpenChange={handleMenuOpenChange}>
-				<Menu.Trigger
-					ref={triggerRef}
-					aria-label="Page options"
-					className="rounded-lg bg-transparent p-[7px] text-gray-600 hover:bg-gray-100 hover:text-plain-reverse"
-				>
-					<OptionsIcon />
-				</Menu.Trigger>
-				<Menu.Portal>
-					<Menu.Positioner align="end">
-						<Menu.Popup className="w-[180px] leading-[20px]">
-							<HeaderMenuItems onSelectView={setView} />
-						</Menu.Popup>
-					</Menu.Positioner>
-				</Menu.Portal>
-			</Menu.Root>
-
-			<HeaderSubPanel anchor={triggerRef} onDismiss={dismiss} view={view} />
-		</>
+		<Menu.Root open={popoverOpen} onOpenChange={handleMenuOpenChange}>
+			<Menu.Trigger
+				aria-label="Page options"
+				className="rounded-lg bg-transparent p-[7px] text-gray-600 hover:bg-gray-100 hover:text-plain-reverse"
+			>
+				<OptionsIcon />
+			</Menu.Trigger>
+			<Menu.Portal>
+				<Menu.Positioner align="end">
+					<Menu.Popup className="w-auto overflow-clip p-0 leading-[20px]">
+						<AnimatedSize>
+							<AnimatePresence mode="popLayout" initial={false}>
+								{view === "menu" && (
+									<motion.div
+										key="menu"
+										className="w-[180px] p-1"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={fade}
+									>
+										<HeaderMenuItems
+											isItemClickRef={isItemClickRef}
+											onSelectView={setView}
+										/>
+									</motion.div>
+								)}
+								{view === "view" && (
+									<motion.div
+										key="view"
+										className="w-[180px] p-1"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={fade}
+									>
+										<BookmarksViewDropdown isDropdown={false} />
+									</motion.div>
+								)}
+								{view === "sort" && (
+									<motion.div
+										key="sort"
+										className="w-[180px] p-1"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={fade}
+									>
+										<BookmarksSortDropdown isDropdown={false} />
+									</motion.div>
+								)}
+								{view === "share" && (
+									<motion.div
+										key="share"
+										className="p-1"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={fade}
+									>
+										<div className="w-[300px]">
+											<ShareContent />
+										</div>
+									</motion.div>
+								)}
+								{view === "trash" && (
+									<motion.div
+										key="trash"
+										className="w-[180px] p-1"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={fade}
+									>
+										<ClearTrashTabContent />
+									</motion.div>
+								)}
+								{view === "delete-collection" && (
+									<motion.div
+										key="delete-collection"
+										className="w-[180px] p-1"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={fade}
+									>
+										<DeleteCollectionTabContent />
+									</motion.div>
+								)}
+							</AnimatePresence>
+						</AnimatedSize>
+					</Menu.Popup>
+				</Menu.Positioner>
+			</Menu.Portal>
+		</Menu.Root>
 	);
 }
 
-type SelectViewFn = (view: ViewState) => void;
+interface HeaderMenuItemsProps {
+	isItemClickRef: React.RefObject<boolean>;
+	onSelectView: (view: ViewState) => void;
+}
 
-function HeaderMenuItems({ onSelectView }: { onSelectView: SelectViewFn }) {
+function HeaderMenuItems({
+	isItemClickRef,
+	onSelectView,
+}: HeaderMenuItemsProps) {
 	const currentPath = useGetCurrentUrlPath();
 	const { category_id: categoryId } = useGetCurrentCategoryId();
 
@@ -79,18 +166,23 @@ function HeaderMenuItems({ onSelectView }: { onSelectView: SelectViewFn }) {
 	const showSort = currentPath !== DISCOVER_URL && currentPath !== TRASH_URL;
 	const showTrash = currentPath === TRASH_URL;
 
+	const selectView = (nextView: ViewState) => {
+		isItemClickRef.current = true;
+		onSelectView(nextView);
+	};
+
 	return (
 		<>
 			<Menu.Item
 				className="rounded-lg p-0 data-highlighted:bg-gray-200"
-				onClick={() => onSelectView("view")}
+				onClick={() => selectView("view")}
 			>
 				<BookmarksViewDropdown renderOnlyButton />
 			</Menu.Item>
 			{showSort && (
 				<Menu.Item
 					className="rounded-lg p-0 data-highlighted:bg-gray-200"
-					onClick={() => onSelectView("sort")}
+					onClick={() => selectView("sort")}
 				>
 					<BookmarksSortDropdown renderOnlyButton />
 				</Menu.Item>
@@ -98,7 +190,7 @@ function HeaderMenuItems({ onSelectView }: { onSelectView: SelectViewFn }) {
 			{showTrash && (
 				<Menu.Item
 					className="text-red-600 data-highlighted:text-red-600"
-					onClick={() => onSelectView("trash")}
+					onClick={() => selectView("trash")}
 				>
 					<TrashIconRed />
 					<span className="ml-[6px]">Clear Trash</span>
@@ -106,14 +198,14 @@ function HeaderMenuItems({ onSelectView }: { onSelectView: SelectViewFn }) {
 			)}
 			{isCategory && (
 				<>
-					<Menu.Item onClick={() => onSelectView("share")}>
+					<Menu.Item onClick={() => selectView("share")}>
 						<ShareIcon />
 						<span className="ml-[6px]">Share</span>
 					</Menu.Item>
 					<RenameMenuItem />
 					<Menu.Item
 						className="text-red-600 data-highlighted:text-red-600"
-						onClick={() => onSelectView("delete-collection")}
+						onClick={() => selectView("delete-collection")}
 					>
 						<TrashIconRed />
 						<span className="ml-[6px]">Delete collection</span>
@@ -140,79 +232,6 @@ function RenameMenuItem() {
 			<span className="ml-[6px]">Rename</span>
 		</Menu.Item>
 	);
-}
-
-interface HeaderSubPanelProps {
-	anchor: RefObject<HTMLButtonElement | null>;
-	onDismiss: () => void;
-	view: ViewState;
-}
-
-function HeaderSubPanel({ anchor, onDismiss, view }: HeaderSubPanelProps) {
-	const isSubPanel =
-		view === "share" ||
-		view === "sort" ||
-		view === "trash" ||
-		view === "view" ||
-		view === "delete-collection";
-
-	return (
-		<Popover.Root
-			open={isSubPanel}
-			onOpenChange={(nextOpen) => {
-				if (!nextOpen) {
-					onDismiss();
-				}
-			}}
-		>
-			<Popover.Portal>
-				<Popover.Positioner
-					anchor={anchor}
-					align="end"
-					className="z-10"
-					sideOffset={1}
-				>
-					<Popover.Popup
-						className={`rounded-xl bg-gray-50 p-1 leading-[20px] shadow-custom-3 outline-hidden ${view === "share" ? "w-auto" : "w-[180px]"}`}
-					>
-						<HeaderSubPanelContent view={view} />
-					</Popover.Popup>
-				</Popover.Positioner>
-			</Popover.Portal>
-		</Popover.Root>
-	);
-}
-
-type HeaderSubPanelContentProps = {
-	view: ViewState;
-};
-
-function HeaderSubPanelContent({ view }: HeaderSubPanelContentProps) {
-	if (view === "trash") {
-		return <ClearTrashTabContent />;
-	}
-
-	if (view === "view") {
-		return <BookmarksViewDropdown isDropdown={false} />;
-	}
-
-	if (view === "sort") {
-		return <BookmarksSortDropdown isDropdown={false} />;
-	}
-
-	if (view === "share") {
-		return (
-			<div className="w-[300px]">
-				<ShareContent />
-			</div>
-		);
-	}
-
-	if (view === "delete-collection") {
-		return <DeleteCollectionTabContent />;
-	}
-
-	return null;
 }
 
 function ClearTrashTabContent() {
