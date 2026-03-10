@@ -39,11 +39,9 @@ export default async function handler(
 	const supabase = createServiceClient();
 
 	if (request?.query?.token) {
-		const tokenData = decode(
-			request?.query?.token as string,
-		) as InviteTokenData | null;
+		const decoded = decode(request?.query?.token as string);
 
-		if (!tokenData) {
+		if (!decoded || typeof decoded === "string") {
 			response.status(400).json({
 				success: null,
 				error: "Invalid invite token",
@@ -51,9 +49,11 @@ export default async function handler(
 			return;
 		}
 
+		const tokenData = decoded as InviteTokenData;
+
 		const insertData = {
-			email: tokenData?.email,
-			category_id: tokenData?.category_id,
+			email: tokenData.email,
+			category_id: tokenData.category_id,
 			// edit_access: tokenData?.edit_access,
 			// userId: tokenData?.userId,
 		};
