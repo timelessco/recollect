@@ -83,7 +83,7 @@ export const CategoryIconsDropdown = (props: CategoryIconsDropdownProps) => {
 			</Popover.Trigger>
 			<Popover.Portal>
 				<Popover.Positioner className="z-103" sideOffset={8}>
-					<Popover.Popup className="h-[368px] w-[310px] px-1 shadow-custom-1 ring-1 ring-black/5">
+					<Popover.Popup className="h-[368px] w-[310px] p-0 px-1 shadow-custom-1 ring-1 ring-black/5">
 						<IconPickerHeader
 							searchValue={searchValue}
 							setSearchValue={setSearchValue}
