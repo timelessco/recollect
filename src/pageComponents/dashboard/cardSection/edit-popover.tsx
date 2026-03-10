@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo, useState } from "react";
+import { useMemo, type ReactNode } from "react";
 
 import { useAddTagToBookmarkOptimisticMutation } from "@/async/mutationHooks/tags/use-add-tag-to-bookmark-optimistic-mutation";
 import { useCreateAndAssignTagOptimisticMutation } from "@/async/mutationHooks/tags/use-create-and-assign-tag-optimistic-mutation";
@@ -88,33 +88,16 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 };
 
 function EditPopoverShell({ children }: { children: ReactNode }) {
-	const [open, setOpen] = useState(false);
-	const [exitingPopover, setExitingPopover] = useState(false);
 	const isPublicPage = useIsPublicPage();
 
-	const showTrigger = open || exitingPopover;
-
-	const handleOpenChange = (nextOpen: boolean) => {
-		if (nextOpen) {
-			setExitingPopover(false);
-		} else {
-			setExitingPopover(true);
-		}
-
-		setOpen(nextOpen);
-	};
-
 	return (
-		<Popover.Root
-			open={open}
-			onOpenChange={handleOpenChange}
-			onOpenChangeComplete={() => setExitingPopover(false)}
-		>
+		<Popover.Root>
 			<Popover.Trigger
 				className={cn(
-					"z-15 rounded-lg bg-whites-700 p-[5px] text-gray-1000 backdrop-blur-xs outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-					!isPublicPage && (showTrigger ? "flex" : "hidden group-hover:flex"),
-					isPublicPage && "hidden",
+					"z-15 flex rounded-lg bg-whites-700 p-[5px] text-gray-1000 backdrop-blur-xs outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+					!isPublicPage &&
+						"invisible group-hover:visible data-popup-open:visible",
+					isPublicPage && "invisible",
 				)}
 			>
 				<EditIcon />
