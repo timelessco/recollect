@@ -1,5 +1,4 @@
-import { useMemo, useState } from "react";
-import { Popover } from "@base-ui/react/popover";
+import { useMemo, type ReactNode } from "react";
 
 import { useAddTagToBookmarkOptimisticMutation } from "@/async/mutationHooks/tags/use-add-tag-to-bookmark-optimistic-mutation";
 import { useCreateAndAssignTagOptimisticMutation } from "@/async/mutationHooks/tags/use-create-and-assign-tag-optimistic-mutation";
@@ -7,6 +6,7 @@ import { useRemoveTagFromBookmarkOptimisticMutation } from "@/async/mutationHook
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { CollectionIcon } from "@/components/collectionIcon";
 import { Combobox } from "@/components/ui/recollect/combobox";
+import { Popover } from "@/components/ui/recollect/popover";
 import { ScrollArea } from "@/components/ui/recollect/scroll-area";
 import { useBookmarkTags } from "@/hooks/use-bookmark-tags";
 import { useCategoryMultiSelect } from "@/hooks/use-category-multi-select";
@@ -31,9 +31,6 @@ type EditPopoverProps = {
 };
 
 export const EditPopover = ({ post, userId }: EditPopoverProps) => {
-	const [open, setOpen] = useState(false);
-	const isPublicPage = useIsPublicPage();
-
 	const postUserId =
 		typeof post?.user_id === "object" ? post?.user_id?.id : post?.user_id;
 	const isOwner = userId && postUserId === userId;
@@ -44,14 +41,63 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 	}
 
 	return (
-		<Popover.Root open={open} onOpenChange={setOpen}>
-			{/* When popover is open, always show trigger (flex) */}
-			{/* When closed, show only on hover (hidden group-hover:flex) */}
+		<EditPopoverShell>
+			<div className="mb-2 w-[231px]">
+				<div className="w-full">
+					<div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
+						Collections
+					</div>
+
+					<div className="w-full">
+						<CategoryMultiSelect bookmarkId={post.id} />
+					</div>
+				</div>
+				<div className="w-full">
+					<div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
+						Tags
+					</div>
+
+					<div className="w-full">
+						<TagMultiSelect bookmarkId={post.id} />
+					</div>
+				</div>
+			</div>
+			<div className="w-full">
+				<DiscoverSwitch
+					bookmarkId={post.id}
+					isDiscoverable={post.make_discoverable !== null}
+				/>
+			</div>
+			{(() => {
+				const domain = getDomain(post.url);
+				// Don't render switch for domains that are already skipped for OG images
+				return domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain) ? (
+					<>
+						<div className="px-2.5 py-1">
+							<div className="h-px bg-gray-200" />
+						</div>
+
+						<div className="w-full">
+							<OgPreferenceSwitch bookmarkUrl={post.url} userId={userId} />
+						</div>
+					</>
+				) : null;
+			})()}
+		</EditPopoverShell>
+	);
+};
+
+function EditPopoverShell({ children }: { children: ReactNode }) {
+	const isPublicPage = useIsPublicPage();
+
+	return (
+		<Popover.Root>
 			<Popover.Trigger
 				className={cn(
-					"z-15 rounded-lg bg-whites-700 p-[5px] text-gray-1000 backdrop-blur-xs outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-					!isPublicPage && (open ? "flex" : "hidden group-hover:flex"),
-					isPublicPage && "hidden",
+					"z-15 flex rounded-lg bg-whites-700 p-[5px] text-gray-1000 backdrop-blur-xs outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+					!isPublicPage &&
+						"invisible group-hover:visible data-popup-open:visible",
+					isPublicPage && "invisible",
 				)}
 			>
 				<EditIcon />
@@ -59,57 +105,12 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 
 			<Popover.Portal>
 				<Popover.Positioner sideOffset={4} align="start">
-					<Popover.Popup className="z-10 rounded-xl bg-gray-50 p-1.5 shadow-custom-3">
-						<div className="mb-2 w-[231px]">
-							<div className="w-full">
-								<div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
-									Collections
-								</div>
-
-								<div className="w-full">
-									<CategoryMultiSelect bookmarkId={post.id} />
-								</div>
-							</div>
-							<div className="w-full">
-								<div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
-									Tags
-								</div>
-
-								<div className="w-full">
-									<TagMultiSelect bookmarkId={post.id} />
-								</div>
-							</div>
-						</div>
-						<div className="w-full">
-							<DiscoverSwitch
-								bookmarkId={post.id}
-								isDiscoverable={post.make_discoverable !== null}
-							/>
-						</div>
-						{(() => {
-							const domain = getDomain(post.url);
-							// Don't render switch for domains that are already skipped for OG images
-							return domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain) ? (
-								<>
-									<div className="px-2.5 py-1">
-										<div className="h-px bg-gray-200" />
-									</div>
-
-									<div className="w-full">
-										<OgPreferenceSwitch
-											bookmarkUrl={post.url}
-											userId={userId}
-										/>
-									</div>
-								</>
-							) : null;
-						})()}
-					</Popover.Popup>
+					<Popover.Popup className="p-1.5">{children}</Popover.Popup>
 				</Popover.Positioner>
 			</Popover.Portal>
 		</Popover.Root>
 	);
-};
+}
 
 type TagMultiSelectProps = {
 	bookmarkId: number;

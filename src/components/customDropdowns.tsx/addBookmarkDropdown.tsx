@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Popover } from "@base-ui/react/popover";
+import { Popover } from "@/components/ui/recollect/popover";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 import { useForm, type SubmitHandler } from "react-hook-form";
@@ -12,10 +12,7 @@ import { useFileUploadDrop } from "@/hooks/useFileUploadDrop";
 import { AddBookmarkInputIcon } from "@/icons/miscellaneousIcons/add-bookmark-input-icon";
 import PlusIconWhite from "@/icons/plusIconWhite";
 import { type FileType } from "@/types/componentTypes";
-import {
-	dropdownMenuClassName,
-	grayInputClassName,
-} from "@/utils/commonClassNames";
+import { grayInputClassName } from "@/utils/commonClassNames";
 import { URL_PATTERN } from "@/utils/constants";
 
 const AddBookmarkDropdown = () => {
@@ -44,8 +41,8 @@ const AddBookmarkDropdown = () => {
 				</figure>
 			</Popover.Trigger>
 			<Popover.Portal>
-				<Popover.Positioner align="end" className="z-10" sideOffset={1}>
-					<Popover.Popup className="leading-5 outline-hidden">
+				<Popover.Positioner align="end">
+					<Popover.Popup className="w-auto p-0 leading-5">
 						<AddBookmarkPopupContent onClose={() => setOpen(false)} />
 					</Popover.Popup>
 				</Popover.Positioner>
@@ -93,7 +90,7 @@ const AddBookmarkPopupContent = ({ onClose }: AddBookmarkPopupContentProps) => {
 	});
 
 	return (
-		<div className={`relative w-[326px] ${dropdownMenuClassName}`}>
+		<div className="relative w-[326px] p-1">
 			<input
 				className="hidden"
 				onChange={(event) =>
