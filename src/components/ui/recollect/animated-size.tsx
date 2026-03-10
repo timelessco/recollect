@@ -1,0 +1,59 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
+
+interface AnimatedSizeProps {
+	children: React.ReactNode;
+}
+
+/**
+ * Wraps children in a container that smoothly animates width/height changes
+ * using ResizeObserver + Framer Motion spring animation.
+ * Respects prefers-reduced-motion.
+ */
+export function AnimatedSize({ children }: AnimatedSizeProps) {
+	const shouldReduceMotion = useReducedMotion();
+	const ref = useRef<HTMLDivElement>(null);
+	const [size, setSize] = useState<{
+		height: number;
+		width: number;
+	} | null>(null);
+
+	useEffect(() => {
+		const el = ref.current;
+		if (!el) {
+			return () => {};
+		}
+
+		const observer = new ResizeObserver(([entry]) => {
+			if (!entry) {
+				return;
+			}
+
+			const { height, width } = entry.contentRect;
+			// Skip zero sizes (popup closing) — let parent CSS animation handle exit
+			if (height > 0 && width > 0) {
+				setSize({ height, width });
+			}
+		});
+		observer.observe(el);
+		return () => observer.disconnect();
+	}, []);
+
+	return (
+		<motion.div
+			animate={size ?? undefined}
+			transition={
+				shouldReduceMotion
+					? { duration: 0 }
+					: { type: "spring", bounce: 0.15, duration: 0.3 }
+			}
+			style={{ overflow: "clip" }}
+		>
+			<div ref={ref} className="w-fit">
+				{children}
+			</div>
+		</motion.div>
+	);
+}
