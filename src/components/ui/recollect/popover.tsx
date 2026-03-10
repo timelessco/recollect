@@ -23,7 +23,7 @@ function Positioner({
 }: PopoverPrimitive.Positioner.Props) {
 	return (
 		<PopoverPrimitive.Positioner
-			className={cn("z-[51]", className)}
+			className={cn("z-51", className)}
 			sideOffset={sideOffset}
 			{...props}
 		/>
