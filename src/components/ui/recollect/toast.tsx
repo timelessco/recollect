@@ -56,10 +56,10 @@ function Root(props: ToastPrimitive.Root.Props) {
 					"[--scale:max(0,calc(1-var(--toast-index)*0.1))]",
 					"[--shrink:calc(1-var(--scale))]",
 					"[--height:var(--toast-frontmost-height,var(--toast-height))]",
-					"transform-[translateX(var(--toast-swipe-movement-x,0px))_translateY(calc(var(--toast-swipe-movement-y,0px)-var(--toast-index)*0.75rem-var(--shrink)*var(--height)))_scale(var(--scale))]",
+					"transform-[translateX(var(--toast-swipe-movement-x,0px))_translateY(calc(var(--toast-swipe-movement-y,0px)-var(--toast-index)*0.75rem-var(--shrink)*var(--height)))_scale(var(--scale))_scale(var(--toast-pulse-scale,1))]",
 					// Expanded: fan out
 					"data-expanded:h-(--toast-height)",
-					"data-expanded:transform-[translateX(var(--toast-swipe-movement-x,0px))_translateY(calc((var(--toast-offset-y)+var(--toast-index)*0.75rem)*-1+var(--toast-swipe-movement-y,0px)))]",
+					"data-expanded:transform-[translateX(var(--toast-swipe-movement-x,0px))_translateY(calc((var(--toast-offset-y)+var(--toast-index)*0.75rem)*-1+var(--toast-swipe-movement-y,0px)))_scale(var(--toast-pulse-scale,1))]",
 					// Enter
 					"data-starting-style:transform-[translateY(150%)]",
 					// Exit (default)

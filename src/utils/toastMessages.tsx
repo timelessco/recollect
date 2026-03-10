@@ -44,13 +44,13 @@ function pulseExistingToast() {
 
 	if (pulseTimeout) {
 		clearTimeout(pulseTimeout);
-		frontToast.style.transform = "";
+		frontToast.style.removeProperty("--toast-pulse-scale");
 	}
 
 	requestAnimationFrame(() => {
-		frontToast.style.transform = "scale(1.05)";
+		frontToast.style.setProperty("--toast-pulse-scale", "1.05");
 		pulseTimeout = setTimeout(() => {
-			frontToast.style.transform = "";
+			frontToast.style.removeProperty("--toast-pulse-scale");
 			pulseTimeout = null;
 		}, PULSE_DURATION);
 	});
