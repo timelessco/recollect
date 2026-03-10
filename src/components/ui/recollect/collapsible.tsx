@@ -19,7 +19,10 @@ function Trigger(props: CollapsiblePrimitive.Trigger.Props) {
 
 	return (
 		<CollapsiblePrimitive.Trigger
-			className={cn("aria-disclosure-button w-full cursor-pointer", className)}
+			className={cn(
+				"aria-disclosure-button w-full cursor-pointer outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200",
+				className,
+			)}
 			type="button"
 			{...rest}
 		/>

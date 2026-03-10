@@ -104,7 +104,12 @@ const Option = ({
 					? mergeProps(
 							isPublicPage
 								? []
-								: omit(dragProps, ["onKeyDownCapture", "onKeyUpCapture"]),
+								: omit(dragProps, [
+										"onKeyDown",
+										"onKeyDownCapture",
+										"onKeyUp",
+										"onKeyUpCapture",
+									]),
 							isPublicPage ? [] : focusProps,
 						)
 					: {},

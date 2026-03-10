@@ -1,19 +1,17 @@
 import { useState, type ReactNode } from "react";
 import router from "next/router";
-import { Button } from "@base-ui/react/button";
-import { Popover } from "@base-ui/react/popover";
 import { isNull } from "lodash";
 
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
 import OptionsIcon from "../../../icons/optionsIcon";
-import { dropdownMenuClassName } from "../../../utils/commonClassNames";
 
 import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
 import { useAddCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-optimistic-mutation";
 import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 import { Collapsible } from "@/components/ui/recollect/collapsible";
-import { useIsMobileView } from "@/hooks/useIsMobileView";
+import { Menu } from "@/components/ui/recollect/menu";
+
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import {
 	MAX_TAG_COLLECTION_NAME_LENGTH,
@@ -62,7 +60,7 @@ export function CollectionsListSection({
 					show={showAddCategoryInput}
 				/>
 				<div
-					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] hover:bg-gray-100"
+					className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] outline-hidden hover:bg-gray-100 focus-visible:ring-1 focus-visible:ring-gray-200 focus-visible:ring-inset"
 					id="add-category-button"
 					onClick={() => setShowAddCategoryInput(true)}
 					onKeyDown={(event) => {
@@ -89,54 +87,30 @@ export function CollectionsListSection({
 function CollectionsHeaderOptionsPopover({
 	onAddCollectionClick,
 }: CollectionsListSectionHeaderProps) {
-	const { isDesktop } = useIsMobileView();
-	const [isOpen, setIsOpen] = useState(false);
-
 	return (
-		<Popover.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Popover.Trigger
+		<Menu.Root>
+			<Menu.Trigger
 				aria-label="Collection options"
-				className={
-					isOpen
-						? "visible text-gray-500"
-						: "invisible text-gray-500 group-hover:visible"
-				}
+				className="invisible text-gray-500 outline-hidden group-hover:visible focus-visible:ring-1 focus-visible:ring-gray-200 data-popup-open:visible"
 				onClick={(event) => event.stopPropagation()}
 			>
 				<OptionsIcon />
-			</Popover.Trigger>
-			<Popover.Portal
-				container={
-					!isDesktop
-						? (document.querySelector("#side-pane-dropdown-portal") as
-								| HTMLElement
-								| undefined)
-						: undefined
-				}
-			>
-				<Popover.Positioner
-					align="start"
-					className="pointer-events-auto z-10"
-					sideOffset={1}
-				>
-					<Popover.Popup
-						className={`${dropdownMenuClassName} leading-[20px] outline-hidden`}
-					>
-						<Button
-							className="w-full cursor-pointer rounded-lg px-2 py-[5px] text-left text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800 hover:bg-gray-200"
+			</Menu.Trigger>
+			<Menu.Portal>
+				<Menu.Positioner align="start">
+					<Menu.Popup className="leading-[20px]">
+						<Menu.Item
 							onClick={(event) => {
 								event.stopPropagation();
-								setIsOpen(false);
 								onAddCollectionClick();
 							}}
-							type="button"
 						>
 							Add Collection
-						</Button>
-					</Popover.Popup>
-				</Popover.Positioner>
-			</Popover.Portal>
-		</Popover.Root>
+						</Menu.Item>
+					</Menu.Popup>
+				</Menu.Positioner>
+			</Menu.Portal>
+		</Menu.Root>
 	);
 }
 
@@ -196,7 +170,7 @@ function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
 				</figure>
 				<input
 					autoFocus
-					className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! placeholder:text-plain-reverse focus:ring-0! focus:ring-offset-0! focus:outline-hidden!"
+					className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! outline-hidden! placeholder:text-plain-reverse focus-visible:ring-1! focus-visible:ring-gray-200!"
 					id="add-category-input"
 					aria-label="New collection name"
 					onBlur={async (event) => {

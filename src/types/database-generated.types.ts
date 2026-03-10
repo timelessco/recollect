@@ -265,6 +265,8 @@ export type Database = {
 					display_name: string | null;
 					email: string | null;
 					id: string;
+					last_synced_instagram_id: string | null;
+					last_synced_twitter_id: string | null;
 					preferred_og_domains: string[] | null;
 					profile_pic: string | null;
 					provider: string | null;
@@ -279,6 +281,8 @@ export type Database = {
 					display_name?: string | null;
 					email?: string | null;
 					id: string;
+					last_synced_instagram_id?: string | null;
+					last_synced_twitter_id?: string | null;
 					preferred_og_domains?: string[] | null;
 					profile_pic?: string | null;
 					provider?: string | null;
@@ -293,6 +297,8 @@ export type Database = {
 					display_name?: string | null;
 					email?: string | null;
 					id?: string;
+					last_synced_instagram_id?: string | null;
+					last_synced_twitter_id?: string | null;
 					preferred_og_domains?: string[] | null;
 					profile_pic?: string | null;
 					provider?: string | null;

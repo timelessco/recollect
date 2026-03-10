@@ -201,9 +201,11 @@ type SecretHandlerConfig<TInput, TOutput> = PublicHandlerConfig<
 	secretEnvVar: string;
 };
 
-export const createGetApiHandlerWithSecret = <TInput, TOutput>(
+function createSecretHandlerInternal<TInput, TOutput>(
 	config: SecretHandlerConfig<TInput, TOutput>,
-): HandlerFn => {
+	factoryName: string,
+	method: "body" | "query",
+): HandlerFn {
 	const { route, inputSchema, outputSchema, handler, secretEnvVar } = config;
 
 	const fn = async (request: NextRequest) => {
@@ -225,12 +227,12 @@ export const createGetApiHandlerWithSecret = <TInput, TOutput>(
 				);
 			}
 
-			const query = parseQuery({ request, schema: inputSchema, route });
-			if (query.errorResponse) {
-				return query.errorResponse;
+			const parsed = await parseInput(request, inputSchema, route, method);
+			if (parsed.errorResponse) {
+				return parsed.errorResponse;
 			}
 
-			const result = await handler({ input: query.data, route });
+			const result = await handler({ input: parsed.data, route });
 
 			if (result instanceof NextResponse) {
 				return result;
@@ -247,12 +249,17 @@ export const createGetApiHandlerWithSecret = <TInput, TOutput>(
 		}
 	};
 
-	fn.config = {
-		factoryName: "createGetApiHandlerWithSecret",
-		inputSchema,
-		outputSchema,
-		route,
-	};
+	fn.config = { factoryName, inputSchema, outputSchema, route };
 
 	return fn;
-};
+}
+
+export const createGetApiHandlerWithSecret = <TInput, TOutput>(
+	config: SecretHandlerConfig<TInput, TOutput>,
+): HandlerFn =>
+	createSecretHandlerInternal(config, "createGetApiHandlerWithSecret", "query");
+
+export const createPostApiHandlerWithSecret = <TInput, TOutput>(
+	config: SecretHandlerConfig<TInput, TOutput>,
+): HandlerFn =>
+	createSecretHandlerInternal(config, "createPostApiHandlerWithSecret", "body");

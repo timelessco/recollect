@@ -1,15 +1,10 @@
 import { type Key } from "react";
-import { Popover } from "@base-ui/react/popover";
 import isEmpty from "lodash/isEmpty";
 
 import { useAddCategoryToBookmarksOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmarks-optimistic-mutation";
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
-import { Button } from "@/components/ui/recollect/button";
+import { Menu } from "@/components/ui/recollect/menu";
 import MoveIcon from "@/icons/moveIcon";
-import {
-	dropdownMenuClassName,
-	dropdownMenuItemClassName,
-} from "@/utils/commonClassNames";
 
 interface AddToCollectionPopoverProps {
 	onSuccess: () => void;
@@ -21,38 +16,36 @@ export function AddToCollectionPopover({
 	selectedKeys,
 }: AddToCollectionPopoverProps) {
 	return (
-		<Popover.Root>
-			<Popover.Trigger className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 leading-4 font-450 text-gray-900">
+		<Menu.Root>
+			<Menu.Trigger className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 leading-4 font-450 text-gray-900">
 				<span className="mr-[6px] text-gray-1000" aria-hidden="true">
 					<MoveIcon />
 				</span>
 				<p>Add to</p>
-			</Popover.Trigger>
-			<Popover.Portal>
-				<Popover.Positioner align="end" className="z-10" sideOffset={1}>
-					<Popover.Popup
-						className={`${dropdownMenuClassName} leading-[20px] outline-hidden`}
-					>
-						<AddToCollectionMenu
+			</Menu.Trigger>
+			<Menu.Portal>
+				<Menu.Positioner align="end">
+					<Menu.Popup className="leading-[20px]">
+						<AddToCollectionMenuItems
 							onSuccess={onSuccess}
 							selectedKeys={selectedKeys}
 						/>
-					</Popover.Popup>
-				</Popover.Positioner>
-			</Popover.Portal>
-		</Popover.Root>
+					</Menu.Popup>
+				</Menu.Positioner>
+			</Menu.Portal>
+		</Menu.Root>
 	);
 }
 
-interface AddToCollectionMenuProps {
+interface AddToCollectionMenuItemsProps {
 	onSuccess: () => void;
 	selectedKeys: Set<Key>;
 }
 
-function AddToCollectionMenu({
+function AddToCollectionMenuItems({
 	onSuccess,
 	selectedKeys,
-}: AddToCollectionMenuProps) {
+}: AddToCollectionMenuItemsProps) {
 	const { allCategories } = useFetchCategories();
 	const { addCategoryToBookmarksOptimisticMutation } =
 		useAddCategoryToBookmarksOptimisticMutation();
@@ -69,8 +62,8 @@ function AddToCollectionMenu({
 	return (
 		<>
 			{categories.map((item) => (
-				<Button
-					className={`w-full truncate text-left ${dropdownMenuItemClassName}`}
+				<Menu.Item
+					className="w-full truncate text-left"
 					key={item.value}
 					onClick={() => {
 						const selectedIds = Array.from(selectedKeys).map(Number);
@@ -82,10 +75,9 @@ function AddToCollectionMenu({
 							{ onSuccess },
 						);
 					}}
-					type="button"
 				>
 					{item.label}
-				</Button>
+				</Menu.Item>
 			))}
 		</>
 	);

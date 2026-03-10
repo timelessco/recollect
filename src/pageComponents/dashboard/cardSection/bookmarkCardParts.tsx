@@ -4,7 +4,7 @@ import { isNil } from "lodash";
 
 import { CategoryBadges } from "@/components/categoryBadges";
 import { GetBookmarkIcon } from "@/components/get-bookmark-icon";
-import DefaultUserIcon from "@/icons/user/defaultUserIcon";
+import { DefaultUserIcon } from "@/icons/user/defaultUserIcon";
 import { type SingleListData } from "@/types/apiTypes";
 import { EVERYTHING_URL, IMAGE_TYPE_PREFIX } from "@/utils/constants";
 

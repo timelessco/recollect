@@ -5,6 +5,7 @@ import { cn } from "@/utils/tailwind-merge";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
+import omit from "lodash/omit";
 import {
 	DragPreview,
 	useDraggableCollection,
@@ -279,7 +280,16 @@ const ListBox = (props: ListBoxDropTypes) => {
 
 	return (
 		<>
-			<ul {...listBoxProps} className={ulClassName} ref={ariaRef}>
+			<ul
+				{...omit(listBoxProps, [
+					"onKeyDown",
+					"onKeyDownCapture",
+					"onKeyUp",
+					"onKeyUpCapture",
+				])}
+				className={ulClassName}
+				ref={ariaRef}
+			>
 				{cardTypeCondition === viewValues.moodboard ? (
 					<MoodboardViewVirtualized
 						rowVirtualizer={rowVirtualizer}

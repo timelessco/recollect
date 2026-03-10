@@ -26,7 +26,9 @@ type SettingsModalProps = {
 
 export const SettingsModal = ({ children }: SettingsModalProps) => (
 	<Dialog.Root>
-		<Dialog.Trigger>{children}</Dialog.Trigger>
+		<Dialog.Trigger className="w-full rounded-lg outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200">
+			{children}
+		</Dialog.Trigger>
 		<Dialog.Portal>
 			<Dialog.Backdrop />
 			<Dialog.Popup
