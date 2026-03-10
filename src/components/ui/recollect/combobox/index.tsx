@@ -310,7 +310,7 @@ function Positioner({
 
 	return (
 		<ComboboxPrimitive.Positioner
-			className={cn("z-50 select-none", className)}
+			className={cn("z-52 select-none", className)}
 			sideOffset={sideOffset}
 			anchor={anchor ?? containerRef}
 			data-slot="combobox-positioner"
