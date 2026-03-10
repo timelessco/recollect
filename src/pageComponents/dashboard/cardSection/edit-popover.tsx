@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { Popover } from "@/components/ui/recollect/popover";
 
 import { useAddTagToBookmarkOptimisticMutation } from "@/async/mutationHooks/tags/use-add-tag-to-bookmark-optimistic-mutation";
 import { useCreateAndAssignTagOptimisticMutation } from "@/async/mutationHooks/tags/use-create-and-assign-tag-optimistic-mutation";
@@ -7,6 +6,7 @@ import { useRemoveTagFromBookmarkOptimisticMutation } from "@/async/mutationHook
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { CollectionIcon } from "@/components/collectionIcon";
 import { Combobox } from "@/components/ui/recollect/combobox";
+import { Popover } from "@/components/ui/recollect/popover";
 import { ScrollArea } from "@/components/ui/recollect/scroll-area";
 import { useBookmarkTags } from "@/hooks/use-bookmark-tags";
 import { useCategoryMultiSelect } from "@/hooks/use-category-multi-select";
@@ -32,7 +32,20 @@ type EditPopoverProps = {
 
 export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 	const [open, setOpen] = useState(false);
+	const [exitingPopover, setExitingPopover] = useState(false);
 	const isPublicPage = useIsPublicPage();
+
+	const showTrigger = open || exitingPopover;
+
+	const handleOpenChange = (nextOpen: boolean) => {
+		if (nextOpen) {
+			setExitingPopover(false);
+		} else {
+			setExitingPopover(true);
+		}
+
+		setOpen(nextOpen);
+	};
 
 	const postUserId =
 		typeof post?.user_id === "object" ? post?.user_id?.id : post?.user_id;
@@ -44,13 +57,15 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 	}
 
 	return (
-		<Popover.Root open={open} onOpenChange={setOpen}>
-			{/* When popover is open, always show trigger (flex) */}
-			{/* When closed, show only on hover (hidden group-hover:flex) */}
+		<Popover.Root
+			open={open}
+			onOpenChange={handleOpenChange}
+			onOpenChangeComplete={() => setExitingPopover(false)}
+		>
 			<Popover.Trigger
 				className={cn(
 					"z-15 rounded-lg bg-whites-700 p-[5px] text-gray-1000 backdrop-blur-xs outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-					!isPublicPage && (open ? "flex" : "hidden group-hover:flex"),
+					!isPublicPage && (showTrigger ? "flex" : "hidden group-hover:flex"),
 					isPublicPage && "hidden",
 				)}
 			>
