@@ -66,7 +66,7 @@ export const CategoryMultiSelect = ({
 										</Combobox.Chip>
 									))}
 
-									<div className="ml-2 flex items-center gap-1 rounded focus-within:ring-2 focus-within:ring-gray-200">
+									<div className="ml-2 flex items-center gap-1 rounded px-2 focus-within:ring-2 focus-within:ring-gray-200">
 										<div className="h-[14px] w-[14px] text-gray-600">
 											<AddToCollectionsButton />
 										</div>
@@ -82,8 +82,8 @@ export const CategoryMultiSelect = ({
 					</Combobox.Chips>
 
 					<Combobox.Portal>
-						<Combobox.Positioner className="z-10000">
-							<Combobox.Popup className="mt-2 rounded-lg bg-gray-50 shadow-custom-3">
+						<Combobox.Positioner align="start" className="z-10000">
+							<Combobox.Popup className="mt-2 w-48 rounded-xl bg-gray-50 shadow-custom-3">
 								<ScrollArea
 									scrollbarGutter
 									scrollFade
@@ -99,7 +99,9 @@ export const CategoryMultiSelect = ({
 													iconSize="10"
 													size="16"
 												/>
-												<span className="truncate">{item.category_name}</span>
+												<span className="flex-1 truncate">
+													{item.category_name}
+												</span>
 												<Combobox.ItemIndicator />
 											</Combobox.Item>
 										)}
