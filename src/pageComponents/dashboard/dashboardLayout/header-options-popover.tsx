@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
+import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import { BookmarksSortDropdown } from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
 import { BookmarksViewDropdown } from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
@@ -237,6 +238,8 @@ function RenameMenuItem() {
 function ClearTrashTabContent() {
 	const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
 		useClearBookmarksInTrashMutation();
+	const { bookmarksCountData } = useFetchBookmarksCount();
+	const trashCount = bookmarksCountData?.data?.trash ?? 0;
 
 	return (
 		<DestructiveConfirmContent
@@ -245,6 +248,7 @@ function ClearTrashTabContent() {
 			}}
 			pending={isClearingTrash}
 			label="Clear All Trash"
+			description={`${trashCount} ${trashCount === 1 ? "bookmark" : "bookmarks"}`}
 		/>
 	);
 }
@@ -252,6 +256,11 @@ function ClearTrashTabContent() {
 function DeleteCollectionTabContent() {
 	const { category_id: categoryId } = useGetCurrentCategoryId();
 	const { onDeleteCollection } = useDeleteCollection();
+	const { bookmarksCountData } = useFetchBookmarksCount();
+	const count =
+		bookmarksCountData?.data?.categoryCount?.find(
+			(category) => category.category_id === categoryId,
+		)?.count ?? 0;
 
 	return (
 		<DestructiveConfirmContent
@@ -259,6 +268,7 @@ function DeleteCollectionTabContent() {
 				void onDeleteCollection(true, categoryId as number);
 			}}
 			label="Delete Collection"
+			description={`${count} ${count === 1 ? "bookmark" : "bookmarks"}`}
 		/>
 	);
 }

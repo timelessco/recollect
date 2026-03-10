@@ -128,6 +128,7 @@ export function CollectionOptionsPopover({
 										>
 											<DeleteCollectionContent
 												categoryId={item.id}
+												count={item.count}
 												isCurrent={item.current}
 											/>
 										</motion.div>
@@ -178,11 +179,13 @@ function FavoriteMenuItem({ categoryId, isFavorite }: FavoriteMenuItemProps) {
 
 interface DeleteCollectionContentProps {
 	categoryId: number;
+	count?: number;
 	isCurrent: boolean;
 }
 
 function DeleteCollectionContent({
 	categoryId,
+	count = 0,
 	isCurrent,
 }: DeleteCollectionContentProps) {
 	const { onDeleteCollection } = useDeleteCollection();
@@ -193,6 +196,7 @@ function DeleteCollectionContent({
 				void onDeleteCollection(isCurrent, categoryId);
 			}}
 			label="Delete Collection"
+			description={`${count} ${count === 1 ? "bookmark" : "bookmarks"}`}
 		/>
 	);
 }
