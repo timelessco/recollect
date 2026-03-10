@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import { useAddTagToBookmarkOptimisticMutation } from "@/async/mutationHooks/tags/use-add-tag-to-bookmark-optimistic-mutation";
 import { useCreateAndAssignTagOptimisticMutation } from "@/async/mutationHooks/tags/use-create-and-assign-tag-optimistic-mutation";
@@ -31,6 +31,63 @@ type EditPopoverProps = {
 };
 
 export const EditPopover = ({ post, userId }: EditPopoverProps) => {
+	const postUserId =
+		typeof post?.user_id === "object" ? post?.user_id?.id : post?.user_id;
+	const isOwner = userId && postUserId === userId;
+
+	// Non-owners see nothing
+	if (!isOwner) {
+		return null;
+	}
+
+	return (
+		<EditPopoverShell>
+			<div className="mb-2 w-[231px]">
+				<div className="w-full">
+					<div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
+						Collections
+					</div>
+
+					<div className="w-full">
+						<CategoryMultiSelect bookmarkId={post.id} />
+					</div>
+				</div>
+				<div className="w-full">
+					<div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
+						Tags
+					</div>
+
+					<div className="w-full">
+						<TagMultiSelect bookmarkId={post.id} />
+					</div>
+				</div>
+			</div>
+			<div className="w-full">
+				<DiscoverSwitch
+					bookmarkId={post.id}
+					isDiscoverable={post.make_discoverable !== null}
+				/>
+			</div>
+			{(() => {
+				const domain = getDomain(post.url);
+				// Don't render switch for domains that are already skipped for OG images
+				return domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain) ? (
+					<>
+						<div className="px-2.5 py-1">
+							<div className="h-px bg-gray-200" />
+						</div>
+
+						<div className="w-full">
+							<OgPreferenceSwitch bookmarkUrl={post.url} userId={userId} />
+						</div>
+					</>
+				) : null;
+			})()}
+		</EditPopoverShell>
+	);
+};
+
+function EditPopoverShell({ children }: { children: ReactNode }) {
 	const [open, setOpen] = useState(false);
 	const [exitingPopover, setExitingPopover] = useState(false);
 	const isPublicPage = useIsPublicPage();
@@ -46,15 +103,6 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 
 		setOpen(nextOpen);
 	};
-
-	const postUserId =
-		typeof post?.user_id === "object" ? post?.user_id?.id : post?.user_id;
-	const isOwner = userId && postUserId === userId;
-
-	// Non-owners see nothing
-	if (!isOwner) {
-		return null;
-	}
 
 	return (
 		<Popover.Root
@@ -74,57 +122,12 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
 
 			<Popover.Portal>
 				<Popover.Positioner sideOffset={4} align="start">
-					<Popover.Popup className="p-1.5">
-						<div className="mb-2 w-[231px]">
-							<div className="w-full">
-								<div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
-									Collections
-								</div>
-
-								<div className="w-full">
-									<CategoryMultiSelect bookmarkId={post.id} />
-								</div>
-							</div>
-							<div className="w-full">
-								<div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
-									Tags
-								</div>
-
-								<div className="w-full">
-									<TagMultiSelect bookmarkId={post.id} />
-								</div>
-							</div>
-						</div>
-						<div className="w-full">
-							<DiscoverSwitch
-								bookmarkId={post.id}
-								isDiscoverable={post.make_discoverable !== null}
-							/>
-						</div>
-						{(() => {
-							const domain = getDomain(post.url);
-							// Don't render switch for domains that are already skipped for OG images
-							return domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain) ? (
-								<>
-									<div className="px-2.5 py-1">
-										<div className="h-px bg-gray-200" />
-									</div>
-
-									<div className="w-full">
-										<OgPreferenceSwitch
-											bookmarkUrl={post.url}
-											userId={userId}
-										/>
-									</div>
-								</>
-							) : null;
-						})()}
-					</Popover.Popup>
+					<Popover.Popup className="p-1.5">{children}</Popover.Popup>
 				</Popover.Positioner>
 			</Popover.Portal>
 		</Popover.Root>
 	);
-};
+}
 
 type TagMultiSelectProps = {
 	bookmarkId: number;
