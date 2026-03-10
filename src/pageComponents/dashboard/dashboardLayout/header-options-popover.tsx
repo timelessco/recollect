@@ -1,5 +1,5 @@
 import { useRef, useState, type RefObject } from "react";
-import { Popover } from "@base-ui/react/popover";
+import { Popover } from "@/components/ui/recollect/popover";
 
 import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import { BookmarksSortDropdown } from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
@@ -166,14 +166,9 @@ function HeaderSubPanel({ anchor, onDismiss, view }: HeaderSubPanelProps) {
 			}}
 		>
 			<Popover.Portal>
-				<Popover.Positioner
-					anchor={anchor}
-					align="end"
-					className="z-10"
-					sideOffset={1}
-				>
+				<Popover.Positioner anchor={anchor} align="end">
 					<Popover.Popup
-						className={`rounded-xl bg-gray-50 p-1 leading-[20px] shadow-custom-3 outline-hidden ${view === "share" ? "w-auto" : "w-[180px]"}`}
+						className={`leading-[20px] ${view === "share" ? "w-auto" : "w-[180px]"}`}
 					>
 						<HeaderSubPanelContent view={view} />
 					</Popover.Popup>

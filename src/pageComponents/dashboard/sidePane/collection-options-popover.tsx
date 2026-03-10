@@ -1,5 +1,5 @@
 import { useRef, useState, type RefObject } from "react";
-import { Popover } from "@base-ui/react/popover";
+import { Popover } from "@/components/ui/recollect/popover";
 
 import { DeleteCollectionModal } from "../modals/delete-collection-modal";
 import ShareContent from "../share/shareContent";
@@ -157,13 +157,8 @@ function SharePopover({
 			}}
 		>
 			<Popover.Portal>
-				<Popover.Positioner
-					anchor={anchor}
-					align="start"
-					className="z-51"
-					sideOffset={1}
-				>
-					<Popover.Popup className="rounded-xl bg-gray-50 p-1 leading-[20px] shadow-custom-3 outline-hidden">
+				<Popover.Positioner anchor={anchor} align="start">
+					<Popover.Popup className="leading-[20px]">
 						<div className="w-75 rounded-lg bg-gray-50">
 							<ShareContent categoryId={categoryId} />
 						</div>

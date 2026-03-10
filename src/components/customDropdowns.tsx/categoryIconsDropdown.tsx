@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Popover } from "@base-ui/react/popover";
+import { Popover } from "@/components/ui/recollect/popover";
 import { matchSorter } from "match-sorter";
 
 import { useUpdateCategoryOptimisticMutation } from "../../async/mutationHooks/category/use-update-category-optimistic-mutation";
@@ -83,7 +83,7 @@ export const CategoryIconsDropdown = (props: CategoryIconsDropdownProps) => {
 			</Popover.Trigger>
 			<Popover.Portal>
 				<Popover.Positioner className="z-103" sideOffset={8}>
-					<Popover.Popup className="h-[368px] w-[310px] rounded-xl bg-gray-50 px-1 shadow-custom-1 ring-1 ring-black/5 outline-hidden">
+					<Popover.Popup className="h-[368px] w-[310px] px-1 shadow-custom-1 ring-1 ring-black/5">
 						<IconPickerHeader
 							searchValue={searchValue}
 							setSearchValue={setSearchValue}

@@ -1,4 +1,4 @@
-import { Popover } from "@base-ui/react/popover";
+import { Popover } from "@/components/ui/recollect/popover";
 import find from "lodash/find";
 
 import useGetViewValue from "../../hooks/useGetViewValue";
@@ -105,7 +105,7 @@ const BookmarksViewPopover = ({
 		</Popover.Trigger>
 		<Popover.Portal>
 			<Popover.Positioner sideOffset={8}>
-				<Popover.Popup className="z-20 w-[195px] origin-(--transform-origin) rounded-xl bg-white px-[6px] pt-[6px] pb-3 shadow-custom-1 ring-1 ring-black/5">
+				<Popover.Popup className="w-[195px] bg-white px-[6px] pt-[6px] pb-3 shadow-custom-1 ring-1 ring-black/5">
 					{children}
 				</Popover.Popup>
 			</Popover.Positioner>
