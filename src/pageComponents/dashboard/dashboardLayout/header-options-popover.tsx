@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
+import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import { BookmarksSortDropdown } from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
 import { BookmarksViewDropdown } from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
@@ -16,11 +17,18 @@ import { mutationApiCall } from "../../../utils/apiHelpers";
 import { DISCOVER_URL, TRASH_URL } from "../../../utils/constants";
 import ShareContent from "../share/shareContent";
 
-import { ClearTrashContent } from "@/components/clearTrashContent";
+import { DestructiveConfirmContent } from "@/components/destructive-confirm-content";
 import { AnimatedSize } from "@/components/ui/recollect/animated-size";
 import { Menu } from "@/components/ui/recollect/menu";
 
-type ViewState = "closed" | "menu" | "share" | "sort" | "trash" | "view";
+type ViewState =
+	| "closed"
+	| "delete-collection"
+	| "menu"
+	| "share"
+	| "sort"
+	| "trash"
+	| "view";
 
 export function HeaderOptionsPopover() {
 	const [view, setView] = useState<ViewState>("closed");
@@ -119,7 +127,19 @@ export function HeaderOptionsPopover() {
 										exit={{ opacity: 0 }}
 										transition={fade}
 									>
-										<ClearTrashTabContent />
+										<ClearTrashTabContent onClose={() => setView("closed")} />
+									</motion.div>
+								)}
+								{view === "delete-collection" && (
+									<motion.div
+										key="delete-collection"
+										className="w-[180px] p-1"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={fade}
+									>
+										<DeleteCollectionTabContent />
 									</motion.div>
 								)}
 							</AnimatePresence>
@@ -184,7 +204,13 @@ function HeaderMenuItems({
 						<span className="ml-[6px]">Share</span>
 					</Menu.Item>
 					<RenameMenuItem />
-					<DeleteCollectionMenuItem />
+					<Menu.Item
+						className="text-red-600 data-highlighted:text-red-600"
+						onClick={() => selectView("delete-collection")}
+					>
+						<TrashIconRed />
+						<span className="ml-[6px]">Delete collection</span>
+					</Menu.Item>
 				</>
 			)}
 		</>
@@ -209,33 +235,41 @@ function RenameMenuItem() {
 	);
 }
 
-function DeleteCollectionMenuItem() {
-	const { category_id: categoryId } = useGetCurrentCategoryId();
-	const { onDeleteCollection } = useDeleteCollection();
+function ClearTrashTabContent({ onClose }: { onClose: () => void }) {
+	const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
+		useClearBookmarksInTrashMutation();
+	const { bookmarksCountData } = useFetchBookmarksCount();
+	const trashCount = bookmarksCountData?.data?.trash ?? 0;
 
 	return (
-		<Menu.Item
-			className="text-red-600 data-highlighted:text-red-600"
-			onClick={() => {
-				void onDeleteCollection(true, categoryId as number);
+		<DestructiveConfirmContent
+			onConfirm={async () => {
+				await mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
+				onClose();
 			}}
-		>
-			<TrashIconRed />
-			<span className="ml-[6px]">Delete collection</span>
-		</Menu.Item>
+			pending={isClearingTrash}
+			label="Clear All Trash"
+			description={`${trashCount} ${trashCount === 1 ? "bookmark" : "bookmarks"}`}
+		/>
 	);
 }
 
-function ClearTrashTabContent() {
-	const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
-		useClearBookmarksInTrashMutation();
+function DeleteCollectionTabContent() {
+	const { category_id: categoryId } = useGetCurrentCategoryId();
+	const { onDeleteCollection } = useDeleteCollection();
+	const { bookmarksCountData } = useFetchBookmarksCount();
+	const count =
+		bookmarksCountData?.data?.categoryCount?.find(
+			(category) => category.category_id === categoryId,
+		)?.count ?? 0;
 
 	return (
-		<ClearTrashContent
-			isClearingTrash={isClearingTrash}
-			onClearTrash={() => {
-				void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
+		<DestructiveConfirmContent
+			onConfirm={() => {
+				void onDeleteCollection(true, categoryId as number);
 			}}
+			label="Delete Collection"
+			description={`${count} ${count === 1 ? "bookmark" : "bookmarks"}`}
 		/>
 	);
 }

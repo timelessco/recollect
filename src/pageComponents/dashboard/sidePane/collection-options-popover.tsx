@@ -1,13 +1,14 @@
 import { useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
-import { DeleteCollectionModal } from "../modals/delete-collection-modal";
 import ShareContent from "../share/shareContent";
 
 import { type CollectionItemTypes } from "./singleListItemComponent";
 import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
+import { DestructiveConfirmContent } from "@/components/destructive-confirm-content";
 import { AnimatedSize } from "@/components/ui/recollect/animated-size";
 import { Menu } from "@/components/ui/recollect/menu";
+import { useDeleteCollection } from "@/hooks/useDeleteCollection";
 import OptionsIcon from "@/icons/optionsIcon";
 
 type CollectionOptionsPopoverProps = {
@@ -24,7 +25,7 @@ export function CollectionOptionsPopover({
 	const shouldReduceMotion = useReducedMotion();
 	const isItemClickRef = useRef(false);
 
-	const popoverOpen = view === "menu" || view === "share";
+	const popoverOpen = view === "menu" || view === "share" || view === "delete";
 	const showTrigger = view !== "closed" || exitingMenu;
 	const fade = shouldReduceMotion ? { duration: 0 } : { duration: 0.15 };
 
@@ -116,23 +117,28 @@ export function CollectionOptionsPopover({
 											</div>
 										</motion.div>
 									)}
+									{view === "delete" && (
+										<motion.div
+											key="delete"
+											className="w-48 p-1"
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={fade}
+										>
+											<DeleteCollectionContent
+												categoryId={item.id}
+												count={item.count}
+												isCurrent={item.current}
+											/>
+										</motion.div>
+									)}
 								</AnimatePresence>
 							</AnimatedSize>
 						</Menu.Popup>
 					</Menu.Positioner>
 				</Menu.Portal>
 			</Menu.Root>
-
-			<DeleteCollectionModal
-				categoryId={item.id}
-				isCurrent={item.current}
-				open={view === "delete"}
-				onOpenChange={(nextOpen) => {
-					if (!nextOpen) {
-						setView("closed");
-					}
-				}}
-			/>
 
 			{item.count !== undefined && item.current && (
 				<div className="flex w-full justify-end">
@@ -168,5 +174,29 @@ function FavoriteMenuItem({ categoryId, isFavorite }: FavoriteMenuItemProps) {
 		>
 			{isFavorite ? "Unfavorite" : "Favorite"}
 		</Menu.Item>
+	);
+}
+
+interface DeleteCollectionContentProps {
+	categoryId: number;
+	count?: number;
+	isCurrent: boolean;
+}
+
+function DeleteCollectionContent({
+	categoryId,
+	count = 0,
+	isCurrent,
+}: DeleteCollectionContentProps) {
+	const { onDeleteCollection } = useDeleteCollection();
+
+	return (
+		<DestructiveConfirmContent
+			onConfirm={() => {
+				void onDeleteCollection(isCurrent, categoryId);
+			}}
+			label="Delete Collection"
+			description={`${count} ${count === 1 ? "bookmark" : "bookmarks"}`}
+		/>
 	);
 }
