@@ -25,7 +25,7 @@ type ViewState = "closed" | "menu" | "share" | "sort" | "trash" | "view";
 export function HeaderOptionsPopover() {
 	const [view, setView] = useState<ViewState>("closed");
 	const shouldReduceMotion = useReducedMotion();
-	const isItemClick = useRef(false);
+	const isItemClickRef = useRef(false);
 
 	const popoverOpen = view !== "closed";
 	const fade = shouldReduceMotion ? { duration: 0 } : { duration: 0.15 };
@@ -36,8 +36,8 @@ export function HeaderOptionsPopover() {
 			return;
 		}
 
-		if (isItemClick.current) {
-			isItemClick.current = false;
+		if (isItemClickRef.current) {
+			isItemClickRef.current = false;
 			return;
 		}
 
@@ -67,7 +67,7 @@ export function HeaderOptionsPopover() {
 										transition={fade}
 									>
 										<HeaderMenuItems
-											isItemClick={isItemClick}
+											isItemClickRef={isItemClickRef}
 											onSelectView={setView}
 										/>
 									</motion.div>
@@ -132,11 +132,14 @@ export function HeaderOptionsPopover() {
 }
 
 interface HeaderMenuItemsProps {
-	isItemClick: React.RefObject<boolean>;
+	isItemClickRef: React.RefObject<boolean>;
 	onSelectView: (view: ViewState) => void;
 }
 
-function HeaderMenuItems({ isItemClick, onSelectView }: HeaderMenuItemsProps) {
+function HeaderMenuItems({
+	isItemClickRef,
+	onSelectView,
+}: HeaderMenuItemsProps) {
 	const currentPath = useGetCurrentUrlPath();
 	const { category_id: categoryId } = useGetCurrentCategoryId();
 
@@ -144,9 +147,9 @@ function HeaderMenuItems({ isItemClick, onSelectView }: HeaderMenuItemsProps) {
 	const showSort = currentPath !== DISCOVER_URL && currentPath !== TRASH_URL;
 	const showTrash = currentPath === TRASH_URL;
 
-	const selectView = (v: ViewState) => {
-		isItemClick.current = true;
-		onSelectView(v);
+	const selectView = (nextView: ViewState) => {
+		isItemClickRef.current = true;
+		onSelectView(nextView);
 	};
 
 	return (

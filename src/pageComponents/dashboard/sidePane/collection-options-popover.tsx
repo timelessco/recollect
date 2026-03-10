@@ -22,7 +22,7 @@ export function CollectionOptionsPopover({
 	const [view, setView] = useState<ViewState>("closed");
 	const [exitingMenu, setExitingMenu] = useState(false);
 	const shouldReduceMotion = useReducedMotion();
-	const isItemClick = useRef(false);
+	const isItemClickRef = useRef(false);
 
 	const popoverOpen = view === "menu" || view === "share";
 	const showTrigger = view !== "closed" || exitingMenu;
@@ -36,8 +36,8 @@ export function CollectionOptionsPopover({
 		}
 
 		// Skip close if a Menu.Item onClick already transitioned the view
-		if (isItemClick.current) {
-			isItemClick.current = false;
+		if (isItemClickRef.current) {
+			isItemClickRef.current = false;
 			return;
 		}
 
@@ -85,7 +85,7 @@ export function CollectionOptionsPopover({
 											<Menu.Item
 												onClick={(event) => {
 													event.stopPropagation();
-													isItemClick.current = true;
+													isItemClickRef.current = true;
 													setView("share");
 												}}
 											>
@@ -94,7 +94,7 @@ export function CollectionOptionsPopover({
 											<Menu.Item
 												onClick={(event) => {
 													event.stopPropagation();
-													isItemClick.current = true;
+													isItemClickRef.current = true;
 													setView("delete");
 												}}
 											>
