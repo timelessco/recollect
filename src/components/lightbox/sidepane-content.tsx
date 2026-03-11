@@ -210,6 +210,11 @@ export function SidepaneContent({
 									aiSummaryScrollRef.current.scrollTop = 0;
 								}
 							}}
+							onPointerDownCapture={(event) => {
+								if (hasAIOverflowContent) {
+									event.stopPropagation();
+								}
+							}}
 							whileTap={hasAIOverflowContent ? { scale: 0.98 } : {}}
 						>
 							<div className="mb-2 flex items-center gap-2">
