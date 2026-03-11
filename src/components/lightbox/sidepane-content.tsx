@@ -21,7 +21,7 @@ const formatDate = (dateString: string) => {
 	}
 };
 
-interface SidepaneContentProps {
+export interface SidepaneContentProps {
 	currentBookmark: SingleListData;
 	currentIndex: number;
 	shouldFetch: boolean;
