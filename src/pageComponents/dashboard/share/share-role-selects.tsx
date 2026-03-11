@@ -111,18 +111,22 @@ export const InviteRoleSelect = ({
 		onValueChange={(value) => onChange(value === "Editor")}
 		disabled={disabled}
 	>
-		<Select.Trigger className="flex items-center rounded-[6px] px-2 py-[5.5px] text-gray-alpha-600 hover:bg-gray-50 data-popup-open:bg-gray-50">
+		<Select.Trigger className="flex items-center rounded-[6px] px-2 py-[5.5px] text-13 leading-[15px] tracking-[0.13px] text-gray-alpha-600 hover:bg-gray-50 data-popup-open:bg-gray-50">
 			<Select.Value placeholder="Viewer" />
 			<Select.Icon className="ml-1">
 				<DownArrowGray />
 			</Select.Icon>
 		</Select.Trigger>
 		<Select.Portal>
-			<Select.Positioner sideOffset={2} className="z-103">
+			<Select.Positioner align="start" className="z-103">
 				<Select.Popup>
 					<Select.List>
 						{INVITE_ROLE_OPTIONS.map((option) => (
-							<Select.Item key={option.value} value={option.value}>
+							<Select.Item
+								key={option.value}
+								value={option.value}
+								className="py-[5px] leading-[15px] font-medium tracking-[0.13px]"
+							>
 								<Select.ItemText>{option.label}</Select.ItemText>
 								<Select.ItemIndicator />
 							</Select.Item>
