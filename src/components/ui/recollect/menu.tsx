@@ -62,9 +62,28 @@ function GroupLabel({ className, ...props }: MenuPrimitive.GroupLabel.Props) {
 	return <MenuPrimitive.GroupLabel className={cn(className)} {...props} />;
 }
 
+function CheckboxItem({
+	className,
+	...props
+}: MenuPrimitive.CheckboxItem.Props) {
+	return (
+		<MenuPrimitive.CheckboxItem
+			className={cn(
+				"flex cursor-pointer items-center rounded-lg px-2 py-[5px] text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800 outline-hidden data-highlighted:bg-gray-200 data-highlighted:text-gray-900",
+				className,
+			)}
+			{...props}
+		/>
+	);
+}
+
+const CheckboxItemIndicator = MenuPrimitive.CheckboxItemIndicator;
+
 const Separator = MenuPrimitive.Separator;
 
 export const Menu = {
+	CheckboxItem,
+	CheckboxItemIndicator,
 	Group,
 	GroupLabel,
 	Item,
