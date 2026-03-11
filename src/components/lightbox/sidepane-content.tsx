@@ -148,12 +148,12 @@ export function SidepaneContent({
 						)}
 					</div>
 				)}
-			{!isDiscoverPage && !isPublicPage && (
-				<CategoryMultiSelect
-					bookmarkId={currentBookmark.id}
-					shouldFetch={shouldFetch}
-				/>
-			)}
+				{!isDiscoverPage && !isPublicPage && (
+					<CategoryMultiSelect
+						bookmarkId={currentBookmark.id}
+						shouldFetch={shouldFetch}
+					/>
+				)}
 			</div>
 			{(currentBookmark?.addedTags?.length > 0 ||
 				metaData?.img_caption ||
