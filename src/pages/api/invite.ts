@@ -3,7 +3,7 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { jwtDecode } from "jwt-decode";
+import { decode } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
@@ -39,13 +39,21 @@ export default async function handler(
 	const supabase = createServiceClient();
 
 	if (request?.query?.token) {
-		const tokenData: InviteTokenData = jwtDecode(
-			request?.query?.token as string,
-		);
+		const decoded = decode(request?.query?.token as string);
+
+		if (!decoded || typeof decoded === "string") {
+			response.status(400).json({
+				success: null,
+				error: "Invalid invite token",
+			});
+			return;
+		}
+
+		const tokenData = decoded as InviteTokenData;
 
 		const insertData = {
-			email: tokenData?.email,
-			category_id: tokenData?.category_id,
+			email: tokenData.email,
+			category_id: tokenData.category_id,
 			// edit_access: tokenData?.edit_access,
 			// userId: tokenData?.userId,
 		};
