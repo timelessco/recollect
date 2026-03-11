@@ -1,12 +1,14 @@
-import { useRef, useState, type RefObject } from "react";
-import { Popover } from "@base-ui/react/popover";
+import { useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
-import { DeleteCollectionModal } from "../modals/delete-collection-modal";
 import ShareContent from "../share/shareContent";
 
 import { type CollectionItemTypes } from "./singleListItemComponent";
 import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
+import { DestructiveConfirmContent } from "@/components/destructive-confirm-content";
+import { AnimatedSize } from "@/components/ui/recollect/animated-size";
 import { Menu } from "@/components/ui/recollect/menu";
+import { useDeleteCollection } from "@/hooks/useDeleteCollection";
 import OptionsIcon from "@/icons/optionsIcon";
 
 type CollectionOptionsPopoverProps = {
@@ -19,32 +21,44 @@ export function CollectionOptionsPopover({
 	item,
 }: CollectionOptionsPopoverProps) {
 	const [view, setView] = useState<ViewState>("closed");
-	const triggerRef = useRef<HTMLButtonElement>(null);
+	const [exitingMenu, setExitingMenu] = useState(false);
+	const shouldReduceMotion = useReducedMotion();
+	const isItemClickRef = useRef(false);
+
+	const popoverOpen = view === "menu" || view === "share" || view === "delete";
+	const showTrigger = view !== "closed" || exitingMenu;
+	const fade = shouldReduceMotion ? { duration: 0 } : { duration: 0.15 };
 
 	const handleMenuOpenChange = (nextOpen: boolean) => {
 		if (nextOpen) {
+			setExitingMenu(false);
 			setView("menu");
 			return;
 		}
 
-		// Only close if still on "menu" — onClick may have already transitioned to "share"/"delete"
-		setView((current) => (current === "menu" ? "closed" : current));
-	};
+		// Skip close if a Menu.Item onClick already transitioned the view
+		if (isItemClickRef.current) {
+			isItemClickRef.current = false;
+			return;
+		}
 
-	const dismiss = () => {
-		setView((current) => (current === "menu" ? current : "closed"));
+		// Keep trigger visible during exit animation so floating-ui
+		// retains a valid anchor. Cleared in onOpenChangeComplete.
+		setExitingMenu(true);
+		setView("closed");
 	};
-
-	const isOpen = view !== "closed";
 
 	return (
 		<>
-			<Menu.Root open={view === "menu"} onOpenChange={handleMenuOpenChange}>
+			<Menu.Root
+				open={popoverOpen}
+				onOpenChange={handleMenuOpenChange}
+				onOpenChangeComplete={() => setExitingMenu(false)}
+			>
 				<Menu.Trigger
-					ref={triggerRef}
 					aria-label="Collection options"
 					className={
-						isOpen
+						showTrigger
 							? "flex text-gray-500 outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200"
 							: "hidden text-gray-500 outline-hidden group-hover:flex focus-visible:ring-1 focus-visible:ring-gray-200"
 					}
@@ -53,54 +67,83 @@ export function CollectionOptionsPopover({
 				</Menu.Trigger>
 				<Menu.Portal>
 					<Menu.Positioner align="start">
-						<Menu.Popup className="leading-[20px]">
-							<FavoriteMenuItem
-								categoryId={item.id}
-								isFavorite={item.isFavorite}
-							/>
-							<Menu.Item
-								onClick={(event) => {
-									event.stopPropagation();
-									setView("share");
-								}}
-							>
-								Share
-							</Menu.Item>
-							<Menu.Item
-								onClick={(event) => {
-									event.stopPropagation();
-									setView("delete");
-								}}
-							>
-								Delete
-							</Menu.Item>
+						<Menu.Popup className="w-auto overflow-clip p-0 leading-[20px]">
+							<AnimatedSize>
+								<AnimatePresence mode="popLayout" initial={false}>
+									{view === "menu" && (
+										<motion.div
+											key="menu"
+											className="w-48 p-1"
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={fade}
+										>
+											<FavoriteMenuItem
+												categoryId={item.id}
+												isFavorite={item.isFavorite}
+											/>
+											<Menu.Item
+												onClick={(event) => {
+													event.stopPropagation();
+													isItemClickRef.current = true;
+													setView("share");
+												}}
+											>
+												Share
+											</Menu.Item>
+											<Menu.Item
+												onClick={(event) => {
+													event.stopPropagation();
+													isItemClickRef.current = true;
+													setView("delete");
+												}}
+											>
+												Delete
+											</Menu.Item>
+										</motion.div>
+									)}
+									{view === "share" && (
+										<motion.div
+											key="share"
+											className="p-1"
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={fade}
+										>
+											<div className="w-75 rounded-lg bg-gray-50">
+												<ShareContent categoryId={item.id} />
+											</div>
+										</motion.div>
+									)}
+									{view === "delete" && (
+										<motion.div
+											key="delete"
+											className="w-48 p-1"
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={fade}
+										>
+											<DeleteCollectionContent
+												categoryId={item.id}
+												count={item.count}
+												isCurrent={item.current}
+											/>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							</AnimatedSize>
 						</Menu.Popup>
 					</Menu.Positioner>
 				</Menu.Portal>
 			</Menu.Root>
 
-			<SharePopover
-				anchor={triggerRef}
-				categoryId={item.id}
-				open={view === "share"}
-				onDismiss={dismiss}
-			/>
-
-			<DeleteCollectionModal
-				categoryId={item.id}
-				isCurrent={item.current}
-				open={view === "delete"}
-				onOpenChange={(nextOpen) => {
-					if (!nextOpen) {
-						dismiss();
-					}
-				}}
-			/>
-
 			{item.count !== undefined && item.current && (
 				<div className="flex w-full justify-end">
 					<p
-						className={`block text-right text-[11px] leading-[115%] font-450 tracking-[0.03em] text-gray-600 group-hover:hidden ${isOpen ? "hidden" : ""}`}
+						className={`block text-right text-[11px] leading-[115%] font-450 tracking-[0.03em] text-gray-600 group-hover:hidden ${showTrigger ? "hidden" : ""}`}
 					>
 						{item.count}
 					</p>
@@ -134,42 +177,26 @@ function FavoriteMenuItem({ categoryId, isFavorite }: FavoriteMenuItemProps) {
 	);
 }
 
-interface SharePopoverProps {
-	anchor: RefObject<HTMLButtonElement | null>;
+interface DeleteCollectionContentProps {
 	categoryId: number;
-	onDismiss: () => void;
-	open: boolean;
+	count?: number;
+	isCurrent: boolean;
 }
 
-function SharePopover({
-	anchor,
+function DeleteCollectionContent({
 	categoryId,
-	open,
-	onDismiss,
-}: SharePopoverProps) {
+	count = 0,
+	isCurrent,
+}: DeleteCollectionContentProps) {
+	const { onDeleteCollection } = useDeleteCollection();
+
 	return (
-		<Popover.Root
-			open={open}
-			onOpenChange={(nextOpen) => {
-				if (!nextOpen) {
-					onDismiss();
-				}
+		<DestructiveConfirmContent
+			onConfirm={() => {
+				void onDeleteCollection(isCurrent, categoryId);
 			}}
-		>
-			<Popover.Portal>
-				<Popover.Positioner
-					anchor={anchor}
-					align="start"
-					className="z-51"
-					sideOffset={1}
-				>
-					<Popover.Popup className="rounded-xl bg-gray-50 p-1 leading-[20px] shadow-custom-3 outline-hidden">
-						<div className="w-75 rounded-lg bg-gray-50">
-							<ShareContent categoryId={categoryId} />
-						</div>
-					</Popover.Popup>
-				</Popover.Positioner>
-			</Popover.Portal>
-		</Popover.Root>
+			label="Delete Collection"
+			description={`${count} ${count === 1 ? "bookmark" : "bookmarks"}`}
+		/>
 	);
 }
