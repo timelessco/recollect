@@ -70,7 +70,12 @@ export function SidepaneContent({
 		}, 0);
 	}, [currentBookmark?.id, currentIndex, lightboxShowSidepane]);
 
-	const domain = new URL(currentBookmark?.url)?.hostname;
+	let domain: string | undefined;
+	try {
+		domain = new URL(currentBookmark.url).hostname;
+	} catch {
+		domain = undefined;
+	}
 
 	return (
 		<>
