@@ -162,11 +162,11 @@ export function SidepaneContent({
 				(metaData?.image_keywords?.length ?? 0) > 0) && (
 				<motion.div
 					animate={{
-						y: isExpanded ? 0 : `calc(100% - ${collapsedOffset}px)`,
+						y: isExpanded ? 0 : `max(0px, calc(100% - ${collapsedOffset}px))`,
 					}}
 					className="relative overflow-hidden"
 					initial={{
-						y: `calc(100% - ${collapsedOffset}px)`,
+						y: `max(0px, calc(100% - ${collapsedOffset}px))`,
 					}}
 					key={currentBookmark?.id}
 					ref={expandableRef}
