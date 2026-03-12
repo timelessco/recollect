@@ -33,8 +33,9 @@ export const POST = createPostApiHandlerWithAuth({
 					category_name: name,
 					user_id: userId,
 					category_slug: `${slugify(name, { lower: true })}-${uniqid.time()}`,
-					...(icon != null && { icon }),
-					...(icon_color != null && { icon_color }),
+					...(icon !== null && icon !== undefined && { icon }),
+					...(icon_color !== null &&
+						icon_color !== undefined && { icon_color }),
 				},
 			])
 			.select();
