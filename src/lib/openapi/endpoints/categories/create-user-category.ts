@@ -14,6 +14,8 @@ export const createUserCategorySupplement = {
 	security: [{ [bearerAuth.name]: [] }, {}],
 	requestExample: {
 		name: "AI Research",
+		icon: "brain",
+		icon_color: "#6366f1",
 		category_order: [1, 2, 3],
 	},
 	responseExample: {
@@ -23,8 +25,8 @@ export const createUserCategorySupplement = {
 			category_slug: "ai-research-abc123",
 			category_views: null,
 			created_at: "2024-03-15T10:30:00Z",
-			icon: null,
-			icon_color: null,
+			icon: "brain",
+			icon_color: "#6366f1",
 			is_public: false,
 			order_index: 0,
 			user_id: "550e8400-e29b-41d4-a716-446655440000",
