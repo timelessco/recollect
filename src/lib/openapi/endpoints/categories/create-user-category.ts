@@ -15,6 +15,8 @@ export const createUserCategorySupplement = {
 	requestExample: {
 		name: "AI Research",
 		category_order: [1, 2, 3],
+		icon: "bookmark",
+		icon_color: "#6366f1",
 	},
 	responseExample: {
 		data: {

@@ -14,6 +14,12 @@ export const CreateCategoryPayloadSchema = z.object({
 				"Current ordered list of category IDs from the user profile. " +
 				"The new category ID will be appended. Omit to skip reordering.",
 		}),
+	icon: z.string().nullish().meta({
+		description: "Icon identifier (defaults to 'star-04' if omitted)",
+	}),
+	icon_color: z.string().nullish().meta({
+		description: "Icon color hex code (defaults to '#000000' if omitted)",
+	}),
 });
 
 export type CreateCategoryPayload = z.infer<typeof CreateCategoryPayloadSchema>;
