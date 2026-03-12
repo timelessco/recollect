@@ -103,7 +103,7 @@ function Slot(props: SlotProps) {
 				"text-sm font-medium text-gray-900",
 				"rounded-lg",
 				"transition",
-				props.isActive && "ring-2 ring-blue-500 outline-none",
+				props.isActive && "ring-2 ring-gray-200 outline-none",
 			)}
 		>
 			{props.char !== null && <div>{props.char}</div>}
