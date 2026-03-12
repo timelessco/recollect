@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useFirstMountState } from "@react-hookz/web";
 import { format } from "date-fns";
 import { AnimatePresence, motion } from "motion/react";
 
@@ -32,7 +33,7 @@ export function DesktopSidepane({
 	currentIndex,
 	shouldFetch,
 }: DesktopSidepaneProps) {
-	const [isInitialMount, setIsInitialMount] = useState(true);
+	const isInitialMount = useFirstMountState();
 	const [showMore, setShowMore] = useState(false);
 	const [isOverflowing, setIsOverflowing] = useState(false);
 	const [isExpanded, setIsExpanded] = useState(false);
@@ -54,10 +55,6 @@ export function DesktopSidepane({
 	const metaData = currentBookmark?.meta_data;
 	const collapsedOffset =
 		(currentBookmark?.addedTags?.length ?? 0) > 0 ? 145 : 110;
-
-	useEffect(() => {
-		setIsInitialMount(false);
-	}, []);
 
 	useEffect(() => {
 		setShowMore(false);
