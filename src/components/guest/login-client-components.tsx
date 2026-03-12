@@ -134,7 +134,7 @@ export function ContinueWithEmailLink() {
 			className={cn(
 				buttonBaseClasses,
 				"w-full bg-gray-alpha-100 text-gray-950",
-				"gap-2 rounded-lg px-2 py-2.5 text-[14px] leading-[115%] font-medium",
+				"gap-2 rounded-lg px-2 py-2.5 text-sm leading-[115%] font-medium",
 				"no-underline hover:not-data-disabled:bg-gray-300",
 			)}
 			href="/email"
