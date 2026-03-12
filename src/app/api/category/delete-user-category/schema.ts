@@ -2,6 +2,10 @@ import { z } from "zod";
 
 export const DeleteCategoryInputSchema = z.object({
 	category_id: z.number().meta({ description: "ID of the category to delete" }),
+	keep_bookmarks: z.boolean().default(false).meta({
+		description:
+			"When true, preserves bookmarks instead of trashing them. Orphaned bookmarks auto-get Uncategorized.",
+	}),
 });
 
 export type DeleteCategoryInput = z.infer<typeof DeleteCategoryInputSchema>;

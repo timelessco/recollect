@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import ShareContent from "../share/shareContent";
@@ -120,7 +120,7 @@ export function CollectionOptionsPopover({
 									{view === "delete" && (
 										<motion.div
 											key="delete"
-											className="w-48 p-1"
+											className="w-56 p-1"
 											initial={{ opacity: 0 }}
 											animate={{ opacity: 1 }}
 											exit={{ opacity: 0 }}
@@ -189,14 +189,45 @@ function DeleteCollectionContent({
 	isCurrent,
 }: DeleteCollectionContentProps) {
 	const { onDeleteCollection } = useDeleteCollection();
+	const [pendingMode, setPendingMode] = useState<
+		"delete-all" | "keep-bookmarks" | null
+	>(null);
+
+	const handleDeleteAll = useCallback(async () => {
+		setPendingMode("delete-all");
+		try {
+			await onDeleteCollection({
+				current: isCurrent,
+				categoryId,
+				keepBookmarks: false,
+			});
+		} finally {
+			setPendingMode(null);
+		}
+	}, [isCurrent, categoryId, onDeleteCollection]);
+
+	const handleKeepBookmarks = useCallback(async () => {
+		setPendingMode("keep-bookmarks");
+		try {
+			await onDeleteCollection({
+				current: isCurrent,
+				categoryId,
+				keepBookmarks: true,
+			});
+		} finally {
+			setPendingMode(null);
+		}
+	}, [isCurrent, categoryId, onDeleteCollection]);
 
 	return (
 		<DestructiveConfirmContent
-			onConfirm={() => {
-				void onDeleteCollection(isCurrent, categoryId);
-			}}
-			label="Delete Collection"
 			description={`${count} ${count === 1 ? "bookmark" : "bookmarks"}`}
+			label="Delete all bookmarks"
+			labelSecondary="Delete collection only"
+			onConfirm={handleDeleteAll}
+			onConfirmSecondary={handleKeepBookmarks}
+			pending={pendingMode === "delete-all"}
+			pendingSecondary={pendingMode === "keep-bookmarks"}
 		/>
 	);
 }

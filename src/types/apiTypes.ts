@@ -307,6 +307,7 @@ export type MoveBookmarkToTrashApiPayload = {
 
 export type DeleteUserCategoryApiPayload = {
 	category_id: number;
+	keep_bookmarks?: boolean;
 };
 
 export type UpdateCategoryOrderApiPayload = { order: number[] };

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
@@ -133,7 +133,7 @@ export function HeaderOptionsPopover() {
 								{view === "delete-collection" && (
 									<motion.div
 										key="delete-collection"
-										className="w-[180px] p-1"
+										className="w-56 p-1"
 										initial={{ opacity: 0 }}
 										animate={{ opacity: 1 }}
 										exit={{ opacity: 0 }}
@@ -258,18 +258,49 @@ function DeleteCollectionTabContent() {
 	const { category_id: categoryId } = useGetCurrentCategoryId();
 	const { onDeleteCollection } = useDeleteCollection();
 	const { bookmarksCountData } = useFetchBookmarksCount();
+	const [pendingMode, setPendingMode] = useState<
+		"delete-all" | "keep-bookmarks" | null
+	>(null);
 	const count =
 		bookmarksCountData?.data?.categoryCount?.find(
 			(category) => category.category_id === categoryId,
 		)?.count ?? 0;
 
+	const handleDeleteAll = useCallback(async () => {
+		setPendingMode("delete-all");
+		try {
+			await onDeleteCollection({
+				current: true,
+				categoryId: categoryId as number,
+				keepBookmarks: false,
+			});
+		} finally {
+			setPendingMode(null);
+		}
+	}, [categoryId, onDeleteCollection]);
+
+	const handleKeepBookmarks = useCallback(async () => {
+		setPendingMode("keep-bookmarks");
+		try {
+			await onDeleteCollection({
+				current: true,
+				categoryId: categoryId as number,
+				keepBookmarks: true,
+			});
+		} finally {
+			setPendingMode(null);
+		}
+	}, [categoryId, onDeleteCollection]);
+
 	return (
 		<DestructiveConfirmContent
-			onConfirm={() => {
-				void onDeleteCollection(true, categoryId as number);
-			}}
-			label="Delete Collection"
 			description={`${count} ${count === 1 ? "bookmark" : "bookmarks"}`}
+			label="Delete all bookmarks"
+			labelSecondary="Delete collection only"
+			onConfirm={handleDeleteAll}
+			onConfirmSecondary={handleKeepBookmarks}
+			pending={pendingMode === "delete-all"}
+			pendingSecondary={pendingMode === "keep-bookmarks"}
 		/>
 	);
 }
