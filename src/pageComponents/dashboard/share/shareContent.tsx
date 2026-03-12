@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { TrashIcon } from "@heroicons/react/20/solid";
-import { cn } from "@/utils/tailwind-merge";
 import { find, isEmpty, isNull } from "lodash";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
@@ -26,6 +25,7 @@ import { errorToast, successToast } from "../../../utils/toastMessages";
 
 import { SharePublicSwitch } from "./share-public-switch";
 import { AccessRoleSelect, InviteRoleSelect } from "./share-role-selects";
+import { cn } from "@/utils/tailwind-merge";
 
 const rightTextStyles = "text-13 font-medium leading-[15px] text-gray-600";
 
@@ -238,6 +238,7 @@ const ShareContent = (props: ShareContentProps) => {
 					isDisabled={!isUserTheCategoryOwner}
 					isError={!isEmpty(errors)}
 					onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+						event.stopPropagation();
 						if (event.nativeEvent.isComposing || event.key !== "Enter") {
 							return;
 						}
@@ -252,7 +253,7 @@ const ShareContent = (props: ShareContentProps) => {
 					placeholder="Enter emails or names"
 					rendedRightSideElement={
 						sendCollaborationEmailInviteMutation?.isPending ? (
-							<div className="my-[9.5px] flex items-center px-2">
+							<div className="my-[7px] flex items-center px-2">
 								<Spinner className="h-3 w-3 animate-spin text-gray-0" />
 							</div>
 						) : (
