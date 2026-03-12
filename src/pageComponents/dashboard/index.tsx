@@ -8,6 +8,7 @@ import isNull from "lodash/isNull";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/useFetchBookmarksView";
 import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
+import useFetchSharedCategories from "../../async/queryHooks/share/useFetchSharedCategories";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
@@ -83,6 +84,7 @@ const Dashboard = () => {
 	const { isLoadingCategories, isFetchingCategories } = useFetchCategories();
 
 	useFetchBookmarksView();
+	useFetchSharedCategories();
 
 	const { userProfileData } = useFetchUserProfile();
 
