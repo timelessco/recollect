@@ -60,7 +60,7 @@ export function MobileBottomSheet({
 						<div className="flex shrink-0 justify-center py-3">
 							<div className="h-1 w-8 rounded-full bg-gray-300" />
 						</div>
-						<div className="hide-scrollbar max-h-[calc(100dvh-48px)] overflow-y-auto">
+						<div className="max-h-[calc(100dvh-48px)] overflow-hidden">
 							<SidepaneContent
 								currentBookmark={currentBookmark}
 								currentIndex={currentIndex}
