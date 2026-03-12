@@ -47,7 +47,7 @@ export function AnimatedSize({ children }: AnimatedSizeProps) {
 			transition={
 				shouldReduceMotion
 					? { duration: 0 }
-					: { type: "spring", bounce: 0.15, duration: 0.3 }
+					: { type: "spring", bounce: 0.2, duration: 0.2 }
 			}
 			style={{ overflow: "clip" }}
 		>
