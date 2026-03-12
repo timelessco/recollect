@@ -11,14 +11,14 @@ export default function AuthLayout(props: AuthLayoutProps) {
 
 	return (
 		<div className="mx-auto flex min-h-dvh max-w-[300px] flex-col justify-center">
-			<header className="mb-[21px] flex items-center justify-center">
+			<header className="mb-[54px] flex items-center justify-center">
 				<RecollectLogoIcon
-					className="h-[23px] w-[19px] text-gray-950"
+					className="h-10 w-[30px] text-gray-950"
 					aria-label="Recollect"
 				/>
 			</header>
 
-			<main className="flex flex-col items-center justify-center gap-4">
+			<main className="flex flex-col items-center justify-center gap-3">
 				{children}
 			</main>
 		</div>
