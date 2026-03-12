@@ -15,7 +15,6 @@ import { createClient } from "@/lib/supabase/client";
 import { EVERYTHING_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
 import { cn } from "@/utils/tailwind-merge";
-import { successToast } from "@/utils/toastMessages";
 
 export function SignInWithGoogleForm() {
 	const [callbackURL] = React.useState<string | undefined>(() => {
@@ -47,10 +46,7 @@ export function SignInWithGoogleForm() {
 
 				if (error) {
 					handleClientError(error, "Failed to sign in with Google");
-					return;
 				}
-
-				successToast("Proceeding with Google OAuth!");
 			} catch (error) {
 				handleClientError(error, "Failed to sign in with Google");
 			}
@@ -106,10 +102,7 @@ export function SignInWithAppleForm() {
 
 				if (error) {
 					handleClientError(error, "Failed to sign in with Apple");
-					return;
 				}
-
-				successToast("Proceeding with Apple OAuth!");
 			} catch (error) {
 				handleClientError(error, "Failed to sign in with Apple");
 			}
