@@ -58,7 +58,7 @@ export function SidepaneContent({
 		setShowMore(false);
 		setIsExpanded(false);
 
-		setTimeout(() => {
+		const timeoutId = setTimeout(() => {
 			if (expandableRef?.current) {
 				setHasAIOverflowContent(expandableRef.current.scrollHeight > 120);
 			}
@@ -68,7 +68,16 @@ export function SidepaneContent({
 				setIsOverflowing(element.scrollHeight > element.clientHeight);
 			}
 		}, 0);
-	}, [currentBookmark?.id, currentIndex, lightboxShowSidepane]);
+
+		return () => clearTimeout(timeoutId);
+	}, [
+		currentBookmark?.id,
+		currentBookmark?.description,
+		currentBookmark?.addedTags,
+		currentBookmark?.meta_data,
+		currentIndex,
+		lightboxShowSidepane,
+	]);
 
 	let domain: string | undefined;
 	try {
