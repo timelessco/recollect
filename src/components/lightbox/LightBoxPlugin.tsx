@@ -1,8 +1,5 @@
-import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useMediaQuery } from "@react-hookz/web";
-import { format } from "date-fns";
-import { AnimatePresence, motion } from "motion/react";
 import {
 	createModule,
 	useLightboxState,
@@ -10,48 +7,17 @@ import {
 } from "yet-another-react-lightbox";
 
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
-import { Icon } from "../atoms/icon";
-import { GetBookmarkIcon } from "../get-bookmark-icon";
 import { Spinner } from "../spinner";
 
-import { CategoryMultiSelect } from "./category-multi-select";
-import { highlightSearch, type CustomSlide } from "./LightboxUtils";
+import { DesktopSidepane } from "./desktop-sidepane";
+import { type CustomSlide } from "./LightboxUtils";
 import { MobileBottomSheet } from "./mobile-bottom-sheet";
-import { usePageContext } from "@/hooks/use-page-context";
-import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
-import { GeminiAiIcon } from "@/icons/geminiAiIcon";
-import { useMiscellaneousStore } from "@/store/componentStore";
-
-const formatDate = (dateString: string) => {
-	try {
-		return format(new Date(dateString), "MMM d, yyyy");
-	} catch {
-		return "";
-	}
-};
 
 const MyComponent = () => {
 	const { currentIndex, slides } = useLightboxState();
 	const isMobile = useMediaQuery("(max-width: 768px)");
-	const [isInitialMount, setIsInitialMount] = useState(true);
-
-	useEffect(() => {
-		setIsInitialMount(false);
-	}, []);
-	const [showMore, setShowMore] = useState(false);
-	const [isOverflowing, setIsOverflowing] = useState(false);
-	const [isExpanded, setIsExpanded] = useState(false);
-	const descriptionRef = useRef<HTMLParagraphElement>(null);
-	const aiSummaryScrollRef = useRef<HTMLDivElement>(null);
 
 	const router = useRouter();
-
-	const isUserInTweetsPage = useIsUserInTweetsPage();
-
-	const { isPublicPage, isDiscoverPage } = usePageContext();
-
-	const searchText = useMiscellaneousStore((state) => state.searchText);
-	const trimmedSearchText = searchText?.trim() ?? "";
 
 	const currentSlide = slides[currentIndex] as CustomSlide | undefined;
 	let currentBookmark = currentSlide?.data?.bookmark;
@@ -67,32 +33,6 @@ const MyComponent = () => {
 	if (!currentBookmark && bookmark?.data) {
 		currentBookmark = bookmark.data;
 	}
-
-	const [hasAIOverflowContent, setHasAIOverflowContent] = useState(false);
-	const expandableRef = useRef<HTMLDivElement>(null);
-
-	const metaData = currentBookmark?.meta_data;
-	const collapsedOffset =
-		(currentBookmark?.addedTags?.length ?? 0) > 0 ? 145 : 110;
-	const lightboxShowSidepane = useMiscellaneousStore(
-		(state) => state.lightboxShowSidepane,
-	);
-	useEffect(() => {
-		setShowMore(false);
-		setIsExpanded(false);
-
-		setTimeout(() => {
-			if (expandableRef?.current) {
-				const contentHeight = expandableRef?.current?.scrollHeight;
-				setHasAIOverflowContent(contentHeight > 120);
-			}
-
-			if (descriptionRef?.current) {
-				const element = descriptionRef?.current;
-				setIsOverflowing(element?.scrollHeight > element?.clientHeight);
-			}
-		}, 0);
-	}, [currentBookmark?.id, currentIndex, lightboxShowSidepane]);
 
 	if (!currentBookmark) {
 		if (isMobile) {
@@ -119,232 +59,12 @@ const MyComponent = () => {
 		);
 	}
 
-	const domain = new URL(currentBookmark?.url)?.hostname;
 	return (
-		<AnimatePresence>
-			{lightboxShowSidepane && (
-				<motion.div
-					initial={
-						isInitialMount && lightboxShowSidepane
-							? { x: 0, opacity: 0, scale: 0.97 }
-							: { x: "100%" }
-					}
-					animate={{
-						x: 0,
-						opacity: 1,
-						scale: 1,
-						transition:
-							isInitialMount && lightboxShowSidepane
-								? {
-										duration: 0.25,
-										ease: "easeInOut",
-										opacity: { duration: 0.25, ease: "easeInOut" },
-										scale: {
-											from: 0.97,
-											duration: 0.25,
-											ease: "easeInOut",
-										},
-									}
-								: {
-										type: "tween",
-										duration: 0.15,
-										ease: "easeInOut",
-									},
-					}}
-					exit={{
-						x: "100%",
-						transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
-					}}
-					className="absolute top-0 right-0 flex h-full w-1/5 max-w-[400px] min-w-[320px] flex-col border-l-[0.5px] border-gray-100 bg-gray-0 backdrop-blur-[41px]"
-				>
-					<div className="flex flex-1 flex-col p-5 text-left">
-						{currentBookmark?.title && (
-							<div>
-								<p
-									className="pb-2 align-middle text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900"
-									tabIndex={-1}
-								>
-									{highlightSearch(currentBookmark.title, trimmedSearchText)}
-								</p>
-							</div>
-						)}
-						{domain && (
-							<div
-								className="pb-4 align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
-								tabIndex={-1}
-							>
-								<div className="flex items-center gap-1 text-13 leading-[138%]">
-									<div className="flex h-[15px] w-[15px] items-center text-gray-600">
-										{currentBookmark ? (
-											<GetBookmarkIcon
-												item={currentBookmark}
-												isUserInTweetsPage={isUserInTweetsPage}
-												size={15}
-											/>
-										) : null}
-									</div>
-									<span className="truncate">
-										{highlightSearch(domain ?? "", trimmedSearchText)}
-									</span>
-									<span>·</span>
-									{currentBookmark?.inserted_at && (
-										<span className="truncate">
-											{formatDate(currentBookmark?.inserted_at)}
-										</span>
-									)}
-								</div>
-							</div>
-						)}
-						{currentBookmark?.description && (
-							<div className="relative">
-								<p
-									className={`${
-										showMore ? "" : "line-clamp-4"
-									} text-13 leading-[138%] font-normal tracking-[0.01em] text-clip text-gray-700`}
-									ref={descriptionRef}
-									tabIndex={-1}
-								>
-									{highlightSearch(
-										currentBookmark.description,
-										trimmedSearchText,
-									)}
-									{showMore && isOverflowing && (
-										<button
-											className="ml-1 inline text-13 leading-[138%] tracking-[0.01em] text-gray-700"
-											onClick={() => setShowMore(false)}
-											type="button"
-										>
-											Show less
-										</button>
-									)}
-								</p>
-								{isOverflowing && !showMore && (
-									<button
-										className="absolute right-0 bottom-0 inline bg-gray-0 pl-1 text-13 leading-[138%] tracking-[0.01em] text-gray-700"
-										onClick={() => setShowMore(true)}
-										type="button"
-									>
-										Show more
-									</button>
-								)}
-							</div>
-						)}
-						{!isDiscoverPage && !isPublicPage && (
-							<CategoryMultiSelect
-								bookmarkId={currentBookmark?.id}
-								shouldFetch={shouldFetch}
-							/>
-						)}
-					</div>
-					{(currentBookmark?.addedTags?.length > 0 ||
-						metaData?.img_caption ||
-						metaData?.ocr ||
-						metaData?.image_caption ||
-						(metaData?.image_keywords?.length ?? 0) > 0) && (
-						<motion.div
-							animate={{
-								y: isExpanded ? 0 : `calc(100% - ${collapsedOffset}px)`,
-							}}
-							className="relative overflow-hidden"
-							initial={{
-								y: `calc(100% - ${collapsedOffset}px)`,
-							}}
-							key={currentBookmark?.id}
-							ref={expandableRef}
-							transition={{
-								type: "spring",
-								damping: 25,
-								stiffness: 300,
-							}}
-						>
-							{currentBookmark?.addedTags?.length > 0 && (
-								<div className="px-5 pb-[19px]">
-									<div className="flex flex-wrap gap-[6px]">
-										{currentBookmark?.addedTags?.map(
-											(tag: { id: number; name: string }) => (
-												<span
-													className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
-													key={tag?.id}
-												>
-													{highlightSearch("#" + tag?.name, trimmedSearchText)}
-												</span>
-											),
-										)}
-									</div>
-								</div>
-							)}
-							{(metaData?.img_caption ||
-								metaData?.ocr ||
-								metaData?.image_caption ||
-								(metaData?.image_keywords?.length ?? 0) > 0) && (
-								<motion.div
-									className={`relative px-5 py-3 text-sm ${
-										hasAIOverflowContent ? "cursor-pointer" : ""
-									}`}
-									onClick={() => {
-										if (!hasAIOverflowContent) {
-											return;
-										}
-
-										setIsExpanded((prev) => !prev);
-										if (aiSummaryScrollRef.current) {
-											aiSummaryScrollRef.current.scrollTop = 0;
-										}
-									}}
-									whileTap={hasAIOverflowContent ? { scale: 0.98 } : {}}
-								>
-									<div className="mb-2 flex items-center gap-2">
-										<Icon className="h-[15px] w-[15px] text-gray-600">
-											<GeminiAiIcon />
-										</Icon>
-										<p className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600">
-											AI Summary
-										</p>
-									</div>
-									<div
-										ref={aiSummaryScrollRef}
-										className={`max-h-[200px] ${
-											isExpanded ? "hide-scrollbar scroll-shadows" : ""
-										}`}
-									>
-										<p className="text-13 leading-[138%] tracking-[0.01em] text-gray-500">
-											{highlightSearch(
-												metaData?.img_caption || metaData?.image_caption || "",
-												trimmedSearchText,
-											)}
-											{(metaData?.img_caption || metaData?.image_caption) &&
-												metaData?.ocr && <br />}
-											{highlightSearch(metaData?.ocr ?? "", trimmedSearchText)}
-											{(metaData?.image_keywords?.length ?? 0) > 0 && (
-												<>
-													{(metaData?.img_caption ||
-														metaData?.image_caption ||
-														metaData?.ocr) && <br />}
-													<span className="font-450">Keywords: </span>
-													{highlightSearch(
-														metaData?.image_keywords?.join(", ") ?? "",
-														trimmedSearchText,
-													)}
-												</>
-											)}
-										</p>
-									</div>
-								</motion.div>
-							)}
-						</motion.div>
-					)}
-					{!isExpanded && hasAIOverflowContent && (
-						<div
-							className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[60px]"
-							style={{
-								background:
-									"linear-gradient(180deg, var(--color-whites-50) 0%, var(--color-whites-800) 77%, var(--color-whites-1000) 100%)",
-							}}
-						/>
-					)}
-				</motion.div>
-			)}
-		</AnimatePresence>
+		<DesktopSidepane
+			currentBookmark={currentBookmark}
+			currentIndex={currentIndex}
+			shouldFetch={shouldFetch}
+		/>
 	);
 };
 
