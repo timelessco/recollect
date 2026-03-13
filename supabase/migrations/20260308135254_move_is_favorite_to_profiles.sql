@@ -40,14 +40,32 @@ set search_path = public, pg_temp
 as $$
 declare
   v_row record;
+  v_uid uuid := auth.uid();
 begin
+  -- Validate the category exists and is accessible (owned or shared with user)
+  if not exists (
+    select 1 from public.categories where id = p_category_id and user_id = v_uid
+    union all
+    select 1 from public.shared_categories
+    where category_id = p_category_id
+      and user_id = v_uid
+      and is_accept_pending = false
+  ) then
+    -- Return current profile unchanged
+    return query
+      select p.id, p.favorite_categories
+      from public.profiles p
+      where p.id = v_uid;
+    return;
+  end if;
+
   update public.profiles p
   set favorite_categories = case
     when p_category_id = any(coalesce(p.favorite_categories, '{}'))
     then array_remove(coalesce(p.favorite_categories, '{}'), p_category_id)
     else array_append(coalesce(p.favorite_categories, '{}'), p_category_id)
   end
-  where p.id = auth.uid()
+  where p.id = v_uid
   returning p.id, p.favorite_categories into v_row;
 
   return query select v_row.id, v_row.favorite_categories;
@@ -80,6 +98,7 @@ $$;
 revoke execute on function public.remove_category_from_all_favorites(integer) from public;
 revoke execute on function public.remove_category_from_all_favorites(integer) from anon;
 revoke execute on function public.remove_category_from_all_favorites(integer) from authenticated;
+grant execute on function public.remove_category_from_all_favorites(integer) to service_role;
 
 comment on function public.remove_category_from_all_favorites is
 'Removes a category ID from all users favorite_categories arrays. Used during category deletion cleanup.';
