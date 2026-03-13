@@ -28,15 +28,7 @@ export function MobileBottomSheet({
 		setSnapPoint(DEFAULT_SNAP_POINT);
 	}, [currentBookmark?.id]);
 
-	const handleOpenChange: Drawer.Root.Props["onOpenChange"] = (
-		open,
-		eventDetails,
-	) => {
-		// Only close via swipe dismiss or escape key — outside press races with the toolbar toggle button
-		if (!open && eventDetails.reason === "outside-press") {
-			return;
-		}
-
+	const handleOpenChange: Drawer.Root.Props["onOpenChange"] = (open) => {
 		setLightboxShowSidepane(open);
 		try {
 			localStorage.setItem("lightboxSidepaneOpen", String(open));
@@ -47,6 +39,7 @@ export function MobileBottomSheet({
 
 	return (
 		<Drawer.Root
+			disablePointerDismissal
 			modal={false}
 			onOpenChange={handleOpenChange}
 			onSnapPointChange={setSnapPoint}
@@ -56,7 +49,7 @@ export function MobileBottomSheet({
 		>
 			<Drawer.Portal keepMounted>
 				<Drawer.Viewport className="pointer-events-none fixed inset-0 z-10000 flex items-end">
-					<Drawer.Popup className="pointer-events-auto relative flex w-full [transform:translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))] touch-none flex-col overflow-visible rounded-t-xl bg-gray-0 shadow-[0_-16px_48px_rgb(0_0_0/0.12),0_6px_18px_rgb(0_0_0/0.06)] outline-hidden transition-[transform,box-shadow] duration-[450ms] ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform data-[ending-style]:[transform:translateY(calc(100%+2px))] data-[ending-style]:shadow-[0_-16px_48px_rgb(0_0_0/0),0_6px_18px_rgb(0_0_0/0)] data-[ending-style]:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-[starting-style]:[transform:translateY(calc(100%+2px))] data-[starting-style]:shadow-[0_-16px_48px_rgb(0_0_0/0),0_6px_18px_rgb(0_0_0/0)] data-[swiping]:select-none">
+					<Drawer.Popup className="pointer-events-auto relative flex w-full transform-[translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))] touch-none flex-col overflow-visible rounded-t-xl bg-gray-0 shadow-[0_-16px_48px_rgb(0_0_0/0.12),0_6px_18px_rgb(0_0_0/0.06)] outline-hidden transition-[transform,box-shadow] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform data-ending-style:transform-[translateY(calc(100%+2px))] data-ending-style:shadow-[0_-16px_48px_rgb(0_0_0/0),0_6px_18px_rgb(0_0_0/0)] data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-starting-style:transform-[translateY(calc(100%+2px))] data-starting-style:shadow-[0_-16px_48px_rgb(0_0_0/0),0_6px_18px_rgb(0_0_0/0)] data-swiping:select-none">
 						<div className="flex shrink-0 justify-center py-3">
 							<div className="h-1 w-8 rounded-full bg-gray-300" />
 						</div>
