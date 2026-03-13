@@ -5,7 +5,8 @@ import ShareContent from "../share/shareContent";
 
 import { type CollectionItemTypes } from "./singleListItemComponent";
 import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
-import { DestructiveConfirmContent } from "@/components/destructive-confirm-content";
+import useFetchBookmarksCount from "@/async/queryHooks/bookmarks/useFetchBookmarksCount";
+import { DeleteCollectionConfirm } from "@/components/delete-collection-confirm";
 import { AnimatedSize } from "@/components/ui/recollect/animated-size";
 import { Menu } from "@/components/ui/recollect/menu";
 import { useDeleteCollectionActions } from "@/hooks/useDeleteCollectionActions";
@@ -120,7 +121,7 @@ export function CollectionOptionsPopover({
 									{view === "delete" && (
 										<motion.div
 											key="delete"
-											className="w-56 p-1"
+											className="w-auto p-1"
 											initial={{ opacity: 0 }}
 											animate={{ opacity: 1 }}
 											exit={{ opacity: 0 }}
@@ -128,7 +129,6 @@ export function CollectionOptionsPopover({
 										>
 											<DeleteCollectionContent
 												categoryId={item.id}
-												count={item.count}
 												isCurrent={item.current}
 											/>
 										</motion.div>
@@ -179,27 +179,27 @@ function FavoriteMenuItem({ categoryId, isFavorite }: FavoriteMenuItemProps) {
 
 interface DeleteCollectionContentProps {
 	categoryId: number;
-	count?: number;
 	isCurrent: boolean;
 }
 
 function DeleteCollectionContent({
 	categoryId,
-	count = 0,
 	isCurrent,
 }: DeleteCollectionContentProps) {
 	const { pendingMode, handleDeleteAll, handleKeepBookmarks } =
 		useDeleteCollectionActions({ categoryId, isCurrent });
+	const { bookmarksCountData } = useFetchBookmarksCount();
+	const count =
+		bookmarksCountData?.data?.categoryCount?.find(
+			(category) => category.category_id === categoryId,
+		)?.count ?? 0;
 
 	return (
-		<DestructiveConfirmContent
-			description={`${count} ${count === 1 ? "bookmark" : "bookmarks"}`}
-			label="Delete all bookmarks"
-			labelSecondary="Delete collection only"
-			onConfirm={handleDeleteAll}
-			onConfirmSecondary={handleKeepBookmarks}
-			pending={pendingMode === "delete-all"}
-			pendingSecondary={pendingMode === "keep-bookmarks"}
+		<DeleteCollectionConfirm
+			count={count}
+			onDeleteCollection={handleKeepBookmarks}
+			onDeleteAll={handleDeleteAll}
+			pendingMode={pendingMode}
 		/>
 	);
 }

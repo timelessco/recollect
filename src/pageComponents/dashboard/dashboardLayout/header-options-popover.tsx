@@ -9,14 +9,15 @@ import { useDeleteCollectionActions } from "../../../hooks/useDeleteCollectionAc
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import RenameIcon from "../../../icons/actionIcons/renameIcon";
-import TrashIconRed from "../../../icons/actionIcons/trashIconRed";
 import OptionsIcon from "../../../icons/optionsIcon";
 import ShareIcon from "../../../icons/shareIcon";
+import TrashIconGray from "../../../icons/trash-icon-gray";
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import { DISCOVER_URL, TRASH_URL } from "../../../utils/constants";
 import ShareContent from "../share/shareContent";
 
+import { DeleteCollectionConfirm } from "@/components/delete-collection-confirm";
 import { DestructiveConfirmContent } from "@/components/destructive-confirm-content";
 import { AnimatedSize } from "@/components/ui/recollect/animated-size";
 import { Menu } from "@/components/ui/recollect/menu";
@@ -193,7 +194,7 @@ function HeaderMenuItems({
 					className="text-red-600 data-highlighted:text-red-600"
 					onClick={() => selectView("trash")}
 				>
-					<TrashIconRed />
+					<TrashIconGray className="size-4" />
 					<span className="ml-[6px]">Clear Trash</span>
 				</Menu.Item>
 			)}
@@ -208,7 +209,7 @@ function HeaderMenuItems({
 						className="text-red-600 data-highlighted:text-red-600"
 						onClick={() => selectView("delete-collection")}
 					>
-						<TrashIconRed />
+						<TrashIconGray className="size-4" />
 						<span className="ml-[6px]">Delete collection</span>
 					</Menu.Item>
 				</>
@@ -268,14 +269,11 @@ function DeleteCollectionTabContent() {
 		)?.count ?? 0;
 
 	return (
-		<DestructiveConfirmContent
-			description={`${count} ${count === 1 ? "bookmark" : "bookmarks"}`}
-			label="Delete all bookmarks"
-			labelSecondary="Delete collection only"
-			onConfirm={handleDeleteAll}
-			onConfirmSecondary={handleKeepBookmarks}
-			pending={pendingMode === "delete-all"}
-			pendingSecondary={pendingMode === "keep-bookmarks"}
+		<DeleteCollectionConfirm
+			count={count}
+			onDeleteCollection={handleKeepBookmarks}
+			onDeleteAll={handleDeleteAll}
+			pendingMode={pendingMode}
 		/>
 	);
 }

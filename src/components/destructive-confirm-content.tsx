@@ -2,8 +2,7 @@ import { type ReactNode } from "react";
 import { Button } from "@base-ui/react/button";
 
 import { Spinner } from "./spinner";
-import TrashIconGray from "@/icons/actionIcons/trashIconGray";
-import TrashIconRed from "@/icons/actionIcons/trashIconRed";
+import TrashIconGray from "@/icons/trash-icon-gray";
 
 interface DestructiveConfirmContentProps {
 	onConfirm: () => void;
@@ -22,11 +21,11 @@ export function DestructiveConfirmContent({
 	label,
 	description,
 	pending = false,
-	icon = <TrashIconRed />,
+	icon = <TrashIconGray className="size-4" />,
 	onConfirmSecondary,
 	labelSecondary,
 	pendingSecondary = false,
-	iconSecondary = <TrashIconGray />,
+	iconSecondary = <TrashIconGray className="size-4" />,
 }: DestructiveConfirmContentProps) {
 	return (
 		<>

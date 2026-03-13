@@ -1,7 +1,6 @@
-import { Popover } from "@/components/ui/recollect/popover";
-
 import { DestructiveConfirmContent } from "./destructive-confirm-content";
-import TrashIconGray from "@/icons/actionIcons/trashIconGray";
+import { Popover } from "@/components/ui/recollect/popover";
+import TrashIconGray from "@/icons/trash-icon-gray";
 
 interface ClearTrashDropdownProps {
 	onClearTrash: () => void;
@@ -48,6 +47,7 @@ export function ClearTrashDropdown(props: ClearTrashDropdownProps) {
 							onPointerDown={(event) => {
 								event.stopPropagation();
 							}}
+							className="size-4"
 						/>
 					</figure>
 				)}

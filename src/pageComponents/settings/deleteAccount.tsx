@@ -11,7 +11,7 @@ import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
 import { BackIconBlack } from "../../icons/actionIcons/backIconBlack";
-import TrashIconRed from "../../icons/actionIcons/trashIconRed";
+import TrashIconGray from "../../icons/trash-icon-gray";
 import { useSupabaseSession } from "../../store/componentStore";
 import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
@@ -148,7 +148,7 @@ export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
 								) : (
 									<>
 										<figure className="mr-2">
-											<TrashIconRed />
+											<TrashIconGray className="size-4" />
 										</figure>
 										Confirm delete
 									</>
