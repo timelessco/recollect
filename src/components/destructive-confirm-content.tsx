@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import { Button } from "@base-ui/react/button";
 
 import { Spinner } from "./spinner";
-import TrashIconRed from "@/icons/actionIcons/trashIconRed";
+import TrashIconGray from "@/icons/trash-icon-gray";
 
 interface DestructiveConfirmContentProps {
 	onConfirm: () => void;
@@ -10,6 +10,10 @@ interface DestructiveConfirmContentProps {
 	description?: string;
 	pending?: boolean;
 	icon?: ReactNode;
+	onConfirmSecondary?: () => void;
+	labelSecondary?: string;
+	pendingSecondary?: boolean;
+	iconSecondary?: ReactNode;
 }
 
 export function DestructiveConfirmContent({
@@ -17,7 +21,11 @@ export function DestructiveConfirmContent({
 	label,
 	description,
 	pending = false,
-	icon = <TrashIconRed />,
+	icon = <TrashIconGray className="size-4" />,
+	onConfirmSecondary,
+	labelSecondary,
+	pendingSecondary = false,
+	iconSecondary = <TrashIconGray className="size-4" />,
 }: DestructiveConfirmContentProps) {
 	return (
 		<>
@@ -31,6 +39,7 @@ export function DestructiveConfirmContent({
 			)}
 			<Button
 				className="flex w-full items-center justify-center rounded-lg bg-gray-alpha-100 px-2 py-[5.5px] text-13 leading-[115%] font-medium tracking-[0.01em] text-red-600 hover:bg-gray-alpha-200 hover:text-red-600"
+				disabled={pending || pendingSecondary}
 				onClick={onConfirm}
 			>
 				{pending ? (
@@ -38,10 +47,28 @@ export function DestructiveConfirmContent({
 				) : (
 					<>
 						{icon}
-						<p className="ml-[6px] text-red-600 hover:text-red-600">{label}</p>
+						<span className="ml-[6px] text-red-600 hover:text-red-600">
+							{label}
+						</span>
 					</>
 				)}
 			</Button>
+			{onConfirmSecondary && labelSecondary && (
+				<Button
+					className="mt-1 flex w-full items-center justify-center rounded-lg bg-gray-alpha-100 px-2 py-[5.5px] text-13 leading-[115%] font-medium tracking-[0.01em] text-gray-600 hover:bg-gray-alpha-200 hover:text-gray-700"
+					disabled={pending || pendingSecondary}
+					onClick={onConfirmSecondary}
+				>
+					{pendingSecondary ? (
+						<Spinner className="h-[15px] w-[15px]" />
+					) : (
+						<>
+							{iconSecondary}
+							<span className="ml-[6px]">{labelSecondary}</span>
+						</>
+					)}
+				</Button>
+			)}
 		</>
 	);
 }

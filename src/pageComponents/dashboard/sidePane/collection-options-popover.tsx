@@ -5,11 +5,11 @@ import ShareContent from "../share/shareContent";
 
 import { type CollectionItemTypes } from "./singleListItemComponent";
 import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
-import { DestructiveConfirmContent } from "@/components/destructive-confirm-content";
+import useFetchBookmarksCount from "@/async/queryHooks/bookmarks/useFetchBookmarksCount";
+import { DeleteCollectionConfirm } from "@/components/delete-collection-confirm";
 import { AnimatedSize } from "@/components/ui/recollect/animated-size";
 import { Menu } from "@/components/ui/recollect/menu";
-import useFetchBookmarksCount from "@/async/queryHooks/bookmarks/useFetchBookmarksCount";
-import { useDeleteCollection } from "@/hooks/useDeleteCollection";
+import { useDeleteCollectionActions } from "@/hooks/useDeleteCollectionActions";
 import OptionsIcon from "@/icons/optionsIcon";
 
 type CollectionOptionsPopoverProps = {
@@ -121,7 +121,7 @@ export function CollectionOptionsPopover({
 									{view === "delete" && (
 										<motion.div
 											key="delete"
-											className="w-48 p-1"
+											className="w-auto p-1"
 											initial={{ opacity: 0 }}
 											animate={{ opacity: 1 }}
 											exit={{ opacity: 0 }}
@@ -186,7 +186,8 @@ function DeleteCollectionContent({
 	categoryId,
 	isCurrent,
 }: DeleteCollectionContentProps) {
-	const { onDeleteCollection } = useDeleteCollection();
+	const { pendingMode, handleDeleteAll, handleKeepBookmarks } =
+		useDeleteCollectionActions({ categoryId, isCurrent });
 	const { bookmarksCountData } = useFetchBookmarksCount();
 	const count =
 		bookmarksCountData?.data?.categoryCount?.find(
@@ -194,12 +195,11 @@ function DeleteCollectionContent({
 		)?.count ?? 0;
 
 	return (
-		<DestructiveConfirmContent
-			onConfirm={() => {
-				void onDeleteCollection(isCurrent, categoryId);
-			}}
-			label="Delete Collection"
-			description={`${count} ${count === 1 ? "bookmark" : "bookmarks"}`}
+		<DeleteCollectionConfirm
+			count={count}
+			onDeleteCollection={handleKeepBookmarks}
+			onDeleteAll={handleDeleteAll}
+			pendingMode={pendingMode}
 		/>
 	);
 }
