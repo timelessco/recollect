@@ -57,7 +57,7 @@ export function DestructiveConfirmContent({
 			{onConfirmSecondary && labelSecondary && (
 				<Button
 					className="mt-1 flex w-full items-center justify-center rounded-lg bg-gray-alpha-100 px-2 py-[5.5px] text-13 leading-[115%] font-medium tracking-[0.01em] text-gray-600 hover:bg-gray-alpha-200 hover:text-gray-700"
-					disabled={pending}
+					disabled={pending || pendingSecondary}
 					onClick={onConfirmSecondary}
 				>
 					{pendingSecondary ? (
