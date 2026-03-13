@@ -206,9 +206,9 @@ export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
 	// Only render iframe if this is the active slide and iframe is allowed
 	if (bookmark?.meta_data?.iframeAllowed && isActive && iframeEnabled) {
 		return (
-			<div className="flex h-full min-h-[500px] w-full max-w-[min(1200px,90vw)] items-end">
+			<div className="flex h-full min-h-[200px] w-full max-w-[min(1200px,90vw)] items-end">
 				<object
-					className="flex h-full max-h-[90vh] w-full items-center justify-center bg-gray-0"
+					className="flex h-full max-h-[80vh] w-full items-center justify-center bg-gray-0 md:max-h-[90vh]"
 					data={bookmark?.url}
 					title="Website Preview"
 					type="text/html"
