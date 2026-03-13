@@ -85,7 +85,30 @@ comment on function public.remove_category_from_all_favorites is
 'Removes a category ID from all users favorite_categories arrays. Used during category deletion cleanup.';
 
 -- -----------------------------------------------------------------------
--- PART 5: Drop old column from categories
+-- PART 5: Create single-user cleanup function (for leaving shared categories)
+-- -----------------------------------------------------------------------
+
+create or replace function public.remove_favorite_category_for_user(p_category_id integer)
+returns void
+language sql
+security invoker
+set search_path = public, pg_temp
+as $$
+  update public.profiles
+  set favorite_categories = array_remove(favorite_categories, p_category_id)
+  where id = auth.uid()
+    and p_category_id = any(favorite_categories);
+$$;
+
+revoke execute on function public.remove_favorite_category_for_user(integer) from public;
+revoke execute on function public.remove_favorite_category_for_user(integer) from anon;
+grant execute on function public.remove_favorite_category_for_user(integer) to authenticated;
+
+comment on function public.remove_favorite_category_for_user is
+'Atomically removes a category ID from the calling user''s favorite_categories array. Used when leaving a shared category.';
+
+-- -----------------------------------------------------------------------
+-- PART 6: Drop old column from categories
 -- -----------------------------------------------------------------------
 
 alter table public.categories drop column is_favorite;

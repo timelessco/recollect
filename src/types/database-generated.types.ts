@@ -519,6 +519,10 @@ export type Database = {
 				Args: { p_category_id: number };
 				Returns: undefined;
 			};
+			remove_favorite_category_for_user: {
+				Args: { p_category_id: number };
+				Returns: undefined;
+			};
 			remove_category_from_bookmark: {
 				Args: { p_bookmark_id: number; p_category_id: number };
 				Returns: Array<{
