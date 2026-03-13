@@ -8,6 +8,7 @@ import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/categ
 import { DestructiveConfirmContent } from "@/components/destructive-confirm-content";
 import { AnimatedSize } from "@/components/ui/recollect/animated-size";
 import { Menu } from "@/components/ui/recollect/menu";
+import useFetchBookmarksCount from "@/async/queryHooks/bookmarks/useFetchBookmarksCount";
 import { useDeleteCollection } from "@/hooks/useDeleteCollection";
 import OptionsIcon from "@/icons/optionsIcon";
 
@@ -128,7 +129,6 @@ export function CollectionOptionsPopover({
 										>
 											<DeleteCollectionContent
 												categoryId={item.id}
-												count={item.count}
 												isCurrent={item.current}
 											/>
 										</motion.div>
@@ -179,16 +179,19 @@ function FavoriteMenuItem({ categoryId, isFavorite }: FavoriteMenuItemProps) {
 
 interface DeleteCollectionContentProps {
 	categoryId: number;
-	count?: number;
 	isCurrent: boolean;
 }
 
 function DeleteCollectionContent({
 	categoryId,
-	count = 0,
 	isCurrent,
 }: DeleteCollectionContentProps) {
 	const { onDeleteCollection } = useDeleteCollection();
+	const { bookmarksCountData } = useFetchBookmarksCount();
+	const count =
+		bookmarksCountData?.data?.categoryCount?.find(
+			(category) => category.category_id === categoryId,
+		)?.count ?? 0;
 
 	return (
 		<DestructiveConfirmContent
