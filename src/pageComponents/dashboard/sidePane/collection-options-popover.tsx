@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import ShareContent from "../share/shareContent";
@@ -8,7 +8,7 @@ import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/categ
 import { DestructiveConfirmContent } from "@/components/destructive-confirm-content";
 import { AnimatedSize } from "@/components/ui/recollect/animated-size";
 import { Menu } from "@/components/ui/recollect/menu";
-import { useDeleteCollection } from "@/hooks/useDeleteCollection";
+import { useDeleteCollectionActions } from "@/hooks/useDeleteCollectionActions";
 import OptionsIcon from "@/icons/optionsIcon";
 
 type CollectionOptionsPopoverProps = {
@@ -188,36 +188,8 @@ function DeleteCollectionContent({
 	count = 0,
 	isCurrent,
 }: DeleteCollectionContentProps) {
-	const { onDeleteCollection } = useDeleteCollection();
-	const [pendingMode, setPendingMode] = useState<
-		"delete-all" | "keep-bookmarks" | null
-	>(null);
-
-	const handleDeleteAll = useCallback(async () => {
-		setPendingMode("delete-all");
-		try {
-			await onDeleteCollection({
-				current: isCurrent,
-				categoryId,
-				keepBookmarks: false,
-			});
-		} finally {
-			setPendingMode(null);
-		}
-	}, [isCurrent, categoryId, onDeleteCollection]);
-
-	const handleKeepBookmarks = useCallback(async () => {
-		setPendingMode("keep-bookmarks");
-		try {
-			await onDeleteCollection({
-				current: isCurrent,
-				categoryId,
-				keepBookmarks: true,
-			});
-		} finally {
-			setPendingMode(null);
-		}
-	}, [isCurrent, categoryId, onDeleteCollection]);
+	const { pendingMode, handleDeleteAll, handleKeepBookmarks } =
+		useDeleteCollectionActions({ categoryId, isCurrent });
 
 	return (
 		<DestructiveConfirmContent

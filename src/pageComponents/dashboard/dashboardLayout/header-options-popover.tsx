@@ -1,11 +1,11 @@
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
 import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import { BookmarksSortDropdown } from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
 import { BookmarksViewDropdown } from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
-import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
+import { useDeleteCollectionActions } from "../../../hooks/useDeleteCollectionActions";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import RenameIcon from "../../../icons/actionIcons/renameIcon";
@@ -256,41 +256,16 @@ function ClearTrashTabContent({ onClose }: { onClose: () => void }) {
 
 function DeleteCollectionTabContent() {
 	const { category_id: categoryId } = useGetCurrentCategoryId();
-	const { onDeleteCollection } = useDeleteCollection();
 	const { bookmarksCountData } = useFetchBookmarksCount();
-	const [pendingMode, setPendingMode] = useState<
-		"delete-all" | "keep-bookmarks" | null
-	>(null);
+	const { pendingMode, handleDeleteAll, handleKeepBookmarks } =
+		useDeleteCollectionActions({
+			categoryId: categoryId as number,
+			isCurrent: true,
+		});
 	const count =
 		bookmarksCountData?.data?.categoryCount?.find(
 			(category) => category.category_id === categoryId,
 		)?.count ?? 0;
-
-	const handleDeleteAll = useCallback(async () => {
-		setPendingMode("delete-all");
-		try {
-			await onDeleteCollection({
-				current: true,
-				categoryId: categoryId as number,
-				keepBookmarks: false,
-			});
-		} finally {
-			setPendingMode(null);
-		}
-	}, [categoryId, onDeleteCollection]);
-
-	const handleKeepBookmarks = useCallback(async () => {
-		setPendingMode("keep-bookmarks");
-		try {
-			await onDeleteCollection({
-				current: true,
-				categoryId: categoryId as number,
-				keepBookmarks: true,
-			});
-		} finally {
-			setPendingMode(null);
-		}
-	}, [categoryId, onDeleteCollection]);
 
 	return (
 		<DestructiveConfirmContent

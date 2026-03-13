@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import { Button } from "@base-ui/react/button";
 
 import { Spinner } from "./spinner";
+import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 import TrashIconRed from "@/icons/actionIcons/trashIconRed";
 
 interface DestructiveConfirmContentProps {
@@ -25,7 +26,7 @@ export function DestructiveConfirmContent({
 	onConfirmSecondary,
 	labelSecondary,
 	pendingSecondary = false,
-	iconSecondary = <TrashIconRed />,
+	iconSecondary = <TrashIconGray />,
 }: DestructiveConfirmContentProps) {
 	return (
 		<>
@@ -39,7 +40,7 @@ export function DestructiveConfirmContent({
 			)}
 			<Button
 				className="flex w-full items-center justify-center rounded-lg bg-gray-alpha-100 px-2 py-[5.5px] text-13 leading-[115%] font-medium tracking-[0.01em] text-red-600 hover:bg-gray-alpha-200 hover:text-red-600"
-				disabled={pendingSecondary}
+				disabled={pending || pendingSecondary}
 				onClick={onConfirm}
 			>
 				{pending ? (

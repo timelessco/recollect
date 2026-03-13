@@ -157,9 +157,9 @@ export const POST = createPostApiHandlerWithAuth({
 					(multiCategoryBookmarks ?? []).map((b) => b.bookmark_id),
 				);
 
-				// Bookmarks that ONLY belong to this category need Uncategorized
+				// Owner bookmarks that ONLY belong to this category need Uncategorized
 				const orphanedBookmarks = categoryBookmarks.filter(
-					(b) => !multiCategoryIds.has(b.bookmark_id),
+					(b) => b.user_id === userId && !multiCategoryIds.has(b.bookmark_id),
 				);
 
 				if (isNonEmptyArray(orphanedBookmarks)) {
