@@ -74,7 +74,7 @@ export function EmailToOtpForm() {
 
 			<Button
 				type="submit"
-				className="gap-2 rounded-lg bg-gray-950 px-2 py-2.5 text-sm leading-[115%] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
+				className="gap-2 rounded-xl bg-gray-950 px-2 py-2.5 text-sm leading-[115%] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
 				pending={extendedIsPending}
 				disabled={extendedIsPending}
 			>
@@ -105,7 +105,7 @@ function EmailField({ ref, value, onChange, autoFocus }: EmailFieldProps) {
 				placeholder="Enter your email"
 				className={cn(
 					"bg-gray-50",
-					"rounded-lg px-[10px] py-2.5",
+					"rounded-[10px] px-[10px] py-2.5",
 					"text-sm leading-[115%] text-gray-800",
 					"placeholder:text-gray-600",
 					"transition",

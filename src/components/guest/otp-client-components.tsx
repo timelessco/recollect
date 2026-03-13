@@ -83,7 +83,7 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 
 			<Button
 				type="submit"
-				className="gap-2 rounded-lg bg-gray-950 px-2 py-[10px] text-sm leading-[115%] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
+				className="gap-2 rounded-xl bg-gray-950 px-2 py-[10px] text-sm leading-[115%] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
 				pending={extendedIsPending}
 				disabled={extendedIsPending || otp.length !== 6}
 			>
