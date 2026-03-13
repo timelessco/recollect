@@ -83,7 +83,7 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
 
 			<Button
 				type="submit"
-				className="gap-2 rounded-lg bg-gray-950 p-2 text-13 leading-[15px] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
+				className="gap-2 rounded-xl bg-gray-950 px-2 py-[10px] text-sm leading-[115%] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
 				pending={extendedIsPending}
 				disabled={extendedIsPending || otp.length !== 6}
 			>
@@ -97,13 +97,14 @@ function Slot(props: SlotProps) {
 	return (
 		<div
 			className={cn(
-				"relative h-10 w-18",
+				"relative h-9 w-[39px]",
 				"flex items-center justify-center",
-				"bg-gray-alpha-100",
-				"text-sm font-medium text-gray-900",
-				"rounded-lg",
+				"bg-gray-50",
+				"text-sm leading-[115%] font-medium text-gray-800",
+				"rounded-[10px]",
 				"transition",
-				props.isActive && "ring-2 ring-gray-200 outline-none",
+				"border border-gray-300",
+				props.isActive && "ring-2 ring-gray-200 outline-1 outline-gray-300",
 			)}
 		>
 			{props.char !== null && <div>{props.char}</div>}

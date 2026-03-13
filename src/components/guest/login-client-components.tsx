@@ -58,15 +58,15 @@ export function SignInWithGoogleForm() {
 			<Button
 				type="submit"
 				aria-label="Sign in with Google"
-				className="w-full rounded-lg bg-gray-950 p-2 text-13 leading-[13px] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
+				className="w-full rounded-[10px] bg-gray-alpha-100 py-2 text-13 leading-[13px] font-medium text-gray-800 hover:not-data-disabled:bg-gray-300"
 				pending={extendedIsPending}
 				pendingSlot={
 					<ButtonDefaultPendingComp>
-						<span>Logging in...</span>
+						<span className="py-[3.5px]">Logging in...</span>
 					</ButtonDefaultPendingComp>
 				}
 			>
-				<GoogleIcon />
+				<GoogleIcon className="size-5" />
 			</Button>
 		</form>
 	);
@@ -114,15 +114,15 @@ export function SignInWithAppleForm() {
 			<Button
 				type="submit"
 				aria-label="Sign in with Apple"
-				className="w-full rounded-lg bg-gray-950 p-2 text-13 leading-[13px] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
+				className="w-full rounded-[10px] bg-gray-alpha-100 py-2 text-13 leading-[13px] font-medium text-gray-800 hover:not-data-disabled:bg-gray-300"
 				pending={extendedIsPending}
 				pendingSlot={
 					<ButtonDefaultPendingComp>
-						<span>Logging in...</span>
+						<span className="py-[3.5px]">Logging in...</span>
 					</ButtonDefaultPendingComp>
 				}
 			>
-				<AppleIcon />
+				<AppleIcon className="size-5" />
 			</Button>
 		</form>
 	);
@@ -134,7 +134,7 @@ export function ContinueWithEmailLink() {
 			className={cn(
 				buttonBaseClasses,
 				"w-full bg-gray-alpha-100 text-gray-950",
-				"gap-2 rounded-lg p-2 text-13 leading-[15px] font-medium",
+				"gap-2 rounded-[10px] px-2 py-2.5 text-sm leading-[115%] font-medium",
 				"no-underline hover:not-data-disabled:bg-gray-300",
 			)}
 			href="/email"
