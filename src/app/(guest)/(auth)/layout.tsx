@@ -18,7 +18,7 @@ export default function AuthLayout(props: AuthLayoutProps) {
 				/>
 			</header>
 
-			<main className="flex flex-col items-center justify-center gap-3">
+			<main className="flex flex-col items-center justify-center gap-4">
 				{children}
 			</main>
 		</div>
