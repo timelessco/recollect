@@ -1,10 +1,8 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-import { useCallback, useState } from "react";
-import { Popover } from "@base-ui/react/popover";
-import isNull from "lodash/isNull";
+import { useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
+import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import { BookmarksSortDropdown } from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
 import { BookmarksViewDropdown } from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
 import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
@@ -16,205 +14,262 @@ import OptionsIcon from "../../../icons/optionsIcon";
 import ShareIcon from "../../../icons/shareIcon";
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { mutationApiCall } from "../../../utils/apiHelpers";
-import {
-	dropdownMenuClassName,
-	dropdownMenuItemClassName,
-} from "../../../utils/commonClassNames";
 import { DISCOVER_URL, TRASH_URL } from "../../../utils/constants";
 import ShareContent from "../share/shareContent";
 
-import { ClearTrashContent } from "@/components/clearTrashContent";
-import { cn } from "@/utils/tailwind-merge";
+import { DestructiveConfirmContent } from "@/components/destructive-confirm-content";
+import { AnimatedSize } from "@/components/ui/recollect/animated-size";
+import { Menu } from "@/components/ui/recollect/menu";
+
+type ViewState =
+	| "closed"
+	| "delete-collection"
+	| "menu"
+	| "share"
+	| "sort"
+	| "trash"
+	| "view";
 
 export function HeaderOptionsPopover() {
-	const [open, setOpen] = useState(false);
-	const [currentTab, setCurrentTab] = useState<string | null>(null);
+	const [view, setView] = useState<ViewState>("closed");
+	const shouldReduceMotion = useReducedMotion();
+	const isItemClickRef = useRef(false);
 
-	const updateCurrentTab = useCallback((value: string) => {
-		if (value === "delete-collection" || value === "rename") {
-			setOpen(false);
+	const popoverOpen = view !== "closed";
+	const fade = shouldReduceMotion ? { duration: 0 } : { duration: 0.15 };
+
+	const handleMenuOpenChange = (nextOpen: boolean) => {
+		if (nextOpen) {
+			setView("menu");
 			return;
 		}
 
-		setCurrentTab(value);
-	}, []);
+		if (isItemClickRef.current) {
+			isItemClickRef.current = false;
+			return;
+		}
 
-	const popupClassName = cn(
-		dropdownMenuClassName,
-		"leading-[20px] outline-hidden",
-		currentTab === "share" ? "w-auto" : "w-[180px]",
-	);
+		setView("closed");
+	};
 
 	return (
-		<Popover.Root
-			open={open}
-			onOpenChange={(nextOpen) => {
-				setOpen(nextOpen);
-				if (!nextOpen) {
-					setCurrentTab(null);
-				}
-			}}
-		>
-			<Popover.Trigger className="rounded-lg bg-transparent p-[7px] text-gray-600 hover:bg-gray-100 hover:text-plain-reverse">
+		<Menu.Root open={popoverOpen} onOpenChange={handleMenuOpenChange}>
+			<Menu.Trigger
+				aria-label="Page options"
+				className="rounded-lg bg-transparent p-[7px] text-gray-600 hover:bg-gray-100 hover:text-plain-reverse"
+			>
 				<OptionsIcon />
-			</Popover.Trigger>
-			<Popover.Portal>
-				<Popover.Positioner align="end" className="z-10" sideOffset={1}>
-					<Popover.Popup className={popupClassName}>
-						{isNull(currentTab) ? (
-							<HeaderMenuItems onSelectTab={updateCurrentTab} />
-						) : (
-							<HeaderTabContent currentTab={currentTab} />
-						)}
-					</Popover.Popup>
-				</Popover.Positioner>
-			</Popover.Portal>
-		</Popover.Root>
+			</Menu.Trigger>
+			<Menu.Portal>
+				<Menu.Positioner align="end">
+					<Menu.Popup className="w-auto overflow-clip p-0 leading-[20px]">
+						<AnimatedSize>
+							<AnimatePresence mode="popLayout" initial={false}>
+								{view === "menu" && (
+									<motion.div
+										key="menu"
+										className="w-[180px] p-1"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={fade}
+									>
+										<HeaderMenuItems
+											isItemClickRef={isItemClickRef}
+											onSelectView={setView}
+										/>
+									</motion.div>
+								)}
+								{view === "view" && (
+									<motion.div
+										key="view"
+										className="w-[180px] p-1"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={fade}
+									>
+										<BookmarksViewDropdown isDropdown={false} />
+									</motion.div>
+								)}
+								{view === "sort" && (
+									<motion.div
+										key="sort"
+										className="w-[180px] p-1"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={fade}
+									>
+										<BookmarksSortDropdown isDropdown={false} />
+									</motion.div>
+								)}
+								{view === "share" && (
+									<motion.div
+										key="share"
+										className="p-1"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={fade}
+									>
+										<div className="w-[300px]">
+											<ShareContent />
+										</div>
+									</motion.div>
+								)}
+								{view === "trash" && (
+									<motion.div
+										key="trash"
+										className="w-[180px] p-1"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={fade}
+									>
+										<ClearTrashTabContent onClose={() => setView("closed")} />
+									</motion.div>
+								)}
+								{view === "delete-collection" && (
+									<motion.div
+										key="delete-collection"
+										className="w-[180px] p-1"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={fade}
+									>
+										<DeleteCollectionTabContent />
+									</motion.div>
+								)}
+							</AnimatePresence>
+						</AnimatedSize>
+					</Menu.Popup>
+				</Menu.Positioner>
+			</Menu.Portal>
+		</Menu.Root>
 	);
 }
 
-type HeaderMenuItemsProps = {
-	onSelectTab: (value: string) => void;
-};
+interface HeaderMenuItemsProps {
+	isItemClickRef: React.RefObject<boolean>;
+	onSelectView: (view: ViewState) => void;
+}
 
-function HeaderMenuItems({ onSelectTab }: HeaderMenuItemsProps) {
+function HeaderMenuItems({
+	isItemClickRef,
+	onSelectView,
+}: HeaderMenuItemsProps) {
 	const currentPath = useGetCurrentUrlPath();
 	const { category_id: categoryId } = useGetCurrentCategoryId();
 
-	const optionsData = [
-		{
-			show: true,
-			value: "view",
-			render: <BookmarksViewDropdown renderOnlyButton />,
-		},
-		{
-			show: currentPath !== DISCOVER_URL && currentPath !== TRASH_URL,
-			value: "sort",
-			render: <BookmarksSortDropdown renderOnlyButton />,
-		},
-		{
-			show: currentPath === TRASH_URL,
-			value: "trash",
-			render: (
-				<div
-					className={`flex items-center ${dropdownMenuItemClassName} text-red-600 hover:text-red-600 focus:text-red-600`}
-				>
-					<TrashIconRed />
-					<p className="ml-[6px]">Clear Trash</p>
-				</div>
-			),
-		},
-		{
-			show: typeof categoryId === "number",
-			value: "share",
-			render: (
-				<div className={`flex ${dropdownMenuItemClassName}`}>
-					<figure className="h-4 w-4 text-gray-1000">
-						<ShareIcon />
-					</figure>
-					<span className="ml-[7px]">Share</span>
-				</div>
-			),
-		},
-		{
-			show: typeof categoryId === "number",
-			value: "rename",
-			render: <RenameOption />,
-		},
-		{
-			show: typeof categoryId === "number",
-			value: "delete-collection",
-			render: <DeleteCollectionOption />,
-		},
-	];
+	const isCategory = typeof categoryId === "number";
+	const showSort = currentPath !== DISCOVER_URL && currentPath !== TRASH_URL;
+	const showTrash = currentPath === TRASH_URL;
+
+	const selectView = (nextView: ViewState) => {
+		isItemClickRef.current = true;
+		onSelectView(nextView);
+	};
 
 	return (
 		<>
-			{optionsData
-				?.filter((optionItem) => optionItem?.show === true)
-				?.map((item) => (
-					<div key={item?.value} onClick={() => onSelectTab(item?.value)}>
-						{item?.render}
-					</div>
-				))}
+			<Menu.Item
+				className="rounded-lg p-0 data-highlighted:bg-gray-200"
+				onClick={() => selectView("view")}
+			>
+				<BookmarksViewDropdown renderOnlyButton />
+			</Menu.Item>
+			{showSort && (
+				<Menu.Item
+					className="rounded-lg p-0 data-highlighted:bg-gray-200"
+					onClick={() => selectView("sort")}
+				>
+					<BookmarksSortDropdown renderOnlyButton />
+				</Menu.Item>
+			)}
+			{showTrash && (
+				<Menu.Item
+					className="text-red-600 data-highlighted:text-red-600"
+					onClick={() => selectView("trash")}
+				>
+					<TrashIconRed />
+					<span className="ml-[6px]">Clear Trash</span>
+				</Menu.Item>
+			)}
+			{isCategory && (
+				<>
+					<Menu.Item onClick={() => selectView("share")}>
+						<ShareIcon />
+						<span className="ml-[6px]">Share</span>
+					</Menu.Item>
+					<RenameMenuItem />
+					<Menu.Item
+						className="text-red-600 data-highlighted:text-red-600"
+						onClick={() => selectView("delete-collection")}
+					>
+						<TrashIconRed />
+						<span className="ml-[6px]">Delete collection</span>
+					</Menu.Item>
+				</>
+			)}
 		</>
 	);
 }
 
-function RenameOption() {
+function RenameMenuItem() {
 	const setTriggerHeadingEdit = useMiscellaneousStore(
 		(state) => state.setTriggerHeadingEdit,
 	);
 
-	const handleRenameClick = useCallback(() => {
-		setTriggerHeadingEdit(true);
-		setTimeout(() => setTriggerHeadingEdit(false), 0);
-	}, [setTriggerHeadingEdit]);
-
 	return (
-		<div
-			className={`flex items-center ${dropdownMenuItemClassName}`}
-			onClick={handleRenameClick}
+		<Menu.Item
+			onClick={() => {
+				setTriggerHeadingEdit(true);
+				setTimeout(() => setTriggerHeadingEdit(false), 0);
+			}}
 		>
 			<RenameIcon />
-			<p className="ml-[6px]">Rename</p>
-		</div>
+			<span className="ml-[6px]">Rename</span>
+		</Menu.Item>
 	);
 }
 
-function DeleteCollectionOption() {
-	const { category_id: categoryId } = useGetCurrentCategoryId();
-	const { onDeleteCollection } = useDeleteCollection();
-
-	return (
-		<div
-			className={`flex items-center ${dropdownMenuItemClassName} text-red-600 hover:text-red-600 focus:text-red-600`}
-			onClick={async () => await onDeleteCollection(true, categoryId as number)}
-		>
-			<TrashIconRed />
-			<p className="ml-[6px]">Delete collection</p>
-		</div>
-	);
-}
-
-type HeaderTabContentProps = {
-	currentTab: string;
-};
-
-function HeaderTabContent({ currentTab }: HeaderTabContentProps) {
-	if (currentTab === "trash") {
-		return <ClearTrashTabContent />;
-	}
-
-	if (currentTab === "view") {
-		return <BookmarksViewDropdown isDropdown={false} />;
-	}
-
-	if (currentTab === "sort") {
-		return <BookmarksSortDropdown isDropdown={false} />;
-	}
-
-	if (currentTab === "share") {
-		return (
-			<div className="w-[300px]">
-				<ShareContent />
-			</div>
-		);
-	}
-
-	return null;
-}
-
-function ClearTrashTabContent() {
+function ClearTrashTabContent({ onClose }: { onClose: () => void }) {
 	const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
 		useClearBookmarksInTrashMutation();
+	const { bookmarksCountData } = useFetchBookmarksCount();
+	const trashCount = bookmarksCountData?.data?.trash ?? 0;
 
 	return (
-		<ClearTrashContent
-			onClearTrash={() => {
-				void mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
+		<DestructiveConfirmContent
+			onConfirm={async () => {
+				await mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
+				onClose();
 			}}
-			isClearingTrash={isClearingTrash}
+			pending={isClearingTrash}
+			label="Clear All Trash"
+			description={`${trashCount} ${trashCount === 1 ? "bookmark" : "bookmarks"}`}
+		/>
+	);
+}
+
+function DeleteCollectionTabContent() {
+	const { category_id: categoryId } = useGetCurrentCategoryId();
+	const { onDeleteCollection } = useDeleteCollection();
+	const { bookmarksCountData } = useFetchBookmarksCount();
+	const count =
+		bookmarksCountData?.data?.categoryCount?.find(
+			(category) => category.category_id === categoryId,
+		)?.count ?? 0;
+
+	return (
+		<DestructiveConfirmContent
+			onConfirm={() => {
+				void onDeleteCollection(true, categoryId as number);
+			}}
+			label="Delete Collection"
+			description={`${count} ${count === 1 ? "bookmark" : "bookmarks"}`}
 		/>
 	);
 }

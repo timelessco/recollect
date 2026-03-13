@@ -1,6 +1,6 @@
-import { Popover } from "@base-ui/react/popover";
+import { Popover } from "@/components/ui/recollect/popover";
 
-import { ClearTrashContent } from "./clearTrashContent";
+import { DestructiveConfirmContent } from "./destructive-confirm-content";
 import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 
 interface ClearTrashDropdownProps {
@@ -53,14 +53,14 @@ export function ClearTrashDropdown(props: ClearTrashDropdownProps) {
 				)}
 			</Popover.Trigger>
 			<Popover.Portal>
-				<Popover.Positioner align="start" className="z-10" sideOffset={1}>
+				<Popover.Positioner align="start">
 					<Popover.Popup
-						className={`${!isBottomBar ? "ml-2" : ""} w-[180px] rounded-xl bg-gray-50 p-1 leading-[20px] shadow-custom-3 outline-hidden`}
+						className={`${!isBottomBar ? "ml-2" : ""} w-[180px] leading-[20px]`}
 					>
-						<ClearTrashContent
-							onClearTrash={onClearTrash}
-							isClearingTrash={isClearingTrash}
-							label={label}
+						<DestructiveConfirmContent
+							onConfirm={onClearTrash}
+							pending={isClearingTrash}
+							label={label ?? "Clear All Trash"}
 						/>
 					</Popover.Popup>
 				</Popover.Positioner>

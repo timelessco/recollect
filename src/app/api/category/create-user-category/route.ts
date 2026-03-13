@@ -21,7 +21,7 @@ export const POST = createPostApiHandlerWithAuth({
 	inputSchema: CreateCategoryPayloadSchema,
 	outputSchema: CreateCategoryResponseSchema,
 	handler: async ({ data, supabase, user, route }) => {
-		const { name, category_order: categoryOrder } = data;
+		const { name, icon, icon_color, category_order: categoryOrder } = data;
 		const userId = user.id;
 
 		console.log(`[${route}] API called:`, { userId, name });
@@ -33,6 +33,8 @@ export const POST = createPostApiHandlerWithAuth({
 					category_name: name,
 					user_id: userId,
 					category_slug: `${slugify(name, { lower: true })}-${uniqid.time()}`,
+					...(icon !== undefined && { icon }),
+					...(icon_color !== undefined && { icon_color }),
 				},
 			])
 			.select();

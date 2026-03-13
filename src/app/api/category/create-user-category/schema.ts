@@ -6,6 +6,19 @@ export const CreateCategoryPayloadSchema = z.object({
 	name: tagCategoryNameSchema.meta({
 		description: "Category display name (1–20 characters)",
 	}),
+	icon: z
+		.string()
+		.nullable()
+		.optional()
+		.meta({ description: "Icon identifier" }),
+	icon_color: z
+		.string()
+		.regex(
+			/^#([\dA-Fa-f]{6}|[\dA-Fa-f]{3})$/u,
+			"Invalid hex color — expected format like #fff or #1a2b3c",
+		)
+		.optional()
+		.meta({ description: "Icon color hex code" }),
 	category_order: z
 		.array(z.number())
 		.nullish()

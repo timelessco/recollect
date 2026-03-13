@@ -310,7 +310,7 @@ function Positioner({
 
 	return (
 		<ComboboxPrimitive.Positioner
-			className={cn("z-50 select-none", className)}
+			className={cn("z-52 select-none", className)}
 			sideOffset={sideOffset}
 			anchor={anchor ?? containerRef}
 			data-slot="combobox-positioner"
@@ -330,7 +330,7 @@ function Popup({
 		<ComboboxPrimitive.Popup
 			data-slot="combobox-popup"
 			className={cn(
-				"w-(--anchor-width) origin-(--transform-origin) rounded-xl bg-gray-0 shadow-custom-7 transition-[scale,opacity,shadow] data-starting-style:scale-98 data-starting-style:opacity-0",
+				"w-(--anchor-width) origin-center rounded-xl bg-gray-0 shadow-custom-7 transition-[transform,scale,opacity,shadow] data-ending-style:scale-95 data-ending-style:opacity-0 data-open:origin-(--transform-origin) data-starting-style:scale-95 data-starting-style:opacity-0 data-[side=bottom]:data-starting-style:-translate-y-1 data-[side=top]:data-starting-style:translate-y-1",
 				className,
 			)}
 			{...props}

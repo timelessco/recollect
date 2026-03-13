@@ -48,11 +48,8 @@ export const buttonBaseClasses = [
 	"[&_svg]:pointer-events-none [&_svg]:shrink-0",
 	// Disabled state
 	"data-disabled:cursor-not-allowed data-disabled:opacity-50",
-	// Hover/Active
-	"hover:not-data-disabled:-translate-y-px",
-	"active:not-data-disabled:translate-y-0",
 	// Focus ring
-	"outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+	"outline-none focus-visible:ring-2 focus-visible:ring-gray-200",
 ];
 
 type ButtonDefaultPendingCompProps = Omit<Progress.Root.Props, "value"> & {

@@ -109,7 +109,7 @@ function EmailField({ ref, value, onChange, autoFocus }: EmailFieldProps) {
 					"text-sm leading-4 text-gray-900",
 					"placeholder:text-gray-600",
 					"transition",
-					"outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+					"outline-none focus-visible:ring-2 focus-visible:ring-gray-200",
 					"data-invalid:bg-red-50 data-invalid:ring-red-600",
 					"data-disabled:cursor-not-allowed data-disabled:opacity-50",
 				)}
