@@ -25,7 +25,7 @@ export const POST = createPostApiHandlerWithAuth({
 	inputSchema: DeleteCategoryInputSchema,
 	outputSchema: DeleteCategoryResponseSchema,
 	handler: async ({ data, supabase, user, route }) => {
-		const { category_id: categoryId } = data;
+		const { category_id: categoryId, keep_bookmarks: keepBookmarks } = data;
 		const userId = user.id;
 
 		console.log(`[${route}] API called:`, { userId, categoryId });
@@ -129,34 +129,105 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
-		// Trash only the owner's bookmarks, collaborators just lose the reference
 		if (isNonEmptyArray(categoryBookmarks)) {
-			const ownerBookmarkIds = categoryBookmarks
-				.filter((b) => b.user_id === userId)
-				.map((b) => b.bookmark_id);
+			if (keepBookmarks) {
+				// Preserve bookmarks: auto-assign Uncategorized for orphaned ones
+				const categoryBookmarkIds = categoryBookmarks.map((b) => b.bookmark_id);
 
-			if (isNonEmptyArray(ownerBookmarkIds)) {
-				const { error: trashError } = await serviceClient
-					.from(MAIN_TABLE_NAME)
-					.update({ trash: new Date().toISOString() })
-					.in("id", ownerBookmarkIds)
-					.is("trash", null);
+				// Find bookmarks that also belong to other categories
+				const { data: multiCategoryBookmarks, error: multiCategoryError } =
+					await serviceClient
+						.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+						.select("bookmark_id")
+						.in("bookmark_id", categoryBookmarkIds)
+						.neq("category_id", categoryId);
 
-				if (trashError) {
+				if (multiCategoryError) {
 					return apiError({
 						route,
-						message: "Failed to move bookmarks to trash",
-						error: trashError,
-						operation: "delete_category_trash_bookmarks",
+						message: "Failed to check bookmark category associations",
+						error: multiCategoryError,
+						operation: "delete_category_check_orphans",
 						userId,
-						extra: { categoryId, bookmarkCount: ownerBookmarkIds.length },
+						extra: { categoryId },
 					});
 				}
 
-				console.log(`[${route}] Moved owner bookmarks to trash:`, {
-					categoryId,
-					count: ownerBookmarkIds.length,
-				});
+				const multiCategoryIds = new Set(
+					(multiCategoryBookmarks ?? []).map((b) => b.bookmark_id),
+				);
+
+				// Owner bookmarks that ONLY belong to this category need Uncategorized
+				const orphanedBookmarks = categoryBookmarks.filter(
+					(b) => b.user_id === userId && !multiCategoryIds.has(b.bookmark_id),
+				);
+
+				if (isNonEmptyArray(orphanedBookmarks)) {
+					const { error: uncategorizedError } = await serviceClient
+						.from(BOOKMARK_CATEGORIES_TABLE_NAME)
+						.upsert(
+							orphanedBookmarks.map((b) => ({
+								bookmark_id: b.bookmark_id,
+								category_id: 0,
+								user_id: b.user_id,
+							})),
+							{ onConflict: "bookmark_id,category_id" },
+						);
+
+					if (uncategorizedError) {
+						return apiError({
+							route,
+							message: "Failed to assign Uncategorized to orphaned bookmarks",
+							error: uncategorizedError,
+							operation: "delete_category_assign_uncategorized",
+							userId,
+							extra: {
+								categoryId,
+								orphanedCount: orphanedBookmarks.length,
+							},
+						});
+					}
+
+					console.log(
+						`[${route}] Assigned Uncategorized to orphaned bookmarks:`,
+						{
+							categoryId,
+							count: orphanedBookmarks.length,
+						},
+					);
+				}
+			} else {
+				// Trash owner's bookmarks, collaborators just lose the reference
+				const ownerBookmarkIds = categoryBookmarks
+					.filter((b) => b.user_id === userId)
+					.map((b) => b.bookmark_id);
+
+				if (isNonEmptyArray(ownerBookmarkIds)) {
+					const { error: trashError } = await serviceClient
+						.from(MAIN_TABLE_NAME)
+						.update({ trash: new Date().toISOString() })
+						.in("id", ownerBookmarkIds)
+						.is("trash", null);
+
+					if (trashError) {
+						return apiError({
+							route,
+							message: "Failed to move bookmarks to trash",
+							error: trashError,
+							operation: "delete_category_trash_bookmarks",
+							userId,
+							extra: {
+								categoryId,
+								bookmarkCount: ownerBookmarkIds.length,
+							},
+						});
+					}
+
+					console.log(`[${route}] Moved owner bookmarks to trash:`, {
+						categoryId,
+						count: ownerBookmarkIds.length,
+					});
+				}
 			}
 		}
 

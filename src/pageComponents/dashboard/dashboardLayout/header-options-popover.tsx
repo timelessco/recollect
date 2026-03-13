@@ -5,18 +5,19 @@ import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookm
 import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import { BookmarksSortDropdown } from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
 import { BookmarksViewDropdown } from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
-import { useDeleteCollection } from "../../../hooks/useDeleteCollection";
+import { useDeleteCollectionActions } from "../../../hooks/useDeleteCollectionActions";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import RenameIcon from "../../../icons/actionIcons/renameIcon";
-import TrashIconRed from "../../../icons/actionIcons/trashIconRed";
 import OptionsIcon from "../../../icons/optionsIcon";
 import ShareIcon from "../../../icons/shareIcon";
+import TrashIconGray from "../../../icons/trash-icon-gray";
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import { DISCOVER_URL, TRASH_URL } from "../../../utils/constants";
 import ShareContent from "../share/shareContent";
 
+import { DeleteCollectionConfirm } from "@/components/delete-collection-confirm";
 import { DestructiveConfirmContent } from "@/components/destructive-confirm-content";
 import { AnimatedSize } from "@/components/ui/recollect/animated-size";
 import { Menu } from "@/components/ui/recollect/menu";
@@ -133,7 +134,7 @@ export function HeaderOptionsPopover() {
 								{view === "delete-collection" && (
 									<motion.div
 										key="delete-collection"
-										className="w-[180px] p-1"
+										className="w-56 p-1"
 										initial={{ opacity: 0 }}
 										animate={{ opacity: 1 }}
 										exit={{ opacity: 0 }}
@@ -193,7 +194,7 @@ function HeaderMenuItems({
 					className="text-red-600 data-highlighted:text-red-600"
 					onClick={() => selectView("trash")}
 				>
-					<TrashIconRed />
+					<TrashIconGray className="size-4" />
 					<span className="ml-[6px]">Clear Trash</span>
 				</Menu.Item>
 			)}
@@ -208,7 +209,7 @@ function HeaderMenuItems({
 						className="text-red-600 data-highlighted:text-red-600"
 						onClick={() => selectView("delete-collection")}
 					>
-						<TrashIconRed />
+						<TrashIconGray className="size-4" />
 						<span className="ml-[6px]">Delete collection</span>
 					</Menu.Item>
 				</>
@@ -256,20 +257,23 @@ function ClearTrashTabContent({ onClose }: { onClose: () => void }) {
 
 function DeleteCollectionTabContent() {
 	const { category_id: categoryId } = useGetCurrentCategoryId();
-	const { onDeleteCollection } = useDeleteCollection();
 	const { bookmarksCountData } = useFetchBookmarksCount();
+	const { pendingMode, handleDeleteAll, handleKeepBookmarks } =
+		useDeleteCollectionActions({
+			categoryId: categoryId as number,
+			isCurrent: true,
+		});
 	const count =
 		bookmarksCountData?.data?.categoryCount?.find(
 			(category) => category.category_id === categoryId,
 		)?.count ?? 0;
 
 	return (
-		<DestructiveConfirmContent
-			onConfirm={() => {
-				void onDeleteCollection(true, categoryId as number);
-			}}
-			label="Delete Collection"
-			description={`${count} ${count === 1 ? "bookmark" : "bookmarks"}`}
+		<DeleteCollectionConfirm
+			count={count}
+			onDeleteCollection={handleKeepBookmarks}
+			onDeleteAll={handleDeleteAll}
+			pendingMode={pendingMode}
 		/>
 	);
 }

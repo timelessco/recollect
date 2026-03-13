@@ -9,6 +9,12 @@ import { mutationApiCall } from "../utils/apiHelpers";
 import { EVERYTHING_URL } from "../utils/constants";
 import { errorToast } from "../utils/toastMessages";
 
+interface OnDeleteCollectionProps {
+	current: boolean;
+	categoryId: number;
+	keepBookmarks?: boolean;
+}
+
 export const useDeleteCollection = () => {
 	const router = useRouter();
 	const session = useSupabaseSession((state) => state.session);
@@ -18,7 +24,9 @@ export const useDeleteCollection = () => {
 		useDeleteCategoryOptimisticMutation();
 
 	const onDeleteCollection = useCallback(
-		async (current: boolean, categoryId: number) => {
+		async (props: OnDeleteCollectionProps) => {
+			const { current, categoryId, keepBookmarks = false } = props;
+
 			const currentCategory = find(
 				allCategories?.data,
 				(item) => item?.id === categoryId,
@@ -37,6 +45,7 @@ export const useDeleteCollection = () => {
 			const response = await mutationApiCall(
 				deleteCategoryOptimisticMutation.mutateAsync({
 					category_id: categoryId,
+					keep_bookmarks: keepBookmarks,
 				}),
 			);
 

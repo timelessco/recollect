@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { Button } from "@base-ui/react/button";
 
-import { EditPopover } from "@/pageComponents/dashboard/cardSection/edit-popover";
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import BackIcon from "@/icons/actionIcons/backIcon";
-import TrashIconGray from "@/icons/actionIcons/trashIconGray";
 import LinkExternalIcon from "@/icons/linkExternalIcon";
+import TrashIconGray from "@/icons/trash-icon-gray";
+import { EditPopover } from "@/pageComponents/dashboard/cardSection/edit-popover";
 import { useSupabaseSession } from "@/store/componentStore";
 import { type SingleListData } from "@/types/apiTypes";
 import { TRASH_URL, viewValues } from "@/utils/constants";
@@ -72,7 +72,7 @@ export function EditAndDeleteIcons({
 				className="z-15 ml-2 hidden rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
 				onClick={() => onDeleteClick?.([post])}
 			>
-				<TrashIconGray />
+				<TrashIconGray className="size-4" />
 			</Button>
 		);
 
