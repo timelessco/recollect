@@ -165,7 +165,6 @@ export type CategoriesData = {
 	icon: string | null;
 	icon_color: string;
 	id: number;
-	is_favorite: boolean;
 	is_public: boolean;
 	user_id: Pick<
 		ProfilesTableTypes,
@@ -219,6 +218,7 @@ export type ProfilesTableTypes = {
 	category_order: number[];
 	display_name: string;
 	email: string;
+	favorite_categories: number[];
 	id: string;
 	last_synced_instagram_id: string | null;
 	last_synced_twitter_id: string | null;
@@ -234,6 +234,7 @@ export type ProfilesTableForPayloadTypes = {
 	category_order?: number[];
 	display_name?: string;
 	email?: string;
+	favorite_categories?: number[];
 	id?: string;
 	last_synced_instagram_id?: string | null;
 	last_synced_twitter_id?: string | null;

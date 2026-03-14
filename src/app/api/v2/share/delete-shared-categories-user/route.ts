@@ -43,6 +43,21 @@ export const DELETE = createDeleteApiHandlerWithAuth({
 			});
 		}
 
+		// Clean up favorite_categories for the departing user (atomic array_remove)
+		const categoryId = deleted[0].category_id;
+		const { error: favCleanupError } = await supabase.rpc(
+			"remove_favorite_category_for_user",
+			{ p_category_id: categoryId },
+		);
+
+		if (favCleanupError) {
+			console.error(`[${route}] Failed to clean up favorite_categories:`, {
+				error: favCleanupError,
+				categoryId,
+				userId,
+			});
+		}
+
 		return deleted;
 	},
 });

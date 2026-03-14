@@ -34,6 +34,7 @@ dups
 ecommerce
 ECOMMERCE
 eqwhx
+favorited
 fbca
 fbcdn
 fbclid
