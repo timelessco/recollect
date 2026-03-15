@@ -1,10 +1,11 @@
 ---
-paths: supabase/functions/**
+paths:
+  - "supabase/functions/**"
 ---
 
-# Supabase Edge Functions
+## Supabase Edge Functions
 
-## Guidelines
+### Guidelines
 
 1. **Prefer Web APIs and Deno core APIs** over external dependencies
    - Use `fetch` instead of Axios
@@ -45,7 +46,7 @@ paths: supabase/functions/**
 
 12. **The Edge Runtime uses an older Deno version** that cannot read lockfile v5 — the fix is `lock: false` in `deno.json`; do not delete the lockfile as a workaround
 
-## Example Function
+### Example Function
 
 ```typescript
 interface ReqPayload {
@@ -66,7 +67,7 @@ Deno.serve(async (req: Request) => {
 });
 ```
 
-## Using npm Packages
+### Using npm Packages
 
 ```typescript
 import express from "npm:express@4.18.2";
@@ -80,7 +81,7 @@ app.get(/(.*)/, (req, res) => {
 app.listen(8000);
 ```
 
-## Using Node APIs
+### Using Node APIs
 
 ```typescript
 import { randomBytes } from "node:crypto";

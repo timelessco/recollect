@@ -1,10 +1,11 @@
 ---
-paths: supabase/migrations/**
+paths:
+  - "supabase/migrations/**"
 ---
 
-# Supabase Migrations
+## Supabase Migrations
 
-## File Naming Convention
+### File Naming Convention
 
 Migration files MUST follow: `YYYYMMDDHHmmss_short_description.sql`
 
@@ -17,14 +18,14 @@ Migration files MUST follow: `YYYYMMDDHHmmss_short_description.sql`
 
 Example: `20240906123045_create_profiles.sql`
 
-## SQL Guidelines
+### SQL Guidelines
 
 - Include header comment with migration purpose and affected tables
 - Add comments explaining each migration step
 - Write SQL in lowercase (or uppercase consistently within file)
 - Add copious comments for destructive commands (truncate, drop, alter)
 
-## Row Level Security
+### Row Level Security
 
 **MUST enable RLS on every new table**, even for public access:
 
@@ -32,7 +33,7 @@ Example: `20240906123045_create_profiles.sql`
 alter table my_table enable row level security;
 ```
 
-### RLS Policy Rules
+#### RLS Policy Rules
 
 - Create separate policies for each operation (select, insert, update, delete)
 - Create separate policies for each role (`anon`, `authenticated`)

@@ -1,17 +1,18 @@
 ---
-paths: supabase/**/*.sql
+paths:
+  - "supabase/**/*.sql"
 ---
 
-# Supabase RLS Policies
+## Supabase RLS
 
-## Policy Structure
+### Policy Structure
 
 - SELECT policies: USING only (not WITH CHECK)
 - INSERT policies: WITH CHECK only (not USING)
 - UPDATE policies: Both USING and WITH CHECK
 - DELETE policies: USING only (not WITH CHECK)
 
-## Required Patterns
+### Required Patterns
 
 - Always use `auth.uid()` instead of `current_user`
 - `auth.jwt()->>'email'` for email-based sharing checks -- always wrap in `(SELECT ...)`:
@@ -21,7 +22,7 @@ paths: supabase/**/*.sql
 - Use descriptive policy names in double quotes
 - Prefer `PERMISSIVE` over `RESTRICTIVE` policies
 
-## Correct Syntax Order
+### Correct Syntax Order
 
 ```sql
 create policy "Policy name"
@@ -31,9 +32,9 @@ to authenticated     -- role comes after operation
 using ( ... );
 ```
 
-## Performance Recommendations
+### Performance Recommendations
 
-### Add Indexes
+#### Add Indexes
 
 ```sql
 create index idx_table_user_id
@@ -41,7 +42,7 @@ on my_table
 using btree (user_id);
 ```
 
-### Use Select Wrapper for Functions
+#### Use Select Wrapper for Functions
 
 ```sql
 -- ❌ Slow - function called per row
@@ -51,7 +52,7 @@ using ( auth.uid() = user_id );
 using ( (select auth.uid()) = user_id );
 ```
 
-### Minimize Joins
+#### Minimize Joins
 
 ```sql
 -- ✅ Use IN with subquery instead of joins
@@ -64,7 +65,7 @@ using (
 );
 ```
 
-## Example Policies
+### Example Policies
 
 ```sql
 -- Select policy for authenticated users

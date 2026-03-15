@@ -1,22 +1,13 @@
 ---
-paths: src/**/*.{ts,tsx}
+paths:
+  - "src/**/*.{ts,tsx}"
 ---
 
-# Sentry Monitoring Guidelines
+## Sentry
 
 Patterns for error tracking and debugging with Sentry in this project.
 
-## Configuration
-
-Sentry initialization files:
-
-- `instrumentation-client.ts` - Client-side init
-- `sentry.server.config.ts` - Server init
-- `sentry.edge.config.ts` - Edge init
-
-Import Sentry in other files: `import * as Sentry from "@sentry/nextjs"`
-
-## Exception Capture (Primary Pattern)
+### Exception Capture (Primary Pattern)
 
 **Always include tags and context:**
 
@@ -46,7 +37,7 @@ Sentry.captureException(error, {
 });
 ```
 
-## Breadcrumbs for Cache Debugging
+### Breadcrumbs for Cache Debugging
 
 Use `Sentry.addBreadcrumb` to track state before errors occur:
 
@@ -76,7 +67,7 @@ if (!foundItem) {
 }
 ```
 
-## API Handler Integration
+### API Handler Integration
 
 Response helpers in `/src/lib/api-helpers/response.ts` auto-capture exceptions:
 
@@ -98,7 +89,7 @@ return apiError({
 });
 ```
 
-## Error Boundaries
+### Error Boundaries
 
 Root error boundaries capture with context:
 
@@ -109,7 +100,7 @@ Sentry.captureException(error, {
 });
 ```
 
-## Best Practices
+### Best Practices
 
 1. **Always tag operations** - Makes errors filterable in Sentry dashboard
 2. **Include userId when available** - Helps identify affected users

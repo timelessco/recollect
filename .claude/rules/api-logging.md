@@ -1,10 +1,12 @@
 ---
-paths: "src/app/api/**/*.ts, src/pages/api/**/*.ts"
+paths:
+  - "src/app/api/**/*.ts"
+  - "src/pages/api/**/*.ts"
 ---
 
-# API Routes
+## API Routes
 
-## Patterns
+### Patterns
 
 - App Router endpoints in `/src/app/api/`, legacy in `/src/pages/api/` (migrate, don't modify)
 - Mutation hooks: `use-{action}-{resource}-mutation.ts` -- don't include "optimistic" in filename
@@ -16,7 +18,7 @@ paths: "src/app/api/**/*.ts, src/pages/api/**/*.ts"
 - Constants shared with Deno Edge Functions: define in `src/utils/constants.ts`, add sync comment in Deno files
 - Ground-truth CodeRabbit suggestions against actual runtime behavior before implementing
 
-## Handler Factories
+### Handler Factories
 
 Four factories in `/src/lib/api-helpers/create-handler.ts`:
 
@@ -33,7 +35,7 @@ Four factories in `/src/lib/api-helpers/create-handler.ts`:
 
 **Return**: Raw data -> wrapped in `apiSuccess`. `NextResponse` (via `apiWarn`/`apiError`) -> passed through.
 
-## Response Helpers
+### Response Helpers
 
 | Helper       | Use For                              | Sentry | Status |
 | ------------ | ------------------------------------ | ------ | ------ |
@@ -44,14 +46,14 @@ Four factories in `/src/lib/api-helpers/create-handler.ts`:
 
 `requireAuth` returns discriminated union -- check `errorResponse` for early return.
 
-## Critical Rules
+### Critical Rules
 
 1. **Root try-catch**: Every handler wraps all logic (including auth) in try-catch
 2. **Never expose error details**: Log full errors server-side, return user-friendly messages
 3. **Fail-fast pattern**: Check errors immediately, return early
 4. **Always send response**: Never return without a response (causes hanging requests)
 
-## Log Levels
+### Log Levels
 
 | Level           | Use For                                           |
 | --------------- | ------------------------------------------------- |
@@ -59,6 +61,6 @@ Four factories in `/src/lib/api-helpers/create-handler.ts`:
 | `console.warn`  | User-caused issues (auth, validation, duplicates) |
 | `console.error` | System/database errors                            |
 
-## `vet` Helper
+### `vet` Helper
 
 Use for external APIs that throw (axios, fetch) -- returns `[error, result]` tuple. Don't use for Supabase (already returns `{ data, error }`).

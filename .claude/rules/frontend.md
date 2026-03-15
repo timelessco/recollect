@@ -1,10 +1,11 @@
 ---
-paths: src/**/*.{ts,tsx}
+paths:
+  - "src/**/*.{ts,tsx}"
 ---
 
-# Frontend Patterns
+## Frontend Patterns
 
-## Compound Component Pattern
+### Compound Component Pattern
 
 For complex UI (Combobox, Menu), export object with subcomponents:
 
@@ -23,7 +24,7 @@ export const Combobox = {
 
 See `/src/components/ui/recollect/combobox/` for implementation.
 
-## Recollect-Specific Rules
+### Recollect-Specific Rules
 
 - Tailwind v4 only (never v3)
 - Make static elements with click handlers use a valid role
@@ -32,5 +33,3 @@ See `/src/components/ui/recollect/combobox/` for implementation.
   - Use `<div>` instead of `<p>` when containing block-level elements
 - Use function types instead of object types with call signatures
 - Function declarations for named functions, arrow functions for callbacks
-- Never create import cycles
-- Never hardcode sensitive data

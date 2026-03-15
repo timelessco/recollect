@@ -1,12 +1,13 @@
 ---
-paths: supabase/**/*.sql
+paths:
+  - "supabase/**/*.sql"
 ---
 
-# Supabase Database Functions
+## Supabase Functions
 
 Generate high-quality PostgreSQL functions following these best practices.
 
-## General Guidelines
+### General Guidelines
 
 1. **Default to `SECURITY INVOKER`:**
    - Functions run with permissions of the invoking user
@@ -24,9 +25,9 @@ Generate high-quality PostgreSQL functions following these best practices.
    - Use `IMMUTABLE` or `STABLE` when possible
    - Use `VOLATILE` only if modifying data
 
-## Example Templates
+### Example Templates
 
-### Simple Function
+#### Simple Function
 
 ```sql
 create or replace function my_schema.hello_world()
@@ -41,7 +42,7 @@ end;
 $$;
 ```
 
-### Function with Parameters
+#### Function with Parameters
 
 ```sql
 create or replace function public.calculate_total_price(order_id bigint)
@@ -63,7 +64,7 @@ end;
 $$;
 ```
 
-### Trigger Function
+#### Trigger Function
 
 ```sql
 create or replace function my_schema.update_updated_at()
@@ -84,7 +85,7 @@ for each row
 execute function my_schema.update_updated_at();
 ```
 
-### Immutable Function
+#### Immutable Function
 
 ```sql
 create or replace function my_schema.full_name(first_name text, last_name text)
@@ -98,7 +99,7 @@ as $$
 $$;
 ```
 
-### Error Handling
+#### Error Handling
 
 Use `RAISE EXCEPTION` for auth guards, input validation, and business rules. In queue-processing functions, use the `RAISE WARNING` + bare `RAISE` pattern for observability before triggering rollback:
 

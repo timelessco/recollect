@@ -1,10 +1,12 @@
 ---
-paths: "supabase/**, seed.sql"
+paths:
+  - "supabase/**"
+  - "seed.sql"
 ---
 
-# Supabase CLI Local Development
+## Supabase CLI
 
-## CRITICAL: Local Only
+### CRITICAL: Local Only
 
 **NEVER** run these commands - they affect production:
 
@@ -23,7 +25,7 @@ All CLI commands in this project affect LOCAL Supabase only.
 cat .supabase/project-ref # If exists, project is linked
 ```
 
-## Always Use npx
+### Always Use npx
 
 ```bash
 npx supabase status       # Correct
@@ -31,20 +33,20 @@ npx supabase migration up # Correct
 supabase status           # Wrong - may use different version
 ```
 
-## Pre-flight Check
+### Pre-flight Check
 
 ```bash
 npx supabase status # Verify local is running
 ```
 
-## Migration Commands
+### Migration Commands
 
 | Command                      | Effect                                       | Use When                         |
 | ---------------------------- | -------------------------------------------- | -------------------------------- |
 | `npx supabase migration up`  | Apply pending, **preserves data**            | Default                          |
 | `pnpm db:reset`              | Full reset, **loses data**, syncs vault      | Clean slate, conflicts, seeding  |
 
-## Migration Safety Rules
+### Migration Safety Rules
 
 - NEVER add database indexes without explicit user approval -- may conflict with production
 - NEVER create a new migration file when the user wants changes merged into an existing one -- check for existing PR migrations first
@@ -60,7 +62,7 @@ npx supabase status # Verify local is running
 - SQL migration format: `BEGIN/COMMIT`, PART separators, numbered steps, pre-flight `DO $$` validation, `GRANT/REVOKE`, post-migration verification, `COMMENT ON`
 - Seeding conflicts on fresh start: use Supabase's `sql_paths` in `config.toml` with cleanup pre-seed file
 
-## SQL Execution
+### SQL Execution
 
 Use Supabase MCP for SQL: `mcp__supabase-local__execute_sql`
 
@@ -70,13 +72,13 @@ For pgmq verification, use direct table access:
 SELECT * FROM pgmq."q_queue-name" WHERE condition;
 ```
 
-## Type Generation
+### Type Generation
 
 ```bash
 pnpm db:types # Generates from LOCAL schema
 ```
 
-## Seed-Migration Conflicts
+### Seed-Migration Conflicts
 
 1. **Migrations are source of truth** -- fix `seed.sql`, never modify migrations
 2. Fix ALL column mismatches in one pass
