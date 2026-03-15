@@ -4,14 +4,6 @@ paths: src/**/*.{ts,tsx}
 
 # Code Style Conventions
 
-## Code Quality Checks
-
-**ALWAYS run the following commands before completing any task:**
-
-1. Automatically use the IDE's built-in diagnostics tool to check for linting and type errors:
-   - Fix any linting or type errors before considering the task complete
-   - Do this for any file you create or modify
-
 ## File Size Limits
 
 - **Maximum 250 lines per file** -- extract sections, move to modules, split components
@@ -59,7 +51,6 @@ paths: src/**/*.{ts,tsx}
 ## Styling
 
 - **Tailwind CSS v4**: Primary method. Use `cn()` for conditional classes
-- **No CSS-in-JS**: Avoid runtime styling
 - **Custom CSS**: Only in `global.css` when absolutely necessary
 
 ## File Organization
