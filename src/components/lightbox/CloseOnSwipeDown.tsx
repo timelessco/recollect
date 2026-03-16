@@ -12,7 +12,6 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 
 	// Touch tracking refs
 	const pointerStartYRef = useRef(0);
-	const pointerLastYRef = useRef(0);
 	const isDraggingRef = useRef(false);
 
 	useEffect(() => {
@@ -84,7 +83,6 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 				}
 
 				pointerStartYRef.current = event.clientY;
-				pointerLastYRef.current = event.clientY;
 				isDraggingRef.current = false;
 				offsetRef.current = 0;
 			},
@@ -100,7 +98,6 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 				const deltaY = event.clientY - pointerStartYRef.current;
 				const element = event.currentTarget as HTMLElement;
 
-				// Only activate pull-down (positive deltaY = downward)
 				if (deltaY <= 0) {
 					if (isDraggingRef.current) {
 						reset(element);
@@ -111,7 +108,6 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 				}
 
 				isDraggingRef.current = true;
-				pointerLastYRef.current = event.clientY;
 				offsetRef.current = Math.min(deltaY, maxOffset);
 
 				applyOffset(element);
@@ -134,16 +130,15 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 
 			const element = event.currentTarget as HTMLElement;
 			isDraggingRef.current = false;
-
-			if (offsetRef.current > THRESHOLD) {
-				close();
-			} else {
-				reset(element);
-			}
+			reset(element);
 		};
 
 		const unsubscribePointerUp = subscribeSensors(
 			"onPointerUp",
+			handlePointerEnd,
+		);
+		const unsubscribePointerLeave = subscribeSensors(
+			"onPointerLeave",
 			handlePointerEnd,
 		);
 		const unsubscribePointerCancel = subscribeSensors(
@@ -156,6 +151,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			unsubscribePointerDown();
 			unsubscribePointerMove();
 			unsubscribePointerUp();
+			unsubscribePointerLeave();
 			unsubscribePointerCancel();
 			if (timeoutRef.current) {
 				clearTimeout(timeoutRef.current);
