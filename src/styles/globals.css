@@ -971,11 +971,11 @@
 	}
 
 	.drop-indicator.before {
-		@apply top-0;
+		@apply -top-px;
 	}
 
 	.drop-indicator.after {
-		@apply bottom-0;
+		@apply -bottom-px;
 	}
 
 	.drop-indicator.drop-target {
