@@ -13,6 +13,8 @@ import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
 import { Dialog } from "@/components/ui/recollect/dialog";
 
+import { MobileSettingsDrawer } from "./mobile-settings-drawer";
+
 export type SettingsPage =
 	| "ai-features"
 	| "change-email"
@@ -24,24 +26,36 @@ type SettingsModalProps = {
 	children: ReactNode;
 };
 
-export const SettingsModal = ({ children }: SettingsModalProps) => (
-	<Dialog.Root>
-		<Dialog.Trigger className="w-full rounded-lg outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200">
-			{children}
-		</Dialog.Trigger>
-		<Dialog.Portal>
-			<Dialog.Backdrop />
-			<Dialog.Popup
-				className="skip-global-paste w-full max-w-[740px] rounded-[20px]"
-				aria-label="Settings"
-			>
-				<SettingsModalContent />
-			</Dialog.Popup>
-		</Dialog.Portal>
-	</Dialog.Root>
-);
+export const SettingsModal = ({ children }: SettingsModalProps) => {
+	const { isMobile } = useIsMobileView();
 
-function SettingsModalContent() {
+	if (isMobile) {
+		return <MobileSettingsDrawer>{children}</MobileSettingsDrawer>;
+	}
+
+	return <DesktopSettingsDialog>{children}</DesktopSettingsDialog>;
+};
+
+function DesktopSettingsDialog({ children }: SettingsModalProps) {
+	return (
+		<Dialog.Root>
+			<Dialog.Trigger className="w-full rounded-lg outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200">
+				{children}
+			</Dialog.Trigger>
+			<Dialog.Portal>
+				<Dialog.Backdrop />
+				<Dialog.Popup
+					className="skip-global-paste w-full max-w-[740px] rounded-[20px]"
+					aria-label="Settings"
+				>
+					<DesktopSettingsContent />
+				</Dialog.Popup>
+			</Dialog.Portal>
+		</Dialog.Root>
+	);
+}
+
+function DesktopSettingsContent() {
 	const { isDesktop } = useIsMobileView();
 	const [currentPage, setCurrentPage] = useState<SettingsPage>("main");
 
@@ -140,7 +154,7 @@ function SettingsModalContent() {
 					))}
 				</div>
 			</div>
-			<div className="hide-scrollbar h-full w-full overflow-auto rounded-[20px] px-12 pt-8">
+			<div className="hide-scrollbar h-full w-full overflow-auto rounded-[20px] px-6 pt-6 sm:px-12 sm:pt-8">
 				<SettingsMainContent
 					currentPage={currentPage}
 					onNavigate={setCurrentPage}

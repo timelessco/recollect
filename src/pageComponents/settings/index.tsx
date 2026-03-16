@@ -249,9 +249,9 @@ const Settings = ({ onNavigate }: SettingsProps) => {
 						</div>
 					</div>
 				</div>
-				<div className="mt-[44px] flex flex-row space-x-3">
+				<div className="mt-[44px] flex flex-col gap-6 sm:flex-row sm:gap-0 sm:space-x-3">
 					<form
-						className="w-1/2"
+						className="w-full sm:w-1/2"
 						onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}
 					>
 						<LabelledComponent
@@ -296,7 +296,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
 							</div>
 						</LabelledComponent>
 					</form>
-					<form className="w-1/2" onSubmit={handleSubmit(onSubmit)}>
+					<form className="w-full sm:w-1/2" onSubmit={handleSubmit(onSubmit)}>
 						<LabelledComponent
 							label="Username"
 							labelClassName={settingsInputLabelClassName}
@@ -380,7 +380,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
 							your account.
 						</p>
 						<Button
-							className={`w-full ${settingsDeleteButtonRedClassName}`}
+							className={`w-full rounded-lg ${settingsDeleteButtonRedClassName}`}
 							onClick={() => onNavigate("delete")}
 						>
 							<p className="flex w-full justify-center">
