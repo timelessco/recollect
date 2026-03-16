@@ -2,7 +2,7 @@ import { PdfScreenshotInputSchema, PdfScreenshotOutputSchema } from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 
-const ROUTE = "pdf-screenshot";
+const ROUTE = "pdf-thumbnail";
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
