@@ -49,7 +49,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 		};
 
 		// Desktop: wheel/trackpad
-		const unsubWheel = subscribeSensors("onWheel", (event) => {
+		const unsubscribeWheel = subscribeSensors("onWheel", (event) => {
 			const element = event.currentTarget as HTMLElement;
 
 			if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
@@ -76,7 +76,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 		});
 
 		// Mobile: pointer events (touch)
-		const unsubPointerDown = subscribeSensors(
+		const unsubscribePointerDown = subscribeSensors(
 			"onPointerDown",
 			(event: React.PointerEvent) => {
 				if (event.pointerType !== "touch") {
@@ -90,7 +90,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			},
 		);
 
-		const unsubPointerMove = subscribeSensors(
+		const unsubscribePointerMove = subscribeSensors(
 			"onPointerMove",
 			(event: React.PointerEvent) => {
 				if (event.pointerType !== "touch") {
@@ -142,18 +142,21 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			}
 		};
 
-		const unsubPointerUp = subscribeSensors("onPointerUp", handlePointerEnd);
-		const unsubPointerCancel = subscribeSensors(
+		const unsubscribePointerUp = subscribeSensors(
+			"onPointerUp",
+			handlePointerEnd,
+		);
+		const unsubscribePointerCancel = subscribeSensors(
 			"onPointerCancel",
 			handlePointerEnd,
 		);
 
 		return () => {
-			unsubWheel();
-			unsubPointerDown();
-			unsubPointerMove();
-			unsubPointerUp();
-			unsubPointerCancel();
+			unsubscribeWheel();
+			unsubscribePointerDown();
+			unsubscribePointerMove();
+			unsubscribePointerUp();
+			unsubscribePointerCancel();
 			if (timeoutRef.current) {
 				clearTimeout(timeoutRef.current);
 			}
