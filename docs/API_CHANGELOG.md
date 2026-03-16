@@ -18,3 +18,22 @@
 
 
 
+
+## 2026-03-16 [`4b5467d`](https://github.com/timelessco/recollect/commit/4b5467d8ef349bb79cd02406c105c8127b439a9c)
+
+
+### POST /category/update-user-category
+- :warning: removed the required property 'data/items/is_favorite' from the response with the '200' status
+- :warning: removed the request property 'updateData/is_favorite'
+
+
+### POST /profiles/toggle-favorite-category
+-  endpoint added
+
+
+### PATCH /v2/profiles/update-user-profile
+-  added the new optional request property 'updateData/favorite_categories'
+-  added the required property 'data/items/favorite_categories' to the response with the '200' status
+
+
+
