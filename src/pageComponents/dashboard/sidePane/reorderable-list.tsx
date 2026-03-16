@@ -55,10 +55,11 @@ type OptionDropItemTypes = DraggableItemProps & {
 
 type ReorderDropIndicatorProps = DropIndicatorProps & {
 	dropState: DroppableCollectionState;
+	position: "before" | "after";
 };
 
 function ReorderDropIndicator(props: ReorderDropIndicatorProps) {
-	const { dropState } = props;
+	const { dropState, position } = props;
 	const ref = useRef(null);
 	const { dropIndicatorProps, isHidden, isDropTarget } = useDropIndicator(
 		props,
@@ -71,12 +72,11 @@ function ReorderDropIndicator(props: ReorderDropIndicatorProps) {
 	}
 
 	return (
-		<li
+		<div
 			{...dropIndicatorProps}
-			aria-selected
-			className={`drop-indicator ${isDropTarget ? "drop-target" : ""} z-10`}
+			className={`drop-indicator ${position} ${isDropTarget ? "drop-target" : ""}`}
 			ref={ref}
-			role="option"
+			role="presentation"
 		/>
 	);
 }
@@ -118,27 +118,27 @@ function ReorderableOption({
 	);
 
 	return (
-		<>
+		<li
+			{...mergedProps}
+			className={`option-drop relative outline-hidden ${isFocusVisible ? "ring-1 ring-gray-200" : ""} ${
+				isDropTarget && highlightDropTarget ? "drop-target" : ""
+			}`}
+			ref={ref}
+		>
 			<ReorderDropIndicator
 				dropState={dropState}
+				position="before"
 				target={{ type: "item", key: item.key, dropPosition: "before" }}
 			/>
-			<li
-				{...mergedProps}
-				className={`option-drop outline-hidden ${isFocusVisible ? "ring-1 ring-gray-200" : ""} ${
-					isDropTarget && highlightDropTarget ? "drop-target" : ""
-				}`}
-				ref={ref}
-			>
-				{item.rendered}
-			</li>
+			{item.rendered}
 			{state.collection.getKeyAfter(item.key) === null && (
 				<ReorderDropIndicator
 					dropState={dropState}
+					position="after"
 					target={{ type: "item", key: item.key, dropPosition: "after" }}
 				/>
 			)}
-		</>
+		</li>
 	);
 }
 

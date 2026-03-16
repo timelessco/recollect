@@ -58,9 +58,14 @@ export const DELETE = createDeleteApiHandlerWithAuth({
 				categoryId,
 				userId,
 			});
-			Sentry.captureException(favCleanupError, {
+			Sentry.captureException(new Error(favCleanupError.message), {
 				tags: { operation: "cleanup_favorite_categories", userId },
-				extra: { categoryId },
+				extra: {
+					categoryId,
+					code: favCleanupError.code,
+					details: favCleanupError.details,
+					hint: favCleanupError.hint,
+				},
 			});
 		}
 

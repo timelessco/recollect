@@ -52,9 +52,17 @@ export function FavoriteCollectionsList({
 
 		const movingItem = listOrder[sourceIndex];
 		const newOrder = listOrder.filter((item) => item !== movingItem);
-		const adjustedIndex =
-			sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
-		newOrder.splice(adjustedIndex, 0, movingItem);
+		const newTargetIndex = newOrder.indexOf(targetKey);
+
+		if (newTargetIndex === -1) {
+			return;
+		}
+
+		const insertIndex =
+			event.target.dropPosition === "after"
+				? newTargetIndex + 1
+				: newTargetIndex;
+		newOrder.splice(insertIndex, 0, movingItem);
 
 		void mutationApiCall(
 			updateFavoriteOrderMutation.mutateAsync({

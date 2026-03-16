@@ -967,11 +967,15 @@
 	}
 
 	.drop-indicator {
-		@apply -mb-[2px] ml-0 h-[2px] w-full bg-transparent outline-hidden;
+		@apply pointer-events-none absolute left-0 z-10 h-[2px] w-full bg-transparent outline-hidden;
 	}
 
-	.drop-indicator:last-child {
-		@apply -mt-[2px] mb-0;
+	.drop-indicator.before {
+		@apply top-0;
+	}
+
+	.drop-indicator.after {
+		@apply bottom-0;
 	}
 
 	.drop-indicator.drop-target {

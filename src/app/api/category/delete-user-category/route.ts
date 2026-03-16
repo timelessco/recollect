@@ -333,9 +333,14 @@ export const POST = createPostApiHandlerWithAuth({
 				error: favoritesCleanupError,
 				categoryId: deletedCategory[0].id,
 			});
-			Sentry.captureException(favoritesCleanupError, {
+			Sentry.captureException(new Error(favoritesCleanupError.message), {
 				tags: { operation: "cleanup_all_favorite_categories", userId },
-				extra: { categoryId: deletedCategory[0].id },
+				extra: {
+					categoryId: deletedCategory[0].id,
+					code: favoritesCleanupError.code,
+					details: favoritesCleanupError.details,
+					hint: favoritesCleanupError.hint,
+				},
 			});
 		}
 

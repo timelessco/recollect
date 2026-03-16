@@ -289,32 +289,37 @@ const CollectionsList = () => {
 			? collectionsList?.map((item) => item?.id)
 			: userProfileData?.data?.[0].category_order;
 
-		// to index
-		const index1 = listOrder?.indexOf(
-			Number.parseInt(event?.target?.key as string, 10),
-		);
-		// from index
-		const index2 = listOrder?.indexOf(
-			Number.parseInt(event?.keys?.values().next().value as string, 10),
+		const targetKey = Number.parseInt(event?.target?.key as string, 10);
+		const sourceKey = Number.parseInt(
+			event?.keys?.values().next().value as string,
+			10,
 		);
 
-		let myArray = listOrder;
+		const sourceIndex = listOrder?.indexOf(sourceKey);
 
-		if (myArray && index1 !== undefined && index2 !== undefined && listOrder) {
-			const movingItem = listOrder[index2];
-
-			// remove
-			myArray = myArray.filter((item) => item !== movingItem);
-
-			// add — adjust target index when dragging downward since filter shortened the array
-			const adjustedIndex = index2 < index1 ? index1 - 1 : index1;
-			myArray.splice(adjustedIndex, 0, movingItem);
-			void mutationApiCall(
-				updateCategoryOrderMutation?.mutateAsync({
-					order: myArray,
-				}),
-			);
+		if (!listOrder || sourceIndex === undefined || sourceIndex === -1) {
+			return;
 		}
+
+		const movingItem = listOrder[sourceIndex];
+		const newOrder = listOrder.filter((item) => item !== movingItem);
+		const newTargetIndex = newOrder.indexOf(targetKey);
+
+		if (newTargetIndex === -1) {
+			return;
+		}
+
+		const insertIndex =
+			event.target.dropPosition === "after"
+				? newTargetIndex + 1
+				: newTargetIndex;
+		newOrder.splice(insertIndex, 0, movingItem);
+
+		void mutationApiCall(
+			updateCategoryOrderMutation?.mutateAsync({
+				order: newOrder,
+			}),
+		);
 	};
 
 	return (
