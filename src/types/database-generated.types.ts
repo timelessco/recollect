@@ -155,7 +155,6 @@ export type Database = {
 					icon: string | null;
 					icon_color: string | null;
 					id: number;
-					is_favorite: boolean;
 					is_public: boolean;
 					order_index: number | null;
 					user_id: string | null;
@@ -168,7 +167,6 @@ export type Database = {
 					icon?: string | null;
 					icon_color?: string | null;
 					id?: number;
-					is_favorite?: boolean;
 					is_public?: boolean;
 					order_index?: number | null;
 					user_id?: string | null;
@@ -181,7 +179,6 @@ export type Database = {
 					icon?: string | null;
 					icon_color?: string | null;
 					id?: number;
-					is_favorite?: boolean;
 					is_public?: boolean;
 					order_index?: number | null;
 					user_id?: string | null;
@@ -264,6 +261,7 @@ export type Database = {
 					category_order: number[] | null;
 					display_name: string | null;
 					email: string | null;
+					favorite_categories: number[];
 					id: string;
 					last_synced_instagram_id: string | null;
 					last_synced_twitter_id: string | null;
@@ -280,6 +278,7 @@ export type Database = {
 					category_order?: number[] | null;
 					display_name?: string | null;
 					email?: string | null;
+					favorite_categories?: number[];
 					id: string;
 					last_synced_instagram_id?: string | null;
 					last_synced_twitter_id?: string | null;
@@ -296,6 +295,7 @@ export type Database = {
 					category_order?: number[] | null;
 					display_name?: string | null;
 					email?: string | null;
+					favorite_categories?: number[];
 					id?: string;
 					last_synced_instagram_id?: string | null;
 					last_synced_twitter_id?: string | null;
@@ -515,6 +515,14 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			remove_category_from_all_favorites: {
+				Args: { p_category_id: number };
+				Returns: undefined;
+			};
+			remove_favorite_category_for_user: {
+				Args: { p_category_id: number };
+				Returns: undefined;
+			};
 			remove_category_from_bookmark: {
 				Args: { p_bookmark_id: number; p_category_id: number };
 				Returns: Array<{
@@ -675,6 +683,13 @@ export type Database = {
 					isOneToOne: false;
 					isSetofReturn: true;
 				};
+			};
+			toggle_favorite_category: {
+				Args: { p_category_id: number };
+				Returns: Array<{
+					out_favorite_categories: number[];
+					out_id: string;
+				}>;
 			};
 			toggle_preferred_og_domain: {
 				Args: { p_domain: string };

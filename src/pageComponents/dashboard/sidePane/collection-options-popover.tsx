@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import ShareContent from "../share/shareContent";
 
 import { type CollectionItemTypes } from "./singleListItemComponent";
-import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
+import { useToggleFavoriteCategoryOptimisticMutation } from "@/async/mutationHooks/user/use-toggle-favorite-category-optimistic-mutation";
 import useFetchBookmarksCount from "@/async/queryHooks/bookmarks/useFetchBookmarksCount";
 import { DeleteCollectionConfirm } from "@/components/delete-collection-confirm";
 import { AnimatedSize } from "@/components/ui/recollect/animated-size";
@@ -159,16 +159,15 @@ interface FavoriteMenuItemProps {
 }
 
 function FavoriteMenuItem({ categoryId, isFavorite }: FavoriteMenuItemProps) {
-	const { updateCategoryOptimisticMutation } =
-		useUpdateCategoryOptimisticMutation();
+	const { toggleFavoriteCategoryOptimisticMutation } =
+		useToggleFavoriteCategoryOptimisticMutation();
 
 	return (
 		<Menu.Item
 			onClick={(event) => {
 				event.stopPropagation();
-				updateCategoryOptimisticMutation.mutate({
+				toggleFavoriteCategoryOptimisticMutation.mutate({
 					category_id: categoryId,
-					updateData: { is_favorite: !isFavorite },
 				});
 			}}
 		>

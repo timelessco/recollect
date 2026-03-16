@@ -39,9 +39,6 @@ export const UpdateCategoryPayloadSchema = z.object({
 				.string()
 				.optional()
 				.meta({ description: "New icon color hex code" }),
-			is_favorite: z.boolean().optional().meta({
-				description: "Whether to mark the collection as a favorite",
-			}),
 			is_public: z.boolean().optional().meta({
 				description: "Whether to make the collection publicly visible",
 			}),
@@ -73,9 +70,6 @@ export const UpdateCategoryResponseSchema = z
 				.string()
 				.nullable()
 				.meta({ description: "Icon color hex code" }),
-			is_favorite: z
-				.boolean()
-				.meta({ description: "Whether collection is marked as favorite" }),
 			is_public: z
 				.boolean()
 				.meta({ description: "Whether collection is publicly visible" }),
