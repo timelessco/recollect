@@ -1,8 +1,10 @@
 ---
-paths: "src/**/*.ts, src/**/*.tsx"
+paths:
+  - "src/**/*.ts"
+  - "src/**/*.tsx"
 ---
 
-# Zod + Supabase Gotchas
+## Zod + Supabase
 
 - `z.looseObject` infers `{ [x: string]: unknown; ... }` -- incompatible with Supabase's `Json` type. Use `z.object` for route handlers returning Supabase data
 - In OpenAPI raw schema objects, do NOT use `as const` on `required` arrays -- creates `readonly` tuple incompatible with `SchemaObject`'s `string[]`. Example data objects SHOULD use `as const`

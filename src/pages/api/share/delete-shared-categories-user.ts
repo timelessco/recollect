@@ -2,7 +2,6 @@
 
 import { type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
-import { isEmpty } from "lodash";
 import isNull from "lodash/isNull";
 
 import {
@@ -43,12 +42,32 @@ export default async function handler(
 	if (!isNull(error)) {
 		response.status(500).json({ data: null, error });
 		throw new Error("ERROR");
-	} else if (isEmpty(data)) {
+	}
+
+	if (!data || data.length === 0) {
 		response
 			.status(500)
 			.json({ data: null, error: { message: "Something went wrong" } });
 		throw new Error("ERROR");
-	} else {
-		response.status(200).json({ data, error: null });
 	}
+
+	// Clean up favorite_categories for the departing user (atomic array_remove)
+	const categoryId = data[0].category_id;
+	const { error: favCleanupError } = await supabase.rpc(
+		"remove_favorite_category_for_user",
+		{ p_category_id: categoryId },
+	);
+
+	if (favCleanupError) {
+		console.error(
+			"[delete-shared-categories-user] Failed to clean up favorite_categories:",
+			{
+				error: favCleanupError,
+				categoryId,
+				userId,
+			},
+		);
+	}
+
+	response.status(200).json({ data, error: null });
 }

@@ -1,10 +1,14 @@
 ---
-paths: "src/lib/supabase/**, src/middleware.ts, src/utils/supabaseClient.ts, src/utils/supabaseServerClient.ts"
+paths:
+  - "src/lib/supabase/**"
+  - "src/middleware.ts"
+  - "src/utils/supabaseClient.ts"
+  - "src/utils/supabaseServerClient.ts"
 ---
 
-# Supabase Auth SSR with Next.js
+## Supabase Auth SSR
 
-## CRITICAL: Deprecated Patterns
+### CRITICAL: Deprecated Patterns
 
 **NEVER use these patterns - they will break the application:**
 
@@ -23,11 +27,11 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 ```
 
-## REQUIRED: Correct Patterns
+### REQUIRED: Correct Patterns
 
 **ALWAYS use `@supabase/ssr` with `getAll`/`setAll`:**
 
-### Browser Client
+#### Browser Client
 
 ```typescript
 import { createBrowserClient } from "@supabase/ssr";
@@ -40,7 +44,7 @@ export function createClient() {
 }
 ```
 
-### Server Client
+#### Server Client
 
 ```typescript
 import { cookies } from "next/headers";
@@ -72,7 +76,7 @@ export async function createClient() {
 }
 ```
 
-### Middleware
+#### Middleware
 
 ```typescript
 import { NextResponse, type NextRequest } from "next/server";
@@ -113,7 +117,7 @@ export async function middleware(request: NextRequest) {
 }
 ```
 
-## Verification Checklist
+### Verification Checklist
 
 Before generating any Supabase auth code:
 
@@ -122,7 +126,7 @@ Before generating any Supabase auth code:
 3. NO `get`, `set`, or `remove` methods? ✓
 4. NO imports from `auth-helpers-nextjs`? ✓
 
-## Consequences of Wrong Implementation
+### Consequences of Wrong Implementation
 
 Using deprecated patterns will:
 
@@ -131,7 +135,7 @@ Using deprecated patterns will:
 3. Cause authentication loops
 4. Result in security vulnerabilities
 
-## Health Check Patterns
+### Health Check Patterns
 
 **getClaims() does NOT make a network call** — it validates the JWT locally (signature and expiration) from the cookie. A null result does not mean Supabase is unreachable.
 
