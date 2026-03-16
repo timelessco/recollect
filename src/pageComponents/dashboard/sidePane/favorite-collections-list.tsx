@@ -1,17 +1,17 @@
 import { type DroppableCollectionReorderEvent } from "react-aria";
 import { Item } from "react-stately";
 
-import { useUpdateFavoriteOrderMutation } from "@/async/mutationHooks/user/use-update-favorite-order-mutation";
-import { Collapsible } from "@/components/ui/recollect/collapsible";
-import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
-import { mutationApiCall } from "@/utils/apiHelpers";
-import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 import DownArrowGray from "../../../icons/downArrowGray";
 
 import { ReorderableListBox } from "./reorderable-list";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
+import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
+import { useUpdateFavoriteOrderMutation } from "@/async/mutationHooks/user/use-update-favorite-order-mutation";
+import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
+import { Collapsible } from "@/components/ui/recollect/collapsible";
+import { mutationApiCall } from "@/utils/apiHelpers";
 
 interface FavoriteCollectionsListProps {
 	favoriteCollections: CollectionItemTypes[];
@@ -20,8 +20,6 @@ interface FavoriteCollectionsListProps {
 export function FavoriteCollectionsList({
 	favoriteCollections,
 }: FavoriteCollectionsListProps) {
-	const { addCategoryToBookmarkOptimisticMutation } =
-		useAddCategoryToBookmarkOptimisticMutation();
 	const { updateFavoriteOrderMutation } = useUpdateFavoriteOrderMutation();
 	const { userProfileData } = useFetchUserProfile();
 
@@ -91,22 +89,35 @@ export function FavoriteCollectionsList({
 					>
 						{favoriteCollections.map((item) => (
 							<Item key={item.id} textValue={item.name}>
-								<SingleListItemComponent
-									extendedClassname="py-[6px]"
-									item={item}
-									listNameId="favorite-collection-name"
-									showDropdown
-									showSpinner={
-										addCategoryToBookmarkOptimisticMutation.isPending &&
-										addCategoryToBookmarkOptimisticMutation.variables
-											?.category_id === item.id
-									}
-								/>
+								<FavoriteCollectionItem item={item} />
 							</Item>
 						))}
 					</ReorderableListBox>
 				</Collapsible.Panel>
 			</Collapsible.Root>
 		</div>
+	);
+}
+
+interface FavoriteCollectionItemProps {
+	item: CollectionItemTypes;
+}
+
+function FavoriteCollectionItem({ item }: FavoriteCollectionItemProps) {
+	const { addCategoryToBookmarkOptimisticMutation } =
+		useAddCategoryToBookmarkOptimisticMutation();
+
+	return (
+		<SingleListItemComponent
+			extendedClassname="py-[6px]"
+			item={item}
+			listNameId="favorite-collection-name"
+			showDropdown
+			showSpinner={
+				addCategoryToBookmarkOptimisticMutation.isPending &&
+				addCategoryToBookmarkOptimisticMutation.variables?.category_id ===
+					item.id
+			}
+		/>
 	);
 }
