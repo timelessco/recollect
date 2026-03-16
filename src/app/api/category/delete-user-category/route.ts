@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { after } from "next/server";
 
 import {
@@ -331,6 +332,10 @@ export const POST = createPostApiHandlerWithAuth({
 			console.error(`[${route}] Failed to clean up favorite_categories:`, {
 				error: favoritesCleanupError,
 				categoryId: deletedCategory[0].id,
+			});
+			Sentry.captureException(favoritesCleanupError, {
+				tags: { operation: "cleanup_all_favorite_categories", userId },
+				extra: { categoryId: deletedCategory[0].id },
 			});
 		}
 

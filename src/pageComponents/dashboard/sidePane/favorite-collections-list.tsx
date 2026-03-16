@@ -13,9 +13,9 @@ import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 import { Collapsible } from "@/components/ui/recollect/collapsible";
 import { mutationApiCall } from "@/utils/apiHelpers";
 
-interface FavoriteCollectionsListProps {
+type FavoriteCollectionsListProps = {
 	favoriteCollections: CollectionItemTypes[];
-}
+};
 
 export function FavoriteCollectionsList({
 	favoriteCollections,
@@ -52,7 +52,9 @@ export function FavoriteCollectionsList({
 
 		const movingItem = listOrder[sourceIndex];
 		const newOrder = listOrder.filter((item) => item !== movingItem);
-		newOrder.splice(targetIndex, 0, movingItem);
+		const adjustedIndex =
+			sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
+		newOrder.splice(adjustedIndex, 0, movingItem);
 
 		void mutationApiCall(
 			updateFavoriteOrderMutation.mutateAsync({
@@ -99,9 +101,9 @@ export function FavoriteCollectionsList({
 	);
 }
 
-interface FavoriteCollectionItemProps {
+type FavoriteCollectionItemProps = {
 	item: CollectionItemTypes;
-}
+};
 
 function FavoriteCollectionItem({ item }: FavoriteCollectionItemProps) {
 	const { addCategoryToBookmarkOptimisticMutation } =

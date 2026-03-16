@@ -280,7 +280,7 @@ const CollectionsList = () => {
 	};
 
 	const favoriteCollections = sortedFavorites();
-	const nonFavoriteCollections = allSorted;
+	const nonFavoriteCollections = allSorted.filter((item) => !item.isFavorite);
 
 	const onReorder = (event: DroppableCollectionReorderEvent) => {
 		const apiOrder = userProfileData?.data?.[0].category_order;
@@ -306,8 +306,9 @@ const CollectionsList = () => {
 			// remove
 			myArray = myArray.filter((item) => item !== movingItem);
 
-			// add
-			myArray.splice(index1, 0, movingItem);
+			// add — adjust target index when dragging downward since filter shortened the array
+			const adjustedIndex = index2 < index1 ? index1 - 1 : index1;
+			myArray.splice(adjustedIndex, 0, movingItem);
 			void mutationApiCall(
 				updateCategoryOrderMutation?.mutateAsync({
 					order: myArray,

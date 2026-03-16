@@ -1,3 +1,6 @@
+import { type z } from "zod";
+
+import { type UpdateUserProfileOutputSchema } from "@/app/api/v2/profiles/update-user-profile/schema";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { useSupabaseSession } from "@/store/componentStore";
@@ -15,10 +18,9 @@ type UpdateFavoriteOrderInput = {
 	favorite_categories: number[];
 };
 
-type UpdateFavoriteOrderResponse = {
-	data: ProfilesTableTypes[] | null;
-	error: Error | null;
-};
+type UpdateFavoriteOrderResponse = z.infer<
+	typeof UpdateUserProfileOutputSchema
+>;
 
 export function useUpdateFavoriteOrderMutation() {
 	const session = useSupabaseSession((state) => state.session);
