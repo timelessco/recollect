@@ -86,6 +86,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					<div
 						className="flex items-center justify-center"
 						onClick={(event) => event.preventDefault()}
+						onPointerDown={(event) => event.stopPropagation()}
 					>
 						{showSpinner ? (
 							<Spinner
