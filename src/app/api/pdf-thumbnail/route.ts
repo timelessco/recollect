@@ -22,14 +22,39 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
-		const response = await fetch(pdfApiUrl, {
-			body: JSON.stringify({ url: data.url, userId: user.id }),
-			headers: {
-				Authorization: `Bearer ${pdfApiKey}`,
-				"Content-Type": "application/json",
-			},
-			method: "POST",
-		});
+		const controller = new AbortController();
+		const timeout = setTimeout(() => controller.abort(), 10_000);
+
+		let response: Response;
+		try {
+			response = await fetch(pdfApiUrl, {
+				body: JSON.stringify({ url: data.url, userId: user.id }),
+				headers: {
+					Authorization: `Bearer ${pdfApiKey}`,
+					"Content-Type": "application/json",
+				},
+				method: "POST",
+				signal: controller.signal,
+			});
+		} catch (error) {
+			clearTimeout(timeout);
+			const isTimeout =
+				error instanceof DOMException && error.name === "AbortError";
+			return apiError({
+				route,
+				message: isTimeout
+					? "PDF screenshot service timed out"
+					: "PDF screenshot service is unreachable",
+				error: error instanceof Error ? error : new Error(String(error)),
+				operation: isTimeout
+					? "pdf_screenshot_timeout"
+					: "pdf_screenshot_network",
+				userId: user.id,
+				extra: { url: data.url },
+			});
+		}
+
+		clearTimeout(timeout);
 
 		if (!response.ok) {
 			return apiError({
