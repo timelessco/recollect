@@ -1,14 +1,12 @@
 import { z } from "zod";
 
-export const PdfScreenshotInputSchema = z.object({
+export const PdfThumbnailInputSchema = z.object({
 	url: z.url("Invalid URL format"),
 });
 
-export type PdfScreenshotInput = z.infer<typeof PdfScreenshotInputSchema>;
-
-export const PdfScreenshotOutputSchema = z.object({
+export const PdfThumbnailOutputSchema = z.object({
 	path: z.string(),
 	publicUrl: z.string(),
 });
 
-export type PdfScreenshotOutput = z.infer<typeof PdfScreenshotOutputSchema>;
+export type PdfThumbnailOutput = z.infer<typeof PdfThumbnailOutputSchema>;

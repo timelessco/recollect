@@ -1,4 +1,8 @@
-import { PdfScreenshotInputSchema, PdfScreenshotOutputSchema } from "./schema";
+import {
+	PdfThumbnailInputSchema,
+	PdfThumbnailOutputSchema,
+	type PdfThumbnailOutput,
+} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { vet } from "@/utils/try";
@@ -7,8 +11,8 @@ const ROUTE = "pdf-thumbnail";
 
 export const POST = createPostApiHandlerWithAuth({
 	route: ROUTE,
-	inputSchema: PdfScreenshotInputSchema,
-	outputSchema: PdfScreenshotOutputSchema,
+	inputSchema: PdfThumbnailInputSchema,
+	outputSchema: PdfThumbnailOutputSchema,
 	handler: async ({ data, user, route }) => {
 		const sanitizedUrl = data.url.split("?")[0];
 
@@ -63,9 +67,6 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
-		return (await response.json()) as {
-			path: string;
-			publicUrl: string;
-		};
+		return (await response.json()) as PdfThumbnailOutput;
 	},
 });
