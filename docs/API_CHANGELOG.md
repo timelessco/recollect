@@ -37,3 +37,12 @@
 
 
 
+
+## 2026-03-17 [`3c66461`](https://github.com/timelessco/recollect/commit/3c6646102af2f99dd7560dc07cb2dd2b6cada0ca)
+
+
+### POST /pdf-thumbnail
+-  endpoint added
+
+
+
