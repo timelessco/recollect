@@ -46,3 +46,20 @@
 
 
 
+
+## 2026-03-17 [`3fa62d9`](https://github.com/timelessco/recollect/commit/3fa62d98f3df3dbf2d2c3dbb6cba8a16ccafd1c3)
+
+
+### POST /instagram/last-synced-id
+-  api tag 'Instagram' added
+
+
+### POST /profiles/toggle-favorite-category
+-  api tag 'Profiles' added
+
+
+### POST /twitter/last-synced-id
+-  api tag 'Twitter' added
+
+
+
