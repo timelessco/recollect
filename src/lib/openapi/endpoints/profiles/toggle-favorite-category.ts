@@ -22,7 +22,4 @@ export const toggleFavoriteCategorySupplement = {
 		},
 		error: null,
 	},
-	additionalResponses: {
-		400: { description: "Invalid category ID" },
-	},
 } satisfies EndpointSupplement;
