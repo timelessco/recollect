@@ -27,9 +27,9 @@ export const POST = createPostApiHandlerWithAuth({
 		if (!pdfApiUrl || !pdfApiKey) {
 			return apiError({
 				route,
-				message: "PDF screenshot service is not configured",
+				message: "PDF Thumbnail service is not configured",
 				error: new Error("Missing PDF_URL_SCREENSHOT_API or PDF_SECRET_KEY"),
-				operation: "pdf_screenshot_config",
+				operation: "pdf_thumbnail_config",
 				userId: user.id,
 			});
 		}
@@ -48,9 +48,9 @@ export const POST = createPostApiHandlerWithAuth({
 		if (fetchError) {
 			return apiError({
 				route,
-				message: "PDF screenshot service is unreachable",
+				message: "PDF Thumbnail service is unreachable",
 				error: fetchError,
-				operation: "pdf_screenshot_network",
+				operation: "pdf_thumbnail_network",
 				userId: user.id,
 				extra: { url: sanitizedUrl },
 			});
@@ -59,9 +59,9 @@ export const POST = createPostApiHandlerWithAuth({
 		if (!response.ok) {
 			return apiError({
 				route,
-				message: "PDF screenshot service failed",
+				message: "PDF Thumbnail service failed",
 				error: new Error(`PDF service responded with ${response.status}`),
-				operation: "pdf_screenshot_fetch",
+				operation: "pdf_thumbnail_fetch",
 				userId: user.id,
 				extra: { url: sanitizedUrl, status: response.status },
 			});
