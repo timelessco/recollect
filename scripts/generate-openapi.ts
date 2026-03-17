@@ -55,6 +55,10 @@ const tagDescriptions: Array<{ name: string; description: string }> = [
 		name: "iPhone",
 		description: "iOS share extension error reporting",
 	},
+	{
+		name: "PDF",
+		description: "PDF thumbnail generation for bookmarked documents",
+	},
 ];
 
 const errorResponseSchema = {

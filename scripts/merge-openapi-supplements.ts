@@ -15,6 +15,7 @@ import * as cronSupplements from "../src/lib/openapi/endpoints/cron";
 import * as devSupplements from "../src/lib/openapi/endpoints/dev";
 import * as instagramSupplements from "../src/lib/openapi/endpoints/instagram";
 import * as iphoneSupplements from "../src/lib/openapi/endpoints/iphone";
+import * as pdfThumbnailSupplements from "../src/lib/openapi/endpoints/pdf-thumbnail";
 import * as processQueueSupplements from "../src/lib/openapi/endpoints/process-queue";
 import * as profilesSupplements from "../src/lib/openapi/endpoints/profiles";
 import * as publicCategoriesSupplements from "../src/lib/openapi/endpoints/public-categories";
@@ -250,6 +251,7 @@ export function collectSupplements(): EndpointSupplement[] {
 		devSupplements,
 		instagramSupplements,
 		iphoneSupplements,
+		pdfThumbnailSupplements,
 		processQueueSupplements,
 		profilesSupplements,
 		publicCategoriesSupplements,
