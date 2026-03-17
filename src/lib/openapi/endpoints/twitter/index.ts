@@ -1,4 +1,5 @@
 export { registerEdgeProcessTwitterImports } from "./edge-process-imports";
+export { twitterLastSyncedIdSupplement } from "./last-synced-id";
 export { twitterSyncSupplement } from "./sync";
 export { twitterSyncFolderBookmarksSupplement } from "./sync-folder-bookmarks";
 export { twitterSyncFoldersSupplement } from "./sync-folders";
