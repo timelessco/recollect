@@ -1,6 +1,7 @@
 import { PdfScreenshotInputSchema, PdfScreenshotOutputSchema } from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
+import { vet } from "@/utils/try";
 
 const ROUTE = "pdf-thumbnail";
 
@@ -9,6 +10,11 @@ export const POST = createPostApiHandlerWithAuth({
 	inputSchema: PdfScreenshotInputSchema,
 	outputSchema: PdfScreenshotOutputSchema,
 	handler: async ({ data, user, route }) => {
+		console.log(`[${route}] API called:`, {
+			userId: user.id,
+			url: data.url.split("?")[0],
+		});
+
 		const pdfApiUrl = process.env.PDF_URL_SCREENSHOT_API;
 		const pdfApiKey = process.env.PDF_SECRET_KEY;
 
@@ -22,39 +28,27 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
-		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), 10_000);
-
-		let response: Response;
-		try {
-			response = await fetch(pdfApiUrl, {
+		const [fetchError, response] = await vet(() =>
+			fetch(pdfApiUrl, {
 				body: JSON.stringify({ url: data.url, userId: user.id }),
 				headers: {
 					Authorization: `Bearer ${pdfApiKey}`,
 					"Content-Type": "application/json",
 				},
 				method: "POST",
-				signal: controller.signal,
-			});
-		} catch (error) {
-			clearTimeout(timeout);
-			const isTimeout =
-				error instanceof DOMException && error.name === "AbortError";
+			}),
+		);
+
+		if (fetchError) {
 			return apiError({
 				route,
-				message: isTimeout
-					? "PDF screenshot service timed out"
-					: "PDF screenshot service is unreachable",
-				error: error instanceof Error ? error : new Error(String(error)),
-				operation: isTimeout
-					? "pdf_screenshot_timeout"
-					: "pdf_screenshot_network",
+				message: "PDF screenshot service is unreachable",
+				error: fetchError,
+				operation: "pdf_screenshot_network",
 				userId: user.id,
 				extra: { url: data.url },
 			});
 		}
-
-		clearTimeout(timeout);
 
 		if (!response.ok) {
 			return apiError({
