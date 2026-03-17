@@ -10,9 +10,11 @@ export const POST = createPostApiHandlerWithAuth({
 	inputSchema: PdfScreenshotInputSchema,
 	outputSchema: PdfScreenshotOutputSchema,
 	handler: async ({ data, user, route }) => {
+		const sanitizedUrl = data.url.split("?")[0];
+
 		console.log(`[${route}] API called:`, {
 			userId: user.id,
-			url: data.url.split("?")[0],
+			url: sanitizedUrl,
 		});
 
 		const pdfApiUrl = process.env.PDF_URL_SCREENSHOT_API;
@@ -46,7 +48,7 @@ export const POST = createPostApiHandlerWithAuth({
 				error: fetchError,
 				operation: "pdf_screenshot_network",
 				userId: user.id,
-				extra: { url: data.url },
+				extra: { url: sanitizedUrl },
 			});
 		}
 
@@ -57,7 +59,7 @@ export const POST = createPostApiHandlerWithAuth({
 				error: new Error(`PDF service responded with ${response.status}`),
 				operation: "pdf_screenshot_fetch",
 				userId: user.id,
-				extra: { url: data.url, status: response.status },
+				extra: { url: sanitizedUrl, status: response.status },
 			});
 		}
 
