@@ -5,7 +5,6 @@ export const PdfThumbnailInputSchema = z.object({
 });
 
 export const PdfThumbnailOutputSchema = z.object({
-	path: z.string(),
 	publicUrl: z.string(),
 });
 

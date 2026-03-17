@@ -17,7 +17,6 @@ export const pdfThumbnailSupplement = {
 	},
 	responseExample: {
 		data: {
-			path: "pdf-thumbnails/abc123.png",
 			publicUrl: "https://cdn.example.com/pdf-thumbnails/abc123.png",
 		},
 		error: null,
