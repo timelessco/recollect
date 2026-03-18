@@ -19,6 +19,15 @@
 		"Sentry": {
 			"type": "http",
 			"url": "https://mcp.sentry.dev/mcp/timeless-dev/recollect-web"
+		},
+		"code-review-graph": {
+			"command": "uvx",
+			"args": [
+				"--from",
+				"code-review-graph[embeddings]",
+				"code-review-graph",
+				"serve"
+			]
 		}
 	}
 }

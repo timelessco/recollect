@@ -208,7 +208,7 @@ function AudioWaveformPlayerInner({
 						<PlayPauseIcon className="text-gray-700" />
 					</MediaPlayButton>
 
-					<span className="truncate text-[15px] leading-[1.15] font-normal tracking-[0.3px] text-gray-700">
+					<span className="truncate text-[clamp(12px,3vw,15px)] leading-[1.15] font-normal tracking-[0.3px] text-gray-700">
 						{title}
 					</span>
 				</div>

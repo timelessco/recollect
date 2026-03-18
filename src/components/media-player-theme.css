@@ -52,7 +52,7 @@ media-controller media-fullscreen-button {
 	--media-control-background: transparent;
 	--media-control-hover-background: var(--color-gray-alpha-400);
 
-	@apply inline-flex size-10 items-center justify-center rounded-full opacity-90;
+	@apply inline-flex size-10 shrink-0 items-center justify-center rounded-full opacity-90;
 
 	background: transparent;
 	transition:

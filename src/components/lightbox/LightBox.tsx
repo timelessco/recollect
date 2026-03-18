@@ -299,10 +299,11 @@ export const CustomLightBox = ({
 				backgroundColor: "var(--color-whites-900)",
 				backdropFilter: "blur(32px)",
 				transition: "all 0.2s ease-in-out",
-				// Adjust width when side panel is visible
-				width: lightboxShowSidepane
-					? "calc(100% - min(max(320px, 20%), 400px))"
-					: "100%",
+				// Adjust width when side panel is visible (desktop only — mobile uses bottom sheet overlay)
+				width:
+					!isMobile && lightboxShowSidepane
+						? "calc(100% - min(max(320px, 20%), 400px))"
+						: "100%",
 				animation: "custom-fade-scale-in 0.25s ease-in-out",
 				// Prevent browser navigation on swipe gestures
 				overscrollBehavior: "none" as const,
@@ -314,7 +315,7 @@ export const CustomLightBox = ({
 				justifyContent: "center",
 			},
 		}),
-		[lightboxShowSidepane],
+		[isMobile, lightboxShowSidepane],
 	);
 
 	// Memoize toolbar configuration
@@ -339,7 +340,7 @@ export const CustomLightBox = ({
 					key="center-section"
 				>
 					<a
-						className="flex max-w-[300px] items-center gap-2 overflow-hidden rounded-lg px-[13px] py-[7px] hover:bg-gray-alpha-100"
+						className="flex max-w-[200px] items-center gap-2 overflow-hidden rounded-lg px-[13px] hover:bg-gray-alpha-100 md:max-w-[300px]"
 						href={bookmarks?.[activeIndex]?.url}
 						key="center-section"
 						rel="noreferrer"
@@ -361,7 +362,13 @@ export const CustomLightBox = ({
 				>
 					<button
 						aria-label={
-							lightboxShowSidepane ? "Hide side panel" : "Show side panel"
+							lightboxShowSidepane
+								? isMobile
+									? "Hide details"
+									: "Hide side panel"
+								: isMobile
+									? "Show details"
+									: "Show side panel"
 						}
 						onClick={() => {
 							const newState = !lightboxShowSidepane;
@@ -383,6 +390,7 @@ export const CustomLightBox = ({
 			handleClose,
 			bookmarks,
 			activeIndex,
+			isMobile,
 			lightboxShowSidepane,
 			setLightboxShowSidepane,
 		],
@@ -407,7 +415,11 @@ export const CustomLightBox = ({
 					: undefined,
 			buttonZoom: () => null,
 			// eslint-disable-next-line react/no-unstable-nested-components
-			controls: () => <PullEffect enabled={zoomLevel === 1} />,
+			controls: () => (
+				<PullEffect
+					enabled={zoomLevel === 1 && !(isMobile && lightboxShowSidepane)}
+				/>
+			),
 		}),
 		[
 			renderSlide,
@@ -418,6 +430,7 @@ export const CustomLightBox = ({
 			isMobile,
 			zoomLevel,
 			isLastSlide,
+			lightboxShowSidepane,
 		],
 	);
 

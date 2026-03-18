@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+
 import {
 	DeleteSharedCategoriesUserInputSchema,
 	DeleteSharedCategoriesUserOutputSchema,
@@ -55,6 +57,15 @@ export const DELETE = createDeleteApiHandlerWithAuth({
 				error: favCleanupError,
 				categoryId,
 				userId,
+			});
+			Sentry.captureException(new Error(favCleanupError.message), {
+				tags: { operation: "cleanup_favorite_categories", userId },
+				extra: {
+					categoryId,
+					code: favCleanupError.code,
+					details: favCleanupError.details,
+					hint: favCleanupError.hint,
+				},
 			});
 		}
 

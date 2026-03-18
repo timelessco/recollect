@@ -212,3 +212,56 @@ export const twitterSyncSupplement = {
 ```
 
 Example data objects in `-examples.ts` files use `as const` (per frontend rules). Supplement files use `satisfies EndpointSupplement`.
+
+## Schema `.meta()` Reference
+
+Every Zod schema field should have `.meta({ description: "..." })`. The `@asteasolutions/zod-to-openapi` library maps this directly to OpenAPI field descriptions. Without it, fields appear undocumented in the spec.
+
+### Well-documented schema examples
+
+Read these files for `.meta()` style reference:
+
+- `src/app/api/category/delete-user-category/schema.ts` — 11-field response, boolean with default
+- `src/app/api/tags/create-and-assign-tag/schema.ts` — nested sub-schemas with `.meta()` on wrappers
+- `src/app/api/bookmark/fetch-discoverable-by-id/schema.ts` — deeply nested `MetadataSchema`
+
+### Patterns
+
+```typescript
+// Primitive fields
+z.string().meta({ description: "The bookmark's unique identifier" })
+z.int().min(0).meta({ description: "Category ID; 0 = Uncategorized" })
+z.boolean().default(true).meta({ description: "Whether to keep bookmarks when deleting category" })
+
+// Arrays
+z.array(z.int()).meta({ description: "Ordered list of favorite category IDs" })
+
+// Nested objects — annotate both the wrapper and inner fields
+const TagSchema = z.object({
+  id: z.int().meta({ description: "Tag identifier" }),
+  name: z.string().meta({ description: "Tag display name" }),
+});
+
+z.object({
+  tag: TagSchema.meta({ description: "The newly created tag" }),
+  junction: z.object({
+    bookmark_id: z.int().meta({ description: "Associated bookmark ID" }),
+    tag_id: z.int().meta({ description: "Associated tag ID" }),
+  }).meta({ description: "The bookmark-tag junction record" }),
+})
+```
+
+### Endpoints missing `.meta()` (known gaps)
+
+These schemas have NO `.meta()` and should be updated when touched:
+
+| File | Fields missing `.meta()` |
+|------|-------------------------|
+| `bookmarks/check-url/schema.ts` | `url`, `exists`, `bookmarkId` |
+| `cron/clear-trash/schema.ts` | `deletedCount` |
+| `profiles/toggle-preferred-og-domain/schema.ts` | `domain`, `id`, `preferred_og_domains` |
+| `tags/add-tag-to-bookmark/schema.ts` | all fields |
+| `instagram/sync/schema.ts` | bookmark array fields |
+| `twitter/sync/schema.ts` | bookmark array fields |
+| `v2/api-key/schema.ts` | `apikey`, `success` |
+| `v2/bookmarks/insert/schema.ts` | `data` array, `insertedCount` |

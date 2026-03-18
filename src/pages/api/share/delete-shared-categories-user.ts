@@ -4,6 +4,8 @@ import { type NextApiResponse } from "next";
 import { type PostgrestError } from "@supabase/supabase-js";
 import isNull from "lodash/isNull";
 
+import * as Sentry from "@sentry/nextjs";
+
 import {
 	type DeleteSharedCategoriesUserApiPayload,
 	type FetchSharedCategoriesData,
@@ -67,6 +69,15 @@ export default async function handler(
 				userId,
 			},
 		);
+		Sentry.captureException(new Error(favCleanupError.message), {
+			tags: { operation: "cleanup_favorite_categories", userId },
+			extra: {
+				categoryId,
+				code: favCleanupError.code,
+				details: favCleanupError.details,
+				hint: favCleanupError.hint,
+			},
+		});
 	}
 
 	response.status(200).json({ data, error: null });
