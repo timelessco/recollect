@@ -20,7 +20,6 @@ export function MobileSettingsDrawer() {
 
 	return (
 		<Drawer.Root
-			handle
 			modal
 			onOpenChange={setOpen}
 			open={open}
