@@ -36,7 +36,7 @@ function Panel(props: CollapsiblePrimitive.Panel.Props) {
 		<CollapsiblePrimitive.Panel
 			keepMounted
 			className={cn(
-				"h-(--collapsible-panel-height) overflow-hidden transition-[height] duration-150 ease-out data-ending-style:h-0 data-starting-style:h-0 motion-reduce:transition-none",
+				"h-(--collapsible-panel-height) overflow-hidden transition-[height,opacity] duration-250 ease-in-out data-ending-style:h-0 data-ending-style:opacity-0 data-starting-style:h-0 data-starting-style:opacity-0 motion-reduce:transition-none",
 				className,
 			)}
 			{...rest}
