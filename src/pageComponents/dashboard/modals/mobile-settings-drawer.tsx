@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 import { DrawerPreview as Drawer } from "@base-ui/react/drawer";
 import { Tabs } from "@base-ui/react/tabs";
 
@@ -43,37 +43,25 @@ export function MobileSettingsDrawer() {
 }
 
 function DrawerContent() {
+	const open = useSettingsModalStore((state) => state.open);
 	const [currentPage, setCurrentPage] = useState<SettingsPage>("main");
-	const [activeTab, setActiveTab] = useState<string>("main");
+
+	useEffect(() => {
+		if (open) {
+			setCurrentPage("main");
+		}
+	}, [open]);
 
 	const isSubPage = currentPage === "change-email" || currentPage === "delete";
+	const activeTab = isSubPage ? "main" : currentPage;
 
-	const handleNavigate = useCallback((page: SettingsPage) => {
-		setCurrentPage(page);
-		if (page === "ai-features") {
-			setActiveTab("ai-features");
-		} else if (page === "import") {
-			setActiveTab("import");
-		} else if (page === "main") {
-			setActiveTab("main");
-		}
-	}, []);
-
-	const handleTabChange = useCallback((value: unknown) => {
+	const handleTabChange = (value: string | null) => {
 		if (value === null) {
 			return;
 		}
 
-		const tab = String(value as string);
-		setActiveTab(tab);
-		if (tab === "main") {
-			setCurrentPage("main");
-		} else if (tab === "ai-features") {
-			setCurrentPage("ai-features");
-		} else if (tab === "import") {
-			setCurrentPage("import");
-		}
-	}, []);
+		setCurrentPage(value as SettingsPage);
+	};
 
 	return (
 		<>
@@ -91,23 +79,23 @@ function DrawerContent() {
 				{isSubPage ? (
 					<Drawer.Content className="min-h-0 flex-1 touch-auto overflow-y-auto overscroll-contain px-6 pt-4 pb-[env(safe-area-inset-bottom)]">
 						{currentPage === "change-email" && (
-							<ChangeEmail onNavigate={handleNavigate} />
+							<ChangeEmail onNavigate={setCurrentPage} />
 						)}
 						{currentPage === "delete" && (
-							<DeleteAccount onNavigate={handleNavigate} />
+							<DeleteAccount onNavigate={setCurrentPage} />
 						)}
 					</Drawer.Content>
 				) : (
 					<>
 						<Drawer.Content className="min-h-0 flex-1 touch-auto overflow-y-auto overscroll-contain px-6 pt-4">
 							<Tabs.Panel className="h-full" value="main">
-								<Settings onNavigate={handleNavigate} />
+								<Settings onNavigate={setCurrentPage} />
 							</Tabs.Panel>
 							<Tabs.Panel className="h-full" value="ai-features">
 								<AiFeatures />
 							</Tabs.Panel>
 							<Tabs.Panel className="h-full" value="import">
-								<ImportBookmarks onNavigate={handleNavigate} />
+								<ImportBookmarks onNavigate={setCurrentPage} />
 							</Tabs.Panel>
 						</Drawer.Content>
 

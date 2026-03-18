@@ -13,9 +13,8 @@ import { DeleteAccount } from "../../settings/deleteAccount";
 import { ImportBookmarks } from "../../settings/import";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
-import { Dialog } from "@/components/ui/recollect/dialog";
-
 import { MobileSettingsDrawer } from "./mobile-settings-drawer";
+import { Dialog } from "@/components/ui/recollect/dialog";
 
 export type SettingsPage =
 	| "ai-features"
@@ -28,7 +27,7 @@ export type SettingsPage =
  * Trigger-only component that lives inside the sidebar.
  * Opens the settings modal via global store.
  */
-export const SettingsModalTrigger = ({ children }: { children: ReactNode }) => {
+export function SettingsModalTrigger({ children }: { children: ReactNode }) {
 	const setOpen = useSettingsModalStore((state) => state.setOpen);
 	const setShowSidePane = useSidePaneStore((state) => state.setShowSidePane);
 	const { isDesktop } = useIsMobileView();
@@ -48,13 +47,13 @@ export const SettingsModalTrigger = ({ children }: { children: ReactNode }) => {
 			{children}
 		</button>
 	);
-};
+}
 
 /**
  * Portal component that renders outside the sidebar drawer tree.
  * Must be placed at DashboardLayout level.
  */
-export const SettingsModalPortal = () => {
+export function SettingsModalPortal() {
 	const { isMobile } = useIsMobileView();
 
 	if (isMobile) {
@@ -62,7 +61,7 @@ export const SettingsModalPortal = () => {
 	}
 
 	return <DesktopSettingsPortal />;
-};
+}
 
 function DesktopSettingsPortal() {
 	const open = useSettingsModalStore((state) => state.open);
