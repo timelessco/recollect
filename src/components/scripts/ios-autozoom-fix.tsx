@@ -2,7 +2,7 @@ import Script from "next/script";
 
 // Prevents iOS Safari from auto-zooming when focusing inputs with font-size < 16px.
 // Only modifies the viewport meta tag on iOS devices to preserve pinch-to-zoom on other platforms.
-// Observes <head> for changes to persist maximum-scale across Next.js client-side navigations.
+// Uses a MutationObserver to persist maximum-scale across Next.js client-side navigations.
 // https://stackoverflow.com/a/57527009
 export function IosAutozoomFix() {
 	return (
@@ -12,25 +12,24 @@ export function IosAutozoomFix() {
 			dangerouslySetInnerHTML={{
 				__html: `
 if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-	let applying = false;
+	const VIEWPORT_CONTENT = 'width=device-width, initial-scale=1.0, maximum-scale=1.0';
 
-	const applyMaximumScale = () => {
+	const observer = new MutationObserver(() => {
 		const meta = document.querySelector('meta[name=viewport]');
 		if (!meta) return;
+		if (meta.getAttribute('content') === VIEWPORT_CONTENT) return;
 
-		const content = meta.getAttribute('content') || '';
-		if (content.includes('maximum-scale=1.0')) return;
+		observer.disconnect();
+		meta.setAttribute('content', VIEWPORT_CONTENT);
+		observer.observe(document.head, { childList: true, subtree: true, attributes: true, attributeFilter: ['content'] });
+	});
 
-		applying = true;
-		meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
-		applying = false;
-	};
+	const meta = document.querySelector('meta[name=viewport]');
+	if (meta) {
+		meta.setAttribute('content', VIEWPORT_CONTENT);
+	}
 
-	applyMaximumScale();
-
-	new MutationObserver(() => {
-		if (!applying) applyMaximumScale();
-	}).observe(document.head, { childList: true, subtree: true, attributes: true, attributeFilter: ['content'] });
+	observer.observe(document.head, { childList: true, subtree: true, attributes: true, attributeFilter: ['content'] });
 }
 `,
 			}}
