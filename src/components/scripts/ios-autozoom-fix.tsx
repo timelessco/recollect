@@ -11,25 +11,46 @@ export function IosAutozoomFix() {
 			strategy="afterInteractive"
 			dangerouslySetInnerHTML={{
 				__html: `
-if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-	const VIEWPORT_CONTENT = 'width=device-width, initial-scale=1.0, maximum-scale=1.0';
+if (!window.__iosAutozoomFixApplied) {
+	var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-	const observer = new MutationObserver(() => {
-		const meta = document.querySelector('meta[name=viewport]');
-		if (!meta) return;
-		if (meta.getAttribute('content') === VIEWPORT_CONTENT) return;
+	if (isIOS) {
+		window.__iosAutozoomFixApplied = true;
+		var applying = false;
 
-		observer.disconnect();
-		meta.setAttribute('content', VIEWPORT_CONTENT);
-		observer.observe(document.head, { childList: true, subtree: true, attributes: true, attributeFilter: ['content'] });
-	});
+		var applyMaxScale = function() {
+			var meta = document.querySelector('meta[name=viewport]');
+			if (!meta) return;
 
-	const meta = document.querySelector('meta[name=viewport]');
-	if (meta) {
-		meta.setAttribute('content', VIEWPORT_CONTENT);
+			var content = meta.getAttribute('content') || '';
+			if (content.includes('maximum-scale=1.0')) return;
+
+			applying = true;
+			if (/maximum-scale=[\\d.]+/.test(content)) {
+				meta.setAttribute('content', content.replace(/maximum-scale=[\\d.]+/, 'maximum-scale=1.0'));
+			} else {
+				meta.setAttribute('content', content + ', maximum-scale=1.0');
+			}
+			applying = false;
+		};
+
+		applyMaxScale();
+
+		new MutationObserver(function(mutations) {
+			if (applying) return;
+			for (var i = 0; i < mutations.length; i++) {
+				var m = mutations[i];
+				if (m.type === 'attributes' && m.target.nodeName === 'META') {
+					applyMaxScale();
+					return;
+				}
+				if (m.type === 'childList') {
+					applyMaxScale();
+					return;
+				}
+			}
+		}).observe(document.head, { childList: true, subtree: true, attributes: true, attributeFilter: ['content'] });
 	}
-
-	observer.observe(document.head, { childList: true, subtree: true, attributes: true, attributeFilter: ['content'] });
 }
 `,
 			}}
