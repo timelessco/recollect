@@ -1,4 +1,11 @@
-import { type JSX, useRef, type Key, type ReactNode } from "react";
+import {
+	createContext,
+	useRef,
+	type HTMLAttributes,
+	type JSX,
+	type Key,
+	type ReactNode,
+} from "react";
 import isNull from "lodash/isNull";
 import omit from "lodash/omit";
 import {
@@ -81,6 +88,10 @@ function ReorderDropIndicator(props: ReorderDropIndicatorProps) {
 	);
 }
 
+export const DragHandleContext = createContext<HTMLAttributes<Element> | null>(
+	null,
+);
+
 // ============================================================================
 // ReorderableOption
 // ============================================================================
@@ -112,10 +123,12 @@ function ReorderableOption({
 		ref,
 	);
 
-	const mergedProps = omit(
-		mergeProps(optionProps, dropProps, focusProps, dragProps),
-		["onKeyDown", "onKeyDownCapture", "onKeyUp", "onKeyUpCapture"],
-	);
+	const mergedProps = omit(mergeProps(optionProps, dropProps, focusProps), [
+		"onKeyDown",
+		"onKeyDownCapture",
+		"onKeyUp",
+		"onKeyUpCapture",
+	]);
 
 	return (
 		<li
@@ -130,7 +143,9 @@ function ReorderableOption({
 				position="before"
 				target={{ type: "item", key: item.key, dropPosition: "before" }}
 			/>
-			{item.rendered}
+			<DragHandleContext.Provider value={dragProps}>
+				{item.rendered}
+			</DragHandleContext.Provider>
 			{state.collection.getKeyAfter(item.key) === null && (
 				<ReorderDropIndicator
 					dropState={dropState}
