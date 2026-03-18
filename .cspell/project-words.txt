@@ -109,7 +109,6 @@ Turborepo
 twclid
 twimg
 umami
-Umami
 UMAMI
 uncategorised
 uniqid
