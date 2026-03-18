@@ -4,6 +4,8 @@ import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { AvatarIcon } from "../../../icons/avatarIcon";
 import { ImportIcon } from "../../../icons/importIcon";
 import { SettingsAiIcon } from "../../../icons/settingsAiIcon";
+import { useSettingsModalStore } from "../../../store/settingsModalStore";
+import { useSidePaneStore } from "../../../store/sidePaneStore";
 import Settings from "../../settings";
 import { AiFeatures } from "../../settings/aiFeatures";
 import ChangeEmail from "../../settings/changeEmail";
@@ -22,26 +24,52 @@ export type SettingsPage =
 	| "import"
 	| "main";
 
-type SettingsModalProps = {
-	children: ReactNode;
+/**
+ * Trigger-only component that lives inside the sidebar.
+ * Opens the settings modal via global store.
+ */
+export const SettingsModalTrigger = ({ children }: { children: ReactNode }) => {
+	const setOpen = useSettingsModalStore((state) => state.setOpen);
+	const setShowSidePane = useSidePaneStore((state) => state.setShowSidePane);
+	const { isDesktop } = useIsMobileView();
+
+	return (
+		<button
+			className="w-full rounded-lg outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200"
+			onClick={() => {
+				if (!isDesktop) {
+					setShowSidePane(false);
+				}
+
+				setOpen(true);
+			}}
+			type="button"
+		>
+			{children}
+		</button>
+	);
 };
 
-export const SettingsModal = ({ children }: SettingsModalProps) => {
+/**
+ * Portal component that renders outside the sidebar drawer tree.
+ * Must be placed at DashboardLayout level.
+ */
+export const SettingsModalPortal = () => {
 	const { isMobile } = useIsMobileView();
 
 	if (isMobile) {
-		return <MobileSettingsDrawer>{children}</MobileSettingsDrawer>;
+		return <MobileSettingsDrawer />;
 	}
 
-	return <DesktopSettingsDialog>{children}</DesktopSettingsDialog>;
+	return <DesktopSettingsPortal />;
 };
 
-function DesktopSettingsDialog({ children }: SettingsModalProps) {
+function DesktopSettingsPortal() {
+	const open = useSettingsModalStore((state) => state.open);
+	const setOpen = useSettingsModalStore((state) => state.setOpen);
+
 	return (
-		<Dialog.Root>
-			<Dialog.Trigger className="w-full rounded-lg outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200">
-				{children}
-			</Dialog.Trigger>
+		<Dialog.Root onOpenChange={setOpen} open={open}>
 			<Dialog.Portal>
 				<Dialog.Backdrop />
 				<Dialog.Popup

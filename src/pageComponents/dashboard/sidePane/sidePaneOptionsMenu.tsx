@@ -9,7 +9,7 @@ import {
 	BOOKMARKS_COUNT_KEY,
 	menuListItemName,
 } from "../../../utils/constants";
-import { SettingsModal } from "../modals/settings-modal";
+import { SettingsModalTrigger } from "../modals/settings-modal";
 
 import SingleListItemComponent from "./singleListItemComponent";
 
@@ -47,14 +47,14 @@ const SidePaneOptionsMenu = () => {
 		<div className="flex flex-col gap-px pt-[10px]">
 			{optionsMenuList?.map((item) =>
 				item?.id === 4 ? (
-					<SettingsModal key={item.id}>
+					<SettingsModalTrigger key={item.id}>
 						<SingleListItemComponent
 							extendedClassname="py-[6px]"
 							isLink={false}
 							item={item}
 							showIconDropdown={false}
 						/>
-					</SettingsModal>
+					</SettingsModalTrigger>
 				) : (
 					<SingleListItemComponent
 						extendedClassname="py-[6px]"
