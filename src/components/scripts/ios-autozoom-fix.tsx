@@ -2,7 +2,7 @@ import Script from "next/script";
 
 // Prevents iOS Safari from auto-zooming when focusing inputs with font-size < 16px.
 // Only modifies the viewport meta tag on iOS devices to preserve pinch-to-zoom on other platforms.
-// Uses a MutationObserver to persist maximum-scale across Next.js client-side navigations.
+// Observes <head> for changes to persist maximum-scale across Next.js client-side navigations.
 // https://stackoverflow.com/a/57527009
 export function IosAutozoomFix() {
 	return (
@@ -11,32 +11,26 @@ export function IosAutozoomFix() {
 			strategy="afterInteractive"
 			dangerouslySetInnerHTML={{
 				__html: `
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+	let applying = false;
 
-if (isIOS) {
-	const ensureMaximumScale = () => {
-		const viewportMetadata = document.querySelector('meta[name=viewport]');
+	const applyMaximumScale = () => {
+		const meta = document.querySelector('meta[name=viewport]');
+		if (!meta) return;
 
-		if (viewportMetadata !== null) {
-			const content = viewportMetadata.getAttribute('content') || '';
+		const content = meta.getAttribute('content') || '';
+		if (content.includes('maximum-scale=1.0')) return;
 
-			if (!content.includes('maximum-scale=1.0')) {
-				viewportMetadata.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
-			}
-		}
-	}
+		applying = true;
+		meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
+		applying = false;
+	};
 
-	ensureMaximumScale();
+	applyMaximumScale();
 
-	const observer = new MutationObserver(() => {
-		ensureMaximumScale();
-	});
-
-	const viewport = document.querySelector('meta[name=viewport]');
-
-	if (viewport) {
-		observer.observe(viewport, { attributes: true, attributeFilter: ['content'] });
-	}
+	new MutationObserver(() => {
+		if (!applying) applyMaximumScale();
+	}).observe(document.head, { childList: true, subtree: true, attributes: true, attributeFilter: ['content'] });
 }
 `,
 			}}
