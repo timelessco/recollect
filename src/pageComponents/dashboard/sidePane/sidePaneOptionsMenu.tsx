@@ -58,7 +58,7 @@ const SidePaneOptionsMenu = () => {
 				) : (
 					<SingleListItemComponent
 						extendedClassname="py-[6px]"
-						isLink={item?.id !== 4}
+						isLink
 						item={item}
 						key={item.id}
 						showIconDropdown={false}
