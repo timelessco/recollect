@@ -24,7 +24,7 @@ export default async function RootLayout(props: RootLayoutProps) {
 			className="antialiased inter-display optimize-legibility"
 			suppressHydrationWarning
 		>
-			<body className="overflow-hidden bg-gray-0 outline-hidden">
+			<body className="overflow-x-hidden bg-gray-0 outline-hidden">
 				<Providers>{children}</Providers>
 
 				<AnalyticsScript />
