@@ -12,7 +12,6 @@ import { ThemeProvider } from "next-themes";
 
 import { getBaseUrl } from "../utils/constants";
 
-import { IosAutozoomFix } from "@/components/scripts/ios-autozoom-fix";
 import { MutationIndicator } from "@/components/ui/recollect/mutation-indicator";
 import { TailwindIndicator } from "@/components/ui/recollect/tailwind-indicator";
 import { ToastSetup } from "@/components/ui/recollect/toast";
@@ -85,7 +84,6 @@ const MyApp = ({
 
 					<Component {...pageProps} />
 				</HydrationBoundary>
-				<IosAutozoomFix />
 				<ToastSetup />
 				<ReactQueryDevtools />
 				<TailwindIndicator />
