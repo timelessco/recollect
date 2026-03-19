@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useController } from "yet-another-react-lightbox";
 
+// Threshold at which we actually close the lightbox
 const THRESHOLD = 200;
+// Point at which opacity starts decreasing
 const OPACITY_START = THRESHOLD * 0.5;
 const INTERACTIVE_SELECTOR =
 	"media-controller, video, audio, iframe, object, [data-no-swipe]";
