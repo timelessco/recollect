@@ -27,6 +27,12 @@ importers:
       '@heroicons/react':
         specifier: 2.2.0
         version: 2.2.0(react@19.2.4)
+      '@polar-sh/nextjs':
+        specifier: 0.9.5
+        version: 0.9.5(next@16.1.6(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
+      '@polar-sh/sdk':
+        specifier: 0.46.4
+        version: 0.46.4
       '@react-hookz/web':
         specifier: 25.2.0
         version: 25.2.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -2505,6 +2511,18 @@ packages:
   '@pkgr/core@0.2.9':
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
+
+  '@polar-sh/adapter-utils@0.4.5':
+    resolution: {integrity: sha512-ar9u2BMmF/6h0KQ2gRQBLPF/fKMcFyicZo1EpJU6awx84cmytVepw1LX5xQa7kMBxPgo8AIxUIXG5OPGeefnWQ==}
+
+  '@polar-sh/nextjs@0.9.5':
+    resolution: {integrity: sha512-T0mnFswqCWCpB1UAF1b3rD4HajX3gwR7rCjBMx86J/xUNvp0TKjdBHubAThQZaMlToNuAzYFr5KOTb5oWRVqPA==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      next: ^15.0.0 || ^16.0.0
+
+  '@polar-sh/sdk@0.46.4':
+    resolution: {integrity: sha512-NnLTqx1M1GvN/fTsfg/MZRiH6TXnpzyiKGZISKaD4YLx80jmRuWUdUbbPtlq8I7cEuigGJAqTmqI167ldX4qPg==}
 
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
@@ -11800,6 +11818,21 @@ snapshots:
     optional: true
 
   '@pkgr/core@0.2.9': {}
+
+  '@polar-sh/adapter-utils@0.4.5':
+    dependencies:
+      '@polar-sh/sdk': 0.46.4
+
+  '@polar-sh/nextjs@0.9.5(next@16.1.6(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))':
+    dependencies:
+      '@polar-sh/adapter-utils': 0.4.5
+      '@polar-sh/sdk': 0.46.4
+      next: 16.1.6(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+
+  '@polar-sh/sdk@0.46.4':
+    dependencies:
+      standardwebhooks: 1.0.0
+      zod: 4.3.6
 
   '@polka/url@1.0.0-next.29': {}
 

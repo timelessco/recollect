@@ -88,6 +88,8 @@
 		"@base-ui/react": "1.2.0",
 		"@google/generative-ai": "0.24.1",
 		"@heroicons/react": "2.2.0",
+		"@polar-sh/nextjs": "0.9.5",
+		"@polar-sh/sdk": "0.46.4",
 		"@react-hookz/web": "25.2.0",
 		"@scalar/nextjs-api-reference": "0.9.19",
 		"@sentry/nextjs": "10.37.0",

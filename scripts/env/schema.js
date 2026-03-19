@@ -19,6 +19,10 @@ export const serverSchema = z.object({
 	PDF_SECRET_KEY: z.string(),
 	PDF_URL_SCREENSHOT_API: z.string(),
 	REVALIDATE_SECRET_TOKEN: z.string(),
+	POLAR_ACCESS_TOKEN: z.string().optional(),
+	POLAR_WEBHOOK_SECRET: z.string().optional(),
+	POLAR_PRO_PRODUCT_ID: z.string().optional(),
+	POLAR_PLUS_PRODUCT_ID: z.string().optional(),
 });
 
 /**
@@ -39,6 +43,10 @@ export const serverEnvironment = {
 	PDF_SECRET_KEY: process.env.PDF_SECRET_KEY,
 	PDF_URL_SCREENSHOT_API: process.env.PDF_URL_SCREENSHOT_API,
 	REVALIDATE_SECRET_TOKEN: process.env.REVALIDATE_SECRET_TOKEN,
+	POLAR_ACCESS_TOKEN: process.env.POLAR_ACCESS_TOKEN,
+	POLAR_WEBHOOK_SECRET: process.env.POLAR_WEBHOOK_SECRET,
+	POLAR_PRO_PRODUCT_ID: process.env.POLAR_PRO_PRODUCT_ID,
+	POLAR_PLUS_PRODUCT_ID: process.env.POLAR_PLUS_PRODUCT_ID,
 };
 
 /**

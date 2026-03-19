@@ -222,9 +222,14 @@ export type ProfilesTableTypes = {
 	id: string;
 	last_synced_instagram_id: string | null;
 	last_synced_twitter_id: string | null;
+	plan: "free" | "pro" | "plus";
+	plan_updated_at: string | null;
+	polar_customer_id: string | null;
 	preferred_og_domains?: string[] | null;
 	profile_pic: string;
 	provider: string | null;
+	subscription_current_period_end: string | null;
+	subscription_status: string | null;
 	user_name: string;
 };
 

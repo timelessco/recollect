@@ -22,7 +22,12 @@
 		},
 		"code-review-graph": {
 			"command": "uvx",
-			"args": ["--from", "code-review-graph[embeddings]", "code-review-graph", "serve"]
+			"args": [
+				"--from",
+				"code-review-graph[embeddings]",
+				"code-review-graph",
+				"serve"
+			]
 		}
 	}
 }
