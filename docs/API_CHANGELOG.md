@@ -63,3 +63,12 @@
 
 
 
+
+## 2026-03-19 [`28d87e6`](https://github.com/timelessco/recollect/commit/28d87e63c2647fee76b4b92aa62675b2dd8e9e90)
+
+
+### POST /category/update-user-category
+-  added the new optional request property 'updateData/is_favorite'
+
+
+
