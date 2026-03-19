@@ -7,9 +7,14 @@ const INTERACTIVE_SELECTOR =
 	"media-controller, video, audio, iframe, object, [data-no-swipe]";
 
 export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
+	// Lightbox controller: lets us subscribe to user input sensors,
+	// close the lightbox, and access current slide dimensions
 	const { subscribeSensors, close, slideRect } = useController();
 
+	// Tracks how far the user has pulled down (Y offset in px)
 	const offsetRef = useRef(0);
+
+	// Used to debounce/reset animations after inactivity
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	// Touch tracking refs
@@ -22,8 +27,10 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			return () => {};
 		}
 
+		// Maximum pull distance = slide height
 		const maxOffset = slideRect?.height ?? 0;
 
+		// Reset styles back to default (no offset, full opacity, normal scale)
 		const reset = (element: HTMLElement) => {
 			offsetRef.current = 0;
 			element.style.setProperty("--yarl-pull-offset", "0px");
@@ -31,9 +38,12 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			element.style.setProperty("--yarl-pull-scale", "1");
 		};
 
+		// Apply pull offset, opacity fade, and scale to the element
 		const applyOffset = (element: HTMLElement) => {
+			// Update CSS variables for translation
 			element.style.setProperty("--yarl-pull-offset", `${offsetRef.current}px`);
 
+			// Fade out gradually after crossing opacityStart
 			const opacity =
 				offsetRef.current > OPACITY_START
 					? Math.max(
@@ -46,18 +56,22 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 					: 1;
 			element.style.setProperty("--yarl-pull-opacity", `${opacity}`);
 
+			// Scale down slightly as we pull further
 			const scale = Math.max(0.5, 1 - (offsetRef.current / THRESHOLD) * 0.2);
 			element.style.setProperty("--yarl-pull-scale", `${scale}`);
 		};
 
-		// Desktop: wheel/trackpad
+		// Subscribe to wheel events from the lightbox (Desktop: wheel/trackpad)
 		const unsubscribeWheel = subscribeSensors("onWheel", (event) => {
 			const element = event.currentTarget as HTMLElement;
 
+			// --- Ignore horizontal swipes (left/right) ---
+			// If horizontal movement is stronger than vertical, do nothing
 			if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
 				return;
 			}
 
+			// Update offset: clamp between 0 and maxOffset (slide height)
 			offsetRef.current = Math.min(
 				Math.max(offsetRef.current + event.deltaY, 0),
 				maxOffset,
@@ -65,11 +79,13 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 
 			applyOffset(element);
 
+			// Close the lightbox if pull distance exceeds threshold
 			if (offsetRef.current > THRESHOLD) {
 				close();
 				return;
 			}
 
+			// Animate back to neutral if user stops pulling
 			if (timeoutRef.current) {
 				clearTimeout(timeoutRef.current);
 			}
@@ -169,6 +185,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			handlePointerEnd,
 		);
 
+		// Cleanup on unmount or dependency change
 		return () => {
 			unsubscribeWheel();
 			unsubscribePointerDown();
