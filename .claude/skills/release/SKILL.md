@@ -10,13 +10,17 @@ description: >
 
 # Release Pipeline
 
-This skill automates the full release lifecycle. Execute the steps below in order.
+Automates the full release lifecycle. Execute steps in order, stop and report if any step fails.
 
 ## Prerequisites
 
-- On `dev` branch with clean working tree
-- All changes committed and pushed to `origin/dev`
-- No existing release branch (or willing to recreate)
+Check all three before starting:
+
+```bash
+git branch --show-current   # must be: dev
+git status --porcelain      # must be: empty
+git log --oneline origin/dev..HEAD  # must be: empty (in sync with origin)
+```
 
 ## Happy Path
 
@@ -30,34 +34,40 @@ The script automatically:
 - Extracts the PR number from `gh pr create` output
 - Posts `docs/API_CHANGELOG.md` content as a PR comment (if the file has content)
 - Recreates existing release PRs if found (`--yes` auto-confirms)
+- Cleans up stale local `release/*` branches from previous aborted runs
+
+Extract the PR number from the script output — it prints the PR URL as the last line before "Release PR created."
+
+If the script exits with "No new commits since [tag]. Nothing to release." — there's nothing to release. Stop here.
 
 ### Step 2: Merge the release PR
 
-Merge immediately with a merge commit (NOT squash — the release workflow depends on merge commits):
+Branch protection requires `--admin` to bypass:
 
 ```bash
-gh pr merge {PR_NUMBER} --merge
+gh pr merge {PR_NUMBER} --merge --admin
 ```
 
-Do NOT pass `--auto` or wait for CI checks — the release PR only has a `release` label which skips CodeRabbit and Semantic PR validation. Merge directly.
+- **Must use `--merge`** (NOT `--squash`) — the release workflow's `if` condition checks for `/release/` in the merge commit message
+- **Must use `--admin`** — branch protection blocks direct merge otherwise
+- Do NOT pass `--auto` or wait for CI — the `release` label skips CodeRabbit and Semantic PR validation
 
 ### Step 3: Monitor the release workflow
 
-After merging, the `Release` workflow triggers on push to `main`. Poll until it completes:
+The `Release` workflow triggers on push to `main`. Watch it:
 
 ```bash
-# Check if the workflow started
-gh run list --workflow=release.yml --branch=main --limit=1
-
-# Watch it (blocks until complete)
+# Get the run ID and watch it
 gh run watch $(gh run list --workflow=release.yml --branch=main --limit=1 --json databaseId -q '.[0].databaseId')
 ```
 
-If the run doesn't appear within 30 seconds, check with `gh run list` again — GitHub Actions can have a brief delay.
+If no run appears, wait a few seconds and retry `gh run list` — GitHub Actions can have a brief delay.
+
+The workflow has two jobs:
+1. **Release** (~30s) — runs `pnpm release` (release-it creates tag + GitHub Release)
+2. **Cleanup** (~8s) — backmerges main→dev, clears `docs/API_CHANGELOG.md`, deletes release branch
 
 ### Step 4: Verify release artifacts
-
-After the workflow succeeds, verify all three artifacts:
 
 ```bash
 # Latest tag
@@ -67,18 +77,26 @@ git tag --sort=-version:refname | head -1
 # GitHub Release exists
 gh release list --limit=1
 
-# Backmerge: main→dev happened (the cleanup job does this)
+# Backmerge landed on dev (check dev's tip, not the diff)
 git fetch origin
-git log --oneline origin/dev..origin/main | head -5
+git log --oneline origin/dev | head -3
 ```
 
-If backmerge shows commits, the cleanup job may still be running. Wait and re-check.
+The backmerge commit message is `chore(release): merge main back into dev after release`.
+
+Note: `git log origin/dev..origin/main` may show the release tag commit even after successful backmerge — the merge commit on dev and the tagged commit on main have different SHAs. This is normal. Check `git log origin/dev | head` instead to confirm the merge commit arrived.
 
 ### Step 5: Sync local dev
 
 ```bash
 git switch dev
 git pull --ff-only origin dev
+```
+
+Verify `docs/API_CHANGELOG.md` is empty (cleared by the cleanup job):
+
+```bash
+wc -c < docs/API_CHANGELOG.md  # should be 0
 ```
 
 ## Fallback: Local Release (if CI fails)
@@ -104,7 +122,8 @@ pnpm release:cleanup
 
 ## Key Constraints
 
-- **Merge commit required** — squash breaks the release workflow's tag detection
+- **Merge commit required** — squash breaks the release workflow's tag detection (`if: contains(github.event.head_commit.message, '/release/')`)
+- **`--admin` required** — branch protection blocks direct merge
 - **`release` label on PR** — skips CodeRabbit and Semantic PR validation
 - **`GITHUB_TOKEN` required** for local `pnpm release` — the changelog writer fetches commit author data from GitHub API
 - **Don't push to dev after merge** — wait for CI backmerge to complete, or you'll create divergence
