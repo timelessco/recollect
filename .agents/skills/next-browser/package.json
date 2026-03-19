@@ -1,0 +1,40 @@
+{
+  "name": "@vercel/next-browser",
+  "version": "0.1.8",
+  "description": "Headed Playwright browser with React DevTools pre-loaded",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vercel-labs/next-browser.git"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "extensions"
+  ],
+  "bin": {
+    "next-browser": "./dist/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.ts",
+    "typecheck": "tsc",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@next/playwright": "16.2.0-canary.80",
+    "playwright": "^1.50.0",
+    "source-map-js": "^1.2.1"
+  },
+  "packageManager": "pnpm@10.29.2",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}

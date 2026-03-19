@@ -17,6 +17,7 @@
 	"ignores": [
 		".github/CODE_OF_CONDUCT.md",
 		"CHANGELOG.md",
+		".agents/**/*.md",
 		".claude/**/*.md",
 		"docs/API_CHANGELOG.md"
 	]

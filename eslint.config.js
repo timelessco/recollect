@@ -32,6 +32,7 @@ export default defineConfig(
 		"pnpm-lock.yaml",
 		"public/",
 		".next/",
+		".agents/",
 		".claude/",
 		"next-env.d.ts",
 		"scripts/release-it/",

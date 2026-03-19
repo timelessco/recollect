@@ -1,7 +1,7 @@
 ## Gotchas
 
 - `middleware.ts` is named `proxy.ts` — exports `proxy` function, not `middleware`
-- Dev server is already running in another terminal — never run `pnpm dev`
+- Dev server is usually running in another terminal — check `lsof -iTCP:3000` before starting `pnpm dev`
 - `pnpm fix` runs the full fix chain via Turbo dependency graph (`fix:spelling → fix:css → fix:md → fix:prettier → fix:eslint`)
 - `build:ci` skips env validation, OpenAPI gen, and sitemap — use `pnpm build` for local verification
 - `typescript.ignoreBuildErrors: true` in next.config — TS errors do NOT fail production builds
@@ -19,3 +19,12 @@
 - `profiles.category_order` updates: use batch concatenation (`|| v_new_category_ids`), NOT read-modify-write loops — the Edge Function processes queue messages in parallel (`Promise.allSettled`), and a for-loop that SELECTs the full array into a variable then UPDATEs will cause lost writes. See `20260209` migration for the correct pattern.
 - `src/pages/[category_id].tsx` catches ALL single-segment paths — new App Router pages at `/foo` will 404 in dev because Pages Router dynamic routes take precedence
 - New public pages must be added to `PUBLIC_PATHS` in `src/utils/constants.ts` — otherwise `proxy.ts` middleware treats them as auth-protected
+- `.agents/` and `.claude/` are excluded from all linters/formatters (eslint, prettier, cspell, markdownlint) — but NOT gitignored as directories
+- `AGENTS.md` is a symlink to `CLAUDE.md` — do not replace with a regular file
+- `next.config.ts` has experimental flags (`prefetchInlining`, `appNewScrollHandler`, `sri`) — check Next.js docs before adding/removing
+- Error boundaries (`error.tsx`, `global-error.tsx`) use `unstable_retry()` from `next/error` (not `reset()`) — re-fetches RSC data on retry
+- Sentry tree-shaking (`bundleSizeOptimizations`, `webpack.treeshake`) is webpack-only — no-op for Turbopack builds. SDK v10 has no Turbopack tree-shaking support yet
+- `next build` defaults to Turbopack in v16 — hard-fails (`process.exit(1)`) if config has `webpack` key without `turbopack` key
+- `@next/bundle-analyzer` is Turbopack-safe — detects `TURBOPACK` env var and skips (no webpack key added)
+- Sentry `disableLogger` is deprecated — use `webpack.treeshake.removeDebugLogging`; top-level `reactComponentAnnotation` → `webpack.reactComponentAnnotation`
+- `/discover` page is blank without JavaScript — `[category_id].tsx` uses `useMounted()` which gates all rendering behind client-side hydration. `getServerSideProps` fetches data but the component won't render it server-side. Search engines see an empty page

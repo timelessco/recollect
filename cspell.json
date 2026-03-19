@@ -29,6 +29,8 @@
 		}
 	],
 	"ignorePaths": [
+		".agents",
+		".claude",
 		".git",
 		".husky",
 		".vscode",

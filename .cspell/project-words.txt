@@ -33,7 +33,6 @@ fbca
 fbcdn
 fbclid
 fetchs
-fgveraehgourpwwzlzhy
 fkey
 gclid
 GOPATH
@@ -41,7 +40,6 @@ hcaptcha
 hookz
 ianvs
 igshid
-ilike
 imdb
 inbucket
 infile
@@ -67,7 +65,6 @@ ogimage
 opsz
 optimisation
 orioledb
-ossp
 pgbouncer
 pgcrypto
 pgmq
@@ -82,9 +79,7 @@ pooler
 Postg
 Postgrest
 Prabhakaran
-psql
 regx
-RRWEB
 sandeepprabhakaran
 savee
 sentryclirc
@@ -95,7 +90,6 @@ slugified
 Slugifies
 SQLERRM
 stefanzweifel
-svgs
 syncer
 timelessco
 timestamptz
@@ -105,7 +99,6 @@ totp
 TOTP
 treeify
 trgm
-Turborepo
 twclid
 twimg
 umami

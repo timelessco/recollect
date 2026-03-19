@@ -1,0 +1,91 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@next/playwright':
+        specifier: 16.2.0-canary.80
+        version: 16.2.0-canary.80
+      playwright:
+        specifier: ^1.50.0
+        version: 1.58.2
+      source-map-js:
+        specifier: ^1.2.1
+        version: 1.2.1
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.13
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+packages:
+
+  '@next/playwright@16.2.0-canary.80':
+    resolution: {integrity: sha512-dU0ArRa86on/ntA/r5YkWaJr6hJ8Dq3AbWvSWETlBTinXMk5gKZH04jUYMzYXK0kyAQQKWg/hcEjDwGTkOnSqw==}
+    peerDependencies:
+      '@playwright/test': '>=1.0.0'
+    peerDependenciesMeta:
+      '@playwright/test':
+        optional: true
+
+  '@types/node@22.19.13':
+    resolution: {integrity: sha512-akNQMv0wW5uyRpD2v2IEyRSZiR+BeGuoB6L310EgGObO44HSMNT8z1xzio28V8qOrgYaopIDNA18YgdXd+qTiw==}
+
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
+
+  playwright-core@1.58.2:
+    resolution: {integrity: sha512-yZkEtftgwS8CsfYo7nm0KE8jsvm6i/PTgVtB8DL726wNf6H2IMsDuxCpJj59KDaxCtSnrWan2AeDqM7JBaultg==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.58.2:
+    resolution: {integrity: sha512-vA30H8Nvkq/cPBnNw4Q8TWz1EJyqgpuinBcHET0YVJVFldr8JDNiU9LaWAE1KqSkRYazuaBhTpB5ZzShOezQ6A==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  source-map-js@1.2.1:
+    resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
+    engines: {node: '>=0.10.0'}
+
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+  undici-types@6.21.0:
+    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
+
+snapshots:
+
+  '@next/playwright@16.2.0-canary.80': {}
+
+  '@types/node@22.19.13':
+    dependencies:
+      undici-types: 6.21.0
+
+  fsevents@2.3.2:
+    optional: true
+
+  playwright-core@1.58.2: {}
+
+  playwright@1.58.2:
+    dependencies:
+      playwright-core: 1.58.2
+    optionalDependencies:
+      fsevents: 2.3.2
+
+  source-map-js@1.2.1: {}
+
+  typescript@5.9.3: {}
+
+  undici-types@6.21.0: {}

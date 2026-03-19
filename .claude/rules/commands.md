@@ -53,7 +53,7 @@ pnpm start            # Start production server
 #### Fix (auto-fix)
 
 ```bash
-pnpm fix              # Turbo: runs fix:eslint only
+pnpm fix              # Turbo: full fix chain (spelling → css → md → prettier → eslint via dependsOn)
 pnpm fix:eslint       # Auto-fix ESLint issues
 pnpm fix:prettier     # Auto-fix formatting
 pnpm fix:css          # Auto-fix Stylelint issues
