@@ -107,8 +107,8 @@ const videoLogic = async (
 				thumbnailUrl?.publicUrl,
 				supabase,
 				userId,
-				null,
-				userCollections.length > 0 ? { collections: userCollections } : null,
+				{ contentType: "video" },
+				{ collections: userCollections },
 				aiToggles,
 			);
 			imageCaption = imageToTextResult?.sentence ?? null;

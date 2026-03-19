@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import imageToText from "../../../async/ai/imageToText";
 import { fetchAiToggles } from "../../../utils/ai-feature-toggles";
+import { resolveContentType } from "@/utils/resolve-content-type";
 import {
 	MAIN_TABLE_NAME,
 	PDF_MIME_TYPE,
@@ -163,7 +164,7 @@ export default async function handler(
 		// Get existing metadata
 		const { data: existing } = await supabase
 			.from(MAIN_TABLE_NAME)
-			.select("meta_data")
+			.select("meta_data, title, description, type")
 			.eq("url", url)
 			.eq("user_id", user_id)
 			.single();
@@ -173,6 +174,12 @@ export default async function handler(
 			mediaType,
 			isPageScreenshot,
 		};
+
+		const contentType = resolveContentType({
+			type: existing?.type ?? undefined,
+			isPageScreenshot: Boolean(isPageScreenshot),
+			mediaType: mediaType ?? undefined,
+		});
 
 		// ai-enrichment
 		const aiToggles = await fetchAiToggles({ supabase, userId: user_id });
@@ -185,8 +192,13 @@ export default async function handler(
 			ogImage,
 			supabase,
 			user_id,
-			{ isPageScreenshot: Boolean(isPageScreenshot) },
-			userCollections.length > 0 ? { collections: userCollections } : null,
+			{ contentType },
+			{
+				collections: userCollections,
+				title: existing?.title,
+				description: existing?.description,
+				url,
+			},
 			aiToggles,
 		);
 		if (imageToTextResult) {

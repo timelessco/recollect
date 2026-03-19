@@ -13,6 +13,7 @@ import imageToText, { type UserCollection } from "@/async/ai/imageToText";
 import { fetchAiToggles, type AiToggles } from "@/utils/ai-feature-toggles";
 import { fetchUserCollections } from "@/utils/auto-assign-collections";
 import { blurhashFromURL } from "@/utils/getBlurHash";
+import { type BookmarkContentType } from "@/utils/resolve-content-type";
 
 type EnrichMetadataParams = {
 	existingMetadata: Record<string, unknown>;
@@ -23,6 +24,9 @@ type EnrichMetadataParams = {
 	userId: string;
 	supabase: SupabaseClient;
 	url: string;
+	contentType?: BookmarkContentType;
+	title?: string | null;
+	description?: string | null;
 };
 
 type EnrichMetadataResult = {
@@ -64,6 +68,9 @@ export const enrichMetadata = async ({
 	userId,
 	supabase,
 	url,
+	contentType,
+	title,
+	description,
 }: EnrichMetadataParams): Promise<EnrichMetadataResult> => {
 	const aiToggles = await fetchAiToggles({ supabase, userId });
 	const userCollections = await fetchUserCollections({
@@ -119,9 +126,11 @@ export const enrichMetadata = async ({
 				supabase,
 				userId,
 				url,
-				existingMetadata,
 				aiToggles,
 				userCollections,
+				contentType,
+				title,
+				description,
 			),
 			// Blurhash generation
 			processBlurhash(ogImage, url, userId),
@@ -200,9 +209,11 @@ const processImageCaption = async (
 	supabase: SupabaseClient,
 	userId: string,
 	url: string,
-	existingMetadata: Record<string, unknown>,
 	aiToggles: AiToggles,
 	userCollections: UserCollection[],
+	contentType?: BookmarkContentType,
+	title?: string | null,
+	description?: string | null,
 ) => {
 	console.log("[processImageCaption] Generating image caption:", {
 		url,
@@ -214,8 +225,13 @@ const processImageCaption = async (
 			ogImage,
 			supabase,
 			userId,
-			{ isPageScreenshot: Boolean(existingMetadata?.isPageScreenshot) },
-			userCollections.length > 0 ? { collections: userCollections } : null,
+			{ contentType },
+			{
+				collections: userCollections,
+				title,
+				description,
+				url,
+			},
 			aiToggles,
 		);
 		if (!result?.sentence) {

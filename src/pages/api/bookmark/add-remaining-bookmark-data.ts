@@ -22,6 +22,7 @@ import {
 	MAIN_TABLE_NAME,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
+	bookmarkType,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import {
@@ -39,6 +40,7 @@ import {
 	autoAssignCollections,
 	fetchUserCollections,
 } from "@/utils/auto-assign-collections";
+import { resolveContentType } from "@/utils/resolve-content-type";
 
 type Data = {
 	data: SingleListData[] | null;
@@ -198,6 +200,11 @@ export default async function handler(
 	let uploadedCoverImageUrl = null;
 	const isUrlAnMedia = await checkIfUrlAnMedia(url);
 	const isAudio = currentData?.meta_data?.mediaType?.includes("audio");
+	const contentType = resolveContentType({
+		type: bookmarkType,
+		isPageScreenshot: currentData?.meta_data?.isPageScreenshot ?? undefined,
+		mediaType: currentData?.meta_data?.mediaType ?? undefined,
+	});
 	// upload scrapper image to r2
 	if (currentData?.ogImage && !isUrlAnMedia) {
 		const ogImageNormalisedUrl = await getNormalisedImageUrl(
@@ -283,18 +290,13 @@ export default async function handler(
 					: imageUrlForMetaDataGeneration,
 				supabase,
 				userId,
+				{ contentType },
 				{
-					isPageScreenshot:
-						currentData?.meta_data?.isPageScreenshot ?? undefined,
+					collections: userCollections,
+					title: currentData?.title,
+					description: currentData?.description,
+					url,
 				},
-				userCollections.length > 0
-					? {
-							collections: userCollections,
-							title: currentData?.title,
-							description: currentData?.description,
-							url,
-						}
-					: null,
 				aiToggles,
 			);
 			if (imageToTextResult) {
