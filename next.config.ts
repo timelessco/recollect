@@ -33,6 +33,15 @@ const nextConfig: NextConfig = {
 			fullUrl: true,
 			hmrRefreshes: true,
 		},
+		browserToTerminal: true,
+	},
+
+	experimental: {
+		prefetchInlining: true,
+		appNewScrollHandler: true,
+		sri: {
+			algorithm: "sha256",
+		},
 	},
 
 	// Enable the below option only when you are debugging sourceamp
@@ -72,25 +81,6 @@ const nextConfig: NextConfig = {
 			},
 		]);
 	},
-
-	// https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/tree-shaking/#tree-shaking-with-nextjs
-	// Only include webpack config when Sentry is enabled
-	...(hasSentry && {
-		webpack: (config, { webpack }) => {
-			config.plugins.push(
-				new webpack.DefinePlugin({
-					__RRWEB_EXCLUDE_IFRAME__: true,
-					__RRWEB_EXCLUDE_SHADOW_DOM__: true,
-					__SENTRY_DEBUG__: false,
-					__SENTRY_EXCLUDE_REPLAY_WORKER__: true,
-					__SENTRY_TRACING__: false,
-				}),
-			);
-
-			// return the modified config
-			return config as unknown as NextConfig;
-		},
-	}),
 };
 
 const noWrapper = (config: NextConfig) => config;
@@ -105,28 +95,16 @@ const withSentry = hasSentry
 				org: process.env.SENTRY_ORG,
 				project: process.env.SENTRY_PROJECT,
 
-				// authToken is required for this to work
 				// Upload a larger set of source maps for prettier stack traces (increases build time)
 				widenClientFileUpload: true,
 
 				// Only print logs for uploading source maps in CI
 				silent: !process.env.CI,
 
-				// Automatically tree-shake Sentry logger statements to reduce bundle size
-				disableLogger: true,
-
-				// Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-				// See the following for more information:
-				// https://docs.sentry.io/product/crons/
-				// https://vercel.com/docs/cron-jobs
-				// automaticVercelMonitors: true,
-
-				// Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-				// This can increase your server load as well as your hosting bill.
-				// Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-side errors will fail.
+				// Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers
 				tunnelRoute: "/skynet",
 
-				// Capture React Component Names (Optional)
+				// Capture React Component Names
 				reactComponentAnnotation: { enabled: true },
 
 				// For all available options, see:

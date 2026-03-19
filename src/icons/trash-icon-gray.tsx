@@ -1,7 +1,7 @@
 import { Icon, type IconProps } from "@/components/atoms/icon";
 
 export const TrashIconGray = (props: IconProps) => (
-	<Icon {...props} fill="none" viewBox="0 0 18 18">
+	<Icon {...props} fill="none" height="18" viewBox="0 0 18 18" width="18">
 		<path
 			fill="currentColor"
 			d="M14 12.4V4H4v8.4c0 1.26 0 1.89.234 2.371a2.2 2.2 0 0 0 .936.984C5.628 16 6.228 16 7.429 16h3.142c1.2 0 1.8 0 2.259-.245a2.2 2.2 0 0 0 .936-.984c.234-.48.234-1.11.234-2.371Z"

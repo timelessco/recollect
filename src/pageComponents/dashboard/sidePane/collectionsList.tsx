@@ -7,8 +7,6 @@ import isNull from "lodash/isNull";
 import { type DroppableCollectionReorderEvent } from "react-aria";
 import { Item } from "react-stately";
 
-import { ReorderableListBox } from "./reorderable-list";
-
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
 import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
 import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
@@ -35,6 +33,7 @@ import { errorToast } from "../../../utils/toastMessages";
 
 import { CollectionsListSection } from "./collections-list-section";
 import { FavoriteCollectionsList } from "./favorite-collections-list";
+import { ReorderableListBox } from "./reorderable-list";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
@@ -280,7 +279,6 @@ const CollectionsList = () => {
 	};
 
 	const favoriteCollections = sortedFavorites();
-	const nonFavoriteCollections = allSorted.filter((item) => !item.isFavorite);
 
 	const onReorder = (event: DroppableCollectionReorderEvent) => {
 		const apiOrder = userProfileData?.data?.[0].category_order;
@@ -341,7 +339,7 @@ const CollectionsList = () => {
 					selectionBehavior="replace"
 					selectionMode="multiple"
 				>
-					{nonFavoriteCollections?.map((item) => (
+					{allSorted.map((item) => (
 						<Item key={item?.id} textValue={item?.name}>
 							<SingleListItemComponent
 								extendedClassname="py-[6px]"

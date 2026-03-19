@@ -4,7 +4,8 @@ import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { AvatarIcon } from "../../../icons/avatarIcon";
 import { ImportIcon } from "../../../icons/importIcon";
 import { SettingsAiIcon } from "../../../icons/settingsAiIcon";
-import { SubscriptionIcon } from "../../../icons/subscription-icon";
+import { useSettingsModalStore } from "../../../store/settingsModalStore";
+import { useSidePaneStore } from "../../../store/sidePaneStore";
 import Settings from "../../settings";
 import { AiFeatures } from "../../settings/aiFeatures";
 import ChangeEmail from "../../settings/changeEmail";
@@ -13,7 +14,9 @@ import { ImportBookmarks } from "../../settings/import";
 import { Subscription } from "../../settings/subscription";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
+import { MobileSettingsDrawer } from "./mobile-settings-drawer";
 import { Dialog } from "@/components/ui/recollect/dialog";
+import { SubscriptionIcon } from "@/icons/subscription-icon";
 
 export type SettingsPage =
 	| "ai-features"
@@ -23,28 +26,66 @@ export type SettingsPage =
 	| "main"
 	| "subscription";
 
-type SettingsModalProps = {
-	children: ReactNode;
-};
+/**
+ * Trigger-only component that lives inside the sidebar.
+ * Opens the settings modal via global store.
+ */
+export function SettingsModalTrigger({ children }: { children: ReactNode }) {
+	const setOpen = useSettingsModalStore((state) => state.setOpen);
+	const setShowSidePane = useSidePaneStore((state) => state.setShowSidePane);
+	const { isDesktop } = useIsMobileView();
 
-export const SettingsModal = ({ children }: SettingsModalProps) => (
-	<Dialog.Root>
-		<Dialog.Trigger className="w-full rounded-lg outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200">
+	return (
+		<button
+			className="w-full rounded-lg outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200"
+			onClick={() => {
+				if (!isDesktop) {
+					setShowSidePane(false);
+				}
+
+				setOpen(true);
+			}}
+			type="button"
+		>
 			{children}
-		</Dialog.Trigger>
-		<Dialog.Portal>
-			<Dialog.Backdrop />
-			<Dialog.Popup
-				className="skip-global-paste w-full max-w-[740px] rounded-[20px]"
-				aria-label="Settings"
-			>
-				<SettingsModalContent />
-			</Dialog.Popup>
-		</Dialog.Portal>
-	</Dialog.Root>
-);
+		</button>
+	);
+}
 
-function SettingsModalContent() {
+/**
+ * Portal component that renders outside the sidebar drawer tree.
+ * Must be placed at DashboardLayout level.
+ */
+export function SettingsModalPortal() {
+	const { isMobile } = useIsMobileView();
+
+	if (isMobile) {
+		return <MobileSettingsDrawer />;
+	}
+
+	return <DesktopSettingsPortal />;
+}
+
+function DesktopSettingsPortal() {
+	const open = useSettingsModalStore((state) => state.open);
+	const setOpen = useSettingsModalStore((state) => state.setOpen);
+
+	return (
+		<Dialog.Root onOpenChange={setOpen} open={open}>
+			<Dialog.Portal>
+				<Dialog.Backdrop />
+				<Dialog.Popup
+					className="skip-global-paste w-full max-w-[740px] rounded-[20px]"
+					aria-label="Settings"
+				>
+					<DesktopSettingsContent />
+				</Dialog.Popup>
+			</Dialog.Portal>
+		</Dialog.Root>
+	);
+}
+
+function DesktopSettingsContent() {
 	const { isDesktop } = useIsMobileView();
 	const [currentPage, setCurrentPage] = useState<SettingsPage>("main");
 
@@ -161,7 +202,7 @@ function SettingsModalContent() {
 					))}
 				</div>
 			</div>
-			<div className="hide-scrollbar h-full w-full overflow-auto rounded-[20px] px-12 pt-8">
+			<div className="hide-scrollbar h-full w-full overflow-auto rounded-[20px] px-6 pt-6 sm:px-12 sm:pt-8">
 				<SettingsMainContent
 					currentPage={currentPage}
 					onNavigate={setCurrentPage}
