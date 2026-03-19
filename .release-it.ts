@@ -12,7 +12,7 @@ export default {
 		// eslint-disable-next-line no-template-curly-in-string
 		commitMessage: "🚀 Release v${version}",
 		requireBranch: "main",
-		requireCleanWorkingDir: false,
+		requireCleanWorkingDir: true,
 		requireCommits: true,
 		tagArgs: ["-s"],
 	},
