@@ -232,8 +232,13 @@ echo "$CHANGELOG"
 echo "PR: $RELEASE_BRANCH → $TARGET_BRANCH"
 echo "Title: $TITLE"
 
+API_CHANGELOG_FILE="docs/API_CHANGELOG.md"
+
 if [ "$DRY_RUN" = true ]; then
 	echo ""
+	if [ -s "$API_CHANGELOG_FILE" ]; then
+		echo "[dry-run] Would post API changelog as PR comment."
+	fi
 	echo "[dry-run] No branches created, no PR opened."
 	exit 0
 fi
@@ -276,15 +281,25 @@ if ! git push "$REMOTE" "$RELEASE_BRANCH"; then
 	exit 1
 fi
 
-if ! gh pr create \
+PR_URL=$(gh pr create \
 	--base "$TARGET_BRANCH" \
 	--head "$RELEASE_BRANCH" \
 	--title "$TITLE" \
 	--label "release" \
-	--body "$CHANGELOG"; then
+	--body "$CHANGELOG") || {
 	echo "Error: PR creation failed." >&2
 	cleanup_release_branch
 	exit 1
+}
+PR_NUMBER=$(echo "$PR_URL" | grep -oE '[0-9]+$')
+
+# Post API changelog as a comment if the file has content
+if [ -s "$API_CHANGELOG_FILE" ]; then
+	COMMENT_BODY="## API Changelog
+
+$(cat "$API_CHANGELOG_FILE")"
+	gh pr comment "$PR_NUMBER" --body "$COMMENT_BODY"
+	echo "Posted API changelog as comment on PR #$PR_NUMBER"
 fi
 
 echo "Release PR created."
