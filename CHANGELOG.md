@@ -1,5 +1,68 @@
 # Changelog
 
+## 0.2.0 (2026-03-19)
+
+### 👀 Notable Changes
+
+
+#### `release` — 🤖 add --yes flag and /release skill
+
+> <sub>- Add --yes/-y flag to release-pr.sh for non-interactive execution - Add release:pr:yes script to package.json - Create /release skill for full pipeline automation</sub>
+
+<sub>Introduced in [`4f5a43eb`](https://github.com/timelessco/recollect/commit/4f5a43eb16a671e598618bdfd36f08cd45f1d927)</sub>
+
+
+---
+
+
+#### `release` — 🐛 use PAT to bypass branch protection
+
+> <sub>- GITHUB_TOKEN can't push to protected main branch - Use ACCESS_TOKEN (admin PAT) for checkout and release - Bypasses PR requirement and Vercel status check</sub>
+
+<sub>Introduced in [`ba6a9993`](https://github.com/timelessco/recollect/commit/ba6a99932fa75ee5ecf1009e8359c70ab6787850)</sub>
+
+
+
+
+<details>
+<summary>🗃️ Commits</summary>
+
+
+
+#### ⭐ New Features
+
+- **`release`** 🤖 add --yes flag and /release skill — [`4f5a43e`](https://github.com/timelessco/recollect/commit/4f5a43eb16a671e598618bdfd36f08cd45f1d927) · @navin-moorthy
+
+
+
+#### 🐞 Bug Fixes
+
+- **`release`** 🐛 use PAT to bypass branch protection — [`ba6a999`](https://github.com/timelessco/recollect/commit/ba6a99932fa75ee5ecf1009e8359c70ab6787850) · @navin-moorthy
+
+
+
+#### 📔 Documentation Changes
+
+- **`gotchas`** fix release pipeline step order and document --yes flag — [`4f31530`](https://github.com/timelessco/recollect/commit/4f31530ccc2b3159f25212d4b973216b1435d99b) · @navin-moorthy
+
+
+
+#### 💚 CI Changes
+
+- **`release`** 🔒 restore release guard after successful test — [`6b44af0`](https://github.com/timelessco/recollect/commit/6b44af005b5cb785642411329aa204cdc8761d52) · @navin-moorthy
+
+- **`release`** 🔒 restore release guard after successful test — [`86d6f8d`](https://github.com/timelessco/recollect/commit/86d6f8da73b63e8698e35c6ade4bf973051f716b) · @navin-moorthy
+
+
+
+#### 🎨 Code Style Changes
+
+- **`release`** 💄 use smaller body text in changelog — [`b657bc0`](https://github.com/timelessco/recollect/commit/b657bc0cee9efebaee97e19e4eecf54495e86f66) · @navin-moorthy
+
+
+
+</details>
+
 ## <small>0.1.3 (2026-03-19)</small>
 
 ### 👀 Notable Changes
