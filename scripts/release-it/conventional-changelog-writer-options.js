@@ -171,6 +171,11 @@ export const transform = async (commitOriginal, context) => {
 	const commit = { ...commitOriginal };
 
 	commit.body = commit?.body || commit?.footer;
+	// Join hard-wrapped lines (72-char git convention), preserve paragraph breaks
+	if (commit.body) {
+		commit.body = commit.body.replace(/(?<!\n)\n(?!\n)/g, " ");
+	}
+
 	// Remove commit body if it's author is a bot
 	if (commit.authorName === "renovate[bot]") {
 		commit.body = "";
