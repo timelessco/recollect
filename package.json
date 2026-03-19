@@ -68,7 +68,10 @@
 		"next:typegen": "pnpm next typegen",
 		"prepare": "is-ci || husky",
 		"release": "release-it --ci",
+		"release:cleanup": "./scripts/release-cleanup.sh",
 		"release:dryrun": "release-it --dry-run",
+		"release:pr": "./scripts/release-pr.sh",
+		"release:pr:dryrun": "./scripts/release-pr.sh --dry-run",
 		"start": "next start",
 		"test": "echo \"no test specified\" && exit 0"
 	},
