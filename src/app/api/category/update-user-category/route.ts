@@ -23,19 +23,59 @@ export const POST = createPostApiHandlerWithAuth({
 		const { category_id: categoryId, updateData } = data;
 		const userId = user.id;
 
+		// Separate is_favorite (legacy compat) from actual category fields
+		const { is_favorite, ...categoryUpdateData } = updateData;
+
 		console.log(`[${route}] API called:`, {
 			userId,
 			categoryId,
-			categoryName: updateData.category_name,
+			categoryName: categoryUpdateData.category_name,
 		});
 
-		const { data: categoryData, error } = await supabase
-			.from(CATEGORIES_TABLE_NAME)
-			.update(
-				updateData as Database["public"]["Tables"]["categories"]["Update"],
-			)
-			.match({ id: categoryId, user_id: userId })
-			.select();
+		// Handle legacy is_favorite → profiles.favorite_categories update
+		if (is_favorite !== undefined) {
+			const numericCategoryId =
+				typeof categoryId === "string"
+					? Number.parseInt(categoryId, 10)
+					: categoryId;
+
+			if (is_favorite) {
+				// Add to favorites (idempotent: only updates if not already present)
+				await supabase.rpc(
+					"remove_favorite_category_for_user" as never,
+					{ p_category_id: numericCategoryId } as never,
+				);
+				// Use toggle to add — we just removed it, so toggle will add it back
+				await supabase.rpc(
+					"toggle_favorite_category" as never,
+					{
+						p_category_id: numericCategoryId,
+					} as never,
+				);
+			} else {
+				// Remove from favorites (idempotent: no-op if absent)
+				await supabase.rpc(
+					"remove_favorite_category_for_user" as never,
+					{ p_category_id: numericCategoryId } as never,
+				);
+			}
+		}
+
+		// If only is_favorite was sent, fetch and return current category data
+		const hasOtherUpdates = Object.keys(categoryUpdateData).length > 0;
+
+		const { data: categoryData, error } = hasOtherUpdates
+			? await supabase
+					.from(CATEGORIES_TABLE_NAME)
+					.update(
+						categoryUpdateData as Database["public"]["Tables"]["categories"]["Update"],
+					)
+					.match({ id: categoryId, user_id: userId })
+					.select()
+			: await supabase
+					.from(CATEGORIES_TABLE_NAME)
+					.select()
+					.match({ id: categoryId, user_id: userId });
 
 		if (error) {
 			// Handle unique constraint violation (case-insensitive duplicate)

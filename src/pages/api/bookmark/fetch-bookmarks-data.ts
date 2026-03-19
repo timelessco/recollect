@@ -25,6 +25,7 @@ import {
 	LINKS_URL,
 	MAIN_TABLE_NAME,
 	PAGINATION_LIMIT,
+	PROFILES,
 	TRASH_URL,
 	TWEETS_URL,
 	tweetType,
@@ -280,6 +281,14 @@ export default async function handler(
 	// Get bookmark IDs for the current page to filter related data
 	const bookmarkIds = data?.map((item) => item.id) ?? [];
 
+	// Fetch user's favorite categories for backwards compat (old builds expect is_favorite on categories)
+	const { data: profileData } = await supabase
+		.from(PROFILES)
+		.select("favorite_categories")
+		.eq("id", userId)
+		.single();
+	const favoriteCategories: number[] = profileData?.favorite_categories ?? [];
+
 	// Only fetch tags/categories for the current page's bookmarks (more efficient + avoids 1000 row limit)
 	const { data: bookmarksWithTags } = bookmarkIds.length
 		? await supabase
@@ -340,6 +349,9 @@ export default async function handler(
 							category_slug: matchedItem?.category_id?.category_slug,
 							icon: matchedItem?.category_id?.icon,
 							icon_color: matchedItem?.category_id?.icon_color,
+							is_favorite: favoriteCategories.includes(
+								matchedItem?.category_id?.id,
+							),
 						}))
 					: [],
 			};

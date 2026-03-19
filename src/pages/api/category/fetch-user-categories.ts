@@ -91,7 +91,7 @@ export default async function handler(
 			supabase.from(CATEGORIES_TABLE_NAME).select("*").eq("user_id", userId),
 			supabase
 				.from(PROFILES)
-				.select("profile_pic, user_name")
+				.select("profile_pic, user_name, favorite_categories")
 				.eq("id", userId)
 				.single(),
 		]);
@@ -175,6 +175,9 @@ export default async function handler(
 			return;
 		}
 
+		// Extract favorite categories for the authenticated user (backwards compat for old builds)
+		const favoriteCategories: number[] = userProfile?.favorite_categories ?? [];
+
 		// Attach authenticated user's profile to own categories (avoids profile join)
 		const userCategories =
 			data?.map((item) => ({
@@ -231,6 +234,7 @@ export default async function handler(
 				return {
 					...item,
 					collabData: collabDataWithOwnerData,
+					is_favorite: favoriteCategories.includes(item?.id),
 				};
 			},
 		);
