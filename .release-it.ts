@@ -32,7 +32,7 @@ export default {
 			},
 			// ignoreRecommendedBump: true,
 			infile: "CHANGELOG.md",
-			preset: { name: "conventionalcommits" },
+			preset: "conventionalcommits",
 			writerOpts: {
 				commitGroupsSort,
 				commitPartial,
