@@ -155,7 +155,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 				<Drawer.Portal keepMounted>
 					<Drawer.Backdrop className="fixed inset-0 z-50 bg-black opacity-[calc(0.2*(1-var(--drawer-swipe-progress)))] transition-opacity duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:opacity-0 data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-starting-style:opacity-0 data-swiping:duration-0" />
 					<Drawer.Viewport className="fixed inset-0 z-50 flex">
-						<Drawer.Popup className="h-full w-[250px] transform-[translateX(var(--drawer-swipe-movement-x))] bg-white shadow-[0_0_10px_5px_rgb(0_0_0/10%)] outline-hidden transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:transform-[translateX(-100%)] data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-starting-style:transform-[translateX(-100%)] data-swiping:duration-0 data-swiping:select-none">
+						<Drawer.Popup className="h-full w-[250px] transform-[translateX(var(--drawer-swipe-movement-x))] overflow-y-auto bg-white shadow-[0_0_10px_5px_rgb(0_0_0/10%)] outline-hidden transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:transform-[translateX(-100%)] data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-starting-style:transform-[translateX(-100%)] data-swiping:duration-0 data-swiping:select-none">
 							<SidePane />
 						</Drawer.Popup>
 					</Drawer.Viewport>
