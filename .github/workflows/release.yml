@@ -20,6 +20,12 @@ jobs:
           git fetch origin
           git checkout -b dev origin/dev
           git merge origin/main -m "chore(release): merge main back into dev after release"
+          # Clear API changelog — accumulated changes are now released
+          if [ -s docs/API_CHANGELOG.md ]; then
+            > docs/API_CHANGELOG.md
+            git add docs/API_CHANGELOG.md
+            git commit --amend --no-edit
+          fi
           git push origin dev
 
     timeout-minutes: 5

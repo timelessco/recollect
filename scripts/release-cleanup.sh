@@ -74,6 +74,13 @@ git merge "$REMOTE/main" -m "chore(release): merge main back into dev after rele
 	echo "Resolve conflicts, commit, push dev, then delete the release branch manually." >&2
 	exit 1
 }
+# Clear API changelog — accumulated changes are now released
+API_CHANGELOG_FILE="docs/API_CHANGELOG.md"
+if [ -s "$API_CHANGELOG_FILE" ]; then
+	> "$API_CHANGELOG_FILE"
+	git add "$API_CHANGELOG_FILE"
+	git commit --amend --no-edit
+fi
 git push "$REMOTE" dev
 
 # --- Delete release branch (best-effort) ---
