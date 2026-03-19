@@ -6,6 +6,7 @@
 /.next
 /next-env.d.ts
 **/*.hbs
+CHANGELOG.md
 /docs/API_CHANGELOG.md
 .agents
 .claude
