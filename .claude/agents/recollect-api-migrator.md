@@ -251,44 +251,17 @@ pnpm fix
 
 This step is NOT optional. Do NOT present a summary until ALL cases pass.
 
-**Required tools for E2E testing:**
+**DELEGATE: Invoke `/recollect-api-tester` skill for full E2E verification.**
 
-- **Supabase MCP** (`mcp__supabase-local__execute_sql`): Seed test data, verify DB state, check table schemas
-- **Chrome MCP** (`mcp__claude-in-chrome__*`): Navigate to `http://localhost:3000/api-docs`, use Scalar's Try It client to call both old and new endpoints, compare responses
+Provide to the skill:
+- **Endpoint path**: the new v2 route (e.g., `/api/v2/bookmarks/get/fetch-by-id`)
+- **HTTP method**: GET or POST
+- **Auth type**: bearer, service-role, secret, or public
+- **Compare against**: the old route path (e.g., `/api/bookmarks/fetch-by-id`) for migration comparison
 
-If Chrome MCP or Supabase MCP are unavailable, state this explicitly in the verification matrix — do NOT silently skip E2E and report only build checks as "verification".
+The skill autonomously: discovers the endpoint, builds a test matrix from 18+ categories, seeds edge-case data via Supabase MCP, executes via Scalar's Try It panel at `/api-docs`, compares old vs new responses, and produces a verification matrix.
 
-**4b-1. Generate route-specific test matrix from these categories:**
-
-| Category             | What to test                   | How                                  |
-| -------------------- | ------------------------------ | ------------------------------------ |
-| Happy path           | All fields populated           | Query existing data via Supabase MCP |
-| Nullable fields      | Each nullable column NULL      | UPDATE via Supabase MCP              |
-| Empty result         | No matching rows               | Use nonexistent ID                   |
-| Validation errors    | Missing/invalid params         | Omit params, wrong types             |
-| Auth boundary        | Unauthenticated request        | `credentials: 'omit'`                |
-| Public access        | Works without cookies          | `credentials: 'omit'` must succeed   |
-| Method enforcement   | Wrong HTTP method → 405        | GET a POST endpoint                  |
-| Data type fidelity   | Types match exactly            | Compare old vs new JSON              |
-| Side effects         | Writes triggered by GET        | Set up pre-condition, call, verify   |
-| Multi-query joins    | Joined data present AND absent | Bookmark with/without categories     |
-| Mutation DB state    | POST creates/updates/deletes   | Call endpoint, SELECT to verify      |
-| Idempotency          | Calling mutation twice         | Verify no duplicates                 |
-| Conflict handling    | Duplicate/invalid mutation     | Try duplicate name, nonexistent ID   |
-| Delete verification  | Row removed                    | Call delete, SELECT to confirm       |
-| Service-role auth    | Correct/incorrect key          | Test valid, invalid, missing         |
-| Secret token auth    | Correct/incorrect secret       | Test valid, invalid, missing         |
-| Proxy/streaming      | Response body format           | Compare content-type, body bytes     |
-| Multipart upload     | File upload, size, type        | Upload valid, oversized, wrong type  |
-| Chain dependency     | Callee returns expected data   | Call callee first, verify caller     |
-| Cross-user isolation | User A can't see User B        | Query with different user's ID       |
-
-Include only categories relevant to the route.
-
-**4b-2. Seed edge case data via Supabase MCP**
-**4b-3. Execute each test via Chrome MCP** — fetch old route, fetch new v2 route, compare
-**4b-4. Restore test data**
-**4b-5. Produce verification matrix:**
+**4b-output. The skill returns a verification matrix — include it verbatim:**
 
 | #   | Case       | Old Status | New Status | Data Match | Notes            |
 | --- | ---------- | ---------- | ---------- | ---------- | ---------------- |
@@ -296,7 +269,9 @@ Include only categories relevant to the route.
 
 Every applicable category MUST appear.
 
-**4b-6. If ANY case fails:** Fix and re-run ALL cases.
+**4b-fallback.** If the skill is unavailable (Chrome MCP or Supabase MCP not connected), stop and report to the user so they can fix the dependency and run E2E separately. Do NOT silently skip E2E and report only build checks as "verification".
+
+**4b-retry.** If ANY case fails: fix and re-run ALL cases.
 
 **4c. Update supplement with E2E-derived named examples (MANDATORY)**
 
@@ -569,37 +544,9 @@ return apiError({
 
 ## Section 7: Route-Specific Test Patterns
 
-**Read Patterns (Phase 7):**
+All route-specific test patterns (Read, Mutation, Utility, Complex) are maintained in the `/recollect-api-tester` skill under "Route-Specific Patterns". The skill is the single source of truth for test patterns — do not duplicate them here.
 
-- **Simple boolean**: DB value → true; NULL → false. Modify via Supabase MCP, test, restore. Unauth → 400/401.
-- **Query param lookup**: Valid email with data → result; null field → null value; nonexistent → empty array; missing param → 400; unauth → 400/401.
-- **Public route**: Above plus `credentials: 'omit'` must work. Verify `security: []` in spec.
-- **Side-effect GET**: Set up pre-condition, call with params, verify DB updated, compare full response, restore.
-- **Two-query join**: With categories → populated; zero categories → empty array; nonexistent → empty.
-- **POST reclassified from GET**: POST with body → 200; GET → 405; missing body field → 400.
-- **.or() multi-condition**: Match by email → data; match by user_id → data; no match → empty.
-
-**Mutation Patterns (Phase 8):**
-
-- **Simple update**: Valid → 200 + verify DB; missing field → 400; nonexistent → 404; restore.
-- **Delete**: Exists → delete → verify gone; already absent → graceful; re-seed.
-- **Create/set**: New → 200 + verify; duplicate → idempotent or conflict; invalid → 400.
-
-**Utility Patterns (Phase 9):**
-
-- **Secret-token POST**: Valid token → 200; invalid token → 401; missing Authorization → 401; wrong method (GET) → 405.
-- **ISR revalidate**: Valid path + valid token → revalidated; invalid path → 400; also update `revalidation-helpers.ts` URL and test server-to-self call.
-- **Public GET proxy (HEAD)**: Valid URL → media type; invalid URL → 400; timeout → graceful error; verify CORS headers in response.
-- **Binary proxy (PDF)**: Valid PDF URL → `Content-Type: application/pdf` + binary body; invalid URL → error; verify response is NOT JSON-wrapped.
-- **Batch insert**: Array of bookmarks → inserted; empty array → error; single item → works; verify DB rows created.
-- **Public complex query**: Pagination (page + limit params); all 4 sort modes; junction table join; no-auth (`credentials: 'omit'` works); username mismatch → appropriate response.
-- **Service-role (no auth)**: Endpoint callable without auth; verify service client operations work; verify Sentry captures errors.
-
-**Complex Patterns (Phase 10-12):**
-
-- **Multipart**: Use curl via Bash. Valid → 200; oversized → error; wrong type → error.
-- **Chained**: Call callee first, verify, then caller. v2 callers still use OLD URLs.
-- **Queue workers**: Enqueue via Supabase MCP, call endpoint, verify processed.
+When invoking the skill in Step 4b, it automatically selects the applicable patterns based on the endpoint's characteristics (GET vs POST, auth type, DB operations, joins, etc.).
 
 ---
 
@@ -627,7 +574,7 @@ return apiError({
 
 11. **Supplement example timestamps:** Use `+00:00` offset format in example data (e.g., `"2024-03-15T10:30:00+00:00"`), not Z-suffix (`"2024-03-15T10:30:00Z"`), to match actual Supabase output format.
 
-12. **Two-phase supplement creation:** Step 3 creates metadata-only (no examples). Step 4c adds examples after E2E. Do NOT fabricate examples in Step 3. If Chrome MCP is unavailable and E2E is skipped, the supplement will have no examples — document this in SUMMARY.
+12. **Two-phase supplement creation:** Step 3 creates metadata-only (no examples). Step 4c adds examples after E2E. Do NOT fabricate examples in Step 3. If `/recollect-api-tester` skill cannot execute (Chrome MCP or Supabase MCP unavailable), E2E is skipped — report this to the user so they can fix the dependency and run E2E separately. Supplement will have no examples until E2E passes.
 
 13. **No PII in examples:** Never use real email addresses, names, or user IDs in supplement examples. Use placeholders: `user@example.com`, `another@example.com`, `550e8400-e29b-41d4-a716-446655440000`. The developer substitutes real values when testing in Scalar.
 

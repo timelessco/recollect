@@ -9,7 +9,10 @@ const UpdateDataSchema = z
 		provider: z.string().nullable().optional(),
 		preferred_og_domains: z.array(z.string()).nullable().optional(),
 		category_order: z.array(z.int()).nullable().optional(),
-		favorite_categories: z.array(z.int()).optional(),
+		favorite_categories: z
+			.array(z.int())
+			.optional()
+			.meta({ description: "Ordered list of favorite category IDs" }),
 		ai_features_toggle: z.unknown().optional(),
 		bookmarks_view: z.unknown().optional(),
 		bookmark_count: z.int().nullable().optional(),
@@ -30,7 +33,9 @@ export const UpdateUserProfileOutputSchema = z.array(
 		bookmarks_view: z.unknown().nullable(),
 		category_order: z.array(z.int()).nullable(),
 		display_name: z.string().nullable(),
-		favorite_categories: z.array(z.int()),
+		favorite_categories: z
+			.array(z.int())
+			.meta({ description: "Ordered list of favorite category IDs" }),
 		email: z.string().nullable(),
 		id: z.string(),
 		preferred_og_domains: z.array(z.string()).nullable(),

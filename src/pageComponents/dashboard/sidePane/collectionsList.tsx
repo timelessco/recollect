@@ -1,38 +1,11 @@
-import { useMemo, useRef, type Key, type ReactNode } from "react";
+import { useMemo } from "react";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
-import omit from "lodash/omit";
-import {
-	DragPreview,
-	ListDropTargetDelegate,
-	ListKeyboardDelegate,
-	mergeProps,
-	useDraggableCollection,
-	useDraggableItem,
-	useDropIndicator,
-	useDroppableCollection,
-	useDroppableItem,
-	useFocusRing,
-	useListBox,
-	useOption,
-	type DraggableItemProps,
-	type DragItem,
-	type DropIndicatorProps,
-	type DroppableCollectionReorderEvent,
-} from "react-aria";
-import {
-	Item,
-	useDraggableCollectionState,
-	useDroppableCollectionState,
-	useListState,
-	type DraggableCollectionState,
-	type DroppableCollectionState,
-	type ListProps,
-	type ListState,
-} from "react-stately";
+import { type DroppableCollectionReorderEvent } from "react-aria";
+import { Item } from "react-stately";
 
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
 import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
@@ -60,17 +33,11 @@ import { errorToast } from "../../../utils/toastMessages";
 
 import { CollectionsListSection } from "./collections-list-section";
 import { FavoriteCollectionsList } from "./favorite-collections-list";
+import { ReorderableListBox } from "./reorderable-list";
 import SingleListItemComponent, {
 	type CollectionItemTypes,
 } from "./singleListItemComponent";
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
-
-type ListBoxDropTypes = ListProps<object> & {
-	getItems?: (keys: Set<Key>) => DragItem[];
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	onItemDrop?: (event: any) => void;
-	onReorder: (event: DroppableCollectionReorderEvent) => unknown;
-};
 
 const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
 	const queryClient = useQueryClient();
@@ -101,195 +68,13 @@ const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
 	);
 };
 
-const ListBoxDrop = (props: ListBoxDropTypes) => {
-	const { getItems } = props;
-	// Setup listbox as normal. See the useListBox docs for more details.
-	const state = useListState(props);
-	const ref = useRef(null);
-	const preview = useRef(null);
-	const { listBoxProps } = useListBox(
-		{ ...props, shouldSelectOnPressUp: true },
-		state,
-		ref,
-	);
-
-	// Setup react-stately and react-aria hooks for drag and drop.
-	const dropState = useDroppableCollectionState({
-		...props,
-		// Collection and selection manager come from list state.
-		collection: state.collection,
-		selectionManager: state.selectionManager,
-	});
-
-	const { collectionProps } = useDroppableCollection(
-		{
-			...props,
-			keyboardDelegate: new ListKeyboardDelegate(
-				state.collection,
-				state.disabledKeys,
-				ref,
-			),
-			dropTargetDelegate: new ListDropTargetDelegate(state.collection, ref),
-		},
-		dropState,
-		ref,
-	);
-
-	// Setup drag state for the collection.
-	const dragState = useDraggableCollectionState({
-		...props,
-		// Collection and selection manager come from list state.
-		collection: state.collection,
-		selectionManager: state.selectionManager,
-		preview,
-		// Provide data for each dragged item. This function could
-		// also be provided by the user of the component.
-		getItems:
-			getItems ??
-			((keys) =>
-				[...keys].map((key) => {
-					const item = state.collection.getItem(key);
-
-					return {
-						"text/plain": !isNull(item) ? item.textValue : "",
-					};
-				})),
-	});
-
-	useDraggableCollection(props, dragState, ref);
-
-	// Merge listbox props and dnd props, and render the items as normal.
-	const ulProps = omit(mergeProps(listBoxProps, collectionProps), [
-		"onKeyDown",
-		"onKeyDownCapture",
-		"onKeyUp",
-		"onKeyUpCapture",
-	]);
-
-	return (
-		<ul {...ulProps} className="flex flex-col gap-px" ref={ref}>
-			{[...state.collection].map((item) => (
-				<OptionDrop
-					dragState={dragState}
-					dropState={dropState}
-					item={item}
-					key={item.key}
-					state={state}
-				/>
-			))}
-			<DragPreview ref={preview}>
-				{(items) => (
-					<RenderDragPreview collectionName={items[0]["text/plain"]} />
-				)}
-			</DragPreview>
-		</ul>
-	);
-};
-
-type DropIndicatorTypes = DropIndicatorProps & {
-	dropState: DroppableCollectionState;
-};
-
-const DropIndicator = (props: DropIndicatorTypes) => {
-	const { dropState } = props;
-	const ref = useRef(null);
-	const { dropIndicatorProps, isHidden, isDropTarget } = useDropIndicator(
-		props,
-		dropState,
-		ref,
-	);
-	if (isHidden) {
-		return null;
-	}
-
-	return (
-		<li
-			{...dropIndicatorProps}
-			aria-selected
-			className={`drop-indicator ${isDropTarget ? "drop-target" : ""} z-10`}
-			ref={ref}
-			role="option"
-		/>
-	);
-};
-
-type OptionDropItemTypes = DraggableItemProps & {
-	rendered: ReactNode;
-};
-
-const OptionDrop = ({
-	item,
-	state,
-	dropState,
-	dragState,
-}: {
-	dragState: DraggableCollectionState;
-	dropState: DroppableCollectionState;
-	item: OptionDropItemTypes;
-	state: ListState<unknown>;
-}) => {
-	// Register the item as a drag source.
-	const { dragProps } = useDraggableItem(
-		{
-			key: item.key,
-		},
-		dragState,
-	);
-
-	// Setup listbox option as normal. See useListBox docs for details.
-	const ref = useRef(null);
-	const { optionProps } = useOption({ key: item.key }, state, ref);
-	const { isFocusVisible, focusProps } = useFocusRing();
-
-	// Register the item as a drop target.
-	const { dropProps, isDropTarget } = useDroppableItem(
-		{
-			target: { type: "item", key: item.key, dropPosition: "on" },
-		},
-		dropState,
-		ref,
-	);
-
-	const isCardDragging = useMiscellaneousStore(
-		(storeState) => storeState.isCardDragging,
-	);
-
-	// Merge option props and dnd props, and render the item.
-	const mergedProps = omit(
-		mergeProps(optionProps, dropProps, focusProps, dragProps),
-		["onKeyDown", "onKeyDownCapture", "onKeyUp", "onKeyUpCapture"],
-	);
-
-	return (
-		<>
-			<DropIndicator
-				dropState={dropState}
-				target={{ type: "item", key: item.key, dropPosition: "before" }}
-			/>
-			<li
-				{...mergedProps}
-				// Apply a class when the item is the active drop target.
-				className={`option-drop outline-hidden ${isFocusVisible ? "ring-1 ring-gray-200" : ""} ${
-					isDropTarget && isCardDragging ? "drop-target" : ""
-				}`}
-				ref={ref}
-			>
-				{item.rendered}
-			</li>
-			{state.collection.getKeyAfter(item.key) === null && (
-				<DropIndicator
-					dropState={dropState}
-					target={{ type: "item", key: item.key, dropPosition: "after" }}
-				/>
-			)}
-		</>
-	);
-};
-
 const CollectionsList = () => {
 	const queryClient = useQueryClient();
 	const session = useSupabaseSession((state) => state.session);
 
+	const isCardDragging = useMiscellaneousStore(
+		(storeState) => storeState.isCardDragging,
+	);
 	const { addCategoryToBookmarkOptimisticMutation } =
 		useAddCategoryToBookmarkOptimisticMutation();
 	const { updateCategoryOrderMutation } =
@@ -466,8 +251,34 @@ const CollectionsList = () => {
 	};
 
 	const allSorted = sortedList() ?? [];
-	const favoriteCollections = allSorted.filter((item) => item.isFavorite);
-	const nonFavoriteCollections = allSorted;
+
+	// Sort favorites by their position in the favorite_categories array
+	const sortedFavorites = () => {
+		const favorites = allSorted.filter((item) => item.isFavorite);
+
+		if (favoriteCategories.length === 0) {
+			return favorites;
+		}
+
+		const ordered: CollectionItemTypes[] = [];
+		for (const id of favoriteCategories) {
+			const found = favorites.find((item) => item.id === id);
+			if (found) {
+				ordered.push(found);
+			}
+		}
+
+		// Append any favorites not in the array (newly favorited)
+		for (const item of favorites) {
+			if (!favoriteCategories.includes(item.id)) {
+				ordered.push(item);
+			}
+		}
+
+		return ordered;
+	};
+
+	const favoriteCollections = sortedFavorites();
 
 	const onReorder = (event: DroppableCollectionReorderEvent) => {
 		const apiOrder = userProfileData?.data?.[0].category_order;
@@ -476,31 +287,37 @@ const CollectionsList = () => {
 			? collectionsList?.map((item) => item?.id)
 			: userProfileData?.data?.[0].category_order;
 
-		// to index
-		const index1 = listOrder?.indexOf(
-			Number.parseInt(event?.target?.key as string, 10),
-		);
-		// from index
-		const index2 = listOrder?.indexOf(
-			Number.parseInt(event?.keys?.values().next().value as string, 10),
+		const targetKey = Number.parseInt(event?.target?.key as string, 10);
+		const sourceKey = Number.parseInt(
+			event?.keys?.values().next().value as string,
+			10,
 		);
 
-		let myArray = listOrder;
+		const sourceIndex = listOrder?.indexOf(sourceKey);
 
-		if (myArray && index1 !== undefined && index2 !== undefined && listOrder) {
-			const movingItem = listOrder[index2];
-
-			// remove
-			myArray = myArray.filter((item) => item !== movingItem);
-
-			// add
-			myArray.splice(index1, 0, movingItem);
-			void mutationApiCall(
-				updateCategoryOrderMutation?.mutateAsync({
-					order: myArray,
-				}),
-			);
+		if (!listOrder || sourceIndex === undefined || sourceIndex === -1) {
+			return;
 		}
+
+		const movingItem = listOrder[sourceIndex];
+		const newOrder = listOrder.filter((item) => item !== movingItem);
+		const newTargetIndex = newOrder.indexOf(targetKey);
+
+		if (newTargetIndex === -1) {
+			return;
+		}
+
+		const insertIndex =
+			event.target.dropPosition === "after"
+				? newTargetIndex + 1
+				: newTargetIndex;
+		newOrder.splice(insertIndex, 0, movingItem);
+
+		void mutationApiCall(
+			updateCategoryOrderMutation?.mutateAsync({
+				order: newOrder,
+			}),
+		);
 	};
 
 	return (
@@ -508,17 +325,21 @@ const CollectionsList = () => {
 			<FavoriteCollectionsList favoriteCollections={favoriteCollections} />
 
 			<CollectionsListSection isLoading={isLoadingCategories}>
-				<ListBoxDrop
+				<ReorderableListBox
 					aria-label="Categories-drop"
+					highlightDropTarget={isCardDragging}
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					onItemDrop={(event: any) => {
 						void handleBookmarksDrop(event);
 					}}
 					onReorder={onReorder}
+					renderDragPreview={(items) => (
+						<RenderDragPreview collectionName={items[0]["text/plain"]} />
+					)}
 					selectionBehavior="replace"
 					selectionMode="multiple"
 				>
-					{nonFavoriteCollections?.map((item) => (
+					{allSorted.map((item) => (
 						<Item key={item?.id} textValue={item?.name}>
 							<SingleListItemComponent
 								extendedClassname="py-[6px]"
@@ -533,7 +354,7 @@ const CollectionsList = () => {
 							/>
 						</Item>
 					))}
-				</ListBoxDrop>
+				</ReorderableListBox>
 			</CollectionsListSection>
 		</>
 	);

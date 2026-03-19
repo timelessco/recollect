@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import Link from "next/link";
 
 import { CategoryIconsDropdown } from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
@@ -7,6 +8,7 @@ import { type CategoriesData } from "../../../types/apiTypes";
 import { type ChildrenTypes } from "../../../types/componentTypes";
 
 import { CollectionOptionsPopover } from "./collection-options-popover";
+import { DragHandleContext } from "./reorderable-list";
 
 export type CollectionItemTypes = {
 	count?: number;
@@ -48,9 +50,13 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 		responsiveIcon = false,
 	} = listProps;
 	const { isDesktop } = useIsMobileView();
+	const dragHandleProps = useContext(DragHandleContext);
 	const renderContent = () => (
 		<>
-			<div className="flex items-center">
+			<div
+				className={`flex items-center ${dragHandleProps ? "mr-5 flex-1" : ""}`}
+				{...dragHandleProps}
+			>
 				{showIconDropdown ? (
 					// disabling eslint as the onClick is just preventdefault
 					// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
@@ -86,6 +92,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 					<div
 						className="flex items-center justify-center"
 						onClick={(event) => event.preventDefault()}
+						onPointerDown={(event) => event.stopPropagation()}
 					>
 						{showSpinner ? (
 							<Spinner
