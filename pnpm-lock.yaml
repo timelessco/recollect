@@ -604,6 +604,7 @@ packages:
   '@aws-sdk/xml-builder@3.972.12':
     resolution: {integrity: sha512-xjyucfn+F+kMf25c+LIUnvX3oyLSlj9T0Vncs5WMQI6G36JdnSwC8g0qf8RajfmSClXr660EpTz7FFKluZ4BqQ==}
     engines: {node: '>=20.0.0'}
+    deprecated: Upgrade @aws-sdk/xml-builder to v3.972.13 or higher to fix a fast-xml-parser configuration issue, see https://github.com/aws/aws-sdk-js-v3/issues/7867
 
   '@aws/lambda-invoke-store@0.2.4':
     resolution: {integrity: sha512-iY8yvjE0y651BixKNPgmv1WrQc+GZ142sb0z4gYnChDDY2YqI4P/jsSopBWrKfAt7LOJAkOXt7rC/hms+WclQQ==}
@@ -13730,7 +13731,7 @@ snapshots:
 
   '@typescript-eslint/project-service@8.54.0(typescript@5.9.3)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.54.0(typescript@5.9.3)
+      '@typescript-eslint/tsconfig-utils': 8.57.1(typescript@5.9.3)
       '@typescript-eslint/types': 8.57.1
       debug: 4.4.3(supports-color@8.1.1)
       typescript: 5.9.3
@@ -19068,7 +19069,7 @@ snapshots:
 
   substyle@9.4.1(react@19.2.4):
     dependencies:
-      '@babel/runtime': 7.4.5
+      '@babel/runtime': 7.29.2
       invariant: 2.2.4
       react: 19.2.4
 
