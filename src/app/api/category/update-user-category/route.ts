@@ -32,7 +32,59 @@ export const POST = createPostApiHandlerWithAuth({
 			categoryName: categoryUpdateData.category_name,
 		});
 
+		// Run category table update first (if there are fields to update)
+		const hasOtherUpdates = Object.keys(categoryUpdateData).length > 0;
+
+		const { data: categoryData, error } = hasOtherUpdates
+			? await supabase
+					.from(CATEGORIES_TABLE_NAME)
+					.update(
+						categoryUpdateData as Database["public"]["Tables"]["categories"]["Update"],
+					)
+					.match({ id: categoryId, user_id: userId })
+					.select()
+			: await supabase
+					.from(CATEGORIES_TABLE_NAME)
+					.select()
+					.match({ id: categoryId, user_id: userId });
+
+		if (error) {
+			// Handle unique constraint violation (case-insensitive duplicate)
+			// Postgres error code 23505 = unique_violation
+			if (
+				error.code === "23505" ||
+				error.message?.includes("unique_user_category_name_ci")
+			) {
+				return apiWarn({
+					route,
+					message: DUPLICATE_CATEGORY_NAME_ERROR,
+					status: 409,
+					context: { name: updateData.category_name, userId },
+				});
+			}
+
+			return apiError({
+				route,
+				message: "Error updating category",
+				error,
+				operation: "update_category",
+				userId,
+				extra: { categoryId },
+			});
+		}
+
+		if (!isNonEmptyArray(categoryData)) {
+			return apiError({
+				route,
+				message: "No data returned from database",
+				error: new Error("Empty update result"),
+				operation: "update_category_empty",
+				userId,
+			});
+		}
+
 		// Handle legacy is_favorite → profiles.favorite_categories update
+		// Runs after category update succeeds to avoid mutating favorites on a failed request
 		if (is_favorite !== undefined) {
 			const numericCategoryId =
 				typeof categoryId === "string"
@@ -90,57 +142,6 @@ export const POST = createPostApiHandlerWithAuth({
 					});
 				}
 			}
-		}
-
-		// If only is_favorite was sent, fetch and return current category data
-		const hasOtherUpdates = Object.keys(categoryUpdateData).length > 0;
-
-		const { data: categoryData, error } = hasOtherUpdates
-			? await supabase
-					.from(CATEGORIES_TABLE_NAME)
-					.update(
-						categoryUpdateData as Database["public"]["Tables"]["categories"]["Update"],
-					)
-					.match({ id: categoryId, user_id: userId })
-					.select()
-			: await supabase
-					.from(CATEGORIES_TABLE_NAME)
-					.select()
-					.match({ id: categoryId, user_id: userId });
-
-		if (error) {
-			// Handle unique constraint violation (case-insensitive duplicate)
-			// Postgres error code 23505 = unique_violation
-			if (
-				error.code === "23505" ||
-				error.message?.includes("unique_user_category_name_ci")
-			) {
-				return apiWarn({
-					route,
-					message: DUPLICATE_CATEGORY_NAME_ERROR,
-					status: 409,
-					context: { name: updateData.category_name, userId },
-				});
-			}
-
-			return apiError({
-				route,
-				message: "Error updating category",
-				error,
-				operation: "update_category",
-				userId,
-				extra: { categoryId },
-			});
-		}
-
-		if (!isNonEmptyArray(categoryData)) {
-			return apiError({
-				route,
-				message: "No data returned from database",
-				error: new Error("Empty update result"),
-				operation: "update_category_empty",
-				userId,
-			});
 		}
 
 		console.log(`[${route}] Category updated:`, {
