@@ -1,5 +1,31 @@
 # Changelog
 
+## <small>0.1.1 (2026-03-19)</small>
+
+### 🗃️ Commits
+
+
+#### 🐞 Bug Fixes
+
+-
+**`coderabbit:`** 	🐛 use correct auto_review.labels path	- [8586cf3](https://github.com/timelessco/recollect/commit/8586cf37dd1454c77feaeb459c45abf31b68b244) by @navin-moorthy
+
+
+#### 🔨 Maintenance Updates
+
+-
+**`deps:`** 	🔧 pin @release-it/conventional-changelog below v10	- [4cefbce](https://github.com/timelessco/recollect/commit/4cefbcee59bc6b129e6afcc70e5f6c75b0115bca) by @navin-moorthy
+-
+**`knip:`** 	🔧 fix knip configuration hints	- [1d8da17](https://github.com/timelessco/recollect/commit/1d8da17c24d94cfc2f5a93e0af8b6f3af32d914c) by @navin-moorthy
+-
+**`release:`** 	🔧 improve release pipeline CI integration	- [6138e2f](https://github.com/timelessco/recollect/commit/6138e2f70772613b67ad7687b9d9dcd514b990b6) by @navin-moorthy
+
+
+#### 🎨 Code Style Changes
+
+-
+**`changelog:`** 	💄 format CHANGELOG.md with prettier	- [4e4c87f](https://github.com/timelessco/recollect/commit/4e4c87f61435b8eace179cf0a4e6b181e7251540) by @navin-moorthy
+
 ## 0.1.0 (2026-03-19)
 
 ### 👀 Notable Changes
