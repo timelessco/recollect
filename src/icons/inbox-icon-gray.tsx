@@ -1,7 +1,7 @@
 import { Icon, type IconProps } from "@/components/atoms/icon";
 
 export const InboxIconGray = (props: IconProps) => (
-	<Icon {...props} fill="none" viewBox="0 0 18 18">
+	<Icon {...props} fill="none" height="18" viewBox="0 0 18 18" width="18">
 		<path
 			fill="currentColor"
 			d="M11.275 3h-4.55c-.808 0-1.212 0-1.568.123a2.25 2.25 0 0 0-.84.52c-.27.263-.45.625-.812 1.347L1.5 9h2.911c.514 0 .984.29 1.214.75.23.46.7.75 1.214.75h4.322c.514 0 .984-.29 1.214-.75.23-.46.7-.75 1.213-.75H16.5l-2.005-4.01c-.361-.722-.542-1.084-.811-1.347a2.25 2.25 0 0 0-.84-.52C12.486 3 12.082 3 11.274 3Z"
