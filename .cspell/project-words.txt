@@ -29,6 +29,7 @@ ecommerce
 ECOMMERCE
 eqwhx
 favorited
+favoriting
 fbca
 fbcdn
 fbclid
