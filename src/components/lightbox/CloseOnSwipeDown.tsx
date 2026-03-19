@@ -75,6 +75,9 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 		});
 
 		// Mobile: pointer events (touch)
+		const getSlideWrapper = (container: HTMLElement) =>
+			container.querySelector<HTMLElement>(".slide-wrapper");
+
 		const unsubscribePointerDown = subscribeSensors(
 			"onPointerDown",
 			(event: React.PointerEvent) => {
@@ -101,10 +104,15 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 				if (deltaY <= 0) {
 					if (isDraggingRef.current) {
 						reset(element);
+						getSlideWrapper(element)?.removeAttribute("data-pulling");
 						isDraggingRef.current = false;
 					}
 
 					return;
+				}
+
+				if (!isDraggingRef.current) {
+					getSlideWrapper(element)?.setAttribute("data-pulling", "");
 				}
 
 				isDraggingRef.current = true;
@@ -130,6 +138,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 
 			const element = event.currentTarget as HTMLElement;
 			isDraggingRef.current = false;
+			getSlideWrapper(element)?.removeAttribute("data-pulling");
 			reset(element);
 		};
 
