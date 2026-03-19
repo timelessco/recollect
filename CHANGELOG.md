@@ -1,5 +1,72 @@
 # Changelog
 
+## <small>0.1.2 (2026-03-19)</small>
+
+### 👀 Notable Changes
+
+
+#### `release` — 🐛 fix commit template formatting
+
+> Align with next-ts-app-template: list marker on same line as
+> scope, spaces instead of tabs for indentation. Fixes entries
+> rendering with dash on its own line.
+<sub>Introduced in [`7d90e246`](https://github.com/timelessco/recollect/commit/7d90e24615bdf67aeabf4f38976425e1b00c66e5)</sub>
+
+
+---
+
+
+#### `release` — 🐛 handle existing release branch gracefully
+
+> Instead of erroring when a release/* branch exists, detect
+> the open PR and offer to delete and recreate it.
+<sub>Introduced in [`d2235a0d`](https://github.com/timelessco/recollect/commit/d2235a0df759b81529e2c18498f0ffdef83229ce)</sub>
+
+
+---
+
+
+#### `release` — 🐛 fix changelog formatting and after:bump hook
+
+> - Format CHANGELOG.md with prettier (fixes CI lint failure)
+> - Use pnpm exec prettier in after:bump hook (pnpm script
+>   ignores the file argument)
+<sub>Introduced in [`54237ae3`](https://github.com/timelessco/recollect/commit/54237ae36c0c18ef37c19181a08fe3b21914e07a)</sub>
+
+
+
+
+<details>
+<summary>🗃️ Commits</summary>
+
+
+
+#### 🐞 Bug Fixes
+
+- **`release`** 🐛 fix changelog formatting and after:bump hook — [`54237ae`](https://github.com/timelessco/recollect/commit/54237ae36c0c18ef37c19181a08fe3b21914e07a) · @navin-moorthy
+
+- **`release`** 🐛 fix commit template formatting — [`7d90e24`](https://github.com/timelessco/recollect/commit/7d90e24615bdf67aeabf4f38976425e1b00c66e5) · @navin-moorthy
+
+- **`release`** 🐛 handle existing release branch gracefully — [`d2235a0`](https://github.com/timelessco/recollect/commit/d2235a0df759b81529e2c18498f0ffdef83229ce) · @navin-moorthy
+
+- **`release`** correct knip ignoreBinaries and commit template formatting — [`c036f34`](https://github.com/timelessco/recollect/commit/c036f34aa2a3f3ad2a978fa394f873bdbccf24de) · @navin-moorthy
+
+
+
+#### 🔨 Maintenance Updates
+
+- **`knip`** fix ignoreBinaries to reference prettier instead of CHANGELOG.md — [`fa6282c`](https://github.com/timelessco/recollect/commit/fa6282c158c95d6d501b75427a5e48937c41ed4a) · @navin-moorthy
+
+
+
+#### 🎨 Code Style Changes
+
+- **`release`** 💄 beautify changelog template output — [`216e202`](https://github.com/timelessco/recollect/commit/216e202f372cdf7ac48577abb0ff4679bae7306b)
+
+
+
+</details>
+
 ## <small>0.1.1 (2026-03-19)</small>
 
 ### 🗃️ Commits
