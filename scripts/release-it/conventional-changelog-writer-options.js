@@ -110,6 +110,12 @@ const addBreakingChanges = (commit, context) => {
 		context.breakingChanges.push({
 			scope: commit?.scope,
 			body: commit?.body,
+			quotedBody: commit?.body
+				? commit.body
+						.split("\n")
+						.map((line) => `> ${line}`)
+						.join("\n")
+				: null,
 			subject: commit?.subject,
 			header: noteText,
 			shortHash: commit.shortHash,
@@ -130,6 +136,10 @@ const addNotableChanges = (commit, context) => {
 		context.notableChanges.push({
 			scope: commit?.scope,
 			body: commit.body,
+			quotedBody: commit.body
+				.split("\n")
+				.map((line) => `> ${line}`)
+				.join("\n"),
 			subject: commit?.subject,
 			shortHash: commit.shortHash,
 			hashUrl: generateCommitUrl(context, commit.hash),
@@ -146,6 +156,10 @@ const addOtherNotableChanges = (commit, context) => {
 		context.otherNotableChanges.push({
 			scope: commit?.scope,
 			body: commit.body,
+			quotedBody: commit.body
+				.split("\n")
+				.map((line) => `> ${line}`)
+				.join("\n"),
 			subject: commit?.subject,
 			shortHash: commit.shortHash,
 			hashUrl: generateCommitUrl(context, commit.hash),
@@ -279,6 +293,11 @@ export const transform = async (commitOriginal, context) => {
 	if (matchedRemoteCommit?.login) {
 		commit.userLogin = matchedRemoteCommit.login;
 	}
+
+	context.hasHighlightedChanges =
+		context.breakingChanges?.length > 0 ||
+		context.notableChanges?.length > 0 ||
+		context.otherNotableChanges?.length > 0;
 
 	return commit;
 };

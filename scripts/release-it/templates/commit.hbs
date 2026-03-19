@@ -1,4 +1,4 @@
-- {{#if scope}}**`{{scope}}:`** {{/if}}
+- {{#if scope}}**`{{scope}}`** {{/if}}
 
 {{~#if subject}}
 {{subject}}
@@ -7,13 +7,13 @@
 {{~/if}}
 
 {{~#if @root.linkReferences}}
- - [{{shortHash}}]({{commitUrlFormat}})
+ — [`{{shortHash}}`]({{commitUrlFormat}})
 {{~else}}
- - {{shortHash}}
+ — `{{shortHash}}`
 {{~/if}}
 
 {{~! commit author details }}
-{{~#if userLogin}} by @{{userLogin}} {{~/if}}
+{{~#if userLogin}} · @{{userLogin}}{{~/if}}
 
 {{~! commit references }}
 {{~#if references~}}

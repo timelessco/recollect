@@ -79,7 +79,7 @@ if [ "$BRANCH_COUNT" -eq 1 ]; then
 		fi
 		echo "Closing PR #$EXISTING_PR and deleting $EXISTING_BRANCH..."
 		gh pr close "$EXISTING_PR" --delete-branch
-		git branch -d "$EXISTING_BRANCH" 2>/dev/null || true
+		git branch -d "$EXISTING_BRANCH" 2> /dev/null || true
 	fi
 fi
 
