@@ -23,7 +23,7 @@ export default {
 		releaseName: "Release v${version}",
 	},
 	hooks: {
-		"after:bump": ["pnpm fix:prettier -- CHANGELOG.md"],
+		"after:bump": ["pnpm exec prettier --write CHANGELOG.md"],
 		"before:init": ["pnpm lint"],
 	},
 	npm: { publish: false },
