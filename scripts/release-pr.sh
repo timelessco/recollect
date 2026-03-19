@@ -49,11 +49,38 @@ git fetch "$REMOTE" || {
 }
 
 RELEASE_BRANCHES=$(git branch -r --list "$REMOTE/release/*" | xargs)
-if [ -n "$RELEASE_BRANCHES" ]; then
-	echo "Error: release branch already exists:" >&2
+BRANCH_COUNT=$(echo "$RELEASE_BRANCHES" | wc -w | tr -d ' ')
+
+if [ "$BRANCH_COUNT" -gt 1 ]; then
+	echo "Error: multiple release branches found:" >&2
 	echo "$RELEASE_BRANCHES" >&2
-	echo "Only one release at a time. Delete it first or run: pnpm release:cleanup" >&2
 	exit 1
+fi
+
+if [ "$BRANCH_COUNT" -eq 1 ]; then
+	EXISTING_BRANCH=$(echo "$RELEASE_BRANCHES" | sed "s|$REMOTE/||" | xargs)
+	EXISTING_PR=$(gh pr list --head "$EXISTING_BRANCH" --base "$TARGET_BRANCH" --state open --json number -q '.[0].number')
+
+	if [ -z "$EXISTING_PR" ]; then
+		echo "Error: stale release branch '$EXISTING_BRANCH' exists without an open PR." >&2
+		echo "Run: pnpm release:cleanup" >&2
+		exit 1
+	fi
+
+	echo "Found existing release PR #$EXISTING_PR ($EXISTING_BRANCH)"
+
+	if [ "$DRY_RUN" = true ]; then
+		echo "[dry-run] Would delete PR #$EXISTING_PR and branch $EXISTING_BRANCH, then recreate."
+	else
+		read -r -p "Delete and recreate release PR? [y/N] " response
+		if [[ ! "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+			echo "Cancelled."
+			exit 0
+		fi
+		echo "Closing PR #$EXISTING_PR and deleting $EXISTING_BRANCH..."
+		gh pr close "$EXISTING_PR" --delete-branch
+		git branch -d "$EXISTING_BRANCH" 2>/dev/null || true
+	fi
 fi
 
 # Check that main is an ancestor of dev (no divergence)
