@@ -38,6 +38,7 @@
 - `pnpm fix:prettier -- <file>` ignores the file argument — use `pnpm exec prettier --write <file>` for targeted formatting
 - Shell scripts must be bash 3.2 compatible (macOS default) — no `declare -A`, use `case` + temp files
 - Release PRs use `release` label — skips CodeRabbit and Semantic PR validation
-- Release pipeline: `pnpm release:pr` → merge on GitHub (merge commit, not squash) → CI auto-runs release-it → verify Vercel → CI auto-backmerges main→dev
+- Release pipeline: `pnpm release:pr` → merge on GitHub (merge commit, not squash) → CI auto-runs release-it → CI auto-backmerges main→dev → verify Vercel
 - `pnpm release` requires `GITHUB_TOKEN` env var — the changelog writer's `getGithubCommits()` fetches commit author data from GitHub API
 - `release-pr.sh` detects existing release PRs and offers to delete+recreate — no need to manually clean up before re-running
+- `release-pr.sh --yes` / `-y` flag auto-confirms all prompts — use for agent-native / CI execution

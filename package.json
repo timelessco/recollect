@@ -72,6 +72,7 @@
 		"release:dryrun": "release-it --dry-run",
 		"release:pr": "./scripts/release-pr.sh",
 		"release:pr:dryrun": "./scripts/release-pr.sh --dry-run",
+		"release:pr:yes": "./scripts/release-pr.sh --yes",
 		"start": "next start",
 		"test": "echo \"no test specified\" && exit 0"
 	},

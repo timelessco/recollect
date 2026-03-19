@@ -7,6 +7,8 @@
 # Usage:
 #   ./scripts/release-pr.sh            # Interactive: preview, confirm, create
 #   ./scripts/release-pr.sh --dry-run   # Preview changelog only, no remote changes
+#   ./scripts/release-pr.sh --yes       # Non-interactive: auto-confirm all prompts
+#   ./scripts/release-pr.sh --yes --dry-run
 #
 # Requires: gh CLI, git
 #
@@ -17,9 +19,13 @@
 set -eo pipefail
 
 DRY_RUN=false
-if [ "$1" = "--dry-run" ]; then
-	DRY_RUN=true
-fi
+AUTO_YES=false
+for arg in "$@"; do
+	case "$arg" in
+		--dry-run) DRY_RUN=true ;;
+		--yes | -y) AUTO_YES=true ;;
+	esac
+done
 
 SOURCE_BRANCH=${SOURCE_BRANCH:-dev}
 TARGET_BRANCH=${TARGET_BRANCH:-main}
@@ -72,7 +78,11 @@ if [ "$BRANCH_COUNT" -eq 1 ]; then
 	if [ "$DRY_RUN" = true ]; then
 		echo "[dry-run] Would delete PR #$EXISTING_PR and branch $EXISTING_BRANCH, then recreate."
 	else
-		read -r -p "Delete and recreate release PR? [y/N] " response
+		if [ "$AUTO_YES" = true ]; then
+			response="y"
+		else
+			read -r -p "Delete and recreate release PR? [y/N] " response
+		fi
 		if [[ ! "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
 			echo "Cancelled."
 			exit 0
@@ -231,7 +241,11 @@ fi
 # --- Confirm, then create branch + PR ---
 
 echo ""
-read -r -p "Create release branch and PR? [y/N] " response
+if [ "$AUTO_YES" = true ]; then
+	response="y"
+else
+	read -r -p "Create release branch and PR? [y/N] " response
+fi
 
 if [[ ! "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
 	echo "Cancelled."
