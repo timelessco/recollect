@@ -15,6 +15,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 	// Touch tracking refs
 	const pointerStartYRef = useRef(0);
 	const isDraggingRef = useRef(false);
+	const rafRef = useRef(0);
 
 	useEffect(() => {
 		if (!enabled) {
@@ -108,6 +109,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 
 				if (deltaY <= 0) {
 					if (isDraggingRef.current) {
+						cancelAnimationFrame(rafRef.current);
 						reset(element);
 						getSlideWrapper(element)?.removeAttribute("data-pulling");
 						isDraggingRef.current = false;
@@ -123,12 +125,18 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 				isDraggingRef.current = true;
 				offsetRef.current = Math.min(deltaY, maxOffset);
 
-				applyOffset(element);
-
 				if (offsetRef.current > THRESHOLD) {
+					cancelAnimationFrame(rafRef.current);
 					isDraggingRef.current = false;
 					close();
+					return;
 				}
+
+				// Batch style updates to next frame to prevent iOS jitter
+				cancelAnimationFrame(rafRef.current);
+				rafRef.current = requestAnimationFrame(() => {
+					applyOffset(element);
+				});
 			},
 		);
 
@@ -142,6 +150,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			}
 
 			const element = event.currentTarget as HTMLElement;
+			cancelAnimationFrame(rafRef.current);
 			isDraggingRef.current = false;
 			getSlideWrapper(element)?.removeAttribute("data-pulling");
 			reset(element);
@@ -167,6 +176,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			unsubscribePointerUp();
 			unsubscribePointerLeave();
 			unsubscribePointerCancel();
+			cancelAnimationFrame(rafRef.current);
 			if (timeoutRef.current) {
 				clearTimeout(timeoutRef.current);
 			}
