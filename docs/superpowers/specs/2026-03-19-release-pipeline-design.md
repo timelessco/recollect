@@ -12,7 +12,7 @@ Currently, dev→main syncing is a manual rebase (`git rebase dev` on main). Thi
 
 ## Solution
 
-A release pipeline using frozen release candidate branches: a local script cuts a `release/*` branch from dev, creates a release PR to main with a changelog body, and after merging (merge commit), `release-it` runs locally on main. Post-release, main is merged back to dev and the release branch is deleted.
+A release pipeline using frozen release candidate branches: a local script cuts a `release/*` branch from dev, creates a release PR to main with a changelog body, and after merging (merge commit), CI automatically runs `release-it` and backmerges main into dev.
 
 ## Source of Truth
 
@@ -26,7 +26,7 @@ A release pipeline using frozen release candidate branches: a local script cuts 
 ## Architecture
 
 ```text
-PRs ──squash merge──▸ dev ──cut release/*──▸ release PR (merge commit)──▸ main ──pnpm release──▸ tag + changelog + GitHub Release ──▸ merge main back to dev
+PRs ──squash merge──▸ dev ──cut release/*──▸ release PR (merge commit)──▸ main ──CI: release-it──▸ tag + changelog + GitHub Release ──CI: backmerge──▸ dev
 ```
 
 ### Branch Model
@@ -70,83 +70,79 @@ On GitHub, merge the release PR using **merge commit** (not squash, not rebase).
 - Creates a merge commit that marks the release boundary
 - Allows `release-it` to see all conventional commits via `git log` for changelog generation
 
-### Step 3: Run release-it Locally (Operator Runbook)
+### Step 3: CI Runs release-it (Automatic)
 
-```bash
-git fetch origin --tags
-git switch main
-git pull --ff-only origin main
-test -z "$(git status --porcelain)"
-pnpm release:dryrun
-pnpm release
-# pnpm release pushes a new commit to main — wait for Vercel production
-# deployment to succeed for this new main HEAD (the finalized release SHA)
-# Verify at: https://vercel.com/timelessco/recollect/deployments
-```
+The `.github/workflows/release.yml` workflow triggers on push to `main`. It only runs when the commit message contains `/release/` (matching merge commits from release PRs).
 
-Preconditions:
+The `release` job:
 
-- Release operator has GPG configured for signed commits/tags
-- Working directory is clean
-- `main` is up to date with `origin/main`
-- `pnpm release:dryrun` shows expected version bump
+1. Checks out full git history (`fetch-depth: 0`)
+2. Installs dependencies
+3. Runs `pnpm release` (which executes `release-it --ci`)
 
-`pnpm release` runs `release-it --ci` (non-interactive). It handles:
+`release-it` handles:
 
 - Analyzing conventional commits since last tag → semver bump (auto)
 - Bumping version in `package.json`
 - Generating/updating `CHANGELOG.md` with custom handlebars templates
-- Creating signed commit (`-S`) + signed tag (`-s`)
+- Creating unsigned commit + tag (GPG signing is skipped in CI via conditional config in `.release-it.ts`)
 - Pushing to main
 - Creating GitHub Release with formatted release notes
 
-### Step 4: Post-Release Cleanup (`pnpm release:cleanup`)
+The `GITHUB_TOKEN` is used for git push and GitHub Release creation. Pushes made with `GITHUB_TOKEN` do not re-trigger workflows, preventing infinite loops.
 
-The `scripts/release-cleanup.sh` script:
+### Step 4: CI Runs Cleanup (Automatic)
+
+The `cleanup` job runs after `release` succeeds:
 
 1. Merges `origin/main` back into `dev` — carries the release commit, `package.json` version bump, and `CHANGELOG.md` back to dev
 2. Pushes dev
-3. Deletes the `release/*` branch locally and on remote
+3. The `release/*` branch is auto-deleted by GitHub on PR merge
 
 This prevents `package.json` and `CHANGELOG.md` conflicts on the next release.
 
+`scripts/release-cleanup.sh` is still available for manual cleanup if the CI job fails.
+
 ## Failure Recovery
 
-- **Nothing pushed remotely:** Fix the issue and rerun `pnpm release`.
+- **CI `release` job failed:** Check the workflow run logs. Fix the issue, then either re-run the workflow or run `pnpm release` locally on main.
+- **CI `cleanup` job failed (merge conflict):** Resolve locally: `git checkout dev && git merge origin/main`, resolve conflicts, push dev.
 - **Release commit reached main but tag/GitHub Release did not:** Create the missing artifact from the pushed release commit. Do not run a second version bump.
 - **Tag exists but GitHub Release is missing:** Publish the GitHub Release from the existing tag.
-- **Vercel deployment failed:** Fix the build issue on a new branch, merge to dev, cherry-pick to the `release/*` branch (if still open) or patch forward with a new release.
+- **Vercel deployment failed:** Fix the build issue on a new branch, merge to dev, patch forward with a new release.
 - **Bad release shipped:** Patch forward with a new release. Do not rewrite `main`.
 
 ## New Files
 
 - `scripts/release-pr.sh` — creates release branch + release PR
-- `scripts/release-cleanup.sh` — post-release merge main→dev + branch deletion
+- `scripts/release-cleanup.sh` — manual post-release merge main→dev + branch deletion (fallback if CI cleanup fails)
+- `.github/workflows/release.yml` — CI workflow: auto-runs release-it + backmerge on push to main
 
 ## Config Changes
 
-- `.release-it.ts`: `requireCleanWorkingDir` → `true` (enforces what the runbook requires)
+- `.release-it.ts`: `requireCleanWorkingDir` → `true`, conditional GPG signing and lint (skipped in CI via `process.env.CI`)
 - `package.json` scripts:
   - `"release:pr": "./scripts/release-pr.sh"`
   - `"release:cleanup": "./scripts/release-cleanup.sh"`
 
 ## What Changes
 
-| Before                      | After                                                   |
-| --------------------------- | ------------------------------------------------------- |
-| `git rebase dev` on main    | Release PR (merge commit) via `pnpm release:pr`         |
-| No release boundary markers | Merge commits mark each release                         |
-| Manual rebase risk          | PR-based review of release contents                     |
-| No post-release sync        | Mandatory `main → dev` merge via `pnpm release:cleanup` |
-| dev as PR head (mutable)    | Frozen `release/*` branch as PR head                    |
+| Before                        | After                                               |
+| ----------------------------- | --------------------------------------------------- |
+| `git rebase dev` on main      | Release PR (merge commit) via `pnpm release:pr`     |
+| No release boundary markers   | Merge commits mark each release                     |
+| Manual rebase risk            | PR-based review of release contents                 |
+| No post-release sync          | Automatic `main → dev` backmerge via CI cleanup job |
+| dev as PR head (mutable)      | Frozen `release/*` branch as PR head                |
+| Manual `pnpm release` run     | CI auto-runs release-it on merge to main            |
+| Manual `pnpm release:cleanup` | CI auto-runs backmerge after release                |
 
 ## What Stays the Same
 
 - Squash merge for PRs→dev
-- `.release-it.ts` configuration (except `requireCleanWorkingDir` → `true`)
 - `scripts/release-it/` custom changelog templates
 - `pnpm release` command
-- Signed commits and tags
+- Signed commits and tags (local only — CI runs unsigned)
 - GitHub Release format
 
 ## Key Design Decisions
@@ -155,7 +151,7 @@ This prevents `package.json` and `CHANGELOG.md` conflicts on the next release.
 
 2. **Merge commit for `release/*`→main** — carries squash-merged PR commits into main's history so `release-it` can parse each conventional commit for changelog generation.
 
-3. **Local release-it execution (not CI)** — GPG-signed commits require local keys. Avoids CI secret management. Can move to CI later.
+3. **CI release-it execution** — runs automatically on push to main via `.github/workflows/release.yml`. GPG signing is conditionally skipped in CI (no keys available). Uses `GITHUB_TOKEN` (no PAT needed).
 
 4. **Automatic semver from conventional commits** — `feat:` → minor, `fix:` → patch, `feat!:` → major.
 
@@ -170,14 +166,13 @@ This prevents `package.json` and `CHANGELOG.md` conflicts on the next release.
 A release is complete when all of the following are true:
 
 - [ ] Release PR merged to `main` via merge commit
-- [ ] `release-it` created version bump commit, signed tag, and GitHub Release on `main`
+- [ ] CI `release` job created version bump commit, tag, and GitHub Release on `main`
 - [ ] Vercel production deployment for the finalized `main` HEAD (post-`release-it`) succeeded
-- [ ] `main` backmerged into `dev` (no file drift in `package.json` or `CHANGELOG.md`)
-- [ ] `release/*` branch deleted locally and on remote
+- [ ] CI `cleanup` job backmerged `main` into `dev` (no file drift in `package.json` or `CHANGELOG.md`)
+- [ ] `release/*` branch auto-deleted by GitHub on PR merge
 - [ ] No other `release/*` branches exist
 
 ## Future Enhancements
 
-- GitHub Actions workflow to auto-run `release-it --ci` on main after merge (removes local step)
 - Slack notification on new release
 - Vercel production deploy gate tied to release tag
