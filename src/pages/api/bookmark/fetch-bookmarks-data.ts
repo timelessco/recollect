@@ -281,7 +281,7 @@ export default async function handler(
 	// Get bookmark IDs for the current page to filter related data
 	const bookmarkIds = data?.map((item) => item.id) ?? [];
 
-	// Fetch user's favorite categories for backwards compat (old builds expect is_favorite on categories)
+	// @deprecated Legacy compat for old mobile builds. Remove when old builds are no longer supported.
 	const { data: profileData } = await supabase
 		.from(PROFILES)
 		.select("favorite_categories")
@@ -349,6 +349,7 @@ export default async function handler(
 							category_slug: matchedItem?.category_id?.category_slug,
 							icon: matchedItem?.category_id?.icon,
 							icon_color: matchedItem?.category_id?.icon_color,
+							// @deprecated legacy compat for old mobile builds
 							is_favorite: favoriteCategories.includes(
 								matchedItem?.category_id?.id,
 							),

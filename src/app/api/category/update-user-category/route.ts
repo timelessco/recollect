@@ -83,6 +83,7 @@ export const POST = createPostApiHandlerWithAuth({
 			});
 		}
 
+		// @deprecated Legacy compat for old mobile builds. Remove when old builds are no longer supported.
 		// Handle legacy is_favorite → profiles.favorite_categories update
 		// Runs after category update succeeds to avoid mutating favorites on a failed request
 		if (is_favorite !== undefined) {

@@ -91,6 +91,7 @@ export default async function handler(
 			supabase.from(CATEGORIES_TABLE_NAME).select("*").eq("user_id", userId),
 			supabase
 				.from(PROFILES)
+				// favorite_categories: @deprecated legacy compat for old mobile builds
 				.select("profile_pic, user_name, favorite_categories")
 				.eq("id", userId)
 				.single(),
@@ -175,7 +176,7 @@ export default async function handler(
 			return;
 		}
 
-		// Extract favorite categories for the authenticated user (backwards compat for old builds)
+		// @deprecated Legacy compat for old mobile builds. Remove when old builds are no longer supported.
 		const favoriteCategories: number[] = userProfile?.favorite_categories ?? [];
 
 		// Attach authenticated user's profile to own categories (avoids profile join)
@@ -234,6 +235,7 @@ export default async function handler(
 				return {
 					...item,
 					collabData: collabDataWithOwnerData,
+					// @deprecated legacy compat for old mobile builds
 					is_favorite: favoriteCategories.includes(item?.id),
 				};
 			},
