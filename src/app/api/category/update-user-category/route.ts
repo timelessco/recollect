@@ -40,24 +40,55 @@ export const POST = createPostApiHandlerWithAuth({
 					: categoryId;
 
 			if (is_favorite) {
-				// Add to favorites (idempotent: only updates if not already present)
-				await supabase.rpc(
+				// Add to favorites (idempotent: remove first, then toggle to add)
+				const { error: removeError } = await supabase.rpc(
 					"remove_favorite_category_for_user" as never,
 					{ p_category_id: numericCategoryId } as never,
 				);
-				// Use toggle to add — we just removed it, so toggle will add it back
-				await supabase.rpc(
+
+				if (removeError) {
+					return apiError({
+						route,
+						message: "Error updating favorite status",
+						error: removeError,
+						operation: "remove_favorite_category",
+						userId,
+						extra: { categoryId },
+					});
+				}
+
+				const { error: toggleError } = await supabase.rpc(
 					"toggle_favorite_category" as never,
-					{
-						p_category_id: numericCategoryId,
-					} as never,
+					{ p_category_id: numericCategoryId } as never,
 				);
+
+				if (toggleError) {
+					return apiError({
+						route,
+						message: "Error updating favorite status",
+						error: toggleError,
+						operation: "toggle_favorite_category",
+						userId,
+						extra: { categoryId },
+					});
+				}
 			} else {
 				// Remove from favorites (idempotent: no-op if absent)
-				await supabase.rpc(
+				const { error: removeError } = await supabase.rpc(
 					"remove_favorite_category_for_user" as never,
 					{ p_category_id: numericCategoryId } as never,
 				);
+
+				if (removeError) {
+					return apiError({
+						route,
+						message: "Error updating favorite status",
+						error: removeError,
+						operation: "remove_favorite_category",
+						userId,
+						extra: { categoryId },
+					});
+				}
 			}
 		}
 
