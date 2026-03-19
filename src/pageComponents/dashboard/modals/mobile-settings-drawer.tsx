@@ -85,14 +85,23 @@ function DrawerContent() {
 					</Drawer.Content>
 				) : (
 					<>
-						<Drawer.Content className="min-h-0 flex-1 touch-auto overflow-y-auto overscroll-contain px-6 pt-4">
-							<Tabs.Panel className="h-full" value="main">
+						<Drawer.Content className="min-h-0 flex-1 touch-auto">
+							<Tabs.Panel
+								className="h-full overflow-y-auto overscroll-contain px-6 pt-4"
+								value="main"
+							>
 								<Settings onNavigate={setCurrentPage} />
 							</Tabs.Panel>
-							<Tabs.Panel className="h-full" value="ai-features">
+							<Tabs.Panel
+								className="h-full overflow-y-auto overscroll-contain px-6 pt-4"
+								value="ai-features"
+							>
 								<AiFeatures />
 							</Tabs.Panel>
-							<Tabs.Panel className="h-full" value="import">
+							<Tabs.Panel
+								className="h-full overflow-y-auto overscroll-contain px-6 pt-4"
+								value="import"
+							>
 								<ImportBookmarks onNavigate={setCurrentPage} />
 							</Tabs.Panel>
 						</Drawer.Content>
