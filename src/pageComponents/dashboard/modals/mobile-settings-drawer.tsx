@@ -2,15 +2,16 @@ import { useEffect, useState } from "react";
 import { DrawerPreview as Drawer } from "@base-ui/react/drawer";
 import { Tabs } from "@base-ui/react/tabs";
 
-import { AvatarIcon } from "../../../icons/avatarIcon";
-import { ImportIcon } from "../../../icons/importIcon";
-import { SettingsAiIcon } from "../../../icons/settingsAiIcon";
-import { useSettingsModalStore } from "../../../store/settingsModalStore";
-import Settings from "../../settings";
-import { AiFeatures } from "../../settings/aiFeatures";
-import ChangeEmail from "../../settings/changeEmail";
-import { DeleteAccount } from "../../settings/deleteAccount";
-import { ImportBookmarks } from "../../settings/import";
+import { AvatarIcon } from "@/icons/avatarIcon";
+import { ImportIcon } from "@/icons/importIcon";
+import { SettingsAiIcon } from "@/icons/settingsAiIcon";
+import { useSettingsModalStore } from "@/store/settingsModalStore";
+
+import Settings from "@/pageComponents/settings";
+import { AiFeatures } from "@/pageComponents/settings/aiFeatures";
+import ChangeEmail from "@/pageComponents/settings/changeEmail";
+import { DeleteAccount } from "@/pageComponents/settings/deleteAccount";
+import { ImportBookmarks } from "@/pageComponents/settings/import";
 
 import { type SettingsPage } from "./settings-modal";
 
