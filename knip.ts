@@ -5,7 +5,7 @@ const config: KnipConfig = {
 	entry: ["src/pages/**/*.{js,jsx,ts,tsx}!"],
 	ignoreBinaries: [
 		// release-it after:bump hook argument, not a real binary
-		"CHANGELOG.md",
+		"prettier",
 	],
 	exclude: ["types", "duplicates", "exports", "files"],
 };
