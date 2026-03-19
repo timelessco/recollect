@@ -152,7 +152,7 @@
 		"@next/env": "16.2.0",
 		"@next/eslint-plugin-next": "16.2.0",
 		"@octokit/core": "7.0.6",
-		"@release-it/conventional-changelog": "10.0.4",
+		"@release-it/conventional-changelog": "10.0.6",
 		"@tailwindcss/postcss": "4.1.18",
 		"@tanstack/eslint-plugin-query": "5.91.3",
 		"@tanstack/react-query-devtools": "5.91.2",
