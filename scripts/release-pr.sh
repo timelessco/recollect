@@ -239,6 +239,7 @@ if ! gh pr create \
 	--base "$TARGET_BRANCH" \
 	--head "$RELEASE_BRANCH" \
 	--title "$TITLE" \
+	--label "release" \
 	--body "$CHANGELOG"; then
 	echo "Error: PR creation failed." >&2
 	cleanup_release_branch
