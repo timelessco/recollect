@@ -16,3 +16,6 @@
 - Node engine: `^22.14.0 || >=24.0.0`
 - cspell dictionary at `.cspell/project-words.txt` — `fix:spelling` wipes and rebuilds from scratch
 - Commit body lines must be under 100 characters (`commitlint` enforces `body-max-line-length`)
+- `profiles.category_order` updates: use batch concatenation (`|| v_new_category_ids`), NOT read-modify-write loops — the Edge Function processes queue messages in parallel (`Promise.allSettled`), and a for-loop that SELECTs the full array into a variable then UPDATEs will cause lost writes. See `20260209` migration for the correct pattern.
+- `src/pages/[category_id].tsx` catches ALL single-segment paths — new App Router pages at `/foo` will 404 in dev because Pages Router dynamic routes take precedence
+- New public pages must be added to `PUBLIC_PATHS` in `src/utils/constants.ts` — otherwise `proxy.ts` middleware treats them as auth-protected
