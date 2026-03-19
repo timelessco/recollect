@@ -3,6 +3,8 @@ import { useController } from "yet-another-react-lightbox";
 
 const THRESHOLD = 200;
 const OPACITY_START = THRESHOLD * 0.5;
+const INTERACTIVE_SELECTOR =
+	"media-controller, video, audio, iframe, object, [data-no-swipe]";
 
 export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 	const { subscribeSensors, close, slideRect } = useController();
@@ -78,10 +80,13 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 		const getSlideWrapper = (container: HTMLElement) =>
 			container.querySelector<HTMLElement>(".slide-wrapper");
 
+		const isInteractiveTarget = (event: React.PointerEvent) =>
+			(event.target as HTMLElement).closest?.(INTERACTIVE_SELECTOR) !== null;
+
 		const unsubscribePointerDown = subscribeSensors(
 			"onPointerDown",
 			(event: React.PointerEvent) => {
-				if (event.pointerType !== "touch") {
+				if (event.pointerType !== "touch" || isInteractiveTarget(event)) {
 					return;
 				}
 
@@ -94,7 +99,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 		const unsubscribePointerMove = subscribeSensors(
 			"onPointerMove",
 			(event: React.PointerEvent) => {
-				if (event.pointerType !== "touch") {
+				if (event.pointerType !== "touch" || isInteractiveTarget(event)) {
 					return;
 				}
 
