@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.3.0 (2026-03-19)
+
+### 👀 Notable Changes
+
+
+#### `release` — 📋 post API changelog as PR comment
+
+> <sub>- Post docs/API_CHANGELOG.md as a PR comment during release - Clear the file during backmerge (CI cleanup + local fallback) - Skip comment when file is empty or missing</sub>
+
+<sub>Introduced in [`68bbd3b7`](https://github.com/timelessco/recollect/commit/68bbd3b78d3329db782e794993ac662946ee1ca0)</sub>
+
+
+
+
+<details>
+<summary>🗃️ Commits</summary>
+
+
+
+#### ⭐ New Features
+
+- **`release`** 📋 post API changelog as PR comment — [`68bbd3b`](https://github.com/timelessco/recollect/commit/68bbd3b78d3329db782e794993ac662946ee1ca0) · @navin-moorthy
+
+
+
+</details>
+
 ## 0.2.0 (2026-03-19)
 
 ### 👀 Notable Changes
