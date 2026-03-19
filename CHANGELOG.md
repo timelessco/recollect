@@ -1,5 +1,80 @@
 # Changelog
 
+## <small>0.1.3 (2026-03-19)</small>
+
+### 👀 Notable Changes
+
+
+#### `release` — 🐛 use PAT to bypass branch protection
+
+> - GITHUB_TOKEN can't push to protected main branch - Use ACCESS_TOKEN (admin PAT) for checkout and release - Bypasses PR requirement and Vercel status check
+<sub>Introduced in [`ba831658`](https://github.com/timelessco/recollect/commit/ba83165884da74ac61fd65fe61852a45c56b08d2)</sub>
+
+
+---
+
+
+#### `release` — 🐛 unwrap hard-wrapped commit body in changelog
+
+> Git convention wraps commit bodies at 72 characters. These hard line breaks flowed directly into the changelog, causing body text to render with visible breaks instead of flowing prose.
+> 
+> Join single newlines into spaces while preserving intentional paragraph breaks (double newlines) so changelog body text reads as continuous paragraphs in both raw markdown and rendered HTML.
+<sub>Introduced in [`d26624f9`](https://github.com/timelessco/recollect/commit/d26624f94a5f58351a226efae01b479c28bca62b)</sub>
+
+
+
+
+### 📌 Other Notable Changes
+
+
+#### `claude` — 📝 add release pipeline gotchas
+
+> - GITHUB_TOKEN requirement for changelog writer - release-pr.sh handles existing release PRs gracefully
+<sub>Introduced in [`21b32bfc`](https://github.com/timelessco/recollect/commit/21b32bfcf69f6d2ea1b3edd5c51a01f131f504ff)</sub>
+
+
+---
+
+
+#### `claude` — 📝 add release pipeline learnings to rules
+
+> - Add release:pr, release:pr:dryrun, release:cleanup to commands - Add gotchas: v10 whatBump bug, prettier file targeting,   bash 3.2 compat, release label, pipeline flow
+<sub>Introduced in [`2ed37433`](https://github.com/timelessco/recollect/commit/2ed3743337ebef002755d2f8e31b7979a4da062a)</sub>
+
+
+
+
+<details>
+<summary>🗃️ Commits</summary>
+
+
+
+#### 🐞 Bug Fixes
+
+- **`release`** 🐛 unwrap hard-wrapped commit body in changelog — [`d26624f`](https://github.com/timelessco/recollect/commit/d26624f94a5f58351a226efae01b479c28bca62b) · @navin-moorthy
+
+- **`release`** 🐛 use PAT to bypass branch protection — [`ba83165`](https://github.com/timelessco/recollect/commit/ba83165884da74ac61fd65fe61852a45c56b08d2) · @navin-moorthy
+
+
+
+#### 📔 Documentation Changes
+
+- **`claude`** 📝 add release pipeline gotchas — [`21b32bf`](https://github.com/timelessco/recollect/commit/21b32bfcf69f6d2ea1b3edd5c51a01f131f504ff) · @navin-moorthy
+
+- **`claude`** 📝 add release pipeline learnings to rules — [`2ed3743`](https://github.com/timelessco/recollect/commit/2ed3743337ebef002755d2f8e31b7979a4da062a) · @navin-moorthy
+
+
+
+#### 💚 CI Changes
+
+- **`release`** 🤖 automate release and cleanup in CI — [`39df5e0`](https://github.com/timelessco/recollect/commit/39df5e036326122094114c7fcef716c217523832) · @navin-moorthy
+
+- **`release`** 🧪 temporarily remove release guard for testing — [`1d6cfe9`](https://github.com/timelessco/recollect/commit/1d6cfe914a787e229823742bc82fc728b45f4b63) · @navin-moorthy
+
+
+
+</details>
+
 ## <small>0.1.2 (2026-03-19)</small>
 
 ### 👀 Notable Changes
