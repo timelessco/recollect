@@ -22,7 +22,10 @@ export default {
 		// eslint-disable-next-line no-template-curly-in-string
 		releaseName: "Release v${version}",
 	},
-	hooks: { "before:init": ["pnpm lint"] },
+	hooks: {
+		"after:bump": ["pnpm fix:prettier -- CHANGELOG.md"],
+		"before:init": ["pnpm lint"],
+	},
 	npm: { publish: false },
 	plugins: {
 		"@release-it/conventional-changelog": {
