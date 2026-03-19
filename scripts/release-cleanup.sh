@@ -19,14 +19,17 @@ REMOTE=${REMOTE:-origin}
 # --- Preflight checks ---
 
 for cmd in gh git; do
-	if ! command -v "$cmd" &>/dev/null; then
+	if ! command -v "$cmd" &> /dev/null; then
 		echo "Error: $cmd is not installed." >&2
 		exit 1
 	fi
 done
 
 echo "Fetching latest from $REMOTE..."
-git fetch "$REMOTE" || { echo "Error: git fetch failed." >&2; exit 1; }
+git fetch "$REMOTE" || {
+	echo "Error: git fetch failed." >&2
+	exit 1
+}
 
 # --- Save and normalize original branch ---
 
@@ -77,13 +80,13 @@ git push "$REMOTE" dev
 
 if [ -n "$RELEASE_BRANCH" ]; then
 	echo "Deleting release branch: $RELEASE_BRANCH"
-	git branch -d "$RELEASE_BRANCH" 2>/dev/null || true
-	git push "$REMOTE" --delete "$RELEASE_BRANCH" 2>/dev/null || true
+	git branch -d "$RELEASE_BRANCH" 2> /dev/null || true
+	git push "$REMOTE" --delete "$RELEASE_BRANCH" 2> /dev/null || true
 fi
 
 # Clean up any stale local release branches
 for local_branch in $(git branch --list "release/*" | xargs); do
-	git branch -D "$local_branch" 2>/dev/null || true
+	git branch -D "$local_branch" 2> /dev/null || true
 done
 
 echo "Cleanup complete."

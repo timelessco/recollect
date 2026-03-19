@@ -25,17 +25,17 @@ A release pipeline using frozen release candidate branches: a local script cuts 
 
 ## Architecture
 
-```
+```text
 PRs ──squash merge──▸ dev ──cut release/*──▸ release PR (merge commit)──▸ main ──pnpm release──▸ tag + changelog + GitHub Release ──▸ merge main back to dev
 ```
 
 ### Branch Model
 
-| Branch | Purpose | Merge strategy INTO this branch |
-|--------|---------|-------------------------------|
-| `dev` | Development. PRs land here. Vercel preview deploys. | Squash merge (from feature PRs) |
-| `release/*` | Frozen release candidate. Cut from `origin/dev`. | Direct commits (release-only fixes only) |
-| `main` | Production. Vercel production deploys. | Merge commit (from `release/*` via release PR) |
+| Branch      | Purpose                                             | Merge strategy INTO this branch                |
+| ----------- | --------------------------------------------------- | ---------------------------------------------- |
+| `dev`       | Development. PRs land here. Vercel preview deploys. | Squash merge (from feature PRs)                |
+| `release/*` | Frozen release candidate. Cut from `origin/dev`.    | Direct commits (release-only fixes only)       |
+| `main`      | Production. Vercel production deploys.              | Merge commit (from `release/*` via release PR) |
 
 ### Step 1: Create Release PR (`pnpm release:pr`)
 
@@ -59,11 +59,13 @@ If a release-only fix is needed after the PR is created, commit it to the `relea
 ### Step 2: Merge the Release PR
 
 Release preconditions before merge:
+
 - CI is green (lint checks pass)
 - Only one active `release/*` branch at a time
 - Release PR has been reviewed
 
 On GitHub, merge the release PR using **merge commit** (not squash, not rebase). This:
+
 - Carries all squash-merged PR commits from dev into main's history
 - Creates a merge commit that marks the release boundary
 - Allows `release-it` to see all conventional commits via `git log` for changelog generation
@@ -83,12 +85,14 @@ pnpm release
 ```
 
 Preconditions:
+
 - Release operator has GPG configured for signed commits/tags
 - Working directory is clean
 - `main` is up to date with `origin/main`
 - `pnpm release:dryrun` shows expected version bump
 
 `pnpm release` runs `release-it --ci` (non-interactive). It handles:
+
 - Analyzing conventional commits since last tag → semver bump (auto)
 - Bumping version in `package.json`
 - Generating/updating `CHANGELOG.md` with custom handlebars templates
@@ -128,13 +132,13 @@ This prevents `package.json` and `CHANGELOG.md` conflicts on the next release.
 
 ## What Changes
 
-| Before | After |
-|--------|-------|
-| `git rebase dev` on main | Release PR (merge commit) via `pnpm release:pr` |
-| No release boundary markers | Merge commits mark each release |
-| Manual rebase risk | PR-based review of release contents |
-| No post-release sync | Mandatory `main → dev` merge via `pnpm release:cleanup` |
-| dev as PR head (mutable) | Frozen `release/*` branch as PR head |
+| Before                      | After                                                   |
+| --------------------------- | ------------------------------------------------------- |
+| `git rebase dev` on main    | Release PR (merge commit) via `pnpm release:pr`         |
+| No release boundary markers | Merge commits mark each release                         |
+| Manual rebase risk          | PR-based review of release contents                     |
+| No post-release sync        | Mandatory `main → dev` merge via `pnpm release:cleanup` |
+| dev as PR head (mutable)    | Frozen `release/*` branch as PR head                    |
 
 ## What Stays the Same
 

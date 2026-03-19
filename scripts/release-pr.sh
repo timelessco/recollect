@@ -28,7 +28,7 @@ REMOTE=${REMOTE:-origin}
 # --- Preflight checks ---
 
 for cmd in gh git; do
-	if ! command -v "$cmd" &>/dev/null; then
+	if ! command -v "$cmd" &> /dev/null; then
 		echo "Error: $cmd is not installed." >&2
 		exit 1
 	fi
@@ -43,7 +43,10 @@ fi
 # --- Fetch and check for existing release branches ---
 
 echo "Fetching latest from $REMOTE..."
-git fetch "$REMOTE" || { echo "Error: git fetch failed." >&2; exit 1; }
+git fetch "$REMOTE" || {
+	echo "Error: git fetch failed." >&2
+	exit 1
+}
 
 RELEASE_BRANCHES=$(git branch -r --list "$REMOTE/release/*" | xargs)
 if [ -n "$RELEASE_BRANCHES" ]; then
@@ -85,18 +88,18 @@ fi
 
 get_section_title() {
 	case "$1" in
-		feat)     echo "New Features" ;;
-		fix)      echo "Bug Fixes" ;;
+		feat) echo "New Features" ;;
+		fix) echo "Bug Fixes" ;;
 		refactor) echo "Code Refactoring" ;;
-		perf)     echo "Performance Improvements" ;;
-		docs)     echo "Documentation Changes" ;;
-		test)     echo "Test Updates" ;;
-		build)    echo "Build Updates" ;;
-		ci)       echo "CI Changes" ;;
-		revert)   echo "Reverted Changes" ;;
-		chore)    echo "Maintenance Updates" ;;
-		style)    echo "Code Style Changes" ;;
-		*)        echo "" ;;
+		perf) echo "Performance Improvements" ;;
+		docs) echo "Documentation Changes" ;;
+		test) echo "Test Updates" ;;
+		build) echo "Build Updates" ;;
+		ci) echo "CI Changes" ;;
+		revert) echo "Reverted Changes" ;;
+		chore) echo "Maintenance Updates" ;;
+		style) echo "Code Style Changes" ;;
+		*) echo "" ;;
 	esac
 }
 
@@ -134,7 +137,7 @@ while IFS= read -r line; do
 	if [ -n "$PR_NUMBER" ]; then
 		PR_URL="https://github.com/$REPO/pull/$PR_NUMBER"
 		# Single API call for both title and author
-		PR_INFO=$(gh pr view "$PR_NUMBER" --json title,author -q '[.title, .author.login] | @tsv' 2>/dev/null || echo "")
+		PR_INFO=$(gh pr view "$PR_NUMBER" --json title,author -q '[.title, .author.login] | @tsv' 2> /dev/null || echo "")
 		PR_TITLE=$(printf '%s' "$PR_INFO" | cut -f1)
 		AUTHOR=$(printf '%s' "$PR_INFO" | cut -f2)
 		# Use PR title if available, otherwise strip trailing (#NNN) from subject
@@ -153,7 +156,7 @@ while IFS= read -r line; do
 	# Place in correct section via temp files
 	TITLE=$(get_section_title "$COMMIT_TYPE")
 	if [ -n "$TITLE" ]; then
-		echo "$ENTRY" >>"$TMPDIR_SECTIONS/$COMMIT_TYPE"
+		echo "$ENTRY" >> "$TMPDIR_SECTIONS/$COMMIT_TYPE"
 	else
 		OTHER_ENTRIES+="$ENTRY"$'\n'
 	fi
@@ -218,9 +221,9 @@ fi
 
 cleanup_release_branch() {
 	echo "Cleaning up release branch..." >&2
-	git checkout "$ORIGINAL_BRANCH" 2>/dev/null || git checkout dev
-	git branch -D "$RELEASE_BRANCH" 2>/dev/null || true
-	git push "$REMOTE" --delete "$RELEASE_BRANCH" 2>/dev/null || true
+	git checkout "$ORIGINAL_BRANCH" 2> /dev/null || git checkout dev
+	git branch -D "$RELEASE_BRANCH" 2> /dev/null || true
+	git push "$REMOTE" --delete "$RELEASE_BRANCH" 2> /dev/null || true
 }
 
 echo "Creating release branch: $RELEASE_BRANCH from $REMOTE/$SOURCE_BRANCH"

@@ -1,6 +1,6 @@
 # Release Pipeline Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For AI agents:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Create release pipeline scripts (`release-pr.sh`, `release-cleanup.sh`), wire them into package.json, and tighten release-it config.
 
@@ -12,14 +12,16 @@
 
 ---
 
-### Task 1: Create release-pr.sh
+## Task 1: Create release-pr.sh
 
 **Status:** DONE
 
 **Files:**
+
 - `scripts/release-pr.sh`
 
 **Key behaviors:**
+
 - `--dry-run` flag: previews changelog without creating any branches or PRs
 - Release branch guard: aborts if a `release/*` branch already exists on remote
 - Confirmation before mutation: changelog preview is shown first, branch creation + PR only happen after `y`
@@ -27,17 +29,20 @@
 - Switches back to original branch after PR creation
 
 **Verification:**
+
 - `pnpm release:pr` — exits with "No new commits" when dev and main are identical
 - `pnpm release:pr:dryrun` — same but explicitly dry-run mode
 
-### Task 2: Create release-cleanup.sh
+## Task 2: Create release-cleanup.sh
 
 **Status:** DONE
 
 **Files:**
+
 - `scripts/release-cleanup.sh`
 
 **Key behaviors:**
+
 - Backmerge (`main → dev`) always runs, even if the release branch was already auto-deleted by GitHub on PR merge
 - Fails if multiple `release/*` branches exist (instead of silently picking one)
 - Uses `git pull --ff-only` for dev (only the `main → dev` merge creates a merge commit)
@@ -48,17 +53,19 @@
 - Sweeps stale local `release/*` branches
 
 **Verification:**
+
 - `pnpm release:cleanup` — runs backmerge even when no remote release branch exists (logs "likely auto-deleted on PR merge")
 
-### Task 3: Update package.json and .release-it.ts
+## Task 3: Update package.json and .release-it.ts
 
 **Status:** DONE
 
 **Files:**
+
 - `package.json`: added `release:cleanup`, `release:pr`, `release:pr:dryrun`
 - `.release-it.ts`: `requireCleanWorkingDir` → `true`
 
-### Task 4: End-to-end verification (manual)
+## Task 4: End-to-end verification (manual)
 
 **Status:** PENDING
 
@@ -85,6 +92,7 @@ Verify: the squash-merged commit on dev has `(#NNN)` in the subject line.
 Run: `pnpm release:pr:dryrun`
 
 Verify:
+
 - It detects the new commit
 - It categorizes it by conventional commit type
 - The changelog preview looks correct
@@ -93,6 +101,7 @@ Verify:
 - [ ] **Step 3: Run `pnpm release:pr`**
 
 Verify:
+
 - Changelog preview matches the dry-run
 - After confirming `y`: creates `release/YYYY-MM-DD` branch from dev
 - Pushes branch to remote
@@ -102,6 +111,7 @@ Verify:
 - [ ] **Step 4: Check the PR on GitHub**
 
 Verify:
+
 - PR head is `release/YYYY-MM-DD` (not `dev`)
 - Title is `Release YYYY-MM-DD`
 - Body has the changelog grouped by type
@@ -123,6 +133,7 @@ pnpm release
 ```
 
 Verify:
+
 - Correct version bump based on conventional commits
 - CHANGELOG.md generated
 - Signed tag and GitHub Release created
@@ -131,13 +142,14 @@ Verify:
 - [ ] **Step 7: Verify Vercel production deployment**
 
 Wait for Vercel production deployment to succeed for the finalized `main` HEAD.
-Verify at: https://vercel.com/timelessco/recollect/deployments
+Verify at: <https://vercel.com/timelessco/recollect/deployments>
 
 The deployed SHA should match the tagged commit (the `release-it` version bump commit), not the merge commit.
 
 - [ ] **Step 8: Run `pnpm release:cleanup`**
 
 Verify:
+
 - `origin/main` merged back into `dev`
 - `release/*` branch deleted locally and on remote
 - `package.json` and `CHANGELOG.md` on dev match main
@@ -145,9 +157,10 @@ Verify:
 - [ ] **Step 9: Verify acceptance criteria**
 
 All of the following must be true:
+
 - Release PR merged to main via merge commit
 - `release-it` created version bump commit, signed tag, and GitHub Release
 - Vercel production deployment for the finalized `main` HEAD succeeded
 - main backmerged into dev
-- release/* branch deleted
+- release/\* branch deleted
 - No file drift between main and dev (for release-managed files)
