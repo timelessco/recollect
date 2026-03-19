@@ -116,6 +116,9 @@ const addBreakingChanges = (commit, context) => {
 						.map((line) => `> ${line}`)
 						.join("\n")
 				: null,
+			smallQuotedBody: commit?.body
+				? `> <sub>${commit.body.split("\n").join("\n> ")}</sub>`
+				: null,
 			subject: commit?.subject,
 			header: noteText,
 			shortHash: commit.shortHash,
@@ -140,6 +143,7 @@ const addNotableChanges = (commit, context) => {
 				.split("\n")
 				.map((line) => `> ${line}`)
 				.join("\n"),
+			smallQuotedBody: `> <sub>${commit.body.split("\n").join("\n> ")}</sub>`,
 			subject: commit?.subject,
 			shortHash: commit.shortHash,
 			hashUrl: generateCommitUrl(context, commit.hash),
@@ -160,6 +164,7 @@ const addOtherNotableChanges = (commit, context) => {
 				.split("\n")
 				.map((line) => `> ${line}`)
 				.join("\n"),
+			smallQuotedBody: `> <sub>${commit.body.split("\n").join("\n> ")}</sub>`,
 			subject: commit?.subject,
 			shortHash: commit.shortHash,
 			hashUrl: generateCommitUrl(context, commit.hash),
