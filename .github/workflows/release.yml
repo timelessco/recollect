@@ -11,6 +11,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.ACCESS_TOKEN }}
 
       - uses: ./.github/actions/git-config
 
@@ -32,11 +33,12 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.ACCESS_TOKEN }}
 
       - uses: ./.github/actions/pnpm-install
 
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         name: Release
         run: pnpm release
 
