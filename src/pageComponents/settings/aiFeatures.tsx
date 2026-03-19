@@ -9,6 +9,7 @@ import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
+import { useIsMobileView } from "../../hooks/useIsMobileView";
 import { InfoIcon } from "../../icons/info-icon";
 import {
 	saveButtonClassName,
@@ -68,6 +69,7 @@ const AiFeaturesSkeleton = () => (
 export const AiFeatures = () => {
 	const [apiKey, setApiKey] = useState<string | null>(null);
 	const [showKey, setShowKey] = useState(false);
+	const { isMobile } = useIsMobileView();
 	const { mutate: saveApiKey, isPending: isSaving } = useApiKeyMutation();
 	const { mutate: deleteApiKey, isPending: isDeleting } =
 		useDeleteApiKeyMutation();
@@ -155,7 +157,9 @@ export const AiFeatures = () => {
 										hasApiKey && !isDeleting
 											? showKey
 												? apiKey || ""
-												: "••••••••••••••••••••••••••••••••"
+												: isMobile
+													? "••••••••••••••••"
+													: "••••••••••••••••••••••••••••••••"
 											: rhfValue;
 
 									return (
@@ -215,16 +219,12 @@ export const AiFeatures = () => {
 						</div>
 					)}
 
-					<div className="mt-2 flex flex-wrap items-center text-13 leading-[150%] tracking-normal text-gray-600">
-						<figure className="mr-2 shrink-0">
-							<InfoIcon className="my-0.5 h-4.5 w-4.5 text-gray-600" />
-						</figure>
-						<span className="flex flex-wrap items-center space-x-1">
-							<span>
-								Add your API key to remove AI limits, get a free key from
-							</span>
+					<div className="mt-2 flex items-center gap-2 text-13 leading-[150%] text-gray-600">
+						<InfoIcon className="h-4.5 w-4.5 shrink-0 text-gray-600" />
+						<span>
+							Add your API key to remove AI limits, get a free key from{" "}
 							<a
-								className="relative inline-flex items-center underline"
+								className="underline"
 								href="https://makersuite.google.com/app/apikey"
 								rel="noopener noreferrer"
 								target="_blank"
