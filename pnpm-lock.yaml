@@ -29,7 +29,7 @@ importers:
         version: 2.2.0(react@19.2.4)
       '@polar-sh/nextjs':
         specifier: 0.9.5
-        version: 0.9.5(next@16.1.6(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
+        version: 0.9.5(next@16.2.0(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
       '@polar-sh/sdk':
         specifier: 0.46.4
         version: 0.46.4
@@ -11856,11 +11856,11 @@ snapshots:
     dependencies:
       '@polar-sh/sdk': 0.46.4
 
-  '@polar-sh/nextjs@0.9.5(next@16.1.6(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))':
+  '@polar-sh/nextjs@0.9.5(next@16.2.0(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))':
     dependencies:
       '@polar-sh/adapter-utils': 0.4.5
       '@polar-sh/sdk': 0.46.4
-      next: 16.1.6(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next: 16.2.0(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
 
   '@polar-sh/sdk@0.46.4':
     dependencies:
