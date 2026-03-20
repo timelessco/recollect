@@ -21,7 +21,7 @@ function getQueryString(afterCursorString) {
 			            ref(qualifiedName: $branchName) {
 			              target { ... on Commit {
 			                  history(first: $pageSize, since: $since ${afterCursorString}) {
-			                    nodes { oid, author { user { login }}}
+			                    nodes { oid, author { user { login }}, associatedPullRequests(first: 1) { nodes { number }}}
 			                    pageInfo { hasNextPage, endCursor }
 			        }}}}}}
 		`;
@@ -120,6 +120,8 @@ export async function getGithubCommits() {
 				if (commit?.oid && commit?.author) {
 					remoteCommits.push({
 						login: commit?.author?.user?.login ?? "",
+						prNumber:
+							commit?.associatedPullRequests?.nodes?.[0]?.number ?? null,
 						shortHash: commit.oid.slice(0, 7),
 					});
 				}
