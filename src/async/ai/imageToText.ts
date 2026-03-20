@@ -4,6 +4,7 @@ import axios from "axios";
 
 import { getApikeyAndBookmarkCount, incrementBookmarkCount } from "./api-key";
 import { type AiToggles } from "@/utils/ai-feature-toggles";
+import { GEMINI_MODEL } from "@/utils/constants";
 import { type BookmarkContentType } from "@/utils/resolve-content-type";
 
 export type UserCollection = {
@@ -119,7 +120,7 @@ export const imageToText = async (
 
 		const genAI = new GoogleGenerativeAI(key);
 		const model = genAI.getGenerativeModel({
-			model: "gemini-flash-lite-latest",
+			model: GEMINI_MODEL,
 		});
 
 		// For Image Caption: sentence + keywords. OCR handles text separately - do not include readable text.

@@ -78,6 +78,7 @@ import {
 } from "../../utils/constants";
 import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
 
+import { GEMINI_MODEL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
 
 // bookmark
@@ -744,7 +745,7 @@ export const validateApiKey = async (apikey: string) => {
 	try {
 		const genAI = new GoogleGenerativeAI(apikey);
 		const model = genAI.getGenerativeModel({
-			model: "gemini-flash-lite-latest",
+			model: GEMINI_MODEL,
 		});
 
 		const prompt = "Hey there!";
