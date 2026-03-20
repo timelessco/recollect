@@ -16,7 +16,12 @@ function resolvePlan(
 		return "free";
 	}
 
-	if (status === "active" || status === "trialing" || status === "past_due") {
+	if (
+		status === "active" ||
+		status === "trialing" ||
+		status === "past_due" ||
+		status === "canceled"
+	) {
 		return plan;
 	}
 
