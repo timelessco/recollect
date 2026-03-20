@@ -98,6 +98,8 @@ The workflow has two jobs:
 
 ### Step 5: Verify release artifacts
 
+A Slack notification fires automatically via `release-notify.yml` when the GitHub Release is published — no manual announcement needed.
+
 ```bash
 # Latest tag
 git fetch origin --tags
