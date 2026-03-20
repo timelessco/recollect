@@ -245,7 +245,37 @@ export const DUPLICATE_CATEGORY_NAME_ERROR =
 	"You already have a category with this name. Please use a different name.";
 export const NO_BOOKMARKS_ID_ERROR = "Bookmark ID is required";
 
-// accepted file type constants
+// Accepted MIME type prefixes (all video/*, audio/*, image/* types are accepted)
+export const ACCEPTED_PREFIXES = ["image/", "video/", "audio/"] as const;
+
+// Specific non-prefixed types to accept
+export const ACCEPTED_SPECIFIC = [
+	"application/msword",
+	"application/pdf",
+] as const;
+
+/**
+ * Check if a MIME type is accepted for upload.
+ * Uses prefix-based validation: any video/*, audio/*, image/* type is accepted,
+ * plus specific application types (PDF, Word docs).
+ *
+ * This approach auto-accepts new IANA-registered types (e.g., video/quicktime for MOV)
+ * without requiring manual list updates.
+ */
+export function isAcceptedMimeType(mimeType: string | undefined): boolean {
+	if (!mimeType) {
+		return false;
+	}
+
+	return (
+		ACCEPTED_PREFIXES.some((prefix) => mimeType.startsWith(prefix)) ||
+		(ACCEPTED_SPECIFIC as readonly string[]).includes(mimeType)
+	);
+}
+
+// Legacy: Explicit array for backward compatibility with DB queries
+// These arrays are used by database filters (.in("type", videoFileTypes))
+// The prefix-based isAcceptedMimeType() should be used for upload validation
 export const acceptedFileTypes = [
 	// Image
 	"image/gif",
@@ -281,6 +311,8 @@ export const acceptedFileTypes = [
 	"video/3gpp",
 	"video/3gpp2",
 	"video/x-msvideo",
+	// MOV files (iPhone/macOS recordings)
+	"video/quicktime",
 
 	// Application
 	"application/msword",

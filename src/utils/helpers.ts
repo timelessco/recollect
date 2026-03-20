@@ -21,7 +21,6 @@ import {
 import { type UrlInput } from "../types/componentTypes";
 
 import {
-	acceptedFileTypes,
 	AUDIO_URL,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
@@ -400,10 +399,21 @@ export const checkIfUrlAnImage = async (url: string): Promise<boolean> => {
 	return mediaType?.includes("image/") ?? false;
 };
 
-// this function returns true if the media type is in the acceptedFileTypes array else false
+// this function returns true if the media type is an accepted media type else false
+// Uses prefix-based validation: image/*, video/*, audio/*, or specific document types
 export const checkIfUrlAnMedia = async (url: string): Promise<boolean> => {
 	const mediaType = await getMediaType(url);
-	return acceptedFileTypes?.includes(mediaType ?? "") ?? false;
+	if (!mediaType) {
+		return false;
+	}
+
+	const ACCEPTED_PREFIXES = ["image/", "video/", "audio/"];
+	const ACCEPTED_SPECIFIC = ["application/msword", "application/pdf"];
+
+	return (
+		ACCEPTED_PREFIXES.some((prefix) => mediaType.startsWith(prefix)) ||
+		ACCEPTED_SPECIFIC.includes(mediaType)
+	);
 };
 
 /**
