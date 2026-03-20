@@ -36,6 +36,7 @@ import {
 	INBOX_URL,
 	INSTAGRAM_URL,
 	instagramType,
+	isAcceptedMimeType,
 	LINKS_URL,
 	MAX_VIDEO_SIZE_BYTES,
 	menuListItemName,
@@ -400,20 +401,9 @@ export const checkIfUrlAnImage = async (url: string): Promise<boolean> => {
 };
 
 // this function returns true if the media type is an accepted media type else false
-// Uses prefix-based validation: image/*, video/*, audio/*, or specific document types
 export const checkIfUrlAnMedia = async (url: string): Promise<boolean> => {
 	const mediaType = await getMediaType(url);
-	if (!mediaType) {
-		return false;
-	}
-
-	const ACCEPTED_PREFIXES = ["image/", "video/", "audio/"];
-	const ACCEPTED_SPECIFIC = ["application/msword", "application/pdf"];
-
-	return (
-		ACCEPTED_PREFIXES.some((prefix) => mediaType.startsWith(prefix)) ||
-		ACCEPTED_SPECIFIC.includes(mediaType)
-	);
+	return isAcceptedMimeType(mediaType);
 };
 
 /**
