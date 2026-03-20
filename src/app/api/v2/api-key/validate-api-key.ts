@@ -1,5 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+import { GEMINI_MODEL } from "@/utils/constants";
+
 export interface ValidateApiKeyProps {
 	apikey: string;
 }
@@ -12,7 +14,7 @@ export async function validateApiKey(
 	try {
 		const genAI = new GoogleGenerativeAI(apikey);
 		const model = genAI.getGenerativeModel({
-			model: "gemini-flash-lite-latest",
+			model: GEMINI_MODEL,
 		});
 
 		const result = await model.generateContent(["Hey there!"]);

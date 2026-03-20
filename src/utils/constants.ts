@@ -1,5 +1,8 @@
 import { BASE_URL } from "@/site-config";
 
+// AI
+export const GEMINI_MODEL = "gemini-3.1-flash-lite-preview";
+
 // Category IDs
 export const UNCATEGORIZED_CATEGORY_ID = 0;
 

@@ -39,6 +39,7 @@ import {
 	autoAssignCollections,
 	fetchUserCollections,
 } from "@/utils/auto-assign-collections";
+import { resolveContentType } from "@/utils/resolve-content-type";
 
 type Data = {
 	data: SingleListData[] | null;
@@ -114,7 +115,7 @@ export default async function handler(
 	// this is a better solution as we are only getting one row of data
 	const { data: currentData, error: currentDataError } = await supabase
 		.from(MAIN_TABLE_NAME)
-		.select("ogImage, meta_data, description, title")
+		.select("ogImage, meta_data, description, title, type")
 		.match({ id })
 		.single();
 
@@ -198,6 +199,10 @@ export default async function handler(
 	let uploadedCoverImageUrl = null;
 	const isUrlAnMedia = await checkIfUrlAnMedia(url);
 	const isAudio = currentData?.meta_data?.mediaType?.includes("audio");
+	const contentType = resolveContentType({
+		type: currentData?.type ?? undefined,
+		mediaType: currentData?.meta_data?.mediaType ?? undefined,
+	});
 	// upload scrapper image to r2
 	if (currentData?.ogImage && !isUrlAnMedia) {
 		const ogImageNormalisedUrl = await getNormalisedImageUrl(
@@ -277,24 +282,24 @@ export default async function handler(
 		}
 
 		try {
+			// Determine if the image being analyzed is an OG image or a screenshot
+			// isOgImagePreferred sites always use OG image; otherwise check if screenshot exists
+			const isOgImage =
+				(currentData?.meta_data?.isOgImagePreferred ?? false) ||
+				!currentData?.meta_data?.screenshot;
 			const imageToTextResult = await imageToText(
 				currentData?.meta_data?.isOgImagePreferred
 					? ogImageMetaDataGeneration
 					: imageUrlForMetaDataGeneration,
 				supabase,
 				userId,
+				{ contentType, isOgImage },
 				{
-					isPageScreenshot:
-						currentData?.meta_data?.isPageScreenshot ?? undefined,
+					collections: userCollections,
+					title: currentData?.title,
+					description: currentData?.description,
+					url,
 				},
-				userCollections.length > 0
-					? {
-							collections: userCollections,
-							title: currentData?.title,
-							description: currentData?.description,
-							url,
-						}
-					: null,
 				aiToggles,
 			);
 			if (imageToTextResult) {

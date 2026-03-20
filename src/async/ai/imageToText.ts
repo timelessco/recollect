@@ -4,6 +4,8 @@ import axios from "axios";
 
 import { getApikeyAndBookmarkCount, incrementBookmarkCount } from "./api-key";
 import { type AiToggles } from "@/utils/ai-feature-toggles";
+import { GEMINI_MODEL } from "@/utils/constants";
+import { type BookmarkContentType } from "@/utils/resolve-content-type";
 
 export type UserCollection = {
 	id: number;
@@ -25,8 +27,30 @@ export type ImageToTextResult = {
 };
 
 export type ImageToTextOptions = {
-	isPageScreenshot?: boolean;
+	contentType?: BookmarkContentType;
+	isOgImage?: boolean;
 };
+
+function formatMetadataContext(
+	context?: ImageToTextContextProps | null,
+): string {
+	const lines: string[] = [];
+	if (context?.title) {
+		lines.push(`Title: ${context.title}`);
+	}
+
+	if (context?.description) {
+		lines.push(`Description: ${context.description}`);
+	}
+
+	if (context?.url) {
+		lines.push(`URL: ${context.url}`);
+	}
+
+	return lines.length > 0
+		? ["", "Bookmark metadata:", ...lines].join("\n")
+		: "";
+}
 
 /**
  * Generates the image description using Gemini AI.
@@ -76,6 +100,16 @@ export const imageToText = async (
 			};
 		}
 
+		// Audio files use a static SVG waveform — skip AI enrichment entirely
+		if (options?.contentType === "audio") {
+			return {
+				sentence: null,
+				image_keywords: [],
+				matched_collection_ids: [],
+				ocr_text: null,
+			};
+		}
+
 		// Fetch the image
 		const imageResponse = await axios.get(imageUrl, {
 			responseType: "arraybuffer",
@@ -87,12 +121,10 @@ export const imageToText = async (
 
 		const genAI = new GoogleGenerativeAI(key);
 		const model = genAI.getGenerativeModel({
-			model: "gemini-flash-lite-latest",
+			model: GEMINI_MODEL,
 		});
 
 		// For Image Caption: sentence + keywords. OCR handles text separately - do not include readable text.
-		const isPageScreenshot = options?.isPageScreenshot === true;
-
 		const siteCategories = [
 			"- ARTICLE/DOCUMENTATION (blog, news, docs, Notion, wiki) → prefer when you see headings, sections, code blocks, or long-form content. Capture the actual intent: what is the content trying to teach, explain, or communicate? Include: page title, main topic, the core message or takeaway (e.g. 'how to style HTML in Tailwind', 'best practices for image attributes'), key concepts, color palette, style.",
 			"- ECOMMERCE (product page, shop, listing) → explain what the product is (type, purpose, key features), brand, product name/model, colors, actual price (write without thousand separators, e.g. ₹8295 not ₹8,295), delivery options. State specific values when visible.",
@@ -101,6 +133,7 @@ export const imageToText = async (
 		];
 
 		// Build prompt sections dynamically based on active toggles
+		const contentType = options?.contentType ?? "link";
 		const promptParts: string[] = [
 			"Analyze this image and provide the following parts.",
 		];
@@ -108,24 +141,94 @@ export const imageToText = async (
 
 		// SENTENCE section (controlled by aiSummary toggle)
 		if (activeToggles.aiSummary) {
-			const websiteInstruction = isPageScreenshot
-				? [
-						"This image may be from a website. Try to recognize which website or service it is (by logo, branding, layout, visible URL, or distinctive UI) and use that as context.",
-						"",
-						"Use your judgment and focus on:",
-						...siteCategories,
-						"",
-						"Start as if describing the content directly. Do NOT say 'screenshot of', 'this appears to be a screenshot', 'the image shows', or meta-labels for website type (e.g. 'a normal website', 'an ecommerce page', 'a documentation page', 'an article') — describe what the page shows (e.g. 'A landing page for...', 'A product listing for...', 'A page titled...').",
-						'Do not start with "The image shows" or "This is a picture of".',
-					].join("\n")
-				: [
-						"Describe what you see. Focus on: colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place, objects.",
+			const metadataBlock = formatMetadataContext(context);
+
+			// Shared constraint — prevents Gemini from describing the image wrapper
+			// instead of the actual content being bookmarked.
+			const noImageMeta =
+				'Never reference the image itself — no "thumbnail", "screenshot", "OG image", "preview", "the image shows", or "this is a picture of".';
+
+			let sentenceInstruction: string;
+
+			switch (contentType) {
+				case "link": {
+					const isOgImage = options?.isOgImage ?? true;
+
+					sentenceInstruction = isOgImage
+						? [
+								"You are summarizing a webpage. Identify the website or platform from the URL and use it to frame your summary (e.g. 'A Pinterest pin about...', 'A Medium article on...', 'A GitHub repository for...').",
+								"Combine the metadata and the image to write a rich, descriptive summary — the page's purpose, main topic, and key details. The image is the Open Graph preview; use it to add visual detail to your description.",
+								noImageMeta,
+								metadataBlock,
+							].join("\n")
+						: [
+								"You are summarizing a webpage. Identify the website or platform from the URL and use it to frame your summary (e.g. 'A Pinterest pin about...', 'An Amazon product listing for...', 'A documentation page on...').",
+								"The image is a full-page screenshot — use it together with the metadata to write a rich, descriptive summary of the page's content.",
+								"",
+								"Classify the page and focus accordingly:",
+								...siteCategories,
+								noImageMeta,
+								metadataBlock,
+							].join("\n");
+					break;
+				}
+
+				case "image": {
+					sentenceInstruction =
+						"Describe what you see. Focus on: colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place, objects.";
+					break;
+				}
+
+				case "video": {
+					sentenceInstruction = [
+						"You are summarizing a video. Identify the platform from the URL (e.g. 'A YouTube tutorial on...', 'A Vimeo short film about...', 'A TikTok video showing...').",
+						"Combine the metadata and the preview frame to write a rich, descriptive summary — the video's topic, format (tutorial, review, vlog, music video, etc.), and key subject.",
+						noImageMeta,
+						metadataBlock,
 					].join("\n");
+					break;
+				}
+
+				case "document": {
+					sentenceInstruction = [
+						"You are summarizing a document. Identify the platform or source from the URL if recognizable (e.g. 'A Google Docs report on...', 'A Notion page about...', 'A PDF manual for...').",
+						"Combine the metadata and the cover page/preview to write a rich, descriptive summary — the document's subject, type (research paper, report, manual, presentation, etc.), and key topic.",
+						noImageMeta,
+						metadataBlock,
+					].join("\n");
+					break;
+				}
+
+				case "tweet": {
+					sentenceInstruction = [
+						"You are summarizing a post from Twitter/X. The image is a capture of the post — use it together with the metadata below.",
+						"Describe the post's topic and main point concisely.",
+						noImageMeta,
+						metadataBlock,
+					].join("\n");
+					break;
+				}
+
+				case "instagram": {
+					sentenceInstruction = [
+						"You are summarizing an Instagram post. The image is the post's visual content — use it together with the metadata below.",
+						"Describe what the post is about and its topic.",
+						noImageMeta,
+						metadataBlock,
+					].join("\n");
+					break;
+				}
+
+				default: {
+					sentenceInstruction =
+						"Describe what you see. Focus on: colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place, objects.";
+				}
+			}
 
 			promptParts.push(
 				"",
 				"SENTENCE:",
-				websiteInstruction,
+				sentenceInstruction,
 				"For people: always try to identify and name if recognizable — include celebrities, actors, fictional characters, politicians, historical figures; otherwise use man, woman, person.",
 			);
 			formatLines.push("SENTENCE: <your sentence here>");
@@ -133,7 +236,9 @@ export const imageToText = async (
 
 		// KEYWORDS section (controlled by imageKeywords toggle)
 		if (activeToggles.imageKeywords) {
-			const keywordsInstruction = isPageScreenshot
+			const useWebsiteKeywords = contentType === "link";
+
+			const keywordsInstruction = useWebsiteKeywords
 				? [
 						"List 20 nouns and short descriptive terms. If you can identify the website or service (e.g. Amazon, GitHub, Notion), include it as a keyword. For recognizable characters: include both the person/character name AND the show, movie, or franchise. Only add the source if confident. Match the image type to one below and include the relevant keywords:",
 						...siteCategories,
