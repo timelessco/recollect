@@ -271,8 +271,15 @@ export function isAcceptedMimeType(
 
 export const bookmarkType = "bookmark";
 export const tweetType = "tweet";
-
 export const instagramType = "instagram";
+
+// MIME type prefixes for media categorization
+// Used in Supabase queries (.like("type", `${VIDEO_MIME_PREFIX}%`))
+// and client-side checks (type?.startsWith(VIDEO_MIME_PREFIX))
+export const IMAGE_MIME_PREFIX = "image/";
+export const VIDEO_MIME_PREFIX = "video/";
+export const AUDIO_MIME_PREFIX = "audio/";
+export const DOCUMENT_MIME_PREFIX = "application/";
 
 // color picker colors
 export const colorPickerColors = [

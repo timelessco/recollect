@@ -7,12 +7,15 @@ import { z } from "zod";
 
 import { type SingleListData } from "../../../types/apiTypes";
 import {
+	AUDIO_MIME_PREFIX,
 	AUDIO_URL,
 	bookmarkType,
 	DISCOVER_URL,
+	DOCUMENT_MIME_PREFIX,
 	DOCUMENTS_URL,
 	GET_HASHTAG_TAG_PATTERN,
 	GET_SITE_SCOPE_PATTERN,
+	IMAGE_MIME_PREFIX,
 	IMAGES_URL,
 	INSTAGRAM_URL,
 	instagramType,
@@ -22,6 +25,7 @@ import {
 	TWEETS_URL,
 	tweetType,
 	UNCATEGORIZED_URL,
+	VIDEO_MIME_PREFIX,
 	VIDEOS_URL,
 } from "../../../utils/constants";
 import {
@@ -240,15 +244,15 @@ export default async function handler(
 		}
 
 		if (category_id === IMAGES_URL) {
-			query = query.like("type", "image/%");
+			query = query.like("type", `${IMAGE_MIME_PREFIX}%`);
 		}
 
 		if (category_id === VIDEOS_URL) {
-			query = query.like("type", "video/%");
+			query = query.like("type", `${VIDEO_MIME_PREFIX}%`);
 		}
 
 		if (category_id === DOCUMENTS_URL) {
-			query = query.like("type", "application/%");
+			query = query.like("type", `${DOCUMENT_MIME_PREFIX}%`);
 		}
 
 		if (category_id === TWEETS_URL) {
@@ -260,7 +264,9 @@ export default async function handler(
 		}
 
 		if (category_id === AUDIO_URL) {
-			query = query.or(`type.like.audio/%,meta_data->>mediaType.like.audio/%`);
+			query = query.or(
+				`type.like.${AUDIO_MIME_PREFIX}%,meta_data->>mediaType.like.${AUDIO_MIME_PREFIX}%`,
+			);
 		}
 
 		if (category_id === LINKS_URL) {

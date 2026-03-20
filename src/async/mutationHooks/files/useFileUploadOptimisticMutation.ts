@@ -12,7 +12,9 @@ import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
 	bookmarkType,
+	DOCUMENT_MIME_PREFIX,
 	DOCUMENTS_URL,
+	IMAGE_MIME_PREFIX,
 	IMAGES_URL,
 	LINKS_URL,
 	PDF_MIME_TYPE,
@@ -20,6 +22,7 @@ import {
 	STORAGE_FILES_PATH,
 	TWEETS_URL,
 	tweetType,
+	VIDEO_MIME_PREFIX,
 	VIDEOS_URL,
 } from "../../../utils/constants";
 import { handlePdfThumbnailAndUpload } from "../../../utils/file-upload";
@@ -246,21 +249,21 @@ export default function useFileUploadOptimisticMutation() {
 
 				if (
 					CATEGORY_ID === IMAGES_URL &&
-					!uploadedDataType?.startsWith("image/")
+					!uploadedDataType?.startsWith(IMAGE_MIME_PREFIX)
 				) {
 					successToast(`Added to ${fileTypeName}`);
 				}
 
 				if (
 					CATEGORY_ID === VIDEOS_URL &&
-					!uploadedDataType?.startsWith("video/")
+					!uploadedDataType?.startsWith(VIDEO_MIME_PREFIX)
 				) {
 					successToast(`Added to ${fileTypeName}`);
 				}
 
 				if (
 					CATEGORY_ID === DOCUMENTS_URL &&
-					!uploadedDataType?.startsWith("application/")
+					!uploadedDataType?.startsWith(DOCUMENT_MIME_PREFIX)
 				) {
 					successToast(`Added to ${fileTypeName}`);
 				}

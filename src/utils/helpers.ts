@@ -25,11 +25,13 @@ import {
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
 	DISCOVER_URL,
+	DOCUMENT_MIME_PREFIX,
 	DOCUMENTS_URL,
 	EVERYTHING_URL,
 	FILE_NAME_PARSING_PATTERN,
 	GET_HASHTAG_TAG_PATTERN,
 	GET_NAME_FROM_EMAIL_PATTERN,
+	IMAGE_MIME_PREFIX,
 	IMAGES_URL,
 	INBOX_URL,
 	INSTAGRAM_URL,
@@ -46,6 +48,7 @@ import {
 	tweetType,
 	UNCATEGORIZED_URL,
 	VIDEO_DOWNLOAD_TIMEOUT_MS,
+	VIDEO_MIME_PREFIX,
 	VIDEOS_URL,
 } from "./constants";
 import { vet } from "./try";
@@ -240,7 +243,7 @@ export const isBookmarkAudio = (type: string): boolean =>
 
 // tells if the bookmark is of document type
 export const isBookmarkDocument = (type: string): boolean =>
-	type?.startsWith("application/");
+	type?.startsWith(DOCUMENT_MIME_PREFIX);
 
 // tells if the bookmark is of image type
 export const isBookmarkImage = (type: string): boolean =>
@@ -287,15 +290,15 @@ export const clickToOpenInNewTabLogic = (
 
 // based on sent type this will tell what it belongs to, eg if type is application/pdf this function will output Documents
 export const fileTypeIdentifier = (type: string) => {
-	if (type?.startsWith("image/")) {
+	if (type?.startsWith(IMAGE_MIME_PREFIX)) {
 		return menuListItemName?.image;
 	}
 
-	if (type?.startsWith("video/")) {
+	if (type?.startsWith(VIDEO_MIME_PREFIX)) {
 		return menuListItemName?.videos;
 	}
 
-	if (type?.startsWith("application/")) {
+	if (type?.startsWith(DOCUMENT_MIME_PREFIX)) {
 		return menuListItemName?.documents;
 	}
 

@@ -4,12 +4,16 @@ import isEmpty from "lodash/isEmpty";
 
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import {
+	AUDIO_MIME_PREFIX,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
+	DOCUMENT_MIME_PREFIX,
+	IMAGE_MIME_PREFIX,
 	instagramType,
 	MAIN_TABLE_NAME,
 	SHARED_CATEGORIES_TABLE_NAME,
 	tweetType,
+	VIDEO_MIME_PREFIX,
 } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -116,19 +120,19 @@ export default async function handler(
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
 				.is("trash", null)
-				.like("type", "image/%"),
+				.like("type", `${IMAGE_MIME_PREFIX}%`),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
 				.is("trash", null)
-				.like("type", "video/%"),
+				.like("type", `${VIDEO_MIME_PREFIX}%`),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
 				.is("trash", null)
-				.like("type", "application/%"),
+				.like("type", `${DOCUMENT_MIME_PREFIX}%`),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
@@ -167,7 +171,9 @@ export default async function handler(
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
 				.is("trash", null)
-				.or(`type.like.audio/%,meta_data->>mediaType.like.audio/%`),
+				.or(
+					`type.like.${AUDIO_MIME_PREFIX}%,meta_data->>mediaType.like.${AUDIO_MIME_PREFIX}%`,
+				),
 			supabase.from(CATEGORIES_TABLE_NAME).select("id").eq("user_id", userId),
 			supabase
 				.from(SHARED_CATEGORIES_TABLE_NAME)
