@@ -40,6 +40,7 @@ const requestBodySchema = z.object({
 					.max(100)
 					.optional(),
 				isPageScreenshot: z.boolean().nullable().optional(),
+				isOgImagePreferred: z.boolean().optional(),
 			}),
 		}),
 	}),
@@ -277,7 +278,9 @@ export default async function handler(
 			url,
 			isInstagramBookmark,
 			contentType,
-			isOgImage: !message.message.meta_data?.isPageScreenshot,
+			isOgImage:
+				message.message.meta_data?.isOgImagePreferred ||
+				!message.message.meta_data?.isPageScreenshot,
 			title: bookmarkRow?.title,
 			description: bookmarkRow?.description,
 		});

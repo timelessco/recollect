@@ -283,15 +283,18 @@ export default async function handler(
 		}
 
 		try {
-			const hasScreenshot = Boolean(currentData?.meta_data?.screenshot);
-			const imageUrl = hasScreenshot
-				? imageUrlForMetaDataGeneration
-				: ogImageMetaDataGeneration;
+			// Determine if the image being analyzed is an OG image or a screenshot
+			// isOgImagePreferred sites always use OG image; otherwise check if screenshot exists
+			const isOgImage =
+				(currentData?.meta_data?.isOgImagePreferred ?? false) ||
+				!currentData?.meta_data?.screenshot;
 			const imageToTextResult = await imageToText(
-				imageUrl,
+				currentData?.meta_data?.isOgImagePreferred
+					? ogImageMetaDataGeneration
+					: imageUrlForMetaDataGeneration,
 				supabase,
 				userId,
-				{ contentType, isOgImage: !hasScreenshot },
+				{ contentType, isOgImage },
 				{
 					collections: userCollections,
 					title: currentData?.title,
