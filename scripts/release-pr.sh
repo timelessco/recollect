@@ -174,7 +174,7 @@ while IFS= read -r line; do
 						}
 					}
 				}
-			}" --jq '.data.repository.object.associatedPullRequests.nodes[0].number // empty' 2>/dev/null || echo "")
+			}" --jq '.data.repository.object.associatedPullRequests.nodes[0].number // empty' 2> /dev/null || echo "")
 	fi
 
 	# Extract conventional commit type
