@@ -46,22 +46,23 @@ Post to Recollect dev channel (`C09139Z0Y75`) using `mcp__claude_ai_Slack__slack
 
 All data is already available from Step 1 output — `PR_URL`, `PR_NUMBER`, the changelog (PR body), and whether `docs/API_CHANGELOG.md` had content. No need to re-fetch.
 
-1. **Main message** (single line):
+1. **Main message** (single line — use the PR title from Step 1):
    ```
-   :rocket: *Release PR* <{PR_URL}|#{PR_NUMBER}>
+   **{PR_TITLE}** <{PR_URL}|#{PR_NUMBER}>
    ```
 
-2. **Thread reply 1** — the PR description/changelog from Step 1 output. Convert from GitHub markdown to Slack mrkdwn before posting:
-   - `### Header` → `*Header*`
+2. **Thread reply 1** — the PR description/changelog from Step 1 output. Convert from GitHub markdown to Slack mrkdwn using `**double asterisks**` for bold:
+   - `### Header` → `**Header**` on its own line (bold section header)
    - `[text](url)` → `<url|text>`
-   - `**bold**` → `*bold*`
+   - `* commit description — author` → `• commit description — **author**` (bold the author name)
    - `* bullet` → `• bullet`
+   - Add a blank line before each section header for visual separation
 
    Post as thread reply using `thread_ts` from the main message response.
 
-3. **Thread reply 2** (only if API changelog was posted as PR comment in Step 1) — read `docs/API_CHANGELOG.md` and post as second thread reply:
+3. **Thread reply 2** (only if API changelog was posted as PR comment in Step 1) — read `docs/API_CHANGELOG.md` and post as second thread reply, tagging Karthik for visibility:
    ```
-   *API Changelog*
+   **API Changelog** cc <@UAZBN2CGZ>
 
    {contents of docs/API_CHANGELOG.md}
    ```
