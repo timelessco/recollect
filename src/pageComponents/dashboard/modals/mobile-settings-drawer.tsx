@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DrawerPreview as Drawer } from "@base-ui/react/drawer";
+import { Drawer } from "@base-ui/react/drawer";
 import { Tabs } from "@base-ui/react/tabs";
 
 import { AvatarIcon } from "@/icons/avatarIcon";
