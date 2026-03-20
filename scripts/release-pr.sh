@@ -158,9 +158,23 @@ while IFS= read -r line; do
 	SHORT_SHA="${SHA:0:7}"
 
 	# Extract PR number from subject: "feat(scope): description (#123)"
+	# Falls back to GitHub GraphQL associatedPullRequests for merge-strategy commits
 	PR_NUMBER=""
 	if [[ "$SUBJECT" =~ \(#([0-9]+)\)$ ]]; then
 		PR_NUMBER="${BASH_REMATCH[1]}"
+	else
+		PR_NUMBER=$(gh api graphql -f query="
+			query {
+				repository(name: \"${REPO#*/}\", owner: \"${REPO%/*}\") {
+					object(expression: \"$SHA\") {
+						... on Commit {
+							associatedPullRequests(first: 1) {
+								nodes { number }
+							}
+						}
+					}
+				}
+			}" --jq '.data.repository.object.associatedPullRequests.nodes[0].number // empty' 2>/dev/null || echo "")
 	fi
 
 	# Extract conventional commit type

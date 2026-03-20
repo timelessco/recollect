@@ -72,6 +72,11 @@ export async function getOldestCommitSinceLastTag() {
 	}
 }
 
+async function getCurrentBranch() {
+	const { stdout } = await execa("git", ["branch", "--show-current"]);
+	return stdout.trim() || "main";
+}
+
 export async function getGithubCommits() {
 	const originUrl = await gitRemoteOriginUrl();
 	const { commitDate } = await getOldestCommitSinceLastTag();
@@ -83,6 +88,7 @@ export async function getGithubCommits() {
 	}
 
 	const repo = gitUrlParse(originUrl);
+	const branchName = await getCurrentBranch();
 	const remoteCommits = [];
 	let afterCursor = "";
 	let hasNextPage = false;
@@ -97,7 +103,7 @@ export async function getGithubCommits() {
 
 		const response = await octokit.graphql(queryString, {
 			afterCursor,
-			branchName: "main",
+			branchName,
 			owner: repo.owner,
 			pageSize: QUERY_PAGE_SIZE,
 			repo: repo.name,
