@@ -62,7 +62,7 @@ async function syncSubscription(payload: any) {
 
 	// If upgrading to a paid plan, enqueue skipped bookmarks for AI enrichment
 	if (plan !== "free") {
-		const { data: enqueued, error } = await getSupabaseAdmin().rpc(
+		const { data: enqueued, error } = await supabase.rpc(
 			"enqueue_skipped_bookmarks",
 			{ p_user_id: externalId },
 		);
