@@ -12,13 +12,10 @@ import {
 } from "../../../types/apiTypes";
 import {
 	AUDIO_URL,
-	audioFileTypes,
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
 	bookmarkType,
-	documentFileTypes,
 	DOCUMENTS_URL,
-	imageFileTypes,
 	IMAGES_URL,
 	INSTAGRAM_URL,
 	instagramType,
@@ -29,7 +26,6 @@ import {
 	TWEETS_URL,
 	tweetType,
 	UNCATEGORIZED_URL,
-	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
 import {
@@ -202,21 +198,15 @@ export default async function handler(
 	}
 
 	if (category_id === IMAGES_URL) {
-		query = query.or(
-			`type.in.(${imageFileTypes}),meta_data->>mediaType.in.(${imageFileTypes})`,
-		);
+		query = query.or(`type.like.image/%,meta_data->>mediaType.like.image/%`);
 	}
 
 	if (category_id === VIDEOS_URL) {
-		query = query.or(
-			`type.in.(${videoFileTypes}),meta_data->>mediaType.in.(${videoFileTypes})`,
-		);
+		query = query.or(`type.like.video/%,meta_data->>mediaType.like.video/%`);
 	}
 
 	if (category_id === AUDIO_URL) {
-		query = query.or(
-			`type.in.(${audioFileTypes}),meta_data->>mediaType.in.(${audioFileTypes})`,
-		);
+		query = query.or(`type.like.audio/%,meta_data->>mediaType.like.audio/%`);
 	}
 
 	if (category_id === instagramType) {
@@ -225,7 +215,7 @@ export default async function handler(
 
 	if (category_id === DOCUMENTS_URL) {
 		query = query.or(
-			`type.in.(${documentFileTypes}),meta_data->>mediaType.in.(${documentFileTypes})`,
+			`type.like.application/%,meta_data->>mediaType.like.application/%`,
 		);
 	}
 

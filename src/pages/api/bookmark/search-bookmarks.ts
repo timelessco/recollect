@@ -8,14 +8,11 @@ import { z } from "zod";
 import { type SingleListData } from "../../../types/apiTypes";
 import {
 	AUDIO_URL,
-	audioFileTypes,
 	bookmarkType,
 	DISCOVER_URL,
-	documentFileTypes,
 	DOCUMENTS_URL,
 	GET_HASHTAG_TAG_PATTERN,
 	GET_SITE_SCOPE_PATTERN,
-	imageFileTypes,
 	IMAGES_URL,
 	INSTAGRAM_URL,
 	instagramType,
@@ -25,7 +22,6 @@ import {
 	TWEETS_URL,
 	tweetType,
 	UNCATEGORIZED_URL,
-	videoFileTypes,
 	VIDEOS_URL,
 } from "../../../utils/constants";
 import {
@@ -244,15 +240,15 @@ export default async function handler(
 		}
 
 		if (category_id === IMAGES_URL) {
-			query = query.in("type", imageFileTypes);
+			query = query.like("type", "image/%");
 		}
 
 		if (category_id === VIDEOS_URL) {
-			query = query.in("type", videoFileTypes);
+			query = query.like("type", "video/%");
 		}
 
 		if (category_id === DOCUMENTS_URL) {
-			query = query.in("type", documentFileTypes);
+			query = query.like("type", "application/%");
 		}
 
 		if (category_id === TWEETS_URL) {
@@ -264,9 +260,7 @@ export default async function handler(
 		}
 
 		if (category_id === AUDIO_URL) {
-			query = query.or(
-				`type.in.(${audioFileTypes}),meta_data->>mediaType.in.(${audioFileTypes})`,
-			);
+			query = query.or(`type.like.audio/%,meta_data->>mediaType.like.audio/%`);
 		}
 
 		if (category_id === LINKS_URL) {

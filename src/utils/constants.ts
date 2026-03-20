@@ -269,71 +269,10 @@ export function isAcceptedMimeType(
 	);
 }
 
-// Explicit MIME type lists for database queries (.in("type", videoFileTypes))
-// Use isAcceptedMimeType() for upload validation instead
-export const acceptedFileTypes = [
-	// Image
-	"image/gif",
-	"image/vnd.microsoft.icon",
-	"image/jpeg",
-	"image/jpg",
-	"image/png",
-	"image/svg+xml",
-	"image/tiff",
-	"image/webp",
-	"image/apng",
-	"image/avif",
-	"image/bmp",
-
-	// Audio
-	"audio/midi",
-	"audio/x-midi",
-	"audio/mpeg",
-	"audio/ogg",
-	"audio/3gpp",
-	"audio/3gpp2",
-	"audio/webm",
-	"audio/wav",
-	"audio/aac",
-	"audio/mp3",
-
-	// Video
-	"video/mp4",
-	"video/mpeg",
-	"video/ogg",
-	"video/mp2t",
-	"video/webm",
-	"video/3gpp",
-	"video/3gpp2",
-	"video/x-msvideo",
-	// MOV files (iPhone/macOS recordings)
-	"video/quicktime",
-
-	// Application
-	"application/msword",
-	"application/pdf",
-];
-
 export const bookmarkType = "bookmark";
 export const tweetType = "tweet";
 
 export const instagramType = "instagram";
-
-export const imageFileTypes = acceptedFileTypes?.filter((item) =>
-	item?.includes("image"),
-);
-
-export const videoFileTypes = acceptedFileTypes?.filter((item) =>
-	item?.includes("video"),
-);
-
-export const audioFileTypes = acceptedFileTypes?.filter((item) =>
-	item?.includes("audio"),
-);
-
-export const documentFileTypes = acceptedFileTypes?.filter((item) =>
-	item?.includes("application"),
-);
 
 // color picker colors
 export const colorPickerColors = [
