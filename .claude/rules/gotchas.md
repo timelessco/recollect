@@ -43,5 +43,5 @@
 - `release-pr.sh` detects existing release PRs and offers to delete+recreate — no need to manually clean up before re-running
 - `release-pr.sh --yes` / `-y` flag auto-confirms all prompts — use for agent-native / CI execution
 - `gh pr merge` on `main` requires `--admin` — branch protection blocks direct merge even with `release` label
-- Backmerge verification: `git log origin/dev..origin/main` shows release tag commit even after success (different SHAs) — check `git log origin/dev | head` instead
+- Backmerge verification: `git log origin/dev..origin/main` should be empty after successful release — if it shows the release commit, the backmerge didn't preserve the merge commit SHA (previously caused by `--amend` in API changelog clear, fixed in `81b92e78`)
 - `docs/API_CHANGELOG.md` is auto-appended by CI on each push to `dev`, posted as PR comment during release, and cleared during backmerge
