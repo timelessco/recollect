@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useController } from "yet-another-react-lightbox";
 
-// Threshold at which we actually close the lightbox
+// Distance threshold at which we close the lightbox (px)
 const THRESHOLD = 200;
 // Point at which opacity starts decreasing
 const OPACITY_START = THRESHOLD * 0.5;
+// Velocity threshold for quick-flick close on mobile (px/s)
+const VELOCITY_THRESHOLD = 800;
 const INTERACTIVE_SELECTOR =
 	"media-controller, video, audio, iframe, object, [data-no-swipe]";
 
@@ -23,6 +25,11 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 	const pointerStartYRef = useRef(0);
 	const isDraggingRef = useRef(false);
 	const rafRef = useRef(0);
+
+	// Velocity tracking for mobile flick-to-close
+	// Stores a sample point ~80ms behind the current pointer for stable velocity calculation
+	const velocitySampleRef = useRef({ y: 0, time: 0 });
+	const prevMoveRef = useRef({ y: 0, time: 0 });
 
 	useEffect(() => {
 		if (!enabled) {
@@ -112,6 +119,14 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 				pointerStartYRef.current = event.clientY;
 				isDraggingRef.current = false;
 				offsetRef.current = 0;
+				velocitySampleRef.current = {
+					y: event.clientY,
+					time: event.timeStamp,
+				};
+				prevMoveRef.current = {
+					y: event.clientY,
+					time: event.timeStamp,
+				};
 			},
 		);
 
@@ -143,6 +158,16 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 				isDraggingRef.current = true;
 				offsetRef.current = Math.min(deltaY, maxOffset);
 
+				// Advance the velocity sample window: keep a point ~80ms behind current
+				if (event.timeStamp - velocitySampleRef.current.time > 80) {
+					velocitySampleRef.current = { ...prevMoveRef.current };
+				}
+
+				prevMoveRef.current = {
+					y: event.clientY,
+					time: event.timeStamp,
+				};
+
 				if (offsetRef.current > THRESHOLD) {
 					cancelAnimationFrame(rafRef.current);
 					isDraggingRef.current = false;
@@ -171,6 +196,19 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			cancelAnimationFrame(rafRef.current);
 			isDraggingRef.current = false;
 			getSlideWrapper(element)?.removeAttribute("data-pulling");
+
+			// Check velocity: close on quick downward flick even if distance < THRESHOLD
+			const sample = velocitySampleRef.current;
+			const dt = event.timeStamp - sample.time;
+			const dy = event.clientY - sample.y;
+			if (dt > 0 && dy > 0) {
+				const velocity = (dy / dt) * 1000;
+				if (velocity > VELOCITY_THRESHOLD && offsetRef.current > 30) {
+					close();
+					return;
+				}
+			}
+
 			reset(element);
 		};
 

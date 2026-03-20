@@ -16,6 +16,7 @@ import { upload } from "../bookmark/add-remaining-bookmark-data";
 
 import { storeQueueError } from "@/lib/api-helpers/queue";
 import { autoAssignCollections } from "@/utils/auto-assign-collections";
+import { resolveContentType } from "@/utils/resolve-content-type";
 
 const requestBodySchema = z.object({
 	id: z.number(),
@@ -38,6 +39,8 @@ const requestBodySchema = z.object({
 					.array(z.string().max(255))
 					.max(100)
 					.optional(),
+				isPageScreenshot: z.boolean().nullable().optional(),
+				isOgImagePreferred: z.boolean().optional(),
 			}),
 		}),
 	}),
@@ -247,6 +250,29 @@ export default async function handler(
 
 		console.log(`[${ROUTE}] Starting metadata enrichment:`, { url });
 
+		// Fetch title and description from DB for contextual AI summary
+		const { data: bookmarkRow, error: fetchError } = await supabase
+			.from(MAIN_TABLE_NAME)
+			.select("title, description, type")
+			.eq("id", id)
+			.single();
+
+		if (fetchError) {
+			console.warn(`[${ROUTE}] Failed to fetch bookmark context:`, {
+				bookmarkId: id,
+				error: fetchError.message,
+			});
+			Sentry.captureException(fetchError, {
+				tags: { operation: "fetch_bookmark_context", userId: user_id },
+				extra: { bookmarkId: id },
+			});
+		}
+
+		const contentType = resolveContentType({
+			type: bookmarkRow?.type ?? undefined,
+			mediaType: undefined,
+		});
+
 		// Enrich metadata with AI-generated content
 		const {
 			metadata: newMeta,
@@ -262,6 +288,12 @@ export default async function handler(
 			supabase,
 			url,
 			isInstagramBookmark,
+			contentType,
+			isOgImage:
+				(message.message.meta_data?.isOgImagePreferred ?? false) ||
+				message.message.meta_data?.isPageScreenshot !== true,
+			title: bookmarkRow?.title,
+			description: bookmarkRow?.description,
 		});
 
 		if (isFailed) {

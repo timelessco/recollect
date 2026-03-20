@@ -37,8 +37,11 @@
 - `@release-it/conventional-changelog` pinned to v9.x — v10.x has `whatBump` bug (unwaited `loadPreset`)
 - `pnpm fix:prettier -- <file>` ignores the file argument — use `pnpm exec prettier --write <file>` for targeted formatting
 - Shell scripts must be bash 3.2 compatible (macOS default) — no `declare -A`, use `case` + temp files
-- Release PRs use `release` label — skips CodeRabbit and Semantic PR validation
-- Release pipeline: `pnpm release:pr` → merge on GitHub (merge commit, not squash) → CI auto-runs release-it → CI auto-backmerges main→dev → verify Vercel
+- Release PRs use `release` label — skips CodeRabbit review
+- Release pipeline: `pnpm release:pr:yes` → `gh pr merge --merge --admin` → CI runs release-it → CI backmerges main→dev (clears `docs/API_CHANGELOG.md`) → verify tag + GitHub Release. Full automation via `/release` skill
 - `pnpm release` requires `GITHUB_TOKEN` env var — the changelog writer's `getGithubCommits()` fetches commit author data from GitHub API
 - `release-pr.sh` detects existing release PRs and offers to delete+recreate — no need to manually clean up before re-running
 - `release-pr.sh --yes` / `-y` flag auto-confirms all prompts — use for agent-native / CI execution
+- `gh pr merge` on `main` requires `--admin` — branch protection blocks direct merge even with `release` label
+- Backmerge verification: `git log origin/dev..origin/main` should be empty after successful release — if it shows the release commit, the backmerge didn't preserve the merge commit SHA (previously caused by `--amend` in API changelog clear, fixed in `81b92e78`)
+- `docs/API_CHANGELOG.md` is auto-appended by CI on each push to `dev`, posted as PR comment during release, and cleared during backmerge

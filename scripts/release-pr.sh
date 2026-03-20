@@ -219,9 +219,9 @@ fi
 
 # --- Preview ---
 
-RELEASE_DATE=$(date +"%Y-%m-%d")
+RELEASE_DATE=$(date +"%Y-%m-%d-%H%M")
 RELEASE_BRANCH="release/$RELEASE_DATE"
-TITLE="Release $RELEASE_DATE"
+TITLE="feat(release): 🚀 $(date +'%d %b %Y %I:%M %p')"
 
 echo ""
 echo "=========================================="

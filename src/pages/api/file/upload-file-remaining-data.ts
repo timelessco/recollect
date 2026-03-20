@@ -25,6 +25,7 @@ import {
 	autoAssignCollections,
 	fetchUserCollections,
 } from "@/utils/auto-assign-collections";
+import { resolveContentType } from "@/utils/resolve-content-type";
 
 type Data = UploadFileApiResponse;
 
@@ -47,12 +48,16 @@ const notVideoLogic = async (
 
 	if (ogImage) {
 		try {
+			const contentType = resolveContentType({
+				type: undefined,
+				mediaType,
+			});
 			const imageToTextResult = await imageToText(
 				ogImage,
 				supabase,
 				userId,
-				null,
-				userCollections.length > 0 ? { collections: userCollections } : null,
+				{ contentType },
+				{ collections: userCollections },
 				aiToggles,
 			);
 			if (imageToTextResult) {

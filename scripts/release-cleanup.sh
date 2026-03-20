@@ -75,11 +75,13 @@ git merge "$REMOTE/main" -m "chore(release): merge main back into dev after rele
 	exit 1
 }
 # Clear API changelog — accumulated changes are now released
+# Uses a separate commit (not --amend) to preserve the merge commit SHA,
+# which must match origin/main for merge-base --is-ancestor to pass
 API_CHANGELOG_FILE="docs/API_CHANGELOG.md"
 if [ -s "$API_CHANGELOG_FILE" ]; then
 	> "$API_CHANGELOG_FILE"
 	git add "$API_CHANGELOG_FILE"
-	git commit --amend --no-edit
+	git commit -m "chore(release): clear API changelog after release"
 fi
 git push "$REMOTE" dev
 

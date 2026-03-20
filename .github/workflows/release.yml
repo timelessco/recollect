@@ -21,10 +21,12 @@ jobs:
           git checkout -b dev origin/dev
           git merge origin/main -m "chore(release): merge main back into dev after release"
           # Clear API changelog — accumulated changes are now released
+          # Uses a separate commit (not --amend) to preserve the merge commit SHA,
+          # which must match origin/main for merge-base --is-ancestor to pass
           if [ -s docs/API_CHANGELOG.md ]; then
             > docs/API_CHANGELOG.md
             git add docs/API_CHANGELOG.md
-            git commit --amend --no-edit
+            git commit -m "chore(release): clear API changelog after release"
           fi
           git push origin dev
 
