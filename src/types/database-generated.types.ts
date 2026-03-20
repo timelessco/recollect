@@ -197,6 +197,7 @@ export type Database = {
 				Row: {
 					category_id: number;
 					description: string | null;
+					enrichment_status: string | null;
 					id: number;
 					inserted_at: string;
 					make_discoverable: string | null;
@@ -213,6 +214,7 @@ export type Database = {
 				Insert: {
 					category_id?: number;
 					description?: string | null;
+					enrichment_status?: string | null;
 					id?: number;
 					inserted_at?: string;
 					make_discoverable?: string | null;
@@ -229,6 +231,7 @@ export type Database = {
 				Update: {
 					category_id?: number;
 					description?: string | null;
+					enrichment_status?: string | null;
 					id?: number;
 					inserted_at?: string;
 					make_discoverable?: string | null;
@@ -470,6 +473,10 @@ export type Database = {
 			enqueue_raindrop_bookmarks: {
 				Args: { p_bookmarks: Json; p_user_id: string };
 				Returns: Json;
+			};
+			enqueue_skipped_bookmarks: {
+				Args: { p_user_id: string };
+				Returns: number;
 			};
 			enqueue_twitter_bookmarks: {
 				Args: { p_bookmarks: Json; p_user_id: string };

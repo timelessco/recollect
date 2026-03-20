@@ -240,6 +240,7 @@ export default async function handler(
 	let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
 	let imageCaption: string | null = null;
 	let imageKeywords: string[] = [];
+	let enrichmentLimitReached = false;
 
 	//	generate meta data for og image for websites like cosmos, pintrest because they have better ogImage
 	const ogImageMetaDataGeneration = uploadedCoverImageUrl
@@ -297,7 +298,9 @@ export default async function handler(
 					: null,
 				aiToggles,
 			);
-			if (imageToTextResult) {
+			if (imageToTextResult?.limitReached) {
+				enrichmentLimitReached = true;
+			} else if (imageToTextResult) {
 				imageCaption = imageToTextResult.sentence;
 				imageKeywords = imageToTextResult.image_keywords ?? [];
 				imageOcrValue = imageToTextResult.ocr_text;
@@ -349,6 +352,7 @@ export default async function handler(
 			meta_data,
 			description: currentData?.description || imageCaption,
 			ogImage: computedOgImage ?? currentData?.ogImage,
+			enrichment_status: enrichmentLimitReached ? "skipped" : null,
 		})
 		.match({ id })
 		.select(`id`);

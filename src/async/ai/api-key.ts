@@ -3,18 +3,18 @@ import CryptoJS from "crypto-js";
 
 import { PROFILES } from "../../utils/constants";
 
+const FREE_MONTHLY_LIMIT = 1;
+
 export const getApikeyAndBookmarkCount = async (
 	supabase: SupabaseClient,
 	userId: string,
 ) => {
-	// monthly limit, in db the bookmark count set to zero at the start of every month using supabase cron job
-	const LIMIT = 10_0000;
-
 	const { data: profile } = await supabase
 		.from(PROFILES)
-		.select("api_key")
+		.select("api_key, bookmark_count, plan")
 		.eq("id", userId)
 		.single();
+
 	let userApiKey: string | null = null;
 	try {
 		const enc = (profile as unknown as { api_key?: string })?.api_key ?? "";
@@ -30,18 +30,12 @@ export const getApikeyAndBookmarkCount = async (
 		userApiKey = null;
 	}
 
-	const { data: count, error } = await supabase
-		.from(PROFILES)
-		.select("bookmark_count")
-		.eq("id", userId)
-		.single();
-	if (error) {
-		throw error;
-	}
+	const bookmarkCount =
+		(profile as { bookmark_count?: number | null })?.bookmark_count ?? 0;
+	const plan = (profile as { plan?: string })?.plan ?? "free";
+	const isLimitReached = plan === "free" && bookmarkCount > FREE_MONTHLY_LIMIT;
 
-	const bookmarkCount = count?.bookmark_count ?? 0;
-
-	return { userApiKey, isLimitReached: bookmarkCount > LIMIT };
+	return { userApiKey, isLimitReached };
 };
 
 export const incrementBookmarkCount = async (
