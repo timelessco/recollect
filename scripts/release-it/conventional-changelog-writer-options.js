@@ -172,6 +172,8 @@ const addOtherNotableChanges = (commit, context) => {
 	}
 };
 
+const seenPrNumbers = new Set();
+
 export const transform = async (commitOriginal, context) => {
 	const commit = { ...commitOriginal };
 
@@ -184,6 +186,37 @@ export const transform = async (commitOriginal, context) => {
 	// Remove commit body if it's author is a bot
 	if (commit.authorName === "renovate[bot]") {
 		commit.body = "";
+	}
+
+	// Get remote commit data early (for dedup and PR title override)
+	const commits = await getRemoteCommits();
+	const matchedRemoteCommit = commits.find(
+		(remoteCommit) => remoteCommit.shortHash === commit.shortHash,
+	);
+	if (matchedRemoteCommit?.login) {
+		commit.userLogin = matchedRemoteCommit.login;
+	}
+	commit.prNumber = matchedRemoteCommit?.prNumber ?? null;
+
+	// Filter release commits
+	if (/^(?:feat\(release\): 🚀|🚀 Release v)/u.test(commit.header)) {
+		return false;
+	}
+
+	// Dedup: one entry per PR
+	if (commit.prNumber !== null) {
+		if (seenPrNumbers.has(commit.prNumber)) {
+			return false;
+		}
+		seenPrNumbers.add(commit.prNumber);
+	}
+
+	// Override with PR title for grouped PR entries
+	if (commit.prNumber !== null && matchedRemoteCommit?.prTitle) {
+		commit.header = matchedRemoteCommit.prTitle;
+		commit.subject = null;
+		commit.type = null;
+		commit.scope = null;
 	}
 
 	const issues = [];
@@ -294,16 +327,6 @@ export const transform = async (commitOriginal, context) => {
 
 		return false;
 	});
-
-	// Add GitHub user info
-	const commits = await getRemoteCommits();
-	const matchedRemoteCommit = commits.find(
-		(remoteCommit) => remoteCommit.shortHash === commit.shortHash,
-	);
-	if (matchedRemoteCommit?.login) {
-		commit.userLogin = matchedRemoteCommit.login;
-	}
-	commit.prNumber = matchedRemoteCommit?.prNumber ?? null;
 
 	context.hasHighlightedChanges =
 		context.breakingChanges?.length > 0 ||
