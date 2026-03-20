@@ -9,10 +9,10 @@ export type BookmarkContentType =
 	| "tweet"
 	| "instagram";
 
-type ResolveContentTypeParams = {
+interface ResolveContentTypeParams {
 	type?: string | null;
 	mediaType?: string | null;
-};
+}
 
 /**
  * Resolves a bookmark's content type from available signals.

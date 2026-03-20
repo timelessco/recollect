@@ -262,6 +262,10 @@ export default async function handler(
 				bookmarkId: id,
 				error: fetchError.message,
 			});
+			Sentry.captureException(fetchError, {
+				tags: { operation: "fetch_bookmark_context", userId: user_id },
+				extra: { bookmarkId: id },
+			});
 		}
 
 		const contentType = resolveContentType({

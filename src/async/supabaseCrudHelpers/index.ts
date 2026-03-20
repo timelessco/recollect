@@ -75,10 +75,9 @@ import {
 	UPDATE_USERNAME_API,
 	UPLOAD_FILE_API,
 	UPLOAD_PROFILE_PIC_API,
+	GEMINI_MODEL,
 } from "../../utils/constants";
 import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
-
-import { GEMINI_MODEL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
 
 // bookmark
