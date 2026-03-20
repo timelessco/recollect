@@ -11,48 +11,48 @@ BEGIN;
 -- PART 1: Plan column with CHECK constraint
 -- -----------------------------------------------------------------------
 
-alter table public.profiles
-add column plan text not null default 'free'
-constraint profiles_plan_check check (plan in ('free', 'pro', 'plus'));
+ALTER TABLE public.profiles
+ADD COLUMN plan TEXT NOT NULL DEFAULT 'free'
+CONSTRAINT profiles_plan_check CHECK (plan IN ('free', 'pro', 'plus'));
 
-comment on column public.profiles.plan is
+COMMENT ON COLUMN public.profiles.plan IS
 'Subscription plan: free, pro, or plus. Updated by Polar webhook.';
 
 -- -----------------------------------------------------------------------
 -- PART 2: Subscription lifecycle columns
 -- -----------------------------------------------------------------------
 
-alter table public.profiles
-add column subscription_status text,
-add column subscription_current_period_end timestamptz;
+ALTER TABLE public.profiles
+ADD COLUMN subscription_status TEXT,
+ADD COLUMN subscription_current_period_end TIMESTAMPTZ;
 
-comment on column public.profiles.subscription_status is
+COMMENT ON COLUMN public.profiles.subscription_status IS
 'Polar subscription status: active, canceled, revoked, past_due.';
 
-comment on column public.profiles.subscription_current_period_end is
+COMMENT ON COLUMN public.profiles.subscription_current_period_end IS
 'End of current billing period. Used for canceled grace period check.';
 
 -- -----------------------------------------------------------------------
 -- PART 3: Polar customer linkage
 -- -----------------------------------------------------------------------
 
-alter table public.profiles
-add column polar_customer_id text;
+ALTER TABLE public.profiles
+ADD COLUMN polar_customer_id TEXT;
 
-alter table public.profiles
-add constraint profiles_polar_customer_id_unique unique (polar_customer_id);
+ALTER TABLE public.profiles
+ADD CONSTRAINT profiles_polar_customer_id_unique UNIQUE (polar_customer_id);
 
-comment on column public.profiles.polar_customer_id is
+COMMENT ON COLUMN public.profiles.polar_customer_id IS
 'Polar customer ID. Primary join key for webhook event processing.';
 
 -- -----------------------------------------------------------------------
 -- PART 4: Webhook idempotency guard
 -- -----------------------------------------------------------------------
 
-alter table public.profiles
-add column plan_updated_at timestamptz;
+ALTER TABLE public.profiles
+ADD COLUMN plan_updated_at TIMESTAMPTZ;
 
-comment on column public.profiles.plan_updated_at is
+COMMENT ON COLUMN public.profiles.plan_updated_at IS
 'Timestamp of last webhook update. Temporal guard against out-of-order events.';
 
 COMMIT;
