@@ -28,6 +28,7 @@ export type ImageToTextResult = {
 
 export type ImageToTextOptions = {
 	contentType?: BookmarkContentType;
+	isOgImage?: boolean;
 };
 
 function formatMetadataContext(
@@ -142,19 +143,35 @@ export const imageToText = async (
 			const contentType = options?.contentType ?? "link";
 			const metadataBlock = formatMetadataContext(context);
 
+			// Shared constraint — prevents Gemini from describing the image wrapper
+			// instead of the actual content being bookmarked.
+			const noImageMeta =
+				'Never reference the image itself — no "thumbnail", "screenshot", "OG image", "preview", "the image shows", or "this is a picture of".';
+
 			let sentenceInstruction: string;
 
 			switch (contentType) {
-				case "screenshot": {
-					sentenceInstruction = [
-						"This image may be from a website. Try to recognize which website or service it is (by logo, branding, layout, visible URL, or distinctive UI) and use that as context.",
-						"",
-						"Use your judgment and focus on:",
-						...siteCategories,
-						"",
-						"Start as if describing the content directly. Do NOT say 'screenshot of', 'this appears to be a screenshot', 'the image shows', or meta-labels for website type (e.g. 'a normal website', 'an ecommerce page', 'a documentation page', 'an article') — describe what the page shows (e.g. 'A landing page for...', 'A product listing for...', 'A page titled...').",
-						'Do not start with "The image shows" or "This is a picture of".',
-					].join("\n");
+				case "link": {
+					const isOgImage = options?.isOgImage ?? true;
+
+					sentenceInstruction = isOgImage
+						? [
+								"You are summarizing a webpage. The image is its Open Graph preview — a marketing/social image chosen by the site. Rely primarily on the metadata below to understand the page; use the image only for visual cues.",
+								"Describe what this page is about — its purpose, main topic, and key takeaway. Focus on the content and intent, not visual layout or UI elements.",
+								noImageMeta,
+								metadataBlock,
+							].join("\n")
+						: [
+								"You are summarizing a webpage. The image is a full-page screenshot — use it as your primary source to understand what the page contains.",
+								"Try to recognize which website or service it is (by logo, branding, layout, visible URL, or distinctive UI) and use that as context.",
+								"",
+								"Classify the page and focus accordingly:",
+								...siteCategories,
+								"",
+								"Describe the page content directly (e.g. 'A landing page for...', 'A product listing for...', 'A page titled...').",
+								noImageMeta,
+								metadataBlock,
+							].join("\n");
 					break;
 				}
 
@@ -164,20 +181,11 @@ export const imageToText = async (
 					break;
 				}
 
-				case "link": {
-					sentenceInstruction = [
-						"This is a webpage thumbnail or Open Graph image. Using the image and the metadata below, describe what this page is about — its purpose, main topic, and key takeaway.",
-						"Don't describe the visual layout or UI elements. Focus on the content and intent.",
-						'Do not start with "The image shows" or "This is a picture of".',
-						metadataBlock,
-					].join("\n");
-					break;
-				}
-
 				case "video": {
 					sentenceInstruction = [
-						"This is a thumbnail for a video. Using the image and metadata below, describe what the video is about — its topic, format (tutorial, review, vlog, music video, etc.), and key subject.",
-						'Do not start with "The image shows" or "This is a picture of".',
+						"You are summarizing a video. The image is just a preview frame — use it together with the metadata below to understand the video's content.",
+						"Describe the video's topic, format (tutorial, review, vlog, music video, etc.), and key subject as if you have watched it.",
+						noImageMeta,
 						metadataBlock,
 					].join("\n");
 					break;
@@ -185,8 +193,9 @@ export const imageToText = async (
 
 				case "document": {
 					sentenceInstruction = [
-						"This is a preview or thumbnail of a document. Describe the document's subject, type (research paper, report, manual, presentation, etc.), and key topic.",
-						'Do not start with "The image shows" or "This is a picture of".',
+						"You are summarizing a document. The image is its cover page or preview — use it together with the metadata below to understand the document.",
+						"Describe the document's subject, type (research paper, report, manual, presentation, etc.), and key topic.",
+						noImageMeta,
 						metadataBlock,
 					].join("\n");
 					break;
@@ -194,8 +203,9 @@ export const imageToText = async (
 
 				case "tweet": {
 					sentenceInstruction = [
-						"This is a social media post from Twitter/X. Describe the post's topic and main point concisely.",
-						'Do not start with "The image shows" or "This is a screenshot of".',
+						"You are summarizing a post from Twitter/X. The image is a capture of the post — use it together with the metadata below.",
+						"Describe the post's topic and main point concisely.",
+						noImageMeta,
 						metadataBlock,
 					].join("\n");
 					break;
@@ -203,8 +213,9 @@ export const imageToText = async (
 
 				case "instagram": {
 					sentenceInstruction = [
-						"This is an Instagram post. Describe what the post shows and its topic.",
-						'Do not start with "The image shows" or "This is a picture of".',
+						"You are summarizing an Instagram post. The image is the post's visual content — use it together with the metadata below.",
+						"Describe what the post is about and its topic.",
+						noImageMeta,
 						metadataBlock,
 					].join("\n");
 					break;
@@ -228,8 +239,7 @@ export const imageToText = async (
 		// KEYWORDS section (controlled by imageKeywords toggle)
 		if (activeToggles.imageKeywords) {
 			const contentType = options?.contentType ?? "link";
-			const useWebsiteKeywords =
-				contentType === "screenshot" || contentType === "link";
+			const useWebsiteKeywords = contentType === "link";
 
 			const keywordsInstruction = useWebsiteKeywords
 				? [

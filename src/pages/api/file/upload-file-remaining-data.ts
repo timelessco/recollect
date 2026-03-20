@@ -50,7 +50,6 @@ const notVideoLogic = async (
 		try {
 			const contentType = resolveContentType({
 				type: undefined,
-				isPageScreenshot: false,
 				mediaType,
 			});
 			const imageToTextResult = await imageToText(

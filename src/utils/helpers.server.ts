@@ -25,6 +25,7 @@ type EnrichMetadataParams = {
 	supabase: SupabaseClient;
 	url: string;
 	contentType?: BookmarkContentType;
+	isOgImage?: boolean;
 	title?: string | null;
 	description?: string | null;
 };
@@ -69,6 +70,7 @@ export const enrichMetadata = async ({
 	supabase,
 	url,
 	contentType,
+	isOgImage,
 	title,
 	description,
 }: EnrichMetadataParams): Promise<EnrichMetadataResult> => {
@@ -129,6 +131,7 @@ export const enrichMetadata = async ({
 				aiToggles,
 				userCollections,
 				contentType,
+				isOgImage,
 				title,
 				description,
 			),
@@ -212,6 +215,7 @@ const processImageCaption = async (
 	aiToggles: AiToggles,
 	userCollections: UserCollection[],
 	contentType?: BookmarkContentType,
+	isOgImage?: boolean,
 	title?: string | null,
 	description?: string | null,
 ) => {
@@ -225,7 +229,7 @@ const processImageCaption = async (
 			ogImage,
 			supabase,
 			userId,
-			{ contentType },
+			{ contentType, isOgImage },
 			{
 				collections: userCollections,
 				title,

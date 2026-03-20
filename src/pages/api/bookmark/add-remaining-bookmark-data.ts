@@ -202,7 +202,6 @@ export default async function handler(
 	const isAudio = currentData?.meta_data?.mediaType?.includes("audio");
 	const contentType = resolveContentType({
 		type: bookmarkType,
-		isPageScreenshot: currentData?.meta_data?.isPageScreenshot ?? undefined,
 		mediaType: currentData?.meta_data?.mediaType ?? undefined,
 	});
 	// upload scrapper image to r2
@@ -284,13 +283,15 @@ export default async function handler(
 		}
 
 		try {
+			const hasScreenshot = Boolean(currentData?.meta_data?.screenshot);
+			const imageUrl = hasScreenshot
+				? imageUrlForMetaDataGeneration
+				: ogImageMetaDataGeneration;
 			const imageToTextResult = await imageToText(
-				currentData?.meta_data?.isOgImagePreferred
-					? ogImageMetaDataGeneration
-					: imageUrlForMetaDataGeneration,
+				imageUrl,
 				supabase,
 				userId,
-				{ contentType },
+				{ contentType, isOgImage: !hasScreenshot },
 				{
 					collections: userCollections,
 					title: currentData?.title,

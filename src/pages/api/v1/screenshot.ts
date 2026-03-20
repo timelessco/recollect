@@ -177,7 +177,6 @@ export default async function handler(
 
 		const contentType = resolveContentType({
 			type: existing?.type ?? undefined,
-			isPageScreenshot: Boolean(isPageScreenshot),
 			mediaType: mediaType ?? undefined,
 		});
 
@@ -192,7 +191,7 @@ export default async function handler(
 			ogImage,
 			supabase,
 			user_id,
-			{ contentType },
+			{ contentType, isOgImage: false },
 			{
 				collections: userCollections,
 				title: existing?.title,

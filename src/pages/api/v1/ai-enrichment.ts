@@ -258,7 +258,6 @@ export default async function handler(
 
 		const contentType = resolveContentType({
 			type: bookmarkRow?.type ?? undefined,
-			isPageScreenshot: Boolean(message.message.meta_data?.isPageScreenshot),
 			mediaType: undefined,
 		});
 
@@ -278,6 +277,7 @@ export default async function handler(
 			url,
 			isInstagramBookmark,
 			contentType,
+			isOgImage: !message.message.meta_data?.isPageScreenshot,
 			title: bookmarkRow?.title,
 			description: bookmarkRow?.description,
 		});
