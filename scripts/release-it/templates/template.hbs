@@ -6,17 +6,18 @@
 
 {{#each breakingChanges}}
 
-{{#if scope}}#### `{{scope}}`{{/if}}{{#if subject}}- {{subject}} {{/if}}
+#### {{#if scope}}`{{scope}}` — {{/if}}{{subject}}
 
-{{#if body}}
-{{body}}
-{{~/if}}
+{{#if quotedBody}}
+{{{smallQuotedBody}}}
+{{/if}}
 
-{{#raw}}{{/raw}}
+<sub>Introduced in [`{{shortHash}}`]({{hashUrl}})</sub>
 
-Introduced in: [`{{shortHash}}`]({{hashUrl}})
+{{#unless @last}}
 
-{{#raw}}{{/raw}}
+---
+{{/unless}}
 
 {{/each}}
 
@@ -26,20 +27,20 @@ Introduced in: [`{{shortHash}}`]({{hashUrl}})
 
 ### {{notableChangesTitle}}
 
-
 {{#each notableChanges}}
 
-{{#if scope}}#### `{{scope}}`{{/if}}{{#if subject}}- {{subject}} {{/if}}
+#### {{#if scope}}`{{scope}}` — {{/if}}{{subject}}
 
-{{#if body}}
-{{body}}
-{{~/if}}
+{{#if quotedBody}}
+{{{smallQuotedBody}}}
+{{/if}}
 
-{{#raw}}{{/raw}}
+<sub>Introduced in [`{{shortHash}}`]({{hashUrl}})</sub>
 
-Introduced in: [`{{shortHash}}`]({{hashUrl}})
+{{#unless @last}}
 
-{{#raw}}{{/raw}}
+---
+{{/unless}}
 
 {{/each}}
 
@@ -51,23 +52,31 @@ Introduced in: [`{{shortHash}}`]({{hashUrl}})
 
 {{#each otherNotableChanges}}
 
-{{#if scope}}#### `{{scope}}`{{/if}}{{#if subject}}- {{subject}} {{/if}}
+#### {{#if scope}}`{{scope}}` — {{/if}}{{subject}}
 
-{{#if body}}
-{{body}}
-{{~/if}}
+{{#if quotedBody}}
+{{{smallQuotedBody}}}
+{{/if}}
 
-{{#raw}}{{/raw}}
+<sub>Introduced in [`{{shortHash}}`]({{hashUrl}})</sub>
 
-Introduced in: [`{{shortHash}}`]({{hashUrl}})
+{{#unless @last}}
 
-{{#raw}}{{/raw}}
+---
+{{/unless}}
 
 {{/each}}
 
 {{/if}}
 
+{{#if hasHighlightedChanges}}
+<details>
+<summary>🗃️ Commits</summary>
+
+{{else}}
 ### 🗃️ Commits
+
+{{/if}}
 
 {{#each commitGroups}}
 
@@ -80,3 +89,7 @@ Introduced in: [`{{shortHash}}`]({{hashUrl}})
 {{/each}}
 
 {{/each}}
+
+{{#if hasHighlightedChanges}}
+</details>
+{{/if}}

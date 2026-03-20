@@ -3,17 +3,11 @@
 "use client";
 
 import * as React from "react";
+import { type ErrorInfo } from "next/error";
 import * as Sentry from "@sentry/nextjs";
 
-type ErrorProps = {
-	readonly error: Error & {
-		digest?: string;
-	};
-	readonly reset: () => void;
-};
-
-export default function Error(props: ErrorProps) {
-	const { error, reset } = props;
+export default function Error(props: ErrorInfo) {
+	const { error, unstable_retry } = props;
 
 	React.useEffect(() => {
 		if (process.env.NODE_ENV === "development") {
@@ -49,7 +43,7 @@ export default function Error(props: ErrorProps) {
 								<button
 									className="inline-flex items-center rounded-md border-transparent bg-[#171717] px-4 py-2 text-base font-medium text-white shadow-xs outline-hidden transition-all hover:bg-[#c18f33] hover:bg-linear-to-br focus-visible:ring-2 focus-visible:ring-white"
 									onClick={() => {
-										reset();
+										unstable_retry();
 									}}
 									type="button"
 								>

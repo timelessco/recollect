@@ -23,19 +23,30 @@ export const POST = createPostApiHandlerWithAuth({
 		const { category_id: categoryId, updateData } = data;
 		const userId = user.id;
 
+		// Separate is_favorite (legacy compat) from actual category fields
+		const { is_favorite, ...categoryUpdateData } = updateData;
+
 		console.log(`[${route}] API called:`, {
 			userId,
 			categoryId,
-			categoryName: updateData.category_name,
+			categoryName: categoryUpdateData.category_name,
 		});
 
-		const { data: categoryData, error } = await supabase
-			.from(CATEGORIES_TABLE_NAME)
-			.update(
-				updateData as Database["public"]["Tables"]["categories"]["Update"],
-			)
-			.match({ id: categoryId, user_id: userId })
-			.select();
+		// Run category table update first (if there are fields to update)
+		const hasOtherUpdates = Object.keys(categoryUpdateData).length > 0;
+
+		const { data: categoryData, error } = hasOtherUpdates
+			? await supabase
+					.from(CATEGORIES_TABLE_NAME)
+					.update(
+						categoryUpdateData as Database["public"]["Tables"]["categories"]["Update"],
+					)
+					.match({ id: categoryId, user_id: userId })
+					.select()
+			: await supabase
+					.from(CATEGORIES_TABLE_NAME)
+					.select()
+					.match({ id: categoryId, user_id: userId });
 
 		if (error) {
 			// Handle unique constraint violation (case-insensitive duplicate)
@@ -70,6 +81,68 @@ export const POST = createPostApiHandlerWithAuth({
 				operation: "update_category_empty",
 				userId,
 			});
+		}
+
+		// @deprecated Legacy compat for old mobile builds. Remove when old builds are no longer supported.
+		// Handle legacy is_favorite → profiles.favorite_categories update
+		// Runs after category update succeeds to avoid mutating favorites on a failed request
+		if (is_favorite !== undefined) {
+			const numericCategoryId =
+				typeof categoryId === "string"
+					? Number.parseInt(categoryId, 10)
+					: categoryId;
+
+			if (is_favorite) {
+				// Add to favorites (idempotent: remove first, then toggle to add)
+				const { error: removeError } = await supabase.rpc(
+					"remove_favorite_category_for_user" as never,
+					{ p_category_id: numericCategoryId } as never,
+				);
+
+				if (removeError) {
+					return apiError({
+						route,
+						message: "Error updating favorite status",
+						error: removeError,
+						operation: "remove_favorite_category",
+						userId,
+						extra: { categoryId },
+					});
+				}
+
+				const { error: toggleError } = await supabase.rpc(
+					"toggle_favorite_category" as never,
+					{ p_category_id: numericCategoryId } as never,
+				);
+
+				if (toggleError) {
+					return apiError({
+						route,
+						message: "Error updating favorite status",
+						error: toggleError,
+						operation: "toggle_favorite_category",
+						userId,
+						extra: { categoryId },
+					});
+				}
+			} else {
+				// Remove from favorites (idempotent: no-op if absent)
+				const { error: removeError } = await supabase.rpc(
+					"remove_favorite_category_for_user" as never,
+					{ p_category_id: numericCategoryId } as never,
+				);
+
+				if (removeError) {
+					return apiError({
+						route,
+						message: "Error updating favorite status",
+						error: removeError,
+						operation: "remove_favorite_category",
+						userId,
+						extra: { categoryId },
+					});
+				}
+			}
 		}
 
 		console.log(`[${route}] Category updated:`, {

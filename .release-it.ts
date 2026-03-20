@@ -6,15 +6,17 @@ import {
 	transform,
 } from "./scripts/release-it/conventional-changelog-writer-options.js";
 
+const isCI = Boolean(process.env.CI);
+
 export default {
 	git: {
-		commitArgs: ["--no-verify", "-S"],
+		commitArgs: ["--no-verify", ...(isCI ? [] : ["-S"])],
 		// eslint-disable-next-line no-template-curly-in-string
 		commitMessage: "🚀 Release v${version}",
 		requireBranch: "main",
-		requireCleanWorkingDir: false,
+		requireCleanWorkingDir: true,
 		requireCommits: true,
-		tagArgs: ["-s"],
+		tagArgs: isCI ? [] : ["-s"],
 	},
 	github: {
 		comments: { submit: true },
@@ -22,7 +24,9 @@ export default {
 		// eslint-disable-next-line no-template-curly-in-string
 		releaseName: "Release v${version}",
 	},
-	hooks: { "before:init": ["pnpm lint"] },
+	hooks: {
+		"before:init": isCI ? [] : ["pnpm lint"],
+	},
 	npm: { publish: false },
 	plugins: {
 		"@release-it/conventional-changelog": {

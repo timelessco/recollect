@@ -1,5 +1,6 @@
 jobs:
   main:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'release') }}
     name: Validate PR title
     runs-on: ubuntu-latest
     steps:

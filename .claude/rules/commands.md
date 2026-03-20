@@ -53,7 +53,7 @@ pnpm start            # Start production server
 #### Fix (auto-fix)
 
 ```bash
-pnpm fix              # Turbo: runs fix:eslint only
+pnpm fix              # Turbo: full fix chain (spelling → css → md → prettier → eslint via dependsOn)
 pnpm fix:eslint       # Auto-fix ESLint issues
 pnpm fix:prettier     # Auto-fix formatting
 pnpm fix:css          # Auto-fix Stylelint issues
@@ -91,6 +91,9 @@ pnpm check:engine     # Verify Node.js engine compatibility
 pnpm clean            # Clean build artifacts
 pnpm release          # Release with release-it
 pnpm release:dryrun   # Dry-run release
+pnpm release:pr       # Create release/* branch + PR to main
+pnpm release:pr:dryrun # Preview release changelog (no mutations)
+pnpm release:cleanup  # Post-release: merge main→dev, delete release branch
 pnpm cypress:open     # Open Cypress (no specs exist)
 ```
 
