@@ -71,6 +71,25 @@ async function syncSubscription(payload: any) {
 		})
 		.eq("id", externalId)
 		.or(`plan_updated_at.is.null,plan_updated_at.lt.${now}`);
+
+	// If upgrading to a paid plan, enqueue skipped bookmarks for AI enrichment
+	if (plan !== "free") {
+		const { data: enqueued, error } = await getSupabaseAdmin().rpc(
+			"enqueue_skipped_bookmarks",
+			{ p_user_id: externalId },
+		);
+
+		if (error) {
+			console.error(
+				"[polar/webhook] Failed to enqueue skipped bookmarks:",
+				error,
+			);
+		} else if (enqueued && enqueued > 0) {
+			console.log(
+				`[polar/webhook] Enqueued ${enqueued} skipped bookmarks for user ${externalId}`,
+			);
+		}
+	}
 }
 
 export const POST = Webhooks({

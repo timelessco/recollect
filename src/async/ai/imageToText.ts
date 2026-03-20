@@ -19,6 +19,7 @@ export type ImageToTextContextProps = {
 
 export type ImageToTextResult = {
 	image_keywords: string[];
+	limitReached?: boolean;
 	matched_collection_ids: number[];
 	ocr_text: string | null;
 	sentence: string | null;
@@ -49,7 +50,13 @@ export const imageToText = async (
 
 		if (!userApiKey && isLimitReached) {
 			console.warn("Monthly free limit reached — skipping caption generation.");
-			return null;
+			return {
+				sentence: null,
+				image_keywords: [],
+				matched_collection_ids: [],
+				ocr_text: null,
+				limitReached: true,
+			};
 		}
 
 		// Skip API call entirely when all toggles are off

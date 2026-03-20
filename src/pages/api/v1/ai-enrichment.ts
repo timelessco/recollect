@@ -253,6 +253,7 @@ export default async function handler(
 			matchedCollectionIds,
 			isFailed,
 			error,
+			limitReached,
 		} = await enrichMetadata({
 			existingMetadata: message.message.meta_data,
 			ogImage,
@@ -263,6 +264,39 @@ export default async function handler(
 			url,
 			isInstagramBookmark,
 		});
+
+		// If limit reached, mark as skipped and remove from queue
+		if (limitReached) {
+			console.log(`[${ROUTE}] Free plan limit reached, marking as skipped:`, {
+				bookmarkId: id,
+				url,
+			});
+
+			await supabase
+				.from(MAIN_TABLE_NAME)
+				.update({ enrichment_status: "skipped" })
+				.eq("id", id);
+
+			const { error: deleteError } = await supabase
+				.schema("pgmq_public")
+				.rpc("delete", {
+					queue_name,
+					message_id: message.msg_id,
+				});
+
+			if (deleteError) {
+				console.error(
+					`[${ROUTE}] Error deleting message from queue after limit skip:`,
+					{ error: deleteError, messageId: message.msg_id },
+				);
+			}
+
+			response.status(200).json({
+				success: true,
+				limitReached: true,
+			});
+			return;
+		}
 
 		if (isFailed) {
 			console.warn(`[${ROUTE}] Metadata enrichment partially failed:`, { url });
@@ -275,7 +309,7 @@ export default async function handler(
 		// Update database with enriched data
 		const { error: updateError } = await supabase
 			.from(MAIN_TABLE_NAME)
-			.update({ ogImage, meta_data: newMeta })
+			.update({ ogImage, meta_data: newMeta, enrichment_status: null })
 			.eq("id", id);
 
 		if (updateError) {

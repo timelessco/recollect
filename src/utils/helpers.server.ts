@@ -30,6 +30,7 @@ type EnrichMetadataResult = {
 	matchedCollectionIds: number[];
 	isFailed: boolean;
 	error: string | null;
+	limitReached?: boolean;
 };
 
 /**
@@ -139,6 +140,7 @@ export const enrichMetadata = async ({
 		matchedCollectionIds,
 		ocr: ocrData,
 		ocr_status: ocrStatus,
+		limitReached,
 	} = captionResult.status === "fulfilled"
 		? captionResult.value
 		: {
@@ -148,6 +150,7 @@ export const enrichMetadata = async ({
 				matchedCollectionIds: [] as number[],
 				ocr: null,
 				ocr_status: "no_text" as const,
+				limitReached: false,
 			};
 
 	// Extract blurhash result
@@ -192,7 +195,7 @@ export const enrichMetadata = async ({
 		hasVideo: Boolean(metadata.video_url),
 	});
 
-	return { metadata, matchedCollectionIds, isFailed, error };
+	return { metadata, matchedCollectionIds, isFailed, error, limitReached };
 };
 
 const processImageCaption = async (
@@ -218,6 +221,19 @@ const processImageCaption = async (
 			userCollections.length > 0 ? { collections: userCollections } : null,
 			aiToggles,
 		);
+
+		if (result?.limitReached) {
+			return {
+				isImageCaptionFailed: false,
+				image_caption: null,
+				image_keywords: [],
+				matchedCollectionIds: [],
+				ocr: null,
+				ocr_status: "no_text" as const,
+				limitReached: true,
+			};
+		}
+
 		if (!result?.sentence) {
 			// When aiSummary is OFF, null sentence is expected — not a failure
 			if (aiToggles.aiSummary) {
