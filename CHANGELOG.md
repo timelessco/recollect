@@ -1,5 +1,185 @@
 # Changelog
 
+## 0.4.0 (2026-03-20)
+
+### 👀 Notable Changes
+
+
+#### `lightbox` — add velocity-based swipe-to-close on mobile
+
+> <sub>Desktop close-on-swipe was already velocity-based (wheel deltaY scales with speed), but mobile touch required dragging the full 200px threshold regardless of flick speed.
+> 
+> Add velocity tracking using an 80ms sample window during touch moves. On pointer up, if downward velocity exceeds 800px/s and the user has dragged at least 30px, close immediately.</sub>
+
+<sub>Introduced in [`68510a93`](https://github.com/timelessco/recollect/commit/68510a93d399c5838a9f141067e3c943e875c0f5)</sub>
+
+
+---
+
+
+#### `release` — 🐛 use separate commit for API changelog clear
+
+> <sub>- --amend rewrites the merge commit SHA, breaking   merge-base --is-ancestor check in release-pr.sh - Separate commit preserves the merge commit identity</sub>
+
+<sub>Introduced in [`81b92e78`](https://github.com/timelessco/recollect/commit/81b92e78d771e21dd9c82afa42dc22495ac5c842)</sub>
+
+
+---
+
+
+#### `release` — 🚀 add timestamp to release PR titles
+
+> <sub>- Include time (HHMM) in branch name for same-day uniqueness - Use conventional commit format with human-readable timestamp - Re-enable Semantic PR validation for release branches</sub>
+
+<sub>Introduced in [`4900cc7b`](https://github.com/timelessco/recollect/commit/4900cc7bcb17789de7749f597ee9b2f8df4f8a34)</sub>
+
+
+---
+
+
+#### `deps` — update @base-ui/react to 1.3.0
+
+> <sub>Fixes mobile drawer scroll by upgrading Base UI which adds cross-axis scroll detection for horizontal-swipe drawers. Also updates DrawerPreview import to Drawer (API graduated).</sub>
+
+<sub>Introduced in [`6a05b57a`](https://github.com/timelessco/recollect/commit/6a05b57aafb9945318473a77bce18b94a8b4fbcb)</sub>
+
+
+---
+
+
+#### `ai` — contextual AI summaries based on content type
+
+> <sub>Replace the one-size-fits-all image captioning prompt with content-type-aware prompts. A resolveContentType utility maps bookmark signals (type, mediaType, isPageScreenshot) to one of 8 content types: link, screenshot, image, video, audio, document, tweet, instagram.
+> 
+> Each type gets a tailored SENTENCE prompt that incorporates bookmark metadata (title, URL, description) for smarter summaries. Audio files skip AI enrichment entirely.
+> 
+> Also fixes a bug where title/description/url context was only passed to the AI when the user had collections.</sub>
+
+<sub>Introduced in [`1ebababc`](https://github.com/timelessco/recollect/commit/1ebababcfe379fe08d5f0efbc376961a7e974bf0)</sub>
+
+
+
+
+### 📌 Other Notable Changes
+
+
+#### `release` — 📝 finalize Slack notification format
+
+> <sub>- Use **double asterisks** for bold (headers, authors, PR title) - Remove :rocket: prefix from main message - Tag Karthik only in API changelog thread reply</sub>
+
+<sub>Introduced in [`1fe9be25`](https://github.com/timelessco/recollect/commit/1fe9be25f80eea035529dd1a07d5f7c02a9c8635)</sub>
+
+
+---
+
+
+#### `release` — 📝 add Slack notification step to release skill
+
+> <sub>- Add Step 2: notify Slack with single-line PR link, changelog in thread - Renumber subsequent steps 3-6 for sequential flow - Update release label references (Semantic PR now runs on releases)</sub>
+
+<sub>Introduced in [`646e5f21`](https://github.com/timelessco/recollect/commit/646e5f21c19cdcca5fead899afff04698731835f)</sub>
+
+
+---
+
+
+#### `gotchas` — 📝 update release label behavior
+
+> <sub>- Semantic PR validation now runs on release PRs</sub>
+
+<sub>Introduced in [`273d600a`](https://github.com/timelessco/recollect/commit/273d600a5911502de7545d099cf04aeb183d74e3)</sub>
+
+
+---
+
+
+#### `gotchas` — 📝 add release pipeline learnings
+
+> <sub>- Document --admin requirement for branch protection - Add backmerge SHA verification gotcha - Document API changelog lifecycle - Update pipeline description with current flow</sub>
+
+<sub>Introduced in [`921bc8a8`](https://github.com/timelessco/recollect/commit/921bc8a89c3d8e8ccebd6101499899f7fd3ac393)</sub>
+
+
+---
+
+
+#### `release` — 📝 update skill with session learnings
+
+> <sub>- Add --admin flag for branch protection bypass - Fix backmerge verification (check dev tip, not diff) - Document cleanup job timing and API changelog flow - Add prerequisite check commands</sub>
+
+<sub>Introduced in [`4175675d`](https://github.com/timelessco/recollect/commit/4175675df86bffd65e3b9b3e8afc9fc698c51478)</sub>
+
+
+
+
+<details>
+<summary>🗃️ Commits</summary>
+
+
+
+#### ⭐ New Features
+
+- **`ai`** contextual AI summaries based on content type — [`1ebabab`](https://github.com/timelessco/recollect/commit/1ebababcfe379fe08d5f0efbc376961a7e974bf0) · @rogerantony-dev
+
+- **`api`** add isOgImagePreferred option for enhanced image processing — [`e32d344`](https://github.com/timelessco/recollect/commit/e32d344e47e15ec95612a61793e2b2ba4ea921f0) · @rogerantony-dev
+
+- **`imageToText`** enhance image processing with isOgImage option — [`befc6d6`](https://github.com/timelessco/recollect/commit/befc6d6f5d98dbfcd6dd34fdf67bfd1cc79f5915) · @rogerantony-dev
+
+- **`release`** 🚀 add timestamp to release PR titles — [`4900cc7`](https://github.com/timelessco/recollect/commit/4900cc7bcb17789de7749f597ee9b2f8df4f8a34) · @navin-moorthy
+
+
+
+#### 🐞 Bug Fixes
+
+- **`api`** update content type resolution and enhance error handling in bookmark data retrieval — [`27d7087`](https://github.com/timelessco/recollect/commit/27d7087fb90ce5af3fc75fe1eecf61932834f3b6) · @rogerantony-dev
+
+- **`deps`** update @base-ui/react to 1.3.0 — [`6a05b57`](https://github.com/timelessco/recollect/commit/6a05b57aafb9945318473a77bce18b94a8b4fbcb) · @rogerantony-dev
+
+- **`lightbox`** add velocity-based swipe-to-close on mobile — [`68510a9`](https://github.com/timelessco/recollect/commit/68510a93d399c5838a9f141067e3c943e875c0f5) · @rogerantony-dev
+
+- **`release`** 🐛 use separate commit for API changelog clear — [`81b92e7`](https://github.com/timelessco/recollect/commit/81b92e78d771e21dd9c82afa42dc22495ac5c842) · @navin-moorthy
+
+
+
+#### ♻️  Code Refactoring
+
+- **`api`** replace hardcoded model string with GEMINI_MODEL constant — [`1f1520c`](https://github.com/timelessco/recollect/commit/1f1520c50960ee853f297059004f0486ee6174ca) · @rogerantony-dev
+
+- **`api`** streamline content type resolution and improve error tracking — [`3356d4a`](https://github.com/timelessco/recollect/commit/3356d4ac24e5cb96b7c825b82380c4ed568e8c6d) · @rogerantony-dev
+
+- **`imageToText`** update summarization instructions for webpages, videos — [`a2a60e0`](https://github.com/timelessco/recollect/commit/a2a60e0aae22f8fae7626ae9ddc63eea014a04f6) · @rogerantony-dev
+
+
+
+#### 📔 Documentation Changes
+
+- **`gotchas`** 📝 add release pipeline learnings — [`921bc8a`](https://github.com/timelessco/recollect/commit/921bc8a89c3d8e8ccebd6101499899f7fd3ac393) · @navin-moorthy
+
+- **`gotchas`** 📝 update release label behavior — [`273d600`](https://github.com/timelessco/recollect/commit/273d600a5911502de7545d099cf04aeb183d74e3) · @navin-moorthy
+
+- **`gotchas`** clarify backmerge verification behavior and root cause — [`047cb93`](https://github.com/timelessco/recollect/commit/047cb93f1bee799c2b693afeeac4073ebf189bab) · @navin-moorthy
+
+- **`release`** 📝 add Slack notification step to release skill — [`646e5f2`](https://github.com/timelessco/recollect/commit/646e5f21c19cdcca5fead899afff04698731835f) · @navin-moorthy
+
+- **`release`** 📝 finalize Slack notification format — [`1fe9be2`](https://github.com/timelessco/recollect/commit/1fe9be25f80eea035529dd1a07d5f7c02a9c8635) · @navin-moorthy
+
+- **`release`** 📝 update skill with session learnings — [`4175675`](https://github.com/timelessco/recollect/commit/4175675df86bffd65e3b9b3e8afc9fc698c51478) · @navin-moorthy
+
+
+
+#### 💚 CI Changes
+
+- **`release`** 🔔 add Slack notification on GitHub Release — [`cb0ae39`](https://github.com/timelessco/recollect/commit/cb0ae39b4183bd5b7097feb5a2439787a5314413) · @navin-moorthy, closes [#recollect-dev](https://github.com/timelessco/recollect/issues/recollect-dev)
+
+
+
+
+- 🚀 Release v0.3.0 — [`125c1e7`](https://github.com/timelessco/recollect/commit/125c1e7d5f24e7a0a2214dd20684272a26d93133) · @navin-moorthy
+
+
+
+</details>
+
 ## 0.3.0 (2026-03-19)
 
 ### 👀 Notable Changes
