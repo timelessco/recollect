@@ -134,7 +134,7 @@ export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
 						/>
 					</div>
 				</LabelledComponent>
-				<div className="flex w-1/2 justify-start sm:mt-0 sm:justify-end">
+				<div className="mt-2 flex w-1/2 justify-start sm:mt-0 sm:justify-end">
 					<Button
 						className={` ${settingsDeleteButtonRedClassName} ${deleteUserMutation.isPending ? "py-[9px]" : ""}`}
 						isDisabled={deleteUserMutation.isPending}

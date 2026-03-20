@@ -1,7 +1,7 @@
 import { Icon, type IconProps } from "@/components/atoms/icon";
 
 export const XIcon = (props: IconProps) => (
-	<Icon {...props} fill="none" viewBox="0 0 18 18">
+	<Icon {...props} fill="none" height="18" viewBox="0 0 18 18" width="18">
 		<path
 			stroke="currentColor"
 			strokeLinecap="round"
