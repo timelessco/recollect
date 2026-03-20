@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DrawerPreview as Drawer } from "@base-ui/react/drawer";
+import { Drawer } from "@base-ui/react/drawer";
 
 import { SidepaneContent, type SidepaneContentProps } from "./sidepane-content";
 import { useMiscellaneousStore } from "@/store/componentStore";
