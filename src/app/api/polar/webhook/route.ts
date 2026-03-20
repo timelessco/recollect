@@ -45,7 +45,11 @@ async function syncSubscription(payload: any) {
 		return;
 	}
 
-	const now = new Date().toISOString();
+	// Use Polar's event timestamp for the temporal guard so that
+	// concurrent webhooks (e.g. canceled + revoked) are ordered correctly.
+	const eventTimestamp =
+		data.modified_at ?? data.modifiedAt ?? new Date().toISOString();
+	const now = new Date(eventTimestamp).toISOString();
 	const productId: string = data.product_id ?? data.productId ?? "";
 	const plan = resolvePlan(productId, data.status);
 	const rawPeriodEnd = data.current_period_end ?? data.currentPeriodEnd ?? null;
