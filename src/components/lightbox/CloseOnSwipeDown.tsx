@@ -1,6 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useController } from "yet-another-react-lightbox";
 
+// Threshold at which we actually close the lightbox
+const THRESHOLD = 200;
+// Point at which opacity starts decreasing
+const OPACITY_START = THRESHOLD * 0.5;
+const INTERACTIVE_SELECTOR =
+	"media-controller, video, audio, iframe, object, [data-no-swipe]";
+
 export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 	// Lightbox controller: lets us subscribe to user input sensors,
 	// close the lightbox, and access current slide dimensions
@@ -12,6 +19,11 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 	// Used to debounce/reset animations after inactivity
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+	// Touch tracking refs
+	const pointerStartYRef = useRef(0);
+	const isDraggingRef = useRef(false);
+	const rafRef = useRef(0);
+
 	useEffect(() => {
 		if (!enabled) {
 			return () => {};
@@ -19,12 +31,6 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 
 		// Maximum pull distance = slide height
 		const maxOffset = slideRect?.height ?? 0;
-
-		// Threshold at which we actually close the lightbox
-		const threshold = 200;
-
-		// Point at which opacity starts decreasing
-		const opacityStart = threshold * 0.5;
 
 		// Reset styles back to default (no offset, full opacity, normal scale)
 		const reset = (element: HTMLElement) => {
@@ -34,8 +40,31 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			element.style.setProperty("--yarl-pull-scale", "1");
 		};
 
-		// Subscribe to wheel events from the lightbox
-		const unsubscribe = subscribeSensors("onWheel", (event) => {
+		// Apply pull offset, opacity fade, and scale to the element
+		const applyOffset = (element: HTMLElement) => {
+			// Update CSS variables for translation
+			element.style.setProperty("--yarl-pull-offset", `${offsetRef.current}px`);
+
+			// Fade out gradually after crossing opacityStart
+			const opacity =
+				offsetRef.current > OPACITY_START
+					? Math.max(
+							0.5,
+							1 -
+								((offsetRef.current - OPACITY_START) /
+									(THRESHOLD - OPACITY_START)) *
+									0.5,
+						)
+					: 1;
+			element.style.setProperty("--yarl-pull-opacity", `${opacity}`);
+
+			// Scale down slightly as we pull further
+			const scale = Math.max(0.5, 1 - (offsetRef.current / THRESHOLD) * 0.2);
+			element.style.setProperty("--yarl-pull-scale", `${scale}`);
+		};
+
+		// Subscribe to wheel events from the lightbox (Desktop: wheel/trackpad)
+		const unsubscribeWheel = subscribeSensors("onWheel", (event) => {
 			const element = event.currentTarget as HTMLElement;
 
 			// --- Ignore horizontal swipes (left/right) ---
@@ -50,28 +79,10 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 				maxOffset,
 			);
 
-			// Update CSS variables for translation
-			element.style.setProperty("--yarl-pull-offset", `${offsetRef.current}px`);
-
-			// Fade out gradually after crossing opacityStart
-			const opacity =
-				offsetRef.current > opacityStart
-					? Math.max(
-							0.5,
-							1 -
-								((offsetRef.current - opacityStart) /
-									(threshold - opacityStart)) *
-									0.5,
-						)
-					: 1;
-			element.style.setProperty("--yarl-pull-opacity", `${opacity}`);
-
-			// Scale down slightly as we pull further
-			const scale = Math.max(0.5, 1 - (offsetRef.current / threshold) * 0.2);
-			element.style.setProperty("--yarl-pull-scale", `${scale}`);
+			applyOffset(element);
 
 			// Close the lightbox if pull distance exceeds threshold
-			if (offsetRef.current > threshold) {
+			if (offsetRef.current > THRESHOLD) {
 				close();
 				return;
 			}
@@ -84,9 +95,107 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 			timeoutRef.current = setTimeout(() => reset(element), 200);
 		});
 
+		// Mobile: pointer events (touch)
+		const getSlideWrapper = (container: HTMLElement) =>
+			container.querySelector<HTMLElement>(".slide-wrapper");
+
+		const isInteractiveTarget = (event: React.PointerEvent) =>
+			(event.target as HTMLElement).closest?.(INTERACTIVE_SELECTOR) !== null;
+
+		const unsubscribePointerDown = subscribeSensors(
+			"onPointerDown",
+			(event: React.PointerEvent) => {
+				if (event.pointerType !== "touch" || isInteractiveTarget(event)) {
+					return;
+				}
+
+				pointerStartYRef.current = event.clientY;
+				isDraggingRef.current = false;
+				offsetRef.current = 0;
+			},
+		);
+
+		const unsubscribePointerMove = subscribeSensors(
+			"onPointerMove",
+			(event: React.PointerEvent) => {
+				if (event.pointerType !== "touch" || isInteractiveTarget(event)) {
+					return;
+				}
+
+				const deltaY = event.clientY - pointerStartYRef.current;
+				const element = event.currentTarget as HTMLElement;
+
+				if (deltaY <= 0) {
+					if (isDraggingRef.current) {
+						cancelAnimationFrame(rafRef.current);
+						reset(element);
+						getSlideWrapper(element)?.removeAttribute("data-pulling");
+						isDraggingRef.current = false;
+					}
+
+					return;
+				}
+
+				if (!isDraggingRef.current) {
+					getSlideWrapper(element)?.setAttribute("data-pulling", "");
+				}
+
+				isDraggingRef.current = true;
+				offsetRef.current = Math.min(deltaY, maxOffset);
+
+				if (offsetRef.current > THRESHOLD) {
+					cancelAnimationFrame(rafRef.current);
+					isDraggingRef.current = false;
+					close();
+					return;
+				}
+
+				// Batch style updates to next frame to prevent iOS jitter
+				cancelAnimationFrame(rafRef.current);
+				rafRef.current = requestAnimationFrame(() => {
+					applyOffset(element);
+				});
+			},
+		);
+
+		const handlePointerEnd = (event: React.PointerEvent) => {
+			if (event.pointerType !== "touch") {
+				return;
+			}
+
+			if (!isDraggingRef.current) {
+				return;
+			}
+
+			const element = event.currentTarget as HTMLElement;
+			cancelAnimationFrame(rafRef.current);
+			isDraggingRef.current = false;
+			getSlideWrapper(element)?.removeAttribute("data-pulling");
+			reset(element);
+		};
+
+		const unsubscribePointerUp = subscribeSensors(
+			"onPointerUp",
+			handlePointerEnd,
+		);
+		const unsubscribePointerLeave = subscribeSensors(
+			"onPointerLeave",
+			handlePointerEnd,
+		);
+		const unsubscribePointerCancel = subscribeSensors(
+			"onPointerCancel",
+			handlePointerEnd,
+		);
+
 		// Cleanup on unmount or dependency change
 		return () => {
-			unsubscribe();
+			unsubscribeWheel();
+			unsubscribePointerDown();
+			unsubscribePointerMove();
+			unsubscribePointerUp();
+			unsubscribePointerLeave();
+			unsubscribePointerCancel();
+			cancelAnimationFrame(rafRef.current);
 			if (timeoutRef.current) {
 				clearTimeout(timeoutRef.current);
 			}

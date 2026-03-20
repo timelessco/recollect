@@ -1078,10 +1078,17 @@
 	}
 
 	.slide-wrapper {
-		transform: translateY(var(--yarl-pull-offset)) scale(var(--yarl-pull-scale));
+		transform: translate3d(0, var(--yarl-pull-offset), 0)
+			scale(var(--yarl-pull-scale));
 		opacity: var(--yarl-pull-opacity);
+		transition:
+			transform 200ms ease-out,
+			opacity 200ms ease-out;
 
-		@apply transition-all duration-200 ease-out;
+		&[data-pulling] {
+			transform: translate3d(0, var(--yarl-pull-offset), 0);
+			transition: none;
+		}
 	}
 
 	@keyframes custom-fade-scale-in {

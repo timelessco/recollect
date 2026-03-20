@@ -39,6 +39,13 @@ export const UpdateCategoryPayloadSchema = z.object({
 				.string()
 				.optional()
 				.meta({ description: "New icon color hex code" }),
+			/**
+			 * @deprecated Legacy compat for old mobile builds. Remove when old builds are no longer supported.
+			 */
+			is_favorite: z.boolean().optional().meta({
+				description:
+					"Deprecated: legacy compat for old mobile builds. Toggles favorite status via profiles.favorite_categories",
+			}),
 			is_public: z.boolean().optional().meta({
 				description: "Whether to make the collection publicly visible",
 			}),
