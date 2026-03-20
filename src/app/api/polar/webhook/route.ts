@@ -70,21 +70,44 @@ async function syncSubscription(payload: any) {
 		.eq("id", externalId)
 		.or(`plan_updated_at.is.null,plan_updated_at.lte.${now}`);
 
-	// If upgrading to a paid plan, enqueue skipped bookmarks for AI enrichment
+	// If upgrading to a paid plan, re-enqueue skipped bookmarks for AI enrichment
 	if (plan !== "free") {
-		const { data: enqueued, error } = await supabase.rpc(
-			"enqueue_skipped_bookmarks",
-			{ p_user_id: externalId },
-		);
+		const { data: skipped, error: fetchError } = await supabase
+			.from("everything")
+			.select("id, url, title, description, ogImage, type, meta_data")
+			.eq("user_id", externalId)
+			.eq("enrichment_status", "skipped");
 
-		if (error) {
+		if (fetchError) {
 			console.error(
-				"[polar/webhook] Failed to enqueue skipped bookmarks:",
-				error,
+				"[polar/webhook] Failed to fetch skipped bookmarks:",
+				fetchError,
 			);
-		} else if (enqueued && enqueued > 0) {
+		} else if (skipped && skipped.length > 0) {
+			for (const bookmark of skipped) {
+				await supabase.schema("pgmq_public").rpc("send", {
+					queue_name: "ai-embeddings",
+					message: {
+						id: bookmark.id,
+						url: bookmark.url,
+						user_id: externalId,
+						type: bookmark.type ?? "",
+						title: bookmark.title ?? "",
+						description: bookmark.description ?? "",
+						ogImage: bookmark.ogImage ?? "",
+						meta_data: bookmark.meta_data ?? {},
+					},
+				});
+			}
+
+			await supabase
+				.from("everything")
+				.update({ enrichment_status: null })
+				.eq("user_id", externalId)
+				.eq("enrichment_status", "skipped");
+
 			console.log(
-				`[polar/webhook] Enqueued ${enqueued} skipped bookmarks for user ${externalId}`,
+				`[polar/webhook] Enqueued ${skipped.length} skipped bookmarks for user ${externalId}`,
 			);
 		}
 	}
