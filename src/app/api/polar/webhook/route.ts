@@ -51,7 +51,8 @@ async function syncSubscription(payload: any) {
 		data.modified_at ?? data.modifiedAt ?? new Date().toISOString();
 	const now = new Date(eventTimestamp).toISOString();
 	const productId: string = data.product_id ?? data.productId ?? "";
-	const plan = resolvePlan(productId, data.status);
+	const endedAt = data.ended_at ?? data.endedAt ?? null;
+	const plan = endedAt ? "free" : resolvePlan(productId, data.status);
 	const rawPeriodEnd = data.current_period_end ?? data.currentPeriodEnd ?? null;
 	const periodEnd = rawPeriodEnd ? new Date(rawPeriodEnd).toISOString() : null;
 
@@ -67,7 +68,7 @@ async function syncSubscription(payload: any) {
 			plan_updated_at: now,
 		})
 		.eq("id", externalId)
-		.or(`plan_updated_at.is.null,plan_updated_at.lt.${now}`);
+		.or(`plan_updated_at.is.null,plan_updated_at.lte.${now}`);
 }
 
 export const POST = Webhooks({
