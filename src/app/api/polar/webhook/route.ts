@@ -1,25 +1,11 @@
 import { Webhooks } from "@polar-sh/nextjs";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-import { SUPABASE_SERVICE_KEY, SUPABASE_URL } from "@/lib/supabase/constants";
+import { createServerServiceClient } from "@/lib/supabase/service";
 
 const PRODUCT_TO_PLAN: Record<string, "pro" | "plus"> = {
 	[process.env.POLAR_PRO_PRODUCT_ID ?? ""]: "pro",
 	[process.env.POLAR_PLUS_PRODUCT_ID ?? ""]: "plus",
 };
-
-let supabaseAdmin: SupabaseClient;
-
-function getSupabaseAdmin() {
-	if (!supabaseAdmin) {
-		supabaseAdmin = createClient(
-			SUPABASE_URL ?? "",
-			SUPABASE_SERVICE_KEY ?? "",
-		);
-	}
-
-	return supabaseAdmin;
-}
 
 function resolvePlan(
 	productId: string,
@@ -60,7 +46,9 @@ async function syncSubscription(payload: any) {
 	const rawPeriodEnd = data.current_period_end ?? data.currentPeriodEnd ?? null;
 	const periodEnd = rawPeriodEnd ? new Date(rawPeriodEnd).toISOString() : null;
 
-	await getSupabaseAdmin()
+	const supabase = await createServerServiceClient();
+
+	await supabase
 		.from("profiles")
 		.update({
 			plan,
