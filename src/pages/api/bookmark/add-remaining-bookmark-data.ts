@@ -22,7 +22,6 @@ import {
 	MAIN_TABLE_NAME,
 	R2_MAIN_BUCKET_NAME,
 	STORAGE_SCRAPPED_IMAGES_PATH,
-	bookmarkType,
 } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import {
@@ -116,7 +115,7 @@ export default async function handler(
 	// this is a better solution as we are only getting one row of data
 	const { data: currentData, error: currentDataError } = await supabase
 		.from(MAIN_TABLE_NAME)
-		.select("ogImage, meta_data, description, title")
+		.select("ogImage, meta_data, description, title, type")
 		.match({ id })
 		.single();
 
@@ -201,7 +200,7 @@ export default async function handler(
 	const isUrlAnMedia = await checkIfUrlAnMedia(url);
 	const isAudio = currentData?.meta_data?.mediaType?.includes("audio");
 	const contentType = resolveContentType({
-		type: bookmarkType,
+		type: currentData?.type ?? undefined,
 		mediaType: currentData?.meta_data?.mediaType ?? undefined,
 	});
 	// upload scrapper image to r2

@@ -133,6 +133,7 @@ export const imageToText = async (
 		];
 
 		// Build prompt sections dynamically based on active toggles
+		const contentType = options?.contentType ?? "link";
 		const promptParts: string[] = [
 			"Analyze this image and provide the following parts.",
 		];
@@ -140,7 +141,6 @@ export const imageToText = async (
 
 		// SENTENCE section (controlled by aiSummary toggle)
 		if (activeToggles.aiSummary) {
-			const contentType = options?.contentType ?? "link";
 			const metadataBlock = formatMetadataContext(context);
 
 			// Shared constraint — prevents Gemini from describing the image wrapper
@@ -238,7 +238,6 @@ export const imageToText = async (
 
 		// KEYWORDS section (controlled by imageKeywords toggle)
 		if (activeToggles.imageKeywords) {
-			const contentType = options?.contentType ?? "link";
 			const useWebsiteKeywords = contentType === "link";
 
 			const keywordsInstruction = useWebsiteKeywords

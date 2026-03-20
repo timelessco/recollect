@@ -251,11 +251,18 @@ export default async function handler(
 		console.log(`[${ROUTE}] Starting metadata enrichment:`, { url });
 
 		// Fetch title and description from DB for contextual AI summary
-		const { data: bookmarkRow } = await supabase
+		const { data: bookmarkRow, error: fetchError } = await supabase
 			.from(MAIN_TABLE_NAME)
 			.select("title, description, type")
 			.eq("id", id)
 			.single();
+
+		if (fetchError) {
+			console.warn(`[${ROUTE}] Failed to fetch bookmark context:`, {
+				bookmarkId: id,
+				error: fetchError.message,
+			});
+		}
 
 		const contentType = resolveContentType({
 			type: bookmarkRow?.type ?? undefined,
@@ -279,8 +286,8 @@ export default async function handler(
 			isInstagramBookmark,
 			contentType,
 			isOgImage:
-				message.message.meta_data?.isOgImagePreferred ||
-				!message.message.meta_data?.isPageScreenshot,
+				(message.message.meta_data?.isOgImagePreferred ?? false) ||
+				message.message.meta_data?.isPageScreenshot !== true,
 			title: bookmarkRow?.title,
 			description: bookmarkRow?.description,
 		});

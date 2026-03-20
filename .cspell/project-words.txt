@@ -25,7 +25,6 @@ denoland
 dont
 dotenvx
 dups
-ecommerce
 ECOMMERCE
 eqwhx
 favorited
@@ -113,4 +112,3 @@ XVCJ
 yarl
 youtu
 YOUTU
- 
