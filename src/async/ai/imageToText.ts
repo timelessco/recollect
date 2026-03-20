@@ -156,19 +156,17 @@ export const imageToText = async (
 
 					sentenceInstruction = isOgImage
 						? [
-								"You are summarizing a webpage. The image is its Open Graph preview — a marketing/social image chosen by the site. Rely primarily on the metadata below to understand the page; use the image only for visual cues.",
-								"Describe what this page is about — its purpose, main topic, and key takeaway. Focus on the content and intent, not visual layout or UI elements.",
+								"You are summarizing a webpage. Identify the website or platform from the URL and use it to frame your summary (e.g. 'A Pinterest pin about...', 'A Medium article on...', 'A GitHub repository for...').",
+								"Combine the metadata and the image to write a rich, descriptive summary — the page's purpose, main topic, and key details. The image is the Open Graph preview; use it to add visual detail to your description.",
 								noImageMeta,
 								metadataBlock,
 							].join("\n")
 						: [
-								"You are summarizing a webpage. The image is a full-page screenshot — use it as your primary source to understand what the page contains.",
-								"Try to recognize which website or service it is (by logo, branding, layout, visible URL, or distinctive UI) and use that as context.",
+								"You are summarizing a webpage. Identify the website or platform from the URL and use it to frame your summary (e.g. 'A Pinterest pin about...', 'An Amazon product listing for...', 'A documentation page on...').",
+								"The image is a full-page screenshot — use it together with the metadata to write a rich, descriptive summary of the page's content.",
 								"",
 								"Classify the page and focus accordingly:",
 								...siteCategories,
-								"",
-								"Describe the page content directly (e.g. 'A landing page for...', 'A product listing for...', 'A page titled...').",
 								noImageMeta,
 								metadataBlock,
 							].join("\n");
@@ -183,8 +181,8 @@ export const imageToText = async (
 
 				case "video": {
 					sentenceInstruction = [
-						"You are summarizing a video. The image is just a preview frame — use it together with the metadata below to understand the video's content.",
-						"Describe the video's topic, format (tutorial, review, vlog, music video, etc.), and key subject as if you have watched it.",
+						"You are summarizing a video. Identify the platform from the URL (e.g. 'A YouTube tutorial on...', 'A Vimeo short film about...', 'A TikTok video showing...').",
+						"Combine the metadata and the preview frame to write a rich, descriptive summary — the video's topic, format (tutorial, review, vlog, music video, etc.), and key subject.",
 						noImageMeta,
 						metadataBlock,
 					].join("\n");
@@ -193,8 +191,8 @@ export const imageToText = async (
 
 				case "document": {
 					sentenceInstruction = [
-						"You are summarizing a document. The image is its cover page or preview — use it together with the metadata below to understand the document.",
-						"Describe the document's subject, type (research paper, report, manual, presentation, etc.), and key topic.",
+						"You are summarizing a document. Identify the platform or source from the URL if recognizable (e.g. 'A Google Docs report on...', 'A Notion page about...', 'A PDF manual for...').",
+						"Combine the metadata and the cover page/preview to write a rich, descriptive summary — the document's subject, type (research paper, report, manual, presentation, etc.), and key topic.",
 						noImageMeta,
 						metadataBlock,
 					].join("\n");
