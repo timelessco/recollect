@@ -21,6 +21,7 @@ import {
 import { type UrlInput } from "../types/componentTypes";
 
 import {
+	AUDIO_MIME_PREFIX,
 	AUDIO_URL,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
@@ -235,11 +236,11 @@ export const generateVideoThumbnail = async (file: File) =>
 
 // tells if the bookmark is of video type
 export const isBookmarkVideo = (type: string): boolean =>
-	type?.includes("video");
+	type?.startsWith(VIDEO_MIME_PREFIX);
 
 // tells if the bookmark is of audio type
 export const isBookmarkAudio = (type: string): boolean =>
-	type?.includes("audio");
+	type?.startsWith(AUDIO_MIME_PREFIX);
 
 // tells if the bookmark is of document type
 export const isBookmarkDocument = (type: string): boolean =>
@@ -247,7 +248,7 @@ export const isBookmarkDocument = (type: string): boolean =>
 
 // tells if the bookmark is of image type
 export const isBookmarkImage = (type: string): boolean =>
-	type?.includes("image");
+	type?.startsWith(IMAGE_MIME_PREFIX);
 
 // used in apis to tell if user is in a collection or not
 export const isUserInACategoryInApi = (
