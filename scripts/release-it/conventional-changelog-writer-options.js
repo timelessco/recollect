@@ -110,6 +110,15 @@ const addBreakingChanges = (commit, context) => {
 		context.breakingChanges.push({
 			scope: commit?.scope,
 			body: commit?.body,
+			quotedBody: commit?.body
+				? commit.body
+						.split("\n")
+						.map((line) => `> ${line}`)
+						.join("\n")
+				: null,
+			smallQuotedBody: commit?.body
+				? `> <sub>${commit.body.split("\n").join("\n> ")}</sub>`
+				: null,
 			subject: commit?.subject,
 			header: noteText,
 			shortHash: commit.shortHash,
@@ -130,6 +139,11 @@ const addNotableChanges = (commit, context) => {
 		context.notableChanges.push({
 			scope: commit?.scope,
 			body: commit.body,
+			quotedBody: commit.body
+				.split("\n")
+				.map((line) => `> ${line}`)
+				.join("\n"),
+			smallQuotedBody: `> <sub>${commit.body.split("\n").join("\n> ")}</sub>`,
 			subject: commit?.subject,
 			shortHash: commit.shortHash,
 			hashUrl: generateCommitUrl(context, commit.hash),
@@ -146,6 +160,11 @@ const addOtherNotableChanges = (commit, context) => {
 		context.otherNotableChanges.push({
 			scope: commit?.scope,
 			body: commit.body,
+			quotedBody: commit.body
+				.split("\n")
+				.map((line) => `> ${line}`)
+				.join("\n"),
+			smallQuotedBody: `> <sub>${commit.body.split("\n").join("\n> ")}</sub>`,
 			subject: commit?.subject,
 			shortHash: commit.shortHash,
 			hashUrl: generateCommitUrl(context, commit.hash),
@@ -157,6 +176,11 @@ export const transform = async (commitOriginal, context) => {
 	const commit = { ...commitOriginal };
 
 	commit.body = commit?.body || commit?.footer;
+	// Join hard-wrapped lines (72-char git convention), preserve paragraph breaks
+	if (commit.body) {
+		commit.body = commit.body.replace(/(?<!\n)\n(?!\n)/g, " ");
+	}
+
 	// Remove commit body if it's author is a bot
 	if (commit.authorName === "renovate[bot]") {
 		commit.body = "";
@@ -279,6 +303,11 @@ export const transform = async (commitOriginal, context) => {
 	if (matchedRemoteCommit?.login) {
 		commit.userLogin = matchedRemoteCommit.login;
 	}
+
+	context.hasHighlightedChanges =
+		context.breakingChanges?.length > 0 ||
+		context.notableChanges?.length > 0 ||
+		context.otherNotableChanges?.length > 0;
 
 	return commit;
 };

@@ -165,6 +165,10 @@ export type CategoriesData = {
 	icon: string | null;
 	icon_color: string;
 	id: number;
+	/**
+	 * @deprecated Legacy compat for old mobile builds. Remove when old builds are no longer supported.
+	 */
+	is_favorite?: boolean;
 	is_public: boolean;
 	user_id: Pick<
 		ProfilesTableTypes,

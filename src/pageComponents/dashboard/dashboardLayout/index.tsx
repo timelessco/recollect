@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { DrawerPreview as Drawer } from "@base-ui/react/drawer";
+import { Drawer } from "@base-ui/react/drawer";
 import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { Allotment, type AllotmentHandle } from "allotment";
