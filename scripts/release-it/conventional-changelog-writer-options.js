@@ -303,6 +303,7 @@ export const transform = async (commitOriginal, context) => {
 	if (matchedRemoteCommit?.login) {
 		commit.userLogin = matchedRemoteCommit.login;
 	}
+	commit.prNumber = matchedRemoteCommit?.prNumber ?? null;
 
 	context.hasHighlightedChanges =
 		context.breakingChanges?.length > 0 ||
