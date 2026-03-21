@@ -5,8 +5,8 @@
 /public
 /.next
 /next-env.d.ts
-**/*.hbs
-CHANGELOG.md
+/CHANGELOG.md
+/scripts/release-it/**/*.hbs
+/.agents
+/.claude
 /docs/API_CHANGELOG.md
-.agents
-.claude
