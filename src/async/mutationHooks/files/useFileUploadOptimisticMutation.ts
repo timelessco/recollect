@@ -12,7 +12,7 @@ import {
 	BOOKMARKS_COUNT_KEY,
 	BOOKMARKS_KEY,
 	bookmarkType,
-	DOCUMENT_MIME_PREFIX,
+	DOCUMENT_MIME_TYPES,
 	DOCUMENTS_URL,
 	IMAGE_MIME_PREFIX,
 	IMAGES_URL,
@@ -263,7 +263,9 @@ export default function useFileUploadOptimisticMutation() {
 
 				if (
 					CATEGORY_ID === DOCUMENTS_URL &&
-					!uploadedDataType?.startsWith(DOCUMENT_MIME_PREFIX)
+					!(DOCUMENT_MIME_TYPES as readonly string[]).includes(
+						uploadedDataType ?? "",
+					)
 				) {
 					successToast(`Added to ${fileTypeName}`);
 				}

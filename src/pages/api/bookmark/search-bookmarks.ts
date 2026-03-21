@@ -11,7 +11,7 @@ import {
 	AUDIO_URL,
 	bookmarkType,
 	DISCOVER_URL,
-	DOCUMENT_MIME_PREFIX,
+	DOCUMENT_MIME_TYPES,
 	DOCUMENTS_URL,
 	GET_HASHTAG_TAG_PATTERN,
 	GET_SITE_SCOPE_PATTERN,
@@ -252,7 +252,7 @@ export default async function handler(
 		}
 
 		if (category_id === DOCUMENTS_URL) {
-			query = query.like("type", `${DOCUMENT_MIME_PREFIX}%`);
+			query = query.in("type", [...DOCUMENT_MIME_TYPES]);
 		}
 
 		if (category_id === TWEETS_URL) {

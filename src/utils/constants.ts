@@ -245,16 +245,27 @@ export const DUPLICATE_CATEGORY_NAME_ERROR =
 	"You already have a category with this name. Please use a different name.";
 export const NO_BOOKMARKS_ID_ERROR = "Bookmark ID is required";
 
-const ACCEPTED_PREFIXES = ["image/", "video/", "audio/"];
-const ACCEPTED_SPECIFIC = ["application/msword", "application/pdf"];
+export const bookmarkType = "bookmark";
+export const tweetType = "tweet";
+export const instagramType = "instagram";
+
+// MIME type prefixes for media categorization
+// Used in Supabase queries (.like("type", `${PREFIX}%`))
+// and client-side checks (type?.startsWith(PREFIX))
+export const IMAGE_MIME_PREFIX = "image/";
+export const VIDEO_MIME_PREFIX = "video/";
+export const AUDIO_MIME_PREFIX = "audio/";
+export const DOCUMENT_MIME_TYPES = [
+	"application/pdf",
+	"application/msword",
+] as const;
+
+const WORD_MIME_TYPE = "application/msword";
 
 /**
  * Check if a MIME type is accepted for upload.
- * Uses prefix-based validation: any video/*, audio/*, image/* type is accepted,
+ * Prefix-based: any image/*, video/*, audio/* is accepted,
  * plus specific application types (PDF, Word docs).
- *
- * This approach auto-accepts new IANA-registered types (e.g., video/quicktime for MOV)
- * without requiring manual list updates.
  */
 export function isAcceptedMimeType(
 	mimeType: string | null | undefined,
@@ -264,22 +275,13 @@ export function isAcceptedMimeType(
 	}
 
 	return (
-		ACCEPTED_PREFIXES.some((prefix) => mimeType.startsWith(prefix)) ||
-		ACCEPTED_SPECIFIC.includes(mimeType)
+		mimeType.startsWith(IMAGE_MIME_PREFIX) ||
+		mimeType.startsWith(VIDEO_MIME_PREFIX) ||
+		mimeType.startsWith(AUDIO_MIME_PREFIX) ||
+		mimeType === WORD_MIME_TYPE ||
+		mimeType === PDF_MIME_TYPE
 	);
 }
-
-export const bookmarkType = "bookmark";
-export const tweetType = "tweet";
-export const instagramType = "instagram";
-
-// MIME type prefixes for media categorization
-// Used in Supabase queries (.like("type", `${VIDEO_MIME_PREFIX}%`))
-// and client-side checks (type?.startsWith(VIDEO_MIME_PREFIX))
-export const IMAGE_MIME_PREFIX = "image/";
-export const VIDEO_MIME_PREFIX = "video/";
-export const AUDIO_MIME_PREFIX = "audio/";
-export const DOCUMENT_MIME_PREFIX = "application/";
 
 // color picker colors
 export const colorPickerColors = [

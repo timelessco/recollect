@@ -26,7 +26,7 @@ import {
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
 	DISCOVER_URL,
-	DOCUMENT_MIME_PREFIX,
+	DOCUMENT_MIME_TYPES,
 	DOCUMENTS_URL,
 	EVERYTHING_URL,
 	FILE_NAME_PARSING_PATTERN,
@@ -234,19 +234,15 @@ export const generateVideoThumbnail = async (file: File) =>
 		};
 	});
 
-// tells if the bookmark is of video type
 export const isBookmarkVideo = (type: string): boolean =>
 	type?.startsWith(VIDEO_MIME_PREFIX);
 
-// tells if the bookmark is of audio type
 export const isBookmarkAudio = (type: string): boolean =>
 	type?.startsWith(AUDIO_MIME_PREFIX);
 
-// tells if the bookmark is of document type
 export const isBookmarkDocument = (type: string): boolean =>
-	type?.startsWith(DOCUMENT_MIME_PREFIX);
+	(DOCUMENT_MIME_TYPES as readonly string[]).includes(type);
 
-// tells if the bookmark is of image type
 export const isBookmarkImage = (type: string): boolean =>
 	type?.startsWith(IMAGE_MIME_PREFIX);
 
@@ -299,7 +295,7 @@ export const fileTypeIdentifier = (type: string) => {
 		return menuListItemName?.videos;
 	}
 
-	if (type?.startsWith(DOCUMENT_MIME_PREFIX)) {
+	if (type && (DOCUMENT_MIME_TYPES as readonly string[]).includes(type)) {
 		return menuListItemName?.documents;
 	}
 
@@ -395,13 +391,11 @@ export const isCurrentYear = (insertedAt: string) => {
 	return insertedYear === currentYear;
 };
 
-// this function returns true if the media type is of image type else false
 export const checkIfUrlAnImage = async (url: string): Promise<boolean> => {
 	const mediaType = await getMediaType(url);
-	return mediaType?.includes("image/") ?? false;
+	return mediaType?.startsWith(IMAGE_MIME_PREFIX) ?? false;
 };
 
-// this function returns true if the media type is an accepted media type else false
 export const checkIfUrlAnMedia = async (url: string): Promise<boolean> => {
 	const mediaType = await getMediaType(url);
 	return isAcceptedMimeType(mediaType);

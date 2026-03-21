@@ -16,7 +16,7 @@ import {
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
 	bookmarkType,
-	DOCUMENT_MIME_PREFIX,
+	DOCUMENT_MIME_TYPES,
 	DOCUMENTS_URL,
 	IMAGE_MIME_PREFIX,
 	IMAGES_URL,
@@ -225,7 +225,7 @@ export default async function handler(
 
 	if (category_id === DOCUMENTS_URL) {
 		query = query.or(
-			`type.like.${DOCUMENT_MIME_PREFIX}%,meta_data->>mediaType.like.${DOCUMENT_MIME_PREFIX}%`,
+			`type.in.(${DOCUMENT_MIME_TYPES.join(",")}),meta_data->>mediaType.in.(${DOCUMENT_MIME_TYPES.join(",")})`,
 		);
 	}
 

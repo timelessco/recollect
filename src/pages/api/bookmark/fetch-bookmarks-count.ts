@@ -7,7 +7,7 @@ import {
 	AUDIO_MIME_PREFIX,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
-	DOCUMENT_MIME_PREFIX,
+	DOCUMENT_MIME_TYPES,
 	IMAGE_MIME_PREFIX,
 	instagramType,
 	MAIN_TABLE_NAME,
@@ -132,7 +132,7 @@ export default async function handler(
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
 				.is("trash", null)
-				.like("type", `${DOCUMENT_MIME_PREFIX}%`),
+				.in("type", [...DOCUMENT_MIME_TYPES]),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
