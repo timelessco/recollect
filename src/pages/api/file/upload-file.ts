@@ -32,6 +32,7 @@ import {
 	STORAGE_FILES_PATH,
 	UPLOAD_FILE_REMAINING_DATA_API,
 } from "../../../utils/constants";
+import { normalizeUploadedMimeType } from "../../../utils/mime";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import {
 	getAxiosConfigWithAuth,
@@ -184,7 +185,7 @@ export default async (
 			: 0;
 
 		const fileName = parseUploadFileName(data?.name ?? "");
-		const fileType = data?.type;
+		const fileType = normalizeUploadedMimeType(data?.type);
 
 		console.log("upload-file API called:", {
 			userId,

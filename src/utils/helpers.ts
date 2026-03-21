@@ -21,22 +21,23 @@ import {
 import { type UrlInput } from "../types/componentTypes";
 
 import {
-	acceptedFileTypes,
+	AUDIO_MIME_PREFIX,
 	AUDIO_URL,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
 	DISCOVER_URL,
-	documentFileTypes,
+	DOCUMENT_MIME_TYPES,
 	DOCUMENTS_URL,
 	EVERYTHING_URL,
 	FILE_NAME_PARSING_PATTERN,
 	GET_HASHTAG_TAG_PATTERN,
 	GET_NAME_FROM_EMAIL_PATTERN,
-	imageFileTypes,
+	IMAGE_MIME_PREFIX,
 	IMAGES_URL,
 	INBOX_URL,
 	INSTAGRAM_URL,
 	instagramType,
+	isAcceptedMimeType,
 	LINKS_URL,
 	MAX_VIDEO_SIZE_BYTES,
 	menuListItemName,
@@ -48,7 +49,7 @@ import {
 	tweetType,
 	UNCATEGORIZED_URL,
 	VIDEO_DOWNLOAD_TIMEOUT_MS,
-	videoFileTypes,
+	VIDEO_MIME_PREFIX,
 	VIDEOS_URL,
 } from "./constants";
 import { vet } from "./try";
@@ -233,21 +234,17 @@ export const generateVideoThumbnail = async (file: File) =>
 		};
 	});
 
-// tells if the bookmark is of video type
 export const isBookmarkVideo = (type: string): boolean =>
-	type?.includes("video");
+	type?.startsWith(VIDEO_MIME_PREFIX);
 
-// tells if the bookmark is of audio type
 export const isBookmarkAudio = (type: string): boolean =>
-	type?.includes("audio");
+	type?.startsWith(AUDIO_MIME_PREFIX);
 
-// tells if the bookmark is of document type
 export const isBookmarkDocument = (type: string): boolean =>
-	documentFileTypes?.includes(type);
+	(DOCUMENT_MIME_TYPES as readonly string[]).includes(type);
 
-// tells if the bookmark is of image type
 export const isBookmarkImage = (type: string): boolean =>
-	type?.includes("image");
+	type?.startsWith(IMAGE_MIME_PREFIX);
 
 // used in apis to tell if user is in a collection or not
 export const isUserInACategoryInApi = (
@@ -290,15 +287,15 @@ export const clickToOpenInNewTabLogic = (
 
 // based on sent type this will tell what it belongs to, eg if type is application/pdf this function will output Documents
 export const fileTypeIdentifier = (type: string) => {
-	if (imageFileTypes?.includes(type)) {
+	if (type?.startsWith(IMAGE_MIME_PREFIX)) {
 		return menuListItemName?.image;
 	}
 
-	if (videoFileTypes?.includes(type)) {
+	if (type?.startsWith(VIDEO_MIME_PREFIX)) {
 		return menuListItemName?.videos;
 	}
 
-	if (documentFileTypes?.includes(type)) {
+	if (type && (DOCUMENT_MIME_TYPES as readonly string[]).includes(type)) {
 		return menuListItemName?.documents;
 	}
 
@@ -394,16 +391,14 @@ export const isCurrentYear = (insertedAt: string) => {
 	return insertedYear === currentYear;
 };
 
-// this function returns true if the media type is of image type else false
 export const checkIfUrlAnImage = async (url: string): Promise<boolean> => {
 	const mediaType = await getMediaType(url);
-	return mediaType?.includes("image/") ?? false;
+	return mediaType?.startsWith(IMAGE_MIME_PREFIX) ?? false;
 };
 
-// this function returns true if the media type is in the acceptedFileTypes array else false
 export const checkIfUrlAnMedia = async (url: string): Promise<boolean> => {
 	const mediaType = await getMediaType(url);
-	return acceptedFileTypes?.includes(mediaType ?? "") ?? false;
+	return isAcceptedMimeType(mediaType);
 };
 
 /**

@@ -7,16 +7,10 @@ import { z } from "zod";
 
 import { type SingleListData } from "../../../types/apiTypes";
 import {
-	AUDIO_URL,
-	audioFileTypes,
 	bookmarkType,
 	DISCOVER_URL,
-	documentFileTypes,
-	DOCUMENTS_URL,
 	GET_HASHTAG_TAG_PATTERN,
 	GET_SITE_SCOPE_PATTERN,
-	imageFileTypes,
-	IMAGES_URL,
 	INSTAGRAM_URL,
 	instagramType,
 	LINKS_URL,
@@ -25,9 +19,8 @@ import {
 	TWEETS_URL,
 	tweetType,
 	UNCATEGORIZED_URL,
-	videoFileTypes,
-	VIDEOS_URL,
 } from "../../../utils/constants";
+import { getBookmarkMediaCategoryPredicate } from "../../../utils/bookmark-category-filters";
 import {
 	checkIsUserOwnerOfCategory,
 	extractTagNamesFromSearch,
@@ -243,16 +236,11 @@ export default async function handler(
 			}
 		}
 
-		if (category_id === IMAGES_URL) {
-			query = query.in("type", imageFileTypes);
-		}
+		const mediaCategoryPredicate =
+			getBookmarkMediaCategoryPredicate(category_id);
 
-		if (category_id === VIDEOS_URL) {
-			query = query.in("type", videoFileTypes);
-		}
-
-		if (category_id === DOCUMENTS_URL) {
-			query = query.in("type", documentFileTypes);
+		if (mediaCategoryPredicate) {
+			query = query.or(mediaCategoryPredicate);
 		}
 
 		if (category_id === TWEETS_URL) {
@@ -261,12 +249,6 @@ export default async function handler(
 
 		if (category_id === INSTAGRAM_URL) {
 			query = query.eq("type", instagramType);
-		}
-
-		if (category_id === AUDIO_URL) {
-			query = query.or(
-				`type.in.(${audioFileTypes}),meta_data->>mediaType.in.(${audioFileTypes})`,
-			);
 		}
 
 		if (category_id === LINKS_URL) {
