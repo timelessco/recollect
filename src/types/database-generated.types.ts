@@ -265,9 +265,14 @@ export type Database = {
 					id: string;
 					last_synced_instagram_id: string | null;
 					last_synced_twitter_id: string | null;
+					plan: string;
+					plan_updated_at: string | null;
+					polar_customer_id: string | null;
 					preferred_og_domains: string[] | null;
 					profile_pic: string | null;
 					provider: string | null;
+					subscription_current_period_end: string | null;
+					subscription_status: string | null;
 					user_name: string | null;
 				};
 				Insert: {
@@ -282,9 +287,14 @@ export type Database = {
 					id: string;
 					last_synced_instagram_id?: string | null;
 					last_synced_twitter_id?: string | null;
+					plan?: string;
+					plan_updated_at?: string | null;
+					polar_customer_id?: string | null;
 					preferred_og_domains?: string[] | null;
 					profile_pic?: string | null;
 					provider?: string | null;
+					subscription_current_period_end?: string | null;
+					subscription_status?: string | null;
 					user_name?: string | null;
 				};
 				Update: {
@@ -299,9 +309,14 @@ export type Database = {
 					id?: string;
 					last_synced_instagram_id?: string | null;
 					last_synced_twitter_id?: string | null;
+					plan?: string;
+					plan_updated_at?: string | null;
+					polar_customer_id?: string | null;
 					preferred_og_domains?: string[] | null;
 					profile_pic?: string | null;
 					provider?: string | null;
+					subscription_current_period_end?: string | null;
+					subscription_status?: string | null;
 					user_name?: string | null;
 				};
 				Relationships: [];
@@ -519,16 +534,16 @@ export type Database = {
 				Args: { p_category_id: number };
 				Returns: undefined;
 			};
-			remove_favorite_category_for_user: {
-				Args: { p_category_id: number };
-				Returns: undefined;
-			};
 			remove_category_from_bookmark: {
 				Args: { p_bookmark_id: number; p_category_id: number };
 				Returns: Array<{
 					added_uncategorized: boolean;
 					deleted_category_id: number;
 				}>;
+			};
+			remove_favorite_category_for_user: {
+				Args: { p_category_id: number };
+				Returns: undefined;
 			};
 			retry_ai_embeddings_archive: {
 				Args: { p_msg_ids: number[] };

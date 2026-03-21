@@ -11,17 +11,20 @@ import { AiFeatures } from "../../settings/aiFeatures";
 import ChangeEmail from "../../settings/changeEmail";
 import { DeleteAccount } from "../../settings/deleteAccount";
 import { ImportBookmarks } from "../../settings/import";
+import { Subscription } from "../../settings/subscription";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
 
 import { MobileSettingsDrawer } from "./mobile-settings-drawer";
 import { Dialog } from "@/components/ui/recollect/dialog";
+import { SubscriptionIcon } from "@/icons/subscription-icon";
 
 export type SettingsPage =
 	| "ai-features"
 	| "change-email"
 	| "delete"
 	| "import"
-	| "main";
+	| "main"
+	| "subscription";
 
 /**
  * Trigger-only component that lives inside the sidebar.
@@ -96,6 +99,8 @@ function DesktopSettingsContent() {
 				return 1;
 			case "import":
 				return 2;
+			case "subscription":
+				return 3;
 			default:
 				return 0;
 		}
@@ -143,6 +148,19 @@ function DesktopSettingsContent() {
 			count: undefined,
 			iconColor: "",
 		},
+		{
+			icon: (
+				<figure className="flex h-4.5 w-4.5 items-center justify-center text-gray-900">
+					<SubscriptionIcon />
+				</figure>
+			),
+			name: "Subscription",
+			href: ``,
+			current: selectedMenuItemId === 3,
+			id: 3,
+			count: undefined,
+			iconColor: "",
+		},
 	];
 
 	return (
@@ -170,6 +188,9 @@ function DesktopSettingsContent() {
 										break;
 									case 2:
 										setCurrentPage("import");
+										break;
+									case 3:
+										setCurrentPage("subscription");
 										break;
 									default:
 										break;
@@ -216,6 +237,10 @@ function SettingsMainContent({
 
 	if (currentPage === "import") {
 		return <ImportBookmarks onNavigate={onNavigate} />;
+	}
+
+	if (currentPage === "subscription") {
+		return <Subscription />;
 	}
 
 	return null;

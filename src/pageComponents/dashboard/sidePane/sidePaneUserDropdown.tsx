@@ -10,6 +10,7 @@ import { LOGIN_URL } from "../../../utils/constants";
 import { createClient } from "../../../utils/supabaseClient";
 
 import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
+import { PlanBadge } from "@/components/planBadge";
 import { Menu } from "@/components/ui/recollect/menu";
 
 const SidePaneUserDropdown = () => {
@@ -77,6 +78,9 @@ const SidePaneUserTrigger = () => {
 					? "Loading..."
 					: userData?.display_name || userData?.user_name || userData?.email}
 			</p>
+			{userData?.plan && userData.plan !== "free" && (
+				<PlanBadge plan={userData.plan} />
+			)}
 		</div>
 	);
 };
