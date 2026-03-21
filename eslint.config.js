@@ -1,5 +1,7 @@
 import { fileURLToPath } from "node:url";
+import comments from "@eslint-community/eslint-plugin-eslint-comments/configs";
 import { includeIgnoreFile } from "@eslint/compat";
+import eslint from "@eslint/js";
 import next from "@next/eslint-plugin-next";
 import reactQuery from "@tanstack/eslint-plugin-query";
 import * as typescriptParser from "@typescript-eslint/parser";
@@ -18,7 +20,7 @@ import * as jsxA11y from "eslint-config-canonical/jsx-a11y";
 import * as reactHooks from "eslint-config-canonical/react-hooks";
 import * as typescriptTypeChecking from "eslint-config-canonical/typescript-type-checking";
 import prettier from "eslint-config-prettier/flat";
-import jsonc from "eslint-plugin-jsonc";
+import { configs as jsoncConfigs } from "eslint-plugin-jsonc";
 import * as packageJson from "eslint-plugin-package-json";
 import reactRefresh from "eslint-plugin-react-refresh";
 import * as yml from "eslint-plugin-yml";
@@ -32,19 +34,17 @@ export default defineConfig(
 		"pnpm-lock.yaml",
 		"public/",
 		".next/",
+		"next-env.d.ts",
 		".agents/",
 		".claude/",
-		"next-env.d.ts",
 		"scripts/release-it/",
+		".ncurc.cjs",
 		"supabase/functions/",
 	]),
-	{
-		linterOptions: {
-			reportUnusedDisableDirectives: "error",
-		},
-	},
-	jsdoc.recommended,
-	regexp.recommended,
+	{ linterOptions: { reportUnusedDisableDirectives: "error" } },
+
+	eslint.configs.recommended,
+
 	canonical.recommended,
 	{
 		rules: {
@@ -80,7 +80,7 @@ export default defineConfig(
 	reactHooks.recommended,
 	reactRefresh.configs.recommended,
 	next.configs["core-web-vitals"],
-	reactQuery.configs["flat/recommended"],
+	...reactQuery.configs["flat/recommended"],
 	zod.recommended,
 	// TODO: Add lodash recommended later
 	// lodash.recommended,
@@ -149,17 +149,24 @@ export default defineConfig(
 		},
 	},
 
+	jsdoc.recommended,
+
+	regexp.recommended,
+
 	packageJson.configs.recommended,
+
 	{
-		extends: [jsonc.configs["flat/recommended-with-json"]],
+		extends: [jsoncConfigs["recommended-with-json"]],
 		files: ["**/*.{json}"],
 	},
 	{
-		extends: [jsonc.configs["flat/recommended-with-jsonc"]],
+		extends: [jsoncConfigs["recommended-with-jsonc"]],
 		files: ["**/*.{jsonc}"],
 	},
-	jsonc.configs["flat/prettier"],
+	jsoncConfigs.prettier,
+
 	...yml.configs.recommended,
+	...yml.configs.prettier,
 	{
 		rules: {
 			"yml/file-extension": ["error", { extension: "yml" }],
@@ -173,6 +180,18 @@ export default defineConfig(
 			],
 		},
 	},
+
+	comments.recommended,
+	{
+		rules: {
+			"@eslint-community/eslint-comments/disable-enable-pair": [
+				"error",
+				{ allowWholeFile: true },
+			],
+		},
+	},
+
+	// Should always be last
 	prettier,
 
 	// Build-time only: prevent runtime code from importing the OpenAPI registry module
