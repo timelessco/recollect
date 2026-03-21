@@ -155,6 +155,13 @@ export default defineConfig(
   regexp.recommended,
 
   packageJson.configs.recommended,
+  {
+    files: ["**/package.json"],
+    rules: {
+      // oxfmt sortPackageJson handles script ordering
+      "package-json/sort-collections": "off",
+    },
+  },
 
   {
     extends: [jsoncConfigs["recommended-with-json"]],
