@@ -61,6 +61,7 @@ export default function useSearchBookmarks(
 				session?.user?.id,
 				CATEGORY_ID,
 				searchText,
+				isSharedCategory,
 			] as const,
 			enabled: enabled && !isEmpty(searchText),
 			refetchOnWindowFocus: false,
