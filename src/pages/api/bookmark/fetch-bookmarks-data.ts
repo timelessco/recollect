@@ -11,15 +11,9 @@ import {
 	type SingleListData,
 } from "../../../types/apiTypes";
 import {
-	AUDIO_MIME_PREFIX,
-	AUDIO_URL,
 	BOOKMARK_CATEGORIES_TABLE_NAME,
 	BOOKMARK_TAGS_TABLE_NAME,
 	bookmarkType,
-	DOCUMENT_MIME_TYPES,
-	DOCUMENTS_URL,
-	IMAGE_MIME_PREFIX,
-	IMAGES_URL,
 	INSTAGRAM_URL,
 	instagramType,
 	LINKS_URL,
@@ -29,9 +23,8 @@ import {
 	TWEETS_URL,
 	tweetType,
 	UNCATEGORIZED_URL,
-	VIDEO_MIME_PREFIX,
-	VIDEOS_URL,
 } from "../../../utils/constants";
+import { getBookmarkMediaCategoryPredicate } from "../../../utils/bookmark-category-filters";
 import {
 	checkIsUserOwnerOfCategory,
 	isUserCollaboratorInCategory,
@@ -201,32 +194,16 @@ export default async function handler(
 			.eq(`${BOOKMARK_CATEGORIES_TABLE_NAME}.user_id`, userId);
 	}
 
-	if (category_id === IMAGES_URL) {
-		query = query.or(
-			`type.like.${IMAGE_MIME_PREFIX}%,meta_data->>mediaType.like.${IMAGE_MIME_PREFIX}%`,
-		);
-	}
+	const mediaCategoryPredicate = getBookmarkMediaCategoryPredicate(
+		category_id as string | undefined,
+	);
 
-	if (category_id === VIDEOS_URL) {
-		query = query.or(
-			`type.like.${VIDEO_MIME_PREFIX}%,meta_data->>mediaType.like.${VIDEO_MIME_PREFIX}%`,
-		);
-	}
-
-	if (category_id === AUDIO_URL) {
-		query = query.or(
-			`type.like.${AUDIO_MIME_PREFIX}%,meta_data->>mediaType.like.${AUDIO_MIME_PREFIX}%`,
-		);
+	if (mediaCategoryPredicate) {
+		query = query.or(mediaCategoryPredicate);
 	}
 
 	if (category_id === instagramType) {
 		query = query.eq("type", instagramType);
-	}
-
-	if (category_id === DOCUMENTS_URL) {
-		query = query.or(
-			`type.in.(${DOCUMENT_MIME_TYPES.join(",")}),meta_data->>mediaType.in.(${DOCUMENT_MIME_TYPES.join(",")})`,
-		);
 	}
 
 	if (category_id === LINKS_URL) {

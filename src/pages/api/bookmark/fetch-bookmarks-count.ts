@@ -4,17 +4,18 @@ import isEmpty from "lodash/isEmpty";
 
 import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import {
-	AUDIO_MIME_PREFIX,
 	bookmarkType,
 	CATEGORIES_TABLE_NAME,
-	DOCUMENT_MIME_TYPES,
-	IMAGE_MIME_PREFIX,
+	DOCUMENTS_URL,
+	IMAGES_URL,
 	instagramType,
 	MAIN_TABLE_NAME,
 	SHARED_CATEGORIES_TABLE_NAME,
 	tweetType,
-	VIDEO_MIME_PREFIX,
+	VIDEOS_URL,
+	AUDIO_URL,
 } from "../../../utils/constants";
+import { BOOKMARK_MEDIA_CATEGORY_PREDICATES } from "../../../utils/bookmark-category-filters";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type Data = {
@@ -120,19 +121,19 @@ export default async function handler(
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
 				.is("trash", null)
-				.like("type", `${IMAGE_MIME_PREFIX}%`),
+				.or(BOOKMARK_MEDIA_CATEGORY_PREDICATES[IMAGES_URL]),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
 				.is("trash", null)
-				.like("type", `${VIDEO_MIME_PREFIX}%`),
+				.or(BOOKMARK_MEDIA_CATEGORY_PREDICATES[VIDEOS_URL]),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
 				.is("trash", null)
-				.in("type", [...DOCUMENT_MIME_TYPES]),
+				.or(BOOKMARK_MEDIA_CATEGORY_PREDICATES[DOCUMENTS_URL]),
 			supabase
 				.from(MAIN_TABLE_NAME)
 				.select("id", { count: "exact", head: true })
@@ -171,9 +172,7 @@ export default async function handler(
 				.select("id", { count: "exact", head: true })
 				.eq("user_id", userId)
 				.is("trash", null)
-				.or(
-					`type.like.${AUDIO_MIME_PREFIX}%,meta_data->>mediaType.like.${AUDIO_MIME_PREFIX}%`,
-				),
+				.or(BOOKMARK_MEDIA_CATEGORY_PREDICATES[AUDIO_URL]),
 			supabase.from(CATEGORIES_TABLE_NAME).select("id").eq("user_id", userId),
 			supabase
 				.from(SHARED_CATEGORIES_TABLE_NAME)
