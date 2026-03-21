@@ -260,12 +260,10 @@ export const DOCUMENT_MIME_TYPES = [
 	"application/msword",
 ] as const;
 
-const WORD_MIME_TYPE = "application/msword";
-
 /**
  * Check if a MIME type is accepted for upload.
  * Prefix-based: any image/*, video/*, audio/* is accepted,
- * plus specific application types (PDF, Word docs).
+ * plus specific document types from DOCUMENT_MIME_TYPES.
  */
 export function isAcceptedMimeType(
 	mimeType: string | null | undefined,
@@ -278,8 +276,7 @@ export function isAcceptedMimeType(
 		mimeType.startsWith(IMAGE_MIME_PREFIX) ||
 		mimeType.startsWith(VIDEO_MIME_PREFIX) ||
 		mimeType.startsWith(AUDIO_MIME_PREFIX) ||
-		mimeType === WORD_MIME_TYPE ||
-		mimeType === PDF_MIME_TYPE
+		(DOCUMENT_MIME_TYPES as readonly string[]).includes(mimeType)
 	);
 }
 
