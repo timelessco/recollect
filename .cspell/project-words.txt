@@ -92,6 +92,7 @@ slugified
 Slugifies
 SQLERRM
 stefanzweifel
+svgs
 syncer
 timelessco
 timestamptz
