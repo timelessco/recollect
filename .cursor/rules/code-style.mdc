@@ -136,7 +136,7 @@ export type ProcessDataReturnType = Awaited<ReturnType<typeof processData>>;
 ## Code Quality Tools
 
 - **ESLint**: Extensive rule set for React, TypeScript, accessibility
-- **Prettier**: Auto-formatting with specific import order
+- **Oxfmt**: Auto-formatting with import sorting and Tailwind class sorting
 - **Stylelint**: CSS linting for consistency
 - **TypeScript**: Strict mode with all checks enabled
 - **Knip**: Detect unused code and dependencies

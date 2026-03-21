@@ -39,7 +39,6 @@ gclid
 GOPATH
 hcaptcha
 hookz
-ianvs
 igshid
 imdb
 inbucket
@@ -67,6 +66,7 @@ ogimage
 opsz
 optimisation
 orioledb
+oxfmtrc
 pgbouncer
 pgcrypto
 pgmq

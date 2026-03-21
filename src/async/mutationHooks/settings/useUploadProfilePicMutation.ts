@@ -6,20 +6,20 @@ import { uploadProfilePic } from "../../supabaseCrudHelpers";
 
 // uploads user profile pic
 export default function useUploadProfilePicMutation() {
-	const session = useSupabaseSession((state) => state.session);
-	const queryClient = useQueryClient();
+  const session = useSupabaseSession((state) => state.session);
+  const queryClient = useQueryClient();
 
-	const uploadProfilePicMutation = useMutation({
-		mutationFn: uploadProfilePic,
-		onSuccess: () => {
-			// Invalidate and refetch
-			void queryClient.invalidateQueries({
-				queryKey: [USER_PROFILE, session?.user?.id],
-			});
-			void queryClient.invalidateQueries({
-				queryKey: [USER_PROFILE_PIC, session?.user?.email],
-			});
-		},
-	});
-	return { uploadProfilePicMutation };
+  const uploadProfilePicMutation = useMutation({
+    mutationFn: uploadProfilePic,
+    onSuccess: () => {
+      // Invalidate and refetch
+      void queryClient.invalidateQueries({
+        queryKey: [USER_PROFILE, session?.user?.id],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: [USER_PROFILE_PIC, session?.user?.email],
+      });
+    },
+  });
+  return { uploadProfilePicMutation };
 }

@@ -364,8 +364,8 @@ if [ -n "$changed_files" ]; then
 	echo "Running TypeScript type checks..."
 	pnpm lint:types
 
-	echo "Running Prettier..."
-	pnpm fix:prettier
+	echo "Running Oxfmt..."
+	pnpm fix:oxfmt
 
 	echo "Checking for unused code..."
 	pnpm lint:knip
@@ -677,7 +677,7 @@ echo ""
 echo "Next steps:"
 echo "1. Run: pnpm fix:eslint <changed-files>"
 echo "2. Run: pnpm lint:types"
-echo "3. Run: pnpm fix:prettier"
+echo "3. Run: pnpm fix:oxfmt"
 echo "4. Review docs/pr_standards_checklist.md for any missed items"
 ```
 
@@ -737,7 +737,7 @@ Use this checklist to manually review your changes:
 - [ ] File size ≤ 250 lines
 - [ ] Functional programming only (no classes)
 - [ ] ESLint passes
-- [ ] Prettier formatting applied
+- [ ] Oxfmt formatting applied
 - [ ] TypeScript strict mode passes
 - [ ] No unused code
 - [ ] **Code reuse verified**:

@@ -39,7 +39,7 @@ src/
 
 - `@/*` alias for all internal imports
 - Direct file imports preferred over barrel exports
-- Import order auto-sorted by Prettier (`@ianvs/prettier-plugin-sort-imports`)
+- Import order auto-sorted by oxfmt (`sortImports`)
 
 ### Component Patterns
 

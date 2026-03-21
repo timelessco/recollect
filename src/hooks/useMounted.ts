@@ -8,11 +8,11 @@ import { useEffect, useState } from "react";
  * on server vs client (e.g. static SSR subset, then virtualized list after mount).
  */
 export const useMounted = (): boolean => {
-	const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-	useEffect(() => {
-		setMounted(true);
-	}, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-	return mounted;
+  return mounted;
 };

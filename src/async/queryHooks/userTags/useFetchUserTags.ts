@@ -7,17 +7,17 @@ import { fetchUserTags } from "../../supabaseCrudHelpers";
 
 // fetchs user tags
 export default function useFetchUserTags() {
-	const session = useSupabaseSession((state) => state.session);
+  const session = useSupabaseSession((state) => state.session);
 
-	const { data: userTags } = useQuery<{
-		data: UserTagsData[] | null;
-		error: Error;
-	}>({
-		queryKey: [USER_TAGS_KEY, session?.user?.id],
-		queryFn: async () => await fetchUserTags(),
-	});
+  const { data: userTags } = useQuery<{
+    data: UserTagsData[] | null;
+    error: Error;
+  }>({
+    queryKey: [USER_TAGS_KEY, session?.user?.id],
+    queryFn: async () => await fetchUserTags(),
+  });
 
-	return {
-		userTags,
-	};
+  return {
+    userTags,
+  };
 }

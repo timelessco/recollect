@@ -6,15 +6,15 @@ import { fetchSharedCategoriesData } from "../../supabaseCrudHelpers";
 
 // fetchs user shared categories
 export default function useFetchSharedCategories() {
-	const { data: sharedCategoriesData } = useQuery<{
-		data: FetchSharedCategoriesData[] | null;
-		error: Error;
-	}>({
-		queryKey: [SHARED_CATEGORIES_TABLE_NAME],
-		queryFn: async () => await fetchSharedCategoriesData(),
-	});
+  const { data: sharedCategoriesData } = useQuery<{
+    data: FetchSharedCategoriesData[] | null;
+    error: Error;
+  }>({
+    queryKey: [SHARED_CATEGORIES_TABLE_NAME],
+    queryFn: async () => await fetchSharedCategoriesData(),
+  });
 
-	return {
-		sharedCategoriesData,
-	};
+  return {
+    sharedCategoriesData,
+  };
 }

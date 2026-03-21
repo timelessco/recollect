@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import * as Sentry from "@sentry/nextjs";
 import { type z, type ZodSchema } from "zod";
 
@@ -12,19 +13,19 @@ type ApiErrorResponse = { data: null; error: string };
 export type ApiResponse<T> = ApiErrorResponse | ApiSuccessResponse<T>;
 
 type ApiWarnProps = {
-	context?: Record<string, unknown>;
-	message: string;
-	route: string;
-	status: number;
+  context?: Record<string, unknown>;
+  message: string;
+  route: string;
+  status: number;
 };
 
 type ApiErrorProps = {
-	error: unknown;
-	extra?: Record<string, unknown>;
-	message: string;
-	operation: string;
-	route: string;
-	userId?: string | null;
+  error: unknown;
+  extra?: Record<string, unknown>;
+  message: string;
+  operation: string;
+  route: string;
+  userId?: string | null;
 };
 
 /**
@@ -33,14 +34,14 @@ type ApiErrorProps = {
  * Use for validation errors, not found, permission denied, etc.
  */
 export function apiWarn({
-	route,
-	message,
-	status,
-	context,
+  route,
+  message,
+  status,
+  context,
 }: ApiWarnProps): NextResponse<ApiErrorResponse> {
-	console.warn(`[${route}] ${message}`, context);
+  console.warn(`[${route}] ${message}`, context);
 
-	return NextResponse.json({ data: null, error: message }, { status });
+  return NextResponse.json({ data: null, error: message }, { status });
 }
 
 /**
@@ -49,30 +50,30 @@ export function apiWarn({
  * Use for database errors, unexpected failures, etc.
  */
 export function apiError({
-	route,
-	message,
-	error,
-	operation,
-	userId = null,
-	extra,
+  route,
+  message,
+  error,
+  operation,
+  userId = null,
+  extra,
 }: ApiErrorProps): NextResponse<ApiErrorResponse> {
-	console.error(`[${route}] ${message}`, { error, ...extra });
-	Sentry.captureException(error, {
-		tags: { operation, ...(userId && { userId }) },
-		extra,
-	});
+  console.error(`[${route}] ${message}`, { error, ...extra });
+  Sentry.captureException(error, {
+    tags: { operation, ...(userId && { userId }) },
+    extra,
+  });
 
-	return NextResponse.json(
-		{ data: null, error: message },
-		{ status: HttpStatus.INTERNAL_SERVER_ERROR },
-	);
+  return NextResponse.json(
+    { data: null, error: message },
+    { status: HttpStatus.INTERNAL_SERVER_ERROR },
+  );
 }
 
 type ApiSuccessProps<T extends z.ZodType> = {
-	data: unknown;
-	route: string;
-	schema: T;
-	status?: number;
+  data: unknown;
+  route: string;
+  schema: T;
+  status?: number;
 };
 
 /**
@@ -90,30 +91,28 @@ type ApiSuccessProps<T extends z.ZodType> = {
  * }
  */
 export function apiSuccess<T extends z.ZodType>({
-	route,
-	data,
-	schema,
-	status = 200,
+  route,
+  data,
+  schema,
+  status = 200,
 }: ApiSuccessProps<T>): NextResponse<ApiSuccessResponse<z.infer<T>>> {
-	const parsed = schema.safeParse(data);
+  const parsed = schema.safeParse(data);
 
-	if (!parsed.success) {
-		throw new Error(
-			`[${route}] Output validation failed: ${JSON.stringify(parsed.error.issues)}`,
-		);
-	}
+  if (!parsed.success) {
+    throw new Error(`[${route}] Output validation failed: ${JSON.stringify(parsed.error.issues)}`);
+  }
 
-	return NextResponse.json({ data: parsed.data, error: null }, { status });
+  return NextResponse.json({ data: parsed.data, error: null }, { status });
 }
 
 type ParseBodyResult<T> =
-	| { data: T; errorResponse: null }
-	| { data: null; errorResponse: NextResponse<ApiErrorResponse> };
+  | { data: T; errorResponse: null }
+  | { data: null; errorResponse: NextResponse<ApiErrorResponse> };
 
 type ParseBodyProps<T> = {
-	request: Request;
-	route: string;
-	schema: ZodSchema<T>;
+  request: Request;
+  route: string;
+  schema: ZodSchema<T>;
 };
 
 /**
@@ -121,56 +120,56 @@ type ParseBodyProps<T> = {
  * Returns discriminated union for type narrowing (same pattern as requireAuth).
  */
 export async function parseBody<T>({
-	request,
-	schema,
-	route,
+  request,
+  schema,
+  route,
 }: ParseBodyProps<T>): Promise<ParseBodyResult<T>> {
-	let body: unknown;
-	try {
-		body = await request.json();
-	} catch (error) {
-		return {
-			data: null,
-			errorResponse: apiWarn({
-				route,
-				message: "Invalid JSON in request body",
-				status: HttpStatus.BAD_REQUEST,
-				context: {
-					error: error instanceof Error ? error.message : String(error),
-				},
-			}),
-		};
-	}
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch (error) {
+    return {
+      data: null,
+      errorResponse: apiWarn({
+        route,
+        message: "Invalid JSON in request body",
+        status: HttpStatus.BAD_REQUEST,
+        context: {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      }),
+    };
+  }
 
-	const parsed = schema.safeParse(body);
+  const parsed = schema.safeParse(body);
 
-	if (!parsed.success) {
-		// Use first Zod error message for user-friendly display
-		const firstError = parsed.error.issues[0];
-		const userMessage = firstError?.message || "Invalid input";
+  if (!parsed.success) {
+    // Use first Zod error message for user-friendly display
+    const firstError = parsed.error.issues[0];
+    const userMessage = firstError?.message || "Invalid input";
 
-		return {
-			data: null,
-			errorResponse: apiWarn({
-				route,
-				message: userMessage,
-				status: HttpStatus.BAD_REQUEST,
-				context: { errors: parsed.error.issues },
-			}),
-		};
-	}
+    return {
+      data: null,
+      errorResponse: apiWarn({
+        route,
+        message: userMessage,
+        status: HttpStatus.BAD_REQUEST,
+        context: { errors: parsed.error.issues },
+      }),
+    };
+  }
 
-	return { data: parsed.data, errorResponse: null };
+  return { data: parsed.data, errorResponse: null };
 }
 
 type ParseQueryResult<T> =
-	| { data: T; errorResponse: null }
-	| { data: null; errorResponse: NextResponse<ApiErrorResponse> };
+  | { data: T; errorResponse: null }
+  | { data: null; errorResponse: NextResponse<ApiErrorResponse> };
 
 type ParseQueryProps<T> = {
-	request: NextRequest;
-	route: string;
-	schema: ZodSchema<T>;
+  request: NextRequest;
+  route: string;
+  schema: ZodSchema<T>;
 };
 
 /**
@@ -178,30 +177,26 @@ type ParseQueryProps<T> = {
  * Returns discriminated union for type narrowing (same pattern as parseBody).
  * Query parameters are strings - use z.coerce.* for numeric values.
  */
-export function parseQuery<T>({
-	request,
-	schema,
-	route,
-}: ParseQueryProps<T>): ParseQueryResult<T> {
-	const searchParams = request.nextUrl.searchParams;
-	const params = Object.fromEntries(searchParams.entries());
+export function parseQuery<T>({ request, schema, route }: ParseQueryProps<T>): ParseQueryResult<T> {
+  const searchParams = request.nextUrl.searchParams;
+  const params = Object.fromEntries(searchParams.entries());
 
-	const parsed = schema.safeParse(params);
+  const parsed = schema.safeParse(params);
 
-	if (!parsed.success) {
-		const firstError = parsed.error.issues[0];
-		const userMessage = firstError?.message || "Invalid query parameters";
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0];
+    const userMessage = firstError?.message || "Invalid query parameters";
 
-		return {
-			data: null,
-			errorResponse: apiWarn({
-				route,
-				message: userMessage,
-				status: HttpStatus.BAD_REQUEST,
-				context: { errors: parsed.error.issues },
-			}),
-		};
-	}
+    return {
+      data: null,
+      errorResponse: apiWarn({
+        route,
+        message: userMessage,
+        status: HttpStatus.BAD_REQUEST,
+        context: { errors: parsed.error.issues },
+      }),
+    };
+  }
 
-	return { data: parsed.data, errorResponse: null };
+  return { data: parsed.data, errorResponse: null };
 }

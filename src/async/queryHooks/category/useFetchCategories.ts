@@ -7,24 +7,24 @@ import { fetchCategoriesData } from "../../supabaseCrudHelpers";
 
 // fetchs user categories
 export default function useFetchCategories(shouldFetch = true) {
-	const session = useSupabaseSession((state) => state.session);
+  const session = useSupabaseSession((state) => state.session);
 
-	const {
-		data: allCategories,
-		isLoading: isLoadingCategories,
-		isFetching: isFetchingCategories,
-	} = useQuery<{
-		data: CategoriesData[] | null;
-		error: Error;
-	}>({
-		queryKey: [CATEGORIES_KEY, session?.user?.id],
-		queryFn: async () => await fetchCategoriesData(),
-		enabled: shouldFetch,
-	});
+  const {
+    data: allCategories,
+    isLoading: isLoadingCategories,
+    isFetching: isFetchingCategories,
+  } = useQuery<{
+    data: CategoriesData[] | null;
+    error: Error;
+  }>({
+    queryKey: [CATEGORIES_KEY, session?.user?.id],
+    queryFn: async () => await fetchCategoriesData(),
+    enabled: shouldFetch,
+  });
 
-	return {
-		allCategories,
-		isLoadingCategories,
-		isFetchingCategories,
-	};
+  return {
+    allCategories,
+    isLoadingCategories,
+    isFetchingCategories,
+  };
 }

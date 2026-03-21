@@ -1,6 +1,7 @@
-import { DevSessionInputSchema, DevSessionOutputSchema } from "./schema";
 import { createGetApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiWarn } from "@/lib/api-helpers/response";
+
+import { DevSessionInputSchema, DevSessionOutputSchema } from "./schema";
 
 const ROUTE = "dev/session";
 
@@ -18,33 +19,30 @@ const ROUTE = "dev/session";
  * @returns {object} { access_token, expires_at, user_email }
  */
 export const GET = createGetApiHandlerWithAuth({
-	route: ROUTE,
-	inputSchema: DevSessionInputSchema,
-	outputSchema: DevSessionOutputSchema,
-	handler: async ({ supabase, user, route }) => {
-		if (
-			process.env.NODE_ENV !== "development" ||
-			process.env.VERCEL_ENV === "production"
-		) {
-			return apiWarn({ route, message: "Not found", status: 404 });
-		}
+  route: ROUTE,
+  inputSchema: DevSessionInputSchema,
+  outputSchema: DevSessionOutputSchema,
+  handler: async ({ supabase, user, route }) => {
+    if (process.env.NODE_ENV !== "development" || process.env.VERCEL_ENV === "production") {
+      return apiWarn({ route, message: "Not found", status: 404 });
+    }
 
-		const {
-			data: { session },
-		} = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-		if (!session) {
-			return apiWarn({
-				route,
-				message: "No active session found",
-				status: 401,
-			});
-		}
+    if (!session) {
+      return apiWarn({
+        route,
+        message: "No active session found",
+        status: 401,
+      });
+    }
 
-		return {
-			access_token: session.access_token,
-			expires_at: session.expires_at,
-			user_email: user.email,
-		};
-	},
+    return {
+      access_token: session.access_token,
+      expires_at: session.expires_at,
+      user_email: user.email,
+    };
+  },
 });

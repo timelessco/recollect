@@ -33,7 +33,7 @@ node_modules
 # Next.js
 ############################
 
-.next/*
+.next
 next-env.d.ts
 
 # Next PWA
@@ -79,9 +79,6 @@ public/sitemap-0.xml
 !.vscode/extensions.json
 !.vscode/settings.json
 
-# Prettier cache
-.prettiercache
-
 # Eslint cache
 .eslintcache
 
@@ -93,6 +90,7 @@ public/sitemap-0.xml
 
 # Extras(if any)
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
 .claude/worktrees
 .worktrees
 .planning

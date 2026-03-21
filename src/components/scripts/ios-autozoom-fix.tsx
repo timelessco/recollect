@@ -5,12 +5,12 @@ import Script from "next/script";
 // Uses a MutationObserver to persist maximum-scale across Next.js client-side navigations.
 // https://stackoverflow.com/a/57527009
 export function IosAutozoomFix() {
-	return (
-		<Script
-			id="ios-autozoom-fix"
-			strategy="afterInteractive"
-			dangerouslySetInnerHTML={{
-				__html: `
+  return (
+    <Script
+      id="ios-autozoom-fix"
+      strategy="afterInteractive"
+      dangerouslySetInnerHTML={{
+        __html: `
 if (!window.__iosAutozoomFixApplied) {
 	var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
@@ -53,7 +53,7 @@ if (!window.__iosAutozoomFixApplied) {
 	}
 }
 `,
-			}}
-		/>
-	);
+      }}
+    />
+  );
 }

@@ -3,11 +3,12 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiRequest, type NextApiResponse } from "next";
+
 import {
-	type AuthError,
-	type PostgrestError,
-	type SupabaseClient,
-	type User,
+  type AuthError,
+  type PostgrestError,
+  type SupabaseClient,
+  type User,
 } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil } from "lodash";
@@ -15,18 +16,18 @@ import isNull from "lodash/isNull";
 
 import { type SingleListData } from "../../../types/apiTypes";
 import {
-	BOOKMARK_CATEGORIES_TABLE_NAME,
-	BOOKMARK_TAGS_TABLE_NAME,
-	CATEGORIES_TABLE_NAME,
-	MAIN_TABLE_NAME,
-	PROFILES,
-	R2_MAIN_BUCKET_NAME,
-	SHARED_CATEGORIES_TABLE_NAME,
-	STORAGE_FILES_PATH,
-	STORAGE_SCRAPPED_IMAGES_PATH,
-	STORAGE_SCREENSHOT_IMAGES_PATH,
-	STORAGE_USER_PROFILE_PATH,
-	TAG_TABLE_NAME,
+  BOOKMARK_CATEGORIES_TABLE_NAME,
+  BOOKMARK_TAGS_TABLE_NAME,
+  CATEGORIES_TABLE_NAME,
+  MAIN_TABLE_NAME,
+  PROFILES,
+  R2_MAIN_BUCKET_NAME,
+  SHARED_CATEGORIES_TABLE_NAME,
+  STORAGE_FILES_PATH,
+  STORAGE_SCRAPPED_IMAGES_PATH,
+  STORAGE_SCREENSHOT_IMAGES_PATH,
+  STORAGE_USER_PROFILE_PATH,
+  TAG_TABLE_NAME,
 } from "../../../utils/constants";
 import { storageHelpers } from "../../../utils/storageClient";
 import { createServiceClient } from "../../../utils/supabaseClient";
@@ -38,342 +39,297 @@ type DataResponse = { user: User | null } | null;
 type ErrorResponse = AuthError | PostgrestError | VerifyErrors | string | null;
 
 type Data = {
-	data: DataResponse;
-	error: ErrorResponse;
+  data: DataResponse;
+  error: ErrorResponse;
 };
 
 // deletes category data
 const categoriesDelete = async (
-	userId: SingleListData["user_id"]["id"],
-	response: NextApiResponse<Data>,
-	supabase: SupabaseClient,
+  userId: SingleListData["user_id"]["id"],
+  response: NextApiResponse<Data>,
+  supabase: SupabaseClient,
 ) => {
-	// the collab categories created by the user might have bookmarks added by other user that are collaborators
-	// these bookmarks added by other users need to be set as uncategorised (id : 0)
-	// get all category ids for the user
-	const { data: categoriesData, error: categoriesDataError } = await supabase
-		.from(CATEGORIES_TABLE_NAME)
-		.select(`id`)
-		.eq("user_id", userId);
+  // the collab categories created by the user might have bookmarks added by other user that are collaborators
+  // these bookmarks added by other users need to be set as uncategorised (id : 0)
+  // get all category ids for the user
+  const { data: categoriesData, error: categoriesDataError } = await supabase
+    .from(CATEGORIES_TABLE_NAME)
+    .select(`id`)
+    .eq("user_id", userId);
 
-	if (!isNull(categoriesDataError)) {
-		response.status(500).json({ data: null, error: categoriesDataError });
-		throw new Error("ERROR: categoriesDataError");
-	}
+  if (!isNull(categoriesDataError)) {
+    response.status(500).json({ data: null, error: categoriesDataError });
+    throw new Error("ERROR: categoriesDataError");
+  }
 
-	// delete category associations from junction table for user's categories
+  // delete category associations from junction table for user's categories
 
-	if (!isNil(categoriesData) && !isEmpty(categoriesData)) {
-		const categoryIds = categoriesData.map((item) => item?.id);
-		const { error: junctionDeleteError } = await supabase
-			.from(BOOKMARK_CATEGORIES_TABLE_NAME)
-			.delete()
-			.in("category_id", categoryIds);
+  if (!isNil(categoriesData) && !isEmpty(categoriesData)) {
+    const categoryIds = categoriesData.map((item) => item?.id);
+    const { error: junctionDeleteError } = await supabase
+      .from(BOOKMARK_CATEGORIES_TABLE_NAME)
+      .delete()
+      .in("category_id", categoryIds);
 
-		if (!isNull(junctionDeleteError)) {
-			response.status(500).json({ data: null, error: junctionDeleteError });
-			throw new Error("ERROR: junctionDeleteError");
-		} else {
-			console.log(
-				"deleted category associations from junction table for categories",
-				categoryIds,
-			);
-		}
-	}
+    if (!isNull(junctionDeleteError)) {
+      response.status(500).json({ data: null, error: junctionDeleteError });
+      throw new Error("ERROR: junctionDeleteError");
+    } else {
+      console.log("deleted category associations from junction table for categories", categoryIds);
+    }
+  }
 
-	// delete all the categories for the user
-	const { error: categoriesError } = await supabase
-		.from(CATEGORIES_TABLE_NAME)
-		.delete()
-		.eq("user_id", userId);
+  // delete all the categories for the user
+  const { error: categoriesError } = await supabase
+    .from(CATEGORIES_TABLE_NAME)
+    .delete()
+    .eq("user_id", userId);
 
-	if (!isNull(categoriesError)) {
-		response.status(500).json({ data: null, error: categoriesError });
-		throw new Error("ERROR: categoriesError");
-	} else {
-		console.log("deleted categories table data", userId);
-	}
+  if (!isNull(categoriesError)) {
+    response.status(500).json({ data: null, error: categoriesError });
+    throw new Error("ERROR: categoriesError");
+  } else {
+    console.log("deleted categories table data", userId);
+  }
 };
 
 // all deletes related to s3 storage
 const storageDeleteLogic = async (
-	userId: SingleListData["user_id"]["id"],
-	response: NextApiResponse<Data>,
+  userId: SingleListData["user_id"]["id"],
+  response: NextApiResponse<Data>,
 ) => {
-	// bookmarks storage ogImages delete
+  // bookmarks storage ogImages delete
 
-	const { data: bookmarksStorageFiles, error: bookmarksStorageError } =
-		await storageHelpers.listObjects(
-			R2_MAIN_BUCKET_NAME,
-			`${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}/`,
-		);
+  const { data: bookmarksStorageFiles, error: bookmarksStorageError } =
+    await storageHelpers.listObjects(
+      R2_MAIN_BUCKET_NAME,
+      `${STORAGE_SCRAPPED_IMAGES_PATH}/${userId}/`,
+    );
 
-	const filesToRemove = bookmarksStorageFiles?.map((x) => x?.Key ?? "");
+  const filesToRemove = bookmarksStorageFiles?.map((x) => x?.Key ?? "");
 
-	if (!isNull(bookmarksStorageError)) {
-		response
-			.status(500)
-			.json({ data: null, error: String(bookmarksStorageError) });
-		throw new Error("ERROR: bookmarksStorageError");
-	}
+  if (!isNull(bookmarksStorageError)) {
+    response.status(500).json({ data: null, error: String(bookmarksStorageError) });
+    throw new Error("ERROR: bookmarksStorageError");
+  }
 
-	if (!isEmpty(filesToRemove) && !isNil(filesToRemove)) {
-		const { error: bookmarksStorageDeleteError } =
-			await storageHelpers.deleteObjects(R2_MAIN_BUCKET_NAME, filesToRemove);
+  if (!isEmpty(filesToRemove) && !isNil(filesToRemove)) {
+    const { error: bookmarksStorageDeleteError } = await storageHelpers.deleteObjects(
+      R2_MAIN_BUCKET_NAME,
+      filesToRemove,
+    );
 
-		if (!isNull(bookmarksStorageDeleteError)) {
-			response.status(500).json({
-				data: null,
-				error: String(bookmarksStorageDeleteError),
-			});
-			throw new Error("ERROR: bookmarksStorageDeleteError");
-		} else {
-			console.log("deleted og images", filesToRemove?.length);
-		}
-	} else {
-		console.log("files to delete is empty: ogImages");
-	}
+    if (!isNull(bookmarksStorageDeleteError)) {
+      response.status(500).json({
+        data: null,
+        error: String(bookmarksStorageDeleteError),
+      });
+      throw new Error("ERROR: bookmarksStorageDeleteError");
+    } else {
+      console.log("deleted og images", filesToRemove?.length);
+    }
+  } else {
+    console.log("files to delete is empty: ogImages");
+  }
 
-	// bookmarks storage screenshot delete
+  // bookmarks storage screenshot delete
 
-	const {
-		data: bookmarksStorageScreenshotFiles,
-		error: bookmarksStorageScreenshotError,
-	} = await storageHelpers.listObjects(
-		R2_MAIN_BUCKET_NAME,
-		`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/`,
-	);
+  const { data: bookmarksStorageScreenshotFiles, error: bookmarksStorageScreenshotError } =
+    await storageHelpers.listObjects(
+      R2_MAIN_BUCKET_NAME,
+      `${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/`,
+    );
 
-	const filesToRemoveScreenshot = bookmarksStorageScreenshotFiles?.map(
-		(x) => x?.Key ?? "",
-	);
+  const filesToRemoveScreenshot = bookmarksStorageScreenshotFiles?.map((x) => x?.Key ?? "");
 
-	if (!isNull(bookmarksStorageScreenshotError)) {
-		response.status(500).json({
-			data: null,
-			error: String(bookmarksStorageScreenshotError),
-		});
-		throw new Error("ERROR: bookmarksStorageScreenshotError");
-	}
+  if (!isNull(bookmarksStorageScreenshotError)) {
+    response.status(500).json({
+      data: null,
+      error: String(bookmarksStorageScreenshotError),
+    });
+    throw new Error("ERROR: bookmarksStorageScreenshotError");
+  }
 
-	if (!isEmpty(filesToRemoveScreenshot) && !isNil(filesToRemoveScreenshot)) {
-		const { error: bookmarksStorageScreenshotDeleteError } =
-			await storageHelpers.deleteObjects(
-				R2_MAIN_BUCKET_NAME,
-				filesToRemoveScreenshot,
-			);
+  if (!isEmpty(filesToRemoveScreenshot) && !isNil(filesToRemoveScreenshot)) {
+    const { error: bookmarksStorageScreenshotDeleteError } = await storageHelpers.deleteObjects(
+      R2_MAIN_BUCKET_NAME,
+      filesToRemoveScreenshot,
+    );
 
-		if (!isNull(bookmarksStorageScreenshotDeleteError)) {
-			response.status(500).json({
-				data: null,
-				error: String(bookmarksStorageScreenshotDeleteError),
-			});
-			throw new Error("ERROR: bookmarksStorageScreenshotDeleteError");
-		} else {
-			console.log("deleted screenshot images", filesToRemoveScreenshot?.length);
-		}
-	} else {
-		console.log("files to delete is empty: screenshot");
-	}
+    if (!isNull(bookmarksStorageScreenshotDeleteError)) {
+      response.status(500).json({
+        data: null,
+        error: String(bookmarksStorageScreenshotDeleteError),
+      });
+      throw new Error("ERROR: bookmarksStorageScreenshotDeleteError");
+    } else {
+      console.log("deleted screenshot images", filesToRemoveScreenshot?.length);
+    }
+  } else {
+    console.log("files to delete is empty: screenshot");
+  }
 
-	// files storage delete
+  // files storage delete
 
-	const { data: filesStorageData, error: filesStorageDataError } =
-		await storageHelpers.listObjects(
-			R2_MAIN_BUCKET_NAME,
-			`${STORAGE_FILES_PATH}/${userId}/`,
-		);
+  const { data: filesStorageData, error: filesStorageDataError } = await storageHelpers.listObjects(
+    R2_MAIN_BUCKET_NAME,
+    `${STORAGE_FILES_PATH}/${userId}/`,
+  );
 
-	const filesStorageFilesToRemove = filesStorageData?.map((x) => x?.Key ?? "");
+  const filesStorageFilesToRemove = filesStorageData?.map((x) => x?.Key ?? "");
 
-	if (!isNull(filesStorageDataError)) {
-		response
-			.status(500)
-			.json({ data: null, error: String(filesStorageDataError) });
-		throw new Error("ERROR: filesStorageDataError");
-	}
+  if (!isNull(filesStorageDataError)) {
+    response.status(500).json({ data: null, error: String(filesStorageDataError) });
+    throw new Error("ERROR: filesStorageDataError");
+  }
 
-	if (
-		!isEmpty(filesStorageFilesToRemove) &&
-		!isNil(filesStorageFilesToRemove)
-	) {
-		const { error: filesDeleteError } = await storageHelpers.deleteObjects(
-			R2_MAIN_BUCKET_NAME,
-			filesStorageFilesToRemove,
-		);
+  if (!isEmpty(filesStorageFilesToRemove) && !isNil(filesStorageFilesToRemove)) {
+    const { error: filesDeleteError } = await storageHelpers.deleteObjects(
+      R2_MAIN_BUCKET_NAME,
+      filesStorageFilesToRemove,
+    );
 
-		if (!isNull(filesDeleteError)) {
-			response
-				.status(500)
-				.json({ data: null, error: String(filesDeleteError) });
-			throw new Error("ERROR: filesDeleteError");
-		} else {
-			console.log("deleted files", filesStorageFilesToRemove?.length);
-		}
-	} else {
-		console.log("files to delete is empty : files");
-	}
+    if (!isNull(filesDeleteError)) {
+      response.status(500).json({ data: null, error: String(filesDeleteError) });
+      throw new Error("ERROR: filesDeleteError");
+    } else {
+      console.log("deleted files", filesStorageFilesToRemove?.length);
+    }
+  } else {
+    console.log("files to delete is empty : files");
+  }
 
-	// user profile storage delete
+  // user profile storage delete
 
-	const { data: userProfileFilesData, error: userProfileFilesError } =
-		await storageHelpers.listObjects(
-			R2_MAIN_BUCKET_NAME,
-			`${STORAGE_USER_PROFILE_PATH}/${userId}/`,
-		);
+  const { data: userProfileFilesData, error: userProfileFilesError } =
+    await storageHelpers.listObjects(
+      R2_MAIN_BUCKET_NAME,
+      `${STORAGE_USER_PROFILE_PATH}/${userId}/`,
+    );
 
-	const userProfileFilesToRemove = userProfileFilesData?.map(
-		(x) => x?.Key ?? "",
-	);
+  const userProfileFilesToRemove = userProfileFilesData?.map((x) => x?.Key ?? "");
 
-	if (!isNull(userProfileFilesError)) {
-		response
-			.status(500)
-			.json({ data: null, error: String(userProfileFilesError) });
-		throw new Error("ERROR: userProfileFilesError");
-	}
+  if (!isNull(userProfileFilesError)) {
+    response.status(500).json({ data: null, error: String(userProfileFilesError) });
+    throw new Error("ERROR: userProfileFilesError");
+  }
 
-	if (!isEmpty(userProfileFilesToRemove) && !isNil(userProfileFilesToRemove)) {
-		const { error: userProfileFilesDeleteError } =
-			await storageHelpers.deleteObjects(
-				R2_MAIN_BUCKET_NAME,
-				userProfileFilesToRemove,
-			);
+  if (!isEmpty(userProfileFilesToRemove) && !isNil(userProfileFilesToRemove)) {
+    const { error: userProfileFilesDeleteError } = await storageHelpers.deleteObjects(
+      R2_MAIN_BUCKET_NAME,
+      userProfileFilesToRemove,
+    );
 
-		if (!isNull(userProfileFilesDeleteError)) {
-			response.status(500).json({
-				data: null,
-				error: String(userProfileFilesDeleteError),
-			});
-			throw new Error("ERROR: userProfileFilesDeleteError");
-		} else {
-			console.log(
-				"deleted user profile files",
-				userProfileFilesToRemove?.length,
-			);
-		}
-	} else {
-		console.log("files to delete is empty : user profiles");
-	}
+    if (!isNull(userProfileFilesDeleteError)) {
+      response.status(500).json({
+        data: null,
+        error: String(userProfileFilesDeleteError),
+      });
+      throw new Error("ERROR: userProfileFilesDeleteError");
+    } else {
+      console.log("deleted user profile files", userProfileFilesToRemove?.length);
+    }
+  } else {
+    console.log("files to delete is empty : user profiles");
+  }
 };
 
-export default async function handler(
-	request: NextApiRequest,
-	response: NextApiResponse<Data>,
-) {
-	const supabase = apiSupabaseClient(request, response);
+export default async function handler(request: NextApiRequest, response: NextApiResponse<Data>) {
+  const supabase = apiSupabaseClient(request, response);
 
-	const userData = await supabase?.auth?.getUser();
+  const userData = await supabase?.auth?.getUser();
 
-	const userId = userData?.data?.user?.id as string;
-	const email = userData?.data?.user?.email as string;
+  const userId = userData?.data?.user?.id as string;
+  const email = userData?.data?.user?.email as string;
 
-	// bookmark_tags delete
-	const { error: bookmarkTagsError } = await supabase
-		.from(BOOKMARK_TAGS_TABLE_NAME)
-		.delete()
-		.eq("user_id", userId);
+  // bookmark_tags delete
+  const { error: bookmarkTagsError } = await supabase
+    .from(BOOKMARK_TAGS_TABLE_NAME)
+    .delete()
+    .eq("user_id", userId);
 
-	if (!isNull(bookmarkTagsError)) {
-		response.status(500).json({ data: null, error: bookmarkTagsError });
-		throw new Error("ERROR: bookmarkTagsError");
-	} else {
-		console.log("deleted bookmark_tags table data", userId);
-	}
+  if (!isNull(bookmarkTagsError)) {
+    response.status(500).json({ data: null, error: bookmarkTagsError });
+    throw new Error("ERROR: bookmarkTagsError");
+  } else {
+    console.log("deleted bookmark_tags table data", userId);
+  }
 
-	// delete MAIN_TABLE_NAME
-	const { error: mainTableError } = await supabase
-		.from(MAIN_TABLE_NAME)
-		.delete()
-		.eq("user_id", userId);
+  // delete MAIN_TABLE_NAME
+  const { error: mainTableError } = await supabase
+    .from(MAIN_TABLE_NAME)
+    .delete()
+    .eq("user_id", userId);
 
-	if (!isNull(mainTableError)) {
-		response.status(500).json({ data: null, error: mainTableError });
-		throw new Error("ERROR: mainTableError");
-	} else {
-		console.log("deleted main table data", userId);
-	}
-	// tags delete
+  if (!isNull(mainTableError)) {
+    response.status(500).json({ data: null, error: mainTableError });
+    throw new Error("ERROR: mainTableError");
+  } else {
+    console.log("deleted main table data", userId);
+  }
+  // tags delete
 
-	const { error: tagsError } = await supabase
-		.from(TAG_TABLE_NAME)
-		.delete()
-		.eq("user_id", userId);
+  const { error: tagsError } = await supabase.from(TAG_TABLE_NAME).delete().eq("user_id", userId);
 
-	if (!isNull(tagsError)) {
-		response.status(500).json({ data: null, error: tagsError });
-		throw new Error("ERROR: tagsError");
-	} else {
-		console.log("deleted tags table data", userId);
-	}
-	// shared_categories delete (user delete , deletes all categories that the user has created)
+  if (!isNull(tagsError)) {
+    response.status(500).json({ data: null, error: tagsError });
+    throw new Error("ERROR: tagsError");
+  } else {
+    console.log("deleted tags table data", userId);
+  }
+  // shared_categories delete (user delete , deletes all categories that the user has created)
 
-	const { error: sharedCategoriesError } = await supabase
-		.from(SHARED_CATEGORIES_TABLE_NAME)
-		.delete()
-		.eq("user_id", userId);
+  const { error: sharedCategoriesError } = await supabase
+    .from(SHARED_CATEGORIES_TABLE_NAME)
+    .delete()
+    .eq("user_id", userId);
 
-	if (!isNull(sharedCategoriesError)) {
-		response.status(500).json({ data: null, error: sharedCategoriesError });
-		throw new Error("ERROR: sharedCategoriesError");
-	} else {
-		console.log(
-			"deleted shared categories table data",
-			userId,
-			"and emails ",
-			email,
-		);
-	}
+  if (!isNull(sharedCategoriesError)) {
+    response.status(500).json({ data: null, error: sharedCategoriesError });
+    throw new Error("ERROR: sharedCategoriesError");
+  } else {
+    console.log("deleted shared categories table data", userId, "and emails ", email);
+  }
 
-	// shared_categories delete (email delete , deletes all categories connections user is part of)
+  // shared_categories delete (email delete , deletes all categories connections user is part of)
 
-	const { error: sharedCategoriesEmailError } = await supabase
-		.from(SHARED_CATEGORIES_TABLE_NAME)
-		.delete()
-		.eq("email", email);
+  const { error: sharedCategoriesEmailError } = await supabase
+    .from(SHARED_CATEGORIES_TABLE_NAME)
+    .delete()
+    .eq("email", email);
 
-	if (!isNull(sharedCategoriesEmailError)) {
-		response
-			.status(500)
-			.json({ data: null, error: sharedCategoriesEmailError });
-		throw new Error("ERROR: sharedCategoriesEmailError");
-	} else {
-		console.log(
-			"deleted shared categories email table data",
-			userId,
-			"and emails ",
-			email,
-		);
-	}
-	// categories delete
+  if (!isNull(sharedCategoriesEmailError)) {
+    response.status(500).json({ data: null, error: sharedCategoriesEmailError });
+    throw new Error("ERROR: sharedCategoriesEmailError");
+  } else {
+    console.log("deleted shared categories email table data", userId, "and emails ", email);
+  }
+  // categories delete
 
-	await categoriesDelete(userId, response, supabase);
+  await categoriesDelete(userId, response, supabase);
 
-	// profile delete
-	const { error: profileError } = await supabase
-		.from(PROFILES)
-		.delete()
-		.eq("id", userId);
+  // profile delete
+  const { error: profileError } = await supabase.from(PROFILES).delete().eq("id", userId);
 
-	if (!isNull(profileError)) {
-		response.status(500).json({ data: null, error: profileError });
-		throw new Error("ERROR: profileError");
-	} else {
-		console.log("deleted profiles table data", userId);
-	}
+  if (!isNull(profileError)) {
+    response.status(500).json({ data: null, error: profileError });
+    throw new Error("ERROR: profileError");
+  } else {
+    console.log("deleted profiles table data", userId);
+  }
 
-	// all bookmarks s3 storage deletes
-	await storageDeleteLogic(userId, response);
+  // all bookmarks s3 storage deletes
+  await storageDeleteLogic(userId, response);
 
-	// deleting user in main auth table
-	const serviceSupabase = createServiceClient();
+  // deleting user in main auth table
+  const serviceSupabase = createServiceClient();
 
-	const { data, error } = await serviceSupabase.auth.admin.deleteUser(userId);
+  const { data, error } = await serviceSupabase.auth.admin.deleteUser(userId);
 
-	if (!isNull(error)) {
-		response.status(500).json({ data: null, error });
-		throw new Error("ERROR: del user auth table");
-	}
+  if (!isNull(error)) {
+    response.status(500).json({ data: null, error });
+    throw new Error("ERROR: del user auth table");
+  }
 
-	response.status(200).json({ data, error: null });
+  response.status(200).json({ data, error: null });
 }

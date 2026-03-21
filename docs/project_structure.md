@@ -15,7 +15,6 @@
 │   └── schema.js         # Zod validation schemas
 │
 ├── public/                # Static assets
-│   ├── app-svgs/         # Application SVG icons
 │   ├── fonts/            # Custom fonts (Inter)
 │   └── ...               # Other static files
 │
@@ -109,7 +108,7 @@
 - **`tsconfig.json`** - TypeScript configuration
 - **`turbo.json`** - Turbo monorepo task configuration
 - **`package.json`** - Project dependencies and scripts
-- **`.prettierrc.json`** - Code formatting rules
+- **`.oxfmtrc.jsonc`** - Code formatting rules
 - **`stylelint.config.js`** - CSS linting rules
 - **`knip.ts`** - Unused dependency detection
 

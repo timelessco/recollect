@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "sortPackageJson": { "sortScripts": true },
+  "sortTailwindcss": {
+    "stylesheet": "./src/styles/globals.css",
+    "functions": ["cn"],
+    "preserveWhitespace": true
+  },
+  "sortImports": {
+    "ignoreCase": true,
+    "newlinesBetween": true,
+    "order": "asc",
+    "customGroups": [
+      { "groupName": "react", "elementNamePattern": ["react", "react-**"] },
+      { "groupName": "next", "elementNamePattern": ["next", "next/**"] }
+    ],
+    "groups": [
+      "side_effect",
+      "builtin",
+      ["react", "next"],
+      "external",
+      "type",
+      "internal",
+      ["parent", "sibling", "index"],
+      "style",
+      "unknown"
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["*.jsonc"],
+      "options": { "trailingComma": "none" }
+    }
+  ],
+  "ignorePatterns": [
+    "/pnpm-lock.yaml",
+    "/public",
+    "/.next",
+    "/next-env.d.ts",
+    "/CHANGELOG.md",
+    "/scripts/release-it/**/*.hbs",
+    "/.agents",
+    "/.claude",
+    "/docs/API_CHANGELOG.md"
+  ]
+}

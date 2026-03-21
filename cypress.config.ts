@@ -5,16 +5,16 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export default defineConfig({
-	e2e: {
-		baseUrl: process.env.NEXT_PUBLIC_SITE_URL,
+  e2e: {
+    baseUrl: process.env.NEXT_PUBLIC_SITE_URL,
 
-		// on, config
-		setupNodeEvents() {
-			// implement node event listeners here
-		},
-	},
-	env: {
-		test_email: "test16@test.com",
-		test_password: "123456",
-	},
+    // on, config
+    setupNodeEvents() {
+      // implement node event listeners here
+    },
+  },
+  env: {
+    test_email: "test16@test.com",
+    test_password: "123456",
+  },
 });

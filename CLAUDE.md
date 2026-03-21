@@ -22,7 +22,7 @@ Before any Next.js work, read the relevant doc in `node_modules/next/dist/docs/`
 ## Commands
 
 ```bash
-pnpm fix        # Auto-fix all (spelling → css → md → prettier → eslint)
+pnpm fix        # Auto-fix all (spelling → css → md → oxfmt → eslint)
 pnpm lint:types # TypeScript strict checks
 pnpm lint:knip  # Detect unused code/exports/deps
 pnpm build      # Verify build passes

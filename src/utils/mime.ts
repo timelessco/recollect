@@ -1,17 +1,15 @@
 import { bookmarkType, isAcceptedMimeType } from "./constants";
 
-export function normalizeUploadedMimeType(
-	mimeType: string | null | undefined,
-): string {
-	if (!mimeType) {
-		return bookmarkType;
-	}
+export function normalizeUploadedMimeType(mimeType: string | null | undefined): string {
+  if (!mimeType) {
+    return bookmarkType;
+  }
 
-	const normalizedMimeType = mimeType.toLowerCase();
+  const normalizedMimeType = mimeType.toLowerCase();
 
-	if (!isAcceptedMimeType(normalizedMimeType)) {
-		return bookmarkType;
-	}
+  if (!isAcceptedMimeType(normalizedMimeType)) {
+    return bookmarkType;
+  }
 
-	return normalizedMimeType;
+  return normalizedMimeType;
 }
