@@ -15,7 +15,6 @@
 │   └── schema.js         # Zod validation schemas
 │
 ├── public/                # Static assets
-│   ├── app-svgs/         # Application SVG icons
 │   ├── fonts/            # Custom fonts (Inter)
 │   └── ...               # Other static files
 │
