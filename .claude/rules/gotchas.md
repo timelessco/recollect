@@ -13,7 +13,7 @@
 - Custom image loader: `src/utils/cloudflareImageLoader.ts` (not Next.js default optimizer)
 - Sentry tunnel: events proxied through `/skynet` to bypass ad-blockers
 - `axios` is in dependencies but the rule is `fetch` only — legacy, do not use for new code
-- Node engine: `^22.14.0 || >=24.0.0`
+- Node engine: `^22.14.0`
 - cspell dictionary at `.cspell/project-words.txt` — `fix:spelling` wipes and rebuilds from scratch
 - Commit body lines must be under 100 characters (`commitlint` enforces `body-max-line-length`)
 - `profiles.category_order` updates: use batch concatenation (`|| v_new_category_ids`), NOT read-modify-write loops — the Edge Function processes queue messages in parallel (`Promise.allSettled`), and a for-loop that SELECTs the full array into a variable then UPDATEs will cause lost writes. See `20260209` migration for the correct pattern.
@@ -45,3 +45,5 @@
 - `gh pr merge` on `main` requires `--admin` — branch protection blocks direct merge even with `release` label
 - Backmerge verification: `git log origin/dev..origin/main` should be empty after successful release — if it shows the release commit, the backmerge didn't preserve the merge commit SHA (previously caused by `--amend` in API changelog clear, fixed in `81b92e78`)
 - `docs/API_CHANGELOG.md` is auto-appended by CI on each push to `dev`, posted as PR comment during release, and cleared during backmerge
+- `.ncurc.cjs` pins packages that can't be upgraded (mirrors `.github/renovate.json` blocks) — keep both in sync
+- GitHub Actions use pinned commit SHAs with version comments — use `gh api repos/{owner}/{repo}/git/ref/tags/{tag}` to get SHAs when upgrading

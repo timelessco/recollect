@@ -2,7 +2,7 @@
 
 Bookmark management app with AI enrichment — organize, search, and collaborate on web bookmarks.
 
-**Stack**: Next.js 16.2 (App + Pages Router), Supabase, React Query, Zustand, Tailwind v4, Base UI
+**Stack**: Next.js 16.2.1 (App + Pages Router), Supabase, React Query, Zustand, Tailwind v4, Base UI
 
 **Architecture**: Hybrid routing (App Router for new APIs, Pages Router for dashboard), optimistic mutations, pgmq queues for async processing.
 
