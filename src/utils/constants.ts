@@ -225,60 +225,35 @@ export const DUPLICATE_CATEGORY_NAME_ERROR =
   "You already have a category with this name. Please use a different name.";
 export const NO_BOOKMARKS_ID_ERROR = "Bookmark ID is required";
 
-// accepted file type constants
-export const acceptedFileTypes = [
-  // Image
-  "image/gif",
-  "image/vnd.microsoft.icon",
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/svg+xml",
-  "image/tiff",
-  "image/webp",
-  "image/apng",
-  "image/avif",
-  "image/bmp",
-
-  // Audio
-  "audio/midi",
-  "audio/x-midi",
-  "audio/mpeg",
-  "audio/ogg",
-  "audio/3gpp",
-  "audio/3gpp2",
-  "audio/webm",
-  "audio/wav",
-  "audio/aac",
-  "audio/mp3",
-
-  // Video
-  "video/mp4",
-  "video/mpeg",
-  "video/ogg",
-  "video/mp2t",
-  "video/webm",
-  "video/3gpp",
-  "video/3gpp2",
-  "video/x-msvideo",
-
-  // Application
-  "application/msword",
-  "application/pdf",
-];
-
 export const bookmarkType = "bookmark";
 export const tweetType = "tweet";
-
 export const instagramType = "instagram";
 
-export const imageFileTypes = acceptedFileTypes?.filter((item) => item?.includes("image"));
+// MIME type prefixes for media categorization
+// Used in Supabase queries (.like("type", `${PREFIX}%`))
+// and client-side checks (type?.startsWith(PREFIX))
+export const IMAGE_MIME_PREFIX = "image/";
+export const VIDEO_MIME_PREFIX = "video/";
+export const AUDIO_MIME_PREFIX = "audio/";
+export const DOCUMENT_MIME_TYPES = ["application/pdf", "application/msword"] as const;
 
-export const videoFileTypes = acceptedFileTypes?.filter((item) => item?.includes("video"));
+/**
+ * Check if a MIME type is accepted for upload.
+ * Prefix-based: any image/*, video/*, audio/* is accepted,
+ * plus specific document types from DOCUMENT_MIME_TYPES.
+ */
+export function isAcceptedMimeType(mimeType: string | null | undefined): boolean {
+  if (!mimeType) {
+    return false;
+  }
 
-export const audioFileTypes = acceptedFileTypes?.filter((item) => item?.includes("audio"));
-
-export const documentFileTypes = acceptedFileTypes?.filter((item) => item?.includes("application"));
+  return (
+    mimeType.startsWith(IMAGE_MIME_PREFIX) ||
+    mimeType.startsWith(VIDEO_MIME_PREFIX) ||
+    mimeType.startsWith(AUDIO_MIME_PREFIX) ||
+    (DOCUMENT_MIME_TYPES as readonly string[]).includes(mimeType)
+  );
+}
 
 // color picker colors
 export const colorPickerColors = [

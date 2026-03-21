@@ -35,6 +35,7 @@ import {
   isUserInACategory,
   parseUploadFileName,
 } from "../../../utils/helpers";
+import { normalizeUploadedMimeType } from "../../../utils/mime";
 import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { vet } from "../../../utils/try";
@@ -173,7 +174,7 @@ export default async (
     const categoryIdLogic = categoryId ? (isUserInACategory(categoryId) ? categoryId : 0) : 0;
 
     const fileName = parseUploadFileName(data?.name ?? "");
-    const fileType = data?.type;
+    const fileType = normalizeUploadedMimeType(data?.type);
 
     console.log("upload-file API called:", {
       userId,

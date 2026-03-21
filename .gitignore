@@ -33,7 +33,7 @@ node_modules
 # Next.js
 ############################
 
-.next/*
+.next
 next-env.d.ts
 
 # Next PWA

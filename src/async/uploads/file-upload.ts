@@ -2,7 +2,7 @@ import uniqid from "uniqid";
 
 import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
-import { acceptedFileTypes } from "../../utils/constants";
+import { isAcceptedMimeType } from "../../utils/constants";
 import { parseUploadFileName, uploadFileLimit } from "../../utils/helpers";
 import { errorToast } from "../../utils/toastMessages";
 import { type FileUploadMutationType } from "./clipboard-upload";
@@ -23,7 +23,7 @@ export const fileUpload = async (
   }
 
   for (let index = 0; index < acceptedFiles?.length; index++) {
-    if (acceptedFiles[index] && acceptedFileTypes?.includes(acceptedFiles[index]?.type)) {
+    if (acceptedFiles[index] && isAcceptedMimeType(acceptedFiles[index]?.type)) {
       const uploadFileNamePath = uniqid.time(
         "",
         `-${parseUploadFileName(acceptedFiles[index]?.name)}`,
