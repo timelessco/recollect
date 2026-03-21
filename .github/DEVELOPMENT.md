@@ -13,7 +13,7 @@
   - [Building the project](#building-the-project)
   - [Deploying the project](#deploying-the-project)
   - [More DX scripts](#more-dx-scripts)
-    - [Prettier](#prettier)
+    - [Oxfmt](#oxfmt)
     - [Eslint](#eslint)
     - [Stylelint](#stylelint)
     - [Markdown](#markdown)
@@ -117,18 +117,18 @@ Guide on how to deploy Next.js to various [hosting providers][7].
 
 `pnpm fix`
 
-### Prettier
+### Oxfmt
 
-[Prettier][9] is used to format code. It should be applied automatically when
+[Oxfmt][9] is used to format code. It should be applied automatically when
 you save files in VS Code or make a Git commit.
 
 > Check the formatting errors
 
-`pnpm lint:prettier`
+`pnpm lint:oxfmt`
 
 > AutoFix the formatting errors
 
-`pnpm fix:prettier`
+`pnpm fix:oxfmt`
 
 > This package includes several forms of linting to enforce consistent code
 > quality and styling. Each should be shown in VS Code, and can be run manually
@@ -277,7 +277,7 @@ After running migrations, manually enable **Database Webhooks** in Supabase Stud
 [6]: https://code.visualstudio.com
 [7]: https://nextjs.org/docs/deployment
 [8]: https://turbo.build/repo
-[9]: https://prettier.io
+[9]: https://github.com/nicolo-ribaudo/oxfmt
 [10]: https://github.com/gajus/eslint-config-canonical
 [11]: https://stylelint.io/
 [12]: https://github.com/DavidAnson/markdownlint

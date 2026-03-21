@@ -159,11 +159,11 @@ User selects file from computer
 
 ```typescript
 interface UploadFilePayload {
-	category_id: string;
-	name: string;
-	type: string; // MIME type: "image/png", "video/mp4", etc.
-	uploadFileNamePath: string; // R2 path where file was uploaded
-	thumbnailPath?: string; // R2 path for video thumbnail (video only)
+  category_id: string;
+  name: string;
+  type: string; // MIME type: "image/png", "video/mp4", etc.
+  uploadFileNamePath: string; // R2 path where file was uploaded
+  thumbnailPath?: string; // R2 path for video thumbnail (video only)
 }
 ```
 
@@ -171,9 +171,9 @@ interface UploadFilePayload {
 
 ```typescript
 interface UploadFileRemainingPayload {
-	id: number; // Bookmark ID from upload-file response
-	publicUrl: string; // Public R2 URL
-	mediaType: string; // MIME type
+  id: number; // Bookmark ID from upload-file response
+  publicUrl: string; // Public R2 URL
+  mediaType: string; // MIME type
 }
 ```
 
@@ -280,9 +280,9 @@ User enters URL
 
 ```typescript
 interface AddBookmarkMinDataPayload {
-	url: string;
-	category_id?: number | "null" | string;
-	update_access: boolean;
+  url: string;
+  category_id?: number | "null" | string;
+  update_access: boolean;
 }
 ```
 
@@ -290,8 +290,8 @@ interface AddBookmarkMinDataPayload {
 
 ```typescript
 interface AddBookmarkScreenshotPayload {
-	url: string;
-	id: number; // Bookmark ID from add-bookmark-min-data
+  url: string;
+  id: number; // Bookmark ID from add-bookmark-min-data
 }
 ```
 
@@ -299,9 +299,9 @@ interface AddBookmarkScreenshotPayload {
 
 ```typescript
 interface AddBookmarkRemainingPayload {
-	url: string;
-	id: number;
-	favIcon?: string;
+  url: string;
+  id: number;
+  favIcon?: string;
 }
 ```
 
@@ -404,46 +404,46 @@ Authorization: Bearer <token>
 ```typescript
 // From src/utils/constants.ts
 const acceptedFileTypes = [
-	// Images (13 types)
-	"image/gif",
-	"image/jpeg",
-	"image/png",
-	"image/webp",
-	"image/svg+xml",
-	"image/tiff",
-	"image/bmp",
-	"image/avif",
-	"image/apng",
-	"image/vnd.microsoft.icon",
-	"image/x-icon",
-	"image/ico",
-	"image/jpg",
+  // Images (13 types)
+  "image/gif",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/svg+xml",
+  "image/tiff",
+  "image/bmp",
+  "image/avif",
+  "image/apng",
+  "image/vnd.microsoft.icon",
+  "image/x-icon",
+  "image/ico",
+  "image/jpg",
 
-	// Audio (10 types)
-	"audio/mpeg",
-	"audio/mp3",
-	"audio/wav",
-	"audio/ogg",
-	"audio/webm",
-	"audio/aac",
-	"audio/midi",
-	"audio/x-midi",
-	"audio/3gpp",
-	"audio/3gpp2",
+  // Audio (10 types)
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/wav",
+  "audio/ogg",
+  "audio/webm",
+  "audio/aac",
+  "audio/midi",
+  "audio/x-midi",
+  "audio/3gpp",
+  "audio/3gpp2",
 
-	// Video (8 types)
-	"video/mp4",
-	"video/webm",
-	"video/mpeg",
-	"video/ogg",
-	"video/mp2t",
-	"video/3gpp",
-	"video/3gpp2",
-	"video/x-msvideo",
+  // Video (8 types)
+  "video/mp4",
+  "video/webm",
+  "video/mpeg",
+  "video/ogg",
+  "video/mp2t",
+  "video/3gpp",
+  "video/3gpp2",
+  "video/x-msvideo",
 
-	// Documents (2 types)
-	"application/pdf",
-	"application/msword",
+  // Documents (2 types)
+  "application/pdf",
+  "application/msword",
 ];
 ```
 

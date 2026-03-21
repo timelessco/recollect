@@ -1,5 +1,6 @@
-import { useBookmarkRelation } from "./use-bookmark-relation";
 import { UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
+
+import { useBookmarkRelation } from "./use-bookmark-relation";
 
 /**
  * Reactively reads a bookmark's category IDs from the React Query cache.
@@ -8,8 +9,8 @@ import { UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
  * @returns Array of category IDs (excluding UNCATEGORIZED_CATEGORY_ID)
  */
 export const useBookmarkCategories = (bookmarkId: number): number[] =>
-	useBookmarkRelation(
-		bookmarkId,
-		(bookmark) => bookmark.addedCategories?.map((cat) => cat.id) ?? [],
-		(id) => id !== UNCATEGORIZED_CATEGORY_ID,
-	);
+  useBookmarkRelation(
+    bookmarkId,
+    (bookmark) => bookmark.addedCategories?.map((cat) => cat.id) ?? [],
+    (id) => id !== UNCATEGORIZED_CATEGORY_ID,
+  );

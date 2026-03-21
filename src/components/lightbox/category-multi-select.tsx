@@ -7,111 +7,87 @@ import { useMiscellaneousStore } from "@/store/componentStore";
 import { type CategoriesData } from "@/types/apiTypes";
 
 type CategoryMultiSelectProps = {
-	bookmarkId: number;
-	shouldFetch?: boolean;
+  bookmarkId: number;
+  shouldFetch?: boolean;
 };
 
-export const CategoryMultiSelect = ({
-	bookmarkId,
-	shouldFetch,
-}: CategoryMultiSelectProps) => {
-	const setIsCollectionChanged = useMiscellaneousStore(
-		(state) => state.setIsCollectionChanged,
-	);
+export const CategoryMultiSelect = ({ bookmarkId, shouldFetch }: CategoryMultiSelectProps) => {
+  const setIsCollectionChanged = useMiscellaneousStore((state) => state.setIsCollectionChanged);
 
-	const {
-		visibleCategories,
-		selectedCategories,
-		handleAdd,
-		handleRemove,
-		getItemId,
-		getItemLabel,
-	} = useCategoryMultiSelect({
-		bookmarkId,
-		shouldFetch,
-		filterUncategorized: true,
-		onMutate: () => setIsCollectionChanged(true),
-		mutationOptions: { skipInvalidation: true, preserveInList: true },
-	});
+  const {
+    visibleCategories,
+    selectedCategories,
+    handleAdd,
+    handleRemove,
+    getItemId,
+    getItemLabel,
+  } = useCategoryMultiSelect({
+    bookmarkId,
+    shouldFetch,
+    filterUncategorized: true,
+    onMutate: () => setIsCollectionChanged(true),
+    mutationOptions: { skipInvalidation: true, preserveInList: true },
+  });
 
-	return (
-		<div className="relative pt-6">
-			<div className="flex flex-wrap items-center gap-[6px]">
-				<Combobox.Root
-					items={visibleCategories}
-					selectedItems={selectedCategories}
-					getItemId={getItemId}
-					getItemLabel={getItemLabel}
-					onAdd={handleAdd}
-					onRemove={handleRemove}
-				>
-					<Combobox.Chips className="min-h-0 gap-[6px] bg-transparent p-0 focus-within:ring-0 focus-within:ring-offset-0">
-						<Combobox.Value>
-							{(value: CategoriesData[]) => (
-								<>
-									{value.map((category) => (
-										<Combobox.Chip
-											key={category.id}
-											item={category}
-											className="py-[5.5px]"
-										>
-											<CollectionIcon
-												bookmarkCategoryData={category}
-												iconSize="8"
-												size="14"
-											/>
-											<Combobox.ChipContent item={category}>
-												{category.category_name}
-											</Combobox.ChipContent>
-										</Combobox.Chip>
-									))}
+  return (
+    <div className="relative pt-6">
+      <div className="flex flex-wrap items-center gap-[6px]">
+        <Combobox.Root
+          items={visibleCategories}
+          selectedItems={selectedCategories}
+          getItemId={getItemId}
+          getItemLabel={getItemLabel}
+          onAdd={handleAdd}
+          onRemove={handleRemove}
+        >
+          <Combobox.Chips className="min-h-0 gap-[6px] bg-transparent p-0 focus-within:ring-0 focus-within:ring-offset-0">
+            <Combobox.Value>
+              {(value: CategoriesData[]) => (
+                <>
+                  {value.map((category) => (
+                    <Combobox.Chip key={category.id} item={category} className="py-[5.5px]">
+                      <CollectionIcon bookmarkCategoryData={category} iconSize="8" size="14" />
+                      <Combobox.ChipContent item={category}>
+                        {category.category_name}
+                      </Combobox.ChipContent>
+                    </Combobox.Chip>
+                  ))}
 
-									<div className="ml-2 flex items-center gap-1 rounded px-2 focus-within:ring-2 focus-within:ring-gray-200">
-										<div className="h-[14px] w-[14px] text-gray-600">
-											<AddToCollectionsButton />
-										</div>
+                  <div className="ml-2 flex items-center gap-1 rounded px-2 focus-within:ring-2 focus-within:ring-gray-200">
+                    <div className="h-[14px] w-[14px] text-gray-600">
+                      <AddToCollectionsButton />
+                    </div>
 
-										<Combobox.Input
-											placeholder="Add to collection"
-											className="w-[130px] border-none bg-transparent px-0.5 py-[2px] text-13 text-gray-500 outline-none placeholder:text-gray-500"
-										/>
-									</div>
-								</>
-							)}
-						</Combobox.Value>
-					</Combobox.Chips>
+                    <Combobox.Input
+                      placeholder="Add to collection"
+                      className="w-[130px] border-none bg-transparent px-0.5 py-[2px] text-13 text-gray-500 outline-none placeholder:text-gray-500"
+                    />
+                  </div>
+                </>
+              )}
+            </Combobox.Value>
+          </Combobox.Chips>
 
-					<Combobox.Portal>
-						<Combobox.Positioner align="start" className="z-10000">
-							<Combobox.Popup className="mt-2 w-48 rounded-xl bg-gray-50 shadow-custom-3">
-								<ScrollArea
-									scrollbarGutter
-									scrollFade
-									scrollHeight={220}
-									hideScrollbar
-								>
-									<Combobox.Empty>No collections found</Combobox.Empty>
-									<Combobox.List>
-										{(item: CategoriesData) => (
-											<Combobox.Item key={item.id} value={item}>
-												<CollectionIcon
-													bookmarkCategoryData={item}
-													iconSize="10"
-													size="16"
-												/>
-												<span className="flex-1 truncate">
-													{item.category_name}
-												</span>
-												<Combobox.ItemIndicator />
-											</Combobox.Item>
-										)}
-									</Combobox.List>
-								</ScrollArea>
-							</Combobox.Popup>
-						</Combobox.Positioner>
-					</Combobox.Portal>
-				</Combobox.Root>
-			</div>
-		</div>
-	);
+          <Combobox.Portal>
+            <Combobox.Positioner align="start" className="z-10000">
+              <Combobox.Popup className="mt-2 w-48 rounded-xl bg-gray-50 shadow-custom-3">
+                <ScrollArea scrollbarGutter scrollFade scrollHeight={220} hideScrollbar>
+                  <Combobox.Empty>No collections found</Combobox.Empty>
+                  <Combobox.List>
+                    {(item: CategoriesData) => (
+                      <Combobox.Item key={item.id} value={item}>
+                        <CollectionIcon bookmarkCategoryData={item} iconSize="10" size="16" />
+                        <span className="flex-1 truncate">{item.category_name}</span>
+                        <Combobox.ItemIndicator />
+                      </Combobox.Item>
+                    )}
+                  </Combobox.List>
+                </ScrollArea>
+              </Combobox.Popup>
+            </Combobox.Positioner>
+          </Combobox.Portal>
+        </Combobox.Root>
+      </div>
+    </div>
+  );
 };

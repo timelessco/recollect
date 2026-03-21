@@ -111,8 +111,8 @@ When updating hooks, preserve these error handling patterns from the v2 routes:
 After removing legacy code, ESLint flags orphaned imports:
 
 ```bash
-pnpm fix:prettier src/async/supabaseCrudHelpers/index.ts
-pnpm fix:prettier src/types/apiTypes.ts
+pnpm fix:oxfmt src/async/supabaseCrudHelpers/index.ts
+pnpm fix:oxfmt src/types/apiTypes.ts
 ```
 
 ### Knip Unused Export Warnings

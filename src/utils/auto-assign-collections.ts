@@ -3,16 +3,12 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 
 import { type UserCollection } from "@/async/ai/imageToText";
 import { createServerServiceClient } from "@/lib/supabase/service";
-import {
-	CATEGORIES_TABLE_NAME,
-	PROFILES,
-	UNCATEGORIZED_CATEGORY_ID,
-} from "@/utils/constants";
+import { CATEGORIES_TABLE_NAME, PROFILES, UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
 
 export interface FetchUserCollectionsProps {
-	autoAssignEnabled?: boolean;
-	supabase: SupabaseClient;
-	userId: string;
+  autoAssignEnabled?: boolean;
+  supabase: SupabaseClient;
+  userId: string;
 }
 
 /**
@@ -20,60 +16,57 @@ export interface FetchUserCollectionsProps {
  * Non-critical — returns empty array on failure.
  */
 export async function fetchUserCollections(
-	props: FetchUserCollectionsProps,
+  props: FetchUserCollectionsProps,
 ): Promise<UserCollection[]> {
-	const { autoAssignEnabled, supabase, userId } = props;
+  const { autoAssignEnabled, supabase, userId } = props;
 
-	try {
-		// When pre-fetched toggle is provided, use it directly to avoid duplicate query
-		if (autoAssignEnabled !== undefined) {
-			if (!autoAssignEnabled) {
-				return [];
-			}
-		} else {
-			// Fallback: fetch toggle from DB (legacy callers)
-			const { data: profileData } = await supabase
-				.from(PROFILES)
-				.select("ai_features_toggle")
-				.eq("id", userId)
-				.single();
+  try {
+    // When pre-fetched toggle is provided, use it directly to avoid duplicate query
+    if (autoAssignEnabled !== undefined) {
+      if (!autoAssignEnabled) {
+        return [];
+      }
+    } else {
+      // Fallback: fetch toggle from DB (legacy callers)
+      const { data: profileData } = await supabase
+        .from(PROFILES)
+        .select("ai_features_toggle")
+        .eq("id", userId)
+        .single();
 
-			const aiFeatures = profileData?.ai_features_toggle as Record<
-				string,
-				unknown
-			> | null;
+      const aiFeatures = profileData?.ai_features_toggle as Record<string, unknown> | null;
 
-			if (aiFeatures?.auto_assign_collections === false) {
-				return [];
-			}
-		}
+      if (aiFeatures?.auto_assign_collections === false) {
+        return [];
+      }
+    }
 
-		const { data: categoriesData } = await supabase
-			.from(CATEGORIES_TABLE_NAME)
-			.select("id, category_name")
-			.eq("user_id", userId)
-			.neq("id", UNCATEGORIZED_CATEGORY_ID);
+    const { data: categoriesData } = await supabase
+      .from(CATEGORIES_TABLE_NAME)
+      .select("id, category_name")
+      .eq("user_id", userId)
+      .neq("id", UNCATEGORIZED_CATEGORY_ID);
 
-		return (
-			categoriesData?.map((category) => ({
-				id: category.id,
-				name: category.category_name,
-			})) ?? []
-		);
-	} catch (error) {
-		console.error("[auto-assign] Failed to fetch categories:", error);
-		Sentry.captureException(error, {
-			tags: { operation: "fetch_categories_for_auto_assign", userId },
-		});
-		return [];
-	}
+    return (
+      categoriesData?.map((category) => ({
+        id: category.id,
+        name: category.category_name,
+      })) ?? []
+    );
+  } catch (error) {
+    console.error("[auto-assign] Failed to fetch categories:", error);
+    Sentry.captureException(error, {
+      tags: { operation: "fetch_categories_for_auto_assign", userId },
+    });
+    return [];
+  }
 }
 
 export interface AutoAssignCollectionsProps {
-	bookmarkId: number;
-	matchedCollectionIds: number[];
-	route: string;
-	userId: string;
+  bookmarkId: number;
+  matchedCollectionIds: number[];
+  route: string;
+  userId: string;
 }
 
 /**
@@ -81,37 +74,35 @@ export interface AutoAssignCollectionsProps {
  * Uses service client to bypass RLS. Non-critical — failures are logged to Sentry
  * but never thrown.
  */
-export async function autoAssignCollections(
-	props: AutoAssignCollectionsProps,
-): Promise<void> {
-	const { bookmarkId, matchedCollectionIds, route, userId } = props;
+export async function autoAssignCollections(props: AutoAssignCollectionsProps): Promise<void> {
+  const { bookmarkId, matchedCollectionIds, route, userId } = props;
 
-	if (matchedCollectionIds.length === 0) {
-		return;
-	}
+  if (matchedCollectionIds.length === 0) {
+    return;
+  }
 
-	try {
-		const serviceClient = await createServerServiceClient();
+  try {
+    const serviceClient = await createServerServiceClient();
 
-		const { error } = await serviceClient.rpc("auto_assign_collections", {
-			p_bookmark_id: bookmarkId,
-			p_user_id: userId,
-			p_category_ids: matchedCollectionIds,
-		});
+    const { error } = await serviceClient.rpc("auto_assign_collections", {
+      p_bookmark_id: bookmarkId,
+      p_user_id: userId,
+      p_category_ids: matchedCollectionIds,
+    });
 
-		if (error) {
-			throw error;
-		}
+    if (error) {
+      throw error;
+    }
 
-		console.log(`[${route}] Auto-assigned collections:`, {
-			bookmarkId,
-			collectionIds: matchedCollectionIds,
-		});
-	} catch (error) {
-		console.error(`[${route}] Auto-assign collections failed:`, error);
-		Sentry.captureException(error, {
-			tags: { operation: "auto_assign_collections", userId },
-			extra: { bookmarkId, matchedCollectionIds },
-		});
-	}
+    console.log(`[${route}] Auto-assigned collections:`, {
+      bookmarkId,
+      collectionIds: matchedCollectionIds,
+    });
+  } catch (error) {
+    console.error(`[${route}] Auto-assign collections failed:`, error);
+    Sentry.captureException(error, {
+      tags: { operation: "auto_assign_collections", userId },
+      extra: { bookmarkId, matchedCollectionIds },
+    });
+  }
 }

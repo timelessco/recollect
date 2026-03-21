@@ -7,16 +7,15 @@ import { fetchBookmarksViews } from "../../supabaseCrudHelpers";
 
 // fetchs bookmarks view
 export default function useFetchBookmarksView() {
-	const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+  const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
-	const { data } = useQuery<{
-		data: BookmarkViewDataTypes | null;
-		error: Error;
-	}>({
-		queryKey: [BOOKMARKS_VIEW, CATEGORY_ID],
-		queryFn: async () =>
-			await fetchBookmarksViews({ category_id: CATEGORY_ID }),
-	});
+  const { data } = useQuery<{
+    data: BookmarkViewDataTypes | null;
+    error: Error;
+  }>({
+    queryKey: [BOOKMARKS_VIEW, CATEGORY_ID],
+    queryFn: async () => await fetchBookmarksViews({ category_id: CATEGORY_ID }),
+  });
 
-	return { data };
+  return { data };
 }

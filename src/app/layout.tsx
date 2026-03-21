@@ -11,31 +11,31 @@ import { ToastSetup } from "@/components/ui/recollect/toast";
 import { rootMetaData, rootViewport } from "@/utils/metadata-utils";
 
 type RootLayoutProps = {
-	readonly children: React.ReactNode;
+  readonly children: React.ReactNode;
 };
 
 export default async function RootLayout(props: RootLayoutProps) {
-	const { children } = props;
+  const { children } = props;
 
-	return (
-		<html
-			lang="en"
-			dir="ltr"
-			className="antialiased inter-display optimize-legibility"
-			suppressHydrationWarning
-		>
-			<body className="overflow-x-hidden bg-gray-0 outline-hidden">
-				<Providers>{children}</Providers>
+  return (
+    <html
+      lang="en"
+      dir="ltr"
+      className="antialiased inter-display optimize-legibility"
+      suppressHydrationWarning
+    >
+      <body className="overflow-x-hidden bg-gray-0 outline-hidden">
+        <Providers>{children}</Providers>
 
-				<AnalyticsScript />
-				<IosAutozoomFix />
-				<ReactGrabScript />
+        <AnalyticsScript />
+        <IosAutozoomFix />
+        <ReactGrabScript />
 
-				<ToastSetup />
-				<TailwindIndicator />
-			</body>
-		</html>
-	);
+        <ToastSetup />
+        <TailwindIndicator />
+      </body>
+    </html>
+  );
 }
 
 export const metadata: Metadata = rootMetaData;

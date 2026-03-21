@@ -6,15 +6,15 @@ import { getUserProfilePic } from "../../supabaseCrudHelpers";
 
 // fetchs user profile
 export default function useGetUserProfilePic(email: string) {
-	const { data: userProfilePicData } = useQuery<{
-		data: UserProfilePicTypes[] | null;
-		error: Error;
-	}>({
-		queryKey: [USER_PROFILE_PIC, email],
-		queryFn: async () => await getUserProfilePic({ email }),
-	});
+  const { data: userProfilePicData } = useQuery<{
+    data: UserProfilePicTypes[] | null;
+    error: Error;
+  }>({
+    queryKey: [USER_PROFILE_PIC, email],
+    queryFn: async () => await getUserProfilePic({ email }),
+  });
 
-	return {
-		userProfilePicData,
-	};
+  return {
+    userProfilePicData,
+  };
 }

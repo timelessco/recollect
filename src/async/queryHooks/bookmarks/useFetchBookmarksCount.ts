@@ -7,20 +7,20 @@ import { getBookmarksCount } from "../../supabaseCrudHelpers";
 
 // fetchs user categories
 export default function useFetchBookmarksCount() {
-	const session = useSupabaseSession((state) => state.session);
+  const session = useSupabaseSession((state) => state.session);
 
-	const { data: bookmarksCountData } = useQuery<{
-		data: BookmarksCountTypes | null;
-		error: Error;
-	}>({
-		// eslint-disable-next-line @tanstack/query/exhaustive-deps
-		queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id as string],
-		queryFn: async (data) =>
-			// @ts-expect-error - Todo fix this
-			await getBookmarksCount(data, session ?? { user: null }),
-	});
+  const { data: bookmarksCountData } = useQuery<{
+    data: BookmarksCountTypes | null;
+    error: Error;
+  }>({
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id as string],
+    queryFn: async (data) =>
+      // @ts-expect-error - Todo fix this
+      await getBookmarksCount(data, session ?? { user: null }),
+  });
 
-	return {
-		bookmarksCountData,
-	};
+  return {
+    bookmarksCountData,
+  };
 }

@@ -1,6 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { type NextApiRequest, type NextApiResponse } from "next";
+
 import { type PostgrestError } from "@supabase/supabase-js";
 import { type VerifyErrors } from "jsonwebtoken";
 import isNull from "lodash/isNull";
@@ -16,39 +17,36 @@ type DataResponse = UserProfilePicTypes[] | null;
 type ErrorResponse = PostgrestError | VerifyErrors | string | null;
 
 type Data = {
-	data: DataResponse;
-	error: ErrorResponse;
+  data: DataResponse;
+  error: ErrorResponse;
 };
 
-export default async function handler(
-	request: NextApiRequest,
-	response: NextApiResponse<Data>,
-) {
-	const supabase = apiSupabaseClient(request, response);
-	const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+export default async function handler(request: NextApiRequest, response: NextApiResponse<Data>) {
+  const supabase = apiSupabaseClient(request, response);
+  const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
 
-	if (userId) {
-		// remove from DB
-		const { data: removeData, error: removeError } = await supabase
-			.from(PROFILES)
-			.update({
-				profile_pic: null,
-			})
-			.match({ id: userId })
-			.select(`profile_pic`);
+  if (userId) {
+    // remove from DB
+    const { data: removeData, error: removeError } = await supabase
+      .from(PROFILES)
+      .update({
+        profile_pic: null,
+      })
+      .match({ id: userId })
+      .select(`profile_pic`);
 
-		if (!isNull(removeError)) {
-			response.status(500).json({ data: null, error: removeError });
-			throw new Error("ERROR: remove error");
-		}
+    if (!isNull(removeError)) {
+      response.status(500).json({ data: null, error: removeError });
+      throw new Error("ERROR: remove error");
+    }
 
-		// remove from bucket
+    // remove from bucket
 
-		await deleteLogic(response, userId);
+    await deleteLogic(response, userId);
 
-		response.status(200).json({ data: removeData, error: null });
-	} else {
-		response.status(500).json({ data: null, error: "User id is missing" });
-		throw new Error("ERROR: User id is missing");
-	}
+    response.status(200).json({ data: removeData, error: null });
+  } else {
+    response.status(500).json({ data: null, error: "User id is missing" });
+    throw new Error("ERROR: User id is missing");
+  }
 }

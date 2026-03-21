@@ -8,18 +8,18 @@ import * as Sentry from "@sentry/nextjs";
  * @param data - Additional data to include in the log
  */
 export function logCacheMiss(
-	context: string,
-	message: string,
-	data: Record<string, unknown>,
+  context: string,
+  message: string,
+  data: Record<string, unknown>,
 ): void {
-	if (process.env.NODE_ENV === "development") {
-		console.warn(`[${context}] ${message}`, data);
-	}
+  if (process.env.NODE_ENV === "development") {
+    console.warn(`[${context}] ${message}`, data);
+  }
 
-	Sentry.addBreadcrumb({
-		category: context.toLowerCase().replaceAll(/\s+/gu, "-"),
-		message,
-		level: "warning",
-		data,
-	});
+  Sentry.addBreadcrumb({
+    category: context.toLowerCase().replaceAll(/\s+/gu, "-"),
+    message,
+    level: "warning",
+    data,
+  });
 }

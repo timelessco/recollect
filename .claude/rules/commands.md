@@ -6,7 +6,7 @@
 2. Run quality checks:
 
 ```bash
-pnpm fix        # Auto-fix all (spelling → css → md → prettier → eslint)
+pnpm fix        # Auto-fix all (spelling → css → md → oxfmt → eslint)
 pnpm lint:types # TypeScript strict checks (includes next typegen + deno check)
 pnpm lint:knip  # Detect unused code (especially after large changes)
 ```
@@ -20,7 +20,7 @@ pnpm build      # Runs OpenAPI gen → next build → next-sitemap
 ### Quality Gates by Task Type
 
 - **Components**: `pnpm fix:eslint` → `pnpm lint:types` → verify ARIA → `pnpm build`
-- **Styling**: `pnpm lint:css` → `pnpm fix:prettier` → `pnpm build`
+- **Styling**: `pnpm lint:css` → `pnpm fix:oxfmt` → `pnpm build`
 - **Utilities**: `pnpm lint:types` → `pnpm lint:knip`
 - **Documentation**: `pnpm fix:md` → `pnpm fix:spelling`
 - **Dependencies**: `pnpm check:packages` → `pnpm lint:knip` → `pnpm build`
@@ -53,9 +53,9 @@ pnpm start            # Start production server
 #### Fix (auto-fix)
 
 ```bash
-pnpm fix              # Turbo: full fix chain (spelling → css → md → prettier → eslint via dependsOn)
+pnpm fix              # Turbo: full fix chain (spelling → css → md → oxfmt → eslint via dependsOn)
 pnpm fix:eslint       # Auto-fix ESLint issues
-pnpm fix:prettier     # Auto-fix formatting
+pnpm fix:oxfmt        # Auto-fix formatting
 pnpm fix:css          # Auto-fix Stylelint issues
 pnpm fix:md           # Auto-fix markdown issues
 pnpm fix:spelling     # Rebuild cspell dictionary from scratch
@@ -71,7 +71,7 @@ pnpm lint:css         # Check Stylelint
 pnpm lint:md          # Check markdown
 pnpm lint:knip        # Check unused code/exports/deps
 pnpm lint:spelling    # Check spelling
-pnpm lint:prettier    # Check formatting
+pnpm lint:oxfmt       # Check formatting
 ```
 
 #### Database
@@ -99,7 +99,7 @@ pnpm cypress:open     # Open Cypress (no specs exist)
 
 ### Pre-Commit (Automatic)
 
-- **pre-commit** (lint-staged): Prettier formatting on all staged files
+- **pre-commit** (lint-staged): Oxfmt formatting on all staged files
 - **commit-msg** (commitlint): Conventional commit message validation (`@commitlint/config-conventional`)
 
 ### Self-Improvement

@@ -91,11 +91,11 @@ jobs:
 
     timeout-minutes: 15
 
-  lint-prettier:
+  lint-oxfmt:
     # env:
     #   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
     #   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-    name: 🔬 Lint Prettier
+    name: 🔬 Lint Oxfmt
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -105,8 +105,8 @@ jobs:
 
       - uses: ./.github/actions/pnpm-install
 
-      - name: Lint Prettier
-        run: pnpm turbo lint:prettier
+      - name: Lint Oxfmt
+        run: pnpm turbo lint:oxfmt
 
     timeout-minutes: 15
 

@@ -7,8 +7,8 @@
 import { z } from "zod";
 
 export function apiResponseSchema<T extends z.ZodTypeAny>(dataSchema: T) {
-	return z.object({
-		data: dataSchema.nullable(),
-		error: z.string().nullable(),
-	});
+  return z.object({
+    data: dataSchema.nullable(),
+    error: z.string().nullable(),
+  });
 }

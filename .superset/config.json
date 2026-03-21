@@ -1,11 +1,11 @@
 {
-	"setup": [
-		"[ -f \"$SUPERSET_ROOT_PATH/.env.local\" ] && cp \"$SUPERSET_ROOT_PATH/.env.local\" .env.local || true",
-		"[ -d \"$SUPERSET_ROOT_PATH/.vercel\" ] && cp -r \"$SUPERSET_ROOT_PATH/.vercel\" . || true",
-		"[ -f \"$SUPERSET_ROOT_PATH/.claude/settings.local.json\" ] && cp \"$SUPERSET_ROOT_PATH/.claude/settings.local.json\" .claude/settings.local.json || true",
-		"[ -f \"$SUPERSET_ROOT_PATH/supabase/seed.sql\" ] && ln -sf \"$SUPERSET_ROOT_PATH/supabase/seed.sql\" supabase/seed.sql || true",
-		"[ -d \"$SUPERSET_ROOT_PATH/.planning\" ] && cp -r \"$SUPERSET_ROOT_PATH/.planning\" . || true",
-		"pnpm install"
-	],
-	"teardown": []
+  "setup": [
+    "[ -f \"$SUPERSET_ROOT_PATH/.env.local\" ] && cp \"$SUPERSET_ROOT_PATH/.env.local\" .env.local || true",
+    "[ -d \"$SUPERSET_ROOT_PATH/.vercel\" ] && cp -r \"$SUPERSET_ROOT_PATH/.vercel\" . || true",
+    "[ -f \"$SUPERSET_ROOT_PATH/.claude/settings.local.json\" ] && cp \"$SUPERSET_ROOT_PATH/.claude/settings.local.json\" .claude/settings.local.json || true",
+    "[ -f \"$SUPERSET_ROOT_PATH/supabase/seed.sql\" ] && ln -sf \"$SUPERSET_ROOT_PATH/supabase/seed.sql\" supabase/seed.sql || true",
+    "[ -d \"$SUPERSET_ROOT_PATH/.planning\" ] && cp -r \"$SUPERSET_ROOT_PATH/.planning\" . || true",
+    "pnpm install"
+  ],
+  "teardown": []
 }

@@ -4,123 +4,105 @@ import { type SingleListData } from "@/types/apiTypes";
 import { isBookmarkOwner } from "@/utils/helpers";
 
 type BulkDeleteBookmarkParams = {
-	bookmarkIds: number[];
-	deleteForever: boolean;
-	isTrash: boolean;
-	isSearching: boolean;
-	flattenedSearchData: SingleListData[];
-	flattendPaginationBookmarkData: SingleListData[];
-	deleteBookmarkId: number[] | undefined;
-	setDeleteBookmarkId: (bookmarkIds: number[]) => void;
-	sessionUserId: string | undefined;
-	moveBookmarkToTrashOptimisticMutation: {
-		mutateAsync: (data: {
-			data: SingleListData[];
-			isTrash: boolean;
-		}) => Promise<unknown>;
-	};
-	deleteBookmarkOptismicMutation: {
-		mutateAsync: (data: {
-			deleteData: Array<{ id: number }>;
-		}) => Promise<unknown>;
-	};
-	clearSelection: () => void;
-	mutationApiCall: (apiCall: Promise<unknown>) => Promise<unknown>;
-	errorToast: (message: string) => void;
+  bookmarkIds: number[];
+  deleteForever: boolean;
+  isTrash: boolean;
+  isSearching: boolean;
+  flattenedSearchData: SingleListData[];
+  flattendPaginationBookmarkData: SingleListData[];
+  deleteBookmarkId: number[] | undefined;
+  setDeleteBookmarkId: (bookmarkIds: number[]) => void;
+  sessionUserId: string | undefined;
+  moveBookmarkToTrashOptimisticMutation: {
+    mutateAsync: (data: { data: SingleListData[]; isTrash: boolean }) => Promise<unknown>;
+  };
+  deleteBookmarkOptismicMutation: {
+    mutateAsync: (data: { deleteData: Array<{ id: number }> }) => Promise<unknown>;
+  };
+  clearSelection: () => void;
+  mutationApiCall: (apiCall: Promise<unknown>) => Promise<unknown>;
+  errorToast: (message: string) => void;
 };
 
 export const handleBulkBookmarkDelete = ({
-	bookmarkIds,
-	deleteForever,
-	isTrash,
-	isSearching,
-	flattenedSearchData,
-	flattendPaginationBookmarkData,
-	deleteBookmarkId,
-	setDeleteBookmarkId,
-	sessionUserId,
-	moveBookmarkToTrashOptimisticMutation,
-	deleteBookmarkOptismicMutation,
-	clearSelection,
-	mutationApiCall,
-	errorToast,
+  bookmarkIds,
+  deleteForever,
+  isTrash,
+  isSearching,
+  flattenedSearchData,
+  flattendPaginationBookmarkData,
+  deleteBookmarkId,
+  setDeleteBookmarkId,
+  sessionUserId,
+  moveBookmarkToTrashOptimisticMutation,
+  deleteBookmarkOptismicMutation,
+  clearSelection,
+  mutationApiCall,
+  errorToast,
 }: BulkDeleteBookmarkParams) => {
-	const currentBookmarksData = isSearching
-		? flattenedSearchData
-		: flattendPaginationBookmarkData;
-	if (!deleteForever) {
-		const foundBookmarks = bookmarkIds
-			.map(
-				(id) =>
-					find(
-						currentBookmarksData,
-						(item) => item?.id === id,
-					) as SingleListData,
-			)
-			.filter(Boolean);
+  const currentBookmarksData = isSearching ? flattenedSearchData : flattendPaginationBookmarkData;
+  if (!deleteForever) {
+    const foundBookmarks = bookmarkIds
+      .map((id) => find(currentBookmarksData, (item) => item?.id === id) as SingleListData)
+      .filter(Boolean);
 
-		const ownedBookmarks: SingleListData[] = [];
-		let skippedCount = 0;
+    const ownedBookmarks: SingleListData[] = [];
+    let skippedCount = 0;
 
-		for (const bookmark of foundBookmarks) {
-			if (isBookmarkOwner(bookmark.user_id, sessionUserId)) {
-				ownedBookmarks.push(bookmark);
-			} else {
-				skippedCount++;
-			}
-		}
+    for (const bookmark of foundBookmarks) {
+      if (isBookmarkOwner(bookmark.user_id, sessionUserId)) {
+        ownedBookmarks.push(bookmark);
+      } else {
+        skippedCount++;
+      }
+    }
 
-		if (skippedCount > 0) {
-			errorToast(
-				skippedCount === 1
-					? "Cannot delete 1 bookmark owned by another user"
-					: `Cannot delete ${skippedCount} bookmarks owned by other users`,
-			);
-		}
+    if (skippedCount > 0) {
+      errorToast(
+        skippedCount === 1
+          ? "Cannot delete 1 bookmark owned by another user"
+          : `Cannot delete ${skippedCount} bookmarks owned by other users`,
+      );
+    }
 
-		if (ownedBookmarks.length > 0) {
-			void mutationApiCall(
-				moveBookmarkToTrashOptimisticMutation.mutateAsync({
-					data: ownedBookmarks,
-					isTrash,
-				}),
-			);
-			// Clear selection to close the selection bar
-			clearSelection();
-		}
-	} else {
-		const bookmarksToDelete = [...(deleteBookmarkId ?? []), ...bookmarkIds];
-		if (bookmarksToDelete.length > 0) {
-			setDeleteBookmarkId(bookmarksToDelete);
-			const deleteData = bookmarksToDelete
-				.map((delItem) => {
-					const idAsNumber =
-						typeof delItem === "number"
-							? delItem
-							: Number.parseInt(delItem as string, 10);
+    if (ownedBookmarks.length > 0) {
+      void mutationApiCall(
+        moveBookmarkToTrashOptimisticMutation.mutateAsync({
+          data: ownedBookmarks,
+          isTrash,
+        }),
+      );
+      // Clear selection to close the selection bar
+      clearSelection();
+    }
+  } else {
+    const bookmarksToDelete = [...(deleteBookmarkId ?? []), ...bookmarkIds];
+    if (bookmarksToDelete.length > 0) {
+      setDeleteBookmarkId(bookmarksToDelete);
+      const deleteData = bookmarksToDelete
+        .map((delItem) => {
+          const idAsNumber =
+            typeof delItem === "number" ? delItem : Number.parseInt(delItem as string, 10);
 
-					const delBookmarkData = find(
-						currentBookmarksData,
-						(item) => item?.id === idAsNumber,
-					);
+          const delBookmarkData = find(currentBookmarksData, (item) => item?.id === idAsNumber);
 
-					if (!delBookmarkData) {
-						console.warn(`Bookmark ${idAsNumber} not found in current data`);
-						return null;
-					}
+          if (!delBookmarkData) {
+            console.warn(`Bookmark ${idAsNumber} not found in current data`);
+            return null;
+          }
 
-					return { id: idAsNumber };
-				})
-				.filter(Boolean);
+          return { id: idAsNumber };
+        })
+        .filter(Boolean);
 
-			void mutationApiCall(
-				deleteBookmarkOptismicMutation.mutateAsync({
-					deleteData,
-				}),
-			);
-			setDeleteBookmarkId([]);
-			// Clear selection to close the selection bar
-			clearSelection();
-		}
-	}
+      void mutationApiCall(
+        deleteBookmarkOptismicMutation.mutateAsync({
+          deleteData,
+        }),
+      );
+      setDeleteBookmarkId([]);
+      // Clear selection to close the selection bar
+      clearSelection();
+    }
+  }
 };

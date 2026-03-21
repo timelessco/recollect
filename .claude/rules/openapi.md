@@ -24,7 +24,7 @@ oasdiff changelog old.json new.json --format markdown # Local changelog diff
 - Workflow: `.github/workflows/openapi-changelog.yml`
 - Uses `go install github.com/oasdiff/oasdiff@latest` + direct CLI (not Docker action)
 - Spec files in `.oasdiff/` (Docker actions can't see `/tmp`)
-- `docs/API_CHANGELOG.md` is CI-generated, ignored by Prettier + markdownlint
+- `docs/API_CHANGELOG.md` is CI-generated, ignored by oxfmt + markdownlint
 
 ### Factory `.config`
 

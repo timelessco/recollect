@@ -1,10 +1,12 @@
 import { cookies, headers } from "next/headers";
 import { NextResponse } from "next/server";
+
 import { createServerClient } from "@supabase/ssr";
 import { type SupabaseClient, type User } from "@supabase/supabase-js";
 
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./constants";
 import { type Database } from "@/types/database.types";
+
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./constants";
 
 /**
  * Creates a Supabase client for App Router API routes with support for:
@@ -23,53 +25,46 @@ import { type Database } from "@/types/database.types";
  * ```
  */
 export async function createApiClient() {
-	// Get authorization header for mobile app authentication
-	const headersList = await headers();
-	const cookieStore = await cookies();
-	const authorization = headersList.get("authorization");
+  // Get authorization header for mobile app authentication
+  const headersList = await headers();
+  const cookieStore = await cookies();
+  const authorization = headersList.get("authorization");
 
-	// Strip "Bearer " prefix from token for use with getUser()
-	const token = authorization?.replace("Bearer ", "") ?? null;
+  // Strip "Bearer " prefix from token for use with getUser()
+  const token = authorization?.replace("Bearer ", "") ?? null;
 
-	const supabase = createServerClient<Database>(
-		SUPABASE_URL,
-		SUPABASE_ANON_KEY,
-		{
-			// This is for Recollect Mobile - Auth context from mobile app is passed to the server via Authorization header
-			// Fix for - https://supabase.com/docs/guides/functions/auth#:~:text=Row%20Level%20Security%23,Security%20will%20be%20enforced.
-			...(authorization
-				? {
-						global: { headers: { Authorization: authorization } },
-					}
-				: {}),
-			cookies: {
-				getAll() {
-					return cookieStore.getAll();
-				},
-				setAll(cookiesToSet) {
-					// For API routes, we typically don't set cookies
-					// But this is required by the Supabase client interface
-					try {
-						for (const { name, value, options } of cookiesToSet) {
-							cookieStore.set(name, value, options);
-						}
-					} catch (error) {
-						// The `setAll` method was called from a Server Component.
-						// This can be ignored if you have middleware refreshing
-						// user sessions.
-						if (process.env.NODE_ENV === "development") {
-							console.warn(
-								"[createApiClient] Cookie setAll failed (expected in RSC):",
-								error,
-							);
-						}
-					}
-				},
-			},
-		},
-	);
+  const supabase = createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    // This is for Recollect Mobile - Auth context from mobile app is passed to the server via Authorization header
+    // Fix for - https://supabase.com/docs/guides/functions/auth#:~:text=Row%20Level%20Security%23,Security%20will%20be%20enforced.
+    ...(authorization
+      ? {
+          global: { headers: { Authorization: authorization } },
+        }
+      : {}),
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        // For API routes, we typically don't set cookies
+        // But this is required by the Supabase client interface
+        try {
+          for (const { name, value, options } of cookiesToSet) {
+            cookieStore.set(name, value, options);
+          }
+        } catch (error) {
+          // The `setAll` method was called from a Server Component.
+          // This can be ignored if you have middleware refreshing
+          // user sessions.
+          if (process.env.NODE_ENV === "development") {
+            console.warn("[createApiClient] Cookie setAll failed (expected in RSC):", error);
+          }
+        }
+      },
+    },
+  });
 
-	return { supabase, token };
+  return { supabase, token };
 }
 
 /**
@@ -88,17 +83,14 @@ export async function createApiClient() {
  * const { data: { user }, error } = await getApiUser(supabase, token);
  * ```
  */
-export async function getApiUser(
-	supabase: SupabaseClient<Database>,
-	token?: string | null,
-) {
-	if (token) {
-		// Mobile app: Use token-based auth by explicitly passing the JWT
-		return await supabase.auth.getUser(token);
-	}
+export async function getApiUser(supabase: SupabaseClient<Database>, token?: string | null) {
+  if (token) {
+    // Mobile app: Use token-based auth by explicitly passing the JWT
+    return await supabase.auth.getUser(token);
+  }
 
-	// Web app: Use cookie-based auth
-	return await supabase.auth.getUser();
+  // Web app: Use cookie-based auth
+  return await supabase.auth.getUser();
 }
 
 // Error response shape - matches ApiErrorResponse from api-response.ts
@@ -108,12 +100,12 @@ type AuthErrorResponse = { data: null; error: string };
  * Result type for requireAuth - discriminated union for type narrowing
  */
 export type AuthResult =
-	| { supabase: SupabaseClient<Database>; user: User; errorResponse: null }
-	| {
-			supabase: null;
-			user: null;
-			errorResponse: NextResponse<AuthErrorResponse>;
-	  };
+  | { supabase: SupabaseClient<Database>; user: User; errorResponse: null }
+  | {
+      supabase: null;
+      user: null;
+      errorResponse: NextResponse<AuthErrorResponse>;
+    };
 
 /**
  * Authenticates API request and returns Supabase client + user.
@@ -126,35 +118,29 @@ export type AuthResult =
  * const { supabase, user } = auth;
  */
 export async function requireAuth(routeName: string): Promise<AuthResult> {
-	const { supabase, token } = await createApiClient();
-	const {
-		data: { user },
-		error: userError,
-	} = await getApiUser(supabase, token);
+  const { supabase, token } = await createApiClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await getApiUser(supabase, token);
 
-	if (userError) {
-		console.warn(`[${routeName}] Auth error:`, userError);
-		return {
-			supabase: null,
-			user: null,
-			errorResponse: NextResponse.json(
-				{ data: null, error: userError.message },
-				{ status: 400 },
-			),
-		};
-	}
+  if (userError) {
+    console.warn(`[${routeName}] Auth error:`, userError);
+    return {
+      supabase: null,
+      user: null,
+      errorResponse: NextResponse.json({ data: null, error: userError.message }, { status: 400 }),
+    };
+  }
 
-	if (!user) {
-		console.warn(`[${routeName}] No user found in session`);
-		return {
-			supabase: null,
-			user: null,
-			errorResponse: NextResponse.json(
-				{ data: null, error: "Not authenticated" },
-				{ status: 401 },
-			),
-		};
-	}
+  if (!user) {
+    console.warn(`[${routeName}] No user found in session`);
+    return {
+      supabase: null,
+      user: null,
+      errorResponse: NextResponse.json({ data: null, error: "Not authenticated" }, { status: 401 }),
+    };
+  }
 
-	return { supabase, user, errorResponse: null };
+  return { supabase, user, errorResponse: null };
 }
