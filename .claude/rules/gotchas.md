@@ -53,9 +53,11 @@
 - `promise-function-async` is off — it auto-adds `async` to Promise-returning functions, but the rule is: only add `async` when `await` is present in the function body
 - oxlint `--deny RULE` CLI flag does NOT override config-level `"off"` — to test a disabled rule, temporarily remove it from `.oxlintrc.json` and re-run
 - `oxlint-disable-next-line` must be on the line immediately before the violation — for multi-line expressions, place on the line with the violation, not the wrapping expression above
-- `typeAware: true` and `typeCheck: true` are enabled — type-aware lint rules active. `no-unsafe-*` family (6 rules) remains off (~677 violations from Supabase `any` propagation, see `docs/plans/2026-03-22-fix-oxlint-no-unsafe-rules.md`)
+- `typeAware: true` and `typeCheck: true` are enabled — all type-aware rules active globally. `no-unsafe-*` + `no-non-null-assertion` disabled in legacy folders via `.oxlintrc.json` overrides (`src/pages/api/`, `src/async/`, `src/pageComponents/`, `src/utils/{worker,file-upload,helpers,apiHelpers}.ts`, `scripts/`). New code is fully enforced
 - `database-generated.types.ts` is in oxlint `ignorePatterns` — Supabase CLI generates types that trigger `no-redundant-type-constituents`
 - `cypress/e2e/**` and `cypress/support/**` are in oxlint `ignorePatterns` — `Cypress.env()` is falsely flagged as deprecated
 - `prefer-nullish-coalescing` auto-fix converts `||` to `??` — use block-level `/* oxlint-disable prefer-nullish-coalescing */` when `||` is intentional (boolean conditions, empty-string-as-falsy chains)
+- `no-misused-promises` / `no-floating-promises`: async callbacks in `onSubmit`, `onClick`, `startTransition`, `onValueChange` must wrap: `() => { void (async () => { ... })(); }`. Form `onSubmit` specifically: `(e) => { e.preventDefault(); void handleSubmit(fn)(); }`
+- `createServerServiceClient()` (`@/lib/supabase/service`) is synchronous — don't `await` it
 - `require-await` checks the OUTER function scope only — `await` inside nested callbacks (`startTransition(async () => { await ... })`) doesn't count. Remove `async` from the outer function, keep it on the inner callback
 - `npx oxlint <changed-files>` only checks listed files — CI runs `pnpm lint:ultracite` on ALL files. When enabling new rules, run full `pnpm lint:ultracite` locally before pushing

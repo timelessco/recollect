@@ -18,6 +18,7 @@ Before any Next.js work, read the relevant doc in `node_modules/next/dist/docs/`
 - `ogImage` (camelCase) — not `og_image`
 - OpenAPI tags are capitalized: `"Bookmarks"`, `"Categories"`, `"iPhone"`
 - `knip` for detecting unused code when making large changes
+- `src/utils/type-utils.ts`: centralized `toJson()` / `toDbType()` for Supabase type boundaries — use instead of inline `as unknown as Json` casts
 
 ## Tooling
 

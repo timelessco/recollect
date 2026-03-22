@@ -53,18 +53,16 @@
     // no-use-before-define: off — codebase uses intentional "registry-at-top,
     // implementation-below" pattern for component dispatch maps. Functions hoist in JS.
     "no-use-before-define": "off",
+    // sort-objects/sort-union-types: off — jsPlugin auto-fix oscillates on multi-line
+    // objects (mutation hooks, infinite queries). Manual fix is 24 violations across 12 files
+    // but auto-fix creates an infinite loop between perfectionist sorting and oxfmt formatting.
+    "perfectionist/sort-objects": "off",
+    "perfectionist/sort-union-types": "off",
 
     // Project Rules
     // jsx-no-new-function-as-prop: off — premature optimization without React.memo.
     // Inline handlers are idiomatic React; useCallback wrapping adds complexity for no measurable gain.
     "react-perf/jsx-no-new-function-as-prop": "off",
-
-    // Disabled: jsPlugin auto-fix oscillates on multi-line objects/unions/query hooks
-    "@tanstack/query/mutation-property-order": "off",
-    "@tanstack/query/infinite-query-property-order": "off",
-    "perfectionist/sort-objects": "off",
-    "perfectionist/sort-union-types": "off",
-
     // no-negated-condition: off permanently — if (!x) is idiomatic JS.
     // Enforcing positive conditions makes code less readable.
     "no-negated-condition": "off",
