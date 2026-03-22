@@ -201,7 +201,7 @@
     "ultracite": "7.3.2"
   },
   "lint-staged": {
-    "*": [
+    "*.{js,jsx,ts,tsx,cjs,mjs,json,jsonc}": [
       "pnpm dlx ultracite fix"
     ]
   },
