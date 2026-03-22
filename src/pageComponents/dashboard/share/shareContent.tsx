@@ -138,7 +138,7 @@ const ShareContent = (props: ShareContentProps) => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const categorySlug = currentCategory?.category_slug!;
+      const categorySlug = currentCategory?.category_slug;
       const userName = currentCategory?.user_id?.user_name;
       const url = `${window?.location?.origin}/public/${userName}/${categorySlug}`;
       setPublicUrl(url);

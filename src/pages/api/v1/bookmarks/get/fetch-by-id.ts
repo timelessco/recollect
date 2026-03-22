@@ -47,7 +47,7 @@ export default async function handler(
     const supabase = apiSupabaseClient(request, response);
 
     const authResult = await supabase?.auth?.getUser();
-    const userId = authResult?.data?.user?.id!;
+    const userId = authResult?.data?.user?.id;
 
     const bookmarkId = Number.parseInt(bodyData?.id, 10);
 

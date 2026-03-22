@@ -95,7 +95,7 @@ export default async function handler(
 
   const supabase = apiSupabaseClient(request, response);
   const authResult = await supabase?.auth?.getUser();
-  const userId = authResult?.data?.user?.id!;
+  const userId = authResult?.data?.user?.id;
 
   if (!userId) {
     response.status(401).json({ data: null, error: "User not authenticated", message: null });
@@ -232,11 +232,14 @@ export default async function handler(
 
   // generat meta data (ocr, blurhash data, imgcaption)
   // For audio bookmarks use currentData.ogImage (fallback) so we can run OCR/caption
-  const imageUrlForMetaDataGeneration = isUrlAnImageCondition
-    ? uploadedImageThatIsAUrl
-    : isAudio && currentData?.ogImage
-      ? currentData.ogImage
-      : (currentData?.meta_data?.screenshot ?? uploadedCoverImageUrl);
+  let imageUrlForMetaDataGeneration;
+  if (isUrlAnImageCondition) {
+    imageUrlForMetaDataGeneration = uploadedImageThatIsAUrl;
+  } else if (isAudio && currentData?.ogImage) {
+    imageUrlForMetaDataGeneration = currentData.ogImage;
+  } else {
+    imageUrlForMetaDataGeneration = currentData?.meta_data?.screenshot ?? uploadedCoverImageUrl;
+  }
 
   if (!isNil(imageUrlForMetaDataGeneration) || !isNil(ogImageMetaDataGeneration)) {
     try {

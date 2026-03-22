@@ -54,6 +54,7 @@ const nextConfig: NextConfig = {
   // Enable the below option only when you are debugging sourceamp
   productionBrowserSourceMaps: process.env.SOURCEMAP === "true",
 
+  // oxlint-disable-next-line require-await -- Next.js types redirects() as async
   async redirects() {
     return [
       {

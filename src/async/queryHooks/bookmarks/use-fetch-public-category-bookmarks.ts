@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import type { GetPublicCategoryBookmarksApiResponseType, SingleListData } from "@/types/apiTypes";
+import type { GetPublicCategoryBookmarksApiResponseType } from "@/types/apiTypes";
 
 import {
   FETCH_PUBLIC_CATEGORY_BOOKMARKS_API,

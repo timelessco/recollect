@@ -24,7 +24,7 @@ import NotFoundPage from "../notFoundPage";
 import { BookmarkCards } from "./bookmarkCards";
 import { DiscoverBookmarkCards } from "./discoverBookmarkCards";
 
-const DashboardLayout = dynamic(async () => import("./dashboardLayout"), {
+const DashboardLayout = dynamic(() => import("./dashboardLayout"), {
   ssr: false,
 });
 

@@ -90,7 +90,7 @@ const PublicPreview = (props: PublicPreviewProps) => {
   );
 };
 
-export const getStaticPaths: GetStaticPaths = async () => ({
+export const getStaticPaths: GetStaticPaths = () => ({
   fallback: "blocking",
   paths: [],
 });

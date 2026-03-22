@@ -38,15 +38,17 @@ function SettingsEmailCardContent({ onNavigate }: SettingsEmailCardContentProps)
       <SettingsToggleCard
         buttonLabel={isEmailProvider ? "Change email" : undefined}
         description="Current email"
-        icon={
-          isEmailProvider ? (
-            <MailIconBlack className="h-5.5 w-5.5 text-gray-900" />
-          ) : provider === "apple" ? (
+        icon={(() => {
+          if (isEmailProvider) {
+            return <MailIconBlack className="h-5.5 w-5.5 text-gray-900" />;
+          }
+
+          return provider === "apple" ? (
             <AppleIcon className="h-5 w-5" />
           ) : (
             <GoogleLoginIcon className="h-5 w-5" />
-          )
-        }
+          );
+        })()}
         onClick={
           isEmailProvider
             ? () => {

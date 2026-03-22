@@ -51,8 +51,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   const authResult = await supabase?.auth?.getUser();
 
-  const userId = authResult?.data?.user?.id!;
-  const email = authResult?.data?.user?.email!;
+  const userId = authResult?.data?.user?.id;
+  const email = authResult?.data?.user?.email;
 
   // tells if user is in a category or not
   const categoryCondition = isUserInACategoryInApi(category_id as string);

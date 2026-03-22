@@ -1,9 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { find } from "lodash";
 
-import type { CategoriesData } from "../types/apiTypes";
-import type { PostgrestError } from "@supabase/supabase-js";
-
 import { useSupabaseSession } from "../store/componentStore";
 import { CATEGORIES_KEY } from "../utils/constants";
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";

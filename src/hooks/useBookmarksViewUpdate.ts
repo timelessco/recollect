@@ -159,12 +159,14 @@ export function useBookmarksViewUpdate() {
           moodboardColumns: [30],
           sortBy: "date-sort-ascending" as BookmarksSortByTypes,
         };
-        const keyed: ProfilesBookmarksView =
-          !raw || typeof raw !== "object"
-            ? { [EVERYTHING_URL]: defaultPageView }
-            : isLegacyBookmarksView(raw)
-              ? { [EVERYTHING_URL]: raw }
-              : ({ ...raw } as ProfilesBookmarksView);
+        let keyed: ProfilesBookmarksView;
+        if (!raw || typeof raw !== "object") {
+          keyed = { [EVERYTHING_URL]: defaultPageView };
+        } else if (isLegacyBookmarksView(raw)) {
+          keyed = { [EVERYTHING_URL]: raw };
+        } else {
+          keyed = { ...raw } as ProfilesBookmarksView;
+        }
 
         const pageView = getPageViewData(raw, pageKey) ?? defaultPageView;
         const updatedPageView: BookmarkViewDataTypes = {

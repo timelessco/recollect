@@ -150,7 +150,7 @@ export default async function handler(
     // Remove junction table field from response (not needed in frontend)
     const data = (rawData as Record<string, unknown>[])?.map((item) =>
       omit(item, [BOOKMARK_CATEGORIES_TABLE_NAME]),
-    ) as GetPublicCategoryBookmarksApiResponseType["data"];
+    ) as unknown as GetPublicCategoryBookmarksApiResponseType["data"];
 
     if (!isNull(error) || !isNull(categoryError)) {
       response.status(500).json({

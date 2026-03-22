@@ -54,7 +54,7 @@ export const apiSupabaseClient = (request: NextApiRequest, response: NextApiResp
   return supabase;
 };
 
-export const getApiSupabaseUser = async (request: NextApiRequest, supabase: SupabaseClient) => {
+export const getApiSupabaseUser = (request: NextApiRequest, supabase: SupabaseClient) => {
   const { authorization } = request.headers;
   const token = authorization?.replace("Bearer ", "");
 

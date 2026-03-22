@@ -6,13 +6,8 @@ import { Item } from "react-stately";
 import { useQueryClient } from "@tanstack/react-query";
 import { find, flatten, isEmpty } from "lodash";
 
-import type {
-  BookmarkViewDataTypes,
-  CategoriesData,
-  SingleListData,
-} from "../../../types/apiTypes";
+import type { BookmarkViewDataTypes, SingleListData } from "../../../types/apiTypes";
 import type { BookmarksViewTypes } from "../../../types/componentStoreTypes";
-import type { PostgrestError } from "@supabase/supabase-js";
 import type { Many } from "lodash";
 
 import { cn } from "@/utils/tailwind-merge";

@@ -7,13 +7,7 @@ import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
-import type {
-  BookmarksCountTypes,
-  CategoriesData,
-  FetchSharedCategoriesData,
-} from "../../../types/apiTypes";
 import type { CollectionItemTypes } from "./singleListItemComponent";
-import type { PostgrestError } from "@supabase/supabase-js";
 
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 

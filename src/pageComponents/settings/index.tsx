@@ -75,7 +75,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
     try {
       const response = await mutationApiCall(
         updateUsernameMutation.mutateAsync({
-          id: session?.user?.id!,
+          id: session?.user?.id as string,
           username: data?.username,
         }),
       );
@@ -159,7 +159,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
         onChange={async (event) => {
           const uploadedFile = event?.target?.files ? event?.target?.files[0] : null;
 
-          const size = uploadedFile?.size!;
+          const size = uploadedFile?.size;
 
           if (!isNull(uploadedFile)) {
             if (size < 1_000_000) {
@@ -226,7 +226,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                 onClick={async () => {
                   const response = await mutationApiCall(
                     removeProfilePic.mutateAsync({
-                      id: userData?.id!,
+                      id: userData?.id as string,
                     }),
                   );
 

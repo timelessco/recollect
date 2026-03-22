@@ -53,16 +53,19 @@ export const PreviewLightBox = ({
   const { isDiscoverPage, isPublicPage } = usePageContext();
 
   // Determine the correct query key based on whether we're on discover page
-  const queryKey = isDiscoverPage
-    ? searchText
+  let queryKey;
+  if (isDiscoverPage) {
+    queryKey = searchText
       ? [BOOKMARKS_KEY, session?.user?.id, DISCOVER_URL, searchText]
-      : [BOOKMARKS_KEY, DISCOVER_URL]
-    : [
-        BOOKMARKS_KEY,
-        session?.user?.id,
-        searchText && categoryData ? searchSlugKey(categoryData) : CATEGORY_ID,
-        searchText || sortBy,
-      ];
+      : [BOOKMARKS_KEY, DISCOVER_URL];
+  } else {
+    queryKey = [
+      BOOKMARKS_KEY,
+      session?.user?.id,
+      searchText && categoryData ? searchSlugKey(categoryData) : CATEGORY_ID,
+      searchText || sortBy,
+    ];
+  }
 
   // if there is text in searchbar we get the cache of searched data else we get from everything
   // Skip query cache lookup for public pages since bookmarks are provided via props

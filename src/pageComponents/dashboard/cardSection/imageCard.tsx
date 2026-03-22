@@ -168,11 +168,13 @@ const LoaderImgPlaceholder = ({
       />
       {!(cardTypeCondition === viewValues.list) && (
         <p className="text-sm text-gray-900">
-          {isLoading
-            ? "Taking screenshot...."
-            : isNil(id)
-              ? "Fetching data..."
-              : "Cannot fetch image for this bookmark"}
+          {(() => {
+            if (isLoading) {
+              return "Taking screenshot....";
+            }
+
+            return isNil(id) ? "Fetching data..." : "Cannot fetch image for this bookmark";
+          })()}
         </p>
       )}
     </div>

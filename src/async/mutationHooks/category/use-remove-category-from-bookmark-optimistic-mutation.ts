@@ -67,7 +67,10 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
           if (!hasNonZeroCategories) {
             // Get uncategorized entry from cache
             const allCategories =
-              queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])?.data ?? [];
+              queryClient.getQueryData<{ data: CategoriesData[] }>([
+                CATEGORIES_KEY,
+                session?.user?.id,
+              ])?.data ?? [];
             const uncategorizedEntry = allCategories.find(
               (cat) => cat.id === UNCATEGORIZED_CATEGORY_ID,
             );
@@ -133,7 +136,8 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
 
       // Get uncategorized entry upfront (may be needed for exclusive model)
       const allCategories =
-        queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])?.data ?? [];
+        queryClient.getQueryData<{ data: CategoriesData[] }>([CATEGORIES_KEY, session?.user?.id])
+          ?.data ?? [];
       const uncategorizedEntry = allCategories.find((cat) => cat.id === UNCATEGORIZED_CATEGORY_ID);
 
       return produce(currentData, (draft) => {

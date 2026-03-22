@@ -8,7 +8,7 @@ describe("Meta data testing", () => {
     cy.visit("/login");
   });
 
-  it("bookmark meta_data check", async () => {
+  it("bookmark meta_data check", () => {
     cy.login(Cypress.env("test_email") as string, Cypress.env("test_password") as string);
 
     cy.request(`/api/bookmark/add-bookmark-min-data`, {
@@ -17,11 +17,11 @@ describe("Meta data testing", () => {
       url: "https://unsplash.com/photos/a-city-street-with-a-lot-of-tall-buildings-badrIRxBqmk",
     }).as("addRequest");
 
-    let bookmarkId;
+    let _bookmarkId;
 
     // eslint-disable-next-line promise/prefer-await-to-then -- Cypress idiomatic .then() chaining
     cy.get("@addRequest")?.then((addBookmarkData) => {
-      bookmarkId = addBookmarkData?.body?.data?.[0]?.id;
+      _bookmarkId = addBookmarkData?.body?.data?.[0]?.id;
 
       // check meta data
 

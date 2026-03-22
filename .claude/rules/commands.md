@@ -3,18 +3,10 @@
 ### After Every Code Change
 
 1. Run IDE diagnostics (LSP) on modified files
-2. Run quality checks:
-
-```bash
-pnpm fix        # Auto-fix all (css → md → ultracite)
-pnpm lint:knip  # Detect unused code (especially after large changes)
-```
-
-3. If types pass, verify build:
-
-```bash
-pnpm build      # Runs OpenAPI gen → next build → next-sitemap
-```
+2. Run in parallel:
+   - `pnpm fix` — auto-fix all (css → md → ultracite)
+   - `pnpm lint:knip` — detect unused code (especially after large changes)
+   - `pnpm build` — confirm build passes (non-trivial changes)
 
 ### Quality Gates by Task Type
 

@@ -25,7 +25,7 @@ export default async function handler(
   const { category_id: categorieId } = request.body;
 
   const authResult = await supabase?.auth?.getUser();
-  const userId = authResult?.data?.user?.id!;
+  const userId = authResult?.data?.user?.id;
 
   const { data, error } = await supabase
     .from(CATEGORIES_TABLE_NAME)

@@ -171,12 +171,19 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
       >
         <RaindropIcon className="mb-1.5 w-8" />
         <p className="mb-1.5 align-middle text-sm leading-[115%] font-normal tracking-normal text-gray-800">
-          {parseError ??
-            (isFileUploaded
-              ? isSuccess
-                ? "Successfully imported bookmarks"
-                : `Found ${bookmarkCount} Bookmarks`
-              : "Drop the CSV file here or")}
+          {(() => {
+            if (parseError) {
+              return parseError;
+            }
+
+            if (!isFileUploaded) {
+              return "Drop the CSV file here or";
+            }
+
+            return isSuccess
+              ? "Successfully imported bookmarks"
+              : `Found ${bookmarkCount} Bookmarks`;
+          })()}
         </p>
         <Button
           className={`relative py-[4.5px] ${saveButtonClassName} rounded-[5px] ${isSuccess ? "bg-gray-600 hover:bg-gray-600" : ""}`}
@@ -190,17 +197,17 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
           }
         >
           <span className="inline-flex min-h-[15px] items-center justify-center">
-            {isFileUploaded ? (
-              isPending ? (
-                <Spinner className="mx-12.5 h-3 w-3" />
-              ) : isSuccess ? (
-                "Imported"
-              ) : (
-                "Import Bookmarks"
-              )
-            ) : (
-              "Choose File"
-            )}
+            {(() => {
+              if (!isFileUploaded) {
+                return "Choose File";
+              }
+
+              if (isPending) {
+                return <Spinner className="mx-12.5 h-3 w-3" />;
+              }
+
+              return isSuccess ? "Imported" : "Import Bookmarks";
+            })()}
           </span>
         </Button>
         <input

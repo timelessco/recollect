@@ -58,11 +58,12 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
         </div>
       </header>
       <main className="min-h-0 flex-1 overflow-hidden">
-        {isLoading ? (
+        {isLoading && (
           <div className="flex h-full items-center justify-center">
             <Spinner className="h-3 w-3 animate-spin" />
           </div>
-        ) : !isEmpty(flattenedData) ? (
+        )}
+        {!isLoading && !isEmpty(flattenedData) && (
           <div className="h-full overflow-x-hidden overflow-y-auto" id="scrollableDiv">
             <InfiniteScroll
               className="overflow-visible"
@@ -90,7 +91,8 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
               />
             </InfiniteScroll>
           </div>
-        ) : (
+        )}
+        {!isLoading && isEmpty(flattenedData) && (
           <div className="flex h-full items-center justify-center text-2xl font-semibold">
             There is no data in this collection
           </div>

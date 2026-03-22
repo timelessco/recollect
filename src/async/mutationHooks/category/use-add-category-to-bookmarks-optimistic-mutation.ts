@@ -4,7 +4,7 @@ import type {
   AddCategoryToBookmarksPayload,
   AddCategoryToBookmarksResponse,
 } from "@/app/api/category/add-category-to-bookmarks/schema";
-import type { CategoriesData, PaginatedBookmarks } from "@/types/apiTypes";
+import type { PaginatedBookmarks } from "@/types/apiTypes";
 
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";

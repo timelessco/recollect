@@ -25,7 +25,7 @@ interface Data {
 export default async function handler(request: NextApiRequest, response: NextApiResponse<Data>) {
   const supabase = apiSupabaseClient(request, response);
   const authResult = await supabase?.auth?.getUser();
-  const userId = authResult?.data?.user?.id!;
+  const userId = authResult?.data?.user?.id;
 
   if (userId) {
     // remove from DB

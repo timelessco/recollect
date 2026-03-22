@@ -50,5 +50,7 @@
 - `lint-staged` glob must be `*.{js,jsx,ts,tsx,cjs,mjs,json,jsonc}` not `*` — ultracite crashes on non-JS files like `.txt`
 - `oxlint-disable-next-line` doesn't work for JSX props on different lines — use block-level `/* oxlint-disable rule */` instead
 - Comment directive split: native oxlint rules use `oxlint-disable`, jsPlugin rules (`@tanstack/query/*`, `regexp/*`, `perfectionist/*`, `react-x/*`) keep `eslint-disable`
-- `promise-function-async` conflicts with `require-await` — both disabled, only add `async` when `await` is present
-- `.oxlintrc.json` has `typeCheck: false` / `typeAware: false` — ~100 pre-existing type errors need fixing before re-enabling
+- `promise-function-async` is off — it auto-adds `async` to Promise-returning functions, but the rule is: only add `async` when `await` is present in the function body
+- oxlint `--deny RULE` CLI flag does NOT override config-level `"off"` — to test a disabled rule, temporarily remove it from `.oxlintrc.json` and re-run
+- `oxlint-disable-next-line` must be on the line immediately before the violation — for multi-line expressions, place on the line with the violation, not the wrapping expression above
+- `typeCheck` removed from `.oxlintrc.json` — ~100 pre-existing type errors need fixing before re-enabling `typeAware: true`

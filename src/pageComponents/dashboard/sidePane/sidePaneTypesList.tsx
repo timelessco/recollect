@@ -1,8 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
 
-import type { BookmarksCountTypes } from "../../../types/apiTypes";
-import type { PostgrestError } from "@supabase/supabase-js";
-
 import { Collapsible } from "@/components/ui/recollect/collapsible";
 
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";

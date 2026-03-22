@@ -47,7 +47,10 @@ export function useAddTagToBookmarkOptimisticMutation() {
       }
 
       // Resolve tag from cache - skip optimistic update if not found
-      const userTagsData = queryClient.getQueryData([USER_TAGS_KEY, session?.user?.id]);
+      const userTagsData = queryClient.getQueryData<{ data: UserTagsData[] }>([
+        USER_TAGS_KEY,
+        session?.user?.id,
+      ]);
 
       const tagInfo = userTagsData?.data?.find((tag) => tag.id === variables.tagId);
 

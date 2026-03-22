@@ -5,8 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Allotment } from "allotment";
 import find from "lodash/find";
 
-import type { BookmarksCountTypes, CategoriesData } from "../../../types/apiTypes";
-import type { PostgrestError } from "@supabase/supabase-js";
 import type { AllotmentHandle } from "allotment";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";

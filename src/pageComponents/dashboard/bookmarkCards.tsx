@@ -27,7 +27,7 @@ import { handleBulkBookmarkDelete } from "./handleBookmarkDelete";
 import { hasMoreBookmarks } from "./hasMoreBookmarks";
 import SignedOutSection from "./signedOutSection";
 
-const CardSection = dynamic(async () => import("./cardSection"), {
+const CardSection = dynamic(() => import("./cardSection"), {
   ssr: false,
 });
 

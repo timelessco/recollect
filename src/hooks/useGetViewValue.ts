@@ -3,13 +3,7 @@ import { useRouter } from "next/router";
 import { useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty } from "lodash";
 
-import type {
-  BookmarkViewDataTypes,
-  CategoriesData,
-  FetchSharedCategoriesData,
-  ProfilesTableTypes,
-} from "../types/apiTypes";
-import type { PostgrestError } from "@supabase/supabase-js";
+import type { BookmarkViewDataTypes } from "../types/apiTypes";
 
 import { getPageViewData, getPageViewKey } from "@/utils/bookmarksViewKeyed";
 

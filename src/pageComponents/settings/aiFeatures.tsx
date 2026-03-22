@@ -150,14 +150,18 @@ export const AiFeatures = () => {
                 render={({ field }) => {
                   const rhfValue = field.value;
 
-                  const displayValue =
-                    hasApiKey && !isDeleting
-                      ? showKey
-                        ? (apiKey ?? "")
-                        : isMobile
-                          ? "••••••••••••••••"
-                          : "••••••••••••••••••••••••••••••••"
-                      : rhfValue;
+                  let displayValue: string;
+                  if (hasApiKey && !isDeleting) {
+                    if (showKey) {
+                      displayValue = apiKey ?? "";
+                    } else {
+                      displayValue = isMobile
+                        ? "••••••••••••••••"
+                        : "••••••••••••••••••••••••••••••••";
+                    }
+                  } else {
+                    displayValue = rhfValue;
+                  }
 
                   return (
                     <Input

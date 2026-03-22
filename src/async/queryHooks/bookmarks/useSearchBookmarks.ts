@@ -3,8 +3,7 @@ import { useEffect } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty } from "lodash";
 
-import type { FetchSharedCategoriesData, SingleListData } from "../../../types/apiTypes";
-import type { PostgrestError } from "@supabase/supabase-js";
+import type { SingleListData } from "../../../types/apiTypes";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import {

@@ -45,7 +45,7 @@ export default async function handler(
     const supabase = apiSupabaseClient(request, response);
 
     const authResult = await supabase?.auth?.getUser();
-    const userId = authResult?.data?.user?.id!;
+    const userId = authResult?.data?.user?.id;
 
     const { error } = await supabase
       .from(MAIN_TABLE_NAME)

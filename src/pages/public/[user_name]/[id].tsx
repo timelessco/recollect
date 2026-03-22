@@ -89,7 +89,7 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
   );
 };
 
-export const getStaticPaths: GetStaticPaths = async () => ({
+export const getStaticPaths: GetStaticPaths = () => ({
   // Generate pages on first request
   fallback: "blocking",
   // Don't pre-generate any pages at build time

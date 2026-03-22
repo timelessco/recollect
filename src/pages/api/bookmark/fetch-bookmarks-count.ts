@@ -76,8 +76,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   const userData = await supabase?.auth?.getUser();
 
-  const userId = userData?.data?.user?.id!;
-  const email = userData?.data?.user?.email!;
+  const userId = userData?.data?.user?.id;
+  const email = userData?.data?.user?.email;
 
   let count: BookmarksCountTypes = {
     audio: 0,

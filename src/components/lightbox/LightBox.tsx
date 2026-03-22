@@ -314,15 +314,13 @@ export const CustomLightBox = ({
           key="right-section"
         >
           <button
-            aria-label={
-              lightboxShowSidepane
-                ? isMobile
-                  ? "Hide details"
-                  : "Hide side panel"
-                : isMobile
-                  ? "Show details"
-                  : "Show side panel"
-            }
+            aria-label={(() => {
+              if (lightboxShowSidepane) {
+                return isMobile ? "Hide details" : "Hide side panel";
+              }
+
+              return isMobile ? "Show details" : "Show side panel";
+            })()}
             onClick={() => {
               const newState = !lightboxShowSidepane;
               setLightboxShowSidepane(newState);

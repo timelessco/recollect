@@ -210,7 +210,7 @@ export default async function handler(
     const { error: DBerror } = await supabase
       .from(MAIN_TABLE_NAME)
       .update({
-        description: meta_data?.img_caption! || "",
+        description: meta_data?.img_caption || "",
         meta_data: mergedMeta,
         ogImage: mediaType?.includes("audio") ? ogImage : publicUrl,
       })

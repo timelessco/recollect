@@ -226,11 +226,14 @@ export function useReactQueryOptimisticMutation<
         const isMultipleKeys =
           Array.isArray(invalidates) && invalidates.length > 0 && Array.isArray(invalidates[0]);
 
-        const keysToInvalidate = isMultipleKeys
-          ? (invalidates as QueryKey[])
-          : Array.isArray(invalidates) && invalidates.length === 0
-            ? []
-            : [invalidates];
+        let keysToInvalidate: QueryKey[];
+        if (isMultipleKeys) {
+          keysToInvalidate = invalidates as QueryKey[];
+        } else if (Array.isArray(invalidates) && invalidates.length === 0) {
+          keysToInvalidate = [];
+        } else {
+          keysToInvalidate = [invalidates];
+        }
 
         for (const key of keysToInvalidate) {
           void queryClient.invalidateQueries({ queryKey: key });

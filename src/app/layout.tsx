@@ -14,7 +14,7 @@ interface RootLayoutProps {
   readonly children: React.ReactNode;
 }
 
-export default async function RootLayout(props: RootLayoutProps) {
+export default function RootLayout(props: RootLayoutProps) {
   const { children } = props;
 
   return (

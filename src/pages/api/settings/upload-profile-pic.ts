@@ -73,7 +73,7 @@ export const deleteLogic = async (response: NextApiResponse, userId: ProfilesTab
  * Parses multipart form data from a Pages Router request using the Web Request API.
  * Converts the Node.js IncomingMessage stream to a Web Request to use native formData().
  */
-async function parseFormData(request: NextApiRequest) {
+function parseFormData(request: NextApiRequest) {
   const headers: [string, string][] = [];
   for (const [name, value] of Object.entries(request.headers)) {
     if (value === null || value === undefined) {
@@ -129,7 +129,12 @@ export default async function handler(
   }
 
   const authResult = await supabase?.auth?.getUser();
-  const userId = authResult?.data?.user?.id!;
+  const userId = authResult?.data?.user?.id;
+
+  if (!userId) {
+    response.status(401).json({ error: "Unauthorized", success: false });
+    return;
+  }
 
   const arrayBuffer = await file.arrayBuffer();
   const contents = Buffer.from(arrayBuffer).toString("base64");

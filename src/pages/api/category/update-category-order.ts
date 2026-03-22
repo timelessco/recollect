@@ -38,7 +38,7 @@ export default async function handler(
   const supabase = apiSupabaseClient(request, response);
 
   const authResult = await supabase?.auth?.getUser();
-  const userId = authResult?.data?.user?.id!;
+  const userId = authResult?.data?.user?.id;
 
   const { data: updateTargetCategoryData, error: updateTargetCategoryError } = (await supabase
     .from(PROFILES)

@@ -44,7 +44,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     // Get authenticated user
     const userResponse = await supabase?.auth?.getUser();
-    const userId = userResponse?.data?.user?.id!;
+    const userId = userResponse?.data?.user?.id;
 
     // Validate user authentication
     if (!userId || isEmpty(userId)) {

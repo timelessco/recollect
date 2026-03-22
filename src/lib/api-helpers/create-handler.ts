@@ -24,14 +24,18 @@ interface PublicHandlerContext<TInput> {
 
 // Config types
 interface AuthHandlerConfig<TInput, TOutput> {
-  handler: (ctx: AuthHandlerContext<TInput>) => Promise<NextResponse | TOutput>;
+  handler: (
+    ctx: AuthHandlerContext<TInput>,
+  ) => NextResponse | Promise<NextResponse | TOutput> | TOutput;
   inputSchema: z.ZodType<TInput>;
   outputSchema: z.ZodType<TOutput>;
   route: string;
 }
 
 interface PublicHandlerConfig<TInput, TOutput> {
-  handler: (ctx: PublicHandlerContext<TInput>) => Promise<NextResponse | TOutput>;
+  handler: (
+    ctx: PublicHandlerContext<TInput>,
+  ) => NextResponse | Promise<NextResponse | TOutput> | TOutput;
   inputSchema: z.ZodType<TInput>;
   outputSchema: z.ZodType<TOutput>;
   route: string;

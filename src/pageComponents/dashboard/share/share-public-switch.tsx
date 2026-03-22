@@ -18,12 +18,14 @@ export function SharePublicSwitch({ categoryId }: SharePublicSwitchProps) {
 
   const dynamicCategoryId = categoryId ?? shareCategoryId ?? currentCategoryId;
 
-  const numericCategoryId =
-    typeof dynamicCategoryId === "number"
-      ? dynamicCategoryId
-      : typeof dynamicCategoryId === "string" && /^\d+$/u.test(String(dynamicCategoryId))
-        ? Number.parseInt(dynamicCategoryId, 10)
-        : null;
+  let numericCategoryId: number | null;
+  if (typeof dynamicCategoryId === "number") {
+    numericCategoryId = dynamicCategoryId;
+  } else if (typeof dynamicCategoryId === "string" && /^\d+$/u.test(String(dynamicCategoryId))) {
+    numericCategoryId = Number.parseInt(dynamicCategoryId, 10);
+  } else {
+    numericCategoryId = null;
+  }
 
   const currentCategory = find(categoryData?.data ?? [], (item) => item?.id === numericCategoryId);
 

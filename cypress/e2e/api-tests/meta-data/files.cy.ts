@@ -8,7 +8,7 @@ describe("Meta data testing", () => {
     cy.visit("/login");
   });
 
-  it("file upload check", async () => {
+  it("file upload check", () => {
     cy.wait(3000);
 
     cy.login(Cypress.env("test_email") as string, Cypress.env("test_password") as string);

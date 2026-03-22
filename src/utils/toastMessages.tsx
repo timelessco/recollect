@@ -22,7 +22,7 @@ function getFrontmostTitle(): null | string {
     return null;
   }
 
-  return activeTitles.at(-1).title;
+  return activeTitles.at(-1)?.title ?? null;
 }
 
 function pulseExistingToast() {

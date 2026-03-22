@@ -1,10 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type {
-  BookmarksPaginatedDataTypes,
-  CategoriesData,
-  SingleListData,
-} from "../../../types/apiTypes";
+import type { BookmarksPaginatedDataTypes, SingleListData } from "../../../types/apiTypes";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";

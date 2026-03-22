@@ -59,15 +59,22 @@ export const useLightboxSlides = (
           Boolean(bookmark?.meta_data?.video_url) ||
           Boolean(bookmark?.meta_data?.additionalVideos?.[0]));
 
+      let slideType: string | undefined;
+      if (isVideo) {
+        slideType = VIDEO_TYPE_PREFIX;
+      } else if (isImage) {
+        slideType = IMAGE_TYPE_PREFIX;
+      }
+
       return {
         // Embed bookmark data in slide for plugin access
         data: {
           bookmark,
-          type: isVideo ? VIDEO_TYPE_PREFIX : isImage ? IMAGE_TYPE_PREFIX : undefined,
+          type: slideType,
         },
         src: bookmark?.url,
         // Set slide type for lightbox to handle appropriately
-        type: isVideo ? VIDEO_TYPE_PREFIX : isImage ? IMAGE_TYPE_PREFIX : undefined,
+        type: slideType,
         // Only include dimensions if not a PDF or not a YouTube video
         ...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
           !bookmark?.type?.includes(PDF_TYPE) &&

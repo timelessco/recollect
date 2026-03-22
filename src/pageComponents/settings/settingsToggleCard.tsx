@@ -37,7 +37,7 @@ export const SettingsToggleCard: React.FC<SettingsCardProps> = ({
         <p className="mt-1 text-[14px] leading-[115%] font-normal text-gray-600">{description}</p>
       </div>
     </div>
-    {isSwitch ? (
+    {isSwitch && (
       <div className="mr-[10px] flex items-center">
         <Switch
           checked={enabled}
@@ -51,7 +51,8 @@ export const SettingsToggleCard: React.FC<SettingsCardProps> = ({
           size="medium"
         />
       </div>
-    ) : buttonLabel && onClick ? (
+    )}
+    {!isSwitch && buttonLabel && onClick && (
       <Button
         className={`mr-[10px] ${settingsLightButtonClassName}`}
         onClick={onClick}
@@ -59,6 +60,6 @@ export const SettingsToggleCard: React.FC<SettingsCardProps> = ({
       >
         {buttonLabel}
       </Button>
-    ) : null}
+    )}
   </div>
 );

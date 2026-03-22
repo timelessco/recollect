@@ -90,12 +90,17 @@ export const enrichMetadata = async ({
     // Video upload (conditional)
     (isTwitterBookmark || isInstagramBookmark) && videoUrl && typeof videoUrl === "string"
       ? (async () => {
-          console.log(
-            `[enrichMetadata] Uploading ${isTwitterBookmark ? "Twitter" : isInstagramBookmark ? "Instagram" : "Twitter/Instagram"} video to R2:`,
-            {
-              url,
-            },
-          );
+          let platform: string;
+          if (isTwitterBookmark) {
+            platform = "Twitter";
+          } else if (isInstagramBookmark) {
+            platform = "Instagram";
+          } else {
+            platform = "Twitter/Instagram";
+          }
+          console.log(`[enrichMetadata] Uploading ${platform} video to R2:`, {
+            url,
+          });
           const r2VideoUrl = await uploadVideoToR2(
             videoUrl,
             userId,
@@ -103,23 +108,20 @@ export const enrichMetadata = async ({
             isInstagramBookmark,
           );
           if (r2VideoUrl) {
-            console.log(
-              `[enrichMetadata] ${isTwitterBookmark ? "Twitter" : isInstagramBookmark ? "Instagram" : "Twitter/Instagram"} video uploaded to R2:`,
-              {
-                r2VideoUrl,
-                url,
-              },
-            );
+            console.log(`[enrichMetadata] ${platform} video uploaded to R2:`, {
+              r2VideoUrl,
+              url,
+            });
             return r2VideoUrl;
           }
 
           // Upload failed but not critical - keep processing
           // Video upload is best-effort. If the URL is expired, the UI will
           // fall back to displaying the thumbnail image instead.
-          console.warn(
-            `[enrichMetadata] ${isTwitterBookmark ? "Twitter" : isInstagramBookmark ? "Instagram" : "Twitter/Instagram"} video upload failed, using original URL:`,
-            { url, videoUrl },
-          );
+          console.warn(`[enrichMetadata] ${platform} video upload failed, using original URL:`, {
+            url,
+            videoUrl,
+          });
           return videoUrl;
         })()
       : Promise.resolve(null),
@@ -397,11 +399,14 @@ export const uploadVideoToR2 = async (
     }
 
     // Generate unique filename based on bookmark type
-    const videoPrefix = isInstagramBookmark
-      ? "instagram-video"
-      : isTwitterBookmark
-        ? "twitter-video"
-        : "video";
+    let videoPrefix: string;
+    if (isInstagramBookmark) {
+      videoPrefix = "instagram-video";
+    } else if (isTwitterBookmark) {
+      videoPrefix = "twitter-video";
+    } else {
+      videoPrefix = "video";
+    }
     const videoName = `${videoPrefix}-${uniqid.time()}.mp4`;
     const storagePath = `${STORAGE_FILES_PATH}/${user_id}/${videoName}`;
 
@@ -418,11 +423,14 @@ export const uploadVideoToR2 = async (
     );
 
     if (uploadError) {
-      const operation = isInstagramBookmark
-        ? "instagram_video_upload"
-        : isTwitterBookmark
-          ? "twitter_video_upload"
-          : "video_upload";
+      let operation: string;
+      if (isInstagramBookmark) {
+        operation = "instagram_video_upload";
+      } else if (isTwitterBookmark) {
+        operation = "twitter_video_upload";
+      } else {
+        operation = "video_upload";
+      }
       Sentry.captureException(uploadError, {
         extra: { userId: user_id, videoUrl },
         tags: { operation },
@@ -438,11 +446,14 @@ export const uploadVideoToR2 = async (
   } catch (error) {
     console.error("Error in uploadVideoToR2:", error);
 
-    const operation = isInstagramBookmark
-      ? "instagram_video_download"
-      : isTwitterBookmark
-        ? "twitter_video_download"
-        : "video_download";
+    let operation: string;
+    if (isInstagramBookmark) {
+      operation = "instagram_video_download";
+    } else if (isTwitterBookmark) {
+      operation = "twitter_video_download";
+    } else {
+      operation = "video_download";
+    }
     Sentry.captureException(error, {
       extra: { userId: user_id, videoUrl },
       tags: { operation },

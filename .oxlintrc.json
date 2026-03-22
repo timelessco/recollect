@@ -62,15 +62,15 @@
     "perfectionist/sort-objects": "off",
     "perfectionist/sort-union-types": "off",
 
-    // Disabled during migration — enable incrementally
-    "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
-    "@typescript-eslint/no-non-null-assertion": "off",
+    // no-negated-condition: off permanently — if (!x) is idiomatic JS.
+    // Enforcing positive conditions makes code less readable.
     "no-negated-condition": "off",
-    "no-nested-ternary": "off",
-    "no-unused-vars": "off",
-    "require-await": "off",
+    // filename-case: off permanently — retroactive rename of 165 files
+    // breaks git blame and risks import breakage on case-insensitive macOS.
     "unicorn/filename-case": "off",
-    "unicorn/no-nested-ternary": "off",
+    // no-non-null-assertion: off — 75 violations need careful null handling.
+    // Enable after dedicated refactor pass.
+    "@typescript-eslint/no-non-null-assertion": "off",
 
     // Requires typeCheck: true — enable after fixing ~100 pre-existing type errors
     "@typescript-eslint/no-confusing-void-expression": "off",

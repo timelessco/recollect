@@ -144,7 +144,10 @@ export default async function handler(
 
   const categoryId = data?.category_id;
 
-  const categoryIdLogic = categoryId ? (isUserInACategory(categoryId) ? categoryId : 0) : 0;
+  let categoryIdLogic = 0;
+  if (categoryId) {
+    categoryIdLogic = isUserInACategory(categoryId) ? categoryId : 0;
+  }
 
   const userData = await supabase?.auth?.getUser();
 
@@ -223,7 +226,7 @@ export default async function handler(
     .from(MAIN_TABLE_NAME)
     .insert([
       {
-        description: meta_data?.img_caption! || "",
+        description: meta_data?.img_caption || "",
         meta_data,
         ogImage,
         title: fileName,

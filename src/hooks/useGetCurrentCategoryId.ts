@@ -2,9 +2,7 @@ import { useRouter } from "next/router";
 
 import { useQueryClient } from "@tanstack/react-query";
 
-import type { CategoriesData } from "../types/apiTypes";
 import type { CategoryIdUrlTypes } from "../types/componentTypes";
-import type { PostgrestError } from "@supabase/supabase-js";
 
 import { useSupabaseSession } from "../store/componentStore";
 import { CATEGORIES_KEY } from "../utils/constants";

@@ -1,8 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
 
-import type { BookmarksCountTypes } from "../../../types/apiTypes";
-import type { PostgrestError } from "@supabase/supabase-js";
-
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { optionsMenuListArray } from "../../../utils/commonData";

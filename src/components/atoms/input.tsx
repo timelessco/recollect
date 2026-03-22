@@ -1,4 +1,3 @@
-import { forwardRef } from "react";
 import type { InputHTMLAttributes } from "react";
 
 import { ExclamationCircleIcon } from "@heroicons/react/20/solid";
@@ -27,10 +26,7 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   wrapperClassName?: string;
 };
 
-const Input = ({
-  ref,
-  ...props
-}: InputProps & { ref?: React.RefObject<HTMLInputElement | null> }) => {
+const Input = ({ ref, ...props }: InputProps & { ref?: React.Ref<HTMLInputElement | null> }) => {
   const {
     autoFocus = true,
     className = "",

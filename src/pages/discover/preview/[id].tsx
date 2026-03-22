@@ -77,7 +77,7 @@ const DiscoverPreview = (props: DiscoverPreviewProps) => {
   );
 };
 
-export const getStaticPaths: GetStaticPaths = async () => ({
+export const getStaticPaths: GetStaticPaths = () => ({
   fallback: "blocking",
   paths: [],
 });

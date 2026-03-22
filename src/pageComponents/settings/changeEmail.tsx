@@ -5,9 +5,7 @@ import type { SubmitHandler } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { isNil } from "lodash";
 
-import type { ProfilesTableTypes } from "../../types/apiTypes";
 import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
-import type { PostgrestError } from "@supabase/supabase-js";
 
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";

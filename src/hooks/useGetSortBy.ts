@@ -4,13 +4,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 
-import type {
-  CategoriesData,
-  FetchSharedCategoriesData,
-  ProfilesTableTypes,
-} from "../types/apiTypes";
-import type { PostgrestError } from "@supabase/supabase-js";
-
 import { useSupabaseSession } from "../store/componentStore";
 import { getPageViewData, getPageViewKey } from "../utils/bookmarksViewKeyed";
 import { CATEGORIES_KEY, SHARED_CATEGORIES_TABLE_NAME, USER_PROFILE } from "../utils/constants";

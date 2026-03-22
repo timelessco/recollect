@@ -154,7 +154,7 @@ export const processImageQueue = async (
           // and generate ocr imagecaption and bulhash for both twitter and raindrop bookmarks,
           // we are not awaiting, because we fire this api and vercel will handle the response
 
-          const response = axios.post(`${getBaseUrl()}${NEXT_API_URL}${AI_ENRICHMENT_API}`, {
+          void axios.post(`${getBaseUrl()}${NEXT_API_URL}${AI_ENRICHMENT_API}`, {
             id,
             isInstagramBookmark,
             isRaindropBookmark,
@@ -169,7 +169,7 @@ export const processImageQueue = async (
           // here we take screenshot of the url for both twitter and raindrop bookmarks
           // we are not awaiting, because we fire this api and vercel will handle the response
 
-          const response_ = axios.post(`${getBaseUrl()}${NEXT_API_URL}${WORKER_SCREENSHOT_API}`, {
+          void axios.post(`${getBaseUrl()}${NEXT_API_URL}${WORKER_SCREENSHOT_API}`, {
             id,
             mediaType,
             message,

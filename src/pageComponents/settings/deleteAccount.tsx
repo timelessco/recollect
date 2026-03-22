@@ -5,9 +5,8 @@ import type { SubmitHandler } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import isNull from "lodash/isNull";
 
-import type { ProfilesTableTypes } from "../../types/apiTypes";
 import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
-import type { PostgrestError } from "@supabase/supabase-js";
+import type { ProfilesTableTypes } from "@/types/apiTypes";
 
 import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
 import { signOut } from "../../async/supabaseCrudHelpers";
@@ -49,7 +48,10 @@ export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
 
   const { deleteUserMutation } = useDeleteUserMutation();
 
-  const userProfilesData = queryClient.getQueryData([USER_PROFILE, session?.user?.id])!;
+  const userProfilesData = queryClient.getQueryData<{ data: ProfilesTableTypes[] | null }>([
+    USER_PROFILE,
+    session?.user?.id,
+  ])!;
 
   const userData = userProfilesData?.data?.[0];
   const {

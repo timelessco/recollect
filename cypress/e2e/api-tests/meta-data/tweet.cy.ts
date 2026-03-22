@@ -8,7 +8,7 @@ describe("Meta data testing", () => {
     cy.visit("/login");
   });
 
-  it("tweet upload check", async () => {
+  it("tweet upload check", () => {
     cy.wait(3000);
 
     cy.login(Cypress.env("test_email") as string, Cypress.env("test_password") as string);
@@ -32,11 +32,11 @@ describe("Meta data testing", () => {
       ],
     }).as("addRequest");
 
-    let bookmarkId;
+    let _bookmarkId;
 
     // eslint-disable-next-line promise/prefer-await-to-then -- Cypress idiomatic .then() chaining
     cy.get("@addRequest")?.then((addBookmarkData) => {
-      bookmarkId = addBookmarkData?.body?.data?.[0]?.id;
+      _bookmarkId = addBookmarkData?.body?.data?.[0]?.id;
 
       // check meta data
 

@@ -72,7 +72,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
     if (!isDiscoverPage) {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       user_id = userData?.user?.id;
-      email = userData?.user?.email!;
+      email = userData?.user?.email;
 
       if (userError || !user_id) {
         console.warn("[search-bookmarks] Missing user_id from Supabase auth");
@@ -107,11 +107,10 @@ export default async function handler(request: NextApiRequest, response: NextApi
     // Determine category_scope for junction table filtering
     // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
     const userInCollections = isUserInACategoryInApi(category_id!, false);
-    const categoryScope = userInCollections
-      ? category_id === UNCATEGORIZED_URL
-        ? 0
-        : Number(category_id)
-      : null;
+    let categoryScope: number | null = null;
+    if (userInCollections) {
+      categoryScope = category_id === UNCATEGORIZED_URL ? 0 : Number(category_id);
+    }
 
     console.log("[search-bookmarks] Parsed search parameters:", {
       categoryScope,

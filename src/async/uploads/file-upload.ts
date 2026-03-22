@@ -14,7 +14,7 @@ import { errorToast } from "../../utils/toastMessages";
  * @param {FileUploadMutationType} fileUploadOptimisticMutation the mutation for the file upload
  * @param {CategoryIdUrlTypes} category_id the category_id of where to upload
  */
-export const fileUpload = async (
+export const fileUpload = (
   acceptedFiles: File[] | FileList | undefined,
   fileUploadOptimisticMutation: FileUploadMutationType,
   category_id: CategoryIdUrlTypes,

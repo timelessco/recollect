@@ -32,8 +32,8 @@ export default async function handler(
   const supabase = apiSupabaseClient(request, response);
   const userData = await supabase?.auth?.getUser();
 
-  const userId = userData?.data?.user?.id!;
-  const email = userData?.data?.user?.email!;
+  const userId = userData?.data?.user?.id;
+  const email = userData?.data?.user?.email;
 
   const { data, error }: { data: DataResponse; error: ErrorResponse } = await supabase
     .from(SHARED_CATEGORIES_TABLE_NAME)

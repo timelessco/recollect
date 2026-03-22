@@ -174,7 +174,10 @@ export default async function handler(
     // Get data from JSON body
     const data = request.body as BodyDataType;
     const categoryId = data?.category_id;
-    const categoryIdLogic = categoryId ? (isUserInACategory(categoryId) ? categoryId : 0) : 0;
+    let categoryIdLogic = 0;
+    if (categoryId) {
+      categoryIdLogic = isUserInACategory(categoryId) ? Number(categoryId) : 0;
+    }
 
     const fileName = parseUploadFileName(data?.name ?? "");
     const fileType = normalizeUploadedMimeType(data?.type);
@@ -308,7 +311,7 @@ export default async function handler(
       .from(MAIN_TABLE_NAME)
       .insert([
         {
-          description: meta_data?.img_caption! || "",
+          description: meta_data?.img_caption || "",
           meta_data,
           ogImage,
           title: fileName,

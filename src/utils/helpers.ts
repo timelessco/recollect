@@ -1029,7 +1029,7 @@ export const collectAdditionalImages = async ({
   }
 
   const settledImages = await Promise.allSettled(
-    allImages.map(async (b64buffer) => {
+    allImages.map((b64buffer) => {
       const base64 = Buffer.from(b64buffer, "binary").toString("base64");
       return upload(base64, userId);
     }),
@@ -1060,12 +1060,15 @@ export const collectAdditionalImages = async ({
       Sentry.addBreadcrumb({
         category: "image-upload",
         data: {
-          error:
-            error instanceof Error
-              ? error.message
-              : typeof error === "string"
-                ? error
-                : "Unknown error",
+          error: (() => {
+            if (error instanceof Error) {
+              return error.message;
+            }
+            if (typeof error === "string") {
+              return error;
+            }
+            return "Unknown error";
+          })(),
           index,
           userId,
         },
