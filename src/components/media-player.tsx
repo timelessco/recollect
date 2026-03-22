@@ -65,7 +65,7 @@ interface VideoPlayerProps {
 
 function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProps) {
   const mediaRef = useMediaRef();
-  const mediaElRef = useRef<HTMLElement | null>(null);
+  const mediaElRef = useRef<HTMLMediaElement | null>(null);
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
   const [loading, setLoading] = useState(true);
@@ -93,16 +93,16 @@ function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProp
     }
 
     if (isActive) {
-      void (el as HTMLMediaElement).play();
+      void el.play();
     } else {
-      (el as HTMLMediaElement).pause();
+      el.pause();
     }
   }, [isActive]);
 
   const ref = useCallback(
-    (el: HTMLElement | null) => {
+    (el: HTMLMediaElement | null) => {
       mediaElRef.current = el;
-      mediaRef(el as HTMLMediaElement | null);
+      mediaRef(el);
     },
     [mediaRef],
   );
@@ -118,8 +118,7 @@ function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProp
       setLoading(false);
     };
 
-    // Check if media is already loaded (event fired before listener attached)
-    if ((el as HTMLMediaElement).readyState >= 2) {
+    if (el.readyState >= 2) {
       setLoading(false);
     }
 

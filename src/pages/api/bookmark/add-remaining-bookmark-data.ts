@@ -176,7 +176,9 @@ export default async function handler(
       }
     } catch (error) {
       console.error("Error uploading image URL to R2:", error);
-      Sentry.captureException(`Error uploading image URL to R2: ${error}`);
+      Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
+        tags: { operation: "upload_image_url_to_r2" },
+      });
 
       // Don't fail the entire request, just set imgUrl to null
       uploadedImageThatIsAUrl = null;
@@ -218,7 +220,9 @@ export default async function handler(
     } catch (error) {
       uploadedCoverImageUrl = currentData?.ogImage;
       console.error("Error uploading scrapped image to R2:", error);
-      Sentry.captureException(`Error uploading scrapped image to R2: ${error}`);
+      Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
+        tags: { operation: "upload_scrapped_image_to_r2" },
+      });
     }
   }
 
@@ -250,7 +254,9 @@ export default async function handler(
       );
     } catch (error) {
       console.error("Error generating blurhash:", error);
-      Sentry.captureException(`Error generating blurhash: ${error}`);
+      Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
+        tags: { operation: "generate_blurhash" },
+      });
       imgData = {
         encoded: null,
         height: null,
@@ -261,9 +267,11 @@ export default async function handler(
     try {
       // Determine if the image being analyzed is an OG image or a screenshot
       // isOgImagePreferred sites always use OG image; otherwise check if screenshot exists
+      /* oxlint-disable prefer-nullish-coalescing -- boolean fallback: false should trigger right side */
       const isOgImage =
         (currentData?.meta_data?.isOgImagePreferred ?? false) ||
         !currentData?.meta_data?.screenshot;
+      /* oxlint-enable prefer-nullish-coalescing */
       const imageToTextResult = await imageToText(
         currentData?.meta_data?.isOgImagePreferred
           ? ogImageMetaDataGeneration
@@ -295,7 +303,9 @@ export default async function handler(
       }
     } catch (error) {
       console.error("Gemini AI processing error", error);
-      Sentry.captureException(`Gemini AI processing error ${error}`);
+      Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
+        tags: { operation: "gemini_ai_processing" },
+      });
     }
   }
 
@@ -351,7 +361,7 @@ export default async function handler(
     // In serverless, fire-and-forget after res.send() is not reliable—the runtime
     // may terminate before the async work runs, so /revalidate would never be called.
     try {
-      const serviceClient = await createServerServiceClient();
+      const serviceClient = createServerServiceClient();
 
       const { data: bookmarkCategories } = await serviceClient
         .from(BOOKMARK_CATEGORIES_TABLE_NAME)

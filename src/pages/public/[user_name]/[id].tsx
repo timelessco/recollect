@@ -22,8 +22,8 @@ type PublicCategoryPageProps = GetPublicCategoryBookmarksApiResponseType;
 
 const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
   const router = useRouter();
-  const categorySlug = router.query.id as string;
-  const userName = router.query.user_name as string;
+  const categorySlug = String(router.query.id ?? "");
+  const userName = String(router.query.user_name ?? "");
 
   const { fetchNextPage, flattenedData, hasNextPage, metadata } = useFetchPublicCategoryBookmarks({
     categorySlug,
@@ -99,8 +99,8 @@ export const getStaticPaths: GetStaticPaths = () => ({
 
 export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (context) => {
   const ROUTE = "/public/[user_name]/[id]";
-  const categorySlug = context.params?.id as string;
-  const userName = context.params?.user_name as string;
+  const categorySlug = String(context.params?.id ?? "");
+  const userName = String(context.params?.user_name ?? "");
 
   try {
     // Fetch the first full page for SEO and initial render
@@ -133,6 +133,7 @@ export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (co
       return { notFound: true };
     }
 
+    // oxlint-disable-next-line no-unsafe-type-assertion -- response.json() types as unknown in oxlint
     const data = (await response.json()) as GetPublicCategoryBookmarksApiResponseType;
 
     if (!data?.is_public) {

@@ -145,7 +145,7 @@ export const getBaseUrl = (href: string): string => {
       href.startsWith("http://") || href.startsWith("https://") ? href : `https://${href}`;
 
     const url = new URL(normalizedHref);
-    const baseUrl = `${url.host}`;
+    const baseUrl = url.host;
 
     return baseUrl;
   } catch (error) {
@@ -332,7 +332,7 @@ export const delete_cookie = (name: string, document: Document) => {
 // this function parses cookies that is to be sent in api calls
 export const apiCookieParser = (cookies: ArrayLike<unknown> | Partial<Record<string, string>>) =>
   Object.entries(cookies)
-    .map(([key, value]) => `${key}=${value}`)
+    .map(([key, value]) => `${key}=${String(value)}`)
     .join("; ");
 
 /**
@@ -403,7 +403,7 @@ export const getPreviewPathInfo = (
 ): { isPreviewPath: boolean; previewId: null | string } => {
   const pathSegments = getPathSegments(path);
   const isPreviewPath = pathSegments.length >= 2 && pathSegments.at(-2) === previewText;
-  const previewId = isPreviewPath ? pathSegments.at(-1) : null;
+  const previewId = isPreviewPath ? (pathSegments.at(-1) ?? null) : null;
 
   return { isPreviewPath, previewId };
 };
@@ -412,13 +412,12 @@ export const getPreviewPathInfo = (
  * Determines the appropriate search key based on the current category slug from the URL.
  * @param categoryData - Object containing category data
  * @param categoryData.data - Array of category data to search through
- * @param categoryData.error - Optional error object from the data fetch
  * @returns number | string | undefined - Returns:
  *   - undefined if the current route is for everything or search
  *   - category ID (number) if a matching category is found
  *   - the original category slug (string) if no matching category is found
  */
-export const searchSlugKey = (categoryData: { data: CategoriesData[]; error: PostgrestError }) => {
+export const searchSlugKey = (categoryData: { data: CategoriesData[] }) => {
   // Get the category slug from the current router/URL
   const categorySlug = getCategorySlugFromRouter(router);
 

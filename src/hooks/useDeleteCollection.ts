@@ -39,12 +39,14 @@ export const useDeleteCollection = () => {
         await router.push(`/${EVERYTHING_URL}`);
       }
 
-      const response = await mutationApiCall(
-        deleteCategoryOptimisticMutation.mutateAsync({
-          category_id: categoryId,
-          keep_bookmarks: keepBookmarks,
-        }),
-      );
+      // oxlint-disable-next-line no-unsafe-assignment -- mutationApiCall returns Promise<any>
+      const response: { response?: { data?: { error?: string }; status?: number } } | undefined =
+        await mutationApiCall(
+          deleteCategoryOptimisticMutation.mutateAsync({
+            category_id: categoryId,
+            keep_bookmarks: keepBookmarks,
+          }),
+        );
 
       // Check if mutation failed (error in response)
       // The API returns errors in response.response.data.error

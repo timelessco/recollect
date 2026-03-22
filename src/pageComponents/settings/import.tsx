@@ -150,7 +150,7 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
 
       <div
         className={`relative flex flex-col items-center justify-center rounded-lg bg-gray-100 py-[75px] transition-colors ${
-          !isFileUploaded ? `${dragActive ? "bg-gray-200" : ""}` : ""
+          !isFileUploaded && dragActive ? "bg-gray-200" : ""
         }`}
         onDragLeave={
           !isFileUploaded
@@ -190,7 +190,9 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
           isDisabled={isFileUploaded ? isSuccess || isPending || bookmarkCount === 0 : false}
           onClick={
             isFileUploaded
-              ? handleImport
+              ? () => {
+                  void handleImport();
+                }
               : () => {
                   inputRef.current?.click();
                 }
@@ -227,7 +229,7 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
         <span className={`mr-2 shrink-0 ${!isFileUploaded ? "py-0.5" : ""}`}>
           <InfoIcon className="h-4.5 w-4.5 text-gray-600" />
         </span>
-        <span className={`${!isFileUploaded ? "flex items-center justify-center" : ""}`}>
+        <span className={!isFileUploaded ? "flex items-center justify-center" : ""}>
           {!isFileUploaded ? (
             <>
               <span>Export a CSV from</span>

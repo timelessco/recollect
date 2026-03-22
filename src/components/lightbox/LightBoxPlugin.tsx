@@ -4,12 +4,16 @@ import { useMediaQuery } from "@react-hookz/web";
 import { createModule, useLightboxState } from "yet-another-react-lightbox";
 
 import type { CustomSlide } from "./LightboxUtils";
-import type { Plugin } from "yet-another-react-lightbox";
+import type { Plugin, Slide } from "yet-another-react-lightbox";
 
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import { Spinner } from "../spinner";
 import { DesktopSidepane } from "./desktop-sidepane";
 import { MobileBottomSheet } from "./mobile-bottom-sheet";
+
+function isCustomSlide(slide: Slide): slide is CustomSlide {
+  return "data" in slide;
+}
 
 const MyComponent = () => {
   const { currentIndex, slides } = useLightboxState();
@@ -17,13 +21,14 @@ const MyComponent = () => {
 
   const router = useRouter();
 
-  const currentSlide = slides[currentIndex] as CustomSlide | undefined;
+  const rawSlide = slides[currentIndex];
+  const currentSlide = rawSlide && isCustomSlide(rawSlide) ? rawSlide : undefined;
   let currentBookmark = currentSlide?.data?.bookmark;
 
   const { id } = router.query;
   const shouldFetch = !currentBookmark && typeof id === "string" && id.length > 0;
 
-  const { data: bookmark } = useFetchBookmarkById(id as string, {
+  const { data: bookmark } = useFetchBookmarkById(typeof id === "string" ? id : "", {
     enabled: shouldFetch,
   });
 

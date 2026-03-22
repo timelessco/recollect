@@ -43,8 +43,8 @@ interface PublicHandlerConfig<TInput, TOutput> {
 
 export interface HandlerConfig {
   factoryName: string;
-  inputSchema: z.ZodTypeAny;
-  outputSchema: z.ZodTypeAny;
+  inputSchema: z.ZodType;
+  outputSchema: z.ZodType;
   route: string;
 }
 

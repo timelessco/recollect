@@ -70,7 +70,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
       error: isUserCollaboratorInCategoryError,
       isCollaborator,
       success: isUserCollaboratorInCategorySuccess,
-    } = await isUserCollaboratorInCategory(supabase, category_id as string, email);
+    } = await isUserCollaboratorInCategory(supabase, category_id as string, email!);
 
     if (!isUserCollaboratorInCategorySuccess) {
       console.error(
@@ -101,7 +101,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
       error: isUserOwnerOfCategoryError,
       isOwner,
       success: isUserOwnerOfCategorySuccess,
-    } = await checkIsUserOwnerOfCategory(supabase, category_id as string, userId);
+    } = await checkIsUserOwnerOfCategory(supabase, category_id as string, userId!);
 
     if (!isUserOwnerOfCategorySuccess) {
       console.error(

@@ -75,6 +75,7 @@ export class Res<T> extends Array {
   static from(tuple: ErrorTuple): TryResultError;
   static from<G>(tuple: OkTuple<G>): TryResultOk<G>;
   static from<G>(tuple: ErrorTuple | OkTuple<G>): TryResult<G> {
+    // oxlint-disable-next-line no-unsafe-type-assertion -- class hierarchy pattern
     return new Res(tuple) as TryResult<G>;
   }
 
@@ -158,7 +159,7 @@ export class Res<T> extends Array {
    */
   // oxlint-disable-next-line eslint/class-methods-use-this -- intentional: chaining API returns static method
   public get or() {
-    return Try.catch;
+    return Try.catch.bind(Try);
   }
 
   /**

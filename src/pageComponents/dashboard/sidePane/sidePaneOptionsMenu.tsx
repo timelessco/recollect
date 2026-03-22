@@ -1,5 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 
+import type { BookmarksCountTypes } from "../../../types/apiTypes";
+
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { optionsMenuListArray } from "../../../utils/commonData";
@@ -12,7 +14,10 @@ const SidePaneOptionsMenu = () => {
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state.session);
 
-  const bookmarksCountData = queryClient.getQueryData([BOOKMARKS_COUNT_KEY, session?.user?.id])!;
+  const bookmarksCountData = queryClient.getQueryData<{ data: BookmarksCountTypes }>([
+    BOOKMARKS_COUNT_KEY,
+    session?.user?.id,
+  ]);
 
   const optionsMenuList = optionsMenuListArray(currentPath, bookmarksCountData).filter((item) => {
     if (

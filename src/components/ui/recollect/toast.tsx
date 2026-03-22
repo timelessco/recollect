@@ -4,7 +4,11 @@ import { Toast as ToastPrimitive } from "@base-ui/react/toast";
 
 import { cn } from "@/utils/tailwind-merge";
 
-export const toastManager = ToastPrimitive.createToastManager();
+interface ToastData {
+  icon?: React.ReactNode;
+}
+
+export const toastManager = ToastPrimitive.createToastManager<ToastData>();
 
 const TOAST_SHADOW = [
   "0 64px 18px 0 rgb(0 0 0 / 0%)",
@@ -120,7 +124,7 @@ function Close(props: ToastPrimitive.Close.Props) {
 }
 
 function List() {
-  const { toasts } = ToastPrimitive.useToastManager();
+  const { toasts } = ToastPrimitive.useToastManager<ToastData>();
   return toasts.map((toast) => (
     <Root key={toast.id} toast={toast}>
       <Content>

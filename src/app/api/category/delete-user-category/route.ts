@@ -66,7 +66,7 @@ export const POST = createPostApiHandlerWithAuth({
     }
 
     // Use service client to bypass RLS for cross-user cleanup
-    const serviceClient = await createServerServiceClient();
+    const serviceClient = createServerServiceClient();
 
     // Query accepted collaborator emails before deleting shared_categories
     const { data: collaborators, error: collaboratorsError } = await serviceClient

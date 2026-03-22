@@ -8,7 +8,7 @@ export type IconProps = ComponentPropsWithoutRef<"svg"> & {
 
 export const Icon: FC<IconProps> = ({ label, ...props }) => {
   const _viewBox = props.viewBox ?? fallbackIcon.viewBox;
-  const _path = (props.children ?? fallbackIcon.path) as string;
+  const _path = props.children ?? fallbackIcon.path;
 
   const className = cn(props.className);
 

@@ -28,7 +28,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
   if (!parseResult.success) {
     response.status(400).json({
       error: "Invalid request body",
-      issues: parseResult.error.format(),
+      issues: z.treeifyError(parseResult.error),
     });
     return;
   }
@@ -93,7 +93,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     response.status(200).json({ data: emailResponse });
   } catch (error) {
-    response.status(500).json({ data: `error: ${error}` });
+    response.status(500).json({ data: `error: ${String(error)}` });
   }
 }
 

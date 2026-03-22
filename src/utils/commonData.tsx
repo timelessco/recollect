@@ -1,5 +1,4 @@
 import type { BookmarksCountTypes } from "../types/apiTypes";
-import type { PostgrestError } from "@supabase/supabase-js";
 
 import { AudioIcon } from "@/icons/audio-icon";
 import { DiscoverIcon } from "@/icons/discover-icon";
@@ -3585,10 +3584,11 @@ export const options = () => iconOptions;
 
 export const optionsMenuListArray = (
   currentPath: null | string,
-  bookmarksCountData: {
-    data: BookmarksCountTypes;
-    error: PostgrestError;
-  },
+  bookmarksCountData:
+    | {
+        data: BookmarksCountTypes;
+      }
+    | undefined,
 ) => [
   {
     count: bookmarksCountData?.data?.everything,

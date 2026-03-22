@@ -109,7 +109,7 @@ const ImgLogicComponent = ({
         }}
         placeholder="blur"
         sizes={sizesLogic}
-        src={`${img}`}
+        src={img}
         width={_width}
       />
     ) : (
@@ -159,7 +159,7 @@ const LoaderImgPlaceholder = ({
       cardTypeCondition === viewValues.list,
   });
   return (
-    <div className={`${loaderClassName}`}>
+    <div className={loaderClassName}>
       <Image
         alt="loading"
         className="h-[50px] w-[50px] rounded-lg object-cover dark:brightness-0 dark:invert"

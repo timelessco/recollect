@@ -4,7 +4,7 @@ import type {
   AddCategoryToBookmarksPayload,
   AddCategoryToBookmarksResponse,
 } from "@/app/api/category/add-category-to-bookmarks/schema";
-import type { PaginatedBookmarks } from "@/types/apiTypes";
+import type { CategoriesData, PaginatedBookmarks } from "@/types/apiTypes";
 
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
@@ -61,7 +61,8 @@ export function useAddCategoryToBookmarksOptimisticMutation() {
 
       // Resolve category from cache - skip optimistic update if not found
       const allCategories =
-        queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])?.data ?? [];
+        queryClient.getQueryData<{ data: CategoriesData[] }>([CATEGORIES_KEY, session?.user?.id])
+          ?.data ?? [];
       const newCategoryEntry = allCategories.find((cat) => cat.id === variables.category_id);
 
       // If category not in cache, skip optimistic update and wait for server response

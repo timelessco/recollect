@@ -4,6 +4,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 
+import type {
+  CategoriesData,
+  FetchSharedCategoriesData,
+  ProfilesTableTypes,
+} from "../types/apiTypes";
+
 import { useSupabaseSession } from "../store/componentStore";
 import { getPageViewData, getPageViewKey } from "../utils/bookmarksViewKeyed";
 import { CATEGORIES_KEY, SHARED_CATEGORIES_TABLE_NAME, USER_PROFILE } from "../utils/constants";
@@ -20,11 +26,19 @@ export default function useGetSortBy() {
 
   const userId = session?.user?.id;
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId])!;
+  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
+    CATEGORIES_KEY,
+    userId,
+  ]);
 
-  const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId])!;
+  const userProfilesData = queryClient.getQueryData<{ data: ProfilesTableTypes[] }>([
+    USER_PROFILE,
+    userId,
+  ]);
 
-  const sharedCategoriesData = queryClient.getQueryData([SHARED_CATEGORIES_TABLE_NAME])!;
+  const sharedCategoriesData = queryClient.getQueryData<{ data: FetchSharedCategoriesData[] }>([
+    SHARED_CATEGORIES_TABLE_NAME,
+  ]);
 
   const isInNonCategoryPage = typeof categoryId !== "number";
 
@@ -52,7 +66,7 @@ export default function useGetSortBy() {
     }
 
     if (!isEmpty(userProfilesData?.data)) {
-      const bookmarksView = userProfilesData.data[0]?.bookmarks_view;
+      const bookmarksView = userProfilesData?.data[0]?.bookmarks_view;
       const pageKey = getPageViewKey(categorySlug);
       const pageView = getPageViewData(bookmarksView, pageKey);
       return pageView?.sortBy as string | undefined;

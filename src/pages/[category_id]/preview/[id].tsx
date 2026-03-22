@@ -17,12 +17,13 @@ export interface BookmarkResponse {
 
 const Preview = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const id = String(router.query.id ?? "");
   const {
     data: bookmark,
     error,
     isLoading,
-  } = useFetchBookmarkById(id as string) as {
+    // oxlint-disable-next-line no-unsafe-type-assertion -- hook's BookmarkResponse shape differs from local (singular vs array)
+  } = useFetchBookmarkById(id) as {
     data: BookmarkResponse | undefined;
     error: Error | null;
     isLoading: boolean;

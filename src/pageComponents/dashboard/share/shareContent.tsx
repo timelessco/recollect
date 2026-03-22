@@ -203,7 +203,12 @@ const ShareContent = (props: ShareContentProps) => {
           Actions cannot be performed as you are not the collection owner
         </p>
       )}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSubmit(onSubmit)();
+        }}
+      >
         <Input
           {...register("email", {
             pattern: EMAIL_CHECK_PATTERN,

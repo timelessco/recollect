@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import uniqid from "uniqid";
 
 import type { UserCollection } from "@/async/ai/imageToText";
+import type { Database } from "@/types/database.types";
 import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { BookmarkContentType } from "@/utils/resolve-content-type";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -27,7 +28,7 @@ interface EnrichMetadataParams {
   isOgImage?: boolean;
   isTwitterBookmark: boolean;
   ogImage: string;
-  supabase: SupabaseClient;
+  supabase: SupabaseClient<Database>;
   title?: null | string;
   url: string;
   userId: string;

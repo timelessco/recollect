@@ -41,10 +41,11 @@ export default async function handler(
     // Check if user is authenticated
     if (!userData?.data?.user) {
       console.warn("[fetch-user-profile] Unauthorized: User not authenticated");
-      return response.status(401).json({
+      response.status(401).json({
         data: null,
         error: "Unauthorized: Please log in to access your profile",
       });
+      return;
     }
 
     const userId = userData.data.user.id;
@@ -54,10 +55,11 @@ export default async function handler(
     if (!userId || isEmpty(userId)) {
       console.error("[fetch-user-profile] Invalid user data: Missing userId");
       Sentry.captureException(new Error("[fetch-user-profile] Invalid user data: Missing userId"));
-      return response.status(400).json({
+      response.status(400).json({
         data: null,
         error: "Invalid user data: Missing user ID",
       });
+      return;
     }
 
     let finalData: DataResponse;
@@ -79,7 +81,8 @@ export default async function handler(
         userId,
       });
       Sentry.captureException(error);
-      return response.status(500).json({ data: null, error });
+      response.status(500).json({ data: null, error });
+      return;
     }
 
     finalData = profileData;
@@ -105,7 +108,8 @@ export default async function handler(
           userId,
         });
         Sentry.captureException(updateProfilePicError);
-        return response.status(500).json({ data: null, error: updateProfilePicError });
+        response.status(500).json({ data: null, error: updateProfilePicError });
+        return;
       }
 
       finalData = updateProfilePicData;
@@ -127,10 +131,11 @@ export default async function handler(
           username: newUsername,
         });
         Sentry.captureException(checkError);
-        return response.status(500).json({
+        response.status(500).json({
           data: null,
           error: "Failed to check username availability",
         });
+        return;
       }
 
       if (isEmpty(checkData)) {
@@ -150,10 +155,11 @@ export default async function handler(
             username: newUsername,
           });
           Sentry.captureException(updateUsernameError);
-          return response.status(500).json({
+          response.status(500).json({
             data: null,
             error: "Failed to update username",
           });
+          return;
         }
 
         finalData = userNameNotPresentUpdateData;
@@ -176,10 +182,11 @@ export default async function handler(
             username: uniqueUsername,
           });
           Sentry.captureException(updateUniqueUsernameError);
-          return response.status(500).json({
+          response.status(500).json({
             data: null,
             error: "Failed to create unique username",
           });
+          return;
         }
 
         finalData = updateUniqueUsernameData;
@@ -187,7 +194,7 @@ export default async function handler(
     }
 
     // Success - return profile data
-    return response.status(200).json({ data: finalData, error: null });
+    response.status(200).json({ data: finalData, error: null });
   } catch (unexpectedError) {
     // Catch any unexpected errors
     console.error("[fetch-user-profile] Unexpected error:", unexpectedError, {
@@ -198,10 +205,11 @@ export default async function handler(
 
     // Check if response was already sent
     if (!response.headersSent) {
-      return response.status(500).json({
+      response.status(500).json({
         data: null,
         error: "An unexpected error occurred while fetching profile",
       });
+      return;
     }
 
     // If response was already sent, just log the error

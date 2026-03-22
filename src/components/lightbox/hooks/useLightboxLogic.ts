@@ -41,7 +41,7 @@ export const useLightboxSlides = (
       return [];
     }
 
-    return bookmarks?.map((bookmark) => {
+    return bookmarks?.map((bookmark): CustomSlide => {
       // Check if this video bookmark failed to load - treat as image for proper zoom
       const hasVideoError =
         typeof bookmark.id === "number" &&
@@ -72,9 +72,7 @@ export const useLightboxSlides = (
           bookmark,
           type: slideType,
         },
-        src: bookmark?.url,
-        // Set slide type for lightbox to handle appropriately
-        type: slideType,
+        src: bookmark?.url ?? "",
         // Only include dimensions if not a PDF or not a YouTube video
         ...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
           !bookmark?.type?.includes(PDF_TYPE) &&
@@ -98,7 +96,7 @@ export const useLightboxSlides = (
           ],
         }),
       };
-    }) as CustomSlide[];
+    });
   }, [bookmarks, iframeEnabled, videoErrorIds]);
 };
 

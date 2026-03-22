@@ -75,7 +75,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
     try {
       const response = await mutationApiCall(
         updateUsernameMutation.mutateAsync({
-          id: session?.user?.id as string,
+          id: session!.user!.id,
           username: data?.username,
         }),
       );
@@ -156,23 +156,22 @@ const Settings = ({ onNavigate }: SettingsProps) => {
     <>
       <input
         id="file"
-        onChange={async (event) => {
+        onChange={(event) => {
           const uploadedFile = event?.target?.files ? event?.target?.files[0] : null;
 
-          const size = uploadedFile?.size;
-
           if (!isNull(uploadedFile)) {
+            const { size } = uploadedFile;
             if (size < 1_000_000) {
-              // file size is less than 1mb
-              const response = await mutationApiCall(
-                uploadProfilePicMutation.mutateAsync({
-                  file: uploadedFile,
-                }),
-              );
-
-              if (isNull(response?.error)) {
-                successToast("Profile pic has been updated");
-              }
+              void (async () => {
+                const response = await mutationApiCall(
+                  uploadProfilePicMutation.mutateAsync({
+                    file: uploadedFile,
+                  }),
+                );
+                if (isNull(response?.error)) {
+                  successToast("Profile pic has been updated");
+                }
+              })();
             } else {
               errorToast("File size is greater then 1MB");
             }
@@ -223,16 +222,17 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                 className="rounded-lg bg-gray-100 px-2.5 py-[7px] text-13 leading-[115%] font-medium tracking-normal text-gray-800 hover:bg-gray-200"
                 disabledClassName="bg-gray-100 text-gray-400 hover:bg-gray-100"
                 isDisabled={isNull(userData?.profile_pic)}
-                onClick={async () => {
-                  const response = await mutationApiCall(
-                    removeProfilePic.mutateAsync({
-                      id: userData?.id as string,
-                    }),
-                  );
-
-                  if (isNull(response?.error)) {
-                    successToast("Profile pic has been removed");
-                  }
+                onClick={() => {
+                  void (async () => {
+                    const response = await mutationApiCall(
+                      removeProfilePic.mutateAsync({
+                        id: userData!.id,
+                      }),
+                    );
+                    if (isNull(response?.error)) {
+                      successToast("Profile pic has been removed");
+                    }
+                  })();
                 }}
               >
                 Remove
@@ -241,7 +241,13 @@ const Settings = ({ onNavigate }: SettingsProps) => {
           </div>
         </div>
         <div className="mt-[44px] flex flex-col gap-6 sm:flex-row sm:gap-0 sm:space-x-3">
-          <form className="w-full sm:w-1/2" onSubmit={displaynameHandleSubmit(onDisplaynameSubmit)}>
+          <form
+            className="w-full sm:w-1/2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void displaynameHandleSubmit(onDisplaynameSubmit)();
+            }}
+          >
             <LabelledComponent label="Display name" labelClassName={settingsInputLabelClassName}>
               <div className={`${settingsInputContainerClassName} w-full`}>
                 <Input
@@ -272,14 +278,22 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                   className={`px-2 py-[4.5px] ${saveButtonClassName} rounded-[5px] ${
                     displaynameValue !== originalDisplayname ? "" : "pointer-events-none invisible"
                   }`}
-                  onClick={displaynameHandleSubmit(onDisplaynameSubmit)}
+                  onClick={() => {
+                    void displaynameHandleSubmit(onDisplaynameSubmit)();
+                  }}
                 >
                   Save
                 </Button>
               </div>
             </LabelledComponent>
           </form>
-          <form className="w-full sm:w-1/2" onSubmit={handleSubmit(onSubmit)}>
+          <form
+            className="w-full sm:w-1/2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void handleSubmit(onSubmit)();
+            }}
+          >
             <LabelledComponent label="Username" labelClassName={settingsInputLabelClassName}>
               <div className={settingsInputContainerClassName}>
                 <Input
@@ -314,7 +328,9 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                   className={`px-2 py-[4.5px] ${saveButtonClassName} rounded-[5px] ${
                     usernameValue !== originalUsername ? "" : "pointer-events-none invisible"
                   }`}
-                  onClick={handleSubmit(onSubmit)}
+                  onClick={() => {
+                    void handleSubmit(onSubmit)();
+                  }}
                 >
                   Save
                 </Button>

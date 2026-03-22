@@ -71,7 +71,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 
     // Subscribe to wheel events from the lightbox (Desktop: wheel/trackpad)
     const unsubscribeWheel = subscribeSensors("onWheel", (event) => {
-      const element = event.currentTarget as HTMLElement;
+      const element = event.currentTarget;
 
       // --- Ignore horizontal swipes (left/right) ---
       // If horizontal movement is stronger than vertical, do nothing
@@ -104,87 +104,81 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
     const getSlideWrapper = (container: HTMLElement) =>
       container.querySelector<HTMLElement>(".slide-wrapper");
 
-    const isInteractiveTarget = (event: React.PointerEvent) =>
-      (event.target as HTMLElement).closest?.(INTERACTIVE_SELECTOR) !== null;
+    const isInteractiveTarget = (event: React.PointerEvent<HTMLDivElement>) =>
+      event.target instanceof HTMLElement && event.target.closest(INTERACTIVE_SELECTOR) !== null;
 
-    const unsubscribePointerDown = subscribeSensors(
-      "onPointerDown",
-      (event: React.PointerEvent) => {
-        if (event.pointerType !== "touch" || isInteractiveTarget(event)) {
-          return;
-        }
+    const unsubscribePointerDown = subscribeSensors("onPointerDown", (event) => {
+      if (event.pointerType !== "touch" || isInteractiveTarget(event)) {
+        return;
+      }
 
-        pointerStartYRef.current = event.clientY;
-        isDraggingRef.current = false;
-        offsetRef.current = 0;
-        velocitySampleRef.current = {
-          time: event.timeStamp,
-          y: event.clientY,
-        };
-        prevMoveRef.current = {
-          time: event.timeStamp,
-          y: event.clientY,
-        };
-      },
-    );
+      pointerStartYRef.current = event.clientY;
+      isDraggingRef.current = false;
+      offsetRef.current = 0;
+      velocitySampleRef.current = {
+        time: event.timeStamp,
+        y: event.clientY,
+      };
+      prevMoveRef.current = {
+        time: event.timeStamp,
+        y: event.clientY,
+      };
+    });
 
-    const unsubscribePointerMove = subscribeSensors(
-      "onPointerMove",
-      (event: React.PointerEvent) => {
-        if (event.pointerType !== "touch" || isInteractiveTarget(event)) {
-          return;
-        }
+    const unsubscribePointerMove = subscribeSensors("onPointerMove", (event) => {
+      if (event.pointerType !== "touch" || isInteractiveTarget(event)) {
+        return;
+      }
 
-        const deltaY = event.clientY - pointerStartYRef.current;
-        const element = event.currentTarget as HTMLElement;
+      const deltaY = event.clientY - pointerStartYRef.current;
+      const element = event.currentTarget;
 
-        if (deltaY <= 0) {
-          if (isDraggingRef.current) {
-            cancelAnimationFrame(rafRef.current);
-            reset(element);
-            delete getSlideWrapper(element)?.dataset.pulling;
-            isDraggingRef.current = false;
-          }
-
-          return;
-        }
-
-        if (!isDraggingRef.current) {
-          const wrapper = getSlideWrapper(element);
-          if (wrapper) {
-            wrapper.dataset.pulling = "";
-          }
-        }
-
-        isDraggingRef.current = true;
-        offsetRef.current = Math.min(deltaY, maxOffset);
-
-        // Advance the velocity sample window: keep a point ~80ms behind current
-        if (event.timeStamp - velocitySampleRef.current.time > 80) {
-          velocitySampleRef.current = { ...prevMoveRef.current };
-        }
-
-        prevMoveRef.current = {
-          time: event.timeStamp,
-          y: event.clientY,
-        };
-
-        if (offsetRef.current > THRESHOLD) {
+      if (deltaY <= 0) {
+        if (isDraggingRef.current) {
           cancelAnimationFrame(rafRef.current);
+          reset(element);
+          delete getSlideWrapper(element)?.dataset.pulling;
           isDraggingRef.current = false;
-          close();
-          return;
         }
 
-        // Batch style updates to next frame to prevent iOS jitter
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = requestAnimationFrame(() => {
-          applyOffset(element);
-        });
-      },
-    );
+        return;
+      }
 
-    const handlePointerEnd = (event: React.PointerEvent) => {
+      if (!isDraggingRef.current) {
+        const wrapper = getSlideWrapper(element);
+        if (wrapper) {
+          wrapper.dataset.pulling = "";
+        }
+      }
+
+      isDraggingRef.current = true;
+      offsetRef.current = Math.min(deltaY, maxOffset);
+
+      // Advance the velocity sample window: keep a point ~80ms behind current
+      if (event.timeStamp - velocitySampleRef.current.time > 80) {
+        velocitySampleRef.current = { ...prevMoveRef.current };
+      }
+
+      prevMoveRef.current = {
+        time: event.timeStamp,
+        y: event.clientY,
+      };
+
+      if (offsetRef.current > THRESHOLD) {
+        cancelAnimationFrame(rafRef.current);
+        isDraggingRef.current = false;
+        close();
+        return;
+      }
+
+      // Batch style updates to next frame to prevent iOS jitter
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        applyOffset(element);
+      });
+    });
+
+    const handlePointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
       if (event.pointerType !== "touch") {
         return;
       }
@@ -193,7 +187,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
         return;
       }
 
-      const element = event.currentTarget as HTMLElement;
+      const element = event.currentTarget;
       cancelAnimationFrame(rafRef.current);
       isDraggingRef.current = false;
       delete getSlideWrapper(element)?.dataset.pulling;

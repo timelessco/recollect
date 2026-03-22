@@ -1,14 +1,12 @@
-import type { PostgrestError } from "@supabase/supabase-js";
-
 import { createGetApiHandler } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { createServerServiceClient } from "@/lib/supabase/service";
 import {
   BOOKMARK_CATEGORIES_TABLE_NAME,
   CATEGORIES_TABLE_NAME,
   MAIN_TABLE_NAME,
   PAGINATION_LIMIT,
 } from "@/utils/constants";
-import { createServiceClient } from "@/utils/supabaseClient";
 
 import {
   FetchPublicCategoryBookmarksInputSchema,
@@ -25,9 +23,9 @@ export const GET = createGetApiHandler({
 
     console.log(`[${route}] API called:`, { categorySlug, userName });
 
-    const supabase = createServiceClient();
+    const supabase = createServerServiceClient();
 
-    const { data: categoryData, error: categoryError } = (await supabase
+    const { data: categoryData, error: categoryError } = await supabase
       .from(CATEGORIES_TABLE_NAME)
       .select(
         `
@@ -43,21 +41,7 @@ export const GET = createGetApiHandler({
 				is_public
 			`,
       )
-      .eq("category_slug", categorySlug)) as unknown as {
-      data: {
-        category_name: null | string;
-        category_views: unknown;
-        icon: null | string;
-        icon_color: null | string;
-        id: number;
-        is_public: boolean | null;
-        user_id: {
-          email: null | string;
-          user_name: null | string;
-        };
-      }[];
-      error: PostgrestError;
-    };
+      .eq("category_slug", categorySlug);
 
     if (categoryError) {
       return apiError({
@@ -80,7 +64,12 @@ export const GET = createGetApiHandler({
     }
 
     const category = categoryData.at(0);
-    const sortBy = (category?.category_views as { sortBy?: string } | null)?.sortBy;
+    const views = category?.category_views;
+    const rawSortBy =
+      typeof views === "object" && views !== null && !Array.isArray(views)
+        ? views.sortBy
+        : undefined;
+    const sortBy = typeof rawSortBy === "string" ? rawSortBy : undefined;
     const categoryId = category?.id;
 
     if (!categoryId) {
@@ -145,7 +134,7 @@ export const GET = createGetApiHandler({
       });
     }
 
-    const bookmarks = (rawData as Record<string, unknown>[])?.map((item) => {
+    const bookmarks = rawData?.map((item) => {
       const { [BOOKMARK_CATEGORIES_TABLE_NAME]: _junction, ...rest } = item;
       return rest;
     });

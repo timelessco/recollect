@@ -123,15 +123,11 @@ const Dashboard = () => {
 
   const renderMainPaneContent = () => {
     if (!isInNotFoundPage) {
-      switch (categorySlug) {
-        case DISCOVER_URL: {
-          return <DiscoverBookmarkCards isDiscoverPage />;
-        }
-
-        default: {
-          return <BookmarkCards />;
-        }
+      if (categorySlug === DISCOVER_URL) {
+        return <DiscoverBookmarkCards isDiscoverPage />;
       }
+
+      return <BookmarkCards />;
     } else if (isLoadingCategories || isFetchingCategories) {
       return "Loading";
     }

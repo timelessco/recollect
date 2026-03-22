@@ -4,7 +4,11 @@ import type { DraggableItemProps } from "react-aria";
 
 import { useQueryClient } from "@tanstack/react-query";
 
-import type { CategoriesData, SingleListData } from "../../types/apiTypes";
+import type {
+  BookmarksPaginatedDataTypes,
+  CategoriesData,
+  SingleListData,
+} from "../../types/apiTypes";
 import type { PostgrestError } from "@supabase/supabase-js";
 
 import { usePageContext } from "../../hooks/use-page-context";
@@ -35,17 +39,10 @@ export const PreviewLightBox = ({
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state.session);
   const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-  const categoryDataRaw = queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]);
-  const categoryData =
-    categoryDataRaw &&
-    typeof categoryDataRaw === "object" &&
-    "data" in categoryDataRaw &&
-    "error" in categoryDataRaw
-      ? (categoryDataRaw as {
-          data: CategoriesData[];
-          error: PostgrestError;
-        })
-      : undefined;
+  const categoryData = queryClient.getQueryData<{
+    data: CategoriesData[];
+    error: PostgrestError;
+  }>([CATEGORIES_KEY, session?.user?.id]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const { sortBy } = useGetSortBy();
   const searchText = useMiscellaneousStore((state) => state.searchText);
@@ -69,7 +66,9 @@ export const PreviewLightBox = ({
 
   // if there is text in searchbar we get the cache of searched data else we get from everything
   // Skip query cache lookup for public pages since bookmarks are provided via props
-  const previousData = isPublicPage ? undefined : queryClient.getQueryData(queryKey)!;
+  const previousData = isPublicPage
+    ? undefined
+    : queryClient.getQueryData<BookmarksPaginatedDataTypes>(queryKey);
   // Get and transform bookmarks from query cache or use provided bookmarks prop
   const bookmarks = useMemo(() => {
     // If bookmarks are provided as prop (e.g., for public pages), use them

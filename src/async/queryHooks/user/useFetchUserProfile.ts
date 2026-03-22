@@ -18,7 +18,7 @@ export default function useFetchUserProfile() {
     queryFn: () =>
       fetchUserProfiles({
         session: session as SupabaseSessionType,
-        userId: session?.user?.id as string,
+        userId: session!.user!.id,
       }),
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [USER_PROFILE, session?.user?.id],

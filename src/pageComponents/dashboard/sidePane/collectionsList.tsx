@@ -7,6 +7,11 @@ import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
+import type {
+  BookmarksCountTypes,
+  CategoriesData,
+  FetchSharedCategoriesData,
+} from "../../../types/apiTypes";
 import type { CollectionItemTypes } from "./singleListItemComponent";
 
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
@@ -34,7 +39,10 @@ import SingleListItemComponent from "./singleListItemComponent";
 const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state.session);
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])!;
+  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
+    CATEGORIES_KEY,
+    session?.user?.id,
+  ]);
 
   const userId = session?.user?.id;
 
@@ -77,11 +85,19 @@ const CollectionsList = () => {
 
   const currentPath = useGetCurrentUrlPath();
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])!;
+  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
+    CATEGORIES_KEY,
+    session?.user?.id,
+  ]);
 
-  const sharedCategoriesData = queryClient.getQueryData([SHARED_CATEGORIES_TABLE_NAME])!;
+  const sharedCategoriesData = queryClient.getQueryData<{ data: FetchSharedCategoriesData[] }>([
+    SHARED_CATEGORIES_TABLE_NAME,
+  ]);
 
-  const bookmarksCountData = queryClient.getQueryData([BOOKMARKS_COUNT_KEY, session?.user?.id])!;
+  const bookmarksCountData = queryClient.getQueryData<{ data: BookmarksCountTypes }>([
+    BOOKMARKS_COUNT_KEY,
+    session?.user?.id,
+  ]);
 
   // oxlint-disable-next-line @typescript-eslint/no-explicit-any
   const handleBookmarksDrop = async (event: any) => {

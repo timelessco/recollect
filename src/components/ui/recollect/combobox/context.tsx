@@ -31,5 +31,6 @@ const [ComboboxContext, useComboboxContextInternal] = createSafeContext<
 export { ComboboxContext };
 
 export function useComboboxContext<T = unknown>() {
+  // oxlint-disable-next-line no-unsafe-type-assertion
   return useComboboxContextInternal() as ComboboxContextValue<T>;
 }

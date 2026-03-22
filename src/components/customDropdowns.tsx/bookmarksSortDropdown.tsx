@@ -11,7 +11,7 @@ import DateIcon from "../../icons/sortByIcons/dateIcon";
 import { TickIcon } from "../../icons/tickIcon";
 import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 
-const sortOptions = [
+const sortOptions: { icon: React.ReactNode; label: string; value: BookmarksSortByTypes }[] = [
   {
     icon: <DateIcon />,
     label: "Recent First",
@@ -70,7 +70,7 @@ function BookmarksSortItems() {
           className={`w-full text-left ${dropdownMenuItemClassName}`}
           key={item.value}
           onClick={() => {
-            setBookmarksView(item.value as BookmarksSortByTypes, "sort");
+            setBookmarksView(item.value, "sort");
           }}
         >
           <SortItemContent icon={item.icon} isSelected={item.value === sortBy} label={item.label} />

@@ -17,7 +17,9 @@ function getErrorMessage(hook: string, provider: string) {
   return `${hook} returned \`undefined\`. Seems you forgot to wrap component within ${provider}`;
 }
 
-export function createSafeContext<T>(options: CreateSafeContextOptions<T> = {}) {
+export function createSafeContext<T>(
+  options: CreateSafeContextOptions<T> = {},
+): CreateSafeContextReturn<T> {
   const {
     defaultValue,
     errorMessage,
@@ -31,7 +33,7 @@ export function createSafeContext<T>(options: CreateSafeContextOptions<T> = {}) 
 
   Context.displayName = name;
 
-  function useContext() {
+  function useContext(): T | undefined {
     const context = use(Context);
 
     if (!context && strict) {
@@ -43,5 +45,6 @@ export function createSafeContext<T>(options: CreateSafeContextOptions<T> = {}) 
     return context;
   }
 
+  // oxlint-disable-next-line no-unsafe-type-assertion -- React Context variance
   return [Context, useContext] as CreateSafeContextReturn<T>;
 }

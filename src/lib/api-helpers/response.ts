@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 import * as Sentry from "@sentry/nextjs";
 
-import type { z, ZodSchema } from "zod";
+import type { z } from "zod";
 
 import { HttpStatus } from "@/utils/error-utils/common";
 
@@ -120,7 +120,7 @@ type ParseBodyResult<T> =
 interface ParseBodyProps<T> {
   request: Request;
   route: string;
-  schema: ZodSchema<T>;
+  schema: z.ZodType<T>;
 }
 
 /**
@@ -177,7 +177,7 @@ type ParseQueryResult<T> =
 interface ParseQueryProps<T> {
   request: NextRequest;
   route: string;
-  schema: ZodSchema<T>;
+  schema: z.ZodType<T>;
 }
 
 /**

@@ -38,7 +38,7 @@ const Home: NextPage<CategoryPageProps> = ({ discoverData, isAuthenticated, isDi
 };
 
 export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (context) => {
-  const categoryId = context.params?.category_id as string;
+  const categoryId = String(context.params?.category_id ?? "");
   const isDiscover = categoryId === DISCOVER_URL;
 
   if (!isDiscover) {
@@ -125,8 +125,7 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
         };
       }
 
-      // Map data to SingleListData format with required fields
-      // Type assertion needed as Supabase returns Json types and nested objects differently than our types
+      // oxlint-disable-next-line no-unsafe-type-assertion -- Supabase partial select doesn't match full SingleListData shape
       const discoverData = (data?.map((item) => ({
         ...item,
         addedCategories: [],

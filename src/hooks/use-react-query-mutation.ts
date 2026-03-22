@@ -193,7 +193,7 @@ export function useReactQueryMutation<
           }
 
           if (retryConfig.retryOn) {
-            return retryConfig.retryOn(error as Error);
+            return retryConfig.retryOn(error instanceof Error ? error : new Error(String(error)));
           }
 
           return true;

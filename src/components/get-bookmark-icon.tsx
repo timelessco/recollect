@@ -59,11 +59,13 @@ export const GetBookmarkIcon = ({
   onFavIconError,
   size = 15,
 }: GetBookmarkIconProps) => {
+  /* oxlint-disable prefer-nullish-coalescing -- boolean OR: false should fall through to backup check */
   const isVideo =
     item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) || isBookmarkVideo(item?.type);
   const isDocument = item?.meta_data?.mediaType === PDF_MIME_TYPE || isBookmarkDocument(item?.type);
   const isImage =
     item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) || isBookmarkImage(item?.type);
+  /* oxlint-enable prefer-nullish-coalescing */
   const isAudio = isBookmarkAudio(item?.type) || item?.meta_data?.mediaType?.startsWith("audio");
   // Favicon error fallback
   if (favIconErrorIds.includes(item.id)) {

@@ -75,7 +75,7 @@ export const buildAuthenticatedPreviewUrl = (params: {
 
   return {
     as: `/${categorySlug}${PREVIEW_PATH}/${bookmarkId}`,
-    pathname: `${CATEGORY_ID_PATHNAME}`,
+    pathname: CATEGORY_ID_PATHNAME,
     query: {
       category_id: categorySlug,
       id: bookmarkId,
@@ -90,7 +90,7 @@ export const buildAuthenticatedPreviewUrl = (params: {
  */
 export const buildAuthenticatedCategoryUrl = (categorySlug: string): RoutePushParams => ({
   as: `/${categorySlug}`,
-  pathname: `${CATEGORY_ID_PATHNAME}`,
+  pathname: CATEGORY_ID_PATHNAME,
   query: {
     category_id: categorySlug,
   },

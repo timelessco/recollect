@@ -22,7 +22,7 @@ const ScreenshotPayloadSchema = z.object({
     msg_id: z.number(),
   }),
   queue_name: z.string(),
-  url: z.string().url("Invalid URL format"),
+  url: z.url("Invalid URL format"),
   user_id: z.string().min(1, "user_id is required"),
 });
 
@@ -43,7 +43,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   const parsed = ScreenshotPayloadSchema.safeParse(request.body);
   if (!parsed.success) {
-    const errors = parsed.error.flatten().fieldErrors;
+    const errors = z.treeifyError(parsed.error).properties;
     await storeQueueError({
       errorReason: "screenshot: validation_failed",
       msgId: rawMsgId,

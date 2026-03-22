@@ -46,8 +46,8 @@ const PublicPreview = (props: PublicPreviewProps) => {
     setIsOpen(false);
     if (user_name && categorySlug) {
       const { as, pathname, query } = buildPublicCategoryUrl({
-        category_slug: categorySlug as string,
-        user_name: user_name as string,
+        category_slug: String(categorySlug),
+        user_name: String(user_name),
       });
       void router.push({ pathname, query }, as, { shallow: true });
     }
@@ -101,7 +101,7 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (context
   const validation = PublicPreviewParamsSchema.safeParse(context.params);
   if (!validation.success) {
     console.warn(`[${ROUTE}] Invalid route parameters`, {
-      errors: validation.error.flatten(),
+      errors: z.treeifyError(validation.error),
     });
     return { notFound: true };
   }
@@ -146,6 +146,7 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (context
       return { notFound: true };
     }
 
+    // oxlint-disable-next-line no-unsafe-type-assertion -- response.json() types as unknown in oxlint
     const data = (await response.json()) as FetchPublicBookmarkByIdResponse;
 
     if (!data?.data || data?.error) {

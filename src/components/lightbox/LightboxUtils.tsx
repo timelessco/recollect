@@ -4,9 +4,21 @@ import type { Slide as BaseSlide } from "yet-another-react-lightbox";
 import { ESCAPE_REGEXP_PATTERN, YOUTU_BE, YOUTUBE_COM } from "../../utils/constants";
 
 const SPOTIFY_HOST = "open.spotify.com";
-const SPOTIFY_CONTENT_TYPES = new Set(["album", "artist", "episode", "playlist", "show", "track"]);
 
 type SpotifyContentType = "album" | "artist" | "episode" | "playlist" | "show" | "track";
+
+const SPOTIFY_CONTENT_TYPES: ReadonlySet<string> = new Set<SpotifyContentType>([
+  "album",
+  "artist",
+  "episode",
+  "playlist",
+  "show",
+  "track",
+]);
+
+function isSpotifyContentType(value: string): value is SpotifyContentType {
+  return SPOTIFY_CONTENT_TYPES.has(value);
+}
 
 /**
  * Parses a Spotify URL into its content type and ID.
@@ -26,11 +38,11 @@ function parseSpotifyUrl(
     }
 
     const segments = url.pathname.split("/").filter(Boolean);
-    if (segments.length < 2 || !SPOTIFY_CONTENT_TYPES.has(segments[0])) {
+    if (segments.length < 2 || !isSpotifyContentType(segments[0])) {
       return null;
     }
 
-    return { id: segments[1], type: segments[0] as SpotifyContentType };
+    return { id: segments[1], type: segments[0] };
   } catch {
     return null;
   }

@@ -1,10 +1,8 @@
-import type { BookmarkViewCategories } from "../../types/componentStoreTypes";
-
 import { Switch } from "@/components/ui/recollect/switch";
 
 import { useBookmarksViewUpdate } from "../../hooks/useBookmarksViewUpdate";
 import useGetViewValue from "../../hooks/useGetViewValue";
-import { singleInfoValues, viewValues } from "../../utils/constants";
+import { viewValues } from "../../utils/constants";
 import { errorToast } from "../../utils/toastMessages";
 
 interface BookmarkCardContentSwitchProps {
@@ -44,10 +42,10 @@ export function BookmarkCardContentSwitch({ option }: BookmarkCardContentSwitchP
   const bookmarksInfoValueRaw = useGetViewValue("cardContentViewArray", []);
   const bookmarksViewValue = useGetViewValue("bookmarksView", "");
 
-  const selectedValues = Array.isArray(bookmarksInfoValueRaw)
-    ? (bookmarksInfoValueRaw as string[])
+  const selectedValues: string[] = Array.isArray(bookmarksInfoValueRaw)
+    ? bookmarksInfoValueRaw.filter((v): v is string => typeof v === "string")
     : [];
-  const currentView = bookmarksViewValue as string;
+  const currentView = typeof bookmarksViewValue === "string" ? bookmarksViewValue : "";
   const isEnabled = isOptionEnabled(option, currentView, selectedValues);
   const isDisabled = isOptionDisabled(option, currentView);
 
@@ -56,16 +54,13 @@ export function BookmarkCardContentSwitch({ option }: BookmarkCardContentSwitchP
       if (selectedValues.length > 1) {
         setBookmarksView(
           selectedValues.filter((value) => value !== option.value),
-          singleInfoValues.info as BookmarkViewCategories,
+          "info",
         );
       } else {
         errorToast("At least one view option needs to be selected");
       }
     } else {
-      setBookmarksView(
-        [...selectedValues, option.value],
-        singleInfoValues.info as BookmarkViewCategories,
-      );
+      setBookmarksView([...selectedValues, option.value], "info");
     }
   };
 

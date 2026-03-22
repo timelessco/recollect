@@ -37,7 +37,7 @@ export function SharePublicSwitch({ categoryId }: SharePublicSwitchProps) {
     }
 
     updateCategoryOptimisticMutation.mutate({
-      category_id: numericCategoryId,
+      category_id: numericCategoryId!,
       updateData: {
         is_public: !currentCategory?.is_public,
       },

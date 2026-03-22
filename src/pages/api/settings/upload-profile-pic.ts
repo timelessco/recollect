@@ -33,7 +33,7 @@ export const deleteLogic = async (response: NextApiResponse, userId: ProfilesTab
 
   if (!isNull(listError)) {
     response.status(500).json({
-      error: String(listError),
+      error: (listError as Error)?.message,
       success: false,
     });
     throw new Error("ERROR: list error!!");
@@ -49,7 +49,7 @@ export const deleteLogic = async (response: NextApiResponse, userId: ProfilesTab
 
     if (!isNil(deleteError)) {
       response.status(500).json({
-        error: String(deleteError),
+        error: (deleteError as Error)?.message,
         success: false,
       });
       throw new Error("ERROR: delete error");
@@ -62,7 +62,7 @@ export const deleteLogic = async (response: NextApiResponse, userId: ProfilesTab
 
   if (!isNil(folderDeleteError)) {
     response.status(500).json({
-      error: String(folderDeleteError),
+      error: (folderDeleteError as Error)?.message,
       success: false,
     });
     throw new Error("ERROR: folder delete error");
@@ -140,7 +140,7 @@ export default async function handler(
   const contents = Buffer.from(arrayBuffer).toString("base64");
 
   const parsedFileName = file.name ? parseUploadFileName(file.name) : "";
-  const fileName = parsedFileName || `${uniqid.time()}`;
+  const fileName = parsedFileName || uniqid.time();
   const fileType = file.type || undefined;
 
   if (contents) {
@@ -154,7 +154,7 @@ export default async function handler(
 
     if (!isNil(storageError)) {
       response.status(500).json({
-        error: String(storageError),
+        error: (storageError as Error)?.message,
         success: false,
       });
 

@@ -16,6 +16,10 @@ export const BOOKMARK_MEDIA_CATEGORY_PREDICATES = {
   [VIDEOS_URL]: `type.like.${VIDEO_MIME_PREFIX}%,meta_data->>mediaType.like.${VIDEO_MIME_PREFIX}%`,
 } as const;
 
+function isMediaCategoryKey(key: string): key is keyof typeof BOOKMARK_MEDIA_CATEGORY_PREDICATES {
+  return key in BOOKMARK_MEDIA_CATEGORY_PREDICATES;
+}
+
 export function getBookmarkMediaCategoryPredicate(
   categoryId: null | string | undefined,
 ): null | string {
@@ -23,9 +27,9 @@ export function getBookmarkMediaCategoryPredicate(
     return null;
   }
 
-  return (
-    BOOKMARK_MEDIA_CATEGORY_PREDICATES[
-      categoryId as keyof typeof BOOKMARK_MEDIA_CATEGORY_PREDICATES
-    ] ?? null
-  );
+  if (isMediaCategoryKey(categoryId)) {
+    return BOOKMARK_MEDIA_CATEGORY_PREDICATES[categoryId];
+  }
+
+  return null;
 }

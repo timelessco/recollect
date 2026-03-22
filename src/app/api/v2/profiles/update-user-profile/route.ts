@@ -3,6 +3,7 @@ import type { Database } from "@/types/database.types";
 import { createPatchApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { PROFILES } from "@/utils/constants";
+import { toDbType } from "@/utils/type-utils";
 
 import { UpdateUserProfileInputSchema, UpdateUserProfileOutputSchema } from "./schema";
 
@@ -16,9 +17,11 @@ export const PATCH = createPatchApiHandlerWithAuth({
 
     console.log(`[${route}] API called:`, { userId });
 
+    const updatePayload = toDbType<ProfileUpdate>(data.updateData);
+
     const { data: profileData, error } = await supabase
       .from(PROFILES)
-      .update(data.updateData as ProfileUpdate)
+      .update(updatePayload)
       .match({ id: userId })
       .select();
 

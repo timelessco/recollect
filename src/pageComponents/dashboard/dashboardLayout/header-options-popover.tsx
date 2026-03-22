@@ -250,9 +250,11 @@ function ClearTrashTabContent({ onClose }: { onClose: () => void }) {
     <DestructiveConfirmContent
       description={`${trashCount} ${trashCount === 1 ? "bookmark" : "bookmarks"}`}
       label="Clear All Trash"
-      onConfirm={async () => {
-        await mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
-        onClose();
+      onConfirm={() => {
+        void (async () => {
+          await mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
+          onClose();
+        })();
       }}
       pending={isClearingTrash}
     />
@@ -273,8 +275,12 @@ function DeleteCollectionTabContent() {
   return (
     <DeleteCollectionConfirm
       count={count}
-      onDeleteAll={handleDeleteAll}
-      onDeleteCollection={handleKeepBookmarks}
+      onDeleteAll={() => {
+        void handleDeleteAll();
+      }}
+      onDeleteCollection={() => {
+        void handleKeepBookmarks();
+      }}
       pendingMode={pendingMode}
     />
   );

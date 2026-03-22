@@ -190,6 +190,7 @@ export function DesktopSidepane({
               <CategoryMultiSelect bookmarkId={currentBookmark?.id} shouldFetch={shouldFetch} />
             )}
           </div>
+          {/* oxlint-disable prefer-nullish-coalescing -- boolean condition: empty string should be falsy */}
           {(currentBookmark?.addedTags?.length > 0 ||
             metaData?.img_caption ||
             metaData?.ocr ||

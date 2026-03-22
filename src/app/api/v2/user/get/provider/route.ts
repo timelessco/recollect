@@ -13,7 +13,7 @@ export const GET = createGetApiHandler({
 
     console.log(`[${route}] API called:`, { email });
 
-    const supabase = await createServerServiceClient();
+    const supabase = createServerServiceClient();
 
     const { data, error } = await supabase.from(PROFILES).select("provider").eq("email", email);
 

@@ -6,7 +6,12 @@ import { Item } from "react-stately";
 import { useQueryClient } from "@tanstack/react-query";
 import { find, flatten, isEmpty } from "lodash";
 
-import type { BookmarkViewDataTypes, SingleListData } from "../../../types/apiTypes";
+import type {
+  BookmarksPaginatedDataTypes,
+  BookmarkViewDataTypes,
+  CategoriesData,
+  SingleListData,
+} from "../../../types/apiTypes";
 import type { BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import type { Many } from "lodash";
 
@@ -113,16 +118,19 @@ const CardSection = ({
   const searchText = useMiscellaneousStore((state) => state.searchText);
   const setCurrentBookmarkView = useMiscellaneousStore((state) => state.setCurrentBookmarkView);
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId])!;
+  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
+    CATEGORIES_KEY,
+    userId,
+  ]);
 
   const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
   // gets from the trigram search api
-  const searchBookmarksData = queryClient.getQueryData([
+  const searchBookmarksData = queryClient.getQueryData<BookmarksPaginatedDataTypes>([
     BOOKMARKS_KEY,
     userId,
-    searchSlugKey(categoryData),
+    categoryData ? searchSlugKey(categoryData) : undefined,
     searchText,
-  ])!;
+  ]);
 
   const bookmarksList =
     isPublicPage || isEmpty(searchText)
@@ -187,7 +195,7 @@ const CardSection = ({
           <Image
             alt="loader"
             className="h-12 w-12"
-            loader={(source) => source.src}
+            loader={(source: { src: string }) => source.src}
             src={loaderGif}
           />
         </div>

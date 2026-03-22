@@ -42,7 +42,7 @@ export const clipboardUpload = async (
   fileUploadOptimisticMutation: FileUploadMutationType,
 ) => {
   if (files) {
-    await fileUpload(files, fileUploadOptimisticMutation, category_id);
+    fileUpload(files, fileUploadOptimisticMutation, category_id);
   }
 
   if (text) {

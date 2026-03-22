@@ -4,7 +4,7 @@ import axios from "axios";
 import { z } from "zod";
 
 const schema = z.object({
-  url: z.string().url({ message: "Invalid URL format" }),
+  url: z.url("Invalid URL format"),
 });
 
 // this api returns the media type of the given url

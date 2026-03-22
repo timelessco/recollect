@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty } from "lodash";
 
-import type { SingleListData } from "../../../types/apiTypes";
+import type { FetchSharedCategoriesData, SingleListData } from "../../../types/apiTypes";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import {
@@ -33,7 +33,9 @@ export default function useSearchBookmarks(options: UseSearchBookmarksOptions = 
 
   const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
-  const sharedCategoriesData = queryClient.getQueryData([SHARED_CATEGORIES_TABLE_NAME])!;
+  const sharedCategoriesData = queryClient.getQueryData<{ data: FetchSharedCategoriesData[] }>([
+    SHARED_CATEGORIES_TABLE_NAME,
+  ]);
 
   // this tells if the collection is a shared collection or not
   const isSharedCategory = Boolean(

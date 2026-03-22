@@ -25,7 +25,7 @@ import {
   getPageViewKey,
   isLegacyBookmarksView,
 } from "../utils/bookmarksViewKeyed";
-import { EVERYTHING_URL, viewValues } from "../utils/constants";
+import { EVERYTHING_URL } from "../utils/constants";
 import { getCategorySlugFromRouter } from "../utils/url";
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
 
@@ -154,7 +154,7 @@ export function useBookmarksViewUpdate() {
         const raw = userProfileData.data[0]?.bookmarks_view;
         const pageKey = getPageViewKey(categorySlug);
         const defaultPageView: BookmarkViewDataTypes = {
-          bookmarksView: viewValues.moodboard as BookmarksViewTypes,
+          bookmarksView: "moodboard" satisfies BookmarksViewTypes,
           cardContentViewArray: ["cover", "title", "info"],
           moodboardColumns: [30],
           sortBy: "date-sort-ascending" as BookmarksSortByTypes,

@@ -12,6 +12,12 @@ import ListIcon from "../icons/viewIcons/listIcon";
 import MoodboardIconGray from "../icons/viewIcons/moodboardIconGray";
 import { viewValues } from "../utils/constants";
 
+const VALID_VIEW_TYPES = new Set<string>(["card", "list", "moodboard", "timeline"]);
+
+function isBookmarksViewType(value: string): value is BookmarksViewTypes {
+  return VALID_VIEW_TYPES.has(value);
+}
+
 export const bookmarksViewOptions = [
   {
     icon: <MoodboardIconGray />,
@@ -37,13 +43,16 @@ export const bookmarksViewOptions = [
 
 export const RadioGroup = () => {
   const { setBookmarksView } = useBookmarksViewUpdate();
-  const bookmarksViewValue = useGetViewValue("bookmarksView", "") as string;
+  const bookmarksViewValueRaw = useGetViewValue("bookmarksView", "");
+  const bookmarksViewValue = typeof bookmarksViewValueRaw === "string" ? bookmarksViewValueRaw : "";
 
   return (
     <BaseRadioGroup
       className="dropdown-container flex flex-col"
       onValueChange={(newValue) => {
-        setBookmarksView(newValue as BookmarksViewTypes, "view");
+        if (isBookmarksViewType(newValue)) {
+          setBookmarksView(newValue, "view");
+        }
       }}
       value={bookmarksViewValue}
     >

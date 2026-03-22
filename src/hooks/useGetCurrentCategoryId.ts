@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 
 import { useQueryClient } from "@tanstack/react-query";
 
+import type { CategoriesData } from "../types/apiTypes";
 import type { CategoryIdUrlTypes } from "../types/componentTypes";
 
 import { useSupabaseSession } from "../store/componentStore";
@@ -15,7 +16,10 @@ export default function useGetCurrentCategoryId() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const allCategories = queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])!;
+  const allCategories = queryClient.getQueryData<{ data: CategoriesData[] }>([
+    CATEGORIES_KEY,
+    session?.user?.id,
+  ]);
 
   const categorySlug = getCategorySlugFromRouter(router);
   // disabling here as everywhere else is correct case

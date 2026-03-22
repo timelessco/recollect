@@ -5,8 +5,6 @@ import type { SubmitHandler } from "react-hook-form";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 
-import type { FileType } from "@/types/componentTypes";
-
 import { Button } from "@/components/ui/recollect/button";
 import { Popover } from "@/components/ui/recollect/popover";
 import { useAddBookmark } from "@/hooks/useAddBookmark";
@@ -102,9 +100,11 @@ const AddBookmarkPopupContent = ({ onClose }: AddBookmarkPopupContentProps) => {
     <div className="relative w-[326px] p-1">
       <input
         className="hidden"
-        onChange={(event) =>
-          !isNil(event.target.files) && onDrop(event.target.files as unknown as FileType[])
-        }
+        onChange={(event) => {
+          if (!isNil(event.target.files)) {
+            onDrop([...event.target.files]);
+          }
+        }}
         ref={fileUploadInputRef}
         type="file"
       />
@@ -119,7 +119,12 @@ const AddBookmarkPopupContent = ({ onClose }: AddBookmarkPopupContentProps) => {
       >
         <AddBookmarkInputIcon className="h-4 w-4" />
       </Button>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSubmit(onSubmit)();
+        }}
+      >
         <Input
           autoFocus
           className={`${grayInputClassName} rounded-[11px] pl-[32px]`}

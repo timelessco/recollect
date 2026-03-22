@@ -190,8 +190,12 @@ function DeleteCollectionContent({ categoryId, isCurrent }: DeleteCollectionCont
   return (
     <DeleteCollectionConfirm
       count={count}
-      onDeleteAll={handleDeleteAll}
-      onDeleteCollection={handleKeepBookmarks}
+      onDeleteAll={() => {
+        void handleDeleteAll();
+      }}
+      onDeleteCollection={() => {
+        void handleKeepBookmarks();
+      }}
       pendingMode={pendingMode}
     />
   );

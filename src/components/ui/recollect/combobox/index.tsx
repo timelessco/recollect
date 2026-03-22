@@ -22,7 +22,7 @@ const isCreateNewItem = (item: unknown): item is CreateNewItem =>
   typeof item === "object" &&
   item !== null &&
   "__createNew" in item &&
-  (item as CreateNewItem).__createNew === CREATE_NEW_MARKER;
+  item.__createNew === CREATE_NEW_MARKER;
 
 interface RootProps<T> {
   children: React.ReactNode;
@@ -144,8 +144,10 @@ const Root = <T,>({
     ? [...deduped, { __createNew: CREATE_NEW_MARKER, label: inputValue.trim() }]
     : deduped;
 
+  /* oxlint-disable no-unsafe-type-assertion */
   return (
     <ComboboxContext value={contextValue as ComboboxContextValue<unknown>}>
+      {/* oxlint-enable no-unsafe-type-assertion */}
       <ComboboxPrimitive.Root
         autoHighlight
         items={itemsWithCreate}

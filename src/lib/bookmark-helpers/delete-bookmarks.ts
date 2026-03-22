@@ -1,7 +1,6 @@
 import * as Sentry from "@sentry/nextjs";
 
-import type { ImgMetadataType } from "@/types/apiTypes";
-import type { Database } from "@/types/database.types";
+import type { Database, Json } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
@@ -31,14 +30,30 @@ function extractFileName(url: null | string | undefined): string | undefined {
   return url.slice(lastSlashIndex + 1) || undefined;
 }
 
+type JsonRecord = Record<string, Json | undefined>;
+
+function getJsonString(record: JsonRecord, key: string): string | undefined {
+  const value = record[key];
+  return typeof value === "string" ? value : undefined;
+}
+
+function getJsonStringArray(record: JsonRecord, key: string): string[] | undefined {
+  const value = record[key];
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
+  return value.filter((item): item is string => typeof item === "string");
+}
+
 /**
  * Deletes storage files (screenshots, og images, file uploads, videos) for a set of bookmarks.
  */
 async function deleteStorageForBookmarks(
   bookmarks: {
-    meta_data: unknown;
+    meta_data: Json | null;
     ogImage: null | string;
-    type: string;
+    type: null | string;
     url: null | string;
   }[],
   userId: string,
@@ -51,9 +66,18 @@ async function deleteStorageForBookmarks(
 
   for (const item of bookmarks) {
     const ogFileName = extractFileName(item.ogImage);
-    const metaData = item.meta_data as ImgMetadataType | null;
-    const screenshotFileName = extractFileName(metaData?.screenshot);
-    const coverImageFileName = extractFileName(metaData?.coverImage);
+    const metaData =
+      item.meta_data !== null &&
+      typeof item.meta_data === "object" &&
+      !Array.isArray(item.meta_data)
+        ? item.meta_data
+        : null;
+    const screenshotFileName = metaData
+      ? extractFileName(getJsonString(metaData, "screenshot"))
+      : undefined;
+    const coverImageFileName = metaData
+      ? extractFileName(getJsonString(metaData, "coverImage"))
+      : undefined;
     const urlFileName = extractFileName(item.url);
 
     // Screenshot image paths (ogImage + meta_data.screenshot)
@@ -75,8 +99,11 @@ async function deleteStorageForBookmarks(
     }
 
     // Additional images (stored under screenshot_imgs)
-    if (metaData?.additionalImages) {
-      for (const imageUrl of metaData.additionalImages) {
+    const additionalImages = metaData
+      ? getJsonStringArray(metaData, "additionalImages")
+      : undefined;
+    if (additionalImages) {
+      for (const imageUrl of additionalImages) {
         const fileName = extractFileName(imageUrl);
         if (fileName) {
           screenshotPaths.add(`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${fileName}`);
@@ -85,8 +112,11 @@ async function deleteStorageForBookmarks(
     }
 
     // Additional videos (stored under screenshot_imgs)
-    if (metaData?.additionalVideos) {
-      for (const videoUrl of metaData.additionalVideos) {
+    const additionalVideos = metaData
+      ? getJsonStringArray(metaData, "additionalVideos")
+      : undefined;
+    if (additionalVideos) {
+      for (const videoUrl of additionalVideos) {
         const fileName = extractFileName(videoUrl);
         if (fileName) {
           screenshotPaths.add(`${STORAGE_SCREENSHOT_IMAGES_PATH}/${userId}/${fileName}`);
@@ -112,9 +142,9 @@ async function deleteStorageForBookmarks(
     storageHelpers.deleteObjects(R2_MAIN_BUCKET_NAME, videoPaths),
   ]);
 
-  const errors = results
+  const errors: unknown[] = results
     .filter((result): result is PromiseRejectedResult => result.status === "rejected")
-    .map((result) => result.reason);
+    .map((result): unknown => result.reason);
 
   if (errors.length > 0) {
     console.error(`[${route}] Storage cleanup errors:`, errors);
@@ -165,16 +195,7 @@ export async function deleteBookmarksByIds(
 
   // Clean up storage files
   if (bookmarksForCleanup && bookmarksForCleanup.length > 0) {
-    await deleteStorageForBookmarks(
-      bookmarksForCleanup as {
-        meta_data: unknown;
-        ogImage: null | string;
-        type: string;
-        url: null | string;
-      }[],
-      userId,
-      route,
-    );
+    await deleteStorageForBookmarks(bookmarksForCleanup, userId, route);
   }
 
   // Delete tags

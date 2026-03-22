@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import { createServerClient, serialize } from "@supabase/ssr";
+import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
 
-import type { CookieOptions } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const isProductionEnvironment = process.env.NODE_ENV === "production";
@@ -20,10 +19,6 @@ export const supabaseAnonKey = !isProductionEnvironment
   : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export const apiSupabaseClient = (request: NextApiRequest, response: NextApiResponse) => {
-  const apiCookieResponse = response as NextApiResponse & {
-    appendHeader: (name: unknown, function_: unknown) => void;
-  };
-
   const authorization = request?.headers?.authorization;
 
   const supabase = createServerClient(
@@ -38,14 +33,16 @@ export const apiSupabaseClient = (request: NextApiRequest, response: NextApiResp
           }
         : {}),
       cookies: {
-        get(name: string) {
-          return request.cookies[name];
+        getAll() {
+          return Object.entries(request.cookies).map(([name, value]) => ({
+            name,
+            value: value ?? "",
+          }));
         },
-        remove(name: string, options: CookieOptions) {
-          apiCookieResponse.appendHeader("Set-Cookie", serialize(name, "", options));
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          apiCookieResponse.appendHeader("Set-Cookie", serialize(name, value, options));
+        setAll(cookiesToSet) {
+          for (const { name, options, value } of cookiesToSet) {
+            response.appendHeader("Set-Cookie", serializeCookieHeader(name, value, options));
+          }
         },
       },
     },

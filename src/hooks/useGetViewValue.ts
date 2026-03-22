@@ -3,7 +3,12 @@ import { useRouter } from "next/router";
 import { useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty } from "lodash";
 
-import type { BookmarkViewDataTypes } from "../types/apiTypes";
+import type {
+  BookmarkViewDataTypes,
+  CategoriesData,
+  FetchSharedCategoriesData,
+  ProfilesTableTypes,
+} from "../types/apiTypes";
 
 import { getPageViewData, getPageViewKey } from "@/utils/bookmarksViewKeyed";
 
@@ -29,11 +34,19 @@ const useGetViewValue = (
   const userId = userData?.user?.id;
   const userEmail = userData?.user?.email;
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId])!;
+  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
+    CATEGORIES_KEY,
+    userId,
+  ]);
 
-  const sharedCategoriesData = queryClient.getQueryData([SHARED_CATEGORIES_TABLE_NAME])!;
+  const sharedCategoriesData = queryClient.getQueryData<{ data: FetchSharedCategoriesData[] }>([
+    SHARED_CATEGORIES_TABLE_NAME,
+  ]);
 
-  const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId])!;
+  const userProfilesData = queryClient.getQueryData<{ data: ProfilesTableTypes[] }>([
+    USER_PROFILE,
+    userId,
+  ]);
 
   const currentCategoryData = find(
     categoryData?.data,
@@ -48,7 +61,7 @@ const useGetViewValue = (
   )?.id;
 
   if (!isPublicPage) {
-    if (isUserInACategory(categorySlug!)) {
+    if (categorySlug && isUserInACategory(categorySlug)) {
       if (isUserTheCategoryOwner) {
         // user is the owner of the category
         return currentCategoryData?.category_views?.[viewType];
@@ -69,7 +82,7 @@ const useGetViewValue = (
     }
 
     if (!isEmpty(userProfilesData?.data)) {
-      const bookmarksView = userProfilesData.data[0]?.bookmarks_view;
+      const bookmarksView = userProfilesData?.data[0]?.bookmarks_view;
       const pageKey = getPageViewKey(categorySlug);
       const pageView = getPageViewData(bookmarksView, pageKey);
       const value = pageView?.[viewType];

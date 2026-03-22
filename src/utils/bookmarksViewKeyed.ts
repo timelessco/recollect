@@ -10,7 +10,7 @@ export function getPageViewKey(slug: null | string): string {
     return EVERYTHING_URL;
   }
 
-  return PAGE_VIEW_SLUGS.includes(slug as (typeof PAGE_VIEW_SLUGS)[number]) ? slug : EVERYTHING_URL;
+  return (PAGE_VIEW_SLUGS as readonly string[]).includes(slug) ? slug : EVERYTHING_URL;
 }
 
 /**

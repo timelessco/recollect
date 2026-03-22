@@ -69,7 +69,7 @@ const videoLogic = async (
   const { error: getError } = await storageHelpers.listObjects(R2_MAIN_BUCKET_NAME, thumbnailPath);
 
   if (!isNil(getError)) {
-    throw new Error(`ERROR: getError ${getError}`);
+    throw new Error(`ERROR: getError ${(getError as Error)?.message}`);
   }
 
   // Since we can't directly copy in R2, we'll assume the thumbnail is already in the right place
@@ -94,7 +94,9 @@ const videoLogic = async (
       imgData = await blurhashFromURL(thumbnailUrl?.publicUrl);
     } catch (error) {
       console.log("Blur hash error", error);
-      Sentry.captureException(`Blur hash error ${error}`);
+      Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
+        tags: { operation: "blur_hash" },
+      });
       imgData = {};
     }
   }
@@ -146,7 +148,7 @@ export default async function handler(
 
   let categoryIdLogic = 0;
   if (categoryId) {
-    categoryIdLogic = isUserInACategory(categoryId) ? categoryId : 0;
+    categoryIdLogic = isUserInACategory(categoryId) ? Number(categoryId) : 0;
   }
 
   const userData = await supabase?.auth?.getUser();
@@ -226,7 +228,7 @@ export default async function handler(
     .from(MAIN_TABLE_NAME)
     .insert([
       {
-        description: meta_data?.img_caption || "",
+        description: meta_data?.img_caption ?? "",
         meta_data,
         ogImage,
         title: fileName,
@@ -278,7 +280,12 @@ export default async function handler(
       }
     } catch (remainingerror) {
       console.error(remainingerror);
-      Sentry.captureException(`Remaining upload api error ${remainingerror}`);
+      Sentry.captureException(
+        remainingerror instanceof Error ? remainingerror : new Error(String(remainingerror)),
+        {
+          tags: { operation: "remaining_upload_api" },
+        },
+      );
     }
   } else {
     response.status(500).json({

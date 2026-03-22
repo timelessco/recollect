@@ -47,7 +47,11 @@ export function SearchBar(props: SearchBarProps) {
       <div className="w-[246px] max-lg:my-[2px] max-lg:w-full">
         <SearchInput
           key={categoryId}
-          onBlur={() => !isDesktop && onShowSearchBar(false)}
+          onBlur={() => {
+            if (!isDesktop) {
+              onShowSearchBar(false);
+            }
+          }}
           placeholder={`Search in ${currentCategoryData?.category_name ?? currentPath}`}
         />
       </div>

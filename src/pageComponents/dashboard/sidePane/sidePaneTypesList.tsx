@@ -1,5 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 
+import type { BookmarksCountTypes } from "../../../types/apiTypes";
+
 import { Collapsible } from "@/components/ui/recollect/collapsible";
 
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
@@ -14,7 +16,10 @@ const SidePaneTypesList = () => {
   const session = useSupabaseSession((state) => state.session);
 
   const queryClient = useQueryClient();
-  const bookmarksCountData = queryClient.getQueryData([BOOKMARKS_COUNT_KEY, session?.user?.id])!;
+  const bookmarksCountData = queryClient.getQueryData<{ data: BookmarksCountTypes }>([
+    BOOKMARKS_COUNT_KEY,
+    session?.user?.id,
+  ]);
 
   const optionsMenuList = optionsMenuListArray(currentPath, bookmarksCountData).filter((item) =>
     [

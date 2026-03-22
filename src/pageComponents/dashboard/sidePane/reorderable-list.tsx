@@ -189,7 +189,6 @@ export function ReorderableListBox(props: ReorderableListBoxProps) {
             "text/plain": !isNull(item) ? item.textValue : "",
           };
         })),
-    previewRef,
     selectionManager: state.selectionManager,
   });
 

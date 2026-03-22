@@ -1,8 +1,7 @@
-import type { Json } from "@/types/database.types";
-
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { createServerServiceClient } from "@/lib/supabase/service";
+import { toJson } from "@/utils/type-utils";
 
 import { TwitterSyncInputSchema, TwitterSyncOutputSchema } from "./schema";
 
@@ -17,9 +16,9 @@ export const POST = createPostApiHandlerWithAuth({
     });
 
     // Call transactional RPC for synchronous dedup + insert
-    const serviceClient = await createServerServiceClient();
+    const serviceClient = createServerServiceClient();
     const { data: result, error: rpcError } = await serviceClient.rpc("enqueue_twitter_bookmarks", {
-      p_bookmarks: data.bookmarks as Json[],
+      p_bookmarks: toJson(data.bookmarks),
       p_user_id: userId,
     });
 

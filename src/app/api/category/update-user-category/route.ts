@@ -1,12 +1,15 @@
-import type { Database } from "@/types/database-generated.types";
+import type { Database } from "@/types/database.types";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
 import { CATEGORIES_TABLE_NAME, DUPLICATE_CATEGORY_NAME_ERROR, PROFILES } from "@/utils/constants";
+import { toDbType } from "@/utils/type-utils";
 
 import { UpdateCategoryPayloadSchema, UpdateCategoryResponseSchema } from "./schema";
+
+type CategoryUpdate = Database["public"]["Tables"]["categories"]["Update"];
 
 const ROUTE = "update-user-category";
 
@@ -16,6 +19,7 @@ export const POST = createPostApiHandlerWithAuth({
     const userId = user.id;
 
     // Separate is_favorite (legacy compat) from actual category fields
+    // oxlint-disable-next-line @typescript-eslint/no-deprecated -- backward compat for old mobile builds
     const { is_favorite, ...categoryUpdateData } = updateData;
 
     console.log(`[${route}] API called:`, {
@@ -27,10 +31,12 @@ export const POST = createPostApiHandlerWithAuth({
     // Run category table update first (if there are fields to update)
     const hasOtherUpdates = Object.keys(categoryUpdateData).length > 0;
 
+    const updatePayload = toDbType<CategoryUpdate>(categoryUpdateData);
+
     const { data: categoryData, error } = hasOtherUpdates
       ? await supabase
           .from(CATEGORIES_TABLE_NAME)
-          .update(categoryUpdateData as Database["public"]["Tables"]["categories"]["Update"])
+          .update(updatePayload)
           .match({ id: categoryId, user_id: userId })
           .select()
       : await supabase
@@ -79,10 +85,9 @@ export const POST = createPostApiHandlerWithAuth({
 
       if (is_favorite) {
         // Add to favorites (idempotent: remove first, then toggle to add)
-        const { error: removeError } = await supabase.rpc(
-          "remove_favorite_category_for_user" as never,
-          { p_category_id: numericCategoryId } as never,
-        );
+        const { error: removeError } = await supabase.rpc("remove_favorite_category_for_user", {
+          p_category_id: numericCategoryId,
+        });
 
         if (removeError) {
           return apiError({
@@ -95,10 +100,9 @@ export const POST = createPostApiHandlerWithAuth({
           });
         }
 
-        const { error: toggleError } = await supabase.rpc(
-          "toggle_favorite_category" as never,
-          { p_category_id: numericCategoryId } as never,
-        );
+        const { error: toggleError } = await supabase.rpc("toggle_favorite_category", {
+          p_category_id: numericCategoryId,
+        });
 
         if (toggleError) {
           return apiError({
@@ -112,10 +116,9 @@ export const POST = createPostApiHandlerWithAuth({
         }
       } else {
         // Remove from favorites (idempotent: no-op if absent)
-        const { error: removeError } = await supabase.rpc(
-          "remove_favorite_category_for_user" as never,
-          { p_category_id: numericCategoryId } as never,
-        );
+        const { error: removeError } = await supabase.rpc("remove_favorite_category_for_user", {
+          p_category_id: numericCategoryId,
+        });
 
         if (removeError) {
           return apiError({

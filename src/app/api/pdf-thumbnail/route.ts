@@ -63,10 +63,10 @@ export const POST = createPostApiHandlerWithAuth({
       });
     }
 
-    const raw = (await response.json()) as Record<string, unknown>;
-    const sanitizedJsonData: PdfThumbnailOutput = {
-      publicUrl: String(raw.publicUrl),
-    };
+    const raw: unknown = await response.json();
+    const publicUrl =
+      typeof raw === "object" && raw !== null && "publicUrl" in raw ? String(raw.publicUrl) : "";
+    const sanitizedJsonData: PdfThumbnailOutput = { publicUrl };
 
     return sanitizedJsonData;
   },

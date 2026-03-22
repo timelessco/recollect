@@ -20,7 +20,7 @@ export const useIframeStore = create<IframeState>()(
 );
 
 // Cross-tab sync
-type StoreWithPersist = Mutate<StoreApi<IframeState>, [["zustand/persist", unknown]]>;
+type StoreWithPersist = Mutate<StoreApi<IframeState>, [["zustand/persist", IframeState]]>;
 
 /**
  * Syncs the store across different tabs/windows by listening to the "storage" event.
@@ -46,4 +46,4 @@ const withStorageDOMEvents = (store: StoreWithPersist) => {
   };
 };
 
-withStorageDOMEvents(useIframeStore as StoreWithPersist);
+withStorageDOMEvents(useIframeStore);

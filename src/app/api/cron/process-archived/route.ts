@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { apiError } from "@/lib/api-helpers/response";
 import { SUPABASE_SERVICE_KEY } from "@/lib/supabase/constants";
-import { createServiceClient } from "@/utils/supabaseClient";
+import { createServerServiceClient } from "@/lib/supabase/service";
 
 const ROUTE = "cron/process-archived";
 
@@ -59,7 +59,7 @@ async function handlePost(request: NextRequest) {
     const input = parsed.data;
     console.log(`[${ROUTE}] API called:`, { input });
 
-    const supabase = createServiceClient();
+    const supabase = createServerServiceClient();
 
     if ("retry_all" in input || "count" in input) {
       const count = "count" in input ? input.count : undefined;

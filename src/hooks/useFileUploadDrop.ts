@@ -11,8 +11,8 @@ export function useFileUploadDrop() {
   const { fileUploadOptimisticMutation } = useFileUploadOptimisticMutation();
 
   const onDrop = useCallback(
-    async (acceptedFiles: FileType[]) => {
-      await fileUpload(acceptedFiles, fileUploadOptimisticMutation, CATEGORY_ID);
+    (acceptedFiles: FileType[]) => {
+      fileUpload(acceptedFiles, fileUploadOptimisticMutation, CATEGORY_ID);
     },
     [fileUploadOptimisticMutation, CATEGORY_ID],
   );

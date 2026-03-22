@@ -13,7 +13,7 @@ const TRASH_RETENTION_DAYS = 30;
 
 export const GET = createGetApiHandlerWithSecret({
   handler: async ({ route }) => {
-    const supabase = await createServerServiceClient();
+    const supabase = createServerServiceClient();
 
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - TRASH_RETENTION_DAYS);

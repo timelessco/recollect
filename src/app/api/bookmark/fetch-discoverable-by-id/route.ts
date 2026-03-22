@@ -9,6 +9,7 @@ import {
   MAIN_TABLE_NAME,
 } from "@/utils/constants";
 import { HttpStatus } from "@/utils/error-utils/common";
+import { toDbType } from "@/utils/type-utils";
 
 import { FetchDiscoverableByIdQuerySchema, FetchDiscoverableByIdResponseSchema } from "./schema";
 
@@ -116,34 +117,16 @@ export const GET = createGetApiHandler({
       });
     }
 
-    // Map tags to the expected format, filtering out null join rows
     const addedTags =
-      (
-        tagsData as unknown as {
-          bookmark_id: number;
-          tag_id: { id: number; name: string } | null;
-        }[]
-      )
+      tagsData
         ?.filter((item) => item.tag_id !== null)
         .map((item) => ({
           id: item.tag_id?.id ?? 0,
           name: item.tag_id?.name,
         })) ?? [];
 
-    // Map categories to the expected format, filtering out null join rows
     const addedCategories =
-      (
-        categoriesData as unknown as {
-          bookmark_id: number;
-          category_id: {
-            category_name: string;
-            category_slug: string;
-            icon: null | string;
-            icon_color: string;
-            id: number;
-          } | null;
-        }[]
-      )
+      categoriesData
         ?.filter((item) => item.category_id !== null)
         .map((item) => ({
           category_name: item.category_id?.category_name ?? "",
@@ -159,14 +142,11 @@ export const GET = createGetApiHandler({
       tagsCount: addedTags.length,
     });
 
-    // Type assertion for the complete response
-    const response = {
+    return toDbType<FetchDiscoverableByIdResponse>({
       ...data,
       addedCategories,
       addedTags,
-    } as FetchDiscoverableByIdResponse;
-
-    return response;
+    });
   },
   inputSchema: FetchDiscoverableByIdQuerySchema,
   outputSchema: FetchDiscoverableByIdResponseSchema,

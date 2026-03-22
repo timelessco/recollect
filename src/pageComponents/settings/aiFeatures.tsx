@@ -185,7 +185,9 @@ export const AiFeatures = () => {
                 <button
                   aria-label={showKey ? "Hide API key" : "Show API key"}
                   className="absolute top-1/2 right-2 -translate-y-1/2 text-xl leading-5 text-gray-500 hover:text-gray-700 focus:outline-none"
-                  onClick={handleEyeClick}
+                  onClick={() => {
+                    void handleEyeClick();
+                  }}
                   type="button"
                 >
                   {showKey ? <ShowEyeIcon /> : <SlashedEyeIcon />}

@@ -1,8 +1,7 @@
-import type { Json } from "@/types/database.types";
-
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { createServerServiceClient } from "@/lib/supabase/service";
+import { toJson } from "@/utils/type-utils";
 
 import { InstagramSyncInputSchema, InstagramSyncOutputSchema } from "./schema";
 
@@ -30,11 +29,11 @@ export const POST = createPostApiHandlerWithAuth({
     const inMemorySkipped = data.bookmarks.length - uniqueBookmarks.length;
 
     // Call transactional RPC for synchronous dedup + insert
-    const serviceClient = await createServerServiceClient();
+    const serviceClient = createServerServiceClient();
     const { data: result, error: rpcError } = await serviceClient.rpc(
       "enqueue_instagram_bookmarks",
       {
-        p_bookmarks: uniqueBookmarks as unknown as Json[],
+        p_bookmarks: toJson(uniqueBookmarks),
         p_user_id: userId,
       },
     );

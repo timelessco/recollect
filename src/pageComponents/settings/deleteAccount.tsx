@@ -88,7 +88,9 @@ export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
       <div className="relative mb-[34px] flex items-center">
         <Button
           className="absolute left-[-7px] rounded-full bg-gray-0 p-1 hover:bg-gray-100"
-          onClick={() => onNavigate("main")}
+          onClick={() => {
+            onNavigate("main");
+          }}
         >
           <figure className="text-gray-900">
             <BackIconBlack />
@@ -109,7 +111,10 @@ export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
       </div>
       <form
         className="mt-6 flex flex-wrap items-end justify-between sm:flex-nowrap"
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSubmit(onSubmit)();
+        }}
       >
         <LabelledComponent
           label={`Please type your username ${userData?.user_name} to continue`}
@@ -137,7 +142,9 @@ export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
             buttonType="submit"
             className={` ${settingsDeleteButtonRedClassName} ${deleteUserMutation.isPending ? "py-[9px]" : ""}`}
             isDisabled={deleteUserMutation.isPending}
-            onClick={handleSubmit(onSubmit)}
+            onClick={() => {
+              void handleSubmit(onSubmit)();
+            }}
           >
             <div className="flex w-full min-w-[125px] items-center justify-center">
               <div className="flex justify-center text-red-600">

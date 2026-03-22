@@ -228,6 +228,7 @@ export function useReactQueryOptimisticMutation<
 
         let keysToInvalidate: QueryKey[];
         if (isMultipleKeys) {
+          // oxlint-disable-next-line no-unsafe-type-assertion -- narrowed by isMultipleKeys guard above
           keysToInvalidate = invalidates as QueryKey[];
         } else if (Array.isArray(invalidates) && invalidates.length === 0) {
           keysToInvalidate = [];

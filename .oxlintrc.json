@@ -12,8 +12,8 @@
   ],
   "options": {
     "reportUnusedDisableDirectives": "error",
-    "typeAware": false,
-    "typeCheck": false
+    "typeAware": true,
+    "typeCheck": true
   },
   "ignorePatterns": [
     "pnpm-lock.yaml",
@@ -27,7 +27,10 @@
     "scripts/utils/try.ts",
     ".ncurc.cjs",
     "supabase/functions/**",
-    "package-typings/**"
+    "package-typings/**",
+    "src/types/database-generated.types.ts",
+    "cypress/e2e/**",
+    "cypress/support/**"
   ],
   "rules": {
     "max-lines": "off",
@@ -67,26 +70,7 @@
     "no-negated-condition": "off",
     // filename-case: off permanently — retroactive rename of 165 files
     // breaks git blame and risks import breakage on case-insensitive macOS.
-    "unicorn/filename-case": "off",
-    // no-non-null-assertion: off — 75 violations need careful null handling.
-    // Enable after dedicated refactor pass.
-    "@typescript-eslint/no-non-null-assertion": "off",
-
-    // Requires typeCheck: true — enable after fixing ~100 pre-existing type errors
-    "@typescript-eslint/no-confusing-void-expression": "off",
-    "@typescript-eslint/no-deprecated": "off",
-    "@typescript-eslint/no-floating-promises": "off",
-    "@typescript-eslint/no-misused-promises": "off",
-    "@typescript-eslint/no-redundant-type-constituents": "off",
-    "@typescript-eslint/no-unnecessary-template-expression": "off",
-    "@typescript-eslint/no-unsafe-argument": "off",
-    "@typescript-eslint/no-unsafe-assignment": "off",
-    "@typescript-eslint/no-unsafe-call": "off",
-    "@typescript-eslint/no-unsafe-member-access": "off",
-    "@typescript-eslint/no-unsafe-return": "off",
-    "@typescript-eslint/no-unsafe-type-assertion": "off",
-    "@typescript-eslint/restrict-template-expressions": "off",
-    "@typescript-eslint/unbound-method": "off"
+    "unicorn/filename-case": "off"
   },
   "overrides": [
     {
@@ -95,6 +79,28 @@
         // TODO: Should fix these issues in multiple files
         "react-x/set-state-in-effect": "off",
         "react-x/no-array-index-key": "off"
+      }
+    },
+    {
+      // TODO: Legacy code: no-unsafe-* + no-non-null-assertion disabled until migration/refactor
+      "files": [
+        "src/pages/api/**/*.{ts,tsx}",
+        "src/utils/worker.ts",
+        "src/utils/file-upload.ts",
+        "src/utils/helpers.ts",
+        "src/utils/apiHelpers.ts",
+        "src/async/**/*.{ts,tsx}",
+        "src/pageComponents/**/*.{ts,tsx}",
+        "scripts/**/*.{js,ts}"
+      ],
+      "rules": {
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/no-unsafe-argument": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/no-unsafe-type-assertion": "off"
       }
     },
     {

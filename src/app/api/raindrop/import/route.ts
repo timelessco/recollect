@@ -1,8 +1,7 @@
-import type { Json } from "@/types/database.types";
-
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { createServerServiceClient } from "@/lib/supabase/service";
+import { toJson } from "@/utils/type-utils";
 
 import { RaindropImportInputSchema, RaindropImportOutputSchema } from "./schema";
 
@@ -32,11 +31,11 @@ export const POST = createPostApiHandlerWithAuth({
 
     // Call enqueue_raindrop_bookmarks RPC via service role client
     // (authenticated users don't have direct queue access for security)
-    const serviceClient = await createServerServiceClient();
+    const serviceClient = createServerServiceClient();
     const { data: result, error: rpcError } = await serviceClient.rpc(
       "enqueue_raindrop_bookmarks",
       {
-        p_bookmarks: uniqueBookmarks as unknown as Json,
+        p_bookmarks: toJson(uniqueBookmarks),
         p_user_id: userId,
       },
     );
@@ -52,8 +51,10 @@ export const POST = createPostApiHandlerWithAuth({
       });
     }
 
-    const inserted = (result as { inserted: number })?.inserted ?? 0;
-    const dbSkipped = (result as { skipped: number })?.skipped ?? 0;
+    const parsed =
+      typeof result === "object" && result !== null && !Array.isArray(result) ? result : {};
+    const inserted = typeof parsed.inserted === "number" ? parsed.inserted : 0;
+    const dbSkipped = typeof parsed.skipped === "number" ? parsed.skipped : 0;
 
     console.log(`[${route}] Queued successfully:`, {
       queued: inserted,

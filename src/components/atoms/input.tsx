@@ -91,7 +91,11 @@ const Input = ({ ref, ...props }: InputProps & { ref?: React.Ref<HTMLInputElemen
           disabled={isDisabled}
           onBlur={onBlur}
           onChange={onChange}
-          onFocus={(event) => selectTextOnFocus && event.target.select()}
+          onFocus={(event) => {
+            if (selectTextOnFocus) {
+              event.target.select();
+            }
+          }}
           onKeyUp={onKeyUp}
           placeholder={placeholder}
           tabIndex={tabIndex}

@@ -88,7 +88,7 @@ export const getStaticProps: GetStaticProps<DiscoverPreviewProps> = async (conte
   const validation = DiscoverPreviewParamsSchema.safeParse(context.params);
   if (!validation.success) {
     console.warn(`[${ROUTE}] Invalid route parameters`, {
-      errors: validation.error.flatten(),
+      errors: z.treeifyError(validation.error),
     });
     return { notFound: true };
   }
@@ -127,6 +127,7 @@ export const getStaticProps: GetStaticProps<DiscoverPreviewProps> = async (conte
       return { notFound: true };
     }
 
+    // oxlint-disable-next-line no-unsafe-type-assertion -- response.json() types as unknown in oxlint
     const data = (await response.json()) as FetchDiscoverableBookmarkByIdResponse;
 
     if (!data?.data || data?.error) {

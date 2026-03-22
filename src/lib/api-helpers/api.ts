@@ -1,7 +1,12 @@
 import type { ApiResponse } from "./response";
 
+async function fetchJson<T>(response: Response): Promise<T> {
+  // oxlint-disable-next-line no-unsafe-type-assertion -- response.json() types as unknown in oxlint
+  return (await response.json()) as T;
+}
+
 const handleResponse = async <T>(response: Response): Promise<T> => {
-  const json = (await response.json()) as ApiResponse<T>;
+  const json = await fetchJson<ApiResponse<T>>(response);
 
   if (!response.ok || json.error !== null) {
     throw new Error(json.error ?? `Request failed: ${response.status}`);

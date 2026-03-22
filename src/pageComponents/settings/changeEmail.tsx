@@ -5,6 +5,7 @@ import type { SubmitHandler } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { isNil } from "lodash";
 
+import type { ProfilesTableTypes } from "../../types/apiTypes";
 import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
 
 import Button from "../../components/atoms/button";
@@ -40,7 +41,10 @@ const ChangeEmail = ({ onNavigate }: ChangeEmailProps) => {
   const session = useSupabaseSession((state) => state.session);
   const supabase = createClient();
 
-  const userProfilesData = queryClient.getQueryData([USER_PROFILE, session?.user?.id])!;
+  const userProfilesData = queryClient.getQueryData<{ data: ProfilesTableTypes[] }>([
+    USER_PROFILE,
+    session?.user?.id,
+  ]);
 
   const userData = userProfilesData?.data?.[0];
 
@@ -76,7 +80,9 @@ const ChangeEmail = ({ onNavigate }: ChangeEmailProps) => {
       <div className="relative mb-[30px] flex items-center">
         <Button
           className="absolute left-[-7px] rounded-full bg-gray-0 p-1 hover:bg-gray-100"
-          onClick={() => onNavigate("main")}
+          onClick={() => {
+            onNavigate("main");
+          }}
         >
           <figure className="text-gray-900">
             <BackIconBlack />
@@ -104,7 +110,10 @@ const ChangeEmail = ({ onNavigate }: ChangeEmailProps) => {
       </div>
       <form
         className="flex flex-wrap items-end justify-between pt-[28px] sm:flex-nowrap"
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSubmit(onSubmit)();
+        }}
       >
         <LabelledComponent label="Change new email" labelClassName={settingsInputLabelClassName}>
           <div className={settingsInputContainerClassName}>
@@ -130,9 +139,11 @@ const ChangeEmail = ({ onNavigate }: ChangeEmailProps) => {
         </LabelledComponent>
         <div className="mt-2 flex w-1/2 justify-start sm:mt-0 sm:justify-end">
           <Button
-            className={`${settingsLightButtonClassName}`}
+            className={settingsLightButtonClassName}
             isDisabled={changeEmailLoader}
-            onClick={handleSubmit(onSubmit)}
+            onClick={() => {
+              void handleSubmit(onSubmit)();
+            }}
             type="light"
           >
             {changeEmailLoader ? (

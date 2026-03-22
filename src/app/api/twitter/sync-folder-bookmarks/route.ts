@@ -1,9 +1,8 @@
-import type { Json } from "@/types/database.types";
-
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { TWITTER_IMPORTS_QUEUE } from "@/utils/constants";
+import { toJson } from "@/utils/type-utils";
 
 import { SyncFolderBookmarksInputSchema, SyncFolderBookmarksOutputSchema } from "./schema";
 
@@ -26,10 +25,10 @@ export const POST = createPostApiHandlerWithAuth({
     }));
 
     // Queue via pgmq.send_batch using service role client
-    const serviceClient = await createServerServiceClient();
+    const serviceClient = createServerServiceClient();
     const pgmqSupabase = serviceClient.schema("pgmq_public");
     const { data: queueResults, error: queueError } = await pgmqSupabase.rpc("send_batch", {
-      messages: messages as unknown as Json[],
+      messages: toJson(messages),
       queue_name: TWITTER_IMPORTS_QUEUE,
       sleep_seconds: 0,
     });

@@ -1,11 +1,14 @@
+import type { FetchPublicBookmarkByIdResponse } from "./schema";
+
 import { createGetApiHandler } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { createServerServiceClient } from "@/lib/supabase/service";
 import {
   BOOKMARK_CATEGORIES_TABLE_NAME,
   CATEGORIES_TABLE_NAME,
   MAIN_TABLE_NAME,
 } from "@/utils/constants";
-import { createServiceClient } from "@/utils/supabaseClient";
+import { toDbType } from "@/utils/type-utils";
 
 import {
   FetchPublicBookmarkByIdQuerySchema,
@@ -24,9 +27,9 @@ export const GET = createGetApiHandler({
       userName,
     });
 
-    const supabase = createServiceClient();
+    const supabase = createServerServiceClient();
 
-    const { data: categoryData, error: categoryError } = (await supabase
+    const { data: categoryData, error: categoryError } = await supabase
       .from(CATEGORIES_TABLE_NAME)
       .select(
         `
@@ -38,16 +41,7 @@ export const GET = createGetApiHandler({
 			`,
       )
       .eq("category_slug", categorySlug)
-      .maybeSingle()) as {
-      data: {
-        id: number;
-        is_public: boolean;
-        user_id: {
-          user_name: null | string;
-        };
-      } | null;
-      error: unknown;
-    };
+      .maybeSingle();
 
     if (categoryError) {
       return apiError({
@@ -147,7 +141,7 @@ export const GET = createGetApiHandler({
       bookmarkId: cleanedBookmark.id,
     });
 
-    return cleanedBookmark;
+    return toDbType<FetchPublicBookmarkByIdResponse>(cleanedBookmark);
   },
   inputSchema: FetchPublicBookmarkByIdQuerySchema,
   outputSchema: FetchPublicBookmarkByIdResponseSchema,

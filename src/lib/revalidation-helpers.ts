@@ -109,7 +109,7 @@ export async function revalidatePublicCategoryPage(
           );
           return;
         } catch (error) {
-          lastError = error as Error;
+          lastError = error instanceof Error ? error : new Error(String(error));
           const isLastAttempt = attempt === maxRetries;
 
           if (isLastAttempt) {
@@ -125,7 +125,7 @@ export async function revalidatePublicCategoryPage(
             console.warn(
               `[revalidatePublicCategoryPage] Attempt ${attempt}/${maxRetries} failed, retrying in ${delayMs}ms:`,
               {
-                error: (error as Error).message,
+                error: lastError.message,
                 path,
               },
             );
@@ -190,7 +190,7 @@ export async function getCategoryDetailsForRevalidation(
       context,
     });
 
-    const supabase = await createServerServiceClient();
+    const supabase = createServerServiceClient();
 
     const { data: categoryData, error } = await supabase
       .from(CATEGORIES_TABLE_NAME)

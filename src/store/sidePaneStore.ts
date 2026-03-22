@@ -22,7 +22,7 @@ export const useSidePaneStore = create<SidePaneState>()(
 );
 
 // Cross-tab sync helper
-type StoreWithPersist = Mutate<StoreApi<SidePaneState>, [["zustand/persist", unknown]]>;
+type StoreWithPersist = Mutate<StoreApi<SidePaneState>, [["zustand/persist", SidePaneState]]>;
 
 export const withStorageDOMEvents = (store: StoreWithPersist) => {
   if (!isBrowser) {
@@ -43,4 +43,4 @@ export const withStorageDOMEvents = (store: StoreWithPersist) => {
   };
 };
 
-withStorageDOMEvents(useSidePaneStore as StoreWithPersist);
+withStorageDOMEvents(useSidePaneStore);

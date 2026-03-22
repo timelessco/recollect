@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 
 import type { UserCollection } from "@/async/ai/imageToText";
+import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { createServerServiceClient } from "@/lib/supabase/service";
@@ -8,7 +9,7 @@ import { CATEGORIES_TABLE_NAME, PROFILES, UNCATEGORIZED_CATEGORY_ID } from "@/ut
 
 export interface FetchUserCollectionsProps {
   autoAssignEnabled?: boolean;
-  supabase: SupabaseClient;
+  supabase: SupabaseClient<Database>;
   userId: string;
 }
 
@@ -35,7 +36,12 @@ export async function fetchUserCollections(
         .eq("id", userId)
         .single();
 
-      const aiFeatures = profileData?.ai_features_toggle as null | Record<string, unknown>;
+      const aiFeatures =
+        profileData?.ai_features_toggle !== null &&
+        typeof profileData?.ai_features_toggle === "object" &&
+        !Array.isArray(profileData?.ai_features_toggle)
+          ? profileData.ai_features_toggle
+          : null;
 
       if (aiFeatures?.auto_assign_collections === false) {
         return [];
@@ -49,10 +55,12 @@ export async function fetchUserCollections(
       .neq("id", UNCATEGORIZED_CATEGORY_ID);
 
     return (
-      categoriesData?.map((category) => ({
-        id: category.id,
-        name: category.category_name,
-      })) ?? []
+      categoriesData
+        ?.filter((category) => category.category_name !== null)
+        .map((category) => ({
+          id: category.id,
+          name: category.category_name ?? "",
+        })) ?? []
     );
   } catch (error) {
     console.error("[auto-assign] Failed to fetch categories:", error);
@@ -83,7 +91,7 @@ export async function autoAssignCollections(props: AutoAssignCollectionsProps): 
   }
 
   try {
-    const serviceClient = await createServerServiceClient();
+    const serviceClient = createServerServiceClient();
 
     const { error } = await serviceClient.rpc("auto_assign_collections", {
       p_bookmark_id: bookmarkId,

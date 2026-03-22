@@ -1,6 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { BookmarksPaginatedDataTypes, SingleListData } from "../../../types/apiTypes";
+import type {
+  AddBookmarkMinDataPayloadTypes,
+  BookmarksPaginatedDataTypes,
+  CategoriesData,
+  SingleListData,
+} from "../../../types/apiTypes";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
@@ -36,7 +41,12 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
   const { sortBy } = useGetSortBy();
   const { addLoadingBookmarkId, removeLoadingBookmarkId, setIsBookmarkAdding } = useLoadersStore();
 
-  const addBookmarkMinDataOptimisticMutation = useMutation({
+  const addBookmarkMinDataOptimisticMutation = useMutation<
+    unknown,
+    { previousData: BookmarksPaginatedDataTypes },
+    AddBookmarkMinDataPayloadTypes,
+    { previousData: unknown }
+  >({
     mutationFn: addBookmarkMinData,
     // If the mutation fails, use the context returned from onMutate to roll back
     onMutate: async (data) => {
@@ -56,7 +66,8 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
       // Fetch category from cache to build addedCategories
       const allCategories =
-        queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])?.data ?? [];
+        queryClient.getQueryData<{ data: CategoriesData[] }>([CATEGORIES_KEY, session?.user?.id])
+          ?.data ?? [];
 
       const categoryEntry = allCategories.find((cat) => cat.id === data?.category_id);
 
@@ -108,14 +119,14 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       // Return a context object with the snapshotted value
       return { previousData };
     },
-    onError: (context: { previousData: BookmarksPaginatedDataTypes }) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData(
         [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
         context?.previousData,
       );
     },
     // Always refetch after error or success:
-    onSettled: async (apiResponse: unknown) => {
+    onSettled: async (apiResponse) => {
       setIsBookmarkAdding(false);
       const response = apiResponse as { data: { data: SingleListData[] } };
       void queryClient.invalidateQueries({

@@ -33,7 +33,8 @@ export const useBookmarkRelation = (
     (callback: () => void) =>
       queryClient.getQueryCache().subscribe((event) => {
         // Only trigger for bookmark-related query changes
-        const eventKey = event.query.queryKey;
+        // oxlint-disable-next-line no-unsafe-assignment -- React Query QueryCacheNotifyEvent.query.queryKey is typed as any
+        const eventKey: readonly unknown[] = event.query.queryKey;
         if (
           eventKey[0] === queryKey[0] ||
           (searchQueryKey && eventKey[0] === searchQueryKey[0]) ||

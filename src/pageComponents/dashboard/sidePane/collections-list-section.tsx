@@ -162,20 +162,20 @@ function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
           autoFocus
           className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! outline-hidden! placeholder:text-plain-reverse focus-visible:ring-1! focus-visible:ring-gray-200!"
           id="add-category-input"
-          onBlur={async (event) => {
+          onBlur={(event) => {
             const inputValue = (event.target as HTMLInputElement)?.value;
             if (inputValue) {
-              await handleAddNewCategory(inputValue);
+              handleAddNewCategory(inputValue);
             }
 
             onClose();
           }}
-          onKeyUp={async (event) => {
+          onKeyUp={(event) => {
             if (event.key === "Enter") {
               const inputValue = (event.target as HTMLInputElement)?.value;
 
               if (inputValue) {
-                await handleAddNewCategory(inputValue);
+                handleAddNewCategory(inputValue);
               }
 
               onClose();

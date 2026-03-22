@@ -4,20 +4,23 @@ import { useBookmarksViewUpdate } from "../../hooks/useBookmarksViewUpdate";
 import useGetViewValue from "../../hooks/useGetViewValue";
 
 export function BookmarksViewSlider() {
-  const bookmarksColumns = useGetViewValue("moodboardColumns", [10]);
+  const bookmarksColumnsRaw = useGetViewValue("moodboardColumns", [10]);
+  const bookmarksColumns: number[] = Array.isArray(bookmarksColumnsRaw)
+    ? bookmarksColumnsRaw.filter((v): v is number => typeof v === "number")
+    : [10];
   const { setBookmarksView } = useBookmarksViewUpdate();
 
   return (
     <Slider.Root
       aria-label="moodboard-cols-slider Slider"
       className="relative flex w-full touch-none items-center py-[7px] select-none"
-      defaultValue={bookmarksColumns as number[]}
+      defaultValue={bookmarksColumns}
       key={String(bookmarksColumns)}
       max={50}
       min={10}
       onValueCommitted={(value) => {
-        const normalizedValue = Array.isArray(value) ? ([...value] as number[]) : [value as number];
-        if (normalizedValue[0] !== bookmarksColumns?.[0]) {
+        const normalizedValue = Array.isArray(value) ? [...value] : [value];
+        if (normalizedValue[0] !== bookmarksColumns[0]) {
           setBookmarksView(normalizedValue, "columns");
         }
       }}

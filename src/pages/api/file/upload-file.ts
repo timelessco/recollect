@@ -311,7 +311,7 @@ export default async function handler(
       .from(MAIN_TABLE_NAME)
       .insert([
         {
-          description: meta_data?.img_caption || "",
+          description: meta_data?.img_caption ?? "",
           meta_data,
           ogImage,
           title: fileName,

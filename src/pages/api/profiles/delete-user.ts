@@ -105,7 +105,7 @@ const storageDeleteLogic = async (
   const filesToRemove = bookmarksStorageFiles?.map((x) => x?.Key ?? "");
 
   if (!isNull(bookmarksStorageError)) {
-    response.status(500).json({ data: null, error: String(bookmarksStorageError) });
+    response.status(500).json({ data: null, error: (bookmarksStorageError as Error)?.message });
     throw new Error("ERROR: bookmarksStorageError");
   }
 
@@ -118,7 +118,7 @@ const storageDeleteLogic = async (
     if (!isNull(bookmarksStorageDeleteError)) {
       response.status(500).json({
         data: null,
-        error: String(bookmarksStorageDeleteError),
+        error: (bookmarksStorageDeleteError as Error)?.message,
       });
       throw new Error("ERROR: bookmarksStorageDeleteError");
     } else {
@@ -141,7 +141,7 @@ const storageDeleteLogic = async (
   if (!isNull(bookmarksStorageScreenshotError)) {
     response.status(500).json({
       data: null,
-      error: String(bookmarksStorageScreenshotError),
+      error: (bookmarksStorageScreenshotError as Error)?.message,
     });
     throw new Error("ERROR: bookmarksStorageScreenshotError");
   }
@@ -155,7 +155,7 @@ const storageDeleteLogic = async (
     if (!isNull(bookmarksStorageScreenshotDeleteError)) {
       response.status(500).json({
         data: null,
-        error: String(bookmarksStorageScreenshotDeleteError),
+        error: (bookmarksStorageScreenshotDeleteError as Error)?.message,
       });
       throw new Error("ERROR: bookmarksStorageScreenshotDeleteError");
     } else {
@@ -175,7 +175,7 @@ const storageDeleteLogic = async (
   const filesStorageFilesToRemove = filesStorageData?.map((x) => x?.Key ?? "");
 
   if (!isNull(filesStorageDataError)) {
-    response.status(500).json({ data: null, error: String(filesStorageDataError) });
+    response.status(500).json({ data: null, error: (filesStorageDataError as Error)?.message });
     throw new Error("ERROR: filesStorageDataError");
   }
 
@@ -186,7 +186,7 @@ const storageDeleteLogic = async (
     );
 
     if (!isNull(filesDeleteError)) {
-      response.status(500).json({ data: null, error: String(filesDeleteError) });
+      response.status(500).json({ data: null, error: (filesDeleteError as Error)?.message });
       throw new Error("ERROR: filesDeleteError");
     } else {
       console.log("deleted files", filesStorageFilesToRemove?.length);
@@ -206,7 +206,7 @@ const storageDeleteLogic = async (
   const userProfileFilesToRemove = userProfileFilesData?.map((x) => x?.Key ?? "");
 
   if (!isNull(userProfileFilesError)) {
-    response.status(500).json({ data: null, error: String(userProfileFilesError) });
+    response.status(500).json({ data: null, error: (userProfileFilesError as Error)?.message });
     throw new Error("ERROR: userProfileFilesError");
   }
 
@@ -219,7 +219,7 @@ const storageDeleteLogic = async (
     if (!isNull(userProfileFilesDeleteError)) {
       response.status(500).json({
         data: null,
-        error: String(userProfileFilesDeleteError),
+        error: (userProfileFilesDeleteError as Error)?.message,
       });
       throw new Error("ERROR: userProfileFilesDeleteError");
     } else {
@@ -237,6 +237,11 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   const userId = userData?.data?.user?.id;
   const email = userData?.data?.user?.email;
+
+  if (!userId) {
+    response.status(401).json({ data: null, error: "Unauthorized" });
+    return;
+  }
 
   // bookmark_tags delete
   const { error: bookmarkTagsError } = await supabase

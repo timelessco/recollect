@@ -44,14 +44,14 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace -- Cypress requires namespace augmentation for custom commands
   namespace Cypress {
     interface Chainable {
-      addBookmark(url: string): Chainable<JQuery<HTMLElement>>;
-      checkFistBookmarkUrl(url: string): Chainable<JQuery<HTMLElement>>;
-      checkNotFistBookmarkUrl(url: string): Chainable<JQuery<HTMLElement>>;
+      addBookmark(url: string): Chainable;
+      checkFistBookmarkUrl(url: string): Chainable;
+      checkNotFistBookmarkUrl(url: string): Chainable;
       /**
        * Custom command to select DOM element by data-cy attribute.
        * @example cy.dataCy('greeting')
        */
-      login(email: string, pw: string): Chainable<JQuery<HTMLElement>>;
+      login(email: string, pw: string): Chainable;
     }
   }
 }

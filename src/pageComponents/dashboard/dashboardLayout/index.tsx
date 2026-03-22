@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Allotment } from "allotment";
 import find from "lodash/find";
 
+import type { BookmarksCountTypes, CategoriesData } from "../../../types/apiTypes";
 import type { AllotmentHandle } from "allotment";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -56,9 +57,15 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
   const currentPath = useGetCurrentUrlPath();
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId])!;
+  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
+    CATEGORIES_KEY,
+    userId,
+  ]);
 
-  const bookmarksCountData = queryClient.getQueryData([BOOKMARKS_COUNT_KEY, userId])!;
+  const bookmarksCountData = queryClient.getQueryData<{ data: BookmarksCountTypes }>([
+    BOOKMARKS_COUNT_KEY,
+    userId,
+  ]);
 
   const optionsMenuList = optionsMenuListArray(currentPath, bookmarksCountData);
 
@@ -137,7 +144,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
       <div className="flex">
         <Drawer.Root
           modal
-          onOpenChange={(open) => setShowSidePane(open)}
+          onOpenChange={(open) => {
+            setShowSidePane(open);
+          }}
           open={showSidePane}
           swipeDirection="left"
         >

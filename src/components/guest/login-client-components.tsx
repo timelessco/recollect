@@ -29,25 +29,27 @@ export function SignInWithGoogleForm() {
   const [isPending, startTransition] = React.useTransition();
   const extendedIsPending = usePendingWithMinDuration(isPending, 500);
 
-  const handleSocialLogin = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSocialLogin = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const redirectTo = `${window.location.origin}/auth/oauth?next=${callbackURL ?? `/${EVERYTHING_URL}`}`;
 
-    startTransition(async () => {
-      try {
-        const supabase = createClient();
-        const { error } = await supabase.auth.signInWithOAuth({
-          options: { redirectTo },
-          provider: "google",
-        });
+    startTransition(() => {
+      void (async () => {
+        try {
+          const supabase = createClient();
+          const { error } = await supabase.auth.signInWithOAuth({
+            options: { redirectTo },
+            provider: "google",
+          });
 
-        if (error) {
+          if (error) {
+            handleClientError(error, "Failed to sign in with Google");
+          }
+        } catch (error) {
           handleClientError(error, "Failed to sign in with Google");
         }
-      } catch (error) {
-        handleClientError(error, "Failed to sign in with Google");
-      }
+      })();
     });
   };
 
@@ -83,25 +85,27 @@ export function SignInWithAppleForm() {
   const [isPending, startTransition] = React.useTransition();
   const extendedIsPending = usePendingWithMinDuration(isPending, 500);
 
-  const handleSocialLogin = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSocialLogin = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const redirectTo = `${window.location.origin}/auth/oauth?next=${callbackURL ?? `/${EVERYTHING_URL}`}`;
 
-    startTransition(async () => {
-      try {
-        const supabase = createClient();
-        const { error } = await supabase.auth.signInWithOAuth({
-          options: { redirectTo },
-          provider: "apple",
-        });
+    startTransition(() => {
+      void (async () => {
+        try {
+          const supabase = createClient();
+          const { error } = await supabase.auth.signInWithOAuth({
+            options: { redirectTo },
+            provider: "apple",
+          });
 
-        if (error) {
+          if (error) {
+            handleClientError(error, "Failed to sign in with Apple");
+          }
+        } catch (error) {
           handleClientError(error, "Failed to sign in with Apple");
         }
-      } catch (error) {
-        handleClientError(error, "Failed to sign in with Apple");
-      }
+      })();
     });
   };
 

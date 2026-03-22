@@ -8,11 +8,25 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { createServerClient } from "@/lib/supabase/server";
 import { getErrorMessage } from "@/utils/error-utils/error-message";
 
+const EMAIL_OTP_TYPES = new Set<string>([
+  "email",
+  "email_change",
+  "invite",
+  "magiclink",
+  "recovery",
+  "signup",
+]);
+
+function isEmailOtpType(value: string): value is EmailOtpType {
+  return EMAIL_OTP_TYPES.has(value);
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const token_hash = searchParams.get("token_hash");
-    const type = searchParams.get("type") as EmailOtpType | null;
+    const rawType = searchParams.get("type");
+    const type = rawType !== null && isEmailOtpType(rawType) ? rawType : null;
     // if "next" is in param, use it as the redirect URL
     const _next = searchParams.get("next");
     const next = _next?.startsWith("/") ? _next : "/";
