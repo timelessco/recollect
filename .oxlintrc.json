@@ -41,6 +41,9 @@
     // to functions returning Promises, but require-await then complains about
     // no await. We prefer: only add async when await is present.
     "@typescript-eslint/promise-function-async": "off",
+    // strict-boolean-expressions: off permanently — style rule, not safety.
+    // Truthiness checks on nullable types are idiomatic JS/TS.
+    "@typescript-eslint/strict-boolean-expressions": "off",
 
     // Disabled: jsPlugin auto-fix oscillates on multi-line objects/unions/query hooks
     "@tanstack/query/mutation-property-order": "off",
@@ -126,7 +129,6 @@
     "@typescript-eslint/no-unsafe-return": "off",
     "@typescript-eslint/no-unsafe-type-assertion": "off",
     "@typescript-eslint/restrict-template-expressions": "off",
-    "@typescript-eslint/strict-boolean-expressions": "off",
     "@typescript-eslint/unbound-method": "off"
   },
   "overrides": [
@@ -142,6 +144,7 @@
       "files": ["**/*.{test,spec}.{ts,tsx,js,jsx}", "**/__tests__/**/*.{ts,tsx,js,jsx}"],
       "plugins": ["vitest"],
       "rules": {
+        // describe("blockName", ...) uses the function name as title — intentional for block tests
         "vitest/prefer-describe-function-title": "off"
       }
     }
