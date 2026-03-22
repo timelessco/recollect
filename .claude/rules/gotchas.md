@@ -54,3 +54,5 @@
 - oxlint `--deny RULE` CLI flag does NOT override config-level `"off"` — to test a disabled rule, temporarily remove it from `.oxlintrc.json` and re-run
 - `oxlint-disable-next-line` must be on the line immediately before the violation — for multi-line expressions, place on the line with the violation, not the wrapping expression above
 - `typeCheck` removed from `.oxlintrc.json` — ~100 pre-existing type errors need fixing before re-enabling `typeAware: true`
+- `require-await` checks the OUTER function scope only — `await` inside nested callbacks (`startTransition(async () => { await ... })`) doesn't count. Remove `async` from the outer function, keep it on the inner callback
+- `npx oxlint <changed-files>` only checks listed files — CI runs `pnpm lint:ultracite` on ALL files. When enabling new rules, run full `pnpm lint:ultracite` locally before pushing
