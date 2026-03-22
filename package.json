@@ -51,7 +51,6 @@
     "fix": "npx turbo fix:ultracite",
     "fix:css": "stylelint --fix --cache --ignore-path .gitignore --color -f verbose '**/*.css'",
     "fix:md": "markdownlint-cli2 --fix --rules sentences-per-line",
-    "fix:spelling": "rimraf .cspell/project-words.txt && cspell --gitignore --no-progress --no-summary --words-only --unique --dot . | sort --ignore-case >> .cspell/project-words.txt",
     "fix:ultracite": "ultracite fix",
     "lint": "npx turbo lint:ultracite lint:knip lint:md lint:spelling lint:css",
     "lint:css": "stylelint --cache --ignore-path .gitignore --color -f verbose '**/*.css'",

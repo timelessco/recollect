@@ -26,7 +26,7 @@ Before any Next.js work, read the relevant doc in `node_modules/next/dist/docs/`
 ## Commands
 
 ```bash
-pnpm fix                  # Fix ALL auto-fixable issues (Ultracite + CSS + spelling + MD)
+pnpm fix                  # Fix ALL auto-fixable issues (Ultracite + CSS + MD)
 pnpm lint                 # Run ALL quality checks
 pnpm lint:knip            # Detect unused code/exports/deps
 pnpm lint:types:deno      # Deno type checks for Supabase Edge Functions

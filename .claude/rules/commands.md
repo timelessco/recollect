@@ -6,7 +6,7 @@
 2. Run quality checks:
 
 ```bash
-pnpm fix        # Auto-fix all (spelling → css → md → ultracite)
+pnpm fix        # Auto-fix all (css → md → ultracite)
 pnpm lint:knip  # Detect unused code (especially after large changes)
 ```
 
@@ -21,7 +21,7 @@ pnpm build      # Runs OpenAPI gen → next build → next-sitemap
 - **Components**: `pnpm fix` → verify ARIA → `pnpm build`
 - **Styling**: `pnpm lint:css` → `pnpm fix` → `pnpm build`
 - **Utilities**: `pnpm fix` → `pnpm lint:knip`
-- **Documentation**: `pnpm fix:md` → `pnpm fix:spelling`
+- **Documentation**: `pnpm fix:md`
 - **Dependencies**: `pnpm check:packages` → `pnpm lint:knip` → `pnpm build`
 - **Supabase migrations**: `pnpm db:types` → verify `database-generated.types.ts`
 
@@ -52,11 +52,10 @@ pnpm start            # Start production server
 #### Fix (auto-fix)
 
 ```bash
-pnpm fix              # Turbo: full fix chain (spelling → css → md → ultracite via dependsOn)
+pnpm fix              # Turbo: fix chain (css → md → ultracite via dependsOn)
 pnpm fix:ultracite    # Auto-fix linting + formatting (Oxlint + Oxfmt)
 pnpm fix:css          # Auto-fix Stylelint issues
 pnpm fix:md           # Auto-fix markdown issues
-pnpm fix:spelling     # Rebuild cspell dictionary from scratch
 ```
 
 #### Lint (check only)

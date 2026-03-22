@@ -2,7 +2,7 @@
 
 - `middleware.ts` is named `proxy.ts` — exports `proxy` function, not `middleware`
 - Dev server is usually running in another terminal — check `lsof -iTCP:3000` before starting `pnpm dev`
-- `pnpm fix` runs the full fix chain via Turbo dependency graph (`fix:spelling → fix:css → fix:md → fix:ultracite`)
+- `pnpm fix` runs the full fix chain via Turbo dependency graph (`fix:css → fix:md → fix:ultracite`)
 - `build:ci` skips env validation, OpenAPI gen, and sitemap — use `pnpm build` for local verification
 - `typescript.ignoreBuildErrors: true` in next.config — TS errors do NOT fail production builds
 - `reactStrictMode` is disabled (commented out)
@@ -13,7 +13,7 @@
 - Sentry tunnel: events proxied through `/skynet` to bypass ad-blockers
 - `axios` is in dependencies but the rule is `fetch` only — legacy, do not use for new code
 - Node engine: `^22.14.0`
-- cspell dictionary at `.cspell/project-words.txt` — `fix:spelling` wipes and rebuilds from scratch
+- cspell words are inline in `cspell.json` — add words manually only when CI flags a legitimate term
 - Commit body lines must be under 100 characters (`commitlint` enforces `body-max-line-length`)
 - `profiles.category_order` updates: use batch concatenation (`|| v_new_category_ids`), NOT read-modify-write loops — the Edge Function processes queue messages in parallel (`Promise.allSettled`), and a for-loop that SELECTs the full array into a variable then UPDATEs will cause lost writes. See `20260209` migration for the correct pattern.
 - `src/pages/[category_id].tsx` catches ALL single-segment paths — new App Router pages at `/foo` will 404 in dev because Pages Router dynamic routes take precedence
@@ -46,7 +46,7 @@
 - `docs/API_CHANGELOG.md` is auto-appended by CI on each push to `dev`, posted as PR comment during release, and cleared during backmerge
 - `.ncurc.cjs` pins packages that can't be upgraded (mirrors `.github/renovate.json` blocks) — keep both in sync
 - GitHub Actions use pinned commit SHAs with version comments — use `gh api repos/{owner}/{repo}/git/ref/tags/{tag}` to get SHAs when upgrading
-- CI cspell may flag words the local `fix:spelling` misses — hyphen-split words (e.g. "app-svgs" → "svgs") may need manual dictionary additions
+- CI cspell may flag unknown words — hyphen-split words (e.g. "app-svgs" → "svgs") may need manual additions to `cspell.json` `words` array
 - `lint-staged` glob must be `*.{js,jsx,ts,tsx,cjs,mjs,json,jsonc}` not `*` — ultracite crashes on non-JS files like `.txt`
 - `oxlint-disable-next-line` doesn't work for JSX props on different lines — use block-level `/* oxlint-disable rule */` instead
 - Comment directive split: native oxlint rules use `oxlint-disable`, jsPlugin rules (`@tanstack/query/*`, `regexp/*`, `perfectionist/*`, `react-x/*`) keep `eslint-disable`

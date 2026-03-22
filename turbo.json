@@ -40,9 +40,8 @@
       "inputs": ["**/*.css"],
       "outputs": [".stylelintcache"]
     },
-    "fix:spelling": {},
     "fix:ultracite": {
-      "dependsOn": ["fix:md", "fix:css", "fix:spelling"]
+      "dependsOn": ["fix:md", "fix:css"]
     }
   }
 }
