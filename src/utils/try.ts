@@ -1,3 +1,5 @@
+/* oxlint-disable max-classes-per-file -- Res and Try classes are intentionally co-located */
+
 /**
  * Primitive result tuple which contains a value.
  */
@@ -154,6 +156,7 @@ export class Res<T> extends Array {
    * ```
    * @returns {typeof Try.catch} The Try.catch method for chaining
    */
+  // oxlint-disable-next-line eslint/class-methods-use-this -- intentional: chaining API returns static method
   public get or() {
     return Try.catch;
   }
@@ -207,7 +210,7 @@ export class Res<T> extends Array {
  * @see https://github.com/asleepace/try
  */
 
-// oxlint-disable-next-line @typescript-eslint/no-extraneous-class
+// oxlint-disable-next-line @typescript-eslint/no-extraneous-class, unicorn/no-static-only-class
 export class Try {
   /**
    * Simple error handling utility which will invoke the provided function and

@@ -19,6 +19,32 @@ interface ImportBookmarksProps {
   onNavigate: (page: SettingsPage) => void;
 }
 
+const parseCSV = async (file: File) => {
+  const Papa = await import("papaparse");
+
+  // eslint-disable-next-line promise/avoid-new -- wrapping callback-based Papa.parse API
+  return new Promise<Papa.ParseResult<Record<string, string>>>((resolve, reject) => {
+    Papa.parse(file, {
+      complete: (results) => {
+        if (results.errors.length === 0) {
+          resolve(results as Papa.ParseResult<Record<string, string>>);
+        } else {
+          reject(
+            new Error(
+              `CSV parsing errors: ${results.errors.map((error) => error.message).join(", ")}`,
+            ),
+          );
+        }
+      },
+      error: (error) => {
+        reject(error);
+      },
+      header: true,
+      skipEmptyLines: true,
+    });
+  });
+};
+
 export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [bookmarkCount, setBookmarkCount] = useState<null | number>(null);
@@ -28,31 +54,6 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
 
   const { importBookmarksMutation } = useImportBookmarksMutation();
   const { isPending, isSuccess } = importBookmarksMutation;
-
-  const parseCSV = async (file: File) => {
-    const Papa = await import("papaparse");
-
-    return new Promise<Papa.ParseResult<Record<string, string>>>((resolve, reject) => {
-      Papa.parse(file, {
-        complete: (results) => {
-          if (results.errors.length === 0) {
-            resolve(results as Papa.ParseResult<Record<string, string>>);
-          } else {
-            reject(
-              new Error(
-                `CSV parsing errors: ${results.errors.map((error) => error.message).join(", ")}`,
-              ),
-            );
-          }
-        },
-        error: (error) => {
-          reject(error);
-        },
-        header: true,
-        skipEmptyLines: true,
-      });
-    });
-  };
 
   const handleFile = async (fileToProcess: File) => {
     setSelectedFile(null);

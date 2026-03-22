@@ -40,9 +40,9 @@ export default function useUpdateCategoryOrderOptimisticMutation() {
                   ...item,
                   category_order: newOrder,
                 };
-              } else {
-                return item;
               }
+
+              return item;
             }),
           }) as { data: ProfilesTableTypes[] },
       );

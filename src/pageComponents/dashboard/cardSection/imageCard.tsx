@@ -97,27 +97,23 @@ const ImgLogicComponent = ({
       blurSource = image.src;
     }
 
-    return (
-      <>
-        {img ? (
-          <Image
-            alt="bookmark-img"
-            blurDataURL={blurSource || defaultBlur}
-            className={imgClassName}
-            height={_height}
-            key={img}
-            onError={() => {
-              setErrorImg(img);
-            }}
-            placeholder="blur"
-            sizes={sizesLogic}
-            src={`${img}`}
-            width={_width}
-          />
-        ) : (
-          <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
-        )}
-      </>
+    return img ? (
+      <Image
+        alt="bookmark-img"
+        blurDataURL={blurSource || defaultBlur}
+        className={imgClassName}
+        height={_height}
+        key={img}
+        onError={() => {
+          setErrorImg(img);
+        }}
+        placeholder="blur"
+        sizes={sizesLogic}
+        src={`${img}`}
+        width={_width}
+      />
+    ) : (
+      <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
     );
   }
 

@@ -60,13 +60,10 @@ type NormalizedHeaders = Record<string, string | string[]>;
  */
 const checkIframeHeaders = (headers: AxiosResponseHeaders | RawAxiosResponseHeaders): boolean => {
   // Normalize header names to lowercase for consistent access
-  const normalizedHeaders: NormalizedHeaders = Object?.keys(headers)?.reduce<NormalizedHeaders>(
-    (accumulator, key) => {
-      accumulator[key?.toLowerCase()] = headers?.[key] as string | string[];
-      return accumulator;
-    },
-    {},
-  );
+  const normalizedHeaders: NormalizedHeaders = {};
+  for (const key of Object.keys(headers)) {
+    normalizedHeaders[key?.toLowerCase()] = headers?.[key] as string | string[];
+  }
 
   // --- X-Frame-Options Check ---
   const xFrameOptions = normalizedHeaders?.["x-frame-options"];

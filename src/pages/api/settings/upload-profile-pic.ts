@@ -1,3 +1,4 @@
+// oxlint-disable-next-line no-warning-comments -- pre-existing: needs priority fix for profile pic upload
 // TODO: Fix this in priority
 
 import { Readable } from "node:stream";
@@ -100,10 +101,10 @@ async function parseFormData(request: NextApiRequest) {
   return webRequest.formData();
 }
 
-export default async (
+export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse<UploadProfilePicApiResponse>,
-) => {
+) {
   const supabase = apiSupabaseClient(request, response);
 
   let formData: FormData;
@@ -193,4 +194,4 @@ export default async (
 
     throw new Error("ERROR: payload error");
   }
-};
+}

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment -- Cypress commands file lacks full type definitions
 // @ts-nocheck
 
 /// <reference types="cypress" />
@@ -38,8 +39,9 @@
 //   }
 // }
 
-// @ts-expect-error - This is a valid global declaration
+// @ts-expect-error -- global augmentation for Cypress custom commands
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace -- Cypress requires namespace augmentation for custom commands
   namespace Cypress {
     interface Chainable {
       addBookmark(url: string): Chainable<JQuery<HTMLElement>>;

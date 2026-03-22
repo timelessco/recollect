@@ -30,7 +30,6 @@ import {
   VIDEOS_URL,
 } from "./constants";
 
-// TODO: check if this is needed (for code cleanup)
 const object = [
   {
     name: "shield-dollar",
@@ -3565,7 +3564,7 @@ const object = [
   },
 ];
 export const iconOptions = object.map((index) => ({
-  icon: (iconColor: string, size: string = "16", className: string = "") => (
+  icon: (iconColor: string, size = "16", className = "") => (
     <svg className={className} fill={iconColor} height={size} viewBox="0 0 18 18" width={size}>
       <use href={`/sprite.svg#${index.name}`} />
     </svg>

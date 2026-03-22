@@ -25,7 +25,7 @@ export function SignInWithGoogleForm() {
       return next ?? undefined;
     }
 
-    return;
+    return undefined;
   });
 
   const [isPending, startTransition] = React.useTransition();
@@ -81,7 +81,7 @@ export function SignInWithAppleForm() {
       return next ?? undefined;
     }
 
-    return;
+    return undefined;
   });
 
   const [isPending, startTransition] = React.useTransition();

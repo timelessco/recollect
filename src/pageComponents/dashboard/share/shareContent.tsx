@@ -65,14 +65,10 @@ const AccessUserInfo = (props: { isLoggedinUserTheOwner: boolean; item: CollabDa
       );
     }
 
-    return (
-      <>
-        {item.isOwner ? (
-          <p className={rightTextStyles}>Owner</p>
-        ) : (
-          <AccessRoleSelect isLoggedinUserTheOwner={isLoggedinUserTheOwner} item={item} />
-        )}
-      </>
+    return item.isOwner ? (
+      <p className={rightTextStyles}>Owner</p>
+    ) : (
+      <AccessRoleSelect isLoggedinUserTheOwner={isLoggedinUserTheOwner} item={item} />
     );
   };
 

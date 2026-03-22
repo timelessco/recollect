@@ -26,9 +26,9 @@ const SidePaneOptionsMenu = () => {
       item?.name === menuListItemName.discover
     ) {
       return item;
-    } else {
-      return null;
     }
+
+    return null;
   });
 
   return (

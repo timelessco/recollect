@@ -50,6 +50,7 @@ export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
 
     await page?.render({ canvasContext: context, viewport })?.promise;
 
+    // eslint-disable-next-line promise/avoid-new -- wrapping callback-based canvas.toBlob API
     return await new Promise((resolve) => {
       canvas?.toBlob((blob) => {
         resolve(blob);

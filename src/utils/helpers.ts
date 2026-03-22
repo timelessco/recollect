@@ -15,6 +15,7 @@ import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 
 import { upload, uploadVideo } from "@/lib/storage/media-upload";
 
+// eslint-disable-next-line import/no-cycle -- circular dep between helpers and supabaseCrudHelpers needs structural refactor
 import { getMediaType } from "../async/supabaseCrudHelpers";
 import {
   AUDIO_MIME_PREFIX,
@@ -83,7 +84,7 @@ export const getCategoryIdFromSlug = (
     return find(allCategories, (item) => item?.category_slug === slug)?.id;
   }
 
-  return;
+  return undefined;
 };
 
 export const urlInputErrorText = (errors: FieldErrorsImpl<DeepRequired<UrlInput>>) => {
@@ -201,17 +202,18 @@ export const checker = (array: unknown[], target: unknown[]) =>
   target.every((value: unknown) => array.includes(value));
 
 // gets thumbnail from image, it gets it from the first frame
-export const generateVideoThumbnail = async (file: File) =>
-  new Promise((resolve) => {
-    const canvas = document.createElement("canvas");
-    const video = document.createElement("video");
+export const generateVideoThumbnail = (file: File) => {
+  const canvas = document.createElement("canvas");
+  const video = document.createElement("video");
 
-    // this is important
-    video.autoplay = true;
-    video.muted = true;
-    video.src = URL.createObjectURL(file);
+  // this is important
+  video.autoplay = true;
+  video.muted = true;
+  video.src = URL.createObjectURL(file);
 
-    video.onloadeddata = () => {
+  // eslint-disable-next-line promise/avoid-new -- wrapping callback-based DOM event API
+  return new Promise((resolve) => {
+    video.addEventListener("loadeddata", () => {
       const element = canvas.getContext("2d");
 
       canvas.width = video.videoWidth;
@@ -220,8 +222,9 @@ export const generateVideoThumbnail = async (file: File) =>
       element?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
       video.pause();
       resolve(canvas.toDataURL("image/png"));
-    };
+    });
   });
+};
 
 export const isBookmarkVideo = (type: string): boolean => type?.startsWith(VIDEO_MIME_PREFIX);
 
@@ -233,10 +236,7 @@ export const isBookmarkDocument = (type: string): boolean =>
 export const isBookmarkImage = (type: string): boolean => type?.startsWith(IMAGE_MIME_PREFIX);
 
 // used in apis to tell if user is in a collection or not
-export const isUserInACategoryInApi = (
-  category_id: string,
-  uncategorizedCheck: boolean = true,
-): boolean => {
+export const isUserInACategoryInApi = (category_id: string, uncategorizedCheck = true): boolean => {
   const condition =
     category_id !== null &&
     category_id !== "null" &&
@@ -295,13 +295,17 @@ export const fileTypeIdentifier = (type: string) => {
   return null;
 };
 
+const gcd = (...array: number[]): number => {
+  const _gcd = (x: number, y: number): number => (!y ? x : gcd(y, x % y));
+  let result = array[0];
+  for (let i = 1; i < array.length; i++) {
+    result = _gcd(result, array[i]);
+  }
+  return result;
+};
+
 // gets aspect ratio based on width and height
 export const aspectRatio = (width: number, height: number): { height: number; width: number } => {
-  const gcd = (...array: number[]): number => {
-    const _gcd = (x: number, y: number) => (!y ? x : gcd(y, x % y));
-    return [...array].reduce((a, b) => _gcd(a, b));
-  };
-
   const gcdResult = gcd(width, height);
 
   return {
@@ -323,7 +327,8 @@ export const uploadFileLimit = (size: number): boolean =>
 
 // deletes a browser cookie
 export const delete_cookie = (name: string, document: Document) => {
-  document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+  // oxlint-disable-next-line unicorn/no-document-cookie -- Cookie Store API is async, would change function signature
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
 };
 
 // this function parses cookies that is to be sent in api calls
@@ -357,7 +362,7 @@ export const getAxiosConfigWithAuth = (
 /**
  * Tells if the year is the current year or not
  * @param {string} insertedAt the time to compare
- * @returns {boolean}
+ * @returns {boolean} true if the year of insertedAt matches the current year
  */
 export const isCurrentYear = (insertedAt: string) => {
   const date = new Date(insertedAt);

@@ -330,7 +330,7 @@ export interface UpdateUsernameApiPayload {
   username: ProfilesTableTypes["user_name"];
 }
 
-export interface DeleteUserApiPayload {}
+export type DeleteUserApiPayload = Record<string, never>;
 
 export interface RemoveUserProfilePicPayload {
   id: string;

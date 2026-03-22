@@ -148,10 +148,10 @@ const videoLogic = async (
   return { matchedCollectionIds, meta_data, ogImage };
 };
 
-export default async (
+export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse<UploadFileApiResponse>,
-) => {
+) {
   try {
     const supabase = apiSupabaseClient(request, response);
 
@@ -431,4 +431,4 @@ export default async (
       success: false,
     });
   }
-};
+}

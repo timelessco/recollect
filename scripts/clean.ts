@@ -153,4 +153,8 @@ switch (value) {
 
     break;
   }
+
+  default: {
+    break;
+  }
 }

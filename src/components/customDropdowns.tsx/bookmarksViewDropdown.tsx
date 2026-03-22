@@ -15,15 +15,15 @@ interface BookmarksViewDropdownProps {
   renderOnlyButton?: boolean;
 }
 
+const renderDropdownHeader = (text: string) => (
+  <div className="px-2 py-[6px] text-xs leading-[14px] font-450 text-gray-600">{text}</div>
+);
+
 // This renders the view options
 export const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
   const { isDropdown = true, renderOnlyButton = false } = props;
 
   const bookmarksViewValue = useGetViewValue("bookmarksView", "");
-
-  const renderDropdownHeader = (text: string) => (
-    <div className="px-2 py-[6px] text-xs leading-[14px] font-450 text-gray-600">{text}</div>
-  );
 
   const dropdownContent = (
     <>

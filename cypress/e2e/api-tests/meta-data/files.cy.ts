@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment -- Cypress test file lacks full type definitions
 // @ts-nocheck
 
 describe("Meta data testing", () => {
@@ -46,6 +47,7 @@ describe("Meta data testing", () => {
         {},
       ).as("fetchRequest");
 
+      // eslint-disable-next-line promise/no-nesting -- Cypress idiomatic chaining within .then()
       cy.get("@fetchRequest").then((data) => {
         cy.wait(1000);
 
@@ -63,6 +65,7 @@ describe("Meta data testing", () => {
         },
       }).as("deleteRequest");
 
+      // eslint-disable-next-line promise/no-nesting -- Cypress idiomatic chaining within .then()
       cy.get("@deleteRequest").then((data) => {
         cy.wait(1000);
 

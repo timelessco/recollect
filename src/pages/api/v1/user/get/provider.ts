@@ -27,7 +27,7 @@ const getBodySchema = () =>
  * This api does is used outside auth flow
  * @param {NextApiRequest<RequestType>} request
  * @param {NextApiResponse<ResponseType>} response
- * @returns {ResponseType}
+ * @returns {ResponseType} The user's auth provider or error response
  */
 export default async function handler(
   request: NextApiRequest<RequestType>,

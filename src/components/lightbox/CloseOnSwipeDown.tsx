@@ -140,7 +140,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
           if (isDraggingRef.current) {
             cancelAnimationFrame(rafRef.current);
             reset(element);
-            getSlideWrapper(element)?.removeAttribute("data-pulling");
+            delete getSlideWrapper(element)?.dataset.pulling;
             isDraggingRef.current = false;
           }
 
@@ -148,7 +148,10 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
         }
 
         if (!isDraggingRef.current) {
-          getSlideWrapper(element)?.setAttribute("data-pulling", "");
+          const wrapper = getSlideWrapper(element);
+          if (wrapper) {
+            wrapper.dataset.pulling = "";
+          }
         }
 
         isDraggingRef.current = true;
@@ -191,7 +194,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
       const element = event.currentTarget as HTMLElement;
       cancelAnimationFrame(rafRef.current);
       isDraggingRef.current = false;
-      getSlideWrapper(element)?.removeAttribute("data-pulling");
+      delete getSlideWrapper(element)?.dataset.pulling;
 
       // Check velocity: close on quick downward flick even if distance < THRESHOLD
       const sample = velocitySampleRef.current;

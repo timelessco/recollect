@@ -21,8 +21,7 @@ export const useModalStore = create<ModalStoreState>((set) => ({
 export const useLoadersStore = create<LoadersStoreState>((set) => ({
   addLoadingBookmarkId: (id: number) => {
     set((state) => {
-      const newSet = new Set(state.loadingBookmarkIds);
-      newSet.add(id);
+      const newSet = new Set([...state.loadingBookmarkIds, id]);
       return { loadingBookmarkIds: newSet };
     });
   },

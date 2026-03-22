@@ -159,6 +159,10 @@ function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProp
 
       break;
     }
+
+    default: {
+      break;
+    }
   }
 
   return (

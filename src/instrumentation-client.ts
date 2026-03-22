@@ -27,4 +27,5 @@ Sentry.init({
 
 // This export will instrument router navigations, and is only relevant if you enable tracing.
 // `captureRouterTransitionStart` is available from SDK version 9.12.0 onwards
+// eslint-disable-next-line import/namespace -- false positive: export exists in @sentry/nextjs types but oxlint can't resolve the re-export
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

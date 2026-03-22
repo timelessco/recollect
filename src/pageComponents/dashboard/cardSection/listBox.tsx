@@ -47,6 +47,21 @@ type ListBoxDropTypes = ListProps<object> & {
   onItemDrop?: (event: any) => void;
 };
 
+// Helper function to get scroll element
+const getScrollElement = () => {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const element = document.querySelector("#scrollableDiv");
+
+  if (!element) {
+    return document.documentElement;
+  }
+
+  return element as HTMLElement;
+};
+
 const ListBox = (props: ListBoxDropTypes) => {
   const {
     bookmarksColumns,
@@ -76,21 +91,6 @@ const ListBox = (props: ListBoxDropTypes) => {
 
   // this ref is for react-aria listbox
   const ariaRef = useRef<HTMLUListElement | null>(null);
-
-  // Helper function to get scroll element
-  const getScrollElement = () => {
-    if (typeof document === "undefined") {
-      return null;
-    }
-
-    const element = document.querySelector("#scrollableDiv");
-
-    if (!element) {
-      return document.documentElement;
-    }
-
-    return element as HTMLElement;
-  };
 
   // ---- Virtualizer Setup ----
   const rowVirtualizer = useVirtualizer({

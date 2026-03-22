@@ -105,7 +105,7 @@ const Input = ({
             <ExclamationCircleIcon aria-hidden="true" className="h-5 w-5 text-red-500" />
           </div>
         )}
-        {rendedRightSideElement && rendedRightSideElement}
+        {rendedRightSideElement}
       </div>
       {showError && isError && (
         <p className={errorClass} id="email-error">

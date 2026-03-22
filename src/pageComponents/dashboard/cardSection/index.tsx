@@ -61,6 +61,12 @@ export interface CardSectionProps {
   onMoveOutOfTrashClick?: (post: SingleListData) => void;
 }
 
+const renderStatusMessage = (message: string) => (
+  <div className="flex w-full items-center justify-center text-center">
+    <p className="text-lg font-medium text-gray-600">{message}</p>
+  </div>
+);
+
 const CardSection = ({
   categoryViewsFromProps = undefined,
   flattendPaginationBookmarkData = [],
@@ -210,12 +216,6 @@ const CardSection = ({
         </div>
       );
     }
-
-    const renderStatusMessage = (message: string) => (
-      <div className="flex w-full items-center justify-center text-center">
-        <p className="text-lg font-medium text-gray-600">{message}</p>
-      </div>
-    );
 
     // Only show "No results found" if we have search text, no results, and we're not loading anything
     if (

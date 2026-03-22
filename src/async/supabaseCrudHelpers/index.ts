@@ -77,6 +77,7 @@ import {
   UPLOAD_PROFILE_PIC_API,
   GEMINI_MODEL,
 } from "../../utils/constants";
+// eslint-disable-next-line import/no-cycle -- circular dep between helpers and supabaseCrudHelpers needs structural refactor
 import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
 
 // bookmark

@@ -11,10 +11,7 @@ import { useTimeoutEffect } from "@react-hookz/web";
  * @param minDurationMs - Minimum duration in milliseconds (default: 200ms)
  * @returns Extended isPending that stays true for minimum duration
  */
-export function usePendingWithMinDuration(
-  actualIsPending: boolean,
-  minDurationMs: number = 300,
-): boolean {
+export function usePendingWithMinDuration(actualIsPending: boolean, minDurationMs = 300): boolean {
   const [isExtended, setIsExtended] = React.useState(false);
   const previousIsPendingRef = React.useRef(actualIsPending);
 

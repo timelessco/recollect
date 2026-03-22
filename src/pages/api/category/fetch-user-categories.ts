@@ -28,7 +28,7 @@ interface Data {
 }
 
 export default async function handler(
-  request: NextApiRequest<{}>,
+  request: NextApiRequest<Record<string, unknown>>,
   response: NextApiResponse<Data>,
 ) {
   try {
@@ -185,21 +185,18 @@ export default async function handler(
 
     // add colaborators data in each category
     const finalDataWithCollab = userCategoriesDataWithCollabCategoriesData?.map((item) => {
-      let collabData = [] as CollabDataInCategory[];
+      const collabData: CollabDataInCategory[] = [];
       if (sharedCategoryData) {
         for (const catItem of sharedCategoryData) {
           if (catItem?.category_id === item?.id) {
-            collabData = [
-              ...collabData,
-              {
-                edit_access: catItem?.edit_access,
-                is_accept_pending: catItem?.is_accept_pending,
-                isOwner: false,
-                profile_pic: null,
-                share_id: catItem?.id,
-                userEmail: catItem?.email,
-              },
-            ];
+            collabData.push({
+              edit_access: catItem?.edit_access,
+              is_accept_pending: catItem?.is_accept_pending,
+              isOwner: false,
+              profile_pic: null,
+              share_id: catItem?.id,
+              userEmail: catItem?.email,
+            });
           }
         }
       }
@@ -224,6 +221,7 @@ export default async function handler(
       };
     });
 
+    // oxlint-disable-next-line no-warning-comments -- pre-existing: move filter logic to supabase query
     // TODO : figure out how to do this in supabase , and change this to next api
     const finalPublicFilteredData = finalDataWithCollab?.filter((item) => {
       const userCollabData = find(

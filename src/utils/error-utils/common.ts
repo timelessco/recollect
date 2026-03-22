@@ -1,3 +1,5 @@
+/* oxlint-disable max-classes-per-file -- error classes are intentionally grouped in one file */
+
 export const HttpStatus = {
   // 2xx Success
   ACCEPTED: 202,

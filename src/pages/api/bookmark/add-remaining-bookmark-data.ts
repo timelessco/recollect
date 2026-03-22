@@ -258,7 +258,8 @@ export default async function handler(
       // Determine if the image being analyzed is an OG image or a screenshot
       // isOgImagePreferred sites always use OG image; otherwise check if screenshot exists
       const isOgImage =
-        currentData?.meta_data?.isOgImagePreferred ?? false ?? !currentData?.meta_data?.screenshot;
+        (currentData?.meta_data?.isOgImagePreferred ?? false) ||
+        !currentData?.meta_data?.screenshot;
       const imageToTextResult = await imageToText(
         currentData?.meta_data?.isOgImagePreferred
           ? ogImageMetaDataGeneration

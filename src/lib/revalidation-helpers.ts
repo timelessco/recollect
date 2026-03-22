@@ -129,6 +129,7 @@ export async function revalidatePublicCategoryPage(
                 path,
               },
             );
+            // eslint-disable-next-line promise/avoid-new -- wrapping setTimeout callback API
             await new Promise<void>((resolve) => {
               setTimeout(() => {
                 resolve();

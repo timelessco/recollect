@@ -120,7 +120,7 @@ const videoLogic = async (
   return { meta_data, ogImage };
 };
 
-export default async (
+export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse<{
     data?:
@@ -131,7 +131,7 @@ export default async (
     error: null | string;
     success: boolean;
   }>,
-) => {
+) {
   const supabase = apiSupabaseClient(request, response);
 
   const data = request.body as {
@@ -283,4 +283,4 @@ export default async (
       success: false,
     });
   }
-};
+}

@@ -47,15 +47,15 @@ export default function useGetSortBy() {
       if (isUserTheCategoryOwner) {
         // if user is the category owner then get value from category table
         return currentCategory?.category_views?.sortBy;
-      } else {
-        // if user is not the category owner then get value from the shared category table
-        const sharedCategoryUserData = find(
-          sharedCategoriesData?.data,
-          (item) => item?.category_id === categoryId && item?.email === session?.user?.email,
-        );
-
-        return sharedCategoryUserData?.category_views?.sortBy;
       }
+
+      // if user is not the category owner then get value from the shared category table
+      const sharedCategoryUserData = find(
+        sharedCategoriesData?.data,
+        (item) => item?.category_id === categoryId && item?.email === session?.user?.email,
+      );
+
+      return sharedCategoryUserData?.category_views?.sortBy;
     }
 
     if (!isEmpty(userProfilesData?.data)) {

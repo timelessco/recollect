@@ -92,8 +92,6 @@ export const BookmarkCards = () => {
         window.removeEventListener("paste", listener);
       };
     }
-
-    return;
   }, [CATEGORY_ID, addBookmarkMinDataOptimisticMutation, fileUploadOptimisticMutation]);
 
   if (!session) {

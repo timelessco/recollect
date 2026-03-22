@@ -108,37 +108,39 @@ const CollectionsList = () => {
         find(currentCategory?.collabData, (item) => item?.userEmail === session?.user?.email)
           ?.edit_access === true || currentCategory?.user_id?.id === session?.user?.id;
 
-      // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-      await event?.items?.forEach(async (item: any) => {
-        const bookmarkId = (await item.getText("text/plain")) as string;
+      await Promise.all(
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- drag event items lack typed API
+        ((event?.items ?? []) as any[]).map(async (item: any) => {
+          const bookmarkId = (await item.getText("text/plain")) as string;
 
-        const foundBookmark = find(
-          mergedBookmarkData,
-          (bookmarkItem) => Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
-        );
+          const foundBookmark = find(
+            mergedBookmarkData,
+            (bookmarkItem) => Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
+          );
 
-        // Ignore drops that aren't bookmarks (e.g., collections dragged between sidebar lists)
-        if (!foundBookmark) {
-          return;
-        }
-
-        // Handle both nested object (from regular fetch) and plain string (from search)
-        const bookmarkCreatedUserId = foundBookmark?.user_id?.id ?? foundBookmark?.user_id;
-        if (bookmarkCreatedUserId === session?.user?.id) {
-          if (!updateAccessCondition) {
-            // if update access is not there then user cannot drag and drop anything into the collection
-            errorToast("Cannot upload in other owners collection");
+          // Ignore drops that aren't bookmarks (e.g., collections dragged between sidebar lists)
+          if (!foundBookmark) {
             return;
           }
 
-          addCategoryToBookmarkOptimisticMutation.mutate({
-            bookmark_id: Number.parseInt(bookmarkId, 10),
-            category_id: categoryId,
-          });
-        } else {
-          errorToast("You cannot move collaborators uploads");
-        }
-      });
+          // Handle both nested object (from regular fetch) and plain string (from search)
+          const bookmarkCreatedUserId = foundBookmark?.user_id?.id ?? foundBookmark?.user_id;
+          if (bookmarkCreatedUserId === session?.user?.id) {
+            if (!updateAccessCondition) {
+              // if update access is not there then user cannot drag and drop anything into the collection
+              errorToast("Cannot upload in other owners collection");
+              return;
+            }
+
+            addCategoryToBookmarkOptimisticMutation.mutate({
+              bookmark_id: Number.parseInt(bookmarkId, 10),
+              category_id: categoryId,
+            });
+          } else {
+            errorToast("You cannot move collaborators uploads");
+          }
+        }),
+      );
     }
   };
 
@@ -164,7 +166,7 @@ const CollectionsList = () => {
       }))
     : [];
   const sortedList = () => {
-    let array: CollectionItemTypes[] = [];
+    const array: CollectionItemTypes[] = [];
     if (!isEmpty(userProfileData?.data)) {
       const apiCategoryOrder = userProfileData?.data?.[0].category_order;
 
@@ -174,22 +176,19 @@ const CollectionsList = () => {
             const data = find(collectionsList, (dataItem) => dataItem?.id === item);
 
             if (data) {
-              array = [...array, data];
+              array.push(data);
             }
           }
         }
 
-        let categoriesNotThereInApiCategoryOrder: CollectionItemTypes[] = [];
+        const categoriesNotThereInApiCategoryOrder: CollectionItemTypes[] = [];
 
         if (collectionsList) {
           for (const item of collectionsList) {
             const data = find(apiCategoryOrder, (dataItem) => dataItem === item?.id);
 
             if (!data) {
-              categoriesNotThereInApiCategoryOrder = [
-                ...categoriesNotThereInApiCategoryOrder,
-                item,
-              ];
+              categoriesNotThereInApiCategoryOrder.push(item);
             }
           }
         }

@@ -19,7 +19,7 @@ const SidePaneUserDropdown = () => {
 
   const handleSignOut = async () => {
     await signOut(supabase);
-    // @ts-expect-error
+    // @ts-expect-error -- clearing session on sign-out with empty object
     setSession({});
     void router.push(`/${LOGIN_URL}`);
   };

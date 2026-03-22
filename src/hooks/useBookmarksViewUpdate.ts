@@ -89,7 +89,7 @@ export function useBookmarksViewUpdate() {
             return "bookmarksView";
           }
           default: {
-            return;
+            break;
           }
         }
       })();
