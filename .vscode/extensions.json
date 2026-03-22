@@ -2,8 +2,6 @@
   "recommendations": [
     // Linters
     "oxc.oxc-vscode",
-    "DavidAnson.vscode-markdownlint",
-    "streetsidesoftware.code-spell-checker",
     "stylelint.vscode-stylelint",
 
     // Frontend

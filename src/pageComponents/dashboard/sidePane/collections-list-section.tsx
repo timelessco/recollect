@@ -117,7 +117,7 @@ function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
   const { userProfileData } = useFetchUserProfile();
   const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
 
-  const handleAddNewCategory = async (newCategoryName: string) => {
+  const handleAddNewCategory = (newCategoryName: string) => {
     const result = tagCategoryNameSchema.safeParse(newCategoryName);
 
     if (!result.success) {

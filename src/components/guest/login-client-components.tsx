@@ -29,7 +29,7 @@ export function SignInWithGoogleForm() {
   const [isPending, startTransition] = React.useTransition();
   const extendedIsPending = usePendingWithMinDuration(isPending, 500);
 
-  const handleSocialLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSocialLogin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const redirectTo = `${window.location.origin}/auth/oauth?next=${callbackURL ?? `/${EVERYTHING_URL}`}`;
@@ -83,7 +83,7 @@ export function SignInWithAppleForm() {
   const [isPending, startTransition] = React.useTransition();
   const extendedIsPending = usePendingWithMinDuration(isPending, 500);
 
-  const handleSocialLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSocialLogin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const redirectTo = `${window.location.origin}/auth/oauth?next=${callbackURL ?? `/${EVERYTHING_URL}`}`;

@@ -26,7 +26,7 @@ export function EmailToOtpForm() {
   const extendedIsPending = usePendingWithMinDuration(isPending);
   const [errors, setErrors] = React.useState<Record<string, string[]>>({});
 
-  const handleFormSubmit = async (formValues: Form.Values) => {
+  const handleFormSubmit = (formValues: Form.Values) => {
     const result = emailSchema.safeParse(formValues);
 
     if (!result.success) {
