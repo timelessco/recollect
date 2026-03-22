@@ -11,7 +11,7 @@ export default function useGetUserProfilePic(email: string) {
     data: null | UserProfilePicTypes[];
     error: Error;
   }>({
-    queryFn: async () => getUserProfilePic({ email }),
+    queryFn: () => getUserProfilePic({ email }),
     queryKey: [USER_PROFILE_PIC, email],
   });
 

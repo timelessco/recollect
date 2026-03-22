@@ -28,7 +28,7 @@ export function useTogglePreferredOgDomainOptimisticMutation() {
     typeof queryKey,
     undefined | UserProfileCache
   >({
-    mutationFn: async (payload) =>
+    mutationFn: (payload) =>
       postApi<TogglePreferredOgDomainResponse>(`${NEXT_API_URL}${TOGGLE_PREFERRED_OG_DOMAIN_API}`, {
         domain: payload.domain,
       }),

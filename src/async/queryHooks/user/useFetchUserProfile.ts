@@ -15,7 +15,7 @@ export default function useFetchUserProfile() {
     error: Error;
   }>({
     enabled: Boolean(session?.user?.id),
-    queryFn: async () =>
+    queryFn: () =>
       fetchUserProfiles({
         session: session as SupabaseSessionType,
         userId: session?.user?.id!,

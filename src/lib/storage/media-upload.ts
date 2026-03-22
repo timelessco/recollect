@@ -65,7 +65,7 @@ const uploadMedia = async ({
   return storageData?.publicUrl || null;
 };
 
-export const upload = async (base64info: string, uploadUserId: string): Promise<null | string> =>
+export const upload = (base64info: string, uploadUserId: string): Promise<null | string> =>
   uploadMedia({
     contentType: "image/jpg",
     data: new Uint8Array(decode(base64info)),
@@ -73,7 +73,7 @@ export const upload = async (base64info: string, uploadUserId: string): Promise<
     uploadUserId,
   });
 
-export const uploadVideo = async (
+export const uploadVideo = (
   videoBuffer: ArrayBuffer,
   uploadUserId: string,
   contentType: string,

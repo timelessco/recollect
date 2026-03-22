@@ -25,7 +25,7 @@ export function useAddTagToBookmarkOptimisticMutation() {
     typeof queryKey,
     PaginatedBookmarks
   >({
-    mutationFn: async (payload) =>
+    mutationFn: (payload) =>
       postApi<AddTagToBookmarkResponse>(`/api${ADD_TAG_TO_BOOKMARK_API}`, payload),
     onSettled: (_data, error) => {
       if (error) {

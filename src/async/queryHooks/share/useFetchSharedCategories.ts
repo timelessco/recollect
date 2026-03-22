@@ -11,7 +11,7 @@ export default function useFetchSharedCategories() {
     data: FetchSharedCategoriesData[] | null;
     error: Error;
   }>({
-    queryFn: async () => fetchSharedCategoriesData(),
+    queryFn: () => fetchSharedCategoriesData(),
     queryKey: [SHARED_CATEGORIES_TABLE_NAME],
   });
 

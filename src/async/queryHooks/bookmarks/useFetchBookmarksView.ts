@@ -14,7 +14,7 @@ export default function useFetchBookmarksView() {
     data: BookmarkViewDataTypes | null;
     error: Error;
   }>({
-    queryFn: async () => fetchBookmarksViews({ category_id: CATEGORY_ID }),
+    queryFn: () => fetchBookmarksViews({ category_id: CATEGORY_ID }),
     queryKey: [BOOKMARKS_VIEW, CATEGORY_ID],
   });
 

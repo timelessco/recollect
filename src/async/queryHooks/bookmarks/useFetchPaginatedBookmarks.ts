@@ -37,7 +37,7 @@ export default function useFetchPaginatedBookmarks(
     isLoading: isEverythingDataLoading,
   } = useInfiniteQuery({
     enabled: enabled && CATEGORY_ID !== DISCOVER_URL,
-    queryFn: async (data) =>
+    queryFn: (data) =>
       fetchBookmarksData(data, session as SupabaseSessionType, sortBy as BookmarksSortByTypes),
     initialPageParam: 0,
     getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,

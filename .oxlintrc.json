@@ -73,6 +73,10 @@
     "prefer-destructuring": "off",
     "prefer-template": "off",
     "require-await": "off",
+    // promise-function-async conflicts with require-await: it auto-adds async
+    // to functions returning Promises, but require-await then complains about
+    // no await. We prefer: only add async when await is present.
+    "@typescript-eslint/promise-function-async": "off",
     "sort-keys": "off",
     "import/namespace": "off",
     "import/no-cycle": "off",

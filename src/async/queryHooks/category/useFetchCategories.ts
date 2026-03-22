@@ -19,7 +19,7 @@ export default function useFetchCategories(shouldFetch = true) {
     error: Error;
   }>({
     enabled: shouldFetch,
-    queryFn: async () => fetchCategoriesData(),
+    queryFn: () => fetchCategoriesData(),
     queryKey: [CATEGORIES_KEY, session?.user?.id],
   });
 

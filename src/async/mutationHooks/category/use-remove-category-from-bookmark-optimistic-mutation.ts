@@ -94,7 +94,7 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
         },
       },
     ],
-    mutationFn: async (payload) =>
+    mutationFn: (payload) =>
       postApi<RemoveCategoryFromBookmarkResponse>(
         `/api${REMOVE_CATEGORY_FROM_BOOKMARK_API}`,
         payload,

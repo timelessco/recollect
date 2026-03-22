@@ -52,7 +52,7 @@ type HandlerFn = ((request: NextRequest) => Promise<NextResponse>) & {
 // Internal helpers
 // ============================================================
 
-async function parseInput<TInput>(
+function parseInput<TInput>(
   request: NextRequest,
   schema: z.ZodType<TInput>,
   route: string,

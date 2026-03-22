@@ -39,7 +39,7 @@ export function useImportBookmarksMutation() {
     Error,
     ImportBookmarksRequest
   >({
-    mutationFn: async (payload) =>
+    mutationFn: (payload) =>
       postApi<ImportBookmarksResponse>(`/api${RAINDROP_IMPORT_API}`, payload),
     mutationKey: [IMPORT_BOOKMARKS_MUTATION_KEY],
     onSettled: (data, error) => {

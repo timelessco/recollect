@@ -30,7 +30,7 @@ export function useUpdateFavoriteOrderMutation() {
     typeof queryKey,
     undefined | UserProfileCache
   >({
-    mutationFn: async (payload) =>
+    mutationFn: (payload) =>
       postApi<UpdateFavoriteOrderResponse>(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, {
         updateData: { favorite_categories: payload.favorite_categories },
       }),

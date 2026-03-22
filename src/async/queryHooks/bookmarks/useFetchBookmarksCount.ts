@@ -14,7 +14,7 @@ export default function useFetchBookmarksCount() {
     data: BookmarksCountTypes | null;
     error: Error;
   }>({
-    queryFn: async (data) =>
+    queryFn: (data) =>
       // @ts-expect-error - Todo fix this
       getBookmarksCount(data, session ?? { user: null }),
     // eslint-disable-next-line @tanstack/query/exhaustive-deps

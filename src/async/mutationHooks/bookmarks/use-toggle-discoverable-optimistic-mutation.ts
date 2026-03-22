@@ -26,7 +26,7 @@ export function useToggleDiscoverableOptimisticMutation() {
     BookmarksPaginatedDataTypes
   >({
     invalidates: [BOOKMARKS_KEY, DISCOVER_URL],
-    mutationFn: async (variables) =>
+    mutationFn: (variables) =>
       postApi<ToggleBookmarkDiscoverableResponse>(
         `${NEXT_API_URL}${TOGGLE_BOOKMARK_DISCOVERABLE_API}`,
         variables,

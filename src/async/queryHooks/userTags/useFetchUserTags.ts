@@ -14,7 +14,7 @@ export default function useFetchUserTags() {
     data: null | UserTagsData[];
     error: Error;
   }>({
-    queryFn: async () => fetchUserTags(),
+    queryFn: () => fetchUserTags(),
     queryKey: [USER_TAGS_KEY, session?.user?.id],
   });
 

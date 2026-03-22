@@ -83,7 +83,7 @@ export async function createApiClient() {
  * const { data: { user }, error } = await getApiUser(supabase, token);
  * ```
  */
-export async function getApiUser(supabase: SupabaseClient<Database>, token?: null | string) {
+export function getApiUser(supabase: SupabaseClient<Database>, token?: null | string) {
   if (token) {
     // Mobile app: Use token-based auth by explicitly passing the JWT
     return supabase.auth.getUser(token);

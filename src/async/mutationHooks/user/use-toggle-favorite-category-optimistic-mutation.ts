@@ -31,7 +31,7 @@ export function useToggleFavoriteCategoryOptimisticMutation() {
     typeof queryKey,
     undefined | UserProfileCache
   >({
-    mutationFn: async (payload) =>
+    mutationFn: (payload) =>
       postApi<ToggleFavoriteCategoryResponse>(`${NEXT_API_URL}${TOGGLE_FAVORITE_CATEGORY_API}`, {
         category_id: payload.category_id,
       }),

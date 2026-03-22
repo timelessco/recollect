@@ -30,7 +30,7 @@ export function useAddCategoryOptimisticMutation() {
     typeof queryKey,
     { data: CategoriesData[] } | undefined
   >({
-    mutationFn: async (payload) =>
+    mutationFn: (payload) =>
       postApi<CreateCategoryResponse>(`/api${CREATE_USER_CATEGORIES_API}`, payload),
     onSettled: (_data, error) => {
       if (error) {

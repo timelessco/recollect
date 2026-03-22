@@ -7,7 +7,7 @@ import { RevalidateInputSchema, RevalidateOutputSchema } from "./schema";
 const ROUTE = "v2-revalidate";
 
 export const POST = createPostApiHandlerWithSecret({
-  handler: async ({ input, route }) => {
+  handler: ({ input, route }) => {
     console.log(`[${route}] Revalidating path:`, { path: input.path });
 
     revalidatePath(input.path);

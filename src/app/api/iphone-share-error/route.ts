@@ -7,7 +7,7 @@ import { IphoneShareErrorPayloadSchema, IphoneShareErrorResponseSchema } from ".
 const ROUTE = "iphone-share-error";
 
 export const POST = createPostApiHandlerWithAuth({
-  handler: async ({ data, route, user }) => {
+  handler: ({ data, route, user }) => {
     const { context, deviceInfo, message, stackTrace } = data;
     const userId = user.id;
 

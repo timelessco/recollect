@@ -78,7 +78,7 @@ export function useCreateAndAssignTagOptimisticMutation() {
         },
       },
     ],
-    mutationFn: async (payload) =>
+    mutationFn: (payload) =>
       postApi<CreateAndAssignTagResponse>(`/api${CREATE_AND_ASSIGN_TAG_API}`, payload),
     onSettled: (data, error, variables) => {
       if (error || !data) {

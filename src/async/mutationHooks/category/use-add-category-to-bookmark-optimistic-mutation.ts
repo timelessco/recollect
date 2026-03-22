@@ -89,7 +89,7 @@ export function useAddCategoryToBookmarkOptimisticMutation({
         },
       },
     ],
-    mutationFn: async (payload) =>
+    mutationFn: (payload) =>
       postApi<AddCategoryToBookmarkResponse>(`/api${ADD_CATEGORY_TO_BOOKMARK_API}`, payload),
     onSettled: (_data, error) => {
       if (error || skipInvalidation) {

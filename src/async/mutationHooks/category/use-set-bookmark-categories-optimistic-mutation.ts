@@ -41,7 +41,7 @@ export function useSetBookmarkCategoriesOptimisticMutation({
     typeof queryKey,
     PaginatedBookmarks
   >({
-    mutationFn: async (payload) =>
+    mutationFn: (payload) =>
       postApi<SetBookmarkCategoriesResponse>(`/api${SET_BOOKMARK_CATEGORIES_API}`, payload),
     onSettled: (_data, error) => {
       if (error || skipInvalidation) {

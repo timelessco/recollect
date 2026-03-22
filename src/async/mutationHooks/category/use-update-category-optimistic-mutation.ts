@@ -27,7 +27,7 @@ export function useUpdateCategoryOptimisticMutation() {
     typeof queryKey,
     { data: CategoriesData[] } | undefined
   >({
-    mutationFn: async (payload) =>
+    mutationFn: (payload) =>
       postApi<UpdateCategoryResponse>(`/api${UPDATE_USER_CATEGORIES_API}`, payload),
     onSettled: (_data, error) => {
       if (error) {
