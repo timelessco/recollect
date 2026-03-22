@@ -1,20 +1,21 @@
-import { type NextApiResponse } from "next";
+import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
-import { type NextApiRequest, type SingleListData } from "../../../../../types/apiTypes";
+import type { NextApiRequest, SingleListData } from "../../../../../types/apiTypes";
+
 import { MAIN_TABLE_NAME } from "../../../../../utils/constants";
 import { apiSupabaseClient } from "../../../../../utils/supabaseServerClient";
 
-type RequestType = {
+interface RequestType {
   data: Pick<SingleListData, "id">;
-};
+}
 
-type ResponseType = {
-  error: string | null;
+interface ResponseType {
+  error: null | string;
   success: boolean;
-};
+}
 
 const getBodySchema = () =>
   z.object({
@@ -43,7 +44,7 @@ export default async function handler(
     const bodyData = schema.parse(request.body);
     const supabase = apiSupabaseClient(request, response);
 
-    const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+    const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
 
     const { error } = await supabase
       .from(MAIN_TABLE_NAME)

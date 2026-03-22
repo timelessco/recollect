@@ -110,11 +110,13 @@ function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProp
   useEffect(() => {
     const el = mediaElRef.current;
     if (!el) {
-      return undefined;
+      return;
     }
 
     const handleError = () => onErrorRef.current?.();
-    const handleLoaded = () => setLoading(false);
+    const handleLoaded = () => {
+      setLoading(false);
+    };
 
     // Check if media is already loaded (event fired before listener attached)
     if ((el as HTMLMediaElement).readyState >= 2) {
@@ -136,25 +138,25 @@ function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProp
 
   let mediaElement: React.ReactNode = null;
   switch (mediaType) {
+    case "video": {
+      mediaElement = (
+        <video
+          className="h-auto max-h-[80vh] w-auto max-w-[min(1200px,90vw)]"
+          ref={ref}
+          slot="media"
+          src={src}
+        >
+          <track default kind="captions" label="No captions" srcLang="en" />
+        </video>
+      );
+      break;
+    }
+
     case "youtube": {
       if (youTubeReady) {
         mediaElement = <youtube-video crossOrigin="" ref={ref} slot="media" src={src} />;
       }
 
-      break;
-    }
-
-    case "video": {
-      mediaElement = (
-        <video
-          ref={ref}
-          slot="media"
-          src={src}
-          className="h-auto max-h-[80vh] w-auto max-w-[min(1200px,90vw)]"
-        >
-          <track default kind="captions" label="No captions" srcLang="en" />
-        </video>
-      );
       break;
     }
   }
@@ -168,11 +170,13 @@ function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProp
       )}
       <MediaController
         breakpoints="pip:400 sm:384 md:576 lg:768 xl:960"
-        onPointerDown={(event) => event.stopPropagation()}
         className={cn(
           mediaType === "youtube" ? YOUTUBE_CONTROLLER_CLASS : VIDEO_CONTROLLER_CLASS,
           loading && "absolute opacity-0",
         )}
+        onPointerDown={(event) => {
+          event.stopPropagation();
+        }}
       >
         {mediaElement}
 

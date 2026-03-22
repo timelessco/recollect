@@ -1,14 +1,15 @@
-import { type NextApiResponse } from "next";
+import type { NextApiResponse } from "next";
 
-import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import isNull from "lodash/isNull";
 
-import {
-  type CategoriesData,
-  type NextApiRequest,
-  type UpdateSharedCategoriesUserAccessApiPayload,
+import type {
+  CategoriesData,
+  NextApiRequest,
+  UpdateSharedCategoriesUserAccessApiPayload,
 } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
+
 import { SHARED_CATEGORIES_TABLE_NAME } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -17,12 +18,12 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
  */
 
 type DataResponse = CategoriesData[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | string | null;
+type ErrorResponse = null | PostgrestError | string | VerifyErrors;
 
-type Data = {
+interface Data {
   data: DataResponse;
   error: ErrorResponse;
-};
+}
 
 export default async function handler(
   request: NextApiRequest<UpdateSharedCategoriesUserAccessApiPayload>,
@@ -31,8 +32,8 @@ export default async function handler(
   const supabase = apiSupabaseClient(request, response);
   const userData = await supabase?.auth?.getUser();
 
-  const userId = userData?.data?.user?.id as string;
-  const email = userData?.data?.user?.email as string;
+  const userId = userData?.data?.user?.id!;
+  const email = userData?.data?.user?.email!;
 
   const { data, error }: { data: DataResponse; error: ErrorResponse } = await supabase
     .from(SHARED_CATEGORIES_TABLE_NAME)

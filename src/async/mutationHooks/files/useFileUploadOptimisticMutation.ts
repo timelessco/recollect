@@ -1,13 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import isNull from "lodash/isNull";
 
+import type { BookmarksPaginatedDataTypes, UploadFileApiPayload } from "../../../types/apiTypes";
+
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useSupabaseSession } from "../../../store/componentStore";
-import {
-  type BookmarksPaginatedDataTypes,
-  type UploadFileApiPayload,
-} from "../../../types/apiTypes";
 import {
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
@@ -47,7 +45,7 @@ export default function useFileUploadOptimisticMutation() {
   const fileUploadOptimisticMutation = useMutation({
     mutationFn: async (data: UploadFileApiPayload) => {
       // For videos, generate thumbnail if not provided
-      let thumbnailPath = data.thumbnailPath;
+      let { thumbnailPath } = data;
       // please verify if this file type is available for mobile devices
       const isVideo = data?.file?.type?.includes("video");
 
@@ -74,11 +72,11 @@ export default function useFileUploadOptimisticMutation() {
                   if (base64Data) {
                     const buffer = Buffer.from(base64Data, "base64");
                     const uploadResponse = await fetch(uploadTokenData.signedUrl, {
-                      method: "PUT",
+                      body: buffer.buffer as BodyInit,
                       headers: {
                         "Content-Type": "image/jpg",
                       },
-                      body: buffer.buffer as BodyInit,
+                      method: "PUT",
                     });
 
                     if (uploadResponse.ok) {
@@ -97,7 +95,7 @@ export default function useFileUploadOptimisticMutation() {
       }
 
       // Call the original uploadFile with the updated thumbnail path
-      return await uploadFile({
+      return uploadFile({
         ...data,
         thumbnailPath,
       });
@@ -210,13 +208,13 @@ export default function useFileUploadOptimisticMutation() {
     onSuccess: async (apiResponse, data) => {
       const uploadedDataType = data?.file?.type;
 
-      const apiResponseTyped = apiResponse as unknown as {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const apiResponseTyped = apiResponse as {
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         data: any;
         success: boolean;
       };
 
-      if (apiResponseTyped?.success === true) {
+      if (apiResponseTyped?.success) {
         const fileTypeName = fileTypeIdentifier(uploadedDataType);
 
         /* If the user uploads to a type page (links, videos) and the uploaded type is not of the page eg: user
@@ -228,8 +226,8 @@ export default function useFileUploadOptimisticMutation() {
           try {
             successToast(`generating  thumbnail`);
             await handlePdfThumbnailAndUpload({
-              fileUrl: `${getStoragePublicBaseUrl()}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,
               fileId: apiResponseTyped?.data[0].id,
+              fileUrl: `${getStoragePublicBaseUrl()}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,
               sessionUserId: session?.user?.id,
             });
           } catch {

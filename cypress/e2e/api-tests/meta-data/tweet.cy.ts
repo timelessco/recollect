@@ -17,21 +17,20 @@ describe("Meta data testing", () => {
       data: [
         {
           description: "test tweet description",
-          ogImage: "https://pbs.twimg.com/media/GVRv2bGWcAA--aC.jpg",
-          title: "test title",
-          type: "tweet",
-          // we are generating random number , as the duplicates are removed in the sync api
-          url: `https://x.com/passportprofit/status/${Math.floor(Math.random() * 1000000000)}`,
+          inserted_at: "2024-08-22T14:30:00Z",
           meta_data: {
             twitter_avatar_url: "test url",
           },
-          inserted_at: "2024-08-22T14:30:00Z",
+          ogImage: "https://pbs.twimg.com/media/GVRv2bGWcAA--aC.jpg",
           sort_index: "89",
+          title: "test title",
+          type: "tweet",
+          // we are generating random number , as the duplicates are removed in the sync api
+          url: `https://x.com/passportprofit/status/${Math.floor(Math.random() * 1_000_000_000)}`,
         },
       ],
     }).as("addRequest");
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let bookmarkId;
 
     cy.get("@addRequest")?.then((addBookmarkData) => {
@@ -41,7 +40,7 @@ describe("Meta data testing", () => {
 
       cy.reload();
 
-      cy.wait(40000);
+      cy.wait(40_000);
 
       cy.request(
         `/api/v1/bookmarks/get/fetch-by-id?id=${addBookmarkData?.body?.data?.[0]?.id}`,

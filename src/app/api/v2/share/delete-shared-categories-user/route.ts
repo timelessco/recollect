@@ -12,13 +12,10 @@ import {
 const ROUTE = "v2-share-delete-shared-categories-user";
 
 export const DELETE = createDeleteApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: DeleteSharedCategoriesUserInputSchema,
-  outputSchema: DeleteSharedCategoriesUserOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const userId = user.id;
 
-    console.log(`[${route}] API called:`, { userId, id: data.id });
+    console.log(`[${route}] API called:`, { id: data.id, userId });
 
     const { data: deleted, error } = await supabase
       .from(SHARED_CATEGORIES_TABLE_NAME)
@@ -28,21 +25,21 @@ export const DELETE = createDeleteApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to delete shared category",
         error,
-        operation: "delete_shared_category",
-        userId,
         extra: { id: data.id },
+        message: "Failed to delete shared category",
+        operation: "delete_shared_category",
+        route,
+        userId,
       });
     }
 
     if (deleted.length === 0) {
       return apiWarn({
-        route,
-        message: "Shared category not found",
-        status: 404,
         context: { id: data.id, userId },
+        message: "Shared category not found",
+        route,
+        status: 404,
       });
     }
 
@@ -54,21 +51,24 @@ export const DELETE = createDeleteApiHandlerWithAuth({
 
     if (favCleanupError) {
       console.error(`[${route}] Failed to clean up favorite_categories:`, {
-        error: favCleanupError,
         categoryId,
+        error: favCleanupError,
         userId,
       });
       Sentry.captureException(new Error(favCleanupError.message), {
-        tags: { operation: "cleanup_favorite_categories", userId },
         extra: {
           categoryId,
           code: favCleanupError.code,
           details: favCleanupError.details,
           hint: favCleanupError.hint,
         },
+        tags: { operation: "cleanup_favorite_categories", userId },
       });
     }
 
     return deleted;
   },
+  inputSchema: DeleteSharedCategoriesUserInputSchema,
+  outputSchema: DeleteSharedCategoriesUserOutputSchema,
+  route: ROUTE,
 });

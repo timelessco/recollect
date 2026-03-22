@@ -5,17 +5,17 @@ export const FetchPublicCategoryBookmarksInputSchema = z.object({
     .string()
     .min(1)
     .meta({ description: "URL-safe slug of the category", example: "design" }),
-  user_name: z.string().min(1).meta({
-    description: "Username of the category owner",
-    example: "johndoe",
+  limit: z.coerce.number().int().min(1).max(100).optional().meta({
+    description: "Number of bookmarks per page (1-100)",
+    example: 25,
   }),
   page: z.coerce.number().int().min(0).optional().meta({
     description: "Zero-based page number for pagination",
     example: 0,
   }),
-  limit: z.coerce.number().int().min(1).max(100).optional().meta({
-    description: "Number of bookmarks per page (1-100)",
-    example: 25,
+  user_name: z.string().min(1).meta({
+    description: "Username of the category owner",
+    example: "johndoe",
   }),
 });
 

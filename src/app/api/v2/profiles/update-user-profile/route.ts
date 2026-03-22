@@ -1,6 +1,7 @@
+import type { Database } from "@/types/database.types";
+
 import { createPatchApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { type Database } from "@/types/database.types";
 import { PROFILES } from "@/utils/constants";
 
 import { UpdateUserProfileInputSchema, UpdateUserProfileOutputSchema } from "./schema";
@@ -10,10 +11,7 @@ type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
 const ROUTE = "v2-profiles-update-user-profile";
 
 export const PATCH = createPatchApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: UpdateUserProfileInputSchema,
-  outputSchema: UpdateUserProfileOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const userId = user.id;
 
     console.log(`[${route}] API called:`, { userId });
@@ -26,23 +24,26 @@ export const PATCH = createPatchApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to update profile",
         error,
+        message: "Failed to update profile",
         operation: "profile_update",
+        route,
         userId,
       });
     }
 
     if (!profileData || profileData.length === 0) {
       return apiWarn({
-        route,
-        message: "Profile not found",
-        status: 404,
         context: { userId },
+        message: "Profile not found",
+        route,
+        status: 404,
       });
     }
 
     return profileData;
   },
+  inputSchema: UpdateUserProfileInputSchema,
+  outputSchema: UpdateUserProfileOutputSchema,
+  route: ROUTE,
 });

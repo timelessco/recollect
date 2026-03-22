@@ -1,4 +1,4 @@
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import { createServiceClient } from "../../../utils/supabaseClient";
 import { processImageQueue } from "../../../utils/worker";
@@ -13,8 +13,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   try {
     const result = await processImageQueue(supabase, {
-      queue_name: "ai-embeddings",
       batchSize: 1,
+      queue_name: "ai-embeddings",
     });
 
     console.log(
@@ -24,10 +24,10 @@ export default async function handler(request: NextApiRequest, response: NextApi
     );
 
     response.status(200).json({
-      success: true,
       message: `Queue processed successfully`,
+      success: true,
     });
   } catch {
-    response.status(500).json({ success: false, error: "Error processing queue" });
+    response.status(500).json({ error: "Error processing queue", success: false });
   }
 }

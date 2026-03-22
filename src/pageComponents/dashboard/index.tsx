@@ -24,7 +24,7 @@ import NotFoundPage from "../notFoundPage";
 import { BookmarkCards } from "./bookmarkCards";
 import { DiscoverBookmarkCards } from "./discoverBookmarkCards";
 
-const DashboardLayout = dynamic(async () => await import("./dashboardLayout"), {
+const DashboardLayout = dynamic(async () => import("./dashboardLayout"), {
   ssr: false,
 });
 
@@ -81,7 +81,7 @@ const Dashboard = () => {
     }
   }, [CATEGORY_ID, sortBy, session?.user?.id, queryClient]);
 
-  const { isLoadingCategories, isFetchingCategories } = useFetchCategories();
+  const { isFetchingCategories, isLoadingCategories } = useFetchCategories();
 
   useFetchBookmarksView();
   useFetchSharedCategories();
@@ -116,20 +116,21 @@ const Dashboard = () => {
         }),
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [userProfileData?.data?.[0]?.provider]);
 
   const isDiscoverPage = categorySlug === DISCOVER_URL;
 
   const renderMainPaneContent = () => {
     if (!isInNotFoundPage) {
-      // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
       switch (categorySlug) {
-        case DISCOVER_URL:
+        case DISCOVER_URL: {
           return <DiscoverBookmarkCards isDiscoverPage />;
+        }
 
-        default:
+        default: {
           return <BookmarkCards />;
+        }
       }
     } else if (isLoadingCategories || isFetchingCategories) {
       return "Loading";

@@ -8,15 +8,12 @@ import { BookmarksInsertInputSchema, BookmarksInsertOutputSchema } from "./schem
 const ROUTE = "v2-bookmarks-insert";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: BookmarksInsertInputSchema,
-  outputSchema: BookmarksInsertOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const userId = user.id;
 
     console.log(`[${route}] API called:`, {
-      userId,
       bookmarkCount: data.data.length,
+      userId,
     });
 
     const insertData = data.data.map((item) => ({
@@ -31,15 +28,18 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to insert bookmarks",
         error,
-        operation: "insert_bookmarks",
-        userId,
         extra: { bookmarkCount: data.data.length },
+        message: "Failed to insert bookmarks",
+        operation: "insert_bookmarks",
+        route,
+        userId,
       });
     }
 
     return { insertedCount: inserted.length };
   },
+  inputSchema: BookmarksInsertInputSchema,
+  outputSchema: BookmarksInsertOutputSchema,
+  route: ROUTE,
 });

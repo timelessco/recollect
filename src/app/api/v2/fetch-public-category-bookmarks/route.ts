@@ -1,4 +1,4 @@
-import { type PostgrestError } from "@supabase/supabase-js";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 import { createGetApiHandler } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
@@ -18,9 +18,6 @@ import {
 const ROUTE = "v2-fetch-public-category-bookmarks";
 
 export const GET = createGetApiHandler({
-  inputSchema: FetchPublicCategoryBookmarksInputSchema,
-  outputSchema: FetchPublicCategoryBookmarksOutputSchema,
-  route: ROUTE,
   handler: async ({ input, route }) => {
     const { category_slug: categorySlug, user_name: userName } = input;
     const page = Math.max(0, Math.floor(input.page ?? 0));
@@ -47,38 +44,38 @@ export const GET = createGetApiHandler({
 			`,
       )
       .eq("category_slug", categorySlug)) as unknown as {
-      data: Array<{
-        category_name: string | null;
+      data: {
+        category_name: null | string;
         category_views: unknown;
-        icon: string | null;
-        icon_color: string | null;
+        icon: null | string;
+        icon_color: null | string;
         id: number;
         is_public: boolean | null;
         user_id: {
-          email: string | null;
-          user_name: string | null;
+          email: null | string;
+          user_name: null | string;
         };
-      }>;
+      }[];
       error: PostgrestError;
     };
 
     if (categoryError) {
       return apiError({
-        route,
-        message: "Failed to fetch category",
         error: categoryError,
-        operation: "fetch_category",
         extra: { categorySlug },
+        message: "Failed to fetch category",
+        operation: "fetch_category",
+        route,
       });
     }
 
     if (categoryData.at(0)?.user_id?.user_name !== userName) {
       console.log(`[${route}] Username mismatch from URL query`);
       return apiWarn({
-        route,
-        message: "Username mismatch from URL query",
-        status: 404,
         context: { categorySlug, userName },
+        message: "Username mismatch from URL query",
+        route,
+        status: 404,
       });
     }
 
@@ -88,10 +85,10 @@ export const GET = createGetApiHandler({
 
     if (!categoryId) {
       return apiWarn({
-        route,
-        message: "Category not found",
-        status: 404,
         context: { categorySlug },
+        message: "Category not found",
+        route,
+        status: 404,
       });
     }
 
@@ -140,16 +137,15 @@ export const GET = createGetApiHandler({
 
     if (bookmarkError) {
       return apiError({
-        route,
-        message: "Failed to fetch bookmarks",
         error: bookmarkError,
-        operation: "fetch_public_category_bookmarks",
         extra: { categoryId, categorySlug },
+        message: "Failed to fetch bookmarks",
+        operation: "fetch_public_category_bookmarks",
+        route,
       });
     }
 
-    const bookmarks = (rawData as Array<Record<string, unknown>>)?.map((item) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const bookmarks = (rawData as Record<string, unknown>[])?.map((item) => {
       const { [BOOKMARK_CATEGORIES_TABLE_NAME]: _junction, ...rest } = item;
       return rest;
     });
@@ -163,4 +159,7 @@ export const GET = createGetApiHandler({
       isPublic: category?.is_public ?? null,
     };
   },
+  inputSchema: FetchPublicCategoryBookmarksInputSchema,
+  outputSchema: FetchPublicCategoryBookmarksOutputSchema,
+  route: ROUTE,
 });

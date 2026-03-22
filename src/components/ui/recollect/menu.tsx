@@ -70,9 +70,9 @@ function CheckboxItem({ className, ...props }: MenuPrimitive.CheckboxItem.Props)
   );
 }
 
-const CheckboxItemIndicator = MenuPrimitive.CheckboxItemIndicator;
+const { CheckboxItemIndicator } = MenuPrimitive;
 
-const Separator = MenuPrimitive.Separator;
+const { Separator } = MenuPrimitive;
 
 export const Menu = {
   CheckboxItem,

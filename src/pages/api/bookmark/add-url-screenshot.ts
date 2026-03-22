@@ -1,19 +1,20 @@
-import { type NextApiResponse } from "next";
+import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
-import { type VerifyErrors } from "jsonwebtoken";
+
+import type {
+  AddBookmarkScreenshotPayloadTypes,
+  NextApiRequest,
+  SingleListData,
+} from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
 
 import { upload } from "@/lib/storage/media-upload";
 import { collectAdditionalImages, collectVideo } from "@/utils/helpers";
 import { vet } from "@/utils/try";
 
-import {
-  type AddBookmarkScreenshotPayloadTypes,
-  type NextApiRequest,
-  type SingleListData,
-} from "../../../types/apiTypes";
 import {
   ADD_REMAINING_BOOKMARK_API,
   getBaseUrl,
@@ -24,12 +25,12 @@ import {
 import { getAxiosConfigWithAuth } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-type Data = {
-  data: SingleListData[] | null;
-  error: PostgrestError | VerifyErrors | string | null;
-};
+interface Data {
+  data: null | SingleListData[];
+  error: null | PostgrestError | string | VerifyErrors;
+}
 
-const MAX_LENGTH = 1_300;
+const MAX_LENGTH = 1300;
 
 export default async function handler(
   request: NextApiRequest<AddBookmarkScreenshotPayloadTypes>,
@@ -55,12 +56,12 @@ export default async function handler(
 
     // Entry point log
     console.log("add-url-screenshot API called:", {
-      userId,
-      url: request.body.url,
       id: request.body.id,
+      url: request.body.url,
+      userId,
     });
 
-    const [screenshotError, screenShotResponse] = await vet(() =>
+    const [screenshotError, screenShotResponse] = await vet(async () =>
       axios.get(`${SCREENSHOT_API}/try?url=${encodeURIComponent(request.body.url)}`, {
         responseType: "json",
       }),
@@ -69,11 +70,11 @@ export default async function handler(
     if (screenshotError) {
       console.error("Screenshot API error:", screenshotError);
       Sentry.captureException(screenshotError, {
+        extra: { url: request.body.url },
         tags: {
           operation: "screenshot_api",
           userId,
         },
-        extra: { url: request.body.url },
       });
 
       const requestBody = {
@@ -84,7 +85,7 @@ export default async function handler(
         requestBody,
       });
 
-      const [remainingApiError] = await vet(() =>
+      const [remainingApiError] = await vet(async () =>
         axios.post(
           `${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
           requestBody,
@@ -95,12 +96,12 @@ export default async function handler(
       if (remainingApiError) {
         console.error("Remaining bookmark data API error:", remainingApiError);
         Sentry.captureException(remainingApiError, {
+          extra: {
+            bookmarkId: request.body.id,
+          },
           tags: {
             operation: "remaining_bookmark_data_api",
             userId,
-          },
-          extra: {
-            bookmarkId: request.body.id,
           },
         });
       }
@@ -120,7 +121,7 @@ export default async function handler(
       "base64",
     );
 
-    const { title, description, isPageScreenshot } = screenShotResponse?.data.metaData || {};
+    const { description, isPageScreenshot, title } = screenShotResponse?.data.metaData ?? {};
 
     const publicURL = await upload(base64data, userId);
 
@@ -134,12 +135,12 @@ export default async function handler(
     if (fetchError) {
       console.error("Error fetching existing bookmark data:", fetchError);
       Sentry.captureException(fetchError, {
+        extra: {
+          bookmarkId: request.body.id,
+        },
         tags: {
           operation: "fetch_existing_bookmark",
           userId,
-        },
-        extra: {
-          bookmarkId: request.body.id,
         },
       });
       response.status(500).json({
@@ -151,16 +152,16 @@ export default async function handler(
 
     // Log existing bookmark data
     console.log("Existing bookmark data fetched:", {
-      id: request.body.id,
       hasMetaData: Boolean(existingBookmarkData?.meta_data),
+      id: request.body.id,
     });
 
     // Get existing meta_data or create empty object if null
-    const existingMetaData = existingBookmarkData?.meta_data || {};
+    const existingMetaData = existingBookmarkData?.meta_data ?? {};
 
-    const updatedTitle = title?.slice(0, MAX_LENGTH) || existingBookmarkData?.title;
+    const updatedTitle = title?.slice(0, MAX_LENGTH) ?? existingBookmarkData?.title;
     const updatedDescription =
-      description?.slice(0, MAX_LENGTH) || existingBookmarkData?.description;
+      description?.slice(0, MAX_LENGTH) ?? existingBookmarkData?.description;
 
     const [additionalImagesSettled, additionalVideoSettled] = await Promise.allSettled([
       collectAdditionalImages({
@@ -168,8 +169,8 @@ export default async function handler(
         userId,
       }),
       collectVideo({
-        videoUrl: screenShotResponse?.data?.allVideos?.[0] ?? null,
         userId,
+        videoUrl: screenShotResponse?.data?.allVideos?.[0] ?? null,
       }),
     ]);
 
@@ -191,9 +192,9 @@ export default async function handler(
       additionalVideoSettled.status === "fulfilled"
         ? additionalVideoSettled.value
         : {
-            success: false as const,
             error: "unknown" as const,
             message: "collectVideo promise rejected",
+            success: false as const,
           };
 
     if (additionalVideoSettled.status === "rejected") {
@@ -205,14 +206,14 @@ export default async function handler(
 
     if (!additionalVideoResult.success) {
       Sentry.captureException(new Error(additionalVideoResult.message), {
-        tags: {
-          operation: "collect_video",
-          userId,
-          errorType: additionalVideoResult.error,
-        },
         extra: {
           bookmarkId: request.body.id,
           videoUrl: screenShotResponse?.data?.allVideos?.[0],
+        },
+        tags: {
+          errorType: additionalVideoResult.error,
+          operation: "collect_video",
+          userId,
         },
       });
     }
@@ -220,29 +221,29 @@ export default async function handler(
     // Add screenshot URL to meta_data
     const updatedMetaData = {
       ...existingMetaData,
-      screenshot: publicURL,
-      isPageScreenshot,
-      coverImage: existingBookmarkData?.ogImage,
       additionalImages,
       additionalVideos:
         additionalVideoResult.success && additionalVideoResult.url
           ? [additionalVideoResult.url]
           : [],
+      coverImage: existingBookmarkData?.ogImage,
+      isPageScreenshot,
+      screenshot: publicURL,
     };
 
     const {
       data,
       error,
     }: {
-      data: SingleListData[] | null;
-      error: PostgrestError | VerifyErrors | string | null;
+      data: null | SingleListData[];
+      error: null | PostgrestError | string | VerifyErrors;
     } = await supabase
       .from(MAIN_TABLE_NAME)
       // since we now have screenshot , we add that in ogImage as this will now be our primary image, and the existing ogImage (which is the scrapper data image) will be our cover image in meta_data
       .update({
-        title: updatedTitle,
         description: updatedDescription,
         meta_data: updatedMetaData,
+        title: updatedTitle,
       })
       .match({ id: request.body.id, user_id: userId })
       .select();
@@ -251,12 +252,12 @@ export default async function handler(
     if (error) {
       console.error("Error updating bookmark with screenshot:", error);
       Sentry.captureException(error, {
+        extra: {
+          bookmarkId: request.body.id,
+        },
         tags: {
           operation: "update_bookmark_screenshot",
           userId,
-        },
-        extra: {
-          bookmarkId: request.body.id,
         },
       });
       response.status(500).json({
@@ -276,15 +277,15 @@ export default async function handler(
     }
 
     const requestBody = {
-      id: data[0]?.id,
       favIcon: data[0]?.meta_data?.favIcon,
+      id: data[0]?.id,
       url: request.body.url,
     };
     console.log("Calling remaining bookmark data API (screenshot succeeded):", {
       requestBody,
     });
 
-    const [remainingApiError] = await vet(() =>
+    const [remainingApiError] = await vet(async () =>
       axios.post(
         `${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
         requestBody,
@@ -295,12 +296,12 @@ export default async function handler(
     if (remainingApiError) {
       console.error("Remaining bookmark data API error:", remainingApiError);
       Sentry.captureException(remainingApiError, {
+        extra: {
+          bookmarkId: data[0]?.id,
+        },
         tags: {
           operation: "remaining_bookmark_data_api",
           userId,
-        },
-        extra: {
-          bookmarkId: data[0]?.id,
         },
       });
     }

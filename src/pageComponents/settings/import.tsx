@@ -2,8 +2,9 @@
 
 import { useRef, useState } from "react";
 
+import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
+
 import { useImportBookmarksMutation } from "@/async/mutationHooks/bookmarks/use-import-bookmarks-mutation";
-import { type SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
 import { saveButtonClassName } from "@/utils/commonClassNames";
 import { handleClientError } from "@/utils/error-utils/client";
 
@@ -14,14 +15,14 @@ import { RaindropIcon } from "../../icons/raindrop-icon";
 
 const REQUIRED_CSV_COLUMNS = ["url"] as const;
 
-type ImportBookmarksProps = {
+interface ImportBookmarksProps {
   onNavigate: (page: SettingsPage) => void;
-};
+}
 
 export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [bookmarkCount, setBookmarkCount] = useState<number | null>(null);
-  const [parseError, setParseError] = useState<string | null>(null);
+  const [bookmarkCount, setBookmarkCount] = useState<null | number>(null);
+  const [parseError, setParseError] = useState<null | string>(null);
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -31,10 +32,8 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
   const parseCSV = async (file: File) => {
     const Papa = await import("papaparse");
 
-    return await new Promise<Papa.ParseResult<Record<string, string>>>((resolve, reject) => {
+    return new Promise<Papa.ParseResult<Record<string, string>>>((resolve, reject) => {
       Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
         complete: (results) => {
           if (results.errors.length === 0) {
             resolve(results as Papa.ParseResult<Record<string, string>>);
@@ -46,7 +45,11 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
             );
           }
         },
-        error: (error) => reject(error),
+        error: (error) => {
+          reject(error);
+        },
+        header: true,
+        skipEmptyLines: true,
       });
     });
   };
@@ -104,26 +107,26 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
 
     try {
       const results = await parseCSV(selectedFile);
-      const records = results.data as Array<{
-        title: string;
-        excerpt: string;
-        url: string;
+      const records = results.data as {
         cover: string;
-        folder?: string;
         created?: string;
-      }>;
+        excerpt: string;
+        folder?: string;
+        title: string;
+        url: string;
+      }[];
 
       if (!records.length) {
         return;
       }
 
       const bookmarks = records.map((bookmark) => ({
-        title: bookmark.title || null,
+        category_name: bookmark.folder ?? null,
         description: bookmark.excerpt || null,
-        url: bookmark.url,
+        inserted_at: bookmark.created ?? null,
         ogImage: bookmark.cover || null,
-        category_name: bookmark.folder || null,
-        inserted_at: bookmark.created || null,
+        title: bookmark.title || null,
+        url: bookmark.url,
       }));
 
       importBookmarksMutation.mutate({ bookmarks });
@@ -148,7 +151,13 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
         className={`relative flex flex-col items-center justify-center rounded-lg bg-gray-100 py-[75px] transition-colors ${
           !isFileUploaded ? `${dragActive ? "bg-gray-200" : ""}` : ""
         }`}
-        onDrop={!isFileUploaded ? handleDrop : undefined}
+        onDragLeave={
+          !isFileUploaded
+            ? () => {
+                setDragActive(false);
+              }
+            : undefined
+        }
         onDragOver={
           !isFileUploaded
             ? (event) => {
@@ -157,17 +166,16 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
               }
             : undefined
         }
-        onDragLeave={!isFileUploaded ? () => setDragActive(false) : undefined}
+        onDrop={!isFileUploaded ? handleDrop : undefined}
       >
         <RaindropIcon className="mb-1.5 w-8" />
         <p className="mb-1.5 align-middle text-sm leading-[115%] font-normal tracking-normal text-gray-800">
-          {parseError
-            ? parseError
-            : isFileUploaded
+          {parseError ??
+            (isFileUploaded
               ? isSuccess
                 ? "Successfully imported bookmarks"
                 : `Found ${bookmarkCount} Bookmarks`
-              : "Drop the CSV file here or"}
+              : "Drop the CSV file here or")}
         </p>
         <Button
           className={`relative py-[4.5px] ${saveButtonClassName} rounded-[5px] ${isSuccess ? "bg-gray-600 hover:bg-gray-600" : ""}`}
@@ -195,11 +203,11 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
           </span>
         </Button>
         <input
-          ref={inputRef}
-          type="file"
           accept=".csv"
           className="hidden"
           onChange={handleFileChange}
+          ref={inputRef}
+          type="file"
         />
       </div>
 
@@ -229,7 +237,9 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
               <span>Please add your own AI</span>
               <button
                 className="ml-1 underline"
-                onClick={() => onNavigate("ai-features")}
+                onClick={() => {
+                  onNavigate("ai-features");
+                }}
                 type="button"
               >
                 API key

@@ -4,7 +4,8 @@ import { relative, resolve } from "node:path";
 import { OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 
-import { type HandlerConfig } from "../src/lib/api-helpers/create-handler";
+import type { HandlerConfig } from "../src/lib/api-helpers/create-handler";
+
 import { bearerAuth, registry } from "../src/lib/openapi/registry";
 import { apiResponseSchema } from "../src/lib/openapi/schemas/envelope";
 import * as sharedSchemas from "../src/lib/openapi/schemas/shared";
@@ -13,86 +14,86 @@ import { collectSupplements, mergeSupplements } from "./merge-openapi-supplement
 const ROOT = resolve(import.meta.dirname, "..");
 const API_DIR = resolve(ROOT, "src/app/api");
 
-const tagDescriptions: Array<{ name: string; description: string }> = [
+const tagDescriptions: { description: string; name: string }[] = [
   {
-    name: "Bookmarks",
     description: "Bookmark management: CRUD, trash, discover, and tag/category assignment",
+    name: "Bookmarks",
   },
   {
-    name: "Categories",
     description: "Collection management: create, update, and delete collections",
+    name: "Categories",
   },
   {
-    name: "Cron",
     description: "Scheduled maintenance tasks: trash cleanup",
+    name: "Cron",
   },
   {
-    name: "Dev",
     description: "Development-only utilities: session token retrieval",
+    name: "Dev",
   },
   {
-    name: "Instagram",
     description: "Instagram bookmark sync: import and monitor import status",
+    name: "Instagram",
   },
   {
-    name: "Raindrop",
     description: "Raindrop.io bookmark import: queue and monitor import status",
+    name: "Raindrop",
   },
   {
-    name: "Twitter",
     description: "Twitter/X bookmark sync: import folders and monitor import status",
+    name: "Twitter",
   },
   {
-    name: "Profiles",
     description: "User profile management: preferred OG domain settings",
+    name: "Profiles",
   },
   {
-    name: "iPhone",
     description: "iOS share extension error reporting",
+    name: "iPhone",
   },
   {
-    name: "PDF",
     description: "PDF thumbnail generation for bookmarked documents",
+    name: "PDF",
   },
 ];
 
 const errorResponseSchema = {
-  type: "object" as const,
   properties: {
     data: { type: "null" as const },
     error: { type: "string" as const },
   },
   required: ["data", "error"],
+  type: "object" as const,
 };
 
 registry.registerComponent("responses", "Unauthorized", {
-  description: "Not authenticated. Provide a valid bearer token.",
   content: {
     "application/json": {
-      schema: errorResponseSchema,
       example: { data: null, error: "Not authenticated" },
+      schema: errorResponseSchema,
     },
   },
+  description: "Not authenticated. Provide a valid bearer token.",
 });
 
 registry.registerComponent("responses", "ValidationError", {
-  description: "Validation error. The request body or parameters are invalid.",
   content: {
     "application/json": {
-      schema: errorResponseSchema,
       example: { data: null, error: "Invalid request parameters" },
+      schema: errorResponseSchema,
     },
   },
+  description: "Validation error. The request body or parameters are invalid.",
 });
 
 registry.registerComponent("responses", "InternalError", {
-  description: "Server error. The request could not be processed.",
   content: {
     "application/json": {
-      schema: errorResponseSchema,
       example: { data: null, error: "Failed to process request" },
+      schema: errorResponseSchema,
     },
   },
+  description: "Server error. The request could not be processed.",
 });
 
 // Paths to skip — not part of the public API spec
@@ -103,17 +104,17 @@ function getApiPath(routeFilePath: string): string {
   return `/${rel.replace(/\/route\.ts$/u, "")}`;
 }
 
-const METHOD_MAP: Record<string, "get" | "post" | "delete" | "patch" | "put"> = {
-  Get: "get",
-  Post: "post",
+const METHOD_MAP: Record<string, "delete" | "get" | "patch" | "post" | "put"> = {
   Delete: "delete",
+  Get: "get",
   Patch: "patch",
+  Post: "post",
   Put: "put",
 };
 
 function getMethodFromFactoryName(
   factoryName: string,
-): "get" | "post" | "delete" | "patch" | "put" | undefined {
+): "delete" | "get" | "patch" | "post" | "put" | undefined {
   for (const [token, method] of Object.entries(METHOD_MAP)) {
     if (factoryName.includes(token)) {
       return method;
@@ -171,7 +172,7 @@ async function scanAndRegisterRoutes() {
         continue;
       }
 
-      const config = exported.config as HandlerConfig | undefined;
+      const { config } = exported;
       if (!config) {
         continue;
       }
@@ -186,8 +187,8 @@ async function scanAndRegisterRoutes() {
         ? [{ [bearerAuth.name]: [] }, {}]
         : undefined;
 
-      const inputSchema = config.inputSchema;
-      const outputSchema = config.outputSchema;
+      const { inputSchema } = config;
+      const { outputSchema } = config;
 
       const isBodyMethod =
         method === "post" || method === "delete" || method === "patch" || method === "put";
@@ -200,12 +201,12 @@ async function scanAndRegisterRoutes() {
         path: apiPath,
         responses: {
           200: {
-            description: "Success",
             content: {
               "application/json": {
                 schema: apiResponseSchema(outputSchema),
               },
             },
+            description: "Success",
           },
           ...(hasInput ? { 400: { $ref: "#/components/responses/ValidationError" } } : {}),
           401: { $ref: "#/components/responses/Unauthorized" },
@@ -220,12 +221,12 @@ async function scanAndRegisterRoutes() {
       if (isBodyMethod) {
         pathRegistration.request = {
           body: {
-            required: true,
             content: {
               "application/json": {
                 schema: inputSchema,
               },
             },
+            required: true,
           },
         };
       } else {
@@ -273,15 +274,15 @@ console.log(`Auto-inferred: ${registeredCount} App Router endpoints registered`)
 const generator = new OpenApiGeneratorV3(registry.definitions);
 
 const document = generator.generateDocument({
-  openapi: "3.0.3",
   info: {
-    title: "Recollect API",
-    version: "1.0.0",
     description:
       "Recollect API for bookmark management, organization, and import. Designed for mobile and frontend developers. Browser clients authenticate via cookies (automatic after login). Mobile/external clients use a Supabase JWT bearer token.",
+    title: "Recollect API",
+    version: "1.0.0",
   },
+  openapi: "3.0.3",
+  servers: [{ description: "Next.js API routes", url: "/api" }],
   tags: tagDescriptions,
-  servers: [{ url: "/api", description: "Next.js API routes" }],
 });
 
 const outputPath = resolve(ROOT, "public/openapi.json");

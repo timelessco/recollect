@@ -16,7 +16,7 @@ const TOAST_SHADOW = [
 
 function Provider(props: ToastPrimitive.Provider.Props) {
   return (
-    <ToastPrimitive.Provider toastManager={toastManager} timeout={5000} limit={3} {...props} />
+    <ToastPrimitive.Provider limit={3} timeout={5000} toastManager={toastManager} {...props} />
   );
 }
 
@@ -34,7 +34,6 @@ function Root(props: ToastPrimitive.Root.Props) {
   const { className, ...rest } = props;
   return (
     <ToastPrimitive.Root
-      data-toast-root=""
       className={cn(
         [
           "absolute right-0 bottom-0 box-border w-full rounded-2xl bg-gray-950 select-none",
@@ -68,6 +67,7 @@ function Root(props: ToastPrimitive.Root.Props) {
         ],
         className,
       )}
+      data-toast-root=""
       style={{ boxShadow: TOAST_SHADOW }}
       {...rest}
     />

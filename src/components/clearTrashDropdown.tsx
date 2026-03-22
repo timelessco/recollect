@@ -4,30 +4,30 @@ import TrashIconGray from "@/icons/trash-icon-gray";
 import { DestructiveConfirmContent } from "./destructive-confirm-content";
 
 interface ClearTrashDropdownProps {
-  onClearTrash: () => void;
-  isClearingTrash: boolean;
-  label?: string;
   isBottomBar?: boolean;
+  isClearingTrash: boolean;
   isOpen?: boolean;
+  label?: string;
   menuOpenToggle?: (isOpen: boolean) => void;
+  onClearTrash: () => void;
 }
 
 export function ClearTrashDropdown(props: ClearTrashDropdownProps) {
   const {
-    onClearTrash,
-    isClearingTrash,
-    label,
     isBottomBar = false,
+    isClearingTrash,
     isOpen,
+    label,
     menuOpenToggle,
+    onClearTrash,
   } = props;
 
   return (
     <Popover.Root
-      open={isOpen}
       onOpenChange={(nextOpen) => {
         menuOpenToggle?.(nextOpen);
       }}
+      open={isOpen}
     >
       <Popover.Trigger
         className={
@@ -45,10 +45,10 @@ export function ClearTrashDropdown(props: ClearTrashDropdownProps) {
             }}
           >
             <TrashIconGray
+              className="size-4"
               onPointerDown={(event) => {
                 event.stopPropagation();
               }}
-              className="size-4"
             />
           </figure>
         )}
@@ -57,9 +57,9 @@ export function ClearTrashDropdown(props: ClearTrashDropdownProps) {
         <Popover.Positioner align="start">
           <Popover.Popup className={`${!isBottomBar ? "ml-2" : ""} w-[180px] leading-[20px]`}>
             <DestructiveConfirmContent
+              label={label ?? "Clear All Trash"}
               onConfirm={onClearTrash}
               pending={isClearingTrash}
-              label={label ?? "Clear All Trash"}
             />
           </Popover.Popup>
         </Popover.Positioner>

@@ -1,30 +1,31 @@
 import Link from "next/link";
-import { useContext } from "react";
+import { use } from "react";
+
+import type { CategoriesData } from "../../../types/apiTypes";
+import type { ChildrenTypes } from "../../../types/componentTypes";
 
 import { CategoryIconsDropdown } from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
 import { Spinner } from "../../../components/spinner";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
-import { type CategoriesData } from "../../../types/apiTypes";
-import { type ChildrenTypes } from "../../../types/componentTypes";
 import { CollectionOptionsPopover } from "./collection-options-popover";
 import { DragHandleContext } from "./reorderable-list";
 
-export type CollectionItemTypes = {
+export interface CollectionItemTypes {
   count?: number;
   current: boolean;
   href: string;
   icon?: ChildrenTypes;
   iconColor: CategoriesData["icon_color"];
-  iconValue?: string | null;
+  iconValue?: null | string;
   id: number;
   isCollab?: boolean;
   isFavorite?: boolean;
   isPublic?: boolean;
   name: string;
   responsiveIcon?: boolean;
-};
+}
 
-export type listPropsTypes = {
+export interface listPropsTypes {
   extendedClassname: string;
   isLink?: boolean;
   item: CollectionItemTypes;
@@ -34,22 +35,22 @@ export type listPropsTypes = {
   showDropdown?: boolean;
   showIconDropdown?: boolean;
   showSpinner?: boolean;
-};
+}
 
 const SingleListItemComponent = (listProps: listPropsTypes) => {
   const {
-    item,
     extendedClassname = "",
+    isLink = true,
+    item,
+    listNameId = "",
+    onClick = () => null,
+    responsiveIcon = false,
     showDropdown = false,
     showIconDropdown = true,
-    listNameId = "",
     showSpinner = false,
-    onClick = () => null,
-    isLink = true,
-    responsiveIcon = false,
   } = listProps;
   const { isDesktop } = useIsMobileView();
-  const dragHandleProps = useContext(DragHandleContext);
+  const dragHandleProps = use(DragHandleContext);
   const renderContent = () => (
     <>
       <div
@@ -58,18 +59,23 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
       >
         {showIconDropdown ? (
           // disabling eslint as the onClick is just preventdefault
-          // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-          <span className="flex h-[18px] w-[18px]" onClick={(event) => event.preventDefault()}>
+          // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+          <span
+            className="flex h-[18px] w-[18px]"
+            onClick={(event) => {
+              event.preventDefault();
+            }}
+          >
             <CategoryIconsDropdown
               buttonIconSize={18}
               iconColor={item?.iconColor}
-              iconValue={item?.iconValue ?? null}
               iconId={item?.id}
+              iconValue={item?.iconValue ?? null}
             />
           </span>
         ) : (
           <figure className="flex h-[18px] w-[18px] items-center text-gray-900">
-            {item?.icon ? item?.icon : null}
+            {item?.icon ?? null}
           </figure>
         )}
         {(!responsiveIcon || isDesktop) && (
@@ -84,11 +90,15 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
       <div className="flex items-center space-x-3">
         {showDropdown && (
           // disabling eslint as the onClick is just preventdefault
-          // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+          // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
           <div
             className="flex items-center justify-center"
-            onClick={(event) => event.preventDefault()}
-            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              event.preventDefault();
+            }}
+            onPointerDown={(event) => {
+              event.stopPropagation();
+            }}
           >
             {showSpinner ? (
               <Spinner
@@ -120,14 +130,14 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 
   if (isLink) {
     return (
-      <Link href={item?.href} passHref className={contentWrapperClassNames} draggable={false}>
+      <Link className={contentWrapperClassNames} draggable={false} href={item?.href} passHref>
         {renderContent()}
       </Link>
     );
   }
 
   return (
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div className={contentWrapperClassNames} onClick={onClick}>
       {renderContent()}
     </div>

@@ -24,32 +24,32 @@ export async function storeQueueError(props: StoreQueueErrorProps) {
   try {
     const supabase = createServiceClient();
     const { error: rpcError } = await supabase.rpc("update_queue_message_error", {
-      p_queue_name: queueName,
-      p_msg_id: msgId,
       p_error: errorReason,
+      p_msg_id: msgId,
+      p_queue_name: queueName,
     });
 
     if (rpcError) {
       console.error(`[${route}] Failed to store queue error:`, {
-        queueName,
-        msgId,
         errorReason,
+        msgId,
+        queueName,
         rpcError,
       });
       Sentry.captureException(rpcError, {
+        extra: { errorReason, msgId, queueName },
         tags: { operation: "store_queue_error", route },
-        extra: { queueName, msgId, errorReason },
       });
     }
   } catch (error) {
     console.error(`[${route}] Failed to store queue error:`, {
-      queueName,
-      msgId,
       errorReason,
+      msgId,
+      queueName,
     });
     Sentry.captureException(error, {
+      extra: { errorReason, msgId, queueName },
       tags: { operation: "store_queue_error", route },
-      extra: { queueName, msgId, errorReason },
     });
   }
 }

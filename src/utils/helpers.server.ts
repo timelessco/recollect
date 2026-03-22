@@ -1,12 +1,15 @@
 import * as Sentry from "@sentry/nextjs";
-import { type SupabaseClient } from "@supabase/supabase-js";
 import uniqid from "uniqid";
 
-import imageToText, { type UserCollection } from "@/async/ai/imageToText";
-import { fetchAiToggles, type AiToggles } from "@/utils/ai-feature-toggles";
+import type { UserCollection } from "@/async/ai/imageToText";
+import type { AiToggles } from "@/utils/ai-feature-toggles";
+import type { BookmarkContentType } from "@/utils/resolve-content-type";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import imageToText from "@/async/ai/imageToText";
+import { fetchAiToggles } from "@/utils/ai-feature-toggles";
 import { fetchUserCollections } from "@/utils/auto-assign-collections";
 import { blurhashFromURL } from "@/utils/getBlurHash";
-import { type BookmarkContentType } from "@/utils/resolve-content-type";
 
 import {
   MAX_VIDEO_SIZE_BYTES,
@@ -16,27 +19,27 @@ import {
 } from "./constants";
 import { storageHelpers } from "./storageClient";
 
-type EnrichMetadataParams = {
-  existingMetadata: Record<string, unknown>;
-  ogImage: string;
-  isTwitterBookmark: boolean;
-  isInstagramBookmark: boolean;
-  videoUrl?: string | null;
-  userId: string;
-  supabase: SupabaseClient;
-  url: string;
+interface EnrichMetadataParams {
   contentType?: BookmarkContentType;
+  description?: null | string;
+  existingMetadata: Record<string, unknown>;
+  isInstagramBookmark: boolean;
   isOgImage?: boolean;
-  title?: string | null;
-  description?: string | null;
-};
+  isTwitterBookmark: boolean;
+  ogImage: string;
+  supabase: SupabaseClient;
+  title?: null | string;
+  url: string;
+  userId: string;
+  videoUrl?: null | string;
+}
 
-type EnrichMetadataResult = {
-  metadata: Record<string, unknown>;
-  matchedCollectionIds: number[];
+interface EnrichMetadataResult {
+  error: null | string;
   isFailed: boolean;
-  error: string | null;
-};
+  matchedCollectionIds: number[];
+  metadata: Record<string, unknown>;
+}
 
 /**
  * Enrich bookmark metadata with AI-generated content.
@@ -62,18 +65,18 @@ type EnrichMetadataResult = {
 // Client-side dashboard components import functions from helpers.ts
 // Webpack tries to bundle the entire helpers.ts file for the browser, including sharp, which fails
 export const enrichMetadata = async ({
-  existingMetadata,
-  ogImage,
-  isTwitterBookmark,
-  isInstagramBookmark,
-  videoUrl,
-  userId,
-  supabase,
-  url,
   contentType,
-  isOgImage,
-  title,
   description,
+  existingMetadata,
+  isInstagramBookmark,
+  isOgImage,
+  isTwitterBookmark,
+  ogImage,
+  supabase,
+  title,
+  url,
+  userId,
+  videoUrl,
 }: EnrichMetadataParams): Promise<EnrichMetadataResult> => {
   const aiToggles = await fetchAiToggles({ supabase, userId });
   const userCollections = await fetchUserCollections({
@@ -103,8 +106,8 @@ export const enrichMetadata = async ({
             console.log(
               `[enrichMetadata] ${isTwitterBookmark ? "Twitter" : isInstagramBookmark ? "Instagram" : "Twitter/Instagram"} video uploaded to R2:`,
               {
-                url,
                 r2VideoUrl,
+                url,
               },
             );
             return r2VideoUrl;
@@ -141,39 +144,39 @@ export const enrichMetadata = async ({
   const video_url = videoResult.status === "fulfilled" ? videoResult.value : null;
 
   const {
-    isImageCaptionFailed,
     image_caption,
     image_keywords,
+    isImageCaptionFailed,
     matchedCollectionIds,
     ocr: ocrData,
     ocr_status: ocrStatus,
   } = captionResult.status === "fulfilled"
     ? captionResult.value
     : {
-        isImageCaptionFailed: true,
         image_caption: null,
         image_keywords: [] as string[],
+        isImageCaptionFailed: true,
         matchedCollectionIds: [] as number[],
         ocr: null,
         ocr_status: "no_text" as const,
       };
 
   // Extract blurhash result
-  const { isBlurhashFailed, blurhash } =
+  const { blurhash, isBlurhashFailed } =
     blurhashResult.status === "fulfilled"
       ? blurhashResult.value
-      : { isBlurhashFailed: true, blurhash: null };
+      : { blurhash: null, isBlurhashFailed: true };
 
   const metadata = {
     ...existingMetadata,
-    ocr: ocrData,
-    ocr_status: ocrStatus,
+    height: blurhash?.height,
     image_caption,
     image_keywords: image_keywords?.length ? image_keywords : undefined,
-    width: blurhash?.width,
-    height: blurhash?.height,
+    ocr: ocrData,
+    ocr_status: ocrStatus,
     ogImgBlurUrl: blurhash?.encoded,
     video_url,
+    width: blurhash?.width,
   };
 
   const isFailed = isImageCaptionFailed || isBlurhashFailed;
@@ -191,16 +194,16 @@ export const enrichMetadata = async ({
   const error = failedOperations.length > 0 ? failedOperations.join(",") : null;
 
   console.log("[enrichMetadata] Enrichment completed:", {
-    url,
-    isFailed,
     error,
+    hasBlurhash: Boolean(metadata.ogImgBlurUrl),
     hasImageCaption: Boolean(metadata.image_caption),
     hasOcr: Boolean(metadata.ocr),
-    hasBlurhash: Boolean(metadata.ogImgBlurUrl),
     hasVideo: Boolean(metadata.video_url),
+    isFailed,
+    url,
   });
 
-  return { metadata, matchedCollectionIds, isFailed, error };
+  return { error, isFailed, matchedCollectionIds, metadata };
 };
 
 const processImageCaption = async (
@@ -212,12 +215,12 @@ const processImageCaption = async (
   userCollections: UserCollection[],
   contentType?: BookmarkContentType,
   isOgImage?: boolean,
-  title?: string | null,
-  description?: string | null,
+  title?: null | string,
+  description?: null | string,
 ) => {
   console.log("[processImageCaption] Generating image caption:", {
-    url,
     ogImage,
+    url,
   });
   // Generate caption for the image
   try {
@@ -228,8 +231,8 @@ const processImageCaption = async (
       { contentType, isOgImage },
       {
         collections: userCollections,
-        title,
         description,
+        title,
         url,
       },
       aiToggles,
@@ -237,59 +240,58 @@ const processImageCaption = async (
     if (!result?.sentence) {
       // When aiSummary is OFF, null sentence is expected — not a failure
       if (aiToggles.aiSummary) {
-        console.error("[processImageCaption] imageToText returned empty result:", { url, ogImage });
+        console.error("[processImageCaption] imageToText returned empty result:", { ogImage, url });
         Sentry.captureMessage("Image caption generation returned empty result", {
+          extra: {
+            ogImage,
+            url,
+          },
           level: "error",
           tags: {
             operation: "image_caption_empty",
             userId,
           },
-          extra: {
-            url,
-            ogImage,
-          },
         });
       }
 
       return {
-        isImageCaptionFailed: aiToggles.aiSummary,
         image_caption: null,
         image_keywords: result?.image_keywords ?? [],
+        isImageCaptionFailed: aiToggles.aiSummary,
         matchedCollectionIds: result?.matched_collection_ids ?? [],
         ocr: result?.ocr_text ?? null,
         ocr_status: result?.ocr_text ? ("success" as const) : ("no_text" as const),
       };
-    } else {
-      console.log("[processImageCaption] Image caption generated successfully:", { url });
-      return {
-        isImageCaptionFailed: false,
-        image_caption: result.sentence,
-        image_keywords: result.image_keywords ?? [],
-        matchedCollectionIds: result.matched_collection_ids ?? [],
-        ocr: result.ocr_text,
-        ocr_status: result.ocr_text ? ("success" as const) : ("no_text" as const),
-      };
     }
+    console.log("[processImageCaption] Image caption generated successfully:", { url });
+    return {
+      image_caption: result.sentence,
+      image_keywords: result.image_keywords ?? [],
+      isImageCaptionFailed: false,
+      matchedCollectionIds: result.matched_collection_ids ?? [],
+      ocr: result.ocr_text,
+      ocr_status: result.ocr_text ? ("success" as const) : ("no_text" as const),
+    };
   } catch (error) {
     console.error("[processImageCaption] imageToText threw error:", {
-      url,
-      ogImage,
       error,
+      ogImage,
+      url,
     });
     Sentry.captureException(error, {
+      extra: {
+        ogImage,
+        url,
+      },
       tags: {
         operation: "image_caption_generation",
         userId,
       },
-      extra: {
-        url,
-        ogImage,
-      },
     });
     return {
-      isImageCaptionFailed: true,
       image_caption: null,
       image_keywords: [],
+      isImageCaptionFailed: true,
       matchedCollectionIds: [],
       ocr: null,
       ocr_status: "no_text" as const,
@@ -298,51 +300,50 @@ const processImageCaption = async (
 };
 
 const processBlurhash = async (ogImage: string, url: string, userId: string) => {
-  console.log("[processBlurhash] Generating blurhash:", { url, ogImage });
+  console.log("[processBlurhash] Generating blurhash:", { ogImage, url });
   try {
-    const { width, height, encoded } = await blurhashFromURL(ogImage);
+    const { encoded, height, width } = await blurhashFromURL(ogImage);
     if (!encoded || !width || !height) {
       console.error("[processBlurhash] blurhashFromURL returned empty result:", {
-        url,
         ogImage,
+        url,
       });
       Sentry.captureMessage("Blurhash generation returned empty result", {
+        extra: {
+          ogImage,
+          url,
+        },
         level: "error",
         tags: {
           operation: "blurhash_empty",
           userId,
         },
-        extra: {
-          url,
-          ogImage,
-        },
       });
-      return { isBlurhashFailed: true, blurhash: null };
-    } else {
-      console.log("[processBlurhash] Blurhash generated successfully:", {
-        url,
-        width,
-        height,
-      });
-      return { isBlurhashFailed: false, blurhash: { width, height, encoded } };
+      return { blurhash: null, isBlurhashFailed: true };
     }
+    console.log("[processBlurhash] Blurhash generated successfully:", {
+      height,
+      url,
+      width,
+    });
+    return { blurhash: { encoded, height, width }, isBlurhashFailed: false };
   } catch (error) {
     console.error("[processBlurhash] blurhashFromURL threw error:", {
-      url,
-      ogImage,
       error,
+      ogImage,
+      url,
     });
     Sentry.captureException(error, {
+      extra: {
+        ogImage,
+        url,
+      },
       tags: {
         operation: "blurhash_generation",
         userId,
       },
-      extra: {
-        url,
-        ogImage,
-      },
     });
-    return { isBlurhashFailed: true, blurhash: null };
+    return { blurhash: null, isBlurhashFailed: true };
   }
 };
 
@@ -359,7 +360,7 @@ export const uploadVideoToR2 = async (
   user_id: string,
   isTwitterBookmark: boolean,
   isInstagramBookmark: boolean,
-): Promise<string | null> => {
+): Promise<null | string> => {
   try {
     // Validate URL based on bookmark type (defense in depth)
     if (isTwitterBookmark) {
@@ -370,8 +371,8 @@ export const uploadVideoToR2 = async (
 
     const videoResponse: Response = await fetch(videoUrl, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; RecollectBot/1.0)",
         Accept: "video/*,*/*;q=0.8",
+        "User-Agent": "Mozilla/5.0 (compatible; RecollectBot/1.0)",
       },
       signal: AbortSignal.timeout(VIDEO_DOWNLOAD_TIMEOUT_MS),
     });
@@ -405,7 +406,7 @@ export const uploadVideoToR2 = async (
     const storagePath = `${STORAGE_FILES_PATH}/${user_id}/${videoName}`;
 
     // Determine content type from response or default to mp4
-    const contentType = videoResponse.headers.get("content-type") || "video/mp4";
+    const contentType = videoResponse.headers.get("content-type") ?? "video/mp4";
 
     // Upload to R2
     const videoBuffer = Buffer.from(arrayBuffer);
@@ -423,8 +424,8 @@ export const uploadVideoToR2 = async (
           ? "twitter_video_upload"
           : "video_upload";
       Sentry.captureException(uploadError, {
+        extra: { userId: user_id, videoUrl },
         tags: { operation },
-        extra: { videoUrl, userId: user_id },
       });
       console.error("R2 video upload failed:", uploadError);
       return null;
@@ -443,15 +444,15 @@ export const uploadVideoToR2 = async (
         ? "twitter_video_download"
         : "video_download";
     Sentry.captureException(error, {
+      extra: { userId: user_id, videoUrl },
       tags: { operation },
-      extra: { videoUrl, userId: user_id },
     });
 
     return null;
   }
 };
 
-const ALLOWED_TWITTER_DOMAINS = ["video.twimg.com", "pbs.twimg.com"];
+const ALLOWED_TWITTER_DOMAINS = new Set(["pbs.twimg.com", "video.twimg.com"]);
 
 /**
  *
@@ -464,7 +465,7 @@ export const validateTwitterMediaUrl = (urlString: string): void => {
     throw new Error("Only HTTPS allowed");
   }
 
-  if (!ALLOWED_TWITTER_DOMAINS.includes(url.hostname)) {
+  if (!ALLOWED_TWITTER_DOMAINS.has(url.hostname)) {
     throw new Error("Domain not in allowlist");
   }
 };

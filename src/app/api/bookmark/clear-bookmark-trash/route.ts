@@ -9,10 +9,7 @@ const ROUTE = "clear-bookmark-trash";
 const BATCH_SIZE = 1000;
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: ClearBookmarkTrashInputSchema,
-  outputSchema: ClearBookmarkTrashOutputSchema,
-  handler: async ({ supabase, user, route }) => {
+  handler: async ({ route, supabase, user }) => {
     const userId = user.id;
 
     // Get total count of trashed bookmarks first for logging
@@ -24,17 +21,17 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (countError) {
       return apiError({
-        route,
-        message: "Failed to count trashed bookmarks",
         error: countError,
+        message: "Failed to count trashed bookmarks",
         operation: "clear_trash_count",
+        route,
         userId,
       });
     }
 
     console.log(`[${route}] API called:`, {
-      userId,
       trashCount: trashCount ?? 0,
+      userId,
     });
 
     if (!trashCount || trashCount === 0) {
@@ -60,10 +57,10 @@ export const POST = createPostApiHandlerWithAuth({
 
       if (fetchError) {
         return apiError({
-          route,
-          message: "Failed to fetch trashed bookmarks",
           error: fetchError,
+          message: "Failed to fetch trashed bookmarks",
           operation: "clear_trash_fetch_ids",
+          route,
           userId,
         });
       }
@@ -75,28 +72,28 @@ export const POST = createPostApiHandlerWithAuth({
       const bookmarkIds = trashBookmarks.map((item) => item.id);
 
       console.log(`[${route}] Deleting batch:`, {
-        userId,
         batchSize: bookmarkIds.length,
+        userId,
       });
 
       const result = await deleteBookmarksByIds(supabase, bookmarkIds, userId, route);
 
       if (result.error) {
         return apiWarn({
-          route,
-          message: result.error,
-          status: 500,
           context: { count: bookmarkIds.length, totalDeleted },
+          message: result.error,
+          route,
+          status: 500,
         });
       }
 
       totalDeleted += result.deletedCount;
 
       console.log(`[${route}] Batch deleted:`, {
-        userId,
         batchSize: result.deletedCount,
-        totalDeleted,
         remaining: trashCount - totalDeleted,
+        totalDeleted,
+        userId,
       });
 
       // If we got fewer than BATCH_SIZE, there are no more left
@@ -105,11 +102,14 @@ export const POST = createPostApiHandlerWithAuth({
       }
     }
 
-    console.log(`[${route}] Completed:`, { userId, totalDeleted });
+    console.log(`[${route}] Completed:`, { totalDeleted, userId });
 
     return {
       deletedCount: totalDeleted,
       message: `Deleted ${totalDeleted} bookmarks`,
     };
   },
+  inputSchema: ClearBookmarkTrashInputSchema,
+  outputSchema: ClearBookmarkTrashOutputSchema,
+  route: ROUTE,
 });

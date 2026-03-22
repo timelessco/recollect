@@ -5,7 +5,7 @@ export const GetMediaTypeInputSchema = z.object({
 });
 
 export const GetMediaTypeOutputSchema = z.object({
-  success: z.boolean(),
-  mediaType: z.string().nullable(),
   error: z.string().nullable(),
+  mediaType: z.string().nullable(),
+  success: z.boolean(),
 });

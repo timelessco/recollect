@@ -11,14 +11,11 @@ import {
 const ROUTE = "v2-bookmarks-delete-non-cascade";
 
 export const DELETE = createDeleteApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: BookmarksDeleteNonCascadeInputSchema,
-  outputSchema: BookmarksDeleteNonCascadeOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const userId = user.id;
     const bookmarkId = data.data.id;
 
-    console.log(`[${route}] API called:`, { userId, bookmarkId });
+    console.log(`[${route}] API called:`, { bookmarkId, userId });
 
     const { error } = await supabase
       .from(MAIN_TABLE_NAME)
@@ -28,15 +25,18 @@ export const DELETE = createDeleteApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to delete bookmark",
         error,
-        operation: "delete_bookmarks_non_cascade",
-        userId,
         extra: { bookmarkId },
+        message: "Failed to delete bookmark",
+        operation: "delete_bookmarks_non_cascade",
+        route,
+        userId,
       });
     }
 
     return null;
   },
+  inputSchema: BookmarksDeleteNonCascadeInputSchema,
+  outputSchema: BookmarksDeleteNonCascadeOutputSchema,
+  route: ROUTE,
 });

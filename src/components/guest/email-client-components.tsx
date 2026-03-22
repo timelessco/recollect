@@ -39,14 +39,14 @@ export function EmailToOtpForm() {
 
     startTransition(async () => {
       try {
-        const email = result.data.email;
+        const { email } = result.data;
 
         const supabase = createClient();
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-            shouldCreateUser: true,
             emailRedirectTo: `${window.location.origin}/${EVERYTHING_URL}`,
+            shouldCreateUser: true,
           },
         });
 
@@ -64,16 +64,16 @@ export function EmailToOtpForm() {
   };
 
   return (
-    <Form errors={errors} onFormSubmit={handleFormSubmit} className="flex w-full flex-col gap-4">
+    <Form className="flex w-full flex-col gap-4" errors={errors} onFormSubmit={handleFormSubmit}>
       <React.Suspense fallback={<EmailField />}>
         <EmailFieldWithQueryState />
       </React.Suspense>
 
       <Button
-        type="submit"
         className="gap-2 rounded-xl bg-gray-950 px-2 py-2.5 text-sm leading-[115%] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
-        pending={extendedIsPending}
         disabled={extendedIsPending}
+        pending={extendedIsPending}
+        type="submit"
       >
         Continue with Email
       </Button>
@@ -83,23 +83,16 @@ export function EmailToOtpForm() {
 
 type EmailFieldProps = Pick<
   React.ComponentPropsWithRef<typeof Field.Control>,
-  "value" | "onChange" | "autoFocus" | "ref"
+  "autoFocus" | "onChange" | "ref" | "value"
 >;
 
-function EmailField({ ref, value, onChange, autoFocus }: EmailFieldProps) {
+function EmailField({ autoFocus, onChange, ref, value }: EmailFieldProps) {
   return (
-    <Field.Root name="email" className="flex flex-col gap-1">
+    <Field.Root className="flex flex-col gap-1" name="email">
       <Field.Control
-        ref={ref}
-        type="email"
-        required
-        autoFocus={autoFocus}
         aria-label="Email"
-        value={value}
-        inputMode="email"
         autoComplete="email"
-        onChange={onChange}
-        placeholder="Enter your email"
+        autoFocus={autoFocus}
         className={cn(
           "bg-gray-50",
           "rounded-[10px] px-[10px] py-2.5",
@@ -110,6 +103,13 @@ function EmailField({ ref, value, onChange, autoFocus }: EmailFieldProps) {
           "data-invalid:bg-red-50 data-invalid:ring-red-600",
           "data-disabled:cursor-not-allowed data-disabled:opacity-50",
         )}
+        inputMode="email"
+        onChange={onChange}
+        placeholder="Enter your email"
+        ref={ref}
+        required
+        type="email"
+        value={value}
       />
       <Field.Error className="text-xs text-red-600" />
     </Field.Root>
@@ -130,10 +130,12 @@ function EmailFieldWithQueryState() {
 
   return (
     <EmailField
+      autoFocus
+      onChange={(event) => {
+        setLocalEmail(event.target.value);
+      }}
       ref={inputRef}
       value={localEmail}
-      onChange={(event) => setLocalEmail(event.target.value)}
-      autoFocus
     />
   );
 }

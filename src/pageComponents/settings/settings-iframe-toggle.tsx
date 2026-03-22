@@ -17,16 +17,18 @@ function SettingsIframeToggleSwitch() {
 
   return (
     <SettingsToggleCard
+      description="Allow embedding external content in lightbox view"
+      enabled={iframeEnabled}
       icon={
         <figure className="text-gray-900">
           <IframeIcon className="h-5.5 w-5.5 text-gray-900" />
         </figure>
       }
-      title="Enable iframe in lightbox"
-      description="Allow embedding external content in lightbox view"
       isSwitch
-      enabled={iframeEnabled}
-      onToggle={() => setIframeEnabled(!iframeEnabled)}
+      onToggle={() => {
+        setIframeEnabled(!iframeEnabled);
+      }}
+      title="Enable iframe in lightbox"
     />
   );
 }

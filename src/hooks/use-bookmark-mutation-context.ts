@@ -28,12 +28,12 @@ export function useBookmarkMutationContext() {
     : null;
 
   return {
+    CATEGORY_ID,
     queryClient,
-    session,
     queryKey,
     searchQueryKey,
-    CATEGORY_ID,
-    sortBy,
     searchText,
+    session,
+    sortBy,
   };
 }

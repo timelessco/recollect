@@ -2,7 +2,7 @@
 // @see https://nextjs.org/docs/app/api-reference/file-conventions/error
 "use client";
 
-import { type ErrorInfo } from "next/error";
+import type { ErrorInfo } from "next/error";
 import * as React from "react";
 
 import * as Sentry from "@sentry/nextjs";

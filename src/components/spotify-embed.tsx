@@ -14,7 +14,9 @@ export function SpotifyEmbed({ src }: SpotifyEmbedProps) {
   return (
     <div
       className="w-full max-w-[min(600px,90vw)]"
-      onPointerDown={(event) => event.stopPropagation()}
+      onPointerDown={(event) => {
+        event.stopPropagation();
+      }}
     >
       <iframe
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"

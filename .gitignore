@@ -79,9 +79,6 @@ public/sitemap-0.xml
 !.vscode/extensions.json
 !.vscode/settings.json
 
-# Eslint cache
-.eslintcache
-
 # Stylelint cache
 .stylelintcache
 

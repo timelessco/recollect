@@ -1,20 +1,21 @@
-import { type NextApiResponse } from "next";
+import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
-import { type NextApiRequest } from "../../../../../types/apiTypes";
+import type { NextApiRequest } from "../../../../../types/apiTypes";
+
 import { PROFILES } from "../../../../../utils/constants";
 import { createServiceClient } from "../../../../../utils/supabaseClient";
 
-type RequestType = {
+interface RequestType {
   email: string;
-};
+}
 
-type ResponseType = {
-  error: string | null;
-  provider: string | null;
-};
+interface ResponseType {
+  error: null | string;
+  provider: null | string;
+}
 
 const getBodySchema = () =>
   z.object({
@@ -53,7 +54,7 @@ export default async function handler(
       return;
     }
 
-    response.status(200).send({ error: null, provider: data?.[0]?.provider || null });
+    response.status(200).send({ error: null, provider: data?.[0]?.provider ?? null });
   } catch {
     response.status(400).send({ error: "Error in payload data", provider: null });
   }

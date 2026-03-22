@@ -1,10 +1,11 @@
+import type { SettingsPage } from "../dashboard/modals/settings-modal";
+
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import { AppleIcon } from "../../icons/apple-icon";
 import { GoogleLoginIcon } from "../../icons/googleLoginIcon";
 import { InfoIcon } from "../../icons/info-icon";
 import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
 import { useSupabaseSession } from "../../store/componentStore";
-import { type SettingsPage } from "../dashboard/modals/settings-modal";
 import { SettingsToggleCard } from "./settingsToggleCard";
 
 interface SettingsEmailCardProps {
@@ -35,6 +36,8 @@ function SettingsEmailCardContent({ onNavigate }: SettingsEmailCardContentProps)
   return (
     <>
       <SettingsToggleCard
+        buttonLabel={isEmailProvider ? "Change email" : undefined}
+        description="Current email"
         icon={
           isEmailProvider ? (
             <MailIconBlack className="h-5.5 w-5.5 text-gray-900" />
@@ -44,10 +47,14 @@ function SettingsEmailCardContent({ onNavigate }: SettingsEmailCardContentProps)
             <GoogleLoginIcon className="h-5 w-5" />
           )
         }
+        onClick={
+          isEmailProvider
+            ? () => {
+                onNavigate("change-email");
+              }
+            : undefined
+        }
         title={userData?.email ?? ""}
-        description="Current email"
-        buttonLabel={isEmailProvider ? "Change email" : undefined}
-        onClick={isEmailProvider ? () => onNavigate("change-email") : undefined}
       />
       {!isEmailProvider && (
         <div className="mt-2 flex items-center gap-x-2 text-13 leading-[150%] font-normal text-gray-600">

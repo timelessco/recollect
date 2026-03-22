@@ -1,17 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { type UserProfilePicTypes } from "../../../types/apiTypes";
+import type { UserProfilePicTypes } from "../../../types/apiTypes";
+
 import { USER_PROFILE_PIC } from "../../../utils/constants";
 import { getUserProfilePic } from "../../supabaseCrudHelpers";
 
 // fetchs user profile
 export default function useGetUserProfilePic(email: string) {
   const { data: userProfilePicData } = useQuery<{
-    data: UserProfilePicTypes[] | null;
+    data: null | UserProfilePicTypes[];
     error: Error;
   }>({
+    queryFn: async () => getUserProfilePic({ email }),
     queryKey: [USER_PROFILE_PIC, email],
-    queryFn: async () => await getUserProfilePic({ email }),
   });
 
   return {

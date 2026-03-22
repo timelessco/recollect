@@ -7,10 +7,7 @@ import { DeleteApiKeyInputSchema, DeleteApiKeyOutputSchema } from "./schema";
 const ROUTE = "v2-delete-api-key";
 
 export const DELETE = createDeleteApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: DeleteApiKeyInputSchema,
-  outputSchema: DeleteApiKeyOutputSchema,
-  handler: async ({ supabase, user, route }) => {
+  handler: async ({ route, supabase, user }) => {
     const userId = user.id;
 
     console.log(`[${route}] API called:`, { userId });
@@ -22,10 +19,10 @@ export const DELETE = createDeleteApiHandlerWithAuth({
 
     if (updateError) {
       return apiError({
-        route,
-        message: "Failed to delete API key",
         error: updateError,
+        message: "Failed to delete API key",
         operation: "api_key_delete",
+        route,
         userId,
       });
     }
@@ -34,4 +31,7 @@ export const DELETE = createDeleteApiHandlerWithAuth({
 
     return { success: true };
   },
+  inputSchema: DeleteApiKeyInputSchema,
+  outputSchema: DeleteApiKeyOutputSchema,
+  route: ROUTE,
 });

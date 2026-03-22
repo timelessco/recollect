@@ -2,10 +2,8 @@ import { useMemo } from "react";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import {
-  type GetPublicCategoryBookmarksApiResponseType,
-  type SingleListData,
-} from "@/types/apiTypes";
+import type { GetPublicCategoryBookmarksApiResponseType, SingleListData } from "@/types/apiTypes";
+
 import {
   FETCH_PUBLIC_CATEGORY_BOOKMARKS_API,
   getBaseUrl,
@@ -14,22 +12,21 @@ import {
   PUBLIC_BOOKMARKS_KEY,
 } from "@/utils/constants";
 
-type UseFetchPublicCategoryBookmarksProps = {
+interface UseFetchPublicCategoryBookmarksProps {
   categorySlug: string;
-  userName: string;
   enabled?: boolean;
   initialData?: GetPublicCategoryBookmarksApiResponseType;
-};
+  userName: string;
+}
 
 export const useFetchPublicCategoryBookmarks = ({
   categorySlug,
-  userName,
   enabled = true,
   initialData,
+  userName,
 }: UseFetchPublicCategoryBookmarksProps) => {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error } =
+  const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      queryKey: [PUBLIC_BOOKMARKS_KEY, categorySlug, userName],
       enabled: enabled && Boolean(categorySlug) && Boolean(userName),
       queryFn: async ({ pageParam }) => {
         const response = await fetch(
@@ -62,18 +59,19 @@ export const useFetchPublicCategoryBookmarks = ({
         // Return the next page number
         return pages.length;
       },
+      queryKey: [PUBLIC_BOOKMARKS_KEY, categorySlug, userName],
       // Hydrate with SSR data if provided
       ...(initialData && {
         initialData: {
-          pages: [initialData],
           pageParams: [0],
+          pages: [initialData],
         },
       }),
     });
 
   // Flatten paginated data
   const flattenedData = useMemo(
-    () => (data?.pages?.flatMap((page) => page?.data ?? []) ?? []) as SingleListData[],
+    () => data?.pages?.flatMap((page) => page?.data ?? []) ?? [],
     [data],
   );
 
@@ -91,12 +89,12 @@ export const useFetchPublicCategoryBookmarks = ({
 
   return {
     data,
-    flattenedData,
-    metadata,
+    error,
     fetchNextPage,
+    flattenedData,
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,
     isLoading,
-    error,
+    metadata,
   };
 };

@@ -8,7 +8,7 @@ import { GET_NAME_FROM_EMAIL_PATTERN, PROFILES } from "@/utils/constants";
 
 import { FetchUserProfileInputSchema, FetchUserProfileOutputSchema } from "./schema";
 
-function getUserNameFromEmail(email: string): string | null {
+function getUserNameFromEmail(email: string): null | string {
   if (email) {
     const match = email.match(GET_NAME_FROM_EMAIL_PATTERN);
     return match?.[1]?.replace(".", "-") ?? null;
@@ -20,10 +20,7 @@ function getUserNameFromEmail(email: string): string | null {
 const ROUTE = "v2-profiles-fetch-user-profile";
 
 export const GET = createGetApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: FetchUserProfileInputSchema,
-  outputSchema: FetchUserProfileOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const userId = user.id;
 
     console.log(`[${route}] API called:`, { userId });
@@ -32,10 +29,10 @@ export const GET = createGetApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to fetch user profile",
         error,
+        message: "Failed to fetch user profile",
         operation: "profile_fetch",
+        route,
         userId,
       });
     }
@@ -54,10 +51,10 @@ export const GET = createGetApiHandlerWithAuth({
 
       if (updateError) {
         return apiError({
-          route,
-          message: "Failed to update profile picture",
           error: updateError,
+          message: "Failed to update profile picture",
           operation: "profile_pic_update",
+          route,
           userId,
         });
       }
@@ -78,10 +75,10 @@ export const GET = createGetApiHandlerWithAuth({
 
       if (checkError) {
         return apiError({
-          route,
-          message: "Failed to check username availability",
           error: checkError,
+          message: "Failed to check username availability",
           operation: "username_check",
+          route,
           userId,
         });
       }
@@ -97,10 +94,10 @@ export const GET = createGetApiHandlerWithAuth({
 
       if (usernameError) {
         return apiError({
-          route,
-          message: "Failed to update username",
           error: usernameError,
+          message: "Failed to update username",
           operation: "username_update",
+          route,
           userId,
         });
       }
@@ -122,4 +119,7 @@ export const GET = createGetApiHandlerWithAuth({
 
     return usernameResult ?? picResult ?? profileData;
   },
+  inputSchema: FetchUserProfileInputSchema,
+  outputSchema: FetchUserProfileOutputSchema,
+  route: ROUTE,
 });

@@ -1,17 +1,19 @@
-import { bearerAuth } from "@/lib/openapi/registry";
 /**
  * @module Build-time only
  */
-import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
+import type { EndpointSupplement } from "@/lib/openapi/supplement-types";
+
+import { bearerAuth } from "@/lib/openapi/registry";
 
 export const addCategoryToBookmarksSupplement = {
-  path: "/category/add-category-to-bookmarks",
-  method: "post",
-  tags: ["Bookmarks"],
-  summary: "Assign a category to multiple bookmarks",
+  additionalResponses: {
+    403: { description: "Bookmarks not owned or no category access" },
+    404: { description: "Category not found" },
+  },
   description:
     "Assigns a category to multiple bookmarks in a single atomic operation. All bookmarks must be owned by the caller. The caller must have access to the category (owner or collaborator with edit access). Accepts 1–100 bookmark IDs. Returns only the newly-created assignments (existing ones are skipped).",
-  security: [{ [bearerAuth.name]: [] }, {}],
+  method: "post",
+  path: "/category/add-category-to-bookmarks",
   requestExample: {
     bookmark_ids: [42, 43, 44],
     category_id: 7,
@@ -24,8 +26,7 @@ export const addCategoryToBookmarksSupplement = {
     ],
     error: null,
   },
-  additionalResponses: {
-    403: { description: "Bookmarks not owned or no category access" },
-    404: { description: "Category not found" },
-  },
+  security: [{ [bearerAuth.name]: [] }, {}],
+  summary: "Assign a category to multiple bookmarks",
+  tags: ["Bookmarks"],
 } satisfies EndpointSupplement;

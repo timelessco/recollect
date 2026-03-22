@@ -1,6 +1,6 @@
 import "yet-another-react-lightbox/styles.css";
 
-import { type GetStaticPaths, type GetStaticProps } from "next";
+import type { GetStaticPaths, GetStaticProps } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -8,8 +8,9 @@ import * as Sentry from "@sentry/nextjs";
 import { format } from "date-fns";
 import { z } from "zod";
 
+import type { FetchDataResponse, SingleListData } from "../../../types/apiTypes";
+
 import { CustomLightBox } from "../../../components/lightbox/LightBox";
-import { type FetchDataResponse, type SingleListData } from "../../../types/apiTypes";
 import {
   DISCOVER_URL,
   FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API,
@@ -18,15 +19,15 @@ import {
 } from "../../../utils/constants";
 import { HttpStatus } from "../../../utils/error-utils/common";
 
-type FetchDiscoverableBookmarkByIdResponse = FetchDataResponse<SingleListData | null>;
+type FetchDiscoverableBookmarkByIdResponse = FetchDataResponse<null | SingleListData>;
 
 const DiscoverPreviewParamsSchema = z.object({
   id: z.string().regex(/^\d+$/u, "Bookmark ID must be numeric").transform(Number),
 });
 
-export type DiscoverPreviewProps = {
+export interface DiscoverPreviewProps {
   bookmark: SingleListData;
-};
+}
 
 const DiscoverPreview = (props: DiscoverPreviewProps) => {
   const { bookmark } = props;
@@ -75,8 +76,8 @@ const DiscoverPreview = (props: DiscoverPreviewProps) => {
 };
 
 export const getStaticPaths: GetStaticPaths = async () => ({
-  paths: [],
   fallback: "blocking",
+  paths: [],
 });
 
 export const getStaticProps: GetStaticProps<DiscoverPreviewProps> = async (context) => {
@@ -106,19 +107,19 @@ export const getStaticProps: GetStaticProps<DiscoverPreviewProps> = async (conte
 
     if (!response.ok) {
       console.error(`[${ROUTE}] Failed to fetch discoverable bookmark: HTTP ${response.status}`, {
+        bookmarkId,
         status: response.status,
         statusText: response.statusText,
-        bookmarkId,
       });
       Sentry.captureException(new Error(`HTTP ${response.status}: ${response.statusText}`), {
-        tags: {
-          operation: "fetch_discoverable_bookmark",
-          context: "incremental_static_regeneration",
-        },
         extra: {
+          bookmarkId,
           status: response.status,
           statusText: response.statusText,
-          bookmarkId,
+        },
+        tags: {
+          context: "incremental_static_regeneration",
+          operation: "fetch_discoverable_bookmark",
         },
       });
       return { notFound: true };
@@ -128,8 +129,8 @@ export const getStaticProps: GetStaticProps<DiscoverPreviewProps> = async (conte
 
     if (!data?.data || data?.error) {
       console.warn(`[${ROUTE}] Bookmark data not found or contains error`, {
-        error: data?.error,
         bookmarkId,
+        error: data?.error,
       });
       return { notFound: true };
     }
@@ -142,15 +143,15 @@ export const getStaticProps: GetStaticProps<DiscoverPreviewProps> = async (conte
     };
   } catch (error) {
     console.error(`[${ROUTE}] Unexpected error fetching discoverable bookmark`, {
-      error,
       bookmarkId,
+      error,
     });
     Sentry.captureException(error, {
-      tags: {
-        operation: "fetch_discoverable_bookmark",
-        context: "incremental_static_regeneration",
-      },
       extra: { bookmarkId },
+      tags: {
+        context: "incremental_static_regeneration",
+        operation: "fetch_discoverable_bookmark",
+      },
     });
     return { notFound: true };
   }

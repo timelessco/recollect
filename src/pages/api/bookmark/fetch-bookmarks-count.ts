@@ -1,9 +1,10 @@
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
-import { type SupabaseClient } from "@supabase/supabase-js";
 import isEmpty from "lodash/isEmpty";
 
-import { type BookmarksCountTypes } from "../../../types/apiTypes";
+import type { BookmarksCountTypes } from "../../../types/apiTypes";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { BOOKMARK_MEDIA_CATEGORY_PREDICATES } from "../../../utils/bookmark-category-filters";
 import {
   bookmarkType,
@@ -19,10 +20,10 @@ import {
 } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-type Data = {
+interface Data {
   data: BookmarksCountTypes | null;
-  error: string[] | null;
-};
+  error: null | string[];
+}
 
 const getCategoryCount = async (
   supabase: SupabaseClient,
@@ -75,21 +76,21 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   const userData = await supabase?.auth?.getUser();
 
-  const userId = userData?.data?.user?.id as string;
-  const email = userData?.data?.user?.email as string;
+  const userId = userData?.data?.user?.id!;
+  const email = userData?.data?.user?.email!;
 
   let count: BookmarksCountTypes = {
-    everything: 0,
-    categoryCount: [],
-    trash: 0,
-    uncategorized: 0,
-    images: 0,
-    videos: 0,
-    links: 0,
-    documents: 0,
-    tweets: 0,
-    instagram: 0,
     audio: 0,
+    categoryCount: [],
+    documents: 0,
+    everything: 0,
+    images: 0,
+    instagram: 0,
+    links: 0,
+    trash: 0,
+    tweets: 0,
+    uncategorized: 0,
+    videos: 0,
   };
 
   try {
@@ -175,16 +176,16 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     count = {
       ...count,
+      audio: bookmarkAudioCount ?? 0,
+      documents: bookmarkDocumentCount ?? 0,
       everything: bookmarkCount ?? 0,
       images: bookmarkImageCount ?? 0,
-      videos: bookmarkVideoCount ?? 0,
-      documents: bookmarkDocumentCount ?? 0,
+      instagram: bookmarkInstagramCount ?? 0,
       links: bookmarksLinks ?? 0,
       trash: bookmarkTrashCount ?? 0,
-      uncategorized: bookmarkUnCatCount ?? 0,
       tweets: bookmarkTweetsCount ?? 0,
-      instagram: bookmarkInstagramCount ?? 0,
-      audio: bookmarkAudioCount ?? 0,
+      uncategorized: bookmarkUnCatCount ?? 0,
+      videos: bookmarkVideoCount ?? 0,
     };
 
     const userCategoryIdsArray = userCategoryIds?.map((item) => item.id) ?? [];

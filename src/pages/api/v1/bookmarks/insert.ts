@@ -1,21 +1,22 @@
-import { type NextApiResponse } from "next";
+import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 import { z } from "zod";
 
-import { type NextApiRequest, type SingleListData } from "../../../../types/apiTypes";
+import type { NextApiRequest, SingleListData } from "../../../../types/apiTypes";
+
 import { MAIN_TABLE_NAME } from "../../../../utils/constants";
 import { apiSupabaseClient } from "../../../../utils/supabaseServerClient";
 
-type RequestType = {
-  data: Array<Pick<SingleListData, "description" | "ogImage" | "title" | "type" | "url">>;
-};
+interface RequestType {
+  data: Pick<SingleListData, "description" | "ogImage" | "title" | "type" | "url">[];
+}
 
-type ResponseType = {
-  error: string | null;
+interface ResponseType {
+  error: null | string;
   success: boolean;
-};
+}
 
 const getBodySchema = () =>
   z.object({
@@ -44,7 +45,7 @@ export default async function handler(
     const bodyData = schema.parse(request.body);
     const supabase = apiSupabaseClient(request, response);
 
-    const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+    const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
 
     // adding user_id in the data to be inserted
     const insertData = bodyData?.data?.map((item) => ({
@@ -69,7 +70,7 @@ export default async function handler(
       return;
     }
 
-    response.status(200).json({ success: true, error: null });
+    response.status(200).json({ error: null, success: true });
   } catch {
     response.status(400).send({ error: "Error in payload data", success: false });
   }

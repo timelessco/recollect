@@ -19,12 +19,9 @@ const ROUTE = "dev/session";
  * @returns {object} { access_token, expires_at, user_email }
  */
 export const GET = createGetApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: DevSessionInputSchema,
-  outputSchema: DevSessionOutputSchema,
-  handler: async ({ supabase, user, route }) => {
+  handler: async ({ route, supabase, user }) => {
     if (process.env.NODE_ENV !== "development" || process.env.VERCEL_ENV === "production") {
-      return apiWarn({ route, message: "Not found", status: 404 });
+      return apiWarn({ message: "Not found", route, status: 404 });
     }
 
     const {
@@ -33,8 +30,8 @@ export const GET = createGetApiHandlerWithAuth({
 
     if (!session) {
       return apiWarn({
-        route,
         message: "No active session found",
+        route,
         status: 401,
       });
     }
@@ -45,4 +42,7 @@ export const GET = createGetApiHandlerWithAuth({
       user_email: user.email,
     };
   },
+  inputSchema: DevSessionInputSchema,
+  outputSchema: DevSessionOutputSchema,
+  route: ROUTE,
 });

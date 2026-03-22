@@ -27,14 +27,14 @@ import { handleBulkBookmarkDelete } from "./handleBookmarkDelete";
 import { hasMoreBookmarks } from "./hasMoreBookmarks";
 import SignedOutSection from "./signedOutSection";
 
-const CardSection = dynamic(async () => await import("./cardSection"), {
+const CardSection = dynamic(async () => import("./cardSection"), {
   ssr: false,
 });
 
 export const BookmarkCards = () => {
   const session = useSupabaseSession((state) => state.session);
   const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-  const { onDrop, fileUploadOptimisticMutation } = useFileUploadDrop();
+  const { fileUploadOptimisticMutation, onDrop } = useFileUploadDrop();
 
   const searchText = useMiscellaneousStore((state) => state.searchText);
   const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
@@ -44,13 +44,13 @@ export const BookmarkCards = () => {
   const { bookmarksCountData } = useFetchBookmarksCount();
   const {
     everythingData,
-    flattendPaginationBookmarkData,
     fetchNextPage: fetchNextBookmarkPage,
+    flattendPaginationBookmarkData,
     isEverythingDataLoading,
   } = useFetchPaginatedBookmarks();
   const {
-    flattenedSearchData,
     fetchNextPage: fetchNextSearchPage,
+    flattenedSearchData,
     hasNextPage: searchHasNextPage,
   } = useSearchBookmarks();
   const { moveBookmarkToTrashOptimisticMutation } = useMoveBookmarkToTrashOptimisticMutation();
@@ -88,10 +88,12 @@ export const BookmarkCards = () => {
       };
 
       window.addEventListener("paste", listener);
-      return () => window.removeEventListener("paste", listener);
+      return () => {
+        window.removeEventListener("paste", listener);
+      };
     }
 
-    return undefined;
+    return;
   }, [CATEGORY_ID, addBookmarkMinDataOptimisticMutation, fileUploadOptimisticMutation]);
 
   if (!session) {
@@ -102,7 +104,7 @@ export const BookmarkCards = () => {
     <>
       <div className="mx-auto w-full max-xl:w-1/2" />
       <Dropzone disabled={CATEGORY_ID === TRASH_URL} noClick onDrop={onDrop}>
-        {({ getRootProps, getInputProps, isDragActive }) => (
+        {({ getInputProps, getRootProps, isDragActive }) => (
           <div
             {...omit(getRootProps(), ["onBlur", "onFocus"])}
             className={
@@ -114,9 +116,9 @@ export const BookmarkCards = () => {
               id="scrollableDiv"
               style={{
                 height: "100vh",
-                overflowY: "auto",
-                overflowX: "hidden",
                 overflowAnchor: "none",
+                overflowX: "hidden",
+                overflowY: "auto",
               }}
             >
               <InfiniteScroll
@@ -154,19 +156,19 @@ export const BookmarkCards = () => {
                     if (CATEGORY_ID === TRASH_URL) {
                       handleBulkBookmarkDelete({
                         bookmarkIds: item?.map((delItem) => delItem?.id),
-                        deleteForever: true,
-                        isTrash: true,
-                        isSearching,
-                        flattenedSearchData: flattenedSearchData ?? [],
-                        flattendPaginationBookmarkData: flattendPaginationBookmarkData ?? [],
-                        deleteBookmarkId,
-                        setDeleteBookmarkId,
-                        sessionUserId: session?.user?.id,
-                        moveBookmarkToTrashOptimisticMutation,
-                        deleteBookmarkOptismicMutation,
                         clearSelection: () => {},
-                        mutationApiCall,
+                        deleteBookmarkId,
+                        deleteBookmarkOptismicMutation,
+                        deleteForever: true,
                         errorToast,
+                        flattendPaginationBookmarkData: flattendPaginationBookmarkData ?? [],
+                        flattenedSearchData: flattenedSearchData ?? [],
+                        isSearching,
+                        isTrash: true,
+                        moveBookmarkToTrashOptimisticMutation,
+                        mutationApiCall,
+                        sessionUserId: session?.user?.id,
+                        setDeleteBookmarkId,
                       });
                     } else if (!isEmpty(item) && item?.length > 0) {
                       const firstItem = item.at(0);
@@ -176,7 +178,6 @@ export const BookmarkCards = () => {
                             data: [firstItem],
                             isTrash: true,
                           }),
-                          // eslint-disable-next-line promise/prefer-await-to-then
                         ).catch(() => {});
                       }
                     }

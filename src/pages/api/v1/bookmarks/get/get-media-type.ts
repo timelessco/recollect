@@ -1,4 +1,4 @@
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import axios from "axios";
 import { z } from "zod";
@@ -30,19 +30,19 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   try {
     const result = await axios.head(url, {
-      timeout: 5_000,
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
       },
+      timeout: 5000,
     });
 
     if (result.status !== 200) {
       console.log(`Failed to check media type for url: ${url}`);
       response.status(200).json({
-        success: false,
-        mediaType: null,
         error: "Failed to check media type",
+        mediaType: null,
+        success: false,
       });
       return;
     }
@@ -53,13 +53,13 @@ export default async function handler(request: NextApiRequest, response: NextApi
     response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
     response.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-    response.status(200).json({ success: true, mediaType, error: null });
+    response.status(200).json({ error: null, mediaType, success: true });
   } catch {
     console.log(`Failed to check media type for url: ${url}`);
     response.status(200).json({
-      success: false,
-      mediaType: null,
       error: "Failed to check media type",
+      mediaType: null,
+      success: false,
     });
   }
 }

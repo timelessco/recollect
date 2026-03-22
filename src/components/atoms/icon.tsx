@@ -1,4 +1,4 @@
-import { type ComponentPropsWithoutRef, type FC } from "react";
+import type { ComponentPropsWithoutRef, FC } from "react";
 
 import { cn } from "@/utils/tailwind-merge";
 
@@ -12,8 +12,8 @@ export const Icon: FC<IconProps> = ({ label, ...props }) => {
 
   const className = cn(props.className);
 
-  // eslint-disable-next-line no-param-reassign
-  props = { ...props, viewBox: _viewBox, children: _path, className };
+  // oxlint-disable-next-line no-param-reassign
+  props = { ...props, children: _path, className, viewBox: _viewBox };
 
   // For accessibility - https://allyjs.io/tutorials/focusing-in-svg.html#making-svg-elements-focusable
   return (
@@ -25,7 +25,6 @@ export const Icon: FC<IconProps> = ({ label, ...props }) => {
 };
 
 export const fallbackIcon = {
-  viewBox: "0 0 24 24",
   path: (
     <g stroke="currentColor" strokeWidth="1.5">
       <path
@@ -41,4 +40,5 @@ export const fallbackIcon = {
       <circle cx="12" cy="12" fill="none" r="11.25" strokeMiterlimit="10" />
     </g>
   ),
+  viewBox: "0 0 24 24",
 };

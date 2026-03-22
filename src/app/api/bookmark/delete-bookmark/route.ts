@@ -8,17 +8,14 @@ const ROUTE = "delete-bookmark";
 const BATCH_SIZE = 1000;
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: DeleteBookmarkInputSchema,
-  outputSchema: DeleteBookmarkOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const { deleteData } = data;
     const userId = user.id;
     const bookmarkIds = deleteData.map((item) => item.id);
 
     console.log(`[${route}] API called:`, {
-      userId,
       count: bookmarkIds.length,
+      userId,
     });
 
     let totalDeleted = 0;
@@ -32,19 +29,19 @@ export const POST = createPostApiHandlerWithAuth({
       }
 
       console.log(`[${route}] Deleting batch:`, {
-        userId,
         batchSize: batch.length,
         totalDeleted,
+        userId,
       });
 
       const result = await deleteBookmarksByIds(supabase, batch, userId, route);
 
       if (result.error) {
         return apiWarn({
-          route,
-          message: result.error,
-          status: 500,
           context: { count: batch.length, totalDeleted },
+          message: result.error,
+          route,
+          status: 500,
         });
       }
 
@@ -57,8 +54,8 @@ export const POST = createPostApiHandlerWithAuth({
     }
 
     console.log(`[${route}] Completed:`, {
-      userId,
       deletedCount: totalDeleted,
+      userId,
     });
 
     return {
@@ -66,4 +63,7 @@ export const POST = createPostApiHandlerWithAuth({
       message: `Deleted ${totalDeleted} bookmark(s)`,
     };
   },
+  inputSchema: DeleteBookmarkInputSchema,
+  outputSchema: DeleteBookmarkOutputSchema,
+  route: ROUTE,
 });

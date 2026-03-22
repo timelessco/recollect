@@ -13,7 +13,7 @@ const INTERACTIVE_SELECTOR = "media-controller, video, audio, iframe, object, [d
 export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
   // Lightbox controller: lets us subscribe to user input sensors,
   // close the lightbox, and access current slide dimensions
-  const { subscribeSensors, close, slideRect } = useController();
+  const { close, slideRect, subscribeSensors } = useController();
 
   // Tracks how far the user has pulled down (Y offset in px)
   const offsetRef = useRef(0);
@@ -28,8 +28,8 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 
   // Velocity tracking for mobile flick-to-close
   // Stores a sample point ~80ms behind the current pointer for stable velocity calculation
-  const velocitySampleRef = useRef({ y: 0, time: 0 });
-  const prevMoveRef = useRef({ y: 0, time: 0 });
+  const velocitySampleRef = useRef({ time: 0, y: 0 });
+  const prevMoveRef = useRef({ time: 0, y: 0 });
 
   useEffect(() => {
     if (!enabled) {
@@ -93,7 +93,9 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
         clearTimeout(timeoutRef.current);
       }
 
-      timeoutRef.current = setTimeout(() => reset(element), 200);
+      timeoutRef.current = setTimeout(() => {
+        reset(element);
+      }, 200);
     });
 
     // Mobile: pointer events (touch)
@@ -114,12 +116,12 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
         isDraggingRef.current = false;
         offsetRef.current = 0;
         velocitySampleRef.current = {
-          y: event.clientY,
           time: event.timeStamp,
+          y: event.clientY,
         };
         prevMoveRef.current = {
-          y: event.clientY,
           time: event.timeStamp,
+          y: event.clientY,
         };
       },
     );
@@ -138,7 +140,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
           if (isDraggingRef.current) {
             cancelAnimationFrame(rafRef.current);
             reset(element);
-            getSlideWrapper(element)?.removeAttribute("data-pulling");
+            delete getSlideWrapper(element).dataset.pulling;
             isDraggingRef.current = false;
           }
 
@@ -158,8 +160,8 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
         }
 
         prevMoveRef.current = {
-          y: event.clientY,
           time: event.timeStamp,
+          y: event.clientY,
         };
 
         if (offsetRef.current > THRESHOLD) {
@@ -189,7 +191,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
       const element = event.currentTarget as HTMLElement;
       cancelAnimationFrame(rafRef.current);
       isDraggingRef.current = false;
-      getSlideWrapper(element)?.removeAttribute("data-pulling");
+      delete getSlideWrapper(element).dataset.pulling;
 
       // Check velocity: close on quick downward flick even if distance < THRESHOLD
       const sample = velocitySampleRef.current;

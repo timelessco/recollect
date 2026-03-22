@@ -1,7 +1,8 @@
 import find from "lodash/find";
 
-import { type BookmarksCountTypes } from "../../types/apiTypes";
-import { type CategoryIdUrlTypes } from "../../types/componentTypes";
+import type { BookmarksCountTypes } from "../../types/apiTypes";
+import type { CategoryIdUrlTypes } from "../../types/componentTypes";
+
 import {
   AUDIO_URL,
   DOCUMENTS_URL,
@@ -15,25 +16,25 @@ import {
 } from "../../utils/constants";
 
 const CATEGORY_TO_COUNT_KEY: Record<string, keyof BookmarksCountTypes> = {
-  [TRASH_URL]: "trash",
-  [UNCATEGORIZED_URL]: "uncategorized",
-  [IMAGES_URL]: "images",
-  [VIDEOS_URL]: "videos",
-  [DOCUMENTS_URL]: "documents",
-  [TWEETS_URL]: "tweets",
-  [INSTAGRAM_URL]: "instagram",
   [AUDIO_URL]: "audio",
+  [DOCUMENTS_URL]: "documents",
+  [IMAGES_URL]: "images",
+  [INSTAGRAM_URL]: "instagram",
   [LINKS_URL]: "links",
+  [TRASH_URL]: "trash",
+  [TWEETS_URL]: "tweets",
+  [UNCATEGORIZED_URL]: "uncategorized",
+  [VIDEOS_URL]: "videos",
 };
 
-export type HasMoreBookmarksProps = {
+export interface HasMoreBookmarksProps {
   categoryId: CategoryIdUrlTypes;
   countData: BookmarksCountTypes | null | undefined;
   dataLength: number | undefined;
   hasPaginatedData: boolean;
   isSearching: boolean;
   searchHasNextPage: boolean | undefined;
-};
+}
 
 export function hasMoreBookmarks(props: HasMoreBookmarksProps): boolean {
   const { categoryId, countData, dataLength, hasPaginatedData, isSearching, searchHasNextPage } =

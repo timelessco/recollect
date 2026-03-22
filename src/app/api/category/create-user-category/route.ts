@@ -11,22 +11,19 @@ import { CreateCategoryPayloadSchema, CreateCategoryResponseSchema } from "./sch
 const ROUTE = "create-user-category";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: CreateCategoryPayloadSchema,
-  outputSchema: CreateCategoryResponseSchema,
-  handler: async ({ data, supabase, user, route }) => {
-    const { name, icon, icon_color, category_order: categoryOrder } = data;
+  handler: async ({ data, route, supabase, user }) => {
+    const { category_order: categoryOrder, icon, icon_color, name } = data;
     const userId = user.id;
 
-    console.log(`[${route}] API called:`, { userId, name });
+    console.log(`[${route}] API called:`, { name, userId });
 
     const { data: categoryData, error } = await supabase
       .from(CATEGORIES_TABLE_NAME)
       .insert([
         {
           category_name: name,
-          user_id: userId,
           category_slug: `${slugify(name, { lower: true })}-${uniqid.time()}`,
+          user_id: userId,
           ...(icon !== undefined && { icon }),
           ...(icon_color !== undefined && { icon_color }),
         },
@@ -38,29 +35,29 @@ export const POST = createPostApiHandlerWithAuth({
       // Postgres error code 23505 = unique_violation
       if (error.code === "23505" || error.message?.includes("unique_user_category_name_ci")) {
         return apiWarn({
-          route,
-          message: DUPLICATE_CATEGORY_NAME_ERROR,
-          status: 409,
           context: { name, userId },
+          message: DUPLICATE_CATEGORY_NAME_ERROR,
+          route,
+          status: 409,
         });
       }
 
       return apiError({
-        route,
-        message: "Error creating category",
         error,
-        operation: "insert_category",
-        userId,
         extra: { name },
+        message: "Error creating category",
+        operation: "insert_category",
+        route,
+        userId,
       });
     }
 
     if (!isNonEmptyArray(categoryData)) {
       return apiError({
-        route,
-        message: "No data returned from database",
         error: new Error("Empty insert result"),
+        message: "No data returned from database",
         operation: "insert_category_empty",
+        route,
         userId,
       });
     }
@@ -79,12 +76,12 @@ export const POST = createPostApiHandlerWithAuth({
 
       if (orderError) {
         return apiError({
-          route,
-          message: "Error updating category order",
           error: orderError,
-          operation: "update_category_order",
-          userId,
           extra: { categoryId: newCategoryId },
+          message: "Error updating category order",
+          operation: "update_category_order",
+          route,
+          userId,
         });
       }
     }
@@ -95,4 +92,7 @@ export const POST = createPostApiHandlerWithAuth({
 
     return categoryData;
   },
+  inputSchema: CreateCategoryPayloadSchema,
+  outputSchema: CreateCategoryResponseSchema,
+  route: ROUTE,
 });

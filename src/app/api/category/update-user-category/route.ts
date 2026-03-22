@@ -1,7 +1,8 @@
+import type { Database } from "@/types/database-generated.types";
+
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
-import { type Database } from "@/types/database-generated.types";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
 import { CATEGORIES_TABLE_NAME, DUPLICATE_CATEGORY_NAME_ERROR, PROFILES } from "@/utils/constants";
 
@@ -10,10 +11,7 @@ import { UpdateCategoryPayloadSchema, UpdateCategoryResponseSchema } from "./sch
 const ROUTE = "update-user-category";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: UpdateCategoryPayloadSchema,
-  outputSchema: UpdateCategoryResponseSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const { category_id: categoryId, updateData } = data;
     const userId = user.id;
 
@@ -21,9 +19,9 @@ export const POST = createPostApiHandlerWithAuth({
     const { is_favorite, ...categoryUpdateData } = updateData;
 
     console.log(`[${route}] API called:`, {
-      userId,
       categoryId,
       categoryName: categoryUpdateData.category_name,
+      userId,
     });
 
     // Run category table update first (if there are fields to update)
@@ -45,29 +43,29 @@ export const POST = createPostApiHandlerWithAuth({
       // Postgres error code 23505 = unique_violation
       if (error.code === "23505" || error.message?.includes("unique_user_category_name_ci")) {
         return apiWarn({
-          route,
-          message: DUPLICATE_CATEGORY_NAME_ERROR,
-          status: 409,
           context: { name: updateData.category_name, userId },
+          message: DUPLICATE_CATEGORY_NAME_ERROR,
+          route,
+          status: 409,
         });
       }
 
       return apiError({
-        route,
-        message: "Error updating category",
         error,
-        operation: "update_category",
-        userId,
         extra: { categoryId },
+        message: "Error updating category",
+        operation: "update_category",
+        route,
+        userId,
       });
     }
 
     if (!isNonEmptyArray(categoryData)) {
       return apiError({
-        route,
-        message: "No data returned from database",
         error: new Error("Empty update result"),
+        message: "No data returned from database",
         operation: "update_category_empty",
+        route,
         userId,
       });
     }
@@ -88,12 +86,12 @@ export const POST = createPostApiHandlerWithAuth({
 
         if (removeError) {
           return apiError({
-            route,
-            message: "Error updating favorite status",
             error: removeError,
-            operation: "remove_favorite_category",
-            userId,
             extra: { categoryId },
+            message: "Error updating favorite status",
+            operation: "remove_favorite_category",
+            route,
+            userId,
           });
         }
 
@@ -104,12 +102,12 @@ export const POST = createPostApiHandlerWithAuth({
 
         if (toggleError) {
           return apiError({
-            route,
-            message: "Error updating favorite status",
             error: toggleError,
-            operation: "toggle_favorite_category",
-            userId,
             extra: { categoryId },
+            message: "Error updating favorite status",
+            operation: "toggle_favorite_category",
+            route,
+            userId,
           });
         }
       } else {
@@ -121,12 +119,12 @@ export const POST = createPostApiHandlerWithAuth({
 
         if (removeError) {
           return apiError({
-            route,
-            message: "Error updating favorite status",
             error: removeError,
-            operation: "remove_favorite_category",
-            userId,
             extra: { categoryId },
+            message: "Error updating favorite status",
+            operation: "remove_favorite_category",
+            route,
+            userId,
           });
         }
       }
@@ -153,20 +151,23 @@ export const POST = createPostApiHandlerWithAuth({
 
       if (profileError) {
         console.error(`[${route}] Failed to load profile for revalidation:`, {
+          categoryId: categoryData[0].id,
           error: profileError,
           userId,
-          categoryId: categoryData[0].id,
         });
       } else if (profileData?.user_name) {
         // Fire-and-forget revalidation - errors handled internally by helper
         void revalidatePublicCategoryPage(profileData.user_name, categoryData[0].category_slug, {
+          categoryId: categoryData[0].id,
           operation: "update_category",
           userId,
-          categoryId: categoryData[0].id,
         });
       }
     }
 
     return categoryData;
   },
+  inputSchema: UpdateCategoryPayloadSchema,
+  outputSchema: UpdateCategoryResponseSchema,
+  route: ROUTE,
 });

@@ -1,12 +1,19 @@
 import { useMemo } from "react";
-import { type DroppableCollectionReorderEvent } from "react-aria";
+import type { DroppableCollectionReorderEvent } from "react-aria";
 import { Item } from "react-stately";
 
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
+
+import type {
+  BookmarksCountTypes,
+  CategoriesData,
+  FetchSharedCategoriesData,
+} from "../../../types/apiTypes";
+import type { CollectionItemTypes } from "./singleListItemComponent";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 
@@ -18,11 +25,6 @@ import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProf
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
-import {
-  type BookmarksCountTypes,
-  type CategoriesData,
-  type FetchSharedCategoriesData,
-} from "../../../types/apiTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import {
   BOOKMARKS_COUNT_KEY,
@@ -33,15 +35,12 @@ import { errorToast } from "../../../utils/toastMessages";
 import { CollectionsListSection } from "./collections-list-section";
 import { FavoriteCollectionsList } from "./favorite-collections-list";
 import { ReorderableListBox } from "./reorderable-list";
-import SingleListItemComponent, { type CollectionItemTypes } from "./singleListItemComponent";
+import SingleListItemComponent from "./singleListItemComponent";
 
 const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state.session);
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]) as {
-    data: CategoriesData[];
-    error: PostgrestError;
-  };
+  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])!;
 
   const userId = session?.user?.id;
 
@@ -84,22 +83,13 @@ const CollectionsList = () => {
 
   const currentPath = useGetCurrentUrlPath();
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]) as {
-    data: CategoriesData[];
-    error: PostgrestError;
-  };
+  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])!;
 
-  const sharedCategoriesData = queryClient.getQueryData([SHARED_CATEGORIES_TABLE_NAME]) as {
-    data: FetchSharedCategoriesData[];
-    error: PostgrestError;
-  };
+  const sharedCategoriesData = queryClient.getQueryData([SHARED_CATEGORIES_TABLE_NAME])!;
 
-  const bookmarksCountData = queryClient.getQueryData([BOOKMARKS_COUNT_KEY, session?.user?.id]) as {
-    data: BookmarksCountTypes;
-    error: PostgrestError;
-  };
+  const bookmarksCountData = queryClient.getQueryData([BOOKMARKS_COUNT_KEY, session?.user?.id])!;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
   const handleBookmarksDrop = async (event: any) => {
     // Guard: don't process drops while bookmarks are still loading
     if (isEverythingDataLoading || !everythingData) {
@@ -118,7 +108,7 @@ const CollectionsList = () => {
         find(currentCategory?.collabData, (item) => item?.userEmail === session?.user?.email)
           ?.edit_access === true || currentCategory?.user_id?.id === session?.user?.id;
 
-      // eslint-disable-next-line unicorn/no-array-for-each, @typescript-eslint/no-explicit-any
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any
       await event?.items?.forEach(async (item: any) => {
         const bookmarkId = (await item.getText("text/plain")) as string;
 
@@ -142,8 +132,8 @@ const CollectionsList = () => {
           }
 
           addCategoryToBookmarkOptimisticMutation.mutate({
-            category_id: categoryId,
             bookmark_id: Number.parseInt(bookmarkId, 10),
+            category_id: categoryId,
           });
         } else {
           errorToast("You cannot move collaborators uploads");
@@ -156,21 +146,21 @@ const CollectionsList = () => {
 
   const collectionsList = session
     ? categoryData?.data?.map((item) => ({
-        name: item?.category_name,
-        href: `/${item?.category_slug}`,
-        id: item?.id,
-        current: currentPath === item?.category_slug,
-        isFavorite: favoriteCategories.includes(item?.id),
-        isPublic: item?.is_public,
-        isCollab: !isEmpty(
-          find(sharedCategoriesData?.data, (cat) => cat?.category_id === item?.id),
-        ),
-        iconValue: item?.icon,
         count: find(
           bookmarksCountData?.data?.categoryCount,
           (catItem) => catItem?.category_id === item?.id,
         )?.count,
+        current: currentPath === item?.category_slug,
+        href: `/${item?.category_slug}`,
         iconColor: item?.icon_color,
+        iconValue: item?.icon,
+        id: item?.id,
+        isCollab: !isEmpty(
+          find(sharedCategoriesData?.data, (cat) => cat?.category_id === item?.id),
+        ),
+        isFavorite: favoriteCategories.includes(item?.id),
+        isPublic: item?.is_public,
+        name: item?.category_name,
       }))
     : [];
   const sortedList = () => {
@@ -285,7 +275,7 @@ const CollectionsList = () => {
         <ReorderableListBox
           aria-label="Categories-drop"
           highlightDropTarget={isCardDragging}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // oxlint-disable-next-line @typescript-eslint/no-explicit-any
           onItemDrop={(event: any) => {
             void handleBookmarksDrop(event);
           }}

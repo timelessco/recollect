@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-import { type Database } from "@/types/database.types";
+import type { Database } from "@/types/database.types";
 
 import { SUPABASE_SERVICE_KEY, SUPABASE_URL } from "./constants";
 
@@ -15,7 +15,7 @@ export const createServerServiceClient = async () =>
   createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
     auth: {
       autoRefreshToken: false,
-      persistSession: false,
       detectSessionInUrl: false,
+      persistSession: false,
     },
   });

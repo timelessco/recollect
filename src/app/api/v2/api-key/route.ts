@@ -10,10 +10,7 @@ import { validateApiKey } from "./validate-api-key";
 const ROUTE = "v2-api-key";
 
 export const PUT = createPutApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: ApiKeyInputSchema,
-  outputSchema: ApiKeyOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const { apikey } = data;
     const userId = user.id;
 
@@ -23,10 +20,10 @@ export const PUT = createPutApiHandlerWithAuth({
 
     if (!encryptionKey) {
       return apiError({
-        route,
-        message: "Server configuration error",
         error: new Error("API_KEY_ENCRYPTION_KEY is not configured"),
+        message: "Server configuration error",
         operation: "api_key_encryption_config",
+        route,
         userId,
       });
     }
@@ -35,8 +32,8 @@ export const PUT = createPutApiHandlerWithAuth({
       await validateApiKey({ apikey });
     } catch {
       return apiWarn({
-        route,
         message: "Invalid API key",
+        route,
         status: 400,
       });
     }
@@ -45,14 +42,14 @@ export const PUT = createPutApiHandlerWithAuth({
 
     const { error: upsertError } = await supabase
       .from(PROFILES)
-      .upsert({ id: userId, api_key: encryptedApiKey });
+      .upsert({ api_key: encryptedApiKey, id: userId });
 
     if (upsertError) {
       return apiError({
-        route,
-        message: "Failed to save API key",
         error: upsertError,
+        message: "Failed to save API key",
         operation: "api_key_upsert",
+        route,
         userId,
       });
     }
@@ -61,4 +58,7 @@ export const PUT = createPutApiHandlerWithAuth({
 
     return { success: true };
   },
+  inputSchema: ApiKeyInputSchema,
+  outputSchema: ApiKeyOutputSchema,
+  route: ROUTE,
 });

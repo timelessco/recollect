@@ -39,7 +39,7 @@ export function handleClientError(error: unknown, fallbackMessage?: string, show
   }
 
   Sentry.captureException(error, {
+    extra: { errorMessage, fallbackMessage, title },
     tags: { source: "client_error_handler" },
-    extra: { title, errorMessage, fallbackMessage },
   });
 }

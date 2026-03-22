@@ -1,36 +1,37 @@
+import type { EndpointSupplement } from "@/lib/openapi/supplement-types";
+
 /**
  * @module Build-time only
  */
 import { bearerAuth } from "@/lib/openapi/registry";
-import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
 
 export const v2FetchUserProfileSupplement = {
-  path: "/v2/profiles/fetch-user-profile",
-  method: "get",
-  tags: ["Profiles"],
-  summary: "Fetch authenticated user profile with auto-provisioning",
+  additionalResponses: {
+    401: { description: "Not authenticated" },
+  },
   description:
     "Returns the full profile for the authenticated user. Has side effects: if `avatar` query param is provided and the user has no profile picture, updates `profile_pic` with the OAuth avatar URL. If the user has no `user_name`, auto-generates one from their email (appending a unique suffix if the name is already taken).",
-  security: [{ [bearerAuth.name]: [] }, {}],
+  method: "get",
   parameterExamples: {
     avatar: {
-      "with-avatar-sync": {
-        summary: "Sync OAuth avatar",
-        description: "Pass an OAuth avatar URL — updates `profile_pic` if the user has none set.",
-        value: "https://example.com/avatars/user-123.jpg",
-      },
       "no-avatar": {
-        summary: "No avatar param",
         description: "Omit `avatar` — returns the profile without triggering a profile_pic update.",
+        summary: "No avatar param",
         value: "",
+      },
+      "with-avatar-sync": {
+        description: "Pass an OAuth avatar URL — updates `profile_pic` if the user has none set.",
+        summary: "Sync OAuth avatar",
+        value: "https://example.com/avatars/user-123.jpg",
       },
     },
   },
+  path: "/v2/profiles/fetch-user-profile",
   responseExamples: {
     "full-profile": {
-      summary: "Fully populated profile",
       description:
         "Call without `avatar` param — returns all profile fields for the authenticated user.",
+      summary: "Fully populated profile",
       value: {
         data: [
           {
@@ -44,9 +45,9 @@ export const v2FetchUserProfileSupplement = {
             bookmark_count: 0,
             bookmarks_view: {
               everything: {
-                moodboardColumns: [50],
-                cardContentViewArray: ["cover", "title", "tags", "info", "description"],
                 bookmarksView: "moodboard",
+                cardContentViewArray: ["cover", "title", "tags", "info", "description"],
+                moodboardColumns: [50],
                 sortBy: "date-sort-ascending",
               },
             },
@@ -64,8 +65,8 @@ export const v2FetchUserProfileSupplement = {
       } as const,
     },
     "nullable-fields": {
-      summary: "Profile with nullable fields",
       description: "User with minimal data — nullable fields return null or empty arrays.",
+      summary: "Profile with nullable fields",
       value: {
         data: [
           {
@@ -92,7 +93,7 @@ export const v2FetchUserProfileSupplement = {
       } as const,
     },
   },
-  additionalResponses: {
-    401: { description: "Not authenticated" },
-  },
+  security: [{ [bearerAuth.name]: [] }, {}],
+  summary: "Fetch authenticated user profile with auto-provisioning",
+  tags: ["Profiles"],
 } satisfies EndpointSupplement;

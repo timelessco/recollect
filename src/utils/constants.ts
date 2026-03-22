@@ -50,15 +50,11 @@ export const GET_HASHTAG_TAG_PATTERN = /#\[[^\]]+\]\([^)]+\)|#[^\s#]+/gu;
 export const TAG_MARKUP_REGEX = /#\[(?<display>[^\]]+)\]\([^)]+\)/u;
 
 export const GET_SITE_SCOPE_PATTERN = /@([A-Za-z\d]+)/gu;
-export const EMAIL_CHECK_PATTERN =
-  // eslint-disable-next-line no-useless-escape, regexp/no-useless-escape,
-  /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/gu;
-// eslint-disable-next-line unicorn/better-regex, require-unicode-regexp
+export const EMAIL_CHECK_PATTERN = /^[\w\-.]+@([\w-]+\.)+[\w-]{2,4}$/gu;
 export const LETTERS_NUMBERS_CHECK_PATTERN = /^[a-z\d]+$/;
 export const DISPLAY_NAME_CHECK_PATTERN = /^[\d\sA-Za-z]+$/u;
 export const URL_IMAGE_CHECK_PATTERN =
   /^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp|pdf|mp3|mp4)(\?(.*))?$/gimu;
-// eslint-disable-next-line require-unicode-regexp, unicorn/better-regex
 export const FILE_NAME_PARSING_PATTERN = /[!"'()*+:@~^]/g;
 export const URL_PDF_CHECK_PATTERN = /https?:\/\/\S+?\.pdf(\?\S*)?(#\S*)?/iu;
 
@@ -242,7 +238,7 @@ export const DOCUMENT_MIME_TYPES = ["application/pdf", "application/msword"] as 
  * Prefix-based: any image/*, video/*, audio/* is accepted,
  * plus specific document types from DOCUMENT_MIME_TYPES.
  */
-export function isAcceptedMimeType(mimeType: string | null | undefined): boolean {
+export function isAcceptedMimeType(mimeType: null | string | undefined): boolean {
   if (!mimeType) {
     return false;
   }
@@ -289,18 +285,18 @@ export const colorPickerColors = [
 export const defaultBlur = "Uf4:~MrTiwbcpfi]Z~kDb_agaJoco}jbaeax";
 
 export const menuListItemName = {
-  everything: "Everything",
-  discover: "Discover",
-  inbox: "Inbox",
-  trash: "Trash",
-  settings: "Settings",
-  image: "Image",
-  videos: "Videos",
-  links: "Links",
-  documents: "Documents",
-  tweets: "Tweets",
-  instagram: "Instagram",
   audio: "Audio",
+  discover: "Discover",
+  documents: "Documents",
+  everything: "Everything",
+  image: "Image",
+  inbox: "Inbox",
+  instagram: "Instagram",
+  links: "Links",
+  settings: "Settings",
+  trash: "Trash",
+  tweets: "Tweets",
+  videos: "Videos",
 };
 
 // if user is adding anything in these pages then the added item will be in uncategorized
@@ -313,18 +309,18 @@ export const uncategorizedPages = [
 ];
 
 export const viewValues = {
-  timeline: "timeline",
-  moodboard: "moodboard",
   card: "card",
   list: "list",
+  moodboard: "moodboard",
+  timeline: "timeline",
 };
 
 export const singleInfoValues = {
-  title: "title",
   cover: "cover",
-  info: "info",
   description: "description",
+  info: "info",
   tags: "tags",
+  title: "title",
 };
 
 export const infoValues = [
@@ -383,12 +379,12 @@ export const CF_IMAGE_LOADER_URL = `${process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_
 export const SKIP_OG_IMAGE_DOMAINS = ["amazon.in", "twitter.com", "x.com", "amazon.com"];
 
 export const springConfig = {
-  mass: 1,
   damping: 17,
-  stiffness: 250,
+  mass: 1,
   overshootClamping: false,
-  restSpeedThreshold: 0.001,
   restDisplacementThreshold: 0.001,
+  restSpeedThreshold: 0.001,
+  stiffness: 250,
   type: "spring",
 } as const;
 

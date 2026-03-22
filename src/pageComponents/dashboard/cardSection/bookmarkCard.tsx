@@ -4,11 +4,12 @@ import { memo, useState } from "react";
 import { format } from "date-fns";
 import { isEmpty, isNull } from "lodash";
 
+import type { BookmarkViewDataTypes, SingleListData } from "@/types/apiTypes";
+
 import ReadMore from "@/components/readmore";
 import useGetViewValue from "@/hooks/useGetViewValue";
 import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
 import { useSupabaseSession } from "@/store/componentStore";
-import { type BookmarkViewDataTypes, type SingleListData } from "@/types/apiTypes";
 import { viewValues } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
 import { getBaseUrl, isBookmarkOwner, isCurrentYear } from "@/utils/helpers";
@@ -35,7 +36,7 @@ export function getImgForPost(
   return isPreferred ? (postCoverImage ?? postOgImage) : postOgImage;
 }
 
-export type BookmarkCardProps = {
+export interface BookmarkCardProps {
   categoryViewsFromProps?: BookmarkViewDataTypes;
   img?: string;
   isDiscoverPage?: boolean;
@@ -44,7 +45,7 @@ export type BookmarkCardProps = {
   onMoveOutOfTrashClick?: (post: SingleListData) => void;
   post: SingleListData;
   showAvatar: boolean;
-};
+}
 
 const BookmarkCardInner = ({
   categoryViewsFromProps,
@@ -110,7 +111,9 @@ const BookmarkCardInner = ({
         <BookmarkFavIcon
           hasFavIconError={hasFavIconError}
           isUserInTweetsPage={isUserInTweetsPage}
-          onFavIconError={() => setHasFavIconError(true)}
+          onFavIconError={() => {
+            setHasFavIconError(true);
+          }}
           post={post}
         />
         <p

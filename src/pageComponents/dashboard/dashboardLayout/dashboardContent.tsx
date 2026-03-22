@@ -1,28 +1,29 @@
+import type { CategoriesData } from "../../../types/apiTypes";
+import type { CategoryIdUrlTypes } from "../../../types/componentTypes";
+
 import { cn } from "@/utils/tailwind-merge";
 
 import AddBookmarkDropdown from "../../../components/customDropdowns.tsx/addBookmarkDropdown";
 import { useMiscellaneousStore } from "../../../store/componentStore";
-import { type CategoriesData } from "../../../types/apiTypes";
-import { type CategoryIdUrlTypes } from "../../../types/componentTypes";
 import { DISCOVER_URL, TRASH_URL } from "../../../utils/constants";
 import { NavBarLogo, SidePaneCollapseButton } from "./components";
 import { NavBarHeading } from "./headingComponents";
 import { SearchBar } from "./searchComponents";
 
-type DashboardContentProps = {
+interface DashboardContentProps {
   categoryId: CategoryIdUrlTypes;
   children: React.ReactNode;
   currentCategoryData?: CategoriesData;
-  currentPath: string | null;
-  headerName?: string | null;
+  currentPath: null | string;
+  headerName?: null | string;
   headerOptions: React.ReactNode;
   isDesktop: boolean;
   onExpandSidePane: () => void;
   onShowSearchBar: (value: boolean) => void;
-  optionsMenuList: Array<{ current?: boolean; icon?: React.ReactNode }>;
+  optionsMenuList: { current?: boolean; icon?: React.ReactNode }[];
   showSearchBar: boolean;
   showSidePane: boolean;
-};
+}
 
 export const DashboardContent = (props: DashboardContentProps) => {
   const {
@@ -51,7 +52,7 @@ export const DashboardContent = (props: DashboardContentProps) => {
             (isDesktop || !showSearchBar) && "w-1/5 max-lg:w-3/4",
           )}
         >
-          <SidePaneCollapseButton showSidePane={showSidePane} onToggle={onExpandSidePane} />
+          <SidePaneCollapseButton onToggle={onExpandSidePane} showSidePane={showSidePane} />
           {(isDesktop || !showSearchBar) && (
             <>
               <figure className="mr-2 flex max-h-[20px] min-h-[20px] w-full max-w-[20px] min-w-[20px] items-center text-plain-reverse">
@@ -72,19 +73,19 @@ export const DashboardContent = (props: DashboardContentProps) => {
         <div
           className={cn({
             "flex w-4/5 items-center justify-between max-lg:justify-end max-sm:mt-0": true,
-            "max-lg:w-full": showSearchBar,
             "max-lg:w-1/4": !showSearchBar,
+            "max-lg:w-full": showSearchBar,
           })}
         >
           {/* this div is there for centering needs */}
           <div className="h-5 w-[1%] max-lg:hidden" />
           <SearchBar
-            showSearchBar={showSearchBar}
-            isDesktop={isDesktop}
             categoryId={categoryId}
             currentCategoryData={currentCategoryData}
             currentPath={currentPath}
+            isDesktop={isDesktop}
             onShowSearchBar={onShowSearchBar}
+            showSearchBar={showSearchBar}
           />
           <div className="flex w-[27%] items-center justify-end gap-3 max-xl:w-max max-xl:gap-2">
             {currentPath !== DISCOVER_URL && headerOptions}

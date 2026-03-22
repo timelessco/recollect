@@ -10,14 +10,11 @@ import {
 const ROUTE = "v2-share-update-shared-category-user-role";
 
 export const PATCH = createPatchApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: UpdateSharedCategoryUserRoleInputSchema,
-  outputSchema: UpdateSharedCategoryUserRoleOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const userId = user.id;
     const email = user.email ?? "";
 
-    console.log(`[${route}] API called:`, { userId, id: data.id });
+    console.log(`[${route}] API called:`, { id: data.id, userId });
 
     const { data: updated, error } = await supabase
       .from(SHARED_CATEGORIES_TABLE_NAME)
@@ -28,15 +25,18 @@ export const PATCH = createPatchApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to update shared category user role",
         error,
-        operation: "update_shared_category_user_role",
-        userId,
         extra: { id: data.id },
+        message: "Failed to update shared category user role",
+        operation: "update_shared_category_user_role",
+        route,
+        userId,
       });
     }
 
     return updated;
   },
+  inputSchema: UpdateSharedCategoryUserRoleInputSchema,
+  outputSchema: UpdateSharedCategoryUserRoleOutputSchema,
+  route: ROUTE,
 });

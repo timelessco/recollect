@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty } from "lodash";
+
+import type { FetchSharedCategoriesData, SingleListData } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import {
@@ -10,7 +12,6 @@ import {
   useMiscellaneousStore,
   useSupabaseSession,
 } from "../../../store/componentStore";
-import { type FetchSharedCategoriesData, type SingleListData } from "../../../types/apiTypes";
 import {
   BOOKMARKS_KEY,
   PAGINATION_LIMIT,
@@ -18,9 +19,9 @@ import {
 } from "../../../utils/constants";
 import { searchBookmarks } from "../../supabaseCrudHelpers";
 
-type UseSearchBookmarksOptions = {
+interface UseSearchBookmarksOptions {
   enabled?: boolean;
-};
+}
 
 // searches bookmarks
 export default function useSearchBookmarks(options: UseSearchBookmarksOptions = {}) {
@@ -33,27 +34,15 @@ export default function useSearchBookmarks(options: UseSearchBookmarksOptions = 
 
   const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
 
-  const sharedCategoriesData = queryClient.getQueryData([SHARED_CATEGORIES_TABLE_NAME]) as {
-    data: FetchSharedCategoriesData[];
-    error: PostgrestError;
-  };
+  const sharedCategoriesData = queryClient.getQueryData([SHARED_CATEGORIES_TABLE_NAME])!;
 
   // this tells if the collection is a shared collection or not
   const isSharedCategory = Boolean(
     find(sharedCategoriesData?.data, (item) => item?.category_id === CATEGORY_ID),
   );
 
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: [
-      BOOKMARKS_KEY,
-      session?.user?.id,
-      CATEGORY_ID,
-      searchText,
-      isSharedCategory,
-    ] as const,
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
     enabled: enabled && !isEmpty(searchText),
-    refetchOnWindowFocus: false,
-    initialPageParam: 0,
     queryFn: async ({ pageParam: pageParameter }) => {
       if (searchText) {
         const result = await searchBookmarks(
@@ -68,6 +57,7 @@ export default function useSearchBookmarks(options: UseSearchBookmarksOptions = 
 
       return { data: [], error: null };
     },
+    initialPageParam: 0,
     getNextPageParam: (lastPage, pages) => {
       // If last page has fewer results than limit, no more pages
       if (!lastPage?.data || lastPage.data.length < PAGINATION_LIMIT) {
@@ -77,6 +67,14 @@ export default function useSearchBookmarks(options: UseSearchBookmarksOptions = 
       // Return offset for next page
       return pages.length * PAGINATION_LIMIT;
     },
+    queryKey: [
+      BOOKMARKS_KEY,
+      session?.user?.id,
+      CATEGORY_ID,
+      searchText,
+      isSharedCategory,
+    ] as const,
+    refetchOnWindowFocus: false,
     // Remove initialPageParam completely
   });
 
@@ -91,11 +89,11 @@ export default function useSearchBookmarks(options: UseSearchBookmarksOptions = 
   // Flatten the search results to match the expected data structure
   return {
     data,
+    fetchNextPage,
     flattenedSearchData: (data?.pages?.flatMap((page) => page?.data ?? []) ??
       []) as unknown as SingleListData[],
-    isLoading,
-    fetchNextPage,
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,
+    isLoading,
   };
 }

@@ -1,9 +1,10 @@
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { find } from "lodash";
 
+import type { CategoriesData } from "../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+
 import { useSupabaseSession } from "../store/componentStore";
-import { type CategoriesData } from "../types/apiTypes";
 import { CATEGORIES_KEY } from "../utils/constants";
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
 
@@ -19,10 +20,7 @@ export default function useIsUserCategoryOwner() {
     return { isOwner: true };
   }
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
-    data: CategoriesData[];
-    error: PostgrestError;
-  };
+  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId])!;
 
   const isOwner =
     find(categoryData?.data, (item) => item?.id === categoryId)?.user_id?.id === userId;

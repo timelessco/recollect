@@ -1,11 +1,5 @@
-import {
-  createContext,
-  useRef,
-  type HTMLAttributes,
-  type JSX,
-  type Key,
-  type ReactNode,
-} from "react";
+import { createContext, useRef } from "react";
+import type { HTMLAttributes, JSX, Key, ReactNode } from "react";
 import {
   DragPreview,
   ListDropTargetDelegate,
@@ -19,19 +13,23 @@ import {
   useFocusRing,
   useListBox,
   useOption,
-  type DraggableItemProps,
-  type DragItem,
-  type DropIndicatorProps,
-  type DroppableCollectionReorderEvent,
+} from "react-aria";
+import type {
+  DraggableItemProps,
+  DragItem,
+  DropIndicatorProps,
+  DroppableCollectionReorderEvent,
 } from "react-aria";
 import {
   useDraggableCollectionState,
   useDroppableCollectionState,
   useListState,
-  type DraggableCollectionState,
-  type DroppableCollectionState,
-  type ListProps,
-  type ListState,
+} from "react-stately";
+import type {
+  DraggableCollectionState,
+  DroppableCollectionState,
+  ListProps,
+  ListState,
 } from "react-stately";
 
 import isNull from "lodash/isNull";
@@ -43,14 +41,14 @@ import omit from "lodash/omit";
 
 export interface ReorderableListBoxProps extends ListProps<object> {
   getItems?: (keys: Set<Key>) => DragItem[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onItemDrop?: (event: any) => void;
-  onReorder: (event: DroppableCollectionReorderEvent) => unknown;
-  renderDragPreview: (items: DragItem[]) => JSX.Element;
   /**
    * When true, shows drop-target highlight on items during card drags
    */
   highlightDropTarget?: boolean;
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+  onItemDrop?: (event: any) => void;
+  onReorder: (event: DroppableCollectionReorderEvent) => unknown;
+  renderDragPreview: (items: DragItem[]) => JSX.Element;
 }
 
 type OptionDropItemTypes = DraggableItemProps & {
@@ -63,13 +61,13 @@ type OptionDropItemTypes = DraggableItemProps & {
 
 type ReorderDropIndicatorProps = DropIndicatorProps & {
   dropState: DroppableCollectionState;
-  position: "before" | "after";
+  position: "after" | "before";
 };
 
 function ReorderDropIndicator(props: ReorderDropIndicatorProps) {
   const { dropState, position } = props;
   const ref = useRef(null);
-  const { dropIndicatorProps, isHidden, isDropTarget } = useDropIndicator(props, dropState, ref);
+  const { dropIndicatorProps, isDropTarget, isHidden } = useDropIndicator(props, dropState, ref);
 
   if (isHidden) {
     return null;
@@ -92,11 +90,11 @@ export const DragHandleContext = createContext<HTMLAttributes<Element> | null>(n
 // ============================================================================
 
 function ReorderableOption({
+  dragState,
+  dropState,
+  highlightDropTarget = false,
   item,
   state,
-  dropState,
-  dragState,
-  highlightDropTarget = false,
 }: {
   dragState: DraggableCollectionState;
   dropState: DroppableCollectionState;
@@ -108,11 +106,11 @@ function ReorderableOption({
 
   const ref = useRef(null);
   const { optionProps } = useOption({ key: item.key }, state, ref);
-  const { isFocusVisible, focusProps } = useFocusRing();
+  const { focusProps, isFocusVisible } = useFocusRing();
 
   const { dropProps, isDropTarget } = useDroppableItem(
     {
-      target: { type: "item", key: item.key, dropPosition: "on" },
+      target: { dropPosition: "on", key: item.key, type: "item" },
     },
     dropState,
     ref,
@@ -136,14 +134,14 @@ function ReorderableOption({
       <ReorderDropIndicator
         dropState={dropState}
         position="before"
-        target={{ type: "item", key: item.key, dropPosition: "before" }}
+        target={{ dropPosition: "before", key: item.key, type: "item" }}
       />
-      <DragHandleContext.Provider value={dragProps}>{item.rendered}</DragHandleContext.Provider>
+      <DragHandleContext value={dragProps}>{item.rendered}</DragHandleContext>
       {state.collection.getKeyAfter(item.key) === null && (
         <ReorderDropIndicator
           dropState={dropState}
           position="after"
-          target={{ type: "item", key: item.key, dropPosition: "after" }}
+          target={{ dropPosition: "after", key: item.key, type: "item" }}
         />
       )}
     </li>
@@ -155,10 +153,10 @@ function ReorderableOption({
 // ============================================================================
 
 export function ReorderableListBox(props: ReorderableListBoxProps) {
-  const { getItems, renderDragPreview, highlightDropTarget } = props;
+  const { getItems, highlightDropTarget, renderDragPreview } = props;
   const state = useListState(props);
   const ref = useRef(null);
-  const preview = useRef(null);
+  const previewRef = useRef(null);
 
   const { listBoxProps } = useListBox({ ...props, shouldSelectOnPressUp: true }, state, ref);
 
@@ -171,8 +169,8 @@ export function ReorderableListBox(props: ReorderableListBoxProps) {
   const { collectionProps } = useDroppableCollection(
     {
       ...props,
-      keyboardDelegate: new ListKeyboardDelegate(state.collection, state.disabledKeys, ref),
       dropTargetDelegate: new ListDropTargetDelegate(state.collection, ref),
+      keyboardDelegate: new ListKeyboardDelegate(state.collection, state.disabledKeys, ref),
     },
     dropState,
     ref,
@@ -181,8 +179,6 @@ export function ReorderableListBox(props: ReorderableListBoxProps) {
   const dragState = useDraggableCollectionState({
     ...props,
     collection: state.collection,
-    selectionManager: state.selectionManager,
-    preview,
     getItems:
       getItems ??
       ((keys) =>
@@ -193,6 +189,8 @@ export function ReorderableListBox(props: ReorderableListBoxProps) {
             "text/plain": !isNull(item) ? item.textValue : "",
           };
         })),
+    previewRef,
+    selectionManager: state.selectionManager,
   });
 
   useDraggableCollection(props, dragState, ref);
@@ -216,7 +214,7 @@ export function ReorderableListBox(props: ReorderableListBoxProps) {
           state={state}
         />
       ))}
-      <DragPreview ref={preview}>{(items) => renderDragPreview(items)}</DragPreview>
+      <DragPreview ref={previewRef}>{(items) => renderDragPreview(items)}</DragPreview>
     </ul>
   );
 }

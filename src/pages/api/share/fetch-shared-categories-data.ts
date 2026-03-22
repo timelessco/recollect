@@ -1,23 +1,24 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 
-import { type FetchSharedCategoriesData } from "../../../types/apiTypes";
+import type { FetchSharedCategoriesData } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
+
 import { SHARED_CATEGORIES_TABLE_NAME } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // fetches shared categories
 
 type DataResponse = FetchSharedCategoriesData[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | string | null;
-type Data = {
+type ErrorResponse = null | PostgrestError | string | VerifyErrors;
+interface Data {
   data: DataResponse;
   error: ErrorResponse;
-};
+}
 
 export default async function handler(
   request: NextApiRequest,
@@ -34,9 +35,9 @@ export default async function handler(
 
     if (userError || !userId || !email) {
       console.warn("User authentication failed:", {
+        email: email ?? "missing",
         error: userError?.message,
         userId: userId ?? "missing",
-        email: email ?? "missing",
       });
       response.status(401).json({
         data: null,
@@ -46,7 +47,7 @@ export default async function handler(
     }
 
     // Entry point log
-    console.log("fetch-shared-categories-data API called:", { userId, email });
+    console.log("fetch-shared-categories-data API called:", { email, userId });
 
     // Fetch data where user is either a collaborator or owner of the category
     const { data, error }: { data: DataResponse; error: ErrorResponse } = await supabase
@@ -58,18 +59,18 @@ export default async function handler(
     if (error) {
       console.error("Error fetching shared categories:", error);
       Sentry.captureException(error, {
-        tags: {
-          operation: "fetch_shared_categories",
-          userId,
-        },
         extra: {
           email,
           table: SHARED_CATEGORIES_TABLE_NAME,
         },
+        tags: {
+          operation: "fetch_shared_categories",
+          userId,
+        },
       });
 
       // Determine appropriate status code based on error type
-      const statusCode = (error as PostgrestError)?.code === "PGRST116" ? 404 : 500;
+      const statusCode = error?.code === "PGRST116" ? 404 : 500;
 
       response.status(statusCode).json({
         data: null,
@@ -80,19 +81,19 @@ export default async function handler(
 
     // Success log and response
     console.log("Shared categories fetched successfully:", {
-      userId,
       count: data?.length ?? 0,
+      userId,
     });
     response.status(200).json({ data, error: null });
   } catch (unexpectedError) {
     console.error("Unexpected error in fetch-shared-categories-data:", unexpectedError);
     Sentry.captureException(unexpectedError, {
-      tags: {
-        operation: "fetch_shared_categories",
-      },
       extra: {
         method: request.method,
         url: request.url,
+      },
+      tags: {
+        operation: "fetch_shared_categories",
       },
     });
     response.status(500).json({

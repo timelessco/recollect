@@ -1,12 +1,13 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
 import { decode } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
+
+import type { PostgrestError } from "@supabase/supabase-js";
 
 import { EVERYTHING_URL, SHARED_CATEGORIES_TABLE_NAME } from "../../utils/constants";
 import { createServiceClient } from "../../utils/supabaseClient";
@@ -17,17 +18,17 @@ import { createServiceClient } from "../../utils/supabaseClient";
 
 // NOTE: check https://app.asana.com/0/1202643527638612/1205842037172641 for this apis short comings
 
-type Data = {
-  error: PostgrestError | string | null;
-  success: string | null;
-};
+interface Data {
+  error: null | PostgrestError | string;
+  success: null | string;
+}
 
-type InviteTokenData = {
+interface InviteTokenData {
   category_id: number;
   edit_access: boolean;
   email: string;
   userId: string;
-};
+}
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse<Data>) {
   // using service client as this api should work irrespective of user auth
@@ -38,8 +39,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     if (!decoded || typeof decoded === "string") {
       response.status(400).json({
-        success: null,
         error: "Invalid invite token",
+        success: null,
       });
       return;
     }
@@ -47,8 +48,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
     const tokenData = decoded as InviteTokenData;
 
     const insertData = {
-      email: tokenData.email,
       category_id: tokenData.category_id,
+      email: tokenData.email,
       // edit_access: tokenData?.edit_access,
       // userId: tokenData?.userId,
     };
@@ -63,10 +64,10 @@ export default async function handler(request: NextApiRequest, response: NextApi
     // if data is empty then the user invite was deleted
     if (isEmpty(data) && isNull(error)) {
       response.status(500).json({
-        success: null,
         error: `This user invite has been deleted , error: ${
           isNull(error) ? "db error null" : error
         }`,
+        success: null,
       });
       Sentry.captureException(
         `This user invite has been deleted , error: ${isNull(error) ? "db error null" : error}`,
@@ -100,20 +101,20 @@ export default async function handler(request: NextApiRequest, response: NextApi
       } else if (catError?.code === "23503") {
         // if collab user does not have an existing account
         response.status(500).json({
-          success: null,
           error: `You do not have an existing account , please create one and visit this invite lint again ! error : ${catError?.message}`,
+          success: null,
         });
       } else {
         response.status(500).json({
-          success: null,
           error: catError?.message,
+          success: null,
         });
         Sentry.captureException(`Min bookmark data is empty`);
       }
     } else {
       response.status(500).json({
-        success: null,
         error: isNull(error) ? "The user is already a colaborator of this category" : error,
+        success: null,
       });
       Sentry.captureException(
         isNull(error) ? "The user is already a colaborator of this category" : error,

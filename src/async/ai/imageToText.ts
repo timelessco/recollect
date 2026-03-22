@@ -1,36 +1,37 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
 
-import { type AiToggles } from "@/utils/ai-feature-toggles";
+import type { AiToggles } from "@/utils/ai-feature-toggles";
+import type { BookmarkContentType } from "@/utils/resolve-content-type";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { GEMINI_MODEL } from "@/utils/constants";
-import { type BookmarkContentType } from "@/utils/resolve-content-type";
 
 import { getApikeyAndBookmarkCount, incrementBookmarkCount } from "./api-key";
 
-export type UserCollection = {
+export interface UserCollection {
   id: number;
   name: string;
-};
+}
 
-export type ImageToTextContextProps = {
+export interface ImageToTextContextProps {
   collections: UserCollection[];
-  description?: string | null;
-  title?: string | null;
-  url?: string | null;
-};
+  description?: null | string;
+  title?: null | string;
+  url?: null | string;
+}
 
-export type ImageToTextResult = {
+export interface ImageToTextResult {
   image_keywords: string[];
   matched_collection_ids: number[];
-  ocr_text: string | null;
-  sentence: string | null;
-};
+  ocr_text: null | string;
+  sentence: null | string;
+}
 
-export type ImageToTextOptions = {
+export interface ImageToTextOptions {
   contentType?: BookmarkContentType;
   isOgImage?: boolean;
-};
+}
 
 function formatMetadataContext(context?: ImageToTextContextProps | null): string {
   const lines: string[] = [];
@@ -63,7 +64,7 @@ export const imageToText = async (
   toggles?: AiToggles | null,
 ): Promise<ImageToTextResult | null> => {
   try {
-    const { userApiKey, isLimitReached } = await getApikeyAndBookmarkCount(supabase, userId);
+    const { isLimitReached, userApiKey } = await getApikeyAndBookmarkCount(supabase, userId);
 
     if (!userApiKey && isLimitReached) {
       console.warn("Monthly free limit reached — skipping caption generation.");
@@ -84,20 +85,20 @@ export const imageToText = async (
 
     if (!hasAnyPromptToggle && !hasCollectionsToggle) {
       return {
-        sentence: null,
         image_keywords: [],
         matched_collection_ids: [],
         ocr_text: null,
+        sentence: null,
       };
     }
 
     // Audio files use a static SVG waveform — skip AI enrichment entirely
     if (options?.contentType === "audio") {
       return {
-        sentence: null,
         image_keywords: [],
         matched_collection_ids: [],
         ocr_text: null,
+        sentence: null,
       };
     }
 
@@ -108,7 +109,7 @@ export const imageToText = async (
     const imageBytes = Buffer.from(imageResponse.data).toString("base64");
 
     // Initialize the model
-    const key = userApiKey ?? (process.env.GOOGLE_GEMINI_TOKEN as string);
+    const key = userApiKey ?? process.env.GOOGLE_GEMINI_TOKEN;
 
     const genAI = new GoogleGenerativeAI(key);
     const model = genAI.getGenerativeModel({
@@ -140,6 +141,32 @@ export const imageToText = async (
       let sentenceInstruction: string;
 
       switch (contentType) {
+        case "document": {
+          sentenceInstruction = [
+            "You are summarizing a document. Identify the platform or source from the URL if recognizable (e.g. 'A Google Docs report on...', 'A Notion page about...', 'A PDF manual for...').",
+            "Combine the metadata and the cover page/preview to write a rich, descriptive summary — the document's subject, type (research paper, report, manual, presentation, etc.), and key topic.",
+            noImageMeta,
+            metadataBlock,
+          ].join("\n");
+          break;
+        }
+
+        case "image": {
+          sentenceInstruction =
+            "Describe what you see. Focus on: colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place, objects.";
+          break;
+        }
+
+        case "instagram": {
+          sentenceInstruction = [
+            "You are summarizing an Instagram post. The image is the post's visual content — use it together with the metadata below.",
+            "Describe what the post is about and its topic.",
+            noImageMeta,
+            metadataBlock,
+          ].join("\n");
+          break;
+        }
+
         case "link": {
           const isOgImage = options?.isOgImage ?? true;
 
@@ -162,32 +189,6 @@ export const imageToText = async (
           break;
         }
 
-        case "image": {
-          sentenceInstruction =
-            "Describe what you see. Focus on: colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place, objects.";
-          break;
-        }
-
-        case "video": {
-          sentenceInstruction = [
-            "You are summarizing a video. Identify the platform from the URL (e.g. 'A YouTube tutorial on...', 'A Vimeo short film about...', 'A TikTok video showing...').",
-            "Combine the metadata and the preview frame to write a rich, descriptive summary — the video's topic, format (tutorial, review, vlog, music video, etc.), and key subject.",
-            noImageMeta,
-            metadataBlock,
-          ].join("\n");
-          break;
-        }
-
-        case "document": {
-          sentenceInstruction = [
-            "You are summarizing a document. Identify the platform or source from the URL if recognizable (e.g. 'A Google Docs report on...', 'A Notion page about...', 'A PDF manual for...').",
-            "Combine the metadata and the cover page/preview to write a rich, descriptive summary — the document's subject, type (research paper, report, manual, presentation, etc.), and key topic.",
-            noImageMeta,
-            metadataBlock,
-          ].join("\n");
-          break;
-        }
-
         case "tweet": {
           sentenceInstruction = [
             "You are summarizing a post from Twitter/X. The image is a capture of the post — use it together with the metadata below.",
@@ -198,10 +199,10 @@ export const imageToText = async (
           break;
         }
 
-        case "instagram": {
+        case "video": {
           sentenceInstruction = [
-            "You are summarizing an Instagram post. The image is the post's visual content — use it together with the metadata below.",
-            "Describe what the post is about and its topic.",
+            "You are summarizing a video. Identify the platform from the URL (e.g. 'A YouTube tutorial on...', 'A Vimeo short film about...', 'A TikTok video showing...').",
+            "Combine the metadata and the preview frame to write a rich, descriptive summary — the video's topic, format (tutorial, review, vlog, music video, etc.), and key subject.",
             noImageMeta,
             metadataBlock,
           ].join("\n");
@@ -290,10 +291,10 @@ export const imageToText = async (
     // Skip API call if no prompt sections were added (e.g., only autoAssignCollections on with no collections)
     if (formatLines.length === 0) {
       return {
-        sentence: null,
         image_keywords: [],
         matched_collection_ids: [],
         ocr_text: null,
+        sentence: null,
       };
     }
 
@@ -305,8 +306,8 @@ export const imageToText = async (
       captionPrompt,
       {
         inlineData: {
-          mimeType: "image/jpeg",
           data: imageBytes,
+          mimeType: "image/jpeg",
         },
       },
     ]);
@@ -320,7 +321,7 @@ export const imageToText = async (
     const text = rawText.replaceAll(/OCR[ _]TEXT:/gu, "OCR_TEXT:");
 
     // Parse response — only extract sections that were requested
-    let sentence: string | null = null;
+    let sentence: null | string = null;
     if (activeToggles.aiSummary) {
       const sentencePart = text
         .split("KEYWORDS:")[0]
@@ -345,7 +346,7 @@ export const imageToText = async (
         .filter(Boolean);
     }
 
-    let ocr_text: string | null = null;
+    let ocr_text: null | string = null;
     if (activeToggles.ocr && text.includes("OCR_TEXT:")) {
       const rawOcr = text.split("OCR_TEXT:")[1]?.split("COLLECTIONS:")[0]?.trim();
       // Strip brackets Gemini may copy from format template
@@ -391,7 +392,7 @@ export const imageToText = async (
       await incrementBookmarkCount(supabase, userId);
     }
 
-    return { sentence, image_keywords, matched_collection_ids, ocr_text };
+    return { image_keywords, matched_collection_ids, ocr_text, sentence };
   } catch (error) {
     console.error("Image caption error", error);
     throw error;

@@ -1,9 +1,11 @@
 import "allotment/dist/style.css";
 
-import { type RefObject } from "react";
+import type { RefObject } from "react";
 
 import { useResizeObserver } from "@react-hookz/web";
-import { Allotment, type AllotmentHandle, type AllotmentProps } from "allotment";
+import { Allotment } from "allotment";
+
+import type { AllotmentHandle, AllotmentProps } from "allotment";
 
 import { useSidePaneStore } from "../../../store/sidePaneStore";
 
@@ -20,9 +22,8 @@ const interpolateScaleValue = (angle: number) => {
     return 0.95;
   } else if (angle > 200) {
     return 1;
-  } else {
-    return 0.95 + (angle / 200) * 0.05;
   }
+  return 0.95 + (angle / 200) * 0.05;
 };
 
 const interpolateTransformValue = (angle: number) => {
@@ -30,9 +31,8 @@ const interpolateTransformValue = (angle: number) => {
     return -23;
   } else if (angle >= 200) {
     return 0;
-  } else {
-    return -23 + (angle / 200) * 23;
   }
+  return -23 + (angle / 200) * 23;
 };
 
 const interpolateOpacityValue = (angle: number) => {
@@ -40,20 +40,19 @@ const interpolateOpacityValue = (angle: number) => {
     return 0;
   } else if (angle >= 180) {
     return 1;
-  } else {
-    return angle / 180;
   }
+  return angle / 180;
 };
 
 interface AllotmentWrapperProps extends AllotmentProps {
   allotmentRef: RefObject<AllotmentHandle | null>;
-  sidePaneRef: RefObject<HTMLDivElement | null>;
-  sidePaneContentRef: RefObject<HTMLDivElement | null>;
   children: React.ReactNode;
+  sidePaneContentRef: RefObject<HTMLDivElement | null>;
+  sidePaneRef: RefObject<HTMLDivElement | null>;
 }
 
 export const AllotmentWrapper = (props: AllotmentWrapperProps) => {
-  const { allotmentRef, sidePaneRef, sidePaneContentRef, ...rest } = props;
+  const { allotmentRef, sidePaneContentRef, sidePaneRef, ...rest } = props;
 
   const setShowSidePane = useSidePaneStore((state) => state.setShowSidePane);
 

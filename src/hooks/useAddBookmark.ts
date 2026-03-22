@@ -27,9 +27,9 @@ export function useAddBookmark() {
 
     void mutationApiCall(
       addBookmarkMinDataOptimisticMutation.mutateAsync({
-        url: finalUrl,
         category_id: CATEGORY_ID,
         update_access: updateAccessCondition,
+        url: finalUrl,
       }),
     );
   };

@@ -1,15 +1,16 @@
 import find from "lodash/find";
 
-import { CategoryIconsDropdown } from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
-import { type CategoriesData } from "../../../types/apiTypes";
+import type { CategoriesData } from "../../../types/apiTypes";
 
-type SidePaneCollapseButtonProps = {
-  showSidePane: boolean;
+import { CategoryIconsDropdown } from "../../../components/customDropdowns.tsx/categoryIconsDropdown";
+
+interface SidePaneCollapseButtonProps {
   onToggle: () => void;
-};
+  showSidePane: boolean;
+}
 
 export const SidePaneCollapseButton = (props: SidePaneCollapseButtonProps) => {
-  const { showSidePane, onToggle } = props;
+  const { onToggle, showSidePane } = props;
 
   if (showSidePane) {
     return null;
@@ -29,10 +30,10 @@ export const SidePaneCollapseButton = (props: SidePaneCollapseButtonProps) => {
   );
 };
 
-type NavBarLogoProps = {
+interface NavBarLogoProps {
   currentCategoryData?: CategoriesData;
-  optionsMenuList: Array<{ current?: boolean; icon?: React.ReactNode }>;
-};
+  optionsMenuList: { current?: boolean; icon?: React.ReactNode }[];
+}
 
 export const NavBarLogo = (props: NavBarLogoProps) => {
   const { currentCategoryData, optionsMenuList } = props;
@@ -41,8 +42,8 @@ export const NavBarLogo = (props: NavBarLogoProps) => {
     return (
       <CategoryIconsDropdown
         iconColor={currentCategoryData?.icon_color}
-        iconValue={currentCategoryData?.icon}
         iconId={currentCategoryData?.id}
+        iconValue={currentCategoryData?.icon}
       />
     );
   }

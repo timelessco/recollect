@@ -1,16 +1,17 @@
 import { useRouter } from "next/router";
 
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 
-import { useSupabaseSession } from "../store/componentStore";
-import {
-  type CategoriesData,
-  type FetchSharedCategoriesData,
-  type ProfilesTableTypes,
+import type {
+  CategoriesData,
+  FetchSharedCategoriesData,
+  ProfilesTableTypes,
 } from "../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+
+import { useSupabaseSession } from "../store/componentStore";
 import { getPageViewData, getPageViewKey } from "../utils/bookmarksViewKeyed";
 import { CATEGORIES_KEY, SHARED_CATEGORIES_TABLE_NAME, USER_PROFILE } from "../utils/constants";
 import { getCategorySlugFromRouter } from "../utils/url";
@@ -26,20 +27,11 @@ export default function useGetSortBy() {
 
   const userId = session?.user?.id;
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
-    data: CategoriesData[];
-    error: PostgrestError;
-  };
+  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId])!;
 
-  const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
-    data: ProfilesTableTypes[];
-    error: PostgrestError;
-  };
+  const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId])!;
 
-  const sharedCategoriesData = queryClient.getQueryData([SHARED_CATEGORIES_TABLE_NAME]) as {
-    data: FetchSharedCategoriesData[];
-    error: PostgrestError;
-  };
+  const sharedCategoriesData = queryClient.getQueryData([SHARED_CATEGORIES_TABLE_NAME])!;
 
   const isInNonCategoryPage = typeof categoryId !== "number";
 

@@ -1,14 +1,21 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { type NextApiResponse } from "next";
+import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
 import { decode } from "base64-arraybuffer";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isNil, isNull } from "lodash";
 import uniqid from "uniqid";
+
+import type {
+  AddBookmarkRemainingDataPayloadTypes,
+  NextApiRequest,
+  ProfilesTableTypes,
+  SingleListData,
+} from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
 
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
@@ -17,12 +24,6 @@ import { autoAssignCollections, fetchUserCollections } from "@/utils/auto-assign
 import { resolveContentType } from "@/utils/resolve-content-type";
 
 import imageToText from "../../../async/ai/imageToText";
-import {
-  type AddBookmarkRemainingDataPayloadTypes,
-  type NextApiRequest,
-  type ProfilesTableTypes,
-  type SingleListData,
-} from "../../../types/apiTypes";
 import {
   BOOKMARK_CATEGORIES_TABLE_NAME,
   IMAGE_JPEG_MIME_TYPE,
@@ -39,11 +40,11 @@ import {
 import { storageHelpers } from "../../../utils/storageClient";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-type Data = {
-  data: SingleListData[] | null;
-  error: PostgrestError | VerifyErrors | string | null;
-  message: string | null;
-};
+interface Data {
+  data: null | SingleListData[];
+  error: null | PostgrestError | string | VerifyErrors;
+  message: null | string;
+}
 
 // this uploads all the remaining bookmark data
 // these data are blur hash and r2 uploads
@@ -51,8 +52,8 @@ type Data = {
 export const upload = async (
   base64info: string,
   userIdForStorage: ProfilesTableTypes["id"],
-  storagePath: string | null,
-): Promise<string | null> => {
+  storagePath: null | string,
+): Promise<null | string> => {
   try {
     const imgName = `img-${uniqid?.time()}.jpg`;
     const storagePath_ =
@@ -84,7 +85,7 @@ export default async function handler(
   request: NextApiRequest<AddBookmarkRemainingDataPayloadTypes>,
   response: NextApiResponse<Data>,
 ) {
-  const { url, id } = request.body;
+  const { id, url } = request.body;
 
   if (!id) {
     response.status(500).json({ data: null, error: "Id in payload is empty", message: null });
@@ -93,7 +94,7 @@ export default async function handler(
   }
 
   const supabase = apiSupabaseClient(request, response);
-  const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+  const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
 
   if (!userId) {
     response.status(401).json({ data: null, error: "User not authenticated", message: null });
@@ -156,11 +157,11 @@ export default async function handler(
       const realImageUrl = new URL(url)?.searchParams.get("url");
 
       const image = await axios.get(realImageUrl ?? url, {
-        responseType: "arraybuffer",
         headers: {
-          "User-Agent": "Mozilla/5.0",
           Accept: "image/*,*/*;q=0.8",
+          "User-Agent": "Mozilla/5.0",
         },
+        responseType: "arraybuffer",
         timeout: 10_000,
       });
 
@@ -185,8 +186,8 @@ export default async function handler(
   const isUrlAnMedia = await checkIfUrlAnMedia(url);
   const isAudio = currentData?.meta_data?.mediaType?.includes("audio");
   const contentType = resolveContentType({
-    type: currentData?.type ?? undefined,
     mediaType: currentData?.meta_data?.mediaType ?? undefined,
+    type: currentData?.type ?? undefined,
   });
   // upload scrapper image to r2
   if (currentData?.ogImage && !isUrlAnMedia) {
@@ -194,13 +195,13 @@ export default async function handler(
 
     try {
       // 10 second timeout for image download
-      const image = await axios.get(ogImageNormalisedUrl || currentData?.ogImage, {
-        responseType: "arraybuffer",
+      const image = await axios.get(ogImageNormalisedUrl ?? currentData?.ogImage, {
         // Some servers require headers like User-Agent, especially for images from Open Graph (OG) links.
         headers: {
-          "User-Agent": "Mozilla/5.0",
           Accept: "image/*,*/*;q=0.8",
+          "User-Agent": "Mozilla/5.0",
         },
+        responseType: "arraybuffer",
         timeout: 10_000,
       });
 
@@ -221,14 +222,12 @@ export default async function handler(
   }
 
   let imageOcrValue = null;
-  let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
-  let imageCaption: string | null = null;
+  let ocrStatus: "limit_reached" | "no_text" | "success" = "no_text";
+  let imageCaption: null | string = null;
   let imageKeywords: string[] = [];
 
   //	generate meta data for og image for websites like cosmos, pintrest because they have better ogImage
-  const ogImageMetaDataGeneration = uploadedCoverImageUrl
-    ? uploadedCoverImageUrl
-    : currentData?.meta_data?.screenshot;
+  const ogImageMetaDataGeneration = uploadedCoverImageUrl ?? currentData?.meta_data?.screenshot;
 
   // generat meta data (ocr, blurhash data, imgcaption)
   // For audio bookmarks use currentData.ogImage (fallback) so we can run OCR/caption
@@ -236,9 +235,7 @@ export default async function handler(
     ? uploadedImageThatIsAUrl
     : isAudio && currentData?.ogImage
       ? currentData.ogImage
-      : currentData?.meta_data?.screenshot
-        ? currentData?.meta_data?.screenshot
-        : uploadedCoverImageUrl;
+      : (currentData?.meta_data?.screenshot ?? uploadedCoverImageUrl);
 
   if (!isNil(imageUrlForMetaDataGeneration) || !isNil(ogImageMetaDataGeneration)) {
     try {
@@ -252,8 +249,8 @@ export default async function handler(
       Sentry.captureException(`Error generating blurhash: ${error}`);
       imgData = {
         encoded: null,
-        width: null,
         height: null,
+        width: null,
       };
     }
 
@@ -261,8 +258,7 @@ export default async function handler(
       // Determine if the image being analyzed is an OG image or a screenshot
       // isOgImagePreferred sites always use OG image; otherwise check if screenshot exists
       const isOgImage =
-        (currentData?.meta_data?.isOgImagePreferred ?? false) ||
-        !currentData?.meta_data?.screenshot;
+        currentData?.meta_data?.isOgImagePreferred ?? false ?? !currentData?.meta_data?.screenshot;
       const imageToTextResult = await imageToText(
         currentData?.meta_data?.isOgImagePreferred
           ? ogImageMetaDataGeneration
@@ -272,8 +268,8 @@ export default async function handler(
         { contentType, isOgImage },
         {
           collections: userCollections,
-          title: currentData?.title,
           description: currentData?.description,
+          title: currentData?.title,
           url,
         },
         aiToggles,
@@ -299,18 +295,18 @@ export default async function handler(
   }
 
   // Get existing meta_data or create empty object if null
-  const existingMetaData = currentData?.meta_data || {};
+  const existingMetaData = currentData?.meta_data ?? {};
 
   const meta_data = {
     ...existingMetaData,
-    img_caption: imageCaption,
-    image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
-    width: imgData?.width,
+    coverImage: uploadedCoverImageUrl,
     height: imgData?.height,
-    ogImgBlurUrl: imgData?.encoded,
+    image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
+    img_caption: imageCaption,
     ocr: imageOcrValue,
     ocr_status: ocrStatus,
-    coverImage: uploadedCoverImageUrl,
+    ogImgBlurUrl: imgData?.encoded,
+    width: imgData?.width,
   };
 
   // Preserve existing ogImage (e.g. audio fallback) when computed value would be null
@@ -322,13 +318,13 @@ export default async function handler(
     data,
     error: databaseError,
   }: {
-    data: SingleListData[] | null;
-    error: PostgrestError | VerifyErrors | string | null;
+    data: null | SingleListData[];
+    error: null | PostgrestError | string | VerifyErrors;
   } = await supabase
     .from(MAIN_TABLE_NAME)
     .update({
+      description: currentData?.description ?? imageCaption,
       meta_data,
-      description: currentData?.description || imageCaption,
       ogImage: computedOgImage ?? currentData?.ogImage,
     })
     .match({ id })
@@ -378,17 +374,17 @@ export default async function handler(
     } catch (error) {
       // Log but do not fail the request—metadata update already succeeded
       console.error("[add-remaining-bookmark-data] Revalidation failed:", {
+        bookmarkId: id,
         error,
         errorMessage:
           error instanceof Error
             ? error.message
             : "revalidation failed in add-remaining-bookmark-data",
-        bookmarkId: id,
         userId,
       });
       Sentry.captureException(error, {
-        tags: { route: "add-remaining-bookmark-data" },
         extra: { bookmarkId: id, userId },
+        tags: { route: "add-remaining-bookmark-data" },
       });
     }
 

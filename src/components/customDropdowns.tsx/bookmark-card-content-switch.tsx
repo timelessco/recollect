@@ -1,14 +1,15 @@
+import type { BookmarkViewCategories } from "../../types/componentStoreTypes";
+
 import { Switch } from "@/components/ui/recollect/switch";
 
 import { useBookmarksViewUpdate } from "../../hooks/useBookmarksViewUpdate";
 import useGetViewValue from "../../hooks/useGetViewValue";
-import { type BookmarkViewCategories } from "../../types/componentStoreTypes";
 import { singleInfoValues, viewValues } from "../../utils/constants";
 import { errorToast } from "../../utils/toastMessages";
 
-type BookmarkCardContentSwitchProps = {
+interface BookmarkCardContentSwitchProps {
   option: { label: string; value: string };
-};
+}
 
 function isOptionEnabled(
   option: { label: string; value: string },
@@ -74,8 +75,8 @@ export function BookmarkCardContentSwitch({ option }: BookmarkCardContentSwitchP
         {option.label}
       </p>
       <Switch
-        disabled={isDisabled}
         checked={isEnabled}
+        disabled={isDisabled}
         onCheckedChange={handleToggle}
         size="small"
       />

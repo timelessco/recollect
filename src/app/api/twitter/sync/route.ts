@@ -1,17 +1,15 @@
+import type { Json } from "@/types/database.types";
+
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { createServerServiceClient } from "@/lib/supabase/service";
-import { type Json } from "@/types/database.types";
 
 import { TwitterSyncInputSchema, TwitterSyncOutputSchema } from "./schema";
 
 const ROUTE = "twitter-sync";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: TwitterSyncInputSchema,
-  outputSchema: TwitterSyncOutputSchema,
-  handler: async ({ data, user, route }) => {
+  handler: async ({ data, route, user }) => {
     const userId = user.id;
 
     console.log(`[${route}] Inserting ${data.bookmarks.length} bookmarks`, {
@@ -21,17 +19,17 @@ export const POST = createPostApiHandlerWithAuth({
     // Call transactional RPC for synchronous dedup + insert
     const serviceClient = await createServerServiceClient();
     const { data: result, error: rpcError } = await serviceClient.rpc("enqueue_twitter_bookmarks", {
-      p_user_id: userId,
       p_bookmarks: data.bookmarks as Json[],
+      p_user_id: userId,
     });
 
     if (rpcError) {
       console.error(`[${route}] RPC error:`, rpcError);
       return apiError({
-        route,
-        message: "Failed to insert bookmarks",
         error: rpcError,
+        message: "Failed to insert bookmarks",
         operation: "enqueue_twitter_bookmarks",
+        route,
         userId,
       });
     }
@@ -40,12 +38,12 @@ export const POST = createPostApiHandlerWithAuth({
     if (!parsed.success) {
       console.error(`[${route}] Unexpected RPC result:`, result);
       return apiError({
-        route,
-        message: "Failed to insert bookmarks",
         error: new Error("Unexpected RPC result shape"),
-        operation: "enqueue_twitter_bookmarks",
-        userId,
         extra: { result },
+        message: "Failed to insert bookmarks",
+        operation: "enqueue_twitter_bookmarks",
+        route,
+        userId,
       });
     }
 
@@ -53,4 +51,7 @@ export const POST = createPostApiHandlerWithAuth({
 
     return parsed.data;
   },
+  inputSchema: TwitterSyncInputSchema,
+  outputSchema: TwitterSyncOutputSchema,
+  route: ROUTE,
 });

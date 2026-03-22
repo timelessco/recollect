@@ -1,11 +1,13 @@
 import { useRouter } from "next/router";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import isNull from "lodash/isNull";
 
-import { type SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
+import type { ProfilesTableTypes } from "../../types/apiTypes";
+import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
 import { signOut } from "../../async/supabaseCrudHelpers";
@@ -16,7 +18,6 @@ import { Spinner } from "../../components/spinner";
 import { BackIconBlack } from "../../icons/actionIcons/backIconBlack";
 import TrashIconGray from "../../icons/trash-icon-gray";
 import { useSupabaseSession } from "../../store/componentStore";
-import { type ProfilesTableTypes } from "../../types/apiTypes";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {
   settingsDeleteButtonRedClassName,
@@ -31,13 +32,13 @@ import { LOGIN_URL, USER_PROFILE } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
-type SettingsFormTypes = {
+interface SettingsFormTypes {
   confirmText: string;
-};
+}
 
-type DeleteAccountProps = {
+interface DeleteAccountProps {
   onNavigate: (page: SettingsPage) => void;
-};
+}
 
 export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
   const session = useSupabaseSession((state) => state.session);
@@ -48,16 +49,13 @@ export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
 
   const { deleteUserMutation } = useDeleteUserMutation();
 
-  const userProfilesData = queryClient.getQueryData([USER_PROFILE, session?.user?.id]) as {
-    data: ProfilesTableTypes[];
-    error: PostgrestError;
-  };
+  const userProfilesData = queryClient.getQueryData([USER_PROFILE, session?.user?.id])!;
 
   const userData = userProfilesData?.data?.[0];
   const {
-    register,
-    handleSubmit,
     formState: { errors },
+    handleSubmit,
+    register,
     // reset,
   } = useForm<SettingsFormTypes>({
     defaultValues: {
@@ -120,8 +118,8 @@ export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
               errorClassName=" absolute w-full top-[29px]"
               {...register("confirmText", {
                 required: {
-                  value: true,
                   message: "Please add the confirm text",
+                  value: true,
                 },
               })}
               className={settingsInputClassName}
@@ -134,9 +132,9 @@ export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
         </LabelledComponent>
         <div className="mt-2 flex w-1/2 justify-start sm:mt-0 sm:justify-end">
           <Button
+            buttonType="submit"
             className={` ${settingsDeleteButtonRedClassName} ${deleteUserMutation.isPending ? "py-[9px]" : ""}`}
             isDisabled={deleteUserMutation.isPending}
-            buttonType="submit"
             onClick={handleSubmit(onSubmit)}
           >
             <div className="flex w-full min-w-[125px] items-center justify-center">

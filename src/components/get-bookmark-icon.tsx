@@ -1,12 +1,13 @@
 import Image from "next/image";
 
+import type { SingleListData } from "../types/apiTypes";
+
 import { AudioIcon } from "@/icons/audio-icon";
 import { GlobeLinkIcon } from "@/icons/globe-link-icon";
 
 import FolderIcon from "../icons/folderIcon";
 import ImageIcon from "../icons/imageIcon";
 import VideoIcon from "../icons/videoIcon";
-import { type SingleListData } from "../types/apiTypes";
 import { IMAGE_TYPE_PREFIX, PDF_MIME_TYPE, VIDEO_TYPE_PREFIX } from "../utils/constants";
 import {
   isBookmarkAudio,
@@ -15,19 +16,19 @@ import {
   isBookmarkVideo,
 } from "../utils/helpers";
 
-export type GetBookmarkIconProps = {
+export interface GetBookmarkIconProps {
   /**
-   * The bookmark item to determine the icon for
+   * Array of bookmark IDs that have favicon errors
    */
-  item: SingleListData;
+  favIconErrorIds?: number[];
   /**
    * Whether the user is in the tweets page (for Twitter avatar display)
    */
   isUserInTweetsPage?: boolean;
   /**
-   * Array of bookmark IDs that have favicon errors
+   * The bookmark item to determine the icon for
    */
-  favIconErrorIds?: number[];
+  item: SingleListData;
   /**
    * Callback when favicon image fails to load
    */
@@ -36,7 +37,7 @@ export type GetBookmarkIconProps = {
    * Size of the icon (default: 15)
    */
   size?: number;
-};
+}
 
 /**
  * Determines and returns the appropriate icon component for a bookmark
@@ -52,17 +53,17 @@ export type GetBookmarkIconProps = {
  * 7. Default -> LinkIcon
  */
 export const GetBookmarkIcon = ({
-  item,
-  isUserInTweetsPage = false,
   favIconErrorIds = [],
+  isUserInTweetsPage = false,
+  item,
   onFavIconError,
   size = 15,
 }: GetBookmarkIconProps) => {
   const isVideo =
-    item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) || isBookmarkVideo(item?.type);
+    item?.meta_data?.mediaType?.startsWith(VIDEO_TYPE_PREFIX) ?? isBookmarkVideo(item?.type);
   const isDocument = item?.meta_data?.mediaType === PDF_MIME_TYPE || isBookmarkDocument(item?.type);
   const isImage =
-    item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) || isBookmarkImage(item?.type);
+    item?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX) ?? isBookmarkImage(item?.type);
   const isAudio = isBookmarkAudio(item?.type) || item?.meta_data?.mediaType?.startsWith("audio");
   // Favicon error fallback
   if (favIconErrorIds.includes(item.id)) {

@@ -2,7 +2,8 @@ import { useCallback, useRef, useSyncExternalStore } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
 
-import { type PaginatedBookmarks, type SingleListData } from "@/types/apiTypes";
+import type { PaginatedBookmarks, SingleListData } from "@/types/apiTypes";
+
 import { BOOKMARKS_KEY } from "@/utils/constants";
 
 import { useBookmarkMutationContext } from "./use-bookmark-mutation-context";
@@ -37,7 +38,6 @@ export const useBookmarkRelation = (
           (searchQueryKey && eventKey[0] === searchQueryKey[0]) ||
           (eventKey[0] === BOOKMARKS_KEY && eventKey[1] === String(bookmarkId))
         ) {
-          // eslint-disable-next-line n/callback-return
           callback();
         }
       }),

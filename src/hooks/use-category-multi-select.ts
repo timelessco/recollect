@@ -1,29 +1,30 @@
 import { useMemo } from "react";
 
+import type { CategoriesData } from "@/types/apiTypes";
+
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 import { useRemoveCategoryFromBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-remove-category-from-bookmark-optimistic-mutation";
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import { useBookmarkCategories } from "@/hooks/use-bookmark-categories";
-import { type CategoriesData } from "@/types/apiTypes";
 import { UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
 
-type UseCategoryMultiSelectProps = {
+interface UseCategoryMultiSelectProps {
   bookmarkId: number;
-  shouldFetch?: boolean;
   filterUncategorized?: boolean;
-  onMutate?: () => void;
   mutationOptions?: {
-    skipInvalidation?: boolean;
     preserveInList?: boolean;
+    skipInvalidation?: boolean;
   };
-};
+  onMutate?: () => void;
+  shouldFetch?: boolean;
+}
 
 export const useCategoryMultiSelect = ({
   bookmarkId,
-  shouldFetch = true,
   filterUncategorized = false,
-  onMutate,
   mutationOptions = {},
+  onMutate,
+  shouldFetch = true,
 }: UseCategoryMultiSelectProps) => {
   const { allCategories } = useFetchCategories(shouldFetch);
 
@@ -35,8 +36,8 @@ export const useCategoryMultiSelect = ({
   });
   const { removeCategoryFromBookmarkOptimisticMutation } =
     useRemoveCategoryFromBookmarkOptimisticMutation({
-      skipInvalidation: mutationOptions.skipInvalidation,
       preserveInList: mutationOptions.preserveInList,
+      skipInvalidation: mutationOptions.skipInvalidation,
     });
 
   // Compute visible and selected categories
@@ -75,15 +76,15 @@ export const useCategoryMultiSelect = ({
   };
 
   return {
-    visibleCategories,
-    selectedCategories,
-    handleAdd,
-    handleRemove,
+    addError: addCategoryToBookmarkOptimisticMutation.error,
     getItemId: (cat: CategoriesData) => cat.id,
     getItemLabel: (cat: CategoriesData) => cat.category_name,
+    handleAdd,
+    handleRemove,
     isAdding: addCategoryToBookmarkOptimisticMutation.isPending,
     isRemoving: removeCategoryFromBookmarkOptimisticMutation.isPending,
-    addError: addCategoryToBookmarkOptimisticMutation.error,
     removeError: removeCategoryFromBookmarkOptimisticMutation.error,
+    selectedCategories,
+    visibleCategories,
   };
 };

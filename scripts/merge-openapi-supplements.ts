@@ -7,6 +7,8 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 
+import type { EndpointSupplement } from "../src/lib/openapi/supplement-types";
+
 import * as apiKeySupplements from "../src/lib/openapi/endpoints/api-key";
 import * as bookmarksSupplements from "../src/lib/openapi/endpoints/bookmarks";
 import * as categoriesSupplements from "../src/lib/openapi/endpoints/categories";
@@ -25,52 +27,51 @@ import * as shareSupplements from "../src/lib/openapi/endpoints/share";
 import * as tagsSupplements from "../src/lib/openapi/endpoints/tags";
 import * as twitterSupplements from "../src/lib/openapi/endpoints/twitter";
 import * as userSupplements from "../src/lib/openapi/endpoints/user";
-import { type EndpointSupplement } from "../src/lib/openapi/supplement-types";
 
-type OpenApiJsonContent = {
-  schema?: unknown;
+interface OpenApiJsonContent {
   example?: unknown;
-  examples?: Record<string, { summary?: string; description?: string; value: unknown }>;
-};
+  examples?: Record<string, { description?: string; summary?: string; value: unknown }>;
+  schema?: unknown;
+}
 
-type OpenApiResponse = {
-  description?: string;
+interface OpenApiResponse {
   content?: {
     "application/json"?: OpenApiJsonContent;
   };
-};
-
-type OpenApiOperation = {
-  tags?: string[];
-  summary?: string;
   description?: string;
-  security?: Array<Record<string, string[]>>;
-  requestBody?: {
-    required?: boolean;
-    content?: {
-      "application/json"?: OpenApiJsonContent;
-    };
-  };
-  responses?: Record<string, OpenApiResponse | { $ref: string }>;
-  parameters?: Array<{
+}
+
+interface OpenApiOperation {
+  description?: string;
+  parameters?: {
+    example?: unknown;
+    examples?: Record<string, { description?: string; summary?: string; value: unknown }>;
     in: string;
     name: string;
     schema?: unknown;
-    example?: unknown;
-    examples?: Record<string, { summary?: string; description?: string; value: unknown }>;
-  }>;
-};
+  }[];
+  requestBody?: {
+    content?: {
+      "application/json"?: OpenApiJsonContent;
+    };
+    required?: boolean;
+  };
+  responses?: Record<string, { $ref: string } | OpenApiResponse>;
+  security?: Record<string, string[]>[];
+  summary?: string;
+  tags?: string[];
+}
 
-type OpenApiSpec = {
-  paths: Record<string, Record<string, OpenApiOperation>>;
+interface OpenApiSpec {
   components?: {
     responses?: Record<string, OpenApiResponse>;
   };
-};
+  paths: Record<string, Record<string, OpenApiOperation>>;
+}
 
 function resolveResponseRef(
   spec: OpenApiSpec,
-  response: OpenApiResponse | { $ref: string },
+  response: { $ref: string } | OpenApiResponse,
 ): OpenApiResponse {
   if ("$ref" in response) {
     const name = response.$ref.replace("#/components/responses/", "");
@@ -159,12 +160,12 @@ function applySupplementToOperation(
       response400.content ??= {};
       response400.content["application/json"] ??= {
         schema: {
-          type: "object",
           properties: {
             data: { type: "null" },
             error: { type: "string" },
           },
           required: ["data", "error"],
+          type: "object",
         },
       };
 

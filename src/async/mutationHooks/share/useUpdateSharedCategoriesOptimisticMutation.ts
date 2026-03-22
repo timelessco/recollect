@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import type { FetchSharedCategoriesData } from "../../../types/apiTypes";
+
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useSupabaseSession } from "../../../store/componentStore";
-import { type FetchSharedCategoriesData } from "../../../types/apiTypes";
 import {
   BOOKMARKS_KEY,
   SHARED_CATEGORIES_TABLE_NAME,

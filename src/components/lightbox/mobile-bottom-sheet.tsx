@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 
 import { Drawer } from "@base-ui/react/drawer";
 
+import type { SidepaneContentProps } from "./sidepane-content";
+
 import { useMiscellaneousStore } from "@/store/componentStore";
 
-import { SidepaneContent, type SidepaneContentProps } from "./sidepane-content";
+import { SidepaneContent } from "./sidepane-content";
 
 const SNAP_POINTS: Drawer.Root.Props["snapPoints"] = [0.6, 1];
 const DEFAULT_SNAP_POINT = 0.6;

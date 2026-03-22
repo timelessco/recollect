@@ -1,11 +1,12 @@
 import Image from "next/image";
-import { useCallback, useMemo, type RefObject } from "react";
+import { useCallback, useMemo } from "react";
+import type { RefObject } from "react";
 
-import { type ZoomRef } from "yet-another-react-lightbox";
+import type { SingleListData } from "../../types/apiTypes";
+import type { ZoomRef } from "yet-another-react-lightbox";
 
 import loaderGif from "../../../public/loader-gif.gif";
 import { useIframeStore } from "../../store/iframeStore";
-import { type SingleListData } from "../../types/apiTypes";
 import {
   instagramType,
   PDF_MIME_TYPE,
@@ -18,10 +19,8 @@ import { MediaPlayer } from "../media-player";
 
 interface SlideProps {
   bookmark: SingleListData | undefined;
-  // eslint-disable-next-line react/no-unused-prop-types
   isActive?: boolean;
-  // eslint-disable-next-line react/no-unused-prop-types
-  zoomRef?: RefObject<ZoomRef | null>;
+  zoomRef?: RefObject<null | ZoomRef>;
 }
 
 interface VideoSlideProps extends SlideProps {
@@ -64,7 +63,7 @@ export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => {
           height={bookmark?.meta_data?.height ?? 800}
           priority
           src={imageSource}
-          width={bookmark?.meta_data?.width ?? 1_200}
+          width={bookmark?.meta_data?.width ?? 1200}
         />
       </div>
     </div>
@@ -219,7 +218,7 @@ export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
       : bookmark?.ogImage;
   if (placeholder) {
     const placeholderHeight = bookmark?.meta_data?.height ?? 800;
-    const placeholderWidth = bookmark?.meta_data?.width ?? 1_200;
+    const placeholderWidth = bookmark?.meta_data?.width ?? 1200;
 
     // Check if this is a screenshot URL (may need special scaling)
     const is2xScreenshot = bookmark?.meta_data?.isPageScreenshot;
@@ -229,7 +228,7 @@ export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
     const scaledHeight = is2xScreenshot ? placeholderHeight * 0.5 : placeholderHeight;
 
     // Check if image dimensions exceed reasonable display limits
-    const exceedsWidth = scaledWidth >= 1_200;
+    const exceedsWidth = scaledWidth >= 1200;
     const underHeight =
       scaledHeight >= (typeof window !== "undefined" ? window?.innerHeight * 0.8 : 0);
 

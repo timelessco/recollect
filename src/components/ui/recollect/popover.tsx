@@ -38,7 +38,7 @@ function Popup({ className, ...props }: PopoverPrimitive.Popup.Props) {
   );
 }
 
-const Backdrop = PopoverPrimitive.Backdrop;
+const { Backdrop } = PopoverPrimitive;
 
 export const Popover = {
   Backdrop,

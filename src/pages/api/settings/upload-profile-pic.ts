@@ -1,16 +1,16 @@
 // TODO: Fix this in priority
-/* eslint-disable @typescript-eslint/no-base-to-string */
 
 import { Readable } from "node:stream";
 
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import { decode } from "base64-arraybuffer";
 import { isEmpty, isNull } from "lodash";
 import isNil from "lodash/isNil";
 import uniqid from "uniqid";
 
-import { type ProfilesTableTypes, type UploadProfilePicApiResponse } from "../../../types/apiTypes";
+import type { ProfilesTableTypes, UploadProfilePicApiResponse } from "../../../types/apiTypes";
+
 import { PROFILES, R2_MAIN_BUCKET_NAME, STORAGE_USER_PROFILE_PATH } from "../../../utils/constants";
 import { parseUploadFileName } from "../../../utils/helpers";
 import { storageHelpers } from "../../../utils/storageClient";
@@ -32,8 +32,8 @@ export const deleteLogic = async (response: NextApiResponse, userId: ProfilesTab
 
   if (!isNull(listError)) {
     response.status(500).json({
-      success: false,
       error: String(listError),
+      success: false,
     });
     throw new Error("ERROR: list error!!");
   }
@@ -48,8 +48,8 @@ export const deleteLogic = async (response: NextApiResponse, userId: ProfilesTab
 
     if (!isNil(deleteError)) {
       response.status(500).json({
-        success: false,
         error: String(deleteError),
+        success: false,
       });
       throw new Error("ERROR: delete error");
     }
@@ -61,8 +61,8 @@ export const deleteLogic = async (response: NextApiResponse, userId: ProfilesTab
 
   if (!isNil(folderDeleteError)) {
     response.status(500).json({
-      success: false,
       error: String(folderDeleteError),
+      success: false,
     });
     throw new Error("ERROR: folder delete error");
   }
@@ -73,7 +73,7 @@ export const deleteLogic = async (response: NextApiResponse, userId: ProfilesTab
  * Converts the Node.js IncomingMessage stream to a Web Request to use native formData().
  */
 async function parseFormData(request: NextApiRequest) {
-  const headers: Array<[string, string]> = [];
+  const headers: [string, string][] = [];
   for (const [name, value] of Object.entries(request.headers)) {
     if (value === null || value === undefined) {
       continue;
@@ -90,14 +90,14 @@ async function parseFormData(request: NextApiRequest) {
 
   const webStream = Readable.toWeb(request) as ReadableStream<Uint8Array<ArrayBuffer>>;
   const webRequest = new Request("http://localhost", {
-    method: request.method,
-    headers,
     body: webStream,
     // @ts-expect-error -- Node.js supports duplex but types don't expose it
     duplex: "half",
+    headers,
+    method: request.method,
   });
 
-  return await webRequest.formData();
+  return webRequest.formData();
 }
 
 export default async (
@@ -111,8 +111,8 @@ export default async (
     formData = await parseFormData(request);
   } catch {
     response.status(400).json({
-      success: false,
       error: "Invalid or missing multipart form data",
+      success: false,
     });
     return;
   }
@@ -121,13 +121,13 @@ export default async (
 
   if (!(file instanceof File)) {
     response.status(400).json({
-      success: false,
       error: "No file provided",
+      success: false,
     });
     return;
   }
 
-  const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+  const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
 
   const arrayBuffer = await file.arrayBuffer();
   const contents = Buffer.from(arrayBuffer).toString("base64");
@@ -147,8 +147,8 @@ export default async (
 
     if (!isNil(storageError)) {
       response.status(500).json({
-        success: false,
         error: String(storageError),
+        success: false,
       });
 
       throw new Error("ERROR: storage error");
@@ -160,8 +160,8 @@ export default async (
 
     if (!isNil(publicUrlError)) {
       response.status(500).json({
-        success: false,
         error: String(publicUrlError),
+        success: false,
       });
 
       throw new Error("ERROR: public url error");
@@ -174,21 +174,21 @@ export default async (
 
     if (!isNil(databaseError)) {
       response.status(500).json({
-        success: false,
         error: databaseError,
+        success: false,
       });
 
       throw new Error("ERROR: DB error");
     }
 
     response.status(200).json({
-      success: true,
       error: null,
+      success: true,
     });
   } else {
     response.status(500).json({
-      success: false,
       error: "error in payload file data",
+      success: false,
     });
 
     throw new Error("ERROR: payload error");

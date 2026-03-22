@@ -1,20 +1,23 @@
 // you might want to use regular 'fs' and not a promise one
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError, type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 
-import imageToText, { type UserCollection } from "../../../async/ai/imageToText";
-import { getMediaType } from "../../../async/supabaseCrudHelpers";
-import {
-  type ImgMetadataType,
-  type SingleListData,
-  type UploadFileApiResponse,
+import type { UserCollection } from "../../../async/ai/imageToText";
+import type {
+  ImgMetadataType,
+  SingleListData,
+  UploadFileApiResponse,
 } from "../../../types/apiTypes";
-import { type AiToggles, fetchAiToggles } from "../../../utils/ai-feature-toggles";
+import type { AiToggles } from "../../../utils/ai-feature-toggles";
+import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
+
+import imageToText from "../../../async/ai/imageToText";
+import { getMediaType } from "../../../async/supabaseCrudHelpers";
+import { fetchAiToggles } from "../../../utils/ai-feature-toggles";
 import {
   autoAssignCollections,
   fetchUserCollections,
@@ -41,13 +44,13 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { vet } from "../../../utils/try";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "../bookmark/add-bookmark-min-data";
 
-type BodyDataType = {
+interface BodyDataType {
   category_id: string;
   name: string;
-  thumbnailPath: string | null;
+  thumbnailPath: null | string;
   type: string;
   uploadFileNamePath: string;
-};
+}
 
 /*
 If the uploaded file is a video then this function is called
@@ -76,9 +79,9 @@ const videoLogic = async (
   const ogImage = thumbnailUrl?.publicUrl;
 
   let imgData;
-  let ocrData: string | null = null;
-  let ocrStatus: "success" | "limit_reached" | "no_text" = "no_text";
-  let imageCaption: string | null = null;
+  let ocrData: null | string = null;
+  let ocrStatus: "limit_reached" | "no_text" | "success" = "no_text";
+  let imageCaption: null | string = null;
   let imageKeywords: string[] = [];
   let matchedCollectionIds: number[] = [];
   if (thumbnailUrl?.publicUrl) {
@@ -123,26 +126,26 @@ const videoLogic = async (
   }
 
   const meta_data: ImgMetadataType = {
-    img_caption: imageCaption ?? null,
+    coverImage: null,
+    favIcon: null,
+    height: imgData?.height ?? null,
+    iframeAllowed: false,
     image_caption: imageCaption ?? null,
     image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
-    width: imgData?.width ?? null,
-    height: imgData?.height ?? null,
-    ogImgBlurUrl: imgData?.encoded ?? null,
-    favIcon: null,
-    twitter_avatar_url: null,
+    img_caption: imageCaption ?? null,
+    isOgImagePreferred: false,
+    isPageScreenshot: null,
+    mediaType: "",
     ocr: ocrData ?? null,
     ocr_status: ocrStatus,
-    coverImage: null,
+    ogImgBlurUrl: imgData?.encoded ?? null,
     screenshot: null,
-    isOgImagePreferred: false,
-    mediaType: "",
-    iframeAllowed: false,
-    isPageScreenshot: null,
+    twitter_avatar_url: null,
     video_url: null,
+    width: imgData?.width ?? null,
   };
 
-  return { ogImage, meta_data, matchedCollectionIds };
+  return { matchedCollectionIds, meta_data, ogImage };
 };
 
 export default async (
@@ -162,8 +165,8 @@ export default async (
         error: userError?.message,
       });
       response.status(401).json({
-        success: false,
         error: "Unauthorized",
+        success: false,
       });
       return;
     }
@@ -177,23 +180,23 @@ export default async (
     const fileType = normalizeUploadedMimeType(data?.type);
 
     console.log("upload-file API called:", {
-      userId,
+      categoryId,
       fileName,
       fileType,
-      categoryId,
+      userId,
     });
 
     const uploadPath = parseUploadFileName(data?.uploadFileNamePath);
     // if the uploaded file is valid this happens
     const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
 
-    if (Number.parseInt(categoryId as string, 10) !== 0 && typeof categoryId === "number") {
+    if (Number.parseInt(categoryId, 10) !== 0 && typeof categoryId === "number") {
       const checkIfUserIsCategoryOwnerOrCollaboratorValue =
         await checkIfUserIsCategoryOwnerOrCollaborator(
           supabase,
           categoryId as number,
-          userId as string,
-          email as string,
+          userId,
+          email!,
           response,
         );
 
@@ -216,39 +219,39 @@ export default async (
     if (publicUrlError) {
       console.error("Error getting public URL:", publicUrlError);
       Sentry.captureException(publicUrlError, {
+        extra: {
+          storagePath,
+        },
         tags: {
           operation: "get_public_url",
           userId,
         },
-        extra: {
-          storagePath,
-        },
       });
       response.status(500).json({
-        success: false,
         error: "Error getting file URL",
+        success: false,
       });
       return;
     }
 
-    const mediaType = (await getMediaType(storageData?.publicUrl)) as string;
+    const mediaType = (await getMediaType(storageData?.publicUrl))!;
 
     let meta_data: ImgMetadataType = {
-      img_caption: null,
-      image_caption: null,
-      width: null,
-      height: null,
-      ogImgBlurUrl: null,
-      favIcon: null,
-      twitter_avatar_url: null,
-      ocr: null,
       coverImage: null,
-      screenshot: null,
-      isOgImagePreferred: false,
+      favIcon: null,
+      height: null,
       iframeAllowed: false,
-      mediaType,
+      image_caption: null,
+      img_caption: null,
+      isOgImagePreferred: false,
       isPageScreenshot: null,
+      mediaType,
+      ocr: null,
+      ogImgBlurUrl: null,
+      screenshot: null,
+      twitter_avatar_url: null,
       video_url: null,
+      width: null,
     };
     const isVideo = fileType?.includes("video");
 
@@ -290,9 +293,9 @@ export default async (
       });
 
       const {
-        ogImage: image,
-        meta_data: metaData,
         matchedCollectionIds,
+        meta_data: metaData,
+        ogImage: image,
       } = await videoLogic(data, supabase, userId ?? "", aiToggles, userCollections);
 
       ogImage = image;
@@ -305,18 +308,18 @@ export default async (
       .from(MAIN_TABLE_NAME)
       .insert([
         {
-          url: storageData?.publicUrl,
-          title: fileName,
-          user_id: userId,
-          description: (meta_data?.img_caption as string) || "",
-          ogImage,
-          type: fileType,
+          description: meta_data?.img_caption! || "",
           meta_data,
+          ogImage,
+          title: fileName,
+          type: fileType,
+          url: storageData?.publicUrl,
+          user_id: userId,
         },
       ])
       .select(`id`)) as unknown as {
-      data: Array<{ id: SingleListData["id"] }>;
-      error: PostgrestError | VerifyErrors | string | null;
+      data: { id: SingleListData["id"] }[];
+      error: null | PostgrestError | string | VerifyErrors;
     };
 
     console.log("Database insert result:", {
@@ -326,13 +329,13 @@ export default async (
     if (DBerror) {
       console.error("Error inserting file to database:", DBerror);
       Sentry.captureException(DBerror, {
+        extra: { fileName, fileType },
         tags: {
           operation: "insert_file_to_database",
           userId,
         },
-        extra: { fileName, fileType },
       });
-      response.status(500).json({ success: false, error: "Error uploading file" });
+      response.status(500).json({ error: "Error uploading file", success: false });
       return;
     }
 
@@ -347,13 +350,13 @@ export default async (
       if (junctionError) {
         console.error("Error inserting category association:", junctionError);
         Sentry.captureException(junctionError, {
-          tags: {
-            operation: "insert_bookmark_category_junction",
-            userId,
-          },
           extra: {
             bookmarkId: DatabaseData[0].id,
             categoryId: categoryIdLogic,
+          },
+          tags: {
+            operation: "insert_bookmark_category_junction",
+            userId,
           },
         });
       }
@@ -362,7 +365,7 @@ export default async (
     // Skip remaining upload API for PDFs
     if (fileType === PDF_MIME_TYPE) {
       console.log("File type is pdf, so not calling the remaining upload api");
-      response.status(200).json({ data: DatabaseData, success: true, error: null });
+      response.status(200).json({ data: DatabaseData, error: null, success: true });
       return;
     }
 
@@ -379,19 +382,19 @@ export default async (
       }
 
       console.log("File type is video or no data, so not calling the remaining upload api");
-      response.status(200).json({ data: DatabaseData, success: true, error: null });
+      response.status(200).json({ data: DatabaseData, error: null, success: true });
       return;
     }
 
     // Call remaining upload API
     const remainingUploadBody = {
       id: DatabaseData[0]?.id,
-      publicUrl: storageData?.publicUrl,
       mediaType: meta_data?.mediaType,
+      publicUrl: storageData?.publicUrl,
     };
     console.log("Calling remaining upload API:", { remainingUploadBody });
 
-    const [remainingUploadError] = await vet(() =>
+    const [remainingUploadError] = await vet(async () =>
       axios.post(
         `${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
         remainingUploadBody,
@@ -402,12 +405,12 @@ export default async (
     if (remainingUploadError) {
       console.error("Remaining upload API error:", remainingUploadError);
       Sentry.captureException(remainingUploadError, {
+        extra: {
+          bookmarkId: DatabaseData[0]?.id,
+        },
         tags: {
           operation: "remaining_upload_api",
           userId,
-        },
-        extra: {
-          bookmarkId: DatabaseData[0]?.id,
         },
       });
     }
@@ -415,7 +418,7 @@ export default async (
     console.log("File uploaded successfully:", {
       bookmarkId: DatabaseData?.[0]?.id,
     });
-    response.status(200).json({ data: DatabaseData, success: true, error: null });
+    response.status(200).json({ data: DatabaseData, error: null, success: true });
   } catch (error) {
     console.error("Unexpected error in upload-file:", error);
     Sentry.captureException(error, {
@@ -424,8 +427,8 @@ export default async (
       },
     });
     response.status(500).json({
-      success: false,
       error: "An unexpected error occurred",
+      success: false,
     });
   }
 };

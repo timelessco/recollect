@@ -9,10 +9,7 @@ import { UpdateUsernameInputSchema, UpdateUsernameOutputSchema } from "./schema"
 const ROUTE = "v2-profiles-update-username";
 
 export const PATCH = createPatchApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: UpdateUsernameInputSchema,
-  outputSchema: UpdateUsernameOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const userId = user.id;
     const username = slugify(data.username, { lower: true, strict: true });
 
@@ -25,20 +22,20 @@ export const PATCH = createPatchApiHandlerWithAuth({
 
     if (checkError) {
       return apiError({
-        route,
-        message: "Failed to check username availability",
         error: checkError,
+        message: "Failed to check username availability",
         operation: "username_check",
+        route,
         userId,
       });
     }
 
     if (checkData.length > 0) {
       return apiWarn({
-        route,
-        message: "Username already exists, please try another username",
-        status: 409,
         context: { username },
+        message: "Username already exists, please try another username",
+        route,
+        status: 409,
       });
     }
 
@@ -50,14 +47,17 @@ export const PATCH = createPatchApiHandlerWithAuth({
 
     if (updateError) {
       return apiError({
-        route,
-        message: "Failed to update username",
         error: updateError,
+        message: "Failed to update username",
         operation: "username_update",
+        route,
         userId,
       });
     }
 
     return updateData;
   },
+  inputSchema: UpdateUsernameInputSchema,
+  outputSchema: UpdateUsernameOutputSchema,
+  route: ROUTE,
 });

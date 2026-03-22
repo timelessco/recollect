@@ -10,10 +10,7 @@ import { SyncFoldersInputSchema, SyncFoldersOutputSchema } from "./schema";
 const ROUTE = "twitter-sync-folders";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: SyncFoldersInputSchema,
-  outputSchema: SyncFoldersOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const userId = user.id;
 
     console.log(`[${route}] Creating ${data.categories.length} categories`, {
@@ -31,10 +28,10 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (existingError) {
       return apiError({
-        route,
-        message: "Failed to fetch existing categories",
         error: existingError,
+        message: "Failed to fetch existing categories",
         operation: "fetch_categories",
+        route,
         userId,
       });
     }
@@ -67,12 +64,12 @@ export const POST = createPostApiHandlerWithAuth({
     // Insert new categories with twitter slug pattern
     const rowsToInsert = newCategoryNames.map((categoryName) => ({
       category_name: categoryName,
-      user_id: userId,
       category_slug: `${slugify(categoryName, {
         lower: true,
       })}-${uniqid.time()}-twitter`,
       icon: "bookmark",
       icon_color: "#ffffff",
+      user_id: userId,
     }));
 
     const { data: insertedCategories, error: insertError } = await supabase
@@ -85,21 +82,21 @@ export const POST = createPostApiHandlerWithAuth({
       // our SELECT and INSERT. Return 409 so the client can retry.
       if (insertError.code === "23505") {
         console.warn(`[${route}] Duplicate category (race condition)`, {
-          userId,
           error: insertError,
+          userId,
         });
         return apiWarn({
-          route,
           message: "Duplicate category name detected",
+          route,
           status: 409,
         });
       }
 
       return apiError({
-        route,
-        message: "Failed to create categories",
         error: insertError,
+        message: "Failed to create categories",
         operation: "insert_categories",
+        route,
         userId,
       });
     }
@@ -114,10 +111,10 @@ export const POST = createPostApiHandlerWithAuth({
 
       if (profileError) {
         return apiError({
-          route,
-          message: "Failed to fetch profile",
           error: profileError,
+          message: "Failed to fetch profile",
           operation: "fetch_profile",
+          route,
           userId,
         });
       }
@@ -133,10 +130,10 @@ export const POST = createPostApiHandlerWithAuth({
 
       if (orderError) {
         return apiError({
-          route,
-          message: "Failed to update category order",
           error: orderError,
+          message: "Failed to update category order",
           operation: "update_category_order",
+          route,
           userId,
         });
       }
@@ -149,4 +146,7 @@ export const POST = createPostApiHandlerWithAuth({
 
     return { created, skipped };
   },
+  inputSchema: SyncFoldersInputSchema,
+  outputSchema: SyncFoldersOutputSchema,
+  route: ROUTE,
 });

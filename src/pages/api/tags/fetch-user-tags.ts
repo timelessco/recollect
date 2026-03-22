@@ -1,26 +1,27 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNull from "lodash/isNull";
 
-import { type UserTagsData } from "../../../types/apiTypes";
+import type { UserTagsData } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
+
 import { TAG_TABLE_NAME } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // fetches tags for a perticular user
 
-type DataResponse = UserTagsData[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | string | null;
+type DataResponse = null | UserTagsData[];
+type ErrorResponse = null | PostgrestError | string | VerifyErrors;
 
-type Data = {
+interface Data {
   data: DataResponse;
   error: ErrorResponse;
-};
+}
 
 /**
  * Fetches all tags for the authenticated user
@@ -43,7 +44,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     // Get authenticated user
     const userResponse = await supabase?.auth?.getUser();
-    const userId = userResponse?.data?.user?.id as string;
+    const userId = userResponse?.data?.user?.id!;
 
     // Validate user authentication
     if (!userId || isEmpty(userId)) {
@@ -73,10 +74,10 @@ export default async function handler(request: NextApiRequest, response: NextApi
           : (error as PostgrestError)?.message || "Unknown database error";
 
       console.error("[fetch-user-tags][database] Failed to fetch user tags:", {
-        errorMessage,
-        userId,
-        tableName: TAG_TABLE_NAME,
         errorDetails: error,
+        errorMessage,
+        tableName: TAG_TABLE_NAME,
+        userId,
       });
       Sentry.captureException(error);
 

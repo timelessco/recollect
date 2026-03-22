@@ -1,8 +1,9 @@
 import { produce } from "immer";
 
+import type { MoveBookmarkToTrashApiPayload, PaginatedBookmarks } from "@/types/apiTypes";
+
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
-import { type MoveBookmarkToTrashApiPayload, type PaginatedBookmarks } from "@/types/apiTypes";
 import {
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
@@ -20,7 +21,7 @@ import { moveBookmarkToTrash } from "../../supabaseCrudHelpers";
  * - Proper invalidation of all affected caches including trash page with sortBy
  */
 export const useMoveBookmarkToTrashOptimisticMutation = () => {
-  const { queryClient, session, queryKey, searchQueryKey, sortBy } = useBookmarkMutationContext();
+  const { queryClient, queryKey, searchQueryKey, session, sortBy } = useBookmarkMutationContext();
 
   const moveBookmarkToTrashOptimisticMutation = useReactQueryOptimisticMutation<
     unknown,
@@ -29,31 +30,6 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
     typeof queryKey,
     PaginatedBookmarks
   >({
-    mutationFn: moveBookmarkToTrash,
-    queryKey,
-    secondaryQueryKey: searchQueryKey,
-
-    // Remove bookmark from source page (current category or trash)
-    updater: (currentData, variables) => {
-      if (!currentData?.pages) {
-        return currentData as PaginatedBookmarks;
-      }
-
-      // Create a Set of bookmark IDs to remove for efficient lookup
-      const bookmarkIdsToRemove = new Set(variables.data.map((bookmark) => bookmark.id));
-
-      // Remove the bookmarks from the current page
-      return produce(currentData, (draft) => {
-        for (const page of draft.pages) {
-          if (!page?.data) {
-            continue;
-          }
-
-          page.data = page.data.filter((bookmark) => !bookmarkIdsToRemove.has(bookmark.id));
-        }
-      });
-    },
-
     // Add to trash page when moving TO trash, or add to category when restoring FROM trash
     additionalOptimisticUpdates: [
       {
@@ -62,14 +38,13 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
           if (variables.isTrash) {
             // Moving TO trash - update trash page
             return [BOOKMARKS_KEY, session?.user?.id, TRASH_URL, sortBy];
-          } else {
-            // Moving FROM trash (restore) - update the target category page
-            // Use the first category from the first bookmark's addedCategories, or uncategorized if none
-            const firstBookmark = variables.data[0];
-            const categoryIds = firstBookmark?.addedCategories?.map((cat) => cat.id) ?? [];
-            const targetCategoryId = categoryIds.length > 0 ? categoryIds[0] : UNCATEGORIZED_URL;
-            return [BOOKMARKS_KEY, session?.user?.id, targetCategoryId, sortBy];
           }
+          // Moving FROM trash (restore) - update the target category page
+          // Use the first category from the first bookmark's addedCategories, or uncategorized if none
+          const firstBookmark = variables.data[0];
+          const categoryIds = firstBookmark?.addedCategories?.map((cat) => cat.id) ?? [];
+          const targetCategoryId = categoryIds.length > 0 ? categoryIds[0] : UNCATEGORIZED_URL;
+          return [BOOKMARKS_KEY, session?.user?.id, targetCategoryId, sortBy];
         },
         updater: (destinationData, variables) => {
           const data = destinationData as PaginatedBookmarks | undefined;
@@ -98,7 +73,7 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
         },
       },
     ],
-
+    mutationFn: moveBookmarkToTrash,
     // Minimal invalidation - only what wasn't optimistically updated
     onSettled: (_data, error, variables) => {
       if (error) {
@@ -119,7 +94,32 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
       }
     },
 
+    queryKey,
+
+    secondaryQueryKey: searchQueryKey,
+
     showSuccessToast: false,
+
+    // Remove bookmark from source page (current category or trash)
+    updater: (currentData, variables) => {
+      if (!currentData?.pages) {
+        return currentData!;
+      }
+
+      // Create a Set of bookmark IDs to remove for efficient lookup
+      const bookmarkIdsToRemove = new Set(variables.data.map((bookmark) => bookmark.id));
+
+      // Remove the bookmarks from the current page
+      return produce(currentData, (draft) => {
+        for (const page of draft.pages) {
+          if (!page?.data) {
+            continue;
+          }
+
+          page.data = page.data.filter((bookmark) => !bookmarkIdsToRemove.has(bookmark.id));
+        }
+      });
+    },
   });
 
   return { moveBookmarkToTrashOptimisticMutation };

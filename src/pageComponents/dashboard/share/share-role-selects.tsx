@@ -1,10 +1,11 @@
 import { isNull } from "lodash";
 
+import type { CollabDataInCategory } from "../../../types/apiTypes";
+
 import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
 import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation";
 import { Select } from "../../../components/ui/recollect/select";
 import DownArrowGray from "../../../icons/downArrowGray";
-import { type CollabDataInCategory } from "../../../types/apiTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import { successToast } from "../../../utils/toastMessages";
 
@@ -21,12 +22,12 @@ const INVITE_ROLE_OPTIONS = [
   { label: "Viewer", value: "Viewer" },
 ] as const;
 
-type AccessRoleSelectProps = {
-  item: CollabDataInCategory;
+interface AccessRoleSelectProps {
   isLoggedinUserTheOwner: boolean;
-};
+  item: CollabDataInCategory;
+}
 
-export const AccessRoleSelect = ({ item, isLoggedinUserTheOwner }: AccessRoleSelectProps) => {
+export const AccessRoleSelect = ({ isLoggedinUserTheOwner, item }: AccessRoleSelectProps) => {
   const { updateSharedCategoriesUserAccessMutation } =
     useUpdateSharedCategoriesUserAccessMutation();
   const { deleteSharedCategoriesUserMutation } = useDeleteSharedCategoriesUserMutation();
@@ -37,12 +38,11 @@ export const AccessRoleSelect = ({ item, isLoggedinUserTheOwner }: AccessRoleSel
 
   return (
     <Select.Root
-      value={item.edit_access ? "Editor" : "Viewer"}
       onValueChange={async (value) => {
         if (value !== "No Access") {
           const response = (await mutationApiCall(
             updateSharedCategoriesUserAccessMutation.mutateAsync({
-              id: item.share_id as number,
+              id: item.share_id!,
               updateData: {
                 edit_access: Boolean(Number.parseInt(value === "Editor" ? "1" : "0", 10)),
               },
@@ -55,11 +55,12 @@ export const AccessRoleSelect = ({ item, isLoggedinUserTheOwner }: AccessRoleSel
         } else {
           void mutationApiCall(
             deleteSharedCategoriesUserMutation.mutateAsync({
-              id: item.share_id as number,
+              id: item.share_id!,
             }),
           );
         }
       }}
+      value={item.edit_access ? "Editor" : "Viewer"}
     >
       <Select.Trigger className="gap-2">
         <Select.Value placeholder="Select role" />
@@ -68,7 +69,7 @@ export const AccessRoleSelect = ({ item, isLoggedinUserTheOwner }: AccessRoleSel
         </Select.Icon>
       </Select.Trigger>
       <Select.Portal>
-        <Select.Positioner sideOffset={2} className="z-103">
+        <Select.Positioner className="z-103" sideOffset={2}>
           <Select.Popup>
             <Select.List>
               {ROLE_OPTIONS.map((option) => (
@@ -85,17 +86,19 @@ export const AccessRoleSelect = ({ item, isLoggedinUserTheOwner }: AccessRoleSel
   );
 };
 
-type InviteRoleSelectProps = {
-  value: boolean;
-  onChange: (value: boolean) => void;
+interface InviteRoleSelectProps {
   disabled: boolean;
-};
+  onChange: (value: boolean) => void;
+  value: boolean;
+}
 
-export const InviteRoleSelect = ({ value, onChange, disabled }: InviteRoleSelectProps) => (
+export const InviteRoleSelect = ({ disabled, onChange, value }: InviteRoleSelectProps) => (
   <Select.Root
-    value={value ? "Editor" : "Viewer"}
-    onValueChange={(value) => onChange(value === "Editor")}
     disabled={disabled}
+    onValueChange={(value) => {
+      onChange(value === "Editor");
+    }}
+    value={value ? "Editor" : "Viewer"}
   >
     <Select.Trigger className="flex items-center rounded-[6px] px-2 py-[5.5px] text-13 leading-[15px] tracking-[0.13px] text-gray-alpha-600 hover:bg-gray-50 data-popup-open:bg-gray-50">
       <Select.Value placeholder="Viewer" />
@@ -109,9 +112,9 @@ export const InviteRoleSelect = ({ value, onChange, disabled }: InviteRoleSelect
           <Select.List>
             {INVITE_ROLE_OPTIONS.map((option) => (
               <Select.Item
+                className="py-[5px] leading-[15px] font-medium tracking-[0.13px]"
                 key={option.value}
                 value={option.value}
-                className="py-[5px] leading-[15px] font-medium tracking-[0.13px]"
               >
                 <Select.ItemText>{option.label}</Select.ItemText>
                 <Select.ItemIndicator />

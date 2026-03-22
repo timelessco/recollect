@@ -8,12 +8,11 @@ import { GetPdfBufferInputSchema, GetPdfBufferOutputSchema } from "./schema";
 const ROUTE = "v2-bookmarks-get-pdf-buffer";
 
 export const GET = createGetApiHandler({
-  route: ROUTE,
-  inputSchema: GetPdfBufferInputSchema,
-  outputSchema: GetPdfBufferOutputSchema,
   handler: async ({ input }) => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30_000);
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 30_000);
 
     try {
       const result = await fetch(input.url, {
@@ -35,4 +34,7 @@ export const GET = createGetApiHandler({
       clearTimeout(timeoutId);
     }
   },
+  inputSchema: GetPdfBufferInputSchema,
+  outputSchema: GetPdfBufferOutputSchema,
+  route: ROUTE,
 });

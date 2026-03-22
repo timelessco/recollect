@@ -2,18 +2,19 @@ import { useEffect, useState } from "react";
 
 import isEmpty from "lodash/isEmpty";
 
+import type { CategoriesData } from "../../../types/apiTypes";
+
 import { Tooltip } from "@/components/ui/recollect/tooltip";
 
 import { useUpdateCategoryOptimisticMutation } from "../../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import { GlobeIcon } from "../../../icons/globe-icon";
 import UsersCollabIcon from "../../../icons/usersCollabIcon";
-import { type CategoriesData } from "../../../types/apiTypes";
 
-type NavBarHeadingProps = {
+interface NavBarHeadingProps {
   currentCategoryData: CategoriesData | undefined;
   headerName: string | undefined;
   triggerEdit?: boolean;
-};
+}
 
 export const NavBarHeading = (props: NavBarHeadingProps) => {
   const { currentCategoryData, headerName, triggerEdit } = props;
@@ -80,12 +81,12 @@ export const NavBarHeading = (props: NavBarHeadingProps) => {
   );
 };
 
-type NavBarHeadingInputProps = {
+interface NavBarHeadingInputProps {
   currentCategoryData: CategoriesData | undefined;
   headingInputValue: string;
   setHeadingInputValue: (value: string) => void;
   setShowHeadingInput: (value: boolean) => void;
-};
+}
 
 const NavBarHeadingInput = (props: NavBarHeadingInputProps) => {
   const { currentCategoryData, headingInputValue, setHeadingInputValue, setShowHeadingInput } =
@@ -116,29 +117,31 @@ const NavBarHeadingInput = (props: NavBarHeadingInputProps) => {
 
   return (
     <input
-      type="text"
-      name="category-name"
+      autoFocus
       className="m-0 h-[28px] rounded-none border-none bg-gray-0 p-0 text-xl leading-[16px] font-semibold text-gray-900 focus:outline-hidden"
+      name="category-name"
       onBlur={handleSave}
       onChange={(event) => {
         setHeadingInputValue(event.target.value);
       }}
-      autoFocus
+      onFocus={(event) => {
+        event.target.select();
+      }}
       onKeyDown={(event) => {
         if (event.key === "Enter") {
           handleSave();
         }
       }}
       placeholder="Enter name"
-      onFocus={(event) => event.target.select()}
+      type="text"
       value={headingInputValue}
     />
   );
 };
 
-type CollectionStatusIconsProps = {
+interface CollectionStatusIconsProps {
   currentCategoryData: CategoriesData | undefined;
-};
+}
 
 const CollectionStatusIcons = (props: CollectionStatusIconsProps) => {
   const { currentCategoryData } = props;

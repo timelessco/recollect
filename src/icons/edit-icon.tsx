@@ -1,4 +1,6 @@
-import { Icon, type IconProps } from "@/components/ui/recollect/icon";
+import type { IconProps } from "@/components/ui/recollect/icon";
+
+import { Icon } from "@/components/ui/recollect/icon";
 
 export const EditIcon = (props: IconProps) => (
   <Icon fill="none" viewBox="0 0 16 16" {...props}>

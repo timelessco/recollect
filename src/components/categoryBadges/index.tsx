@@ -1,10 +1,11 @@
-import { type CategoriesData } from "../../types/apiTypes";
+import type { CategoriesData } from "../../types/apiTypes";
+
 import { CollectionIcon } from "../collectionIcon";
 
-type CategoryBadgesProps = {
+interface CategoryBadgesProps {
   categories: CategoriesData[] | undefined;
   maxVisible?: number;
-};
+}
 
 export function CategoryBadges({ categories, maxVisible = 2 }: CategoryBadgesProps) {
   if (!categories?.length) {
@@ -18,8 +19,8 @@ export function CategoryBadges({ categories, maxVisible = 2 }: CategoryBadgesPro
     <>
       {visible.map((cat) => (
         <div
-          key={cat.id}
           className="mr-1 flex items-center gap-1 text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
+          key={cat.id}
         >
           <CollectionIcon bookmarkCategoryData={cat} />
           <span>{cat.category_name}</span>

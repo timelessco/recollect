@@ -13,12 +13,12 @@ import {
 import { handleSuccess } from "@/utils/error-utils/client";
 
 export interface ImportBookmarkPayload {
-  title: string | null;
-  description: string | null;
+  category_name: null | string;
+  description: null | string;
+  inserted_at: null | string;
+  ogImage: null | string;
+  title: null | string;
   url: string;
-  ogImage: string | null;
-  category_name: string | null;
-  inserted_at: string | null;
 }
 
 export interface ImportBookmarksRequest {
@@ -39,7 +39,7 @@ export function useImportBookmarksMutation() {
     Error,
     ImportBookmarksRequest
   >({
-    mutationFn: (payload) =>
+    mutationFn: async (payload) =>
       postApi<ImportBookmarksResponse>(`/api${RAINDROP_IMPORT_API}`, payload),
     mutationKey: [IMPORT_BOOKMARKS_MUTATION_KEY],
     onSettled: (data, error) => {

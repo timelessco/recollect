@@ -1,43 +1,44 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { type SupabaseClient } from "@supabase/supabase-js";
-import { type QueryFunctionContext, type QueryKey } from "@tanstack/react-query";
 import axios from "axios";
 import { isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
+import type {
+  AddBookmarkMinDataPayloadTypes,
+  AddBookmarkScreenshotPayloadTypes,
+  BookmarksCountTypes,
+  BookmarksPaginatedDataTypes,
+  BookmarkViewDataTypes,
+  CategoriesData,
+  DeleteBookmarkPayload,
+  DeleteUserCategoryApiPayload,
+  FetchDataResponse,
+  FetchSharedCategoriesData,
+  GetUserProfilePicPayload,
+  MoveBookmarkToTrashApiPayload,
+  ProfilesTableTypes,
+  RemoveUserProfilePicPayload,
+  SingleListData,
+  SupabaseSessionType,
+  UpdateCategoryOrderApiPayload,
+  UpdateSharedCategoriesUserAccessApiPayload,
+  UpdateUsernameApiPayload,
+  UpdateUserProfileApiPayload,
+  UploadFileApiPayload,
+  UploadFileApiResponse,
+  UploadProfilePicApiResponse,
+  UploadProfilePicPayload,
+  UserProfilePicTypes,
+  UserTagsData,
+} from "../../types/apiTypes";
+import type { BookmarksSortByTypes } from "../../types/componentStoreTypes";
+import type { CategoryIdUrlTypes } from "../../types/componentTypes";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { QueryFunctionContext, QueryKey } from "@tanstack/react-query";
+
 import { handleClientError } from "@/utils/error-utils/client";
 
-import {
-  type AddBookmarkMinDataPayloadTypes,
-  type AddBookmarkScreenshotPayloadTypes,
-  type BookmarksCountTypes,
-  type BookmarksPaginatedDataTypes,
-  type BookmarkViewDataTypes,
-  type CategoriesData,
-  type DeleteBookmarkPayload,
-  type DeleteUserCategoryApiPayload,
-  type FetchDataResponse,
-  type FetchSharedCategoriesData,
-  type GetUserProfilePicPayload,
-  type MoveBookmarkToTrashApiPayload,
-  type ProfilesTableTypes,
-  type RemoveUserProfilePicPayload,
-  type SingleListData,
-  type SupabaseSessionType,
-  type UpdateCategoryOrderApiPayload,
-  type UpdateSharedCategoriesUserAccessApiPayload,
-  type UpdateUsernameApiPayload,
-  type UpdateUserProfileApiPayload,
-  type UploadFileApiPayload,
-  type UploadFileApiResponse,
-  type UploadProfilePicApiResponse,
-  type UploadProfilePicPayload,
-  type UserProfilePicTypes,
-  type UserTagsData,
-} from "../../types/apiTypes";
-import { type BookmarksSortByTypes } from "../../types/componentStoreTypes";
-import { type CategoryIdUrlTypes } from "../../types/componentTypes";
 import {
   ADD_BOOKMARK_MIN_DATA,
   ADD_URL_SCREENSHOT_API,
@@ -128,9 +129,9 @@ export const deleteApiKey = async (): Promise<{
   }
 };
 
-type CheckApiKeyResponse = {
+interface CheckApiKeyResponse {
   data: { hasApiKey: boolean } | null;
-};
+}
 
 export const checkGeminiApiKey = async (): Promise<CheckApiKeyResponse> => {
   try {
@@ -143,9 +144,9 @@ export const checkGeminiApiKey = async (): Promise<CheckApiKeyResponse> => {
   }
 };
 
-type GetApiKeyResponse = {
+interface GetApiKeyResponse {
   data: { apiKey: string } | null;
-};
+}
 
 export const getGeminiApiKey = async (): Promise<GetApiKeyResponse> => {
   try {
@@ -164,8 +165,8 @@ export const fetchBookmarksData = async (
   {
     pageParam: pageParameter = 0,
     queryKey,
-  }: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  QueryFunctionContext<Array<number | string | null | undefined>, any>,
+  }: // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+  QueryFunctionContext<(null | number | string | undefined)[], any>,
   session: SupabaseSessionType,
   sortBy: BookmarksSortByTypes,
 ) => {
@@ -174,15 +175,15 @@ export const fetchBookmarksData = async (
   const userId = !isEmpty(queryKey) && queryKey?.length <= 5 ? queryKey[1] : null;
 
   if (!userId) {
-    return { data: [], error: null, count: {} } as unknown as FetchDataResponse;
+    return { count: {}, data: [], error: null } as unknown as FetchDataResponse;
   }
 
   if (!session?.user) {
-    return undefined;
+    return;
   }
 
   if (!sortBy) {
-    return undefined;
+    return;
   }
 
   try {
@@ -196,9 +197,9 @@ export const fetchBookmarksData = async (
     );
 
     return {
+      count: bookmarksData?.data?.count,
       data: bookmarksData?.data?.data,
       error: null,
-      count: bookmarksData?.data?.count,
     } as unknown as FetchDataResponse;
   } catch (error) {
     return { data: undefined, error } as unknown as FetchDataResponse;
@@ -206,7 +207,7 @@ export const fetchBookmarksData = async (
 };
 
 export const getBookmarksCount = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
   queryData: QueryFunctionContext<QueryKey, any>,
   session: SupabaseSessionType,
 ): Promise<{ data: BookmarksCountTypes | null; error: Error }> => {
@@ -218,7 +219,7 @@ export const getBookmarksCount = async (
   if (!session?.user) {
     return {
       data: null,
-      error: { name: "No user session", message: "No user session" },
+      error: { message: "No user session", name: "No user session" },
     };
   }
 
@@ -236,14 +237,14 @@ export const getBookmarksCount = async (
     }
   } else {
     // return undefined;
-    return { data: null, error: { name: "NO user id", message: "NO user id" } };
+    return { data: null, error: { message: "NO user id", name: "NO user id" } };
   }
 };
 
 export const addBookmarkMinData = async ({
-  url,
   category_id,
   update_access,
+  url,
 }: AddBookmarkMinDataPayloadTypes) => {
   try {
     // append https here
@@ -254,9 +255,9 @@ export const addBookmarkMinData = async ({
     }
 
     const apiResponse = await axios.post(`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`, {
-      url: finalUrl,
       category_id: isNull(category_id) ? 0 : category_id,
       update_access,
+      url: finalUrl,
     });
 
     return apiResponse as { data: { data: SingleListData[] } };
@@ -265,15 +266,15 @@ export const addBookmarkMinData = async ({
   }
 };
 
-export const addBookmarkScreenshot = async ({ url, id }: AddBookmarkScreenshotPayloadTypes) => {
+export const addBookmarkScreenshot = async ({ id, url }: AddBookmarkScreenshotPayloadTypes) => {
   try {
-    const apiResponse = await axios.post(`${NEXT_API_URL}${ADD_URL_SCREENSHOT_API}`, { url, id });
+    const apiResponse = await axios.post(`${NEXT_API_URL}${ADD_URL_SCREENSHOT_API}`, { id, url });
 
     return apiResponse;
   } catch (error) {
     if (error instanceof Error) {
       console.error(error.message);
-      throw new Error(error.message);
+      throw new Error(error.message, { cause: error });
     }
 
     return error;
@@ -333,11 +334,11 @@ export const searchBookmarks = async (
 
     // directly using '#' in the params might cause issues
     const parameters = new URLSearchParams({
-      search: searchText ?? "",
       category_id: String(categoryId ?? ""),
       is_shared_category: String(isSharedCategory ?? ""),
-      offset: String(offset ?? 0),
       limit: String(limit ?? PAGINATION_LIMIT),
+      offset: String(offset ?? 0),
+      search: searchText ?? "",
     });
 
     try {
@@ -354,13 +355,13 @@ export const searchBookmarks = async (
 
   return {
     data: null,
-    error: { name: "error", message: "No search text provided" },
+    error: { message: "No search text provided", name: "error" },
   };
 };
 
 // user tags
 export const fetchUserTags = async (): Promise<{
-  data: UserTagsData[] | null;
+  data: null | UserTagsData[];
   error: Error;
 }> => {
   try {
@@ -377,7 +378,7 @@ export const fetchUserTags = async (): Promise<{
 export const fetchBookmarksViews = async ({
   category_id,
 }: {
-  category_id: number | string | null;
+  category_id: null | number | string;
 }): Promise<{ data: BookmarkViewDataTypes | null; error: Error }> => {
   if (!isUserInACategory(category_id as string)) {
     return {
@@ -461,9 +462,9 @@ export const updateCategoryOrder = async ({ order }: UpdateCategoryOrderApiPaylo
 
 // share
 export const sendCollaborationEmailInvite = async ({
-  emailList,
   category_id,
   edit_access,
+  emailList,
   hostUrl,
 }: {
   category_id: number;
@@ -472,9 +473,9 @@ export const sendCollaborationEmailInvite = async ({
   hostUrl: string;
 }) => {
   const response = await axios.post(`${NEXT_API_URL}${SEND_COLLABORATION_EMAIL_API}`, {
-    emailList,
     category_id,
     edit_access,
+    emailList,
     hostUrl,
   });
 
@@ -532,18 +533,18 @@ export const updateSharedCategoriesUserAccess = async ({
 
 // profiles
 export const fetchUserProfiles = async ({
-  userId,
   session,
+  userId,
 }: {
   session: SupabaseSessionType;
   userId: string;
-}): Promise<{ data: ProfilesTableTypes[] | null; error: Error }> => {
+}): Promise<{ data: null | ProfilesTableTypes[]; error: Error }> => {
   const existingOauthAvatarUrl = session?.user?.user_metadata?.avatar_url;
 
   try {
     if (userId) {
       const response = await axios.get<{
-        data: ProfilesTableTypes[] | null;
+        data: null | ProfilesTableTypes[];
         error: Error;
       }>(
         `${NEXT_API_URL}${FETCH_USER_PROFILE_API}?${
@@ -553,7 +554,7 @@ export const fetchUserProfiles = async ({
       return response?.data;
     }
 
-    return { data: null, error: { name: "No user id", message: "No user id" } };
+    return { data: null, error: { message: "No user id", name: "No user id" } };
   } catch (error_) {
     const error = error_ as Error;
     return { data: null, error };
@@ -563,7 +564,7 @@ export const fetchUserProfiles = async ({
 export const updateUserProfile = async ({ updateData }: UpdateUserProfileApiPayload) => {
   try {
     const response = await axios.post<{
-      data: ProfilesTableTypes[] | null;
+      data: null | ProfilesTableTypes[];
       error: Error;
     }>(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, { updateData });
 
@@ -576,7 +577,7 @@ export const updateUserProfile = async ({ updateData }: UpdateUserProfileApiPayl
 export const updateUsername = async ({ id, username }: UpdateUsernameApiPayload) => {
   try {
     const response = await axios.post<{
-      data: ProfilesTableTypes[] | null;
+      data: null | ProfilesTableTypes[];
       error: Error;
     }>(`${NEXT_API_URL}${UPDATE_USERNAME_API}`, { id, username });
 
@@ -589,7 +590,7 @@ export const updateUsername = async ({ id, username }: UpdateUsernameApiPayload)
 export const deleteUser = async () => {
   try {
     const response = await axios.post<{
-      data: ProfilesTableTypes[] | null;
+      data: null | ProfilesTableTypes[];
       error: Error;
     }>(`${NEXT_API_URL}${DELETE_USER_API}`, {});
 
@@ -602,13 +603,13 @@ export const deleteUser = async () => {
 export const getUserProfilePic = async ({
   email,
 }: GetUserProfilePicPayload): Promise<{
-  data: UserProfilePicTypes[] | null;
+  data: null | UserProfilePicTypes[];
   error: Error;
 }> => {
   if (!isNil(email) && !isEmpty(email)) {
     try {
       const response = await axios.get<{
-        data: UserProfilePicTypes[] | null;
+        data: null | UserProfilePicTypes[];
         error: Error;
       }>(`${NEXT_API_URL}${FETCH_USER_PROFILE_PIC_API}?email=${email}`);
 
@@ -624,7 +625,7 @@ export const getUserProfilePic = async ({
 export const removeUserProfilePic = async ({ id }: RemoveUserProfilePicPayload) => {
   try {
     const response = await axios.post<{
-      data: ProfilesTableTypes[] | null;
+      data: null | ProfilesTableTypes[];
       error: Error;
     }>(`${NEXT_API_URL}${REMOVE_PROFILE_PIC_API}`, { id });
 
@@ -637,8 +638,8 @@ export const removeUserProfilePic = async ({ id }: RemoveUserProfilePicPayload) 
 // file upload
 
 export const uploadFile = async ({
-  file,
   category_id,
+  file,
   thumbnailPath,
   uploadFileNamePath,
 }: UploadFileApiPayload) => {
@@ -648,8 +649,8 @@ export const uploadFile = async ({
       `${NEXT_API_URL}${UPLOAD_FILE_API}`,
       {
         category_id,
-        thumbnailPath,
         name: fileName,
+        thumbnailPath,
         type: file?.type,
         uploadFileNamePath,
       },
@@ -678,12 +679,12 @@ export const uploadProfilePic = async ({ file }: UploadProfilePicPayload) => {
 
 // auth
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 export const signOut = async (supabase: SupabaseClient<any, "public", any>) => {
   await supabase.auth.signOut({ scope: "local" });
 };
 
-export const getMediaType = async (url: string): Promise<string | null> => {
+export const getMediaType = async (url: string): Promise<null | string> => {
   try {
     const encodedUrl = encodeURIComponent(url);
 
@@ -699,7 +700,7 @@ export const getMediaType = async (url: string): Promise<string | null> => {
 
     const data = (await response.json()) as { mediaType?: string };
 
-    return data.mediaType || null;
+    return data.mediaType ?? null;
   } catch (error) {
     console.error("Error getting media type:", error);
     return null;

@@ -1,8 +1,9 @@
 import * as Sentry from "@sentry/nextjs";
-import { type SupabaseClient } from "@supabase/supabase-js";
 
-import { type ImgMetadataType } from "@/types/apiTypes";
-import { type Database } from "@/types/database.types";
+import type { ImgMetadataType } from "@/types/apiTypes";
+import type { Database } from "@/types/database.types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import {
   BOOKMARK_TAGS_TABLE_NAME,
   MAIN_TABLE_NAME,
@@ -16,7 +17,7 @@ import { storageHelpers } from "@/utils/storageClient";
 /**
  * Extracts the filename from the end of a URL path.
  */
-function extractFileName(url: string | null | undefined): string | undefined {
+function extractFileName(url: null | string | undefined): string | undefined {
   if (!url) {
     return undefined;
   }
@@ -34,12 +35,12 @@ function extractFileName(url: string | null | undefined): string | undefined {
  * Deletes storage files (screenshots, og images, file uploads, videos) for a set of bookmarks.
  */
 async function deleteStorageForBookmarks(
-  bookmarks: Array<{
+  bookmarks: {
     meta_data: unknown;
-    ogImage: string | null;
-    url: string | null;
+    ogImage: null | string;
     type: string;
-  }>,
+    url: null | string;
+  }[],
   userId: string,
   route: string,
 ) {
@@ -120,10 +121,10 @@ async function deleteStorageForBookmarks(
   }
 }
 
-type DeleteBookmarksByIdsResult = {
+interface DeleteBookmarksByIdsResult {
   deletedCount: number;
-  error: string | null;
-};
+  error: null | string;
+}
 
 /**
  * Cascading delete for bookmarks: cleans up storage files, tags, and bookmark records.
@@ -153,24 +154,24 @@ export async function deleteBookmarksByIds(
 
   if (fetchError) {
     console.error(`[${route}] Failed to fetch bookmarks for cleanup:`, {
-      fetchError,
       count: bookmarkIds.length,
+      fetchError,
     });
     Sentry.captureException(fetchError, {
-      tags: { operation: `${route}_fetch_cleanup`, userId },
       extra: { count: bookmarkIds.length },
+      tags: { operation: `${route}_fetch_cleanup`, userId },
     });
   }
 
   // Clean up storage files
   if (bookmarksForCleanup && bookmarksForCleanup.length > 0) {
     await deleteStorageForBookmarks(
-      bookmarksForCleanup as Array<{
+      bookmarksForCleanup as {
         meta_data: unknown;
-        ogImage: string | null;
-        url: string | null;
+        ogImage: null | string;
         type: string;
-      }>,
+        url: null | string;
+      }[],
       userId,
       route,
     );
@@ -185,12 +186,12 @@ export async function deleteBookmarksByIds(
 
   if (tagsError) {
     console.error(`[${route}] Failed to delete tags:`, {
-      tagsError,
       count: bookmarkIds.length,
+      tagsError,
     });
     Sentry.captureException(tagsError, {
-      tags: { operation: `${route}_delete_tags`, userId },
       extra: { count: bookmarkIds.length },
+      tags: { operation: `${route}_delete_tags`, userId },
     });
   }
 
@@ -204,12 +205,12 @@ export async function deleteBookmarksByIds(
 
   if (deleteError) {
     console.error(`[${route}] Failed to delete bookmarks:`, {
-      deleteError,
       count: bookmarkIds.length,
+      deleteError,
     });
     Sentry.captureException(deleteError, {
-      tags: { operation: `${route}_delete_bookmarks`, userId },
       extra: { count: bookmarkIds.length },
+      tags: { operation: `${route}_delete_bookmarks`, userId },
     });
 
     return { deletedCount: 0, error: "Failed to delete bookmarks" };

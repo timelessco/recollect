@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Controller, useForm, type SubmitHandler } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 
 import { ShowEyeIcon } from "@/icons/show-eye-icon";
 import { SlashedEyeIcon } from "@/icons/slashed-eye-icon";
@@ -22,9 +23,9 @@ import {
 } from "../../utils/commonClassNames";
 import { AiFeaturesToggleSection } from "./ai-features-toggles";
 
-type AiFeaturesFormTypes = {
+interface AiFeaturesFormTypes {
   apiKey: string;
-};
+}
 
 const ToggleCardSkeleton = () => (
   <div className="flex items-center justify-between rounded-xl bg-gray-100 py-2">
@@ -67,11 +68,11 @@ const AiFeaturesSkeleton = () => (
 );
 
 export const AiFeatures = () => {
-  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState<null | string>(null);
   const [showKey, setShowKey] = useState(false);
   const { isMobile } = useIsMobileView();
-  const { mutate: saveApiKey, isPending: isSaving } = useApiKeyMutation();
-  const { mutate: deleteApiKey, isPending: isDeleting } = useDeleteApiKeyMutation();
+  const { isPending: isSaving, mutate: saveApiKey } = useApiKeyMutation();
+  const { isPending: isDeleting, mutate: deleteApiKey } = useDeleteApiKeyMutation();
   const { refetch: fetchApiKey } = useFetchGetApiKey();
 
   const handleEyeClick = async () => {
@@ -94,10 +95,10 @@ export const AiFeatures = () => {
   };
 
   const {
-    handleSubmit,
-    formState: { errors },
-    reset,
     control,
+    formState: { errors },
+    handleSubmit,
+    reset,
   } = useForm<AiFeaturesFormTypes>();
 
   const { data, isLoading: isChecking } = useFetchCheckApiKey();
@@ -118,7 +119,7 @@ export const AiFeatures = () => {
     saveApiKey({ apikey: formData.apiKey });
   };
 
-  const hasApiKey = data.data.hasApiKey;
+  const { hasApiKey } = data.data;
 
   return (
     <>
@@ -144,18 +145,15 @@ export const AiFeatures = () => {
           >
             <div className="relative w-full">
               <Controller
-                name="apiKey"
                 control={control}
-                rules={{
-                  ...(hasApiKey ? {} : { required: "API Key is required" }),
-                }}
+                name="apiKey"
                 render={({ field }) => {
                   const rhfValue = field.value;
 
                   const displayValue =
                     hasApiKey && !isDeleting
                       ? showKey
-                        ? apiKey || ""
+                        ? (apiKey ?? "")
                         : isMobile
                           ? "••••••••••••••••"
                           : "••••••••••••••••••••••••••••••••"
@@ -169,21 +167,22 @@ export const AiFeatures = () => {
                       id="api-key"
                       isDisabled={hasApiKey ? !isDeleting : false}
                       isError={Boolean(errors.apiKey)}
-                      value={displayValue}
                       placeholder="Enter your API key"
                       showError={false}
                       type={hasApiKey && !showKey ? "password" : "text"}
+                      value={displayValue}
                     />
                   );
                 }}
+                rules={hasApiKey ? {} : { required: "API Key is required" }}
               />
 
               {hasApiKey && (
                 <button
-                  type="button"
-                  onClick={handleEyeClick}
-                  className="absolute top-1/2 right-2 -translate-y-1/2 text-xl leading-5 text-gray-500 hover:text-gray-700 focus:outline-none"
                   aria-label={showKey ? "Hide API key" : "Show API key"}
+                  className="absolute top-1/2 right-2 -translate-y-1/2 text-xl leading-5 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  onClick={handleEyeClick}
+                  type="button"
                 >
                   {showKey ? <ShowEyeIcon /> : <SlashedEyeIcon />}
                 </button>
@@ -191,8 +190,8 @@ export const AiFeatures = () => {
             </div>
 
             <Button
-              className={`relative my-[3px] ${saveButtonClassName} rounded-[5px] px-2 py-[4.5px]`}
               buttonType="submit"
+              className={`relative my-[3px] ${saveButtonClassName} rounded-[5px] px-2 py-[4.5px]`}
             >
               <span
                 className={`transition-opacity duration-150 ${

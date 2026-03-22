@@ -7,12 +7,12 @@ export const ReactGrabScript = () => {
   }
 
   return (
-    // eslint-disable-next-line @next/next/no-before-interactive-script-outside-document
+    /* oxlint-disable nextjs/no-before-interactive-script-outside-document */
     <Script
-      src="//unpkg.com/react-grab/dist/index.global.js"
       crossOrigin="anonymous"
-      strategy="beforeInteractive"
       data-enabled="true"
+      src="//unpkg.com/react-grab/dist/index.global.js"
+      strategy="beforeInteractive"
     />
   );
 };

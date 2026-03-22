@@ -3,16 +3,16 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import { Resend } from "resend";
 import { z } from "zod";
 
 const EmailRequestSchema = z.object({
+  category_name: z.string(),
+  display_name: z.string(),
   emailList: z.email(),
   url: z.url(),
-  display_name: z.string(),
-  category_name: z.string(),
 });
 
 const filePath = path.join(process.cwd(), "public", "logo.png");
@@ -33,15 +33,21 @@ export default async function handler(request: NextApiRequest, response: NextApi
     return;
   }
 
-  const data = parseResult.data;
+  const { data } = parseResult;
 
   const resend = new Resend(process.env.RESEND_KEY);
 
   try {
     const { data: emailResponse, error: emailError } = await resend.emails.send({
+      attachments: [
+        {
+          content: base64Logo,
+          contentId: "logo",
+          contentType: "image/png",
+          filename: "logo.png",
+        },
+      ],
       from: "admin@share.recollect.so",
-      to: data.emailList,
-      subject: "Collections from recollect",
       html: `
 				<!DOCTYPE html>
 				<html lang="en">
@@ -76,14 +82,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
 					</body>
 				</html>
 			`,
-      attachments: [
-        {
-          filename: "logo.png",
-          content: base64Logo,
-          contentType: "image/png",
-          contentId: "logo",
-        },
-      ],
+      subject: "Collections from recollect",
+      to: data.emailList,
     });
 
     if (emailError) {

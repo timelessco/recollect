@@ -11,8 +11,8 @@ import { EVERYTHING_URL } from "../utils/constants";
 import { errorToast } from "../utils/toastMessages";
 
 interface OnDeleteCollectionProps {
-  current: boolean;
   categoryId: number;
+  current: boolean;
   keepBookmarks?: boolean;
 }
 
@@ -25,7 +25,7 @@ export const useDeleteCollection = () => {
 
   const onDeleteCollection = useCallback(
     async (props: OnDeleteCollectionProps) => {
-      const { current, categoryId, keepBookmarks = false } = props;
+      const { categoryId, current, keepBookmarks = false } = props;
 
       const currentCategory = find(allCategories?.data, (item) => item?.id === categoryId);
 

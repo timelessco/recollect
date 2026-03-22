@@ -9,16 +9,14 @@ export function BookmarksViewSlider() {
 
   return (
     <Slider.Root
-      key={String(bookmarksColumns)}
       aria-label="moodboard-cols-slider Slider"
       className="relative flex w-full touch-none items-center py-[7px] select-none"
       defaultValue={bookmarksColumns as number[]}
+      key={String(bookmarksColumns)}
       max={50}
       min={10}
       onValueCommitted={(value) => {
-        const normalizedValue = Array.isArray(value)
-          ? (value.slice() as number[])
-          : [value as number];
+        const normalizedValue = Array.isArray(value) ? ([...value] as number[]) : [value as number];
         if (normalizedValue[0] !== bookmarksColumns?.[0]) {
           setBookmarksView(normalizedValue, "columns");
         }

@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useRef } from "react";
 
-import { useQuery, type QueryKey, type UseQueryOptions } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+
+import type { QueryKey, UseQueryOptions } from "@tanstack/react-query";
 
 import { handleClientError, handleSuccess } from "@/utils/error-utils/client";
 
@@ -18,25 +20,25 @@ export interface ReactQueryOptions<
   TQueryKey extends QueryKey,
 > extends UseQueryOptions<TQueryFnData, TError, TData, TQueryKey> {
   /**
-   * Callback invoked on query success (v5 workaround)
-   */
-  onSuccess?: (data: TData) => void;
-  /**
    * Callback invoked on query error (v5 workaround)
    */
   onError?: (error: TError) => void;
+  /**
+   * Callback invoked on query success (v5 workaround)
+   */
+  onSuccess?: (data: TData) => void;
   /**
    * Show success toast when query succeeds (default: false)
    */
   showSuccessToast?: boolean;
   /**
-   * Success message to display
-   */
-  successMessage?: string;
-  /**
    * Skip built-in error handling (default: false)
    */
   skipErrorHandling?: boolean;
+  /**
+   * Success message to display
+   */
+  successMessage?: string;
 }
 
 /**
@@ -58,10 +60,10 @@ export function useReactQuery<
   TQueryKey extends QueryKey = readonly unknown[],
 >(options: ReactQueryOptions<TQueryFnData, TError, TData, TQueryKey>) {
   const {
+    onError,
+    onSuccess,
     showSuccessToast = false,
     skipErrorHandling = false,
-    onSuccess,
-    onError,
     successMessage,
     ...restOptions
   } = options;
@@ -69,8 +71,8 @@ export function useReactQuery<
   const queryResult = useQuery(restOptions);
 
   // Track whether callbacks have been invoked for current query
-  const hasHandledSuccess = useRef(false);
-  const hasHandledError = useRef(false);
+  const hasHandledSuccessRef = useRef(false);
+  const hasHandledErrorRef = useRef(false);
 
   // Stabilize queryKey reference for dependency tracking
   const stableQueryKey = useMemo(() => restOptions.queryKey, [restOptions.queryKey]);
@@ -78,15 +80,15 @@ export function useReactQuery<
   // Reset handlers when queryKey changes (new query)
   useEffect(() => {
     if (stableQueryKey) {
-      hasHandledSuccess.current = false;
-      hasHandledError.current = false;
+      hasHandledSuccessRef.current = false;
+      hasHandledErrorRef.current = false;
     }
   }, [stableQueryKey]);
 
   // Handle success (v5 workaround for removed onSuccess)
   useEffect(() => {
-    if (queryResult.isSuccess && !hasHandledSuccess.current) {
-      hasHandledSuccess.current = true;
+    if (queryResult.isSuccess && !hasHandledSuccessRef.current) {
+      hasHandledSuccessRef.current = true;
 
       if (showSuccessToast && successMessage) {
         handleSuccess(successMessage);
@@ -98,8 +100,8 @@ export function useReactQuery<
 
   // Handle error (v5 workaround for removed onError)
   useEffect(() => {
-    if (queryResult.isError && !hasHandledError.current) {
-      hasHandledError.current = true;
+    if (queryResult.isError && !hasHandledErrorRef.current) {
+      hasHandledErrorRef.current = true;
 
       if (!skipErrorHandling) {
         handleClientError(queryResult.error);
@@ -127,11 +129,11 @@ export function useReactQueryImmutable<
   TQueryKey extends QueryKey = readonly unknown[],
 >(options: ReactQueryOptions<TQueryFnData, TError, TData, TQueryKey>) {
   return useReactQuery<TQueryFnData, TError, TData, TQueryKey>({
-    staleTime: Number.POSITIVE_INFINITY,
     gcTime: Number.POSITIVE_INFINITY,
     refetchOnMount: false,
-    refetchOnWindowFocus: false,
     refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    staleTime: Number.POSITIVE_INFINITY,
     ...options,
   });
 }

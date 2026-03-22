@@ -7,14 +7,11 @@ import { CreateAndAssignTagPayloadSchema, CreateAndAssignTagResponseSchema } fro
 const ROUTE = "create-and-assign-tag";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: CreateAndAssignTagPayloadSchema,
-  outputSchema: CreateAndAssignTagResponseSchema,
-  handler: async ({ data, supabase, user, route }) => {
-    const { name, bookmarkId } = data;
+  handler: async ({ data, route, supabase, user }) => {
+    const { bookmarkId, name } = data;
     const userId = user.id;
 
-    console.log(`[${route}] API called:`, { userId, name, bookmarkId });
+    console.log(`[${route}] API called:`, { bookmarkId, name, userId });
 
     // Single atomic RPC call that:
     // 1. Verifies bookmark ownership (with FOR UPDATE lock)
@@ -31,39 +28,39 @@ export const POST = createPostApiHandlerWithAuth({
       if (rpcError.code === "42501") {
         // insufficient_privilege - bookmark not owned by user
         return apiWarn({
-          route,
-          message: "Bookmark not found or not owned by user",
-          status: 403,
           context: { bookmarkId, userId },
+          message: "Bookmark not found or not owned by user",
+          route,
+          status: 403,
         });
       }
 
       if (rpcError.code === "23505") {
         // unique_violation (23505) - duplicate tag name
         return apiWarn({
-          route,
-          message: "You already have a tag with this name, please use a different name",
-          status: 409,
           context: { name, userId },
+          message: "You already have a tag with this name, please use a different name",
+          route,
+          status: 409,
         });
       }
 
       return apiError({
-        route,
-        message: "Error creating and assigning tag",
         error: rpcError,
-        operation: "create_and_assign_tag_rpc",
-        userId,
         extra: { bookmarkId, name },
+        message: "Error creating and assigning tag",
+        operation: "create_and_assign_tag_rpc",
+        route,
+        userId,
       });
     }
 
     if (!isNonEmptyArray(rpcData)) {
       return apiError({
-        route,
-        message: "No data returned from create_and_assign_tag RPC",
         error: new Error("Empty RPC result"),
+        message: "No data returned from create_and_assign_tag RPC",
         operation: "create_and_assign_tag_empty",
+        route,
         userId,
       });
     }
@@ -71,26 +68,29 @@ export const POST = createPostApiHandlerWithAuth({
     const rpcRow = rpcData[0];
 
     console.log(`[${route}] Tag created and assigned:`, {
+      bookmarkId: rpcRow.bookmark_tag_bookmark_id,
+      bookmarkTagId: rpcRow.bookmark_tag_id,
       tagId: rpcRow.tag_id,
       tagName: rpcRow.tag_name,
-      bookmarkTagId: rpcRow.bookmark_tag_id,
-      bookmarkId: rpcRow.bookmark_tag_bookmark_id,
     });
 
     return {
+      bookmarkTag: {
+        bookmark_id: rpcRow.bookmark_tag_bookmark_id,
+        created_at: rpcRow.bookmark_tag_created_at,
+        id: rpcRow.bookmark_tag_id,
+        tag_id: rpcRow.bookmark_tag_tag_id,
+        user_id: rpcRow.bookmark_tag_user_id,
+      },
       tag: {
+        created_at: rpcRow.tag_created_at,
         id: rpcRow.tag_id,
         name: rpcRow.tag_name,
         user_id: rpcRow.tag_user_id,
-        created_at: rpcRow.tag_created_at,
-      },
-      bookmarkTag: {
-        id: rpcRow.bookmark_tag_id,
-        bookmark_id: rpcRow.bookmark_tag_bookmark_id,
-        tag_id: rpcRow.bookmark_tag_tag_id,
-        user_id: rpcRow.bookmark_tag_user_id,
-        created_at: rpcRow.bookmark_tag_created_at,
       },
     };
   },
+  inputSchema: CreateAndAssignTagPayloadSchema,
+  outputSchema: CreateAndAssignTagResponseSchema,
+  route: ROUTE,
 });

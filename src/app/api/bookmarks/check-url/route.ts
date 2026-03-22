@@ -7,11 +7,8 @@ import { CheckUrlInputSchema, CheckUrlOutputSchema } from "./schema";
 const ROUTE = "bookmarks-check-url";
 
 export const GET = createGetApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: CheckUrlInputSchema,
-  outputSchema: CheckUrlOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
-    console.log(`[${route}] API called:`, { userId: user.id, url: data.url });
+  handler: async ({ data, route, supabase, user }) => {
+    console.log(`[${route}] API called:`, { url: data.url, userId: user.id });
 
     const normalized = normalizeUrl(data.url);
 
@@ -33,10 +30,10 @@ export const GET = createGetApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to check bookmark",
         error,
+        message: "Failed to check bookmark",
         operation: "check_url",
+        route,
         userId: user.id,
       });
     }
@@ -44,9 +41,12 @@ export const GET = createGetApiHandlerWithAuth({
     const match = candidates?.find((row) => normalizeUrl(row.url) === normalized);
 
     if (match) {
-      return { exists: true as const, bookmarkId: String(match.id) };
+      return { bookmarkId: String(match.id), exists: true as const };
     }
 
     return { exists: false as const };
   },
+  inputSchema: CheckUrlInputSchema,
+  outputSchema: CheckUrlOutputSchema,
+  route: ROUTE,
 });

@@ -1,20 +1,15 @@
 // TODO: Fix this in priority
-/* eslint-disable @typescript-eslint/no-base-to-string */
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
-import {
-  type AuthError,
-  type PostgrestError,
-  type SupabaseClient,
-  type User,
-} from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil } from "lodash";
 import isNull from "lodash/isNull";
 
-import { type SingleListData } from "../../../types/apiTypes";
+import type { SingleListData } from "../../../types/apiTypes";
+import type { AuthError, PostgrestError, SupabaseClient, User } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
+
 import {
   BOOKMARK_CATEGORIES_TABLE_NAME,
   BOOKMARK_TAGS_TABLE_NAME,
@@ -35,13 +30,13 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api deletes user
 
-type DataResponse = { user: User | null } | null;
-type ErrorResponse = AuthError | PostgrestError | VerifyErrors | string | null;
+type DataResponse = { user: null | User } | null;
+type ErrorResponse = AuthError | null | PostgrestError | string | VerifyErrors;
 
-type Data = {
+interface Data {
   data: DataResponse;
   error: ErrorResponse;
-};
+}
 
 // deletes category data
 const categoriesDelete = async (
@@ -239,8 +234,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   const userData = await supabase?.auth?.getUser();
 
-  const userId = userData?.data?.user?.id as string;
-  const email = userData?.data?.user?.email as string;
+  const userId = userData?.data?.user?.id!;
+  const email = userData?.data?.user?.email!;
 
   // bookmark_tags delete
   const { error: bookmarkTagsError } = await supabase
@@ -288,7 +283,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
     response.status(500).json({ data: null, error: sharedCategoriesError });
     throw new Error("ERROR: sharedCategoriesError");
   } else {
-    console.log("deleted shared categories table data", userId, "and emails ", email);
+    console.log("deleted shared categories table data", userId, "and emails", email);
   }
 
   // shared_categories delete (email delete , deletes all categories connections user is part of)
@@ -302,7 +297,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
     response.status(500).json({ data: null, error: sharedCategoriesEmailError });
     throw new Error("ERROR: sharedCategoriesEmailError");
   } else {
-    console.log("deleted shared categories email table data", userId, "and emails ", email);
+    console.log("deleted shared categories email table data", userId, "and emails", email);
   }
   // categories delete
 

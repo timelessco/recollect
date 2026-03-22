@@ -1,6 +1,6 @@
-type ShowSidePaneButtonProps = {
+interface ShowSidePaneButtonProps {
   className?: string;
-};
+}
 
 export const ShowSidePaneButton = ({ className = "" }: ShowSidePaneButtonProps) => (
   <svg className={className} fill="none" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">

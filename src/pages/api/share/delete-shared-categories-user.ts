@@ -1,26 +1,27 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { type NextApiResponse } from "next";
+import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
 import isNull from "lodash/isNull";
 
-import {
-  type DeleteSharedCategoriesUserApiPayload,
-  type FetchSharedCategoriesData,
-  type NextApiRequest,
+import type {
+  DeleteSharedCategoriesUserApiPayload,
+  FetchSharedCategoriesData,
+  NextApiRequest,
 } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+
 import { SHARED_CATEGORIES_TABLE_NAME } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 type DataResponse = FetchSharedCategoriesData[] | null;
-type ErrorResponse = PostgrestError | string | { message: string } | null;
+type ErrorResponse = { message: string } | null | PostgrestError | string;
 
-type Data = {
+interface Data {
   data: DataResponse;
   error: ErrorResponse;
-};
+}
 
 /**
  *
@@ -32,7 +33,7 @@ export default async function handler(
   response: NextApiResponse<Data>,
 ) {
   const supabase = apiSupabaseClient(request, response);
-  const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+  const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
 
   const { data, error }: { data: DataResponse; error: ErrorResponse } = await supabase
     .from(SHARED_CATEGORIES_TABLE_NAME)
@@ -58,18 +59,18 @@ export default async function handler(
 
   if (favCleanupError) {
     console.error("[delete-shared-categories-user] Failed to clean up favorite_categories:", {
-      error: favCleanupError,
       categoryId,
+      error: favCleanupError,
       userId,
     });
     Sentry.captureException(new Error(favCleanupError.message), {
-      tags: { operation: "cleanup_favorite_categories", userId },
       extra: {
         categoryId,
         code: favCleanupError.code,
         details: favCleanupError.details,
         hint: favCleanupError.hint,
       },
+      tags: { operation: "cleanup_favorite_categories", userId },
     });
   }
 

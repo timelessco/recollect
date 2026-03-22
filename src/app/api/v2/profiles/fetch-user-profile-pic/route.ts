@@ -7,10 +7,7 @@ import { FetchUserProfilePicInputSchema, FetchUserProfilePicOutputSchema } from 
 const ROUTE = "v2-profiles-fetch-user-profile-pic";
 
 export const GET = createGetApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: FetchUserProfilePicInputSchema,
-  outputSchema: FetchUserProfilePicOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const userId = user.id;
 
     console.log(`[${route}] API called:`, { userId });
@@ -22,15 +19,18 @@ export const GET = createGetApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to fetch user profile picture",
         error,
-        operation: "profile_pic_fetch",
-        userId,
         extra: { email: data.email },
+        message: "Failed to fetch user profile picture",
+        operation: "profile_pic_fetch",
+        route,
+        userId,
       });
     }
 
     return result;
   },
+  inputSchema: FetchUserProfilePicInputSchema,
+  outputSchema: FetchUserProfilePicOutputSchema,
+  route: ROUTE,
 });

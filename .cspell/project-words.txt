@@ -46,6 +46,7 @@ infile
 jobid
 kieran
 Loggedin
+lookarounds
 mediaisfullscreen
 mhehjvu
 micnncim
@@ -67,6 +68,9 @@ opsz
 optimisation
 orioledb
 oxfmtrc
+oxlint
+Oxlint
+oxlintrc
 pgbouncer
 pgcrypto
 pgmq
@@ -101,6 +105,7 @@ totp
 TOTP
 treeify
 trgm
+tsgolint
 twclid
 twimg
 umami

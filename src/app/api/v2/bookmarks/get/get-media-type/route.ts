@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { createGetApiHandler } from "@/lib/api-helpers/create-handler";
 
@@ -7,33 +8,30 @@ import { GetMediaTypeInputSchema, GetMediaTypeOutputSchema } from "./schema";
 const ROUTE = "v2-bookmarks-get-media-type";
 
 const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Origin": "*",
 } as const;
 
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
 
 const baseGet = createGetApiHandler({
-  route: ROUTE,
-  inputSchema: GetMediaTypeInputSchema,
-  outputSchema: GetMediaTypeOutputSchema,
   handler: async ({ input }) => {
     try {
       const response = await fetch(input.url, {
-        method: "HEAD",
-        signal: AbortSignal.timeout(5_000),
         headers: { "User-Agent": USER_AGENT },
+        method: "HEAD",
+        signal: AbortSignal.timeout(5000),
       });
 
       if (!response.ok) {
         return NextResponse.json(
           {
             data: {
-              success: false,
-              mediaType: null,
               error: "Failed to check media type",
+              mediaType: null,
+              success: false,
             },
             error: null,
           },
@@ -45,7 +43,7 @@ const baseGet = createGetApiHandler({
 
       return NextResponse.json(
         {
-          data: { success: true, mediaType, error: null },
+          data: { error: null, mediaType, success: true },
           error: null,
         },
         { headers: CORS_HEADERS },
@@ -54,9 +52,9 @@ const baseGet = createGetApiHandler({
       return NextResponse.json(
         {
           data: {
-            success: false,
-            mediaType: null,
             error: "Failed to check media type",
+            mediaType: null,
+            success: false,
           },
           error: null,
         },
@@ -64,6 +62,9 @@ const baseGet = createGetApiHandler({
       );
     }
   },
+  inputSchema: GetMediaTypeInputSchema,
+  outputSchema: GetMediaTypeOutputSchema,
+  route: ROUTE,
 });
 
 export const GET = Object.assign(
@@ -79,5 +80,5 @@ export const GET = Object.assign(
 );
 
 export function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+  return new NextResponse(null, { headers: CORS_HEADERS, status: 204 });
 }

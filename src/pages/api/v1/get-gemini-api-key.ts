@@ -1,4 +1,4 @@
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 import CryptoJS from "crypto-js";
@@ -67,7 +67,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
     try {
       const decryptedBytes = CryptoJS.AES.decrypt(
         profileData.api_key,
-        process.env.API_KEY_ENCRYPTION_KEY as string,
+        process.env.API_KEY_ENCRYPTION_KEY,
       );
       const apiKey = decryptedBytes.toString(CryptoJS.enc.Utf8);
 

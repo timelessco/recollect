@@ -1,13 +1,13 @@
-import { type Virtualizer } from "@tanstack/react-virtual";
+import type { Virtualizer } from "@tanstack/react-virtual";
 
-type MoodboardViewVirtualizedProps = {
-  rowVirtualizer: Virtualizer<HTMLElement, Element>;
+interface MoodboardViewVirtualizedProps {
   renderOption: (index: number) => React.ReactNode;
-};
+  rowVirtualizer: Virtualizer<HTMLElement, Element>;
+}
 
 export const MoodboardViewVirtualized = ({
-  rowVirtualizer,
   renderOption,
+  rowVirtualizer,
 }: MoodboardViewVirtualizedProps) => (
   <div
     className="relative w-full"
@@ -16,19 +16,19 @@ export const MoodboardViewVirtualized = ({
     }}
   >
     {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-      const lanes = rowVirtualizer.options.lanes;
+      const { lanes } = rowVirtualizer.options;
       const columnWidth = 100 / lanes;
 
       return (
         <div
+          className="absolute top-0 pr-3 pb-6 pl-3"
           data-index={virtualRow.index}
           key={virtualRow.key.toString()}
           ref={rowVirtualizer.measureElement}
-          className="absolute top-0 pr-3 pb-6 pl-3"
           style={{
             left: `${virtualRow?.lane * columnWidth}%`,
-            width: `${columnWidth}%`,
             transform: `translateY(${virtualRow?.start}px)`,
+            width: `${columnWidth}%`,
           }}
         >
           {renderOption(virtualRow?.index)}

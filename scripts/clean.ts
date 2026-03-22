@@ -9,11 +9,11 @@ const NEXT = "next";
 const NODE_MODULES = "node_modules";
 const TURBO = "turbo";
 
-type CleanOption = {
+interface CleanOption {
   description: string;
   name: string;
   value: string;
-};
+}
 
 const options: CleanOption[] = [
   {
@@ -38,12 +38,12 @@ const options: CleanOption[] = [
   },
 ];
 
-type ArgValues = {
+interface ArgValues {
   all?: boolean;
   next?: boolean;
   "node-modules"?: boolean;
   turbo?: boolean;
-};
+}
 
 const argsResult = vet(
   () =>
@@ -81,7 +81,7 @@ if (Object.keys(args).length > 0) {
     value = "";
   }
 } else {
-  const selectResult = await vet(() =>
+  const selectResult = await vet(async () =>
     select({
       choices: options,
       message: "Select what to clean",
@@ -93,7 +93,7 @@ if (Object.keys(args).length > 0) {
     throw selectResult.error;
   }
 
-  value = selectResult.value;
+  ({ value } = selectResult);
 }
 
 const $$ = $({ stdio: "inherit" });
@@ -103,9 +103,9 @@ const $$ = $({ stdio: "inherit" });
 switch (value) {
   case "all": {
     const results = await Promise.all([
-      vet(() => $$`rimraf ./.next`),
-      vet(() => $$`rimraf --glob **/node_modules`),
-      vet(() => $$`rimraf ./.turbo`),
+      vet(async () => $$`rimraf ./.next`),
+      vet(async () => $$`rimraf --glob **/node_modules`),
+      vet(async () => $$`rimraf ./.turbo`),
     ]);
 
     const errors = results.filter((result) => result.isErr());
@@ -122,7 +122,7 @@ switch (value) {
   }
 
   case NEXT: {
-    const [error] = await vet(() => $$`rimraf ./.next`);
+    const [error] = await vet(async () => $$`rimraf ./.next`);
     if (error) {
       console.error("Failed to clean next directory:", error);
     } else {
@@ -133,7 +133,7 @@ switch (value) {
   }
 
   case NODE_MODULES: {
-    const [error] = await vet(() => $$`rimraf --glob **/node_modules`);
+    const [error] = await vet(async () => $$`rimraf --glob **/node_modules`);
     if (error) {
       console.error("Failed to clean node_modules:", error);
     } else {
@@ -144,7 +144,7 @@ switch (value) {
   }
 
   case TURBO: {
-    const [error] = await vet(() => $$`rimraf ./.turbo`);
+    const [error] = await vet(async () => $$`rimraf ./.turbo`);
     if (error) {
       console.error("Failed to clean turbo directory:", error);
     } else {

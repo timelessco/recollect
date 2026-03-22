@@ -1,12 +1,11 @@
 "use client";
 
-import { useQueryClient, type QueryKey } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-import {
-  useReactQueryMutation,
-  type ReactQueryMutationOptions,
-  type RollbackFn,
-} from "@/hooks/use-react-query-mutation";
+import type { ReactQueryMutationOptions, RollbackFn } from "@/hooks/use-react-query-mutation";
+import type { QueryKey } from "@tanstack/react-query";
+
+import { useReactQueryMutation } from "@/hooks/use-react-query-mutation";
 
 // ============================================================================
 // Additional Optimistic Update Interface
@@ -23,7 +22,7 @@ export interface AdditionalOptimisticUpdate<TVariables, TData = unknown> {
    * Function to compute query key from mutation variables.
    * Return null to skip this update (e.g., when cache doesn't exist).
    */
-  getQueryKey: (variables: TVariables) => QueryKey | null;
+  getQueryKey: (variables: TVariables) => null | QueryKey;
   /**
    * Function to compute optimistic cache update for this location.
    * Can have different data shape than primary updater.
@@ -51,6 +50,16 @@ export interface ReactQueryOptimisticMutationOptions<
   TCacheData = TData,
 > extends Omit<ReactQueryMutationOptions<TData, TError, TVariables, RollbackFn>, "onMutate"> {
   /**
+   * Additional cache locations to update optimistically.
+   * Each entry can have a different data shape and dynamic key computed from variables.
+   * Use for updating related caches (e.g., single bookmark cache alongside paginated cache).
+   */
+  additionalOptimisticUpdates?: AdditionalOptimisticUpdate<TVariables>[];
+  /**
+   * Query keys to invalidate after mutation succeeds
+   */
+  invalidates?: QueryKey | QueryKey[];
+  /**
    * Query key to update optimistically
    */
   queryKey: TQueryKey;
@@ -59,27 +68,17 @@ export interface ReactQueryOptimisticMutationOptions<
    * Gets the same optimistic update, snapshot, and rollback treatment.
    * Pass null when not searching.
    */
-  secondaryQueryKey?: QueryKey | null;
-  /**
-   * Function to compute optimistic cache update.
-   * Receives current cache data and returns updated cache data.
-   */
-  updater: (currentData: TCacheData | undefined, variables: TVariables) => TCacheData;
-  /**
-   * Query keys to invalidate after mutation succeeds
-   */
-  invalidates?: QueryKey | QueryKey[];
+  secondaryQueryKey?: null | QueryKey;
   /**
    * Skip invalidating the secondary query key on success.
    * Useful when deferring invalidation (e.g., lightbox category changes).
    */
   skipSecondaryInvalidation?: boolean;
   /**
-   * Additional cache locations to update optimistically.
-   * Each entry can have a different data shape and dynamic key computed from variables.
-   * Use for updating related caches (e.g., single bookmark cache alongside paginated cache).
+   * Function to compute optimistic cache update.
+   * Receives current cache data and returns updated cache data.
    */
-  additionalOptimisticUpdates?: Array<AdditionalOptimisticUpdate<TVariables>>;
+  updater: (currentData: TCacheData | undefined, variables: TVariables) => TCacheData;
 }
 
 // ============================================================================
@@ -106,25 +105,31 @@ export function useReactQueryOptimisticMutation<
   TQueryKey extends QueryKey = QueryKey,
   TCacheData = TData,
 >({
+  additionalOptimisticUpdates = [],
+  guardConcurrentInvalidation = false,
+  invalidates,
   mutationFn,
   mutationKey,
-  guardConcurrentInvalidation = false,
+  onError: userOnError,
+  onSettled: userOnSettled,
   queryKey,
   secondaryQueryKey,
-  updater,
-  invalidates,
   skipSecondaryInvalidation = false,
-  additionalOptimisticUpdates = [],
-  onSettled: userOnSettled,
-  onError: userOnError,
+  updater,
   ...restOptions
 }: ReactQueryOptimisticMutationOptions<TData, TError, TVariables, TQueryKey, TCacheData>) {
   const queryClient = useQueryClient();
 
   return useReactQueryMutation<TData, TError, TVariables, RollbackFn>({
     ...restOptions,
-    mutationKey,
     mutationFn,
+    mutationKey,
+    onError: (error, variables, rollback) => {
+      // Execute rollback to restore previous state
+      rollback?.();
+      // Call user's onError callback
+      userOnError?.(error, variables, rollback);
+    },
     onMutate: async (variables: TVariables) => {
       // Cancel outgoing refetches to prevent race conditions
       await queryClient.cancelQueries({ queryKey });
@@ -135,7 +140,7 @@ export function useReactQueryOptimisticMutation<
       }
 
       // Cancel queries for additional dynamic keys
-      const additionalSnapshots: Array<{ queryKey: QueryKey; data: unknown }> = [];
+      const additionalSnapshots: { data: unknown; queryKey: QueryKey }[] = [];
       for (const { getQueryKey } of additionalOptimisticUpdates) {
         const dynamicKey = getQueryKey(variables);
         if (dynamicKey) {
@@ -154,8 +159,8 @@ export function useReactQueryOptimisticMutation<
         const dynamicKey = getQueryKey(variables);
         if (dynamicKey) {
           additionalSnapshots.push({
-            queryKey: dynamicKey,
             data: queryClient.getQueryData(dynamicKey),
+            queryKey: dynamicKey,
           });
         }
       }
@@ -190,7 +195,7 @@ export function useReactQueryOptimisticMutation<
         }
 
         // Rollback additional caches
-        for (const { queryKey: snapKey, data } of additionalSnapshots) {
+        for (const { data, queryKey: snapKey } of additionalSnapshots) {
           queryClient.setQueryData(snapKey, data);
         }
       }) as RollbackFn;
@@ -200,12 +205,6 @@ export function useReactQueryOptimisticMutation<
       rollback.skipSecondaryInvalidation = skipSecondaryInvalidation;
 
       return rollback;
-    },
-    onError: (error, variables, rollback) => {
-      // Execute rollback to restore previous state
-      rollback?.();
-      // Call user's onError callback
-      userOnError?.(error, variables, rollback);
     },
     onSettled: (data, error, variables, rollback) => {
       // Call user's onSettled callback first
@@ -231,7 +230,7 @@ export function useReactQueryOptimisticMutation<
           ? (invalidates as QueryKey[])
           : Array.isArray(invalidates) && invalidates.length === 0
             ? []
-            : [invalidates as QueryKey];
+            : [invalidates];
 
         for (const key of keysToInvalidate) {
           void queryClient.invalidateQueries({ queryKey: key });
@@ -277,13 +276,13 @@ export interface ReactQueryMultiOptimisticMutationOptions<
   TVariables = void,
 > extends Omit<ReactQueryMutationOptions<TData, TError, TVariables, RollbackFn>, "onMutate"> {
   /**
-   * Array of optimistic update functions for multiple cache locations
-   */
-  optimisticFns: Array<OptimisticFn<TVariables>>;
-  /**
    * Query keys to invalidate after mutation succeeds
    */
   invalidates?: QueryKey[];
+  /**
+   * Array of optimistic update functions for multiple cache locations
+   */
+  optimisticFns: OptimisticFn<TVariables>[];
 }
 
 /**
@@ -314,35 +313,41 @@ export function useReactQueryMultiOptimisticMutation<
   TError = Error,
   TVariables = void,
 >({
+  guardConcurrentInvalidation = false,
+  invalidates,
   mutationFn,
   mutationKey,
-  guardConcurrentInvalidation = false,
-  optimisticFns,
-  invalidates,
-  onSettled: userOnSettled,
   onError: userOnError,
+  onSettled: userOnSettled,
+  optimisticFns,
   ...restOptions
 }: ReactQueryMultiOptimisticMutationOptions<TData, TError, TVariables>) {
   const queryClient = useQueryClient();
 
   return useReactQueryMutation<TData, TError, TVariables, RollbackFn>({
     ...restOptions,
-    mutationKey,
     mutationFn,
+    mutationKey,
+    onError: (error, variables, rollback) => {
+      // Execute rollback to restore all previous states
+      rollback?.();
+      // Call user's onError callback
+      userOnError?.(error, variables, rollback);
+    },
     onMutate: async (variables: TVariables) => {
       // Store all snapshots for rollback
-      const snapshots: Array<{ queryKey: QueryKey; data: unknown }> = [];
+      const snapshots: { data: unknown; queryKey: QueryKey }[] = [];
 
       // Cancel all queries in parallel
       await Promise.all(
-        optimisticFns.map(({ queryKey }) => queryClient.cancelQueries({ queryKey })),
+        optimisticFns.map(async ({ queryKey }) => queryClient.cancelQueries({ queryKey })),
       );
 
       // Snapshot each cache location after cancellation
       for (const { queryKey } of optimisticFns) {
         snapshots.push({
-          queryKey,
           data: queryClient.getQueryData(queryKey),
+          queryKey,
         });
       }
 
@@ -355,16 +360,10 @@ export function useReactQueryMultiOptimisticMutation<
 
       // Return rollback function that restores ALL snapshots
       return () => {
-        for (const { queryKey, data } of snapshots) {
+        for (const { data, queryKey } of snapshots) {
           queryClient.setQueryData(queryKey, data);
         }
       };
-    },
-    onError: (error, variables, rollback) => {
-      // Execute rollback to restore all previous states
-      rollback?.();
-      // Call user's onError callback
-      userOnError?.(error, variables, rollback);
     },
     onSettled: (data, error, variables, rollback) => {
       // Call user's onSettled callback first

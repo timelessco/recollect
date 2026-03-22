@@ -2,9 +2,9 @@ import { cookies, headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { createServerClient } from "@supabase/ssr";
-import { type SupabaseClient, type User } from "@supabase/supabase-js";
 
-import { type Database } from "@/types/database.types";
+import type { Database } from "@/types/database.types";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./constants";
 
@@ -49,7 +49,7 @@ export async function createApiClient() {
         // For API routes, we typically don't set cookies
         // But this is required by the Supabase client interface
         try {
-          for (const { name, value, options } of cookiesToSet) {
+          for (const { name, options, value } of cookiesToSet) {
             cookieStore.set(name, value, options);
           }
         } catch (error) {
@@ -83,29 +83,32 @@ export async function createApiClient() {
  * const { data: { user }, error } = await getApiUser(supabase, token);
  * ```
  */
-export async function getApiUser(supabase: SupabaseClient<Database>, token?: string | null) {
+export async function getApiUser(supabase: SupabaseClient<Database>, token?: null | string) {
   if (token) {
     // Mobile app: Use token-based auth by explicitly passing the JWT
-    return await supabase.auth.getUser(token);
+    return supabase.auth.getUser(token);
   }
 
   // Web app: Use cookie-based auth
-  return await supabase.auth.getUser();
+  return supabase.auth.getUser();
 }
 
 // Error response shape - matches ApiErrorResponse from api-response.ts
-type AuthErrorResponse = { data: null; error: string };
+interface AuthErrorResponse {
+  data: null;
+  error: string;
+}
 
 /**
  * Result type for requireAuth - discriminated union for type narrowing
  */
 export type AuthResult =
-  | { supabase: SupabaseClient<Database>; user: User; errorResponse: null }
   | {
+      errorResponse: NextResponse<AuthErrorResponse>;
       supabase: null;
       user: null;
-      errorResponse: NextResponse<AuthErrorResponse>;
-    };
+    }
+  | { errorResponse: null; supabase: SupabaseClient<Database>; user: User };
 
 /**
  * Authenticates API request and returns Supabase client + user.
@@ -127,20 +130,20 @@ export async function requireAuth(routeName: string): Promise<AuthResult> {
   if (userError) {
     console.warn(`[${routeName}] Auth error:`, userError);
     return {
+      errorResponse: NextResponse.json({ data: null, error: userError.message }, { status: 400 }),
       supabase: null,
       user: null,
-      errorResponse: NextResponse.json({ data: null, error: userError.message }, { status: 400 }),
     };
   }
 
   if (!user) {
     console.warn(`[${routeName}] No user found in session`);
     return {
+      errorResponse: NextResponse.json({ data: null, error: "Not authenticated" }, { status: 401 }),
       supabase: null,
       user: null,
-      errorResponse: NextResponse.json({ data: null, error: "Not authenticated" }, { status: 401 }),
     };
   }
 
-  return { supabase, user, errorResponse: null };
+  return { errorResponse: null, supabase, user };
 }

@@ -2,7 +2,8 @@
 
 import "./media-player-theme.css";
 
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { KeyboardEvent } from "react";
 
 import {
   MediaControlBar,
@@ -43,7 +44,7 @@ function AudioWaveformPlayerInner({ isActive, onError, src, title }: AudioWavefo
   const mediaRef = useMediaRef();
   const audioElRef = useRef<HTMLAudioElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const wsRef = useRef<WaveSurfer | null>(null);
+  const wsRef = useRef<null | WaveSurfer>(null);
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
 
@@ -65,7 +66,7 @@ function AudioWaveformPlayerInner({ isActive, onError, src, title }: AudioWavefo
     const container = containerRef.current;
     const audio = audioElRef.current;
     if (!container || !audio) {
-      return undefined;
+      return;
     }
 
     let destroyed = false;
@@ -157,12 +158,14 @@ function AudioWaveformPlayerInner({ isActive, onError, src, title }: AudioWavefo
     <MediaController
       audio
       autohide="-1"
-      onPointerDown={(event) => event.stopPropagation()}
       className={cn(
         "flex max-h-none w-full max-w-[min(600px,90vw)] flex-col overflow-visible rounded-2xl bg-gray-75 p-1",
         "[--media-background-color:transparent] [--media-control-background:transparent] [--media-control-hover-background:var(--color-gray-alpha-100)] [--media-primary-color:var(--color-gray-900)]",
         "[--video-accent:var(--color-gray-900)] [--video-base:16px] [--video-buffered:var(--color-gray-alpha-200)] [--video-track-bg:var(--color-gray-alpha-200)] [--video-track-hover:var(--color-gray-alpha-300)]",
       )}
+      onPointerDown={(event) => {
+        event.stopPropagation();
+      }}
     >
       <audio ref={audioRef} slot="media" src={src}>
         <track default kind="captions" label="No captions" srcLang="en" />
@@ -172,7 +175,6 @@ function AudioWaveformPlayerInner({ isActive, onError, src, title }: AudioWavefo
       <div className="flex w-full items-center rounded-[12px] bg-gray-50 px-2 py-[37px]">
         {!isReady && <WaveformSkeleton />}
         <div
-          ref={containerRef}
           aria-label="Audio progress"
           aria-valuemax={duration}
           aria-valuemin={0}
@@ -182,6 +184,7 @@ function AudioWaveformPlayerInner({ isActive, onError, src, title }: AudioWavefo
             !isReady && "invisible absolute",
           )}
           onKeyDown={handleWaveformKeyDown}
+          ref={containerRef}
           role="slider"
           tabIndex={isReady ? 0 : -1}
         />

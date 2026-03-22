@@ -1,6 +1,8 @@
 import { useTheme } from "next-themes";
 
-import { Icon, type IconProps } from "@/components/ui/recollect/icon";
+import type { IconProps } from "@/components/ui/recollect/icon";
+
+import { Icon } from "@/components/ui/recollect/icon";
 
 export const DiscoverIcon = (props: IconProps) => {
   const { resolvedTheme } = useTheme();

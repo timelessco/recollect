@@ -9,7 +9,7 @@ function Root({ children, ...props }: SelectPrimitive.Root.Props<string>) {
   return <SelectPrimitive.Root {...props}>{children}</SelectPrimitive.Root>;
 }
 
-function Trigger({ className, children, ...props }: SelectPrimitive.Trigger.Props) {
+function Trigger({ children, className, ...props }: SelectPrimitive.Trigger.Props) {
   return (
     <SelectPrimitive.Trigger
       className={cn("flex items-center rounded-lg text-13 font-medium outline-hidden", className)}
@@ -20,17 +20,17 @@ function Trigger({ className, children, ...props }: SelectPrimitive.Trigger.Prop
   );
 }
 
-const Value = SelectPrimitive.Value;
+const { Value } = SelectPrimitive;
 
-const Icon = SelectPrimitive.Icon;
+const { Icon } = SelectPrimitive;
 
 function Portal({ children, ...props }: SelectPrimitive.Portal.Props) {
   return <SelectPrimitive.Portal {...props}>{children}</SelectPrimitive.Portal>;
 }
 
 function Positioner({
-  className,
   children,
+  className,
   sideOffset = 4,
   ...props
 }: SelectPrimitive.Positioner.Props) {
@@ -45,7 +45,7 @@ function Positioner({
   );
 }
 
-function Popup({ className, children, ...props }: SelectPrimitive.Popup.Props) {
+function Popup({ children, className, ...props }: SelectPrimitive.Popup.Props) {
   return (
     <SelectPrimitive.Popup
       className={cn(
@@ -59,11 +59,11 @@ function Popup({ className, children, ...props }: SelectPrimitive.Popup.Props) {
   );
 }
 
-const ScrollUpArrow = SelectPrimitive.ScrollUpArrow;
+const { ScrollUpArrow } = SelectPrimitive;
 
-const ScrollDownArrow = SelectPrimitive.ScrollDownArrow;
+const { ScrollDownArrow } = SelectPrimitive;
 
-function List({ className, children, ...props }: SelectPrimitive.List.Props) {
+function List({ children, className, ...props }: SelectPrimitive.List.Props) {
   return (
     <SelectPrimitive.List className={cn("py-0", className)} {...props}>
       {children}
@@ -71,7 +71,7 @@ function List({ className, children, ...props }: SelectPrimitive.List.Props) {
   );
 }
 
-function Item({ className, children, ...props }: SelectPrimitive.Item.Props) {
+function Item({ children, className, ...props }: SelectPrimitive.Item.Props) {
   return (
     <SelectPrimitive.Item
       className={cn(
@@ -85,16 +85,16 @@ function Item({ className, children, ...props }: SelectPrimitive.Item.Props) {
   );
 }
 
-const ItemText = SelectPrimitive.ItemText;
+const { ItemText } = SelectPrimitive;
 
-function ItemIndicator({ className, children, ...props }: SelectPrimitive.ItemIndicator.Props) {
+function ItemIndicator({ children, className, ...props }: SelectPrimitive.ItemIndicator.Props) {
   return (
     <SelectPrimitive.ItemIndicator
-      keepMounted
       className={cn(
         "ml-auto flex shrink-0 items-center justify-center pl-2 opacity-0 data-selected:opacity-100",
         className,
       )}
+      keepMounted
       {...props}
     >
       {children ?? <TickIcon className="text-gray-800" />}
@@ -103,17 +103,17 @@ function ItemIndicator({ className, children, ...props }: SelectPrimitive.ItemIn
 }
 
 export const Select = {
-  Root,
-  Trigger,
-  Value,
   Icon,
+  Item,
+  ItemIndicator,
+  ItemText,
+  List,
+  Popup,
   Portal,
   Positioner,
-  Popup,
-  ScrollUpArrow,
+  Root,
   ScrollDownArrow,
-  List,
-  Item,
-  ItemText,
-  ItemIndicator,
+  ScrollUpArrow,
+  Trigger,
+  Value,
 };

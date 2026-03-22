@@ -1,24 +1,25 @@
-import { type NextApiResponse } from "next";
+import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
-import {
-  type BookmarksWithCategoriesWithCategoryForeignKeys,
-  type NextApiRequest,
-  type SingleListData,
+import type {
+  BookmarksWithCategoriesWithCategoryForeignKeys,
+  NextApiRequest,
+  SingleListData,
 } from "../../../../../types/apiTypes";
+
 import { BOOKMARK_CATEGORIES_TABLE_NAME, MAIN_TABLE_NAME } from "../../../../../utils/constants";
 import { apiSupabaseClient } from "../../../../../utils/supabaseServerClient";
 
-type RequestType = {
+interface RequestType {
   data: Pick<SingleListData, "id">;
-};
+}
 
-type ResponseType = {
-  data: SingleListData[] | null;
-  error: string | null;
-};
+interface ResponseType {
+  data: null | SingleListData[];
+  error: null | string;
+}
 
 const getBodySchema = () =>
   z.object({
@@ -42,7 +43,7 @@ export default async function handler(
   response: NextApiResponse<ResponseType>,
 ) {
   if (request.method !== "GET") {
-    response.status(405).send({ error: "Only GET requests allowed", data: null });
+    response.status(405).send({ data: null, error: "Only GET requests allowed" });
     return;
   }
 
@@ -51,7 +52,7 @@ export default async function handler(
     const bodyData = schema.parse(request.query);
     const supabase = apiSupabaseClient(request, response);
 
-    const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+    const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
 
     const bookmarkId = Number.parseInt(bodyData?.id, 10);
 
@@ -62,7 +63,7 @@ export default async function handler(
       .eq("id", bookmarkId);
 
     if (error) {
-      response.status(500).send({ error: "fetch error", data: null });
+      response.status(500).send({ data: null, error: "fetch error" });
       Sentry.captureException(`fetch error`);
       return;
     }
@@ -89,11 +90,11 @@ export default async function handler(
     const bookmarkCategories =
       categoriesData as unknown as BookmarksWithCategoriesWithCategoryForeignKeys;
     const addedCategories = bookmarkCategories?.map((item) => ({
-      id: item?.category_id?.id,
       category_name: item?.category_id?.category_name,
       category_slug: item?.category_id?.category_slug,
       icon: item?.category_id?.icon,
       icon_color: item?.category_id?.icon_color,
+      id: item?.category_id?.id,
     }));
 
     // Add categories to bookmark data
@@ -102,8 +103,8 @@ export default async function handler(
       addedCategories: addedCategories ?? [],
     }));
 
-    response.status(200).send({ error: null, data: dataWithCategories });
+    response.status(200).send({ data: dataWithCategories, error: null });
   } catch {
-    response.status(400).send({ error: "Error in payload data", data: null });
+    response.status(400).send({ data: null, error: "Error in payload data" });
   }
 }

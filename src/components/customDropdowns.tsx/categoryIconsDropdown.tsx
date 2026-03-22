@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 
 import { matchSorter } from "match-sorter";
 
+import type { CategoriesData } from "@/types/apiTypes";
+
 import { Popover } from "@/components/ui/recollect/popover";
-import { type CategoriesData } from "@/types/apiTypes";
 
 import { useUpdateCategoryOptimisticMutation } from "../../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import SearchIconSmallGray from "../../icons/searchIconSmallGray";
@@ -18,12 +19,12 @@ const ROW_SIZE = 11;
 const allLabels = iconOptions.map((item) => item.label);
 const totalPages = Math.ceil(iconOptions.length / ICONS_PER_PAGE);
 
-type CategoryIconsDropdownProps = {
+interface CategoryIconsDropdownProps {
   buttonIconSize?: number;
   iconColor: CategoriesData["icon_color"];
   iconId: number;
-  iconValue: string | null;
-};
+  iconValue: null | string;
+}
 
 export const CategoryIconsDropdown = (props: CategoryIconsDropdownProps) => {
   const { buttonIconSize = 20, iconColor, iconId, iconValue } = props;
@@ -99,8 +100,12 @@ export const CategoryIconsDropdown = (props: CategoryIconsDropdownProps) => {
               {!isSearching && (
                 <IconPagination
                   currentPage={pageIndex + 1}
-                  onNext={() => setPageIndex((prev) => prev + 1)}
-                  onPrev={() => setPageIndex((prev) => prev - 1)}
+                  onNext={() => {
+                    setPageIndex((prev) => prev + 1);
+                  }}
+                  onPrev={() => {
+                    setPageIndex((prev) => prev - 1);
+                  }}
                   totalPages={totalPages}
                 />
               )}
@@ -112,10 +117,10 @@ export const CategoryIconsDropdown = (props: CategoryIconsDropdownProps) => {
   );
 };
 
-type IconPickerHeaderProps = {
+interface IconPickerHeaderProps {
   searchValue: string;
   setSearchValue: (value: string) => void;
-};
+}
 
 function IconPickerHeader({ searchValue, setSearchValue }: IconPickerHeaderProps) {
   return (
@@ -127,7 +132,9 @@ function IconPickerHeader({ searchValue, setSearchValue }: IconPickerHeaderProps
         <input
           aria-label="Search icons"
           className="w-full bg-transparent text-sm leading-4 font-normal text-gray-600 outline-hidden focus-visible:ring-1 focus-visible:ring-gray-200"
-          onChange={(event) => setSearchValue(event.target.value)}
+          onChange={(event) => {
+            setSearchValue(event.target.value);
+          }}
           placeholder="Search..."
           type="text"
           value={searchValue}
@@ -137,10 +144,10 @@ function IconPickerHeader({ searchValue, setSearchValue }: IconPickerHeaderProps
   );
 }
 
-type IconGridProps = {
+interface IconGridProps {
   labels: string[];
   onSelect: (icon: string) => void;
-};
+}
 
 function IconGrid({ labels, onSelect }: IconGridProps) {
   const rows = useMemo(() => {
@@ -165,10 +172,10 @@ function IconGrid({ labels, onSelect }: IconGridProps) {
   );
 }
 
-type IconGridItemProps = {
+interface IconGridItemProps {
   label: string;
   onSelect: (icon: string) => void;
-};
+}
 
 function IconGridItem({ label, onSelect }: IconGridItemProps) {
   const data = iconOptions.find((item) => item.label === label);
@@ -177,7 +184,9 @@ function IconGridItem({ label, onSelect }: IconGridItemProps) {
   return (
     <button
       className="custom-select rounded-md p-1 hover:bg-gray-200"
-      onClick={() => onSelect(label)}
+      onClick={() => {
+        onSelect(label);
+      }}
       title={data?.label}
       type="button"
     >
@@ -186,12 +195,12 @@ function IconGridItem({ label, onSelect }: IconGridItemProps) {
   );
 }
 
-type IconPaginationProps = {
+interface IconPaginationProps {
   currentPage: number;
   onNext: () => void;
   onPrev: () => void;
   totalPages: number;
-};
+}
 
 function IconPagination({ currentPage, onNext, onPrev, totalPages }: IconPaginationProps) {
   return (

@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 
+import type { SingleListData } from "../types/apiTypes";
+
 import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";
-import { type SingleListData } from "../types/apiTypes";
 import { getDomain } from "./domain";
 
 /**

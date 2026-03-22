@@ -24,14 +24,7 @@
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "test": {},
-    "lint:types": {
-      "inputs": ["**/*.{ts,tsx,d.ts,cts,d.cts,mts,d.mts}"],
-      "outputs": ["*.tsbuildinfo"]
-    },
-    "lint:eslint": {
-      "outputs": [".eslintcache"]
-    },
-    "lint:oxfmt": {},
+    "lint:ultracite": {},
     "lint:css": {
       "inputs": ["**/*.css"],
       "outputs": [".stylelintcache"]
@@ -39,9 +32,7 @@
     "lint:md": {
       "inputs": ["**/*.md", ".github/**/*.md"]
     },
-    "lint:spelling": {
-      "outputs": [".cspellcache"]
-    },
+    "lint:spelling": {},
     "fix:md": {
       "inputs": ["**/*.md", ".github/**/*.md"]
     },
@@ -49,15 +40,9 @@
       "inputs": ["**/*.css"],
       "outputs": [".stylelintcache"]
     },
-    "fix:spelling": {
-      "outputs": [".cspellcache"]
-    },
-    "fix:oxfmt": {
+    "fix:spelling": {},
+    "fix:ultracite": {
       "dependsOn": ["fix:md", "fix:css", "fix:spelling"]
-    },
-    "fix:eslint": {
-      "dependsOn": ["fix:oxfmt"],
-      "outputs": [".eslintcache"]
     }
   }
 }

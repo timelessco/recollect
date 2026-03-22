@@ -47,3 +47,6 @@
 - `docs/API_CHANGELOG.md` is auto-appended by CI on each push to `dev`, posted as PR comment during release, and cleared during backmerge
 - `.ncurc.cjs` pins packages that can't be upgraded (mirrors `.github/renovate.json` blocks) — keep both in sync
 - GitHub Actions use pinned commit SHAs with version comments — use `gh api repos/{owner}/{repo}/git/ref/tags/{tag}` to get SHAs when upgrading
+- `eslint-config-prettier` must remain as devDep even without Prettier — `eslint-config-canonical` configures deprecated rules (e.g. `@typescript-eslint/indent`) that crash ESLint without formatting rule suppression
+- oxfmt `sortPackageJson.sortScripts` conflicts with ESLint `package-json/sort-collections` — the ESLint rule is disabled in favor of oxfmt
+- CI cspell may flag words the local `fix:spelling` misses — hyphen-split words (e.g. "app-svgs" → "svgs") may need manual dictionary additions

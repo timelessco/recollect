@@ -6,9 +6,8 @@ import Script from "next/script";
 // https://stackoverflow.com/a/57527009
 export function IosAutozoomFix() {
   return (
+    /* oxlint-disable react-dom/no-dangerously-set-innerhtml -- intentional static inline script */
     <Script
-      id="ios-autozoom-fix"
-      strategy="afterInteractive"
       dangerouslySetInnerHTML={{
         __html: `
 if (!window.__iosAutozoomFixApplied) {
@@ -54,6 +53,8 @@ if (!window.__iosAutozoomFixApplied) {
 }
 `,
       }}
+      id="ios-autozoom-fix"
+      strategy="afterInteractive"
     />
   );
 }

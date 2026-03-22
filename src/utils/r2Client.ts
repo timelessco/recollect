@@ -8,7 +8,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-import { type StorageHelpersInterface } from "./storageClient";
+import type { StorageHelpersInterface } from "./storageClient";
 
 // R2 configuration
 const ACCOUNT_ID = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID;
@@ -27,12 +27,12 @@ const createR2Client = () => {
   }
 
   return new S3Client({
-    region: "auto",
-    endpoint: `https://${ACCOUNT_ID}.r2.cloudflarestorage.com`,
     credentials: {
       accessKeyId: ACCESS_KEY_ID,
       secretAccessKey: SECRET_ACCESS_KEY,
     },
+    endpoint: `https://${ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    region: "auto",
     // Required for R2 compatibility
     requestChecksumCalculation: "WHEN_REQUIRED",
     responseChecksumValidation: "WHEN_REQUIRED",
@@ -51,35 +51,41 @@ const getR2Client = () => {
 
 // Helper functions for R2 operations
 export const r2Helpers: StorageHelpersInterface = {
-  // List objects in a bucket with prefix
-  async listObjects(bucket: string, prefix?: string) {
-    const command = new ListObjectsV2Command({
+  /**
+   * Creates a short-lived signed URL for immediate file downloads.
+   * Default expiration: 1 hour (3600 seconds)
+   * Use case: Immediate download links, temporary access
+   */
+  async createSignedDownloadUrl(bucket: string, key: string, expiresIn = 3600) {
+    const command = new GetObjectCommand({
       Bucket: bucket,
-      Prefix: prefix,
+      Key: key,
     });
 
     try {
-      const response = await getR2Client().send(command);
-      return { data: response.Contents ?? [], error: null };
+      const signedUrl = await getSignedUrl(getR2Client(), command, {
+        expiresIn,
+      });
+      return { data: { signedUrl }, error: null };
     } catch (error) {
       return { data: null, error };
     }
   },
 
-  // Upload object to R2
-  async uploadObject(bucket: string, key: string, body: Buffer | Uint8Array, contentType?: string) {
+  // Generate presigned URL for upload
+  async createSignedUploadUrl(bucket: string, key: string, expiresIn = 3600) {
     const command = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
-      Body: body,
-      ContentType: contentType,
     });
 
     try {
-      await getR2Client().send(command);
-      return { error: null };
+      const signedUrl = await getSignedUrl(getR2Client(), command, {
+        expiresIn,
+      });
+      return { data: { signedUrl }, error: null };
     } catch (error) {
-      return { error };
+      return { data: null, error };
     }
   },
 
@@ -115,44 +121,6 @@ export const r2Helpers: StorageHelpersInterface = {
     }
   },
 
-  // Generate presigned URL for upload
-  async createSignedUploadUrl(bucket: string, key: string, expiresIn = 3_600) {
-    const command = new PutObjectCommand({
-      Bucket: bucket,
-      Key: key,
-    });
-
-    try {
-      const signedUrl = await getSignedUrl(getR2Client(), command, {
-        expiresIn,
-      });
-      return { data: { signedUrl }, error: null };
-    } catch (error) {
-      return { data: null, error };
-    }
-  },
-
-  /**
-   * Creates a short-lived signed URL for immediate file downloads.
-   * Default expiration: 1 hour (3600 seconds)
-   * Use case: Immediate download links, temporary access
-   */
-  async createSignedDownloadUrl(bucket: string, key: string, expiresIn = 3_600) {
-    const command = new GetObjectCommand({
-      Bucket: bucket,
-      Key: key,
-    });
-
-    try {
-      const signedUrl = await getSignedUrl(getR2Client(), command, {
-        expiresIn,
-      });
-      return { data: { signedUrl }, error: null };
-    } catch (error) {
-      return { data: null, error };
-    }
-  },
-
   // Get public URL for public buckets (permanent, no expiration)
   getPublicUrl(path: string) {
     const url = `${PUBLIC_BUCKET_URL}/${path}`;
@@ -180,6 +148,38 @@ export const r2Helpers: StorageHelpersInterface = {
       return { data: { signedUrl }, error: null };
     } catch (error) {
       return { data: null, error };
+    }
+  },
+
+  // List objects in a bucket with prefix
+  async listObjects(bucket: string, prefix?: string) {
+    const command = new ListObjectsV2Command({
+      Bucket: bucket,
+      Prefix: prefix,
+    });
+
+    try {
+      const response = await getR2Client().send(command);
+      return { data: response.Contents ?? [], error: null };
+    } catch (error) {
+      return { data: null, error };
+    }
+  },
+
+  // Upload object to R2
+  async uploadObject(bucket: string, key: string, body: Buffer | Uint8Array, contentType?: string) {
+    const command = new PutObjectCommand({
+      Body: body,
+      Bucket: bucket,
+      ContentType: contentType,
+      Key: key,
+    });
+
+    try {
+      await getR2Client().send(command);
+      return { error: null };
+    } catch (error) {
+      return { error };
     }
   },
 };

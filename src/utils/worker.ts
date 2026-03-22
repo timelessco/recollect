@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
-import { type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
+
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
   AI_ENRICHMENT_API,
@@ -11,7 +12,10 @@ import {
   WORKER_SCREENSHOT_API,
 } from "./constants";
 
-type ProcessParameters = { batchSize: number; queue_name: string };
+interface ProcessParameters {
+  batchSize: number;
+  queue_name: string;
+}
 
 const SLEEP_SECONDS = 30;
 
@@ -21,16 +25,15 @@ export const processImageQueue = async (
   supabase: SupabaseClient,
   parameters: ProcessParameters,
 ) => {
-  const { queue_name, batchSize } = parameters;
+  const { batchSize, queue_name } = parameters;
 
   try {
     const { data: messages, error: messageError } = await supabase
       .schema("pgmq_public")
       .rpc("read", {
+        n: batchSize,
         queue_name,
         sleep_seconds: SLEEP_SECONDS,
-        // eslint-disable-next-line id-length
-        n: batchSize,
       });
 
     if (messageError) {
@@ -45,10 +48,10 @@ export const processImageQueue = async (
 
     for (const message of messages) {
       try {
-        const { user_id, url, id } = message.message;
+        const { id, url, user_id } = message.message;
 
         // this is the number of retries
-        const read_ct = message.read_ct;
+        const { read_ct } = message;
         const isFinalRetry = message.message?.is_final_retry === true;
 
         // Final retry: delete from queue before processing (one-shot)
@@ -61,21 +64,21 @@ export const processImageQueue = async (
 
           const { error: deleteError } = await supabase
             .schema("pgmq_public")
-            .rpc("delete", { queue_name, message_id: message.msg_id });
+            .rpc("delete", { message_id: message.msg_id, queue_name });
 
           if (deleteError) {
             console.error("[process-image-queue] Final-retry delete failed, skipping:", {
-              msg_id: message.msg_id,
-              url,
-              queue_name,
               deleteError,
+              msg_id: message.msg_id,
+              queue_name,
+              url,
             });
             Sentry.captureException(new Error("Final-retry queue delete failed"), {
+              extra: { msg_id: message.msg_id, queue_name, url },
               tags: {
                 operation: "final_retry_delete_failed",
                 userId: user_id,
               },
-              extra: { msg_id: message.msg_id, url, queue_name },
             });
             continue;
           }
@@ -96,17 +99,17 @@ export const processImageQueue = async (
           Sentry.captureException(
             new Error(`Queue processing failed after ${MAX_RETRIES} retries (${targetApi})`),
             {
+              extra: {
+                bookmarkId: id,
+                lastError,
+                msg_id: message.msg_id,
+                queueName: queue_name,
+                read_ct,
+                url,
+              },
               tags: {
                 operation: `${targetApi}_archived`,
                 userId: user_id,
-              },
-              extra: {
-                msg_id: message.msg_id,
-                url,
-                bookmarkId: id,
-                read_ct,
-                lastError,
-                queueName: queue_name,
               },
             },
           );
@@ -114,21 +117,21 @@ export const processImageQueue = async (
           console.log("[process-image-queue] archiving message from queue", message);
 
           const { error: archiveError } = await supabase.rpc("archive_with_reason", {
-            p_queue_name: queue_name,
             p_msg_id: message.msg_id,
+            p_queue_name: queue_name,
             p_reason: archiveReason,
           });
 
           if (archiveError) {
             console.error("[process-image-queue] Error archiving message from queue", archiveError);
             Sentry.captureException(new Error("Queue archive failed"), {
+              extra: {
+                archiveError,
+                msg_id: message.msg_id,
+              },
               tags: {
                 operation: `${targetApi}_archive_failed`,
                 userId: user_id,
-              },
-              extra: {
-                msg_id: message.msg_id,
-                archiveError,
               },
             });
           }
@@ -136,7 +139,7 @@ export const processImageQueue = async (
           continue;
         }
 
-        const ogImage = message.message.ogImage;
+        const { ogImage } = message.message;
 
         const mediaType = message?.message?.meta_data?.mediaType;
 
@@ -151,30 +154,28 @@ export const processImageQueue = async (
           // and generate ocr imagecaption and bulhash for both twitter and raindrop bookmarks,
           // we are not awaiting, because we fire this api and vercel will handle the response
 
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const response = axios.post(`${getBaseUrl()}${NEXT_API_URL}${AI_ENRICHMENT_API}`, {
             id,
+            isInstagramBookmark,
+            isRaindropBookmark,
+            isTwitterBookmark,
+            message,
+            ogImage,
+            queue_name,
             url,
             user_id,
-            isTwitterBookmark,
-            ogImage,
-            isRaindropBookmark,
-            isInstagramBookmark,
-            message,
-            queue_name,
           });
         } else {
           // here we take screenshot of the url for both twitter and raindrop bookmarks
           // we are not awaiting, because we fire this api and vercel will handle the response
 
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const response_ = axios.post(`${getBaseUrl()}${NEXT_API_URL}${WORKER_SCREENSHOT_API}`, {
             id,
-            url,
-            user_id,
             mediaType,
             message,
             queue_name,
+            url,
+            user_id,
           });
         }
       } catch (error) {
@@ -182,7 +183,6 @@ export const processImageQueue = async (
       }
     }
 
-    // eslint-disable-next-line consistent-return
     return { messageId: messages[0]?.msg_id };
   } catch (error) {
     console.error("[process-image-queue] Queue processing error:", error);

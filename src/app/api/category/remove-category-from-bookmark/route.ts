@@ -12,27 +12,24 @@ import {
 const ROUTE = "remove-category-from-bookmark";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: RemoveCategoryFromBookmarkPayloadSchema,
-  outputSchema: RemoveCategoryFromBookmarkResponseSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const { bookmark_id: bookmarkId, category_id: categoryId } = data;
     const userId = user.id;
 
     console.log(`[${route}] API called:`, {
-      userId,
       bookmarkId,
       categoryId,
+      userId,
     });
 
     // Block manual removal of category 0 - it's auto-managed by the exclusive model
     // Users should add a real category to automatically remove category 0
     if (categoryId === UNCATEGORIZED_CATEGORY_ID) {
       return apiWarn({
-        route,
-        message: "Cannot manually remove uncategorized. Add a real category to auto-remove it.",
-        status: 400,
         context: { bookmarkId, categoryId },
+        message: "Cannot manually remove uncategorized. Add a real category to auto-remove it.",
+        route,
+        status: 400,
       });
     }
 
@@ -47,20 +44,20 @@ export const POST = createPostApiHandlerWithAuth({
     if (bookmarkError) {
       if (bookmarkError.code === "PGRST116") {
         return apiWarn({
-          route,
-          message: "Bookmark not found or not owned by user",
-          status: 404,
           context: { bookmarkId },
+          message: "Bookmark not found or not owned by user",
+          route,
+          status: 404,
         });
       }
 
       return apiError({
-        route,
-        message: "Failed to fetch bookmark",
         error: bookmarkError,
-        operation: "fetch_bookmark",
-        userId,
         extra: { bookmarkId },
+        message: "Failed to fetch bookmark",
+        operation: "fetch_bookmark",
+        route,
+        userId,
       });
     }
 
@@ -75,29 +72,29 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (rpcError) {
       return apiError({
-        route,
-        message: "Failed to remove category from bookmark",
         error: rpcError,
-        operation: "rpc_remove_category_from_bookmark",
-        userId,
         extra: { bookmarkId, categoryId },
+        message: "Failed to remove category from bookmark",
+        operation: "rpc_remove_category_from_bookmark",
+        route,
+        userId,
       });
     }
 
     // RPC returns empty array if nothing was deleted (category wasn't associated)
     if (!isNonEmptyArray(rpcData)) {
       return apiWarn({
-        route,
-        message: "Category association not found",
-        status: 404,
         context: { bookmarkId, categoryId },
+        message: "Category association not found",
+        route,
+        status: 404,
       });
     }
 
     console.log(`[${route}] Category removed successfully:`, {
+      addedUncategorized: rpcData[0].added_uncategorized,
       bookmarkId,
       categoryId,
-      addedUncategorized: rpcData[0].added_uncategorized,
     });
 
     // Trigger revalidation if category is public (non-blocking)
@@ -105,15 +102,17 @@ export const POST = createPostApiHandlerWithAuth({
     void revalidateCategoryIfPublic(categoryId, {
       operation: "remove_category_from_bookmark",
       userId,
-      // eslint-disable-next-line promise/prefer-await-to-then
     }).catch((error) => {
       console.error(`[${route}] Revalidation failed:`, {
-        error,
         categoryId,
+        error,
         userId,
       });
     });
 
     return [{ bookmark_id: bookmarkId, category_id: categoryId }];
   },
+  inputSchema: RemoveCategoryFromBookmarkPayloadSchema,
+  outputSchema: RemoveCategoryFromBookmarkResponseSchema,
+  route: ROUTE,
 });

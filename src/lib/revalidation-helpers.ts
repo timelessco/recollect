@@ -1,7 +1,8 @@
 import * as Sentry from "@sentry/nextjs";
 
+import type { Database } from "@/types/database-generated.types";
+
 import { createServerServiceClient } from "@/lib/supabase/service";
-import { type Database } from "@/types/database-generated.types";
 import { CATEGORIES_TABLE_NAME, getBaseUrl, NEXT_API_URL } from "@/utils/constants";
 import { vet } from "@/utils/try";
 
@@ -23,9 +24,9 @@ export async function revalidatePublicCategoryPage(
   userName: string,
   categorySlug: string,
   context?: {
+    categoryId?: number;
     operation?: string;
     userId?: string;
-    categoryId?: number;
   },
 ): Promise<void> {
   const path = `/public/${userName}/${categorySlug}`;
@@ -34,8 +35,8 @@ export async function revalidatePublicCategoryPage(
   const existing = pendingRevalidations.get(path);
   if (existing) {
     console.log("[revalidatePublicCategoryPage] Revalidation already in progress:", {
-      path,
       context,
+      path,
     });
     await existing;
     return;
@@ -49,14 +50,14 @@ export async function revalidatePublicCategoryPage(
       if (!secret) {
         console.warn(
           "[revalidatePublicCategoryPage] REVALIDATE_SECRET_TOKEN not configured - skipping revalidation",
-          { path, context },
+          { context, path },
         );
         return;
       }
 
       console.log("[revalidatePublicCategoryPage] Starting revalidation:", {
-        path,
         context,
+        path,
       });
 
       // Retry logic: 3 attempts with exponential backoff
@@ -69,17 +70,19 @@ export async function revalidatePublicCategoryPage(
         try {
           // Create AbortController for timeout
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+          const timeoutId = setTimeout(() => {
+            controller.abort();
+          }, timeoutMs);
 
-          const [error, response] = await vet(() =>
+          const [error, response] = await vet(async () =>
             fetch(revalidateUrl, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${secret}`,
-              },
               body: JSON.stringify({ path }),
               cache: "no-store",
+              headers: {
+                Authorization: `Bearer ${secret}`,
+                "Content-Type": "application/json",
+              },
+              method: "POST",
               signal: controller.signal,
             }),
           );
@@ -100,8 +103,8 @@ export async function revalidatePublicCategoryPage(
           console.log(
             `[revalidatePublicCategoryPage] Successfully revalidated (attempt ${attempt}/${maxRetries}):`,
             {
-              path,
               context,
+              path,
             },
           );
           return;
@@ -111,10 +114,10 @@ export async function revalidatePublicCategoryPage(
 
           if (isLastAttempt) {
             console.error(`[revalidatePublicCategoryPage] All retry attempts failed:`, {
+              attempts: maxRetries,
+              context,
               error,
               path,
-              context,
-              attempts: maxRetries,
             });
           } else {
             // Exponential backoff: 500ms, 1000ms, 2000ms
@@ -137,26 +140,26 @@ export async function revalidatePublicCategoryPage(
 
       // If we get here, all retries failed
       Sentry.captureException(lastError, {
+        extra: { categorySlug, context, maxRetries, path, userName },
         tags: {
-          operation: "revalidate_public_category",
           context: context?.operation,
+          operation: "revalidate_public_category",
           userId: context?.userId,
         },
-        extra: { path, userName, categorySlug, context, maxRetries },
       });
     } catch (error) {
       console.error("[revalidatePublicCategoryPage] Unexpected error during revalidation:", {
-        error,
-        userName,
         categorySlug,
         context,
+        error,
+        userName,
       });
       Sentry.captureException(error, {
+        extra: { categorySlug, context, userName },
         tags: {
-          operation: "revalidate_public_category_unexpected",
           context: context?.operation,
+          operation: "revalidate_public_category_unexpected",
         },
-        extra: { userName, categorySlug, context },
       });
     } finally {
       // Clean up pending revalidation
@@ -176,8 +179,8 @@ export async function getCategoryDetailsForRevalidation(
   categoryId: number,
   context?: { operation?: string },
 ): Promise<{
-  isPublic: boolean;
   categorySlug: string;
+  isPublic: boolean;
   userName: string;
 } | null> {
   try {
@@ -202,21 +205,21 @@ export async function getCategoryDetailsForRevalidation(
       .eq("id", categoryId)
       .single<
         Database["public"]["Tables"]["categories"]["Row"] & {
-          user_id: { user_name: string | null };
+          user_id: { user_name: null | string };
         }
       >();
 
     console.log("[getCategoryDetailsForRevalidation] Query result:", {
-      categoryId,
       categoryData,
+      categoryId,
       error,
     });
 
     if (error) {
       console.warn("[getCategoryDetailsForRevalidation] Failed to fetch category:", {
-        error,
         categoryId,
         context,
+        error,
       });
       return null;
     }
@@ -224,10 +227,10 @@ export async function getCategoryDetailsForRevalidation(
     const userName = categoryData.user_id?.user_name;
     console.log("[getCategoryDetailsForRevalidation] Extracted data:", {
       categoryId,
-      isPublic: categoryData.is_public,
       categorySlug: categoryData.category_slug,
-      userName,
+      isPublic: categoryData.is_public,
       rawUserId: categoryData.user_id,
+      userName,
     });
 
     if (!categoryData.is_public || !userName) {
@@ -240,18 +243,18 @@ export async function getCategoryDetailsForRevalidation(
     }
 
     return {
-      isPublic: categoryData.is_public,
       categorySlug: categoryData.category_slug,
+      isPublic: categoryData.is_public,
       userName,
     };
   } catch (error) {
     console.error("[getCategoryDetailsForRevalidation] Unexpected error:", error);
     Sentry.captureException(error, {
-      tags: {
-        operation: "get_category_for_revalidation",
-        context: context?.operation,
-      },
       extra: { categoryId, context },
+      tags: {
+        context: context?.operation,
+        operation: "get_category_for_revalidation",
+      },
     });
     return null;
   }
@@ -289,8 +292,8 @@ export async function revalidateCategoryIfPublic(
   }
 
   console.log("[revalidateCategoryIfPublic] Triggering revalidation:", {
-    categoryId,
     categoryDetails,
+    categoryId,
   });
 
   await revalidatePublicCategoryPage(categoryDetails.userName, categoryDetails.categorySlug, {
@@ -321,7 +324,7 @@ export async function revalidateCategoriesIfPublic(
 
   // Process all revalidations in parallel and await completion
   await Promise.all(
-    categoryIds.map((categoryId) => revalidateCategoryIfPublic(categoryId, context)),
+    categoryIds.map(async (categoryId) => revalidateCategoryIfPublic(categoryId, context)),
   );
 
   console.log("[revalidateCategoriesIfPublic] Completed for:", { categoryIds });

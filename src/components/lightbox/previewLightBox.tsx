@@ -1,15 +1,16 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { type DraggableItemProps } from "react-aria";
+import type { DraggableItemProps } from "react-aria";
 
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+
+import type { CategoriesData, SingleListData } from "../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 import { usePageContext } from "../../hooks/use-page-context";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import { useMiscellaneousStore, useSupabaseSession } from "../../store/componentStore";
-import { type CategoriesData, type SingleListData } from "../../types/apiTypes";
 import { BOOKMARKS_KEY, CATEGORIES_KEY, DISCOVER_URL, EVERYTHING_URL } from "../../utils/constants";
 import { searchSlugKey } from "../../utils/helpers";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../utils/url";
@@ -17,18 +18,18 @@ import { buildAuthenticatedCategoryUrl, buildPublicCategoryUrl } from "../../uti
 import { useLightboxPrefetch } from "./hooks/useLightboxPrefetch";
 import { CustomLightBox } from "./LightBox";
 
-type PreviewLightBoxProps = {
+interface PreviewLightBoxProps {
+  bookmarks?: SingleListData[];
   id: DraggableItemProps["key"] | null;
   open: boolean;
   setOpen: (value: boolean) => void;
-  bookmarks?: SingleListData[];
-};
+}
 
 export const PreviewLightBox = ({
+  bookmarks: bookmarksProp,
   id,
   open,
   setOpen,
-  bookmarks: bookmarksProp,
 }: PreviewLightBoxProps) => {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -49,7 +50,7 @@ export const PreviewLightBox = ({
   const { sortBy } = useGetSortBy();
   const searchText = useMiscellaneousStore((state) => state.searchText);
 
-  const { isPublicPage, isDiscoverPage } = usePageContext();
+  const { isDiscoverPage, isPublicPage } = usePageContext();
 
   // Determine the correct query key based on whether we're on discover page
   const queryKey = isDiscoverPage
@@ -65,12 +66,7 @@ export const PreviewLightBox = ({
 
   // if there is text in searchbar we get the cache of searched data else we get from everything
   // Skip query cache lookup for public pages since bookmarks are provided via props
-  const previousData = isPublicPage
-    ? undefined
-    : (queryClient.getQueryData(queryKey) as {
-        data: SingleListData[];
-        pages: Array<{ data: SingleListData[] }>;
-      });
+  const previousData = isPublicPage ? undefined : queryClient.getQueryData(queryKey)!;
   // Get and transform bookmarks from query cache or use provided bookmarks prop
   const bookmarks = useMemo(() => {
     // If bookmarks are provided as prop (e.g., for public pages), use them
@@ -87,9 +83,9 @@ export const PreviewLightBox = ({
   // Prefetch next page when approaching the end of current data
   // For public pages, pass undefined pages to skip prefetching since all data is provided via props
   useLightboxPrefetch({
-    open: open && !isPublicPage,
     activeIndex,
     bookmarksLength: bookmarks?.length ?? 0,
+    open: open && !isPublicPage,
     pages: isPublicPage ? undefined : previousData?.pages,
   });
 
@@ -115,13 +111,13 @@ export const PreviewLightBox = ({
     if (isPublicPage && !isDiscoverPage) {
       const publicInfo = getPublicPageInfo(router);
       if (publicInfo) {
-        const { pathname, query, as } = buildPublicCategoryUrl(publicInfo);
+        const { as, pathname, query } = buildPublicCategoryUrl(publicInfo);
         void router.push({ pathname, query }, as, { shallow: true });
       }
     } else {
       // Update URL without page reload for logged-in users
       const categorySlug = getCategorySlugFromRouter(router) ?? EVERYTHING_URL;
-      const { pathname, query, as } = buildAuthenticatedCategoryUrl(categorySlug);
+      const { as, pathname, query } = buildAuthenticatedCategoryUrl(categorySlug);
       void router.push({ pathname, query }, as, { shallow: true });
     }
 

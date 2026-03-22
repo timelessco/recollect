@@ -1,10 +1,11 @@
-import { type BookmarkViewDataTypes, type ProfilesBookmarksViewOrLegacy } from "../types/apiTypes";
+import type { BookmarkViewDataTypes, ProfilesBookmarksViewOrLegacy } from "../types/apiTypes";
+
 import { EVERYTHING_URL, PAGE_VIEW_SLUGS } from "./constants";
 
 /**
  * Page key for keyed bookmarks_view: slug if in PAGE_VIEW_SLUGS, else "everything".
  */
-export function getPageViewKey(slug: string | null): string {
+export function getPageViewKey(slug: null | string): string {
   if (!slug) {
     return EVERYTHING_URL;
   }
@@ -16,7 +17,7 @@ export function getPageViewKey(slug: string | null): string {
  * True if bookmarks_view is legacy flat shape (top-level bookmarksView key).
  */
 export function isLegacyBookmarksView(
-  view: ProfilesBookmarksViewOrLegacy | null | undefined,
+  view: null | ProfilesBookmarksViewOrLegacy | undefined,
 ): view is BookmarkViewDataTypes {
   return (
     view !== null &&
@@ -31,7 +32,7 @@ export function isLegacyBookmarksView(
  * Resolve view data for a page from keyed (or legacy) bookmarks_view.
  */
 export function getPageViewData(
-  bookmarksView: ProfilesBookmarksViewOrLegacy | null | undefined,
+  bookmarksView: null | ProfilesBookmarksViewOrLegacy | undefined,
   pageKey: string,
 ): BookmarkViewDataTypes | undefined {
   if (!bookmarksView || typeof bookmarksView !== "object") {

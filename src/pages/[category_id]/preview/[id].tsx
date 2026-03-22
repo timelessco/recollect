@@ -3,24 +3,25 @@ import "yet-another-react-lightbox/styles.css";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import type { SingleListData } from "../../../types/apiTypes";
+
 import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import { CustomLightBox } from "../../../components/lightbox/LightBox";
 import { Spinner } from "../../../components/spinner";
-import { type SingleListData } from "../../../types/apiTypes";
 import { EVERYTHING_URL } from "../../../utils/constants";
 
-export type BookmarkResponse = {
+export interface BookmarkResponse {
   data: SingleListData[];
-  error: string | null;
-};
+  error: null | string;
+}
 
 const Preview = () => {
   const router = useRouter();
   const { id } = router.query;
   const {
     data: bookmark,
-    isLoading,
     error,
+    isLoading,
   } = useFetchBookmarkById(id as string) as {
     data: BookmarkResponse | undefined;
     error: Error | null;

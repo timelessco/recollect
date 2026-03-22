@@ -8,7 +8,7 @@ import { cn } from "@/utils/tailwind-merge";
 export type CheckboxProps = BaseCheckbox.Root.Props;
 
 export function Checkbox(props: CheckboxProps) {
-  const { className, children, ...rest } = props;
+  const { children, className, ...rest } = props;
 
   return (
     <BaseCheckbox.Root
@@ -31,9 +31,9 @@ export function CheckboxDefaultIndicator(props: CheckboxDefaultIndicatorProps) {
 
   return (
     <BaseCheckbox.Indicator
-      keepMounted
       className={cn("contents", className)}
       data-slot="checkbox-default-indicator"
+      keepMounted
       {...rest}
     >
       {children ?? <CheckIcon />}

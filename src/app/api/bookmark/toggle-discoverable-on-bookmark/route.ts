@@ -12,17 +12,14 @@ import {
 const ROUTE = "toggle-discoverable-on-bookmark";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: ToggleBookmarkDiscoverablePayloadSchema,
-  outputSchema: ToggleBookmarkDiscoverableResponseSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const { bookmark_id: bookmarkId, make_discoverable: makeDiscoverable } = data;
     const userId = user.id;
 
     console.log(`[${route}] API called:`, {
-      userId,
       bookmarkId,
       makeDiscoverable,
+      userId,
     });
 
     // Build match conditions - atomic update prevents TOCTOU race condition
@@ -48,29 +45,29 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to toggle bookmark discoverable status",
         error,
-        operation: "toggle_discoverable_on_bookmark",
-        userId,
         extra: {
           bookmarkId,
           makeDiscoverable,
         },
+        message: "Failed to toggle bookmark discoverable status",
+        operation: "toggle_discoverable_on_bookmark",
+        route,
+        userId,
       });
     }
 
     if (!isNonEmptyArray(updatedData)) {
       return apiWarn({
-        route,
-        message: makeDiscoverable
-          ? "Bookmark not found, you lack permission, or bookmark is trashed"
-          : "Bookmark not found or you lack permission",
-        status: HttpStatus.BAD_REQUEST,
         context: {
           bookmarkId,
           userId,
         },
+        message: makeDiscoverable
+          ? "Bookmark not found, you lack permission, or bookmark is trashed"
+          : "Bookmark not found or you lack permission",
+        route,
+        status: HttpStatus.BAD_REQUEST,
       });
     }
 
@@ -81,4 +78,7 @@ export const POST = createPostApiHandlerWithAuth({
 
     return updatedData[0];
   },
+  inputSchema: ToggleBookmarkDiscoverablePayloadSchema,
+  outputSchema: ToggleBookmarkDiscoverableResponseSchema,
+  route: ROUTE,
 });

@@ -1,11 +1,12 @@
-import {
-  type ToggleBookmarkDiscoverablePayload,
-  type ToggleBookmarkDiscoverableResponse,
+import type {
+  ToggleBookmarkDiscoverablePayload,
+  ToggleBookmarkDiscoverableResponse,
 } from "@/app/api/bookmark/toggle-discoverable-on-bookmark/schema";
+import type { BookmarksPaginatedDataTypes } from "@/types/apiTypes";
+
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
-import { type BookmarksPaginatedDataTypes } from "@/types/apiTypes";
 import {
   BOOKMARKS_KEY,
   DISCOVER_URL,
@@ -24,7 +25,8 @@ export function useToggleDiscoverableOptimisticMutation() {
     typeof queryKey,
     BookmarksPaginatedDataTypes
   >({
-    mutationFn: (variables) =>
+    invalidates: [BOOKMARKS_KEY, DISCOVER_URL],
+    mutationFn: async (variables) =>
       postApi<ToggleBookmarkDiscoverableResponse>(
         `${NEXT_API_URL}${TOGGLE_BOOKMARK_DISCOVERABLE_API}`,
         variables,
@@ -35,7 +37,6 @@ export function useToggleDiscoverableOptimisticMutation() {
       updateBookmarkInPaginatedData(currentData, variables.bookmark_id, (bookmark) => {
         bookmark.make_discoverable = variables.make_discoverable ? "pending" : null;
       }) as BookmarksPaginatedDataTypes,
-    invalidates: [BOOKMARKS_KEY, DISCOVER_URL],
   });
 
   return { toggleDiscoverableOptimisticMutation };

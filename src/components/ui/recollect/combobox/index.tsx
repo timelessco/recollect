@@ -2,19 +2,21 @@ import * as React from "react";
 
 import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
 import { matchSorter } from "match-sorter";
-import { type z } from "zod";
+
+import type { ComboboxContextValue } from "./context";
+import type { z } from "zod";
 
 import { TickIcon } from "@/icons/tickIcon";
 import { cn } from "@/utils/tailwind-merge";
 
-import { ComboboxContext, useComboboxContext, type ComboboxContextValue } from "./context";
+import { ComboboxContext, useComboboxContext } from "./context";
 
 const CREATE_NEW_MARKER = Symbol("create-new");
 
-type CreateNewItem = {
+interface CreateNewItem {
   __createNew: typeof CREATE_NEW_MARKER;
   label: string;
-};
+}
 
 const isCreateNewItem = (item: unknown): item is CreateNewItem =>
   typeof item === "object" &&
@@ -22,28 +24,28 @@ const isCreateNewItem = (item: unknown): item is CreateNewItem =>
   "__createNew" in item &&
   (item as CreateNewItem).__createNew === CREATE_NEW_MARKER;
 
-type RootProps<T> = {
+interface RootProps<T> {
   children: React.ReactNode;
-  items: T[];
-  selectedItems: T[];
-  onAdd: (item: T) => void;
-  onRemove: (item: T) => void;
-  getItemId: (item: T) => string | number;
-  getItemLabel: (item: T) => string;
-  onCreate?: (inputValue: string) => void;
   createSchema?: z.ZodType<string>;
-};
+  getItemId: (item: T) => number | string;
+  getItemLabel: (item: T) => string;
+  items: T[];
+  onAdd: (item: T) => void;
+  onCreate?: (inputValue: string) => void;
+  onRemove: (item: T) => void;
+  selectedItems: T[];
+}
 
 const Root = <T,>({
   children,
-  items,
-  selectedItems,
-  onAdd,
-  onRemove,
+  createSchema,
   getItemId,
   getItemLabel,
+  items,
+  onAdd,
   onCreate,
-  createSchema,
+  onRemove,
+  selectedItems,
 }: RootProps<T>) => {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [inputValue, setInputValue] = React.useState("");
@@ -59,7 +61,7 @@ const Root = <T,>({
     });
   }, [items, inputValue, getItemLabel]);
 
-  const handleValueChange = (newValue: Array<T | CreateNewItem>) => {
+  const handleValueChange = (newValue: (CreateNewItem | T)[]) => {
     const createItem = newValue.find((item) => isCreateNewItem(item));
     if (createItem) {
       handleCreate();
@@ -101,18 +103,18 @@ const Root = <T,>({
 
   const contextValue: ComboboxContextValue<T> = React.useMemo(
     () => ({
-      items,
-      selectedItems,
+      containerRef,
+      createSchema,
       getItemId,
       getItemLabel,
-      onAdd,
-      onRemove,
       inputValue,
-      setInputValue,
-      containerRef,
-      onCreate,
-      createSchema,
       isOpen,
+      items,
+      onAdd,
+      onCreate,
+      onRemove,
+      selectedItems,
+      setInputValue,
     }),
     [
       items,
@@ -137,20 +139,24 @@ const Root = <T,>({
     ),
   );
 
-  const itemsWithCreate: Array<T | CreateNewItem> = showCreateOption
+  const itemsWithCreate: (CreateNewItem | T)[] = showCreateOption
     ? [...deduped, { __createNew: CREATE_NEW_MARKER, label: inputValue.trim() }]
     : deduped;
 
   return (
     <ComboboxContext value={contextValue as ComboboxContextValue<unknown>}>
       <ComboboxPrimitive.Root
+        autoHighlight
         items={itemsWithCreate}
         multiple
-        autoHighlight
-        value={selectedItems}
+        onInputValueChange={(value) => {
+          setInputValue(value ?? "");
+        }}
+        onOpenChange={(open) => {
+          setIsOpen(open);
+        }}
         onValueChange={handleValueChange}
-        onInputValueChange={(value) => setInputValue(value ?? "")}
-        onOpenChange={(open) => setIsOpen(open)}
+        value={selectedItems}
       >
         {children}
       </ComboboxPrimitive.Root>
@@ -158,16 +164,16 @@ const Root = <T,>({
   );
 };
 
-function Chips({ className, children, ...props }: ComboboxPrimitive.Chips.Props) {
+function Chips({ children, className, ...props }: ComboboxPrimitive.Chips.Props) {
   const { containerRef } = useComboboxContext();
 
   return (
     <ComboboxPrimitive.Chips
-      ref={containerRef}
       className={cn(
         "relative flex min-h-[30px] w-full flex-wrap items-center gap-1 rounded-lg bg-gray-alpha-100 px-[3px] py-[3px] focus-within:ring-2 focus-within:ring-gray-200",
         className,
       )}
+      ref={containerRef}
       {...props}
     >
       {children}
@@ -175,10 +181,10 @@ function Chips({ className, children, ...props }: ComboboxPrimitive.Chips.Props)
   );
 }
 
-const Value = ComboboxPrimitive.Value;
+const { Value } = ComboboxPrimitive;
 
 function Chip<T>({ className, item, ...props }: ComboboxPrimitive.Chip.Props & { item?: T }) {
-  const { onRemove, getItemLabel } = useComboboxContext<T>();
+  const { getItemLabel, onRemove } = useComboboxContext<T>();
 
   const handleClick = (event: React.MouseEvent) => {
     if (item) {
@@ -205,23 +211,23 @@ function Chip<T>({ className, item, ...props }: ComboboxPrimitive.Chip.Props & {
   return (
     <ComboboxPrimitive.Chip
       {...props}
-      data-slot="combobox-chip"
       aria-label={item ? `Remove ${getItemLabel(item)}` : undefined}
-      role="button"
-      tabIndex={0}
       className={cn(
         "flex cursor-pointer items-center gap-1.5 rounded-[6px] bg-gray-100 px-2 py-[4.5px] text-xs leading-[15px] font-450 tracking-[0.01em] text-gray-800 transition-colors outline-none hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-gray-200",
         className,
       )}
+      data-slot="combobox-chip"
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
     />
   );
 }
 
 function ChipContent<T>({
-  className,
   children,
+  className,
   item,
   ...props
 }: React.ComponentProps<"span"> & {
@@ -241,8 +247,8 @@ function ChipContent<T>({
 
 function Input({
   className,
-  placeholder = "Search...",
   onKeyDown,
+  placeholder = "Search...",
   ...props
 }: ComboboxPrimitive.Input.Props) {
   const { isOpen } = useComboboxContext();
@@ -259,12 +265,12 @@ function Input({
 
   return (
     <ComboboxPrimitive.Input
-      placeholder={placeholder}
       className={cn(
         "min-w-[80px] flex-1 bg-transparent px-2.5 text-13 leading-[115%] tracking-[0.13px] outline-none placeholder:font-medium placeholder:text-gray-alpha-600",
         className,
       )}
       onKeyDown={handleKeyDown}
+      placeholder={placeholder}
       {...props}
     />
   );
@@ -282,15 +288,15 @@ type PositionerProps = Omit<ComboboxPrimitive.Positioner.Props, "anchor"> & {
   anchor?: ComboboxPrimitive.Positioner.Props["anchor"];
 };
 
-function Positioner({ className, children, sideOffset = 4, anchor, ...props }: PositionerProps) {
+function Positioner({ anchor, children, className, sideOffset = 4, ...props }: PositionerProps) {
   const { containerRef } = useComboboxContext();
 
   return (
     <ComboboxPrimitive.Positioner
-      className={cn("z-52 select-none", className)}
-      sideOffset={sideOffset}
       anchor={anchor ?? containerRef}
+      className={cn("z-52 select-none", className)}
       data-slot="combobox-positioner"
+      sideOffset={sideOffset}
       {...props}
     >
       {children}
@@ -298,14 +304,14 @@ function Positioner({ className, children, sideOffset = 4, anchor, ...props }: P
   );
 }
 
-function Popup({ className, children, ...props }: ComboboxPrimitive.Popup.Props) {
+function Popup({ children, className, ...props }: ComboboxPrimitive.Popup.Props) {
   return (
     <ComboboxPrimitive.Popup
-      data-slot="combobox-popup"
       className={cn(
         "w-(--anchor-width) origin-center rounded-xl bg-gray-0 shadow-custom-7 transition-[transform,scale,opacity,shadow] data-ending-style:scale-95 data-ending-style:opacity-0 data-open:origin-(--transform-origin) data-starting-style:scale-95 data-starting-style:opacity-0 data-[side=bottom]:data-starting-style:-translate-y-1 data-[side=top]:data-starting-style:translate-y-1",
         className,
       )}
+      data-slot="combobox-popup"
       {...props}
     >
       {children}
@@ -313,12 +319,12 @@ function Popup({ className, children, ...props }: ComboboxPrimitive.Popup.Props)
   );
 }
 
-function Empty({ className, children, ...props }: ComboboxPrimitive.Empty.Props) {
+function Empty({ children, className, ...props }: ComboboxPrimitive.Empty.Props) {
   return (
     <ComboboxPrimitive.Empty {...props}>
       <div
-        data-slot="combobox-empty"
         className={cn("px-2 py-[5px] text-13 text-gray-500", className)}
+        data-slot="combobox-empty"
       >
         {children}
       </div>
@@ -340,20 +346,20 @@ function List({ children, ...props }: ComboboxPrimitive.List.Props) {
   };
 
   return (
-    <ComboboxPrimitive.List data-slot="combobox-list" className="p-1 empty:hidden" {...props}>
+    <ComboboxPrimitive.List className="p-1 empty:hidden" data-slot="combobox-list" {...props}>
       {wrappedRenderItem}
     </ComboboxPrimitive.List>
   );
 }
 
-function Item({ className, children, ...props }: ComboboxPrimitive.Item.Props) {
+function Item({ children, className, ...props }: ComboboxPrimitive.Item.Props) {
   return (
     <ComboboxPrimitive.Item
-      data-slot="combobox-item"
       className={cn(
         "group flex cursor-pointer items-center gap-2 rounded-lg px-2 py-[5.5px] text-13 leading-[15px] font-450 tracking-[0.01em] text-gray-900 transition-colors select-none data-highlighted:bg-gray-200",
         className,
       )}
+      data-slot="combobox-item"
       {...props}
     >
       {children}
@@ -361,15 +367,15 @@ function Item({ className, children, ...props }: ComboboxPrimitive.Item.Props) {
   );
 }
 
-function ItemIndicator({ className, children, ...props }: ComboboxPrimitive.ItemIndicator.Props) {
+function ItemIndicator({ children, className, ...props }: ComboboxPrimitive.ItemIndicator.Props) {
   return (
     <ComboboxPrimitive.ItemIndicator
-      keepMounted
-      data-slot="combobox-item-indicator"
       className={cn(
         "ml-auto flex size-4 shrink-0 items-center justify-center text-plain opacity-0 data-selected:text-plain data-selected:opacity-100",
         className,
       )}
+      data-slot="combobox-item-indicator"
+      keepMounted
       {...props}
     >
       {children ?? <TickIcon className="text-gray-800" />}
@@ -378,17 +384,17 @@ function ItemIndicator({ className, children, ...props }: ComboboxPrimitive.Item
 }
 
 export const Combobox = {
-  Root,
-  Chips,
   Chip,
   ChipContent,
-  Value,
-  Input,
-  Portal,
-  Positioner,
-  Popup,
+  Chips,
   Empty,
-  List,
+  Input,
   Item,
   ItemIndicator,
+  List,
+  Popup,
+  Portal,
+  Positioner,
+  Root,
+  Value,
 };

@@ -7,14 +7,11 @@ import { FetchByIdInputSchema, FetchByIdOutputSchema } from "./schema";
 const ROUTE = "v2-bookmarks-get-fetch-by-id";
 
 export const GET = createGetApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: FetchByIdInputSchema,
-  outputSchema: FetchByIdOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const userId = user.id;
     const bookmarkId = data.id;
 
-    console.log(`[${route}] API called:`, { userId, bookmarkId });
+    console.log(`[${route}] API called:`, { bookmarkId, userId });
 
     const { data: bookmarks, error: bookmarkError } = await supabase
       .from(MAIN_TABLE_NAME)
@@ -24,12 +21,12 @@ export const GET = createGetApiHandlerWithAuth({
 
     if (bookmarkError) {
       return apiError({
-        route,
-        message: "Failed to fetch bookmark",
         error: bookmarkError,
-        operation: "bookmark_fetch_by_id",
-        userId,
         extra: { bookmarkId },
+        message: "Failed to fetch bookmark",
+        operation: "bookmark_fetch_by_id",
+        route,
+        userId,
       });
     }
 
@@ -41,12 +38,12 @@ export const GET = createGetApiHandlerWithAuth({
 
     if (categoriesError) {
       return apiError({
-        route,
-        message: "Failed to fetch bookmark categories",
         error: categoriesError,
-        operation: "bookmark_fetch_by_id_categories",
-        userId,
         extra: { bookmarkId },
+        message: "Failed to fetch bookmark categories",
+        operation: "bookmark_fetch_by_id_categories",
+        route,
+        userId,
       });
     }
 
@@ -65,4 +62,7 @@ export const GET = createGetApiHandlerWithAuth({
       addedCategories,
     }));
   },
+  inputSchema: FetchByIdInputSchema,
+  outputSchema: FetchByIdOutputSchema,
+  route: ROUTE,
 });

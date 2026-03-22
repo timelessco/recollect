@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import type { CategoriesData, ProfilesTableTypes } from "../../../types/apiTypes";
+
 import { useSupabaseSession } from "../../../store/componentStore";
-import { type CategoriesData, type ProfilesTableTypes } from "../../../types/apiTypes";
 import { CATEGORIES_KEY, USER_PROFILE } from "../../../utils/constants";
 import { updateCategoryOrder } from "../../supabaseCrudHelpers";
 

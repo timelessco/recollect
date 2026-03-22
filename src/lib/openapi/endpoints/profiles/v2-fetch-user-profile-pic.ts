@@ -1,53 +1,61 @@
+import type { EndpointSupplement } from "@/lib/openapi/supplement-types";
+
 /**
  * @module Build-time only
  */
 import { bearerAuth } from "@/lib/openapi/registry";
-import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
 
 export const v2FetchUserProfilePicSupplement = {
-  path: "/v2/profiles/fetch-user-profile-pic",
-  method: "get",
-  tags: ["Profiles"],
-  summary: "Fetch profile picture for a user by email",
+  additionalResponses: {
+    400: { description: "Missing or invalid email query parameter" },
+  },
   description:
     "Returns the profile picture URL for the user with the given email address. The profile_pic field is null when no picture has been set.",
-  security: [{ [bearerAuth.name]: [] }, {}],
+  method: "get",
   parameterExamples: {
     email: {
-      "with-profile-pic": {
-        summary: "User with avatar",
-        description: "Returns profile_pic URL.",
-        value: "user@example.com",
+      "no-match": {
+        description: "Returns empty array.",
+        summary: "Nonexistent email",
+        value: "nobody@example.com",
       },
       "no-profile-pic": {
-        summary: "User without avatar",
         description: "Returns profile_pic: null.",
+        summary: "User without avatar",
         value: "another@example.com",
       },
-      "no-match": {
-        summary: "Nonexistent email",
-        description: "Returns empty array.",
-        value: "nobody@example.com",
+      "with-profile-pic": {
+        description: "Returns profile_pic URL.",
+        summary: "User with avatar",
+        value: "user@example.com",
       },
     },
   },
-  responseExamples: {
-    "with-profile-pic": {
-      summary: "User has a profile picture",
-      description: "Send `?email=user@example.com` where the user has an uploaded avatar.",
+  path: "/v2/profiles/fetch-user-profile-pic",
+  response400Examples: {
+    "missing-email": {
+      description: "Omit the `email` query parameter entirely — returns 400.",
+      summary: "Missing email parameter",
       value: {
-        data: [
-          {
-            profile_pic: "https://example.com/storage/v1/object/public/avatars/user-123.jpg",
-          },
-        ],
+        data: null,
+        error: "email: Required",
+      } as const,
+    },
+  },
+  responseExamples: {
+    "no-match": {
+      description:
+        "Send `?email=nobody@example.com` — returns empty array when no profile matches.",
+      summary: "No user found for email",
+      value: {
+        data: [],
         error: null,
       } as const,
     },
     "no-profile-pic": {
-      summary: "User has no profile picture",
       description:
         "Send `?email=user@example.com` where the user has no avatar — `profile_pic` is null.",
+      summary: "User has no profile picture",
       value: {
         data: [
           {
@@ -57,27 +65,20 @@ export const v2FetchUserProfilePicSupplement = {
         error: null,
       } as const,
     },
-    "no-match": {
-      summary: "No user found for email",
-      description:
-        "Send `?email=nobody@example.com` — returns empty array when no profile matches.",
+    "with-profile-pic": {
+      description: "Send `?email=user@example.com` where the user has an uploaded avatar.",
+      summary: "User has a profile picture",
       value: {
-        data: [],
+        data: [
+          {
+            profile_pic: "https://example.com/storage/v1/object/public/avatars/user-123.jpg",
+          },
+        ],
         error: null,
       } as const,
     },
   },
-  additionalResponses: {
-    400: { description: "Missing or invalid email query parameter" },
-  },
-  response400Examples: {
-    "missing-email": {
-      summary: "Missing email parameter",
-      description: "Omit the `email` query parameter entirely — returns 400.",
-      value: {
-        data: null,
-        error: "email: Required",
-      } as const,
-    },
-  },
+  security: [{ [bearerAuth.name]: [] }, {}],
+  summary: "Fetch profile picture for a user by email",
+  tags: ["Profiles"],
 } satisfies EndpointSupplement;

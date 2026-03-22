@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 
 import { createServerClient as createSupabaseServerClient } from "@supabase/ssr";
 
-import { type Database } from "@/types/database.types";
+import type { Database } from "@/types/database.types";
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./constants";
 
@@ -20,7 +20,7 @@ export async function createServerClient() {
       },
       setAll(cookiesToSet) {
         try {
-          for (const { name, value, options } of cookiesToSet) {
+          for (const { name, options, value } of cookiesToSet) {
             cookieStore.set(name, value, options);
           }
         } catch (error) {

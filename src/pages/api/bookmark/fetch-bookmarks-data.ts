@@ -1,16 +1,17 @@
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 
-import {
-  type BookmarksCountTypes,
-  type BookmarksWithCategoriesWithCategoryForeignKeys,
-  type BookmarksWithTagsWithTagForginKeys,
-  type SingleListData,
+import type {
+  BookmarksCountTypes,
+  BookmarksWithCategoriesWithCategoryForeignKeys,
+  BookmarksWithTagsWithTagForginKeys,
+  SingleListData,
 } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
+
 import { getBookmarkMediaCategoryPredicate } from "../../../utils/bookmark-category-filters";
 import {
   BOOKMARK_CATEGORIES_TABLE_NAME,
@@ -35,11 +36,11 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // gets all bookmarks data mapped with the data related to other tables, like tags, categories etc...
 
-type Data = {
+interface Data {
   count: BookmarksCountTypes | null;
-  data: SingleListData[] | null;
-  error: PostgrestError | VerifyErrors | { message: string } | null;
-};
+  data: null | SingleListData[];
+  error: { message: string } | null | PostgrestError | VerifyErrors;
+}
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse<Data>) {
   // disabling as this is not that big of an issue
@@ -50,12 +51,13 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   const userData = await supabase?.auth?.getUser();
 
-  const userId = userData?.data?.user?.id as string;
-  const email = userData?.data?.user?.email as string;
+  const userId = userData?.data?.user?.id!;
+  const email = userData?.data?.user?.email!;
 
   // tells if user is in a category or not
   const categoryCondition = isUserInACategoryInApi(category_id as string);
   const isUncategorized = category_id === UNCATEGORIZED_URL;
+  // oxlint-disable-next-line prefer-const -- reassigned on line 239
   let data;
 
   // Determine if this is a shared category (needs profile join for per-bookmark avatars)
@@ -65,9 +67,9 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   if (categoryCondition) {
     const {
-      success: isUserCollaboratorInCategorySuccess,
-      isCollaborator,
       error: isUserCollaboratorInCategoryError,
+      isCollaborator,
+      success: isUserCollaboratorInCategorySuccess,
     } = await isUserCollaboratorInCategory(supabase, category_id as string, email);
 
     if (!isUserCollaboratorInCategorySuccess) {
@@ -76,29 +78,29 @@ export default async function handler(request: NextApiRequest, response: NextApi
         isUserCollaboratorInCategoryError,
       );
       Sentry.captureException(isUserCollaboratorInCategoryError, {
+        extra: { category_id },
         tags: {
           operation: "check_user_collaborator_of_category",
         },
-        extra: { category_id },
         user: {
-          id: userId,
           email,
+          id: userId,
         },
       });
       response.status(500).json({
+        count: null,
         data: null,
         error: {
           message: "Error checking if user is a collaborator for the category",
         },
-        count: null,
       });
       return;
     }
 
     const {
-      success: isUserOwnerOfCategorySuccess,
-      isOwner,
       error: isUserOwnerOfCategoryError,
+      isOwner,
+      success: isUserOwnerOfCategorySuccess,
     } = await checkIsUserOwnerOfCategory(supabase, category_id as string, userId);
 
     if (!isUserOwnerOfCategorySuccess) {
@@ -107,21 +109,21 @@ export default async function handler(request: NextApiRequest, response: NextApi
         isUserOwnerOfCategoryError,
       );
       Sentry.captureException(isUserOwnerOfCategoryError, {
+        extra: { category_id },
         tags: {
           operation: "check_user_owner_of_category",
         },
-        extra: { category_id },
         user: {
-          id: userId,
           email,
+          id: userId,
         },
       });
       response.status(500).json({
+        count: null,
         data: null,
         error: {
           message: "Error checking if user is the owner of the category",
         },
-        count: null,
       });
       return;
     }
@@ -235,7 +237,6 @@ export default async function handler(request: NextApiRequest, response: NextApi
   const { data: bookmarkData, error } = await query;
 
   // Cast through unknown - Supabase's type parser doesn't understand !inner join syntax
-  // eslint-disable-next-line prefer-const
   data = bookmarkData as unknown as SingleListData[];
 
   // Get bookmark IDs for the current page to filter related data
@@ -288,24 +289,24 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
       return {
         ...item,
+        addedCategories: !isEmpty(matchedBookmarkWithCategory)
+          ? matchedBookmarkWithCategory?.map((matchedItem) => ({
+              category_name: matchedItem?.category_id?.category_name,
+              category_slug: matchedItem?.category_id?.category_slug,
+              icon: matchedItem?.category_id?.icon,
+              icon_color: matchedItem?.category_id?.icon_color,
+              id: matchedItem?.category_id?.id,
+            }))
+          : [],
         addedTags: !isEmpty(matchedBookmarkWithTag)
           ? matchedBookmarkWithTag?.map((matchedItem) => ({
               id: matchedItem?.tag_id?.id,
               name: matchedItem?.tag_id?.name,
             }))
           : [],
-        addedCategories: !isEmpty(matchedBookmarkWithCategory)
-          ? matchedBookmarkWithCategory?.map((matchedItem) => ({
-              id: matchedItem?.category_id?.id,
-              category_name: matchedItem?.category_id?.category_name,
-              category_slug: matchedItem?.category_id?.category_slug,
-              icon: matchedItem?.category_id?.icon,
-              icon_color: matchedItem?.category_id?.icon_color,
-            }))
-          : [],
       };
     })
     .filter(Boolean) as SingleListData[];
 
-  response.status(200).json({ data: finalData, error, count: null });
+  response.status(200).json({ count: null, data: finalData, error });
 }

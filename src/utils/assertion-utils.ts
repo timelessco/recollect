@@ -5,7 +5,7 @@
  * @returns {value is null | undefined} - Returns true if the value is null or undefined, false otherwise.
  */
 export function isNullable(value: unknown): value is null | undefined {
-  // eslint-disable-next-line no-eq-null, eqeqeq
+  // oxlint-disable-next-line no-eq-null, eqeqeq
   return value == null;
 }
 

@@ -5,8 +5,8 @@ export const ToggleFavoriteCategoryPayloadSchema = z.object({
 });
 
 export const ToggleFavoriteCategoryResponseSchema = z.object({
-  id: z.string().meta({ description: "User profile ID" }),
   favorite_categories: z
     .array(z.int())
     .meta({ description: "Updated ordered list of favorite category IDs" }),
+  id: z.string().meta({ description: "User profile ID" }),
 });

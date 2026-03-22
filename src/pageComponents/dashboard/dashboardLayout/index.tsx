@@ -1,17 +1,19 @@
 import { useRef, useState } from "react";
 
 import { Drawer } from "@base-ui/react/drawer";
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { Allotment, type AllotmentHandle } from "allotment";
+import { Allotment } from "allotment";
 import find from "lodash/find";
+
+import type { BookmarksCountTypes, CategoriesData } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { AllotmentHandle } from "allotment";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { useSidePaneStore } from "../../../store/sidePaneStore";
-import { type BookmarksCountTypes, type CategoriesData } from "../../../types/apiTypes";
 import { optionsMenuListArray } from "../../../utils/commonData";
 import { BOOKMARKS_COUNT_KEY, CATEGORIES_KEY } from "../../../utils/constants";
 import { SettingsModalPortal } from "../modals/settings-modal";
@@ -24,9 +26,9 @@ import {
 import { DashboardContent } from "./dashboardContent";
 import { HeaderOptionsPopover } from "./header-options-popover";
 
-type DashboardLayoutProps = {
+interface DashboardLayoutProps {
   children: React.ReactNode;
-};
+}
 
 const DashboardLayout = (props: DashboardLayoutProps) => {
   const { children } = props;
@@ -56,15 +58,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
   const currentPath = useGetCurrentUrlPath();
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
-    data: CategoriesData[];
-    error: PostgrestError;
-  };
+  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId])!;
 
-  const bookmarksCountData = queryClient.getQueryData([BOOKMARKS_COUNT_KEY, userId]) as {
-    data: BookmarksCountTypes;
-    error: PostgrestError;
-  };
+  const bookmarksCountData = queryClient.getQueryData([BOOKMARKS_COUNT_KEY, userId])!;
 
   const optionsMenuList = optionsMenuListArray(currentPath, bookmarksCountData);
 
@@ -73,8 +69,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     (item) => item?.category_slug === currentPath,
   );
   const headerName =
-    currentCategoryData?.category_name ??
-    find(optionsMenuList, (item) => item?.current === true)?.name;
+    currentCategoryData?.category_name ?? find(optionsMenuList, (item) => item?.current)?.name;
 
   const dashboardContentElement = () => {
     const onExpandSidePane = () => {
@@ -111,19 +106,19 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
         <div className="h-screen w-screen">
           <AllotmentWrapper
             allotmentRef={allotmentRef}
-            sidePaneRef={sidePaneRef}
-            sidePaneContentRef={sidePaneContentRef}
             className="split-view-container"
             separator={false}
+            sidePaneContentRef={sidePaneContentRef}
+            sidePaneRef={sidePaneRef}
           >
             <Allotment.Pane
-              ref={sidePaneRef}
               className="split-left-pane"
               maxSize={350}
               minSize={0}
               preferredSize={SIDE_PANE_DEFAULT_WIDTH}
-              visible={showSidePane}
+              ref={sidePaneRef}
               snap
+              visible={showSidePane}
             >
               <div className="h-full min-w-[200px]" ref={sidePaneContentRef}>
                 <SidePane />

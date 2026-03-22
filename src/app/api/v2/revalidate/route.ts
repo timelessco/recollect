@@ -7,10 +7,6 @@ import { RevalidateInputSchema, RevalidateOutputSchema } from "./schema";
 const ROUTE = "v2-revalidate";
 
 export const POST = createPostApiHandlerWithSecret({
-  route: ROUTE,
-  inputSchema: RevalidateInputSchema,
-  outputSchema: RevalidateOutputSchema,
-  secretEnvVar: "REVALIDATE_SECRET_TOKEN",
   handler: async ({ input, route }) => {
     console.log(`[${route}] Revalidating path:`, { path: input.path });
 
@@ -22,4 +18,8 @@ export const POST = createPostApiHandlerWithSecret({
 
     return { revalidated: true };
   },
+  inputSchema: RevalidateInputSchema,
+  outputSchema: RevalidateOutputSchema,
+  route: ROUTE,
+  secretEnvVar: "REVALIDATE_SECRET_TOKEN",
 });

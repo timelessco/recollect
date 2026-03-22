@@ -1,11 +1,12 @@
 import uniqid from "uniqid";
 
-import { type CategoryIdUrlTypes } from "../../types/componentTypes";
+import type { CategoryIdUrlTypes } from "../../types/componentTypes";
+import type { FileUploadMutationType } from "./clipboard-upload";
+
 import { mutationApiCall } from "../../utils/apiHelpers";
 import { isAcceptedMimeType } from "../../utils/constants";
 import { parseUploadFileName, uploadFileLimit } from "../../utils/helpers";
 import { errorToast } from "../../utils/toastMessages";
-import { type FileUploadMutationType } from "./clipboard-upload";
 
 /**
  * Upload file logic
@@ -14,7 +15,7 @@ import { type FileUploadMutationType } from "./clipboard-upload";
  * @param {CategoryIdUrlTypes} category_id the category_id of where to upload
  */
 export const fileUpload = async (
-  acceptedFiles: FileList | undefined | File[],
+  acceptedFiles: File[] | FileList | undefined,
   fileUploadOptimisticMutation: FileUploadMutationType,
   category_id: CategoryIdUrlTypes,
 ) => {
@@ -39,13 +40,14 @@ export const fileUpload = async (
       // For videos, thumbnail generation will happen in onMutate if not provided
       mutationApiCall(
         fileUploadOptimisticMutation.mutateAsync({
-          file: acceptedFiles[index],
           category_id,
+          file: acceptedFiles[index],
           thumbnailPath: null,
           uploadFileNamePath,
         }),
-        // eslint-disable-next-line promise/prefer-await-to-then
-      ).catch((error) => console.error(error));
+      ).catch((error) => {
+        console.error(error);
+      });
     } else {
       errorToast(`File type ${acceptedFiles[index]?.type} is not accepted`);
     }

@@ -2,35 +2,36 @@ import { Radio } from "@base-ui/react/radio";
 import { RadioGroup as BaseRadioGroup } from "@base-ui/react/radio-group";
 import { Bars4Icon } from "@heroicons/react/20/solid";
 
+import type { BookmarksViewTypes } from "../types/componentStoreTypes";
+
 import { useBookmarksViewUpdate } from "../hooks/useBookmarksViewUpdate";
 import useGetViewValue from "../hooks/useGetViewValue";
 import { TickIcon } from "../icons/tickIcon";
 import CardIcon from "../icons/viewIcons/cardIcon";
 import ListIcon from "../icons/viewIcons/listIcon";
 import MoodboardIconGray from "../icons/viewIcons/moodboardIconGray";
-import { type BookmarksViewTypes } from "../types/componentStoreTypes";
 import { viewValues } from "../utils/constants";
 
 export const bookmarksViewOptions = [
   {
+    icon: <MoodboardIconGray />,
     label: "Moodboard",
     value: viewValues.moodboard,
-    icon: <MoodboardIconGray />,
   },
   {
+    icon: <ListIcon />,
     label: "List",
     value: viewValues.list,
-    icon: <ListIcon />,
   },
   {
+    icon: <CardIcon />,
     label: "Card",
     value: viewValues.card,
-    icon: <CardIcon />,
   },
   {
+    icon: <Bars4Icon className="h-4 w-4" />,
     label: "Timeline",
     value: viewValues.timeline,
-    icon: <Bars4Icon className="h-4 w-4" />,
   },
 ];
 
@@ -41,8 +42,10 @@ export const RadioGroup = () => {
   return (
     <BaseRadioGroup
       className="dropdown-container flex flex-col"
+      onValueChange={(newValue) => {
+        setBookmarksView(newValue as BookmarksViewTypes, "view");
+      }}
       value={bookmarksViewValue}
-      onValueChange={(newValue) => setBookmarksView(newValue as BookmarksViewTypes, "view")}
     >
       {bookmarksViewOptions.map((item) => {
         const isRadioSelected = bookmarksViewValue === item.value;
@@ -55,7 +58,7 @@ export const RadioGroup = () => {
               <figure className="mr-2 flex h-4 w-4 items-center justify-center text-plain-reverse">
                 {item.icon}
               </figure>
-              <Radio.Root value={item.value} className="hidden" />
+              <Radio.Root className="hidden" value={item.value} />
               {item.label}
             </div>
             {isRadioSelected && <TickIcon className="text-gray-800" />}

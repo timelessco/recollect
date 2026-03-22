@@ -3,8 +3,6 @@
     // Oxc — formatter + linter via oxfmt and oxlint
     "oxc.oxc-vscode",
 
-    // ESLint, Find and fix problems in your JavaScript code
-    "dbaeumer.vscode-eslint",
     "DavidAnson.vscode-markdownlint",
     "streetsidesoftware.code-spell-checker",
 

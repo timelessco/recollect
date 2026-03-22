@@ -8,15 +8,15 @@ type PendingMode = "delete-all" | "keep-bookmarks" | null;
 
 interface DeleteCollectionConfirmProps {
   count: number;
-  onDeleteCollection: () => void;
   onDeleteAll: () => void;
+  onDeleteCollection: () => void;
   pendingMode: PendingMode;
 }
 
 export function DeleteCollectionConfirm({
   count,
-  onDeleteCollection,
   onDeleteAll,
+  onDeleteCollection,
   pendingMode,
 }: DeleteCollectionConfirmProps) {
   const isDisabled = pendingMode !== null;

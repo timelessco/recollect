@@ -1,7 +1,8 @@
 import * as Sentry from "@sentry/nextjs";
-import { type SupabaseClient } from "@supabase/supabase-js";
 
-import { type UserCollection } from "@/async/ai/imageToText";
+import type { UserCollection } from "@/async/ai/imageToText";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { CATEGORIES_TABLE_NAME, PROFILES, UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
 
@@ -34,7 +35,7 @@ export async function fetchUserCollections(
         .eq("id", userId)
         .single();
 
-      const aiFeatures = profileData?.ai_features_toggle as Record<string, unknown> | null;
+      const aiFeatures = profileData?.ai_features_toggle as null | Record<string, unknown>;
 
       if (aiFeatures?.auto_assign_collections === false) {
         return [];
@@ -86,8 +87,8 @@ export async function autoAssignCollections(props: AutoAssignCollectionsProps): 
 
     const { error } = await serviceClient.rpc("auto_assign_collections", {
       p_bookmark_id: bookmarkId,
-      p_user_id: userId,
       p_category_ids: matchedCollectionIds,
+      p_user_id: userId,
     });
 
     if (error) {
@@ -101,8 +102,8 @@ export async function autoAssignCollections(props: AutoAssignCollectionsProps): 
   } catch (error) {
     console.error(`[${route}] Auto-assign collections failed:`, error);
     Sentry.captureException(error, {
-      tags: { operation: "auto_assign_collections", userId },
       extra: { bookmarkId, matchedCollectionIds },
+      tags: { operation: "auto_assign_collections", userId },
     });
   }
 }

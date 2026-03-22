@@ -1,6 +1,8 @@
-import { produce, type Draft } from "immer";
+import { produce } from "immer";
 
-import { type PaginatedBookmarks, type SingleListData, type UserTagsData } from "@/types/apiTypes";
+import type { PaginatedBookmarks, SingleListData, UserTagsData } from "@/types/apiTypes";
+import type { Draft } from "immer";
+
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 
 /**
@@ -61,7 +63,7 @@ export function updateBookmarkInPaginatedData(
 export function swapTempTagId(
   bookmark: Draft<SingleListData>,
   tempId: number,
-  realTag: { id: number; name: string | null },
+  realTag: { id: number; name: null | string },
 ): boolean {
   const tag = bookmark.addedTags?.find((existing) => existing.id === tempId);
   if (tag) {
@@ -72,9 +74,9 @@ export function swapTempTagId(
 
   logCacheMiss("Cache Update", "Temp tag not found in bookmark", {
     bookmarkId: bookmark.id,
-    tempId,
-    realTagId: realTag.id,
     existingTagIds: bookmark.addedTags?.map((tag) => tag.id) ?? [],
+    realTagId: realTag.id,
+    tempId,
   });
   return false;
 }
@@ -94,10 +96,10 @@ export function swapTempTagInUserTagsCache(
   data: { data: UserTagsData[] } | undefined,
   tempId: number,
   realTag: {
-    id: number;
-    name: string | null;
-    user_id?: string;
     created_at?: string;
+    id: number;
+    name: null | string;
+    user_id?: string;
   },
 ): { data: UserTagsData[] } | undefined {
   if (!data?.data) {
@@ -108,8 +110,8 @@ export function swapTempTagInUserTagsCache(
     const tag = draft.data.find((existing) => existing.id === tempId);
     if (!tag) {
       logCacheMiss("Cache Update", "Temp tag not found in user tags cache", {
-        tempId,
         tagCount: draft.data.length,
+        tempId,
       });
       return;
     }

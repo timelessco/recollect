@@ -1,25 +1,20 @@
+import type { PdfThumbnailOutput } from "./schema";
+
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { vet } from "@/utils/try";
 
-import {
-  PdfThumbnailInputSchema,
-  PdfThumbnailOutputSchema,
-  type PdfThumbnailOutput,
-} from "./schema";
+import { PdfThumbnailInputSchema, PdfThumbnailOutputSchema } from "./schema";
 
 const ROUTE = "pdf-thumbnail";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: PdfThumbnailInputSchema,
-  outputSchema: PdfThumbnailOutputSchema,
-  handler: async ({ data, user, route }) => {
+  handler: async ({ data, route, user }) => {
     const sanitizedUrl = data.url.split("?")[0];
 
     console.log(`[${route}] API called:`, {
-      userId: user.id,
       url: sanitizedUrl,
+      userId: user.id,
     });
 
     const pdfApiUrl = process.env.PDF_URL_SCREENSHOT_API;
@@ -27,15 +22,15 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (!pdfApiUrl || !pdfApiKey) {
       return apiError({
-        route,
-        message: "PDF Thumbnail service is not configured",
         error: new Error("Missing PDF_URL_SCREENSHOT_API or PDF_SECRET_KEY"),
+        message: "PDF Thumbnail service is not configured",
         operation: "pdf_thumbnail_config",
+        route,
         userId: user.id,
       });
     }
 
-    const [fetchError, response] = await vet(() =>
+    const [fetchError, response] = await vet(async () =>
       fetch(pdfApiUrl, {
         body: JSON.stringify({ url: data.url, userId: user.id }),
         headers: {
@@ -48,23 +43,23 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (fetchError) {
       return apiError({
-        route,
-        message: "PDF Thumbnail service is unreachable",
         error: fetchError,
-        operation: "pdf_thumbnail_network",
-        userId: user.id,
         extra: { url: sanitizedUrl },
+        message: "PDF Thumbnail service is unreachable",
+        operation: "pdf_thumbnail_network",
+        route,
+        userId: user.id,
       });
     }
 
     if (!response.ok) {
       return apiError({
-        route,
-        message: "PDF Thumbnail service failed",
         error: new Error(`PDF service responded with ${response.status}`),
+        extra: { status: response.status, url: sanitizedUrl },
+        message: "PDF Thumbnail service failed",
         operation: "pdf_thumbnail_fetch",
+        route,
         userId: user.id,
-        extra: { url: sanitizedUrl, status: response.status },
       });
     }
 
@@ -75,4 +70,7 @@ export const POST = createPostApiHandlerWithAuth({
 
     return sanitizedJsonData;
   },
+  inputSchema: PdfThumbnailInputSchema,
+  outputSchema: PdfThumbnailOutputSchema,
+  route: ROUTE,
 });

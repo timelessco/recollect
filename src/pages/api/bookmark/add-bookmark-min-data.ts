@@ -1,23 +1,24 @@
-import { type NextApiResponse } from "next";
+import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError, type SupabaseClient } from "@supabase/supabase-js";
 import axios from "axios";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNull } from "lodash";
 import ogs from "open-graph-scraper";
+
+import type {
+  AddBookmarkMinDataPayloadTypes,
+  NextApiRequest,
+  ProfilesTableTypes,
+  SingleListData,
+} from "../../../types/apiTypes";
+import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
 
 import { revalidateCategoryIfPublic } from "@/lib/revalidation-helpers";
 import { vet } from "@/utils/try";
 
 import { getMediaType } from "../../../async/supabaseCrudHelpers";
 import { canEmbedInIframe } from "../../../async/uploads/iframe-test";
-import {
-  type AddBookmarkMinDataPayloadTypes,
-  type NextApiRequest,
-  type ProfilesTableTypes,
-  type SingleListData,
-} from "../../../types/apiTypes";
 import {
   ADD_REMAINING_BOOKMARK_API,
   AUDIO_OG_IMAGE_FALLBACK_URL,
@@ -41,25 +42,25 @@ import {
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this api get the scrapper data, checks for duplicate bookmarks and then adds it to the DB
-type Data = {
-  data: SingleListData[] | null;
-  error: PostgrestError | VerifyErrors | string | null;
-  message: string | null;
-};
+interface Data {
+  data: null | SingleListData[];
+  error: null | PostgrestError | string | VerifyErrors;
+  message: null | string;
+}
 
-type ScrapperTypes = {
+interface ScrapperTypes {
   data: {
-    OgImage: string | null;
-    description: string | null;
-    favIcon: string | null;
-    title: string | null;
+    description: null | string;
+    favIcon: null | string;
+    OgImage: null | string;
+    title: null | string;
   };
-};
+}
 
 // tells if user is either category owner or collaborator
 export const checkIfUserIsCategoryOwnerOrCollaborator = async (
   supabase: SupabaseClient,
-  categoryId: number | null,
+  categoryId: null | number,
   userId: SingleListData["user_id"]["id"],
   email: ProfilesTableTypes["email"],
   response: NextApiResponse,
@@ -72,11 +73,11 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
   if (categoryError) {
     console.error("Error checking category ownership:", categoryError);
     Sentry.captureException(categoryError, {
+      extra: { categoryId },
       tags: {
         operation: "check_category_ownership",
         userId,
       },
-      extra: { categoryId },
     });
     response.status(500).json({ data: null, error: categoryError?.message, message: null });
     return false;
@@ -97,11 +98,11 @@ export const checkIfUserIsCategoryOwnerOrCollaborator = async (
   if (shareError) {
     console.error("Error checking share access:", shareError);
     Sentry.captureException(shareError, {
+      extra: { categoryId, email },
       tags: {
         operation: "check_share_access",
         userId,
       },
-      extra: { categoryId, email },
     });
     response.status(500).json({ data: null, error: shareError?.message, message: null });
     return false;
@@ -186,9 +187,9 @@ export default async function handler(
     const { category_id: categoryId } = request.body;
 
     console.log("add-bookmark-min-data API called:", {
-      userId,
-      url,
       categoryId,
+      url,
+      userId,
     });
 
     const urlHost = new URL(url)?.hostname?.toLowerCase();
@@ -200,20 +201,20 @@ export default async function handler(
 
     let scrapperResponse: ScrapperTypes = {
       data: {
-        title: null,
         description: null,
-        OgImage: null,
         favIcon: null,
+        OgImage: null,
+        title: null,
       },
     };
 
     const userAgent =
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
 
-    const [scrapperError, ogsResult] = await vet(() =>
+    const [scrapperError, ogsResult] = await vet(async () =>
       ogs({
-        url,
         fetchOptions: { headers: { "user-agent": userAgent } },
+        url,
       }),
     );
 
@@ -223,27 +224,27 @@ export default async function handler(
       // if scrapper error is there then we just add the url host name as the title and proceed
       scrapperResponse = {
         data: {
-          title: new URL(url)?.hostname,
           description: null,
-          OgImage: null,
           favIcon: null,
+          OgImage: null,
+          title: new URL(url)?.hostname,
         },
       };
     }
 
     scrapperResponse = {
       data: {
-        title: ogsResult?.result?.ogTitle ?? null,
         description: ogsResult?.result?.ogDescription ?? null,
-        OgImage: shouldSkipOgImage ? null : (ogsResult?.result?.ogImage?.[0]?.url ?? null),
         favIcon: ogsResult?.result?.favicon ?? null,
+        OgImage: shouldSkipOgImage ? null : (ogsResult?.result?.ogImage?.[0]?.url ?? null),
+        title: ogsResult?.result?.ogTitle ?? null,
       },
     };
 
     // this will either be 0 (uncategorized) or any number
     // this also checks if the categoryId is one of the strings mentioned in uncategorizedPages , if they are it will be 0
     const computedCategoryId =
-      updateAccess === true &&
+      updateAccess &&
       !isNull(categoryId) &&
       categoryId !== "null" &&
       categoryId !== 0 &&
@@ -257,8 +258,8 @@ export default async function handler(
         await checkIfUserIsCategoryOwnerOrCollaborator(
           supabase,
           computedCategoryId as number,
-          userId as string,
-          email as string,
+          userId,
+          email,
           response,
         );
 
@@ -307,24 +308,24 @@ export default async function handler(
       data,
       error,
     }: {
-      data: SingleListData[] | null;
-      error: PostgrestError | VerifyErrors | string | null;
+      data: null | SingleListData[];
+      error: null | PostgrestError | string | VerifyErrors;
     } = await supabase
       .from(MAIN_TABLE_NAME)
       .insert([
         {
-          url,
-          title: scrapperResponse?.data?.title,
-          user_id: userId,
           description: scrapperResponse?.data?.description,
-          ogImage: ogImageToBeAdded,
           meta_data: {
-            isOgImagePreferred,
-            mediaType,
             favIcon,
             iframeAllowed: iframeAllowedValue,
+            isOgImagePreferred,
+            mediaType,
           },
+          ogImage: ogImageToBeAdded,
+          title: scrapperResponse?.data?.title,
           type: bookmarkType,
+          url,
+          user_id: userId,
         },
       ])
       .select();
@@ -342,11 +343,11 @@ export default async function handler(
     if (!isNull(error)) {
       console.error("Error inserting bookmark:", error);
       Sentry.captureException(error, {
+        extra: { categoryId: computedCategoryId, url },
         tags: {
           operation: "insert_min_bookmark",
           userId,
         },
-        extra: { url, categoryId: computedCategoryId },
       });
       response.status(500).json({
         data: null,
@@ -358,22 +359,22 @@ export default async function handler(
 
     // Insert into junction table for many-to-many relationship
     const { error: junctionError } = await supabase.from(BOOKMARK_CATEGORIES_TABLE_NAME).insert({
-      bookmark_id: data[0]?.id as number,
+      bookmark_id: data[0]?.id,
       category_id: computedCategoryId as number,
-      user_id: userId as string,
+      user_id: userId,
     });
 
     if (junctionError) {
       console.error("Error inserting into bookmark_categories:", junctionError);
       Sentry.captureException(junctionError, {
-        tags: {
-          operation: "insert_bookmark_category_junction",
-          userId,
-        },
         extra: {
           bookmarkId: data[0]?.id,
           categoryId: computedCategoryId,
           url,
+        },
+        tags: {
+          operation: "insert_bookmark_category_junction",
+          userId,
         },
       });
       // Non-blocking: don't fail the request, log and continue
@@ -382,15 +383,15 @@ export default async function handler(
     // Success
     console.log("Min bookmark data inserted successfully:", {
       bookmarkId: data[0]?.id,
-      url,
       categoryId: computedCategoryId,
+      url,
     });
 
     // Trigger revalidation if bookmark was added to a public category
     if (computedCategoryId !== 0) {
       void revalidateCategoryIfPublic(computedCategoryId as number, {
         operation: "add_bookmark",
-        userId: userId as string,
+        userId: userId,
       });
     }
 
@@ -406,13 +407,13 @@ export default async function handler(
       // this is called only if the url is an image url like test.com/image.png.
       // for other urls we call the screenshot api in the client side and in that api the remaining bookmark api (the one below is called)
       const requestBody = {
-        id: data[0]?.id,
         favIcon: scrapperResponse?.data?.favIcon,
+        id: data[0]?.id,
         url,
       };
       console.log("Calling add-remaining-bookmark-data API:", { requestBody });
 
-      const [remainingApiError] = await vet(() =>
+      const [remainingApiError] = await vet(async () =>
         axios.post(
           `${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
           requestBody,
@@ -423,11 +424,11 @@ export default async function handler(
       if (remainingApiError) {
         console.error("Remaining API error:", remainingApiError);
         Sentry.captureException(remainingApiError, {
+          extra: { bookmarkId: data[0]?.id, url },
           tags: {
             operation: "call_remaining_bookmark_api",
             userId,
           },
-          extra: { bookmarkId: data[0]?.id, url },
         });
         response.status(500).json({
           data: null,

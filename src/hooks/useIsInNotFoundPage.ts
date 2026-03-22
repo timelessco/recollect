@@ -18,7 +18,6 @@ export default function useIsInNotFoundPage() {
     return { isInNotFoundPage: false };
   } else if (categorySlug?.split("/")[0] === EVERYTHING_URL) {
     return { isInNotFoundPage: false };
-  } else {
-    return { isInNotFoundPage: true };
   }
+  return { isInNotFoundPage: true };
 }

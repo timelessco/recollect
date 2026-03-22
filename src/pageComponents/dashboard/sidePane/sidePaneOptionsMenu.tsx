@@ -1,9 +1,10 @@
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+
+import type { BookmarksCountTypes } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import { useSupabaseSession } from "../../../store/componentStore";
-import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import { optionsMenuListArray } from "../../../utils/commonData";
 import { BOOKMARKS_COUNT_KEY, menuListItemName } from "../../../utils/constants";
 import { SettingsModalTrigger } from "../modals/settings-modal";
@@ -14,10 +15,7 @@ const SidePaneOptionsMenu = () => {
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state.session);
 
-  const bookmarksCountData = queryClient.getQueryData([BOOKMARKS_COUNT_KEY, session?.user?.id]) as {
-    data: BookmarksCountTypes;
-    error: PostgrestError;
-  };
+  const bookmarksCountData = queryClient.getQueryData([BOOKMARKS_COUNT_KEY, session?.user?.id])!;
 
   const optionsMenuList = optionsMenuListArray(currentPath, bookmarksCountData).filter((item) => {
     if (

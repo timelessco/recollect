@@ -4,25 +4,26 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { useMediaQuery } from "@react-hookz/web";
 import { isEmpty } from "lodash";
 
+import type { BookmarkViewDataTypes, SingleListData } from "../../types/apiTypes";
+import type { BookmarksViewTypes } from "../../types/componentStoreTypes";
+
 import { useFetchDiscoverBookmarks } from "@/async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
 import { Spinner } from "@/components/spinner";
 
 import { useIsMobileView } from "../../hooks/useIsMobileView";
-import { type BookmarkViewDataTypes, type SingleListData } from "../../types/apiTypes";
-import { type BookmarksViewTypes } from "../../types/componentStoreTypes";
 import { viewValues } from "../../utils/constants";
 import CardSection from "../dashboard/cardSection";
 
-type DiscoverGuestViewProps = {
+interface DiscoverGuestViewProps {
   discoverData: SingleListData[];
-};
+}
 
 export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
   const { isMobile } = useIsMobileView();
   const isDesktopMedium = useMediaQuery("(min-width: 1024px) and (max-width: 1280px)");
   const isDesktopLarge = useMediaQuery("(min-width: 1281px)");
 
-  const { flattenedData, fetchNextPage, hasNextPage, isLoading } = useFetchDiscoverBookmarks({
+  const { fetchNextPage, flattenedData, hasNextPage, isLoading } = useFetchDiscoverBookmarks({
     initialData: discoverData,
   });
 
@@ -44,8 +45,8 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
   // Hardcoded view configuration for discover guest view
   const discoverCategoryViews: BookmarkViewDataTypes = {
     bookmarksView: viewValues.moodboard as BookmarksViewTypes,
-    moodboardColumns,
     cardContentViewArray: ["cover", "title"],
+    moodboardColumns,
     sortBy: "date-sort-ascending",
   };
 
@@ -62,7 +63,7 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
             <Spinner className="h-3 w-3 animate-spin" />
           </div>
         ) : !isEmpty(flattenedData) ? (
-          <div id="scrollableDiv" className="h-full overflow-x-hidden overflow-y-auto">
+          <div className="h-full overflow-x-hidden overflow-y-auto" id="scrollableDiv">
             <InfiniteScroll
               className="overflow-visible"
               dataLength={flattenedData.length}

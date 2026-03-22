@@ -1,11 +1,12 @@
-import {
-  type AddTagToBookmarkPayload,
-  type AddTagToBookmarkResponse,
+import type {
+  AddTagToBookmarkPayload,
+  AddTagToBookmarkResponse,
 } from "@/app/api/tags/add-tag-to-bookmark/schema";
+import type { PaginatedBookmarks, UserTagsData } from "@/types/apiTypes";
+
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
-import { type PaginatedBookmarks, type UserTagsData } from "@/types/apiTypes";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import { ADD_TAG_TO_BOOKMARK_API, BOOKMARKS_KEY, USER_TAGS_KEY } from "@/utils/constants";
 import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
@@ -15,7 +16,7 @@ import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
  * This is additive - it adds to existing tags without removing them.
  */
 export function useAddTagToBookmarkOptimisticMutation() {
-  const { queryClient, session, queryKey, searchQueryKey } = useBookmarkMutationContext();
+  const { queryClient, queryKey, searchQueryKey, session } = useBookmarkMutationContext();
 
   const addTagToBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
     AddTagToBookmarkResponse,
@@ -24,20 +25,29 @@ export function useAddTagToBookmarkOptimisticMutation() {
     typeof queryKey,
     PaginatedBookmarks
   >({
-    mutationFn: (payload) =>
+    mutationFn: async (payload) =>
       postApi<AddTagToBookmarkResponse>(`/api${ADD_TAG_TO_BOOKMARK_API}`, payload),
+    onSettled: (_data, error) => {
+      if (error) {
+        return;
+      }
+
+      // Invalidate ALL bookmark queries for user (covers all collections)
+      void queryClient.invalidateQueries({
+        queryKey: [BOOKMARKS_KEY, session?.user?.id],
+      });
+    },
     queryKey,
+
     secondaryQueryKey: searchQueryKey,
 
     updater: (currentData, variables) => {
       if (!currentData?.pages) {
-        return currentData as PaginatedBookmarks;
+        return currentData!;
       }
 
       // Resolve tag from cache - skip optimistic update if not found
-      const userTagsData = queryClient.getQueryData([USER_TAGS_KEY, session?.user?.id]) as
-        | { data: UserTagsData[] }
-        | undefined;
+      const userTagsData = queryClient.getQueryData([USER_TAGS_KEY, session?.user?.id]);
 
       const tagInfo = userTagsData?.data?.find((tag) => tag.id === variables.tagId);
 
@@ -63,17 +73,6 @@ export function useAddTagToBookmarkOptimisticMutation() {
           ];
         }) ?? currentData
       );
-    },
-
-    onSettled: (_data, error) => {
-      if (error) {
-        return;
-      }
-
-      // Invalidate ALL bookmark queries for user (covers all collections)
-      void queryClient.invalidateQueries({
-        queryKey: [BOOKMARKS_KEY, session?.user?.id],
-      });
     },
   });
 

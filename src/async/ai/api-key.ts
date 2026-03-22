@@ -1,18 +1,19 @@
-import { type SupabaseClient } from "@supabase/supabase-js";
 import CryptoJS from "crypto-js";
+
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { PROFILES } from "../../utils/constants";
 
 export const getApikeyAndBookmarkCount = async (supabase: SupabaseClient, userId: string) => {
   // monthly limit, in db the bookmark count set to zero at the start of every month using supabase cron job
-  const LIMIT = 10_0000;
+  const LIMIT = 100_000;
 
   const { data: profile } = await supabase
     .from(PROFILES)
     .select("api_key")
     .eq("id", userId)
     .single();
-  let userApiKey: string | null = null;
+  let userApiKey: null | string = null;
   try {
     const enc = (profile as unknown as { api_key?: string })?.api_key ?? "";
     if (enc) {
@@ -35,13 +36,13 @@ export const getApikeyAndBookmarkCount = async (supabase: SupabaseClient, userId
 
   const bookmarkCount = count?.bookmark_count ?? 0;
 
-  return { userApiKey, isLimitReached: bookmarkCount > LIMIT };
+  return { isLimitReached: bookmarkCount > LIMIT, userApiKey };
 };
 
 export const incrementBookmarkCount = async (
   supabase: SupabaseClient,
   userId: string,
-): Promise<number | null> => {
+): Promise<null | number> => {
   try {
     const { data: profile, error: fetchError } = await supabase
       .from(PROFILES)

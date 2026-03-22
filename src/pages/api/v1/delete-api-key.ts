@@ -1,4 +1,4 @@
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import { PROFILES } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
@@ -36,8 +36,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
     }
 
     response.status(200).json({
-      message: "API key deleted successfully",
       data: DataResponse,
+      message: "API key deleted successfully",
     });
   } catch (error) {
     console.error(error);

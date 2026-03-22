@@ -1,9 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
 
+import type { ProfilesTableTypes } from "@/types/apiTypes";
+
 import { useTogglePreferredOgDomainOptimisticMutation } from "@/async/mutationHooks/user/use-toggle-preferred-og-domain-optimistic-mutation";
 import { Switch } from "@/components/ui/recollect/switch";
 import ImageIcon from "@/icons/imageIcon";
-import { type ProfilesTableTypes } from "@/types/apiTypes";
 import { USER_PROFILE } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
 
@@ -40,7 +41,10 @@ function OgPreferenceSwitchToggle({ bookmarkUrl, userId }: OgPreferenceSwitchTog
 
   const domain = getDomain(bookmarkUrl);
 
-  type UserProfileCache = { data: ProfilesTableTypes[] | null; error?: Error };
+  interface UserProfileCache {
+    data: null | ProfilesTableTypes[];
+    error?: Error;
+  }
   const profileData = queryClient.getQueryData<UserProfileCache>([USER_PROFILE, userId]);
 
   const isPreferred = (() => {
@@ -66,8 +70,8 @@ function OgPreferenceSwitchToggle({ bookmarkUrl, userId }: OgPreferenceSwitchTog
     <Switch
       aria-label="Use OG image for this site"
       checked={isPreferred}
-      onCheckedChange={handleToggle}
       disabled={false}
+      onCheckedChange={handleToggle}
       size="small"
     />
   );

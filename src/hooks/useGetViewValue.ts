@@ -1,18 +1,19 @@
 import { useRouter } from "next/router";
 
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty } from "lodash";
+
+import type {
+  BookmarkViewDataTypes,
+  CategoriesData,
+  FetchSharedCategoriesData,
+  ProfilesTableTypes,
+} from "../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 import { getPageViewData, getPageViewKey } from "@/utils/bookmarksViewKeyed";
 
 import { useSupabaseSession } from "../store/componentStore";
-import {
-  type BookmarkViewDataTypes,
-  type CategoriesData,
-  type FetchSharedCategoriesData,
-  type ProfilesTableTypes,
-} from "../types/apiTypes";
 import { CATEGORIES_KEY, SHARED_CATEGORIES_TABLE_NAME, USER_PROFILE } from "../utils/constants";
 import { isUserInACategory } from "../utils/helpers";
 import { getCategorySlugFromRouter } from "../utils/url";
@@ -20,7 +21,7 @@ import { getCategorySlugFromRouter } from "../utils/url";
 // gets the card views for the user , like moodboard, list ....
 const useGetViewValue = (
   viewType: "bookmarksView" | "cardContentViewArray" | "moodboardColumns",
-  defaultReturnValue: string | [] | [number],
+  defaultReturnValue: [] | [number] | string,
   isPublicPage = false,
   categoryViewsFromProps: BookmarkViewDataTypes | undefined = undefined,
 ) => {
@@ -34,20 +35,11 @@ const useGetViewValue = (
   const userId = userData?.user?.id;
   const userEmail = userData?.user?.email;
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
-    data: CategoriesData[];
-    error: PostgrestError;
-  };
+  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId])!;
 
-  const sharedCategoriesData = queryClient.getQueryData([SHARED_CATEGORIES_TABLE_NAME]) as {
-    data: FetchSharedCategoriesData[];
-    error: PostgrestError;
-  };
+  const sharedCategoriesData = queryClient.getQueryData([SHARED_CATEGORIES_TABLE_NAME])!;
 
-  const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId]) as {
-    data: ProfilesTableTypes[];
-    error: PostgrestError;
-  };
+  const userProfilesData = queryClient.getQueryData([USER_PROFILE, userId])!;
 
   const currentCategoryData = find(
     categoryData?.data,
@@ -62,7 +54,7 @@ const useGetViewValue = (
   )?.id;
 
   if (!isPublicPage) {
-    if (isUserInACategory(categorySlug as string)) {
+    if (isUserInACategory(categorySlug!)) {
       if (isUserTheCategoryOwner) {
         // user is the owner of the category
         return currentCategoryData?.category_views?.[viewType];
@@ -87,7 +79,7 @@ const useGetViewValue = (
       const pageKey = getPageViewKey(categorySlug);
       const pageView = getPageViewData(bookmarksView, pageKey);
       const value = pageView?.[viewType];
-      return value !== undefined && value !== null ? value : defaultReturnValue;
+      return value ?? defaultReturnValue;
     }
   } else {
     // we are in a public page

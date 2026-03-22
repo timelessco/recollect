@@ -1,17 +1,17 @@
 import { instagramType, PDF_MIME_TYPE, tweetType } from "@/utils/constants";
 
 export type BookmarkContentType =
-  | "link"
-  | "image"
-  | "video"
   | "audio"
   | "document"
+  | "image"
+  | "instagram"
+  | "link"
   | "tweet"
-  | "instagram";
+  | "video";
 
 interface ResolveContentTypeParams {
-  type?: string | null;
-  mediaType?: string | null;
+  mediaType?: null | string;
+  type?: null | string;
 }
 
 /**
@@ -19,8 +19,8 @@ interface ResolveContentTypeParams {
  * Priority: explicit type (tweet/instagram) > MIME (mediaType ?? type) > default "link".
  */
 export function resolveContentType({
-  type,
   mediaType,
+  type,
 }: ResolveContentTypeParams): BookmarkContentType {
   // Explicit bookmark types (never MIME strings)
   if (type === tweetType) {

@@ -1,13 +1,14 @@
 import { produce } from "immer";
 
-import {
-  type AddCategoryToBookmarksPayload,
-  type AddCategoryToBookmarksResponse,
+import type {
+  AddCategoryToBookmarksPayload,
+  AddCategoryToBookmarksResponse,
 } from "@/app/api/category/add-category-to-bookmarks/schema";
+import type { CategoriesData, PaginatedBookmarks } from "@/types/apiTypes";
+
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
-import { type CategoriesData, type PaginatedBookmarks } from "@/types/apiTypes";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
   ADD_CATEGORY_TO_BOOKMARKS_API,
@@ -23,7 +24,7 @@ import {
  * Used for bulk selection operations.
  */
 export function useAddCategoryToBookmarksOptimisticMutation() {
-  const { queryClient, session, queryKey, searchQueryKey } = useBookmarkMutationContext();
+  const { queryClient, queryKey, searchQueryKey, session } = useBookmarkMutationContext();
 
   const addCategoryToBookmarksOptimisticMutation = useReactQueryOptimisticMutation<
     AddCategoryToBookmarksResponse,
@@ -34,20 +35,33 @@ export function useAddCategoryToBookmarksOptimisticMutation() {
   >({
     mutationFn: (payload) =>
       postApi<AddCategoryToBookmarksResponse>(`/api${ADD_CATEGORY_TO_BOOKMARKS_API}`, payload),
+    onSettled: (_data, error) => {
+      if (error) {
+        return;
+      }
+
+      // Invalidate bookmark counts
+      void queryClient.invalidateQueries({
+        queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+      });
+
+      // Invalidate ALL bookmark queries for user (covers all collections)
+      void queryClient.invalidateQueries({
+        queryKey: [BOOKMARKS_KEY, session?.user?.id],
+      });
+    },
     queryKey,
     secondaryQueryKey: searchQueryKey,
+    showSuccessToast: true,
+    successMessage: "Collection added to selected bookmarks",
     updater: (currentData, variables) => {
       if (!currentData?.pages) {
-        return currentData as PaginatedBookmarks;
+        return currentData!;
       }
 
       // Resolve category from cache - skip optimistic update if not found
       const allCategories =
-        (
-          queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]) as
-            | { data: CategoriesData[] }
-            | undefined
-        )?.data ?? [];
+        queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])?.data ?? [];
       const newCategoryEntry = allCategories.find((cat) => cat.id === variables.category_id);
 
       // If category not in cache, skip optimistic update and wait for server response
@@ -94,23 +108,6 @@ export function useAddCategoryToBookmarksOptimisticMutation() {
         }
       });
     },
-    onSettled: (_data, error) => {
-      if (error) {
-        return;
-      }
-
-      // Invalidate bookmark counts
-      void queryClient.invalidateQueries({
-        queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
-      });
-
-      // Invalidate ALL bookmark queries for user (covers all collections)
-      void queryClient.invalidateQueries({
-        queryKey: [BOOKMARKS_KEY, session?.user?.id],
-      });
-    },
-    showSuccessToast: true,
-    successMessage: "Collection added to selected bookmarks",
   });
 
   return { addCategoryToBookmarksOptimisticMutation };

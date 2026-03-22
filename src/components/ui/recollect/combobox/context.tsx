@@ -1,31 +1,31 @@
 "use client";
 
-import { type z } from "zod";
+import type { z } from "zod";
 
 import { createSafeContext } from "@/hooks/create-safe-context";
 
-export type ComboboxContextValue<T> = {
-  items: T[];
-  selectedItems: T[];
-  getItemId: (item: T) => string | number;
-  getItemLabel: (item: T) => string;
-  onAdd: (item: T) => void;
-  onRemove: (item: T) => void;
-  inputValue: string;
-  setInputValue: (value: string) => void;
+export interface ComboboxContextValue<T> {
   containerRef: React.RefObject<HTMLDivElement | null>;
-  onCreate?: (inputValue: string) => void;
   createSchema?: z.ZodType<string>;
+  getItemId: (item: T) => number | string;
+  getItemLabel: (item: T) => string;
+  inputValue: string;
   isOpen: boolean;
-};
+  items: T[];
+  onAdd: (item: T) => void;
+  onCreate?: (inputValue: string) => void;
+  onRemove: (item: T) => void;
+  selectedItems: T[];
+  setInputValue: (value: string) => void;
+}
 
 const [ComboboxContext, useComboboxContextInternal] = createSafeContext<
   ComboboxContextValue<unknown>
 >({
-  name: "ComboboxContext",
-  hookName: "useComboboxContext",
-  providerName: "Combobox",
   errorMessage: "Combobox components must be used within Combobox.Root",
+  hookName: "useComboboxContext",
+  name: "ComboboxContext",
+  providerName: "Combobox",
 });
 
 export { ComboboxContext };

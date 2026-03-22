@@ -1,7 +1,7 @@
-type SearchInputSearchIconProps = {
+interface SearchInputSearchIconProps {
   color?: string;
   size?: string;
-};
+}
 
 const SearchInputSearchIcon = ({ color, size = "12" }: SearchInputSearchIconProps) => (
   <svg

@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
+import type { CollectionItemTypes } from "./singleListItemComponent";
+
 import { useToggleFavoriteCategoryOptimisticMutation } from "@/async/mutationHooks/user/use-toggle-favorite-category-optimistic-mutation";
 import useFetchBookmarksCount from "@/async/queryHooks/bookmarks/useFetchBookmarksCount";
 import { DeleteCollectionConfirm } from "@/components/delete-collection-confirm";
@@ -11,11 +13,10 @@ import { useDeleteCollectionActions } from "@/hooks/useDeleteCollectionActions";
 import OptionsIcon from "@/icons/optionsIcon";
 
 import ShareContent from "../share/shareContent";
-import { type CollectionItemTypes } from "./singleListItemComponent";
 
-type CollectionOptionsPopoverProps = {
+interface CollectionOptionsPopoverProps {
   item: CollectionItemTypes;
-};
+}
 
 type ViewState = "closed" | "delete" | "menu" | "share";
 
@@ -51,9 +52,11 @@ export function CollectionOptionsPopover({ item }: CollectionOptionsPopoverProps
   return (
     <>
       <Menu.Root
-        open={popoverOpen}
         onOpenChange={handleMenuOpenChange}
-        onOpenChangeComplete={() => setExitingMenu(false)}
+        onOpenChangeComplete={() => {
+          setExitingMenu(false);
+        }}
+        open={popoverOpen}
       >
         <Menu.Trigger
           aria-label="Collection options"
@@ -69,14 +72,14 @@ export function CollectionOptionsPopover({ item }: CollectionOptionsPopoverProps
           <Menu.Positioner align="start">
             <Menu.Popup className="w-auto overflow-clip p-0 leading-[20px]">
               <AnimatedSize>
-                <AnimatePresence mode="popLayout" initial={false}>
+                <AnimatePresence initial={false} mode="popLayout">
                   {view === "menu" && (
                     <motion.div
-                      key="menu"
-                      className="w-48 p-1"
-                      initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
+                      className="w-48 p-1"
                       exit={{ opacity: 0 }}
+                      initial={{ opacity: 0 }}
+                      key="menu"
                       transition={fade}
                     >
                       <FavoriteMenuItem categoryId={item.id} isFavorite={item.isFavorite} />
@@ -102,11 +105,11 @@ export function CollectionOptionsPopover({ item }: CollectionOptionsPopoverProps
                   )}
                   {view === "share" && (
                     <motion.div
-                      key="share"
-                      className="p-1"
-                      initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
+                      className="p-1"
                       exit={{ opacity: 0 }}
+                      initial={{ opacity: 0 }}
+                      key="share"
                       transition={fade}
                     >
                       <div className="w-75 rounded-lg bg-gray-50">
@@ -116,11 +119,11 @@ export function CollectionOptionsPopover({ item }: CollectionOptionsPopoverProps
                   )}
                   {view === "delete" && (
                     <motion.div
-                      key="delete"
-                      className="w-auto p-1"
-                      initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
+                      className="w-auto p-1"
                       exit={{ opacity: 0 }}
+                      initial={{ opacity: 0 }}
+                      key="delete"
                       transition={fade}
                     >
                       <DeleteCollectionContent categoryId={item.id} isCurrent={item.current} />
@@ -175,7 +178,7 @@ interface DeleteCollectionContentProps {
 }
 
 function DeleteCollectionContent({ categoryId, isCurrent }: DeleteCollectionContentProps) {
-  const { pendingMode, handleDeleteAll, handleKeepBookmarks } = useDeleteCollectionActions({
+  const { handleDeleteAll, handleKeepBookmarks, pendingMode } = useDeleteCollectionActions({
     categoryId,
     isCurrent,
   });
@@ -187,8 +190,8 @@ function DeleteCollectionContent({ categoryId, isCurrent }: DeleteCollectionCont
   return (
     <DeleteCollectionConfirm
       count={count}
-      onDeleteCollection={handleKeepBookmarks}
       onDeleteAll={handleDeleteAll}
+      onDeleteCollection={handleKeepBookmarks}
       pendingMode={pendingMode}
     />
   );

@@ -1,17 +1,14 @@
 import "../styles/globals.css";
 
-import { type AppProps } from "next/app";
+import type { AppProps } from "next/app";
 import Head from "next/head";
 import { useState } from "react";
 
-import {
-  HydrationBoundary,
-  QueryClient,
-  QueryClientProvider,
-  type DehydratedState,
-} from "@tanstack/react-query";
+import { HydrationBoundary, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "next-themes";
+
+import type { DehydratedState } from "@tanstack/react-query";
 
 import { IosAutozoomFix } from "@/components/scripts/ios-autozoom-fix";
 import { MutationIndicator } from "@/components/ui/recollect/mutation-indicator";
@@ -27,14 +24,13 @@ const MyApp = ({
   dehydratedState: DehydratedState;
 }>) => {
   // Create a client
-  // eslint-disable-next-line react/hook-use-state
   const [queryClient] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
             refetchOnWindowFocus: true,
-            staleTime: 5 * 60 * 1_000,
+            staleTime: 5 * 60 * 1000,
           },
         },
       }),

@@ -5,26 +5,13 @@
   "githubPullRequests.ignoredPullRequestBranches": ["main"],
   "typescript.tsdk": "node_modules/typescript/lib",
 
-  // Files Customization
-  "files.associations": {
-    "*.svg": "html",
-    ".env.*": "dotenv",
-    "*.json": "jsonc",
-    "package.json": "json",
-    ".all-contributorsrc": "json",
-    "*.tsx": "typescriptreact",
-    "*.jsx": "javascriptreact"
-  },
-
   // Editor Formatters & Linters.
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
   "editor.codeActionsOnSave": {
     "source.addMissingImports": "explicit",
-    "source.formatDocument": "explicit",
     "source.fixAll.oxc": "explicit",
-    "source.fixAll.eslint": "explicit",
     "source.fixAll.stylelint": "explicit",
     "source.fixAll.markdownlint": "explicit"
   },
@@ -35,48 +22,15 @@
   "css.validate": false,
   "css.lint.unknownAtRules": "ignore",
 
-  // JavaScript
-  "javascript.updateImportsOnFileMove.enabled": "always",
-  "javascript.referencesCodeLens.enabled": true,
-  "javascript.referencesCodeLens.showOnAllFunctions": true,
-
-  // TypeScript
-  "typescript.updateImportsOnFileMove.enabled": "always",
-  "typescript.referencesCodeLens.enabled": true,
-  "typescript.tsserver.watchOptions": "vscode",
-  "typescript.referencesCodeLens.showOnAllFunctions": true,
-
-  // Markdown
-  "[markdown]": {
-    "editor.quickSuggestions": {
-      "comments": "on",
-      "strings": "on",
-      "other": "on"
-    }
-  },
-
   // Must have extensions config
-
-  // Linters & Formatters
-  "eslint.useESLintClass": true,
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact",
-    "json",
-    "jsonc",
-    "json5",
-    "yaml",
-    "yml",
-    "github-actions-workflow"
-  ],
 
   // Tailwind CSS
   // Detect additional class regex
   "tailwindCSS.experimental.classRegex": [
-    // For const/let/var string assignments like: const baseClasses = "tw-..."
-    "(?:const|let|var)\\s+\\w+\\s*=\\s*[\"'`]([^\"'`]*)[\"'`]"
+    // https://regex-vis.com/?r=%5C%5Cs*class%3A%5C%5Cs*%3F%5B%60%27%5C%22%5D%28.*%29%5B%60%27%5C%22%5D%5C%5Cs*%28%3F%3D%5B%3B%2C.%5D%29
+    // Selection visualizer at https://www.debuggex.com/
+    "\\s*class:\\s*?[`'\"](.*)[`'\"]\\s*(?=[;,.])",
+    ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
   ],
   // Enable features in languages that are not supported by default. Add a mapping here between the new language and an already supported language.
   "tailwindCSS.includeLanguages": {
@@ -85,7 +39,7 @@
     "typescriptreact": "javascript",
     "javascriptreact": "javascript"
   },
-  "tailwindCSS.classFunctions": ["cn"],
+  "tailwindCSS.classFunctions": ["cn", "cva"],
 
   // Deno for Supabase Edge Functions
   "deno.enablePaths": ["supabase/functions"]

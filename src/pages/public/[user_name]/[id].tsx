@@ -1,13 +1,14 @@
-import { type GetStaticPaths, type GetStaticProps, type NextPage } from "next";
+import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { useRouter } from "next/router";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 
+import type { GetPublicCategoryBookmarksApiResponseType } from "../../../types/apiTypes";
+
 import { useFetchPublicCategoryBookmarks } from "../../../async/queryHooks/bookmarks/use-fetch-public-category-bookmarks";
 import CardSection from "../../../pageComponents/dashboard/cardSection";
-import { type GetPublicCategoryBookmarksApiResponseType } from "../../../types/apiTypes";
 import { iconMap } from "../../../utils/commonData";
 import {
   BLACK_COLOR,
@@ -24,11 +25,11 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
   const categorySlug = router.query.id as string;
   const userName = router.query.user_name as string;
 
-  const { flattenedData, metadata, fetchNextPage, hasNextPage } = useFetchPublicCategoryBookmarks({
+  const { fetchNextPage, flattenedData, hasNextPage, metadata } = useFetchPublicCategoryBookmarks({
     categorySlug,
-    userName,
     enabled: Boolean(categorySlug) && Boolean(userName),
     initialData: props,
+    userName,
   });
 
   return (
@@ -38,9 +39,9 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
           <div
             className="mr-2 flex items-center justify-center rounded-full p-0.5"
             style={{
-              width: 20,
-              height: 20,
               backgroundColor: props?.icon_color ?? BLACK_COLOR,
+              height: 20,
+              width: 20,
             }}
           >
             {props?.icon &&
@@ -56,8 +57,8 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
       <main>
         {!isEmpty(flattenedData) ? (
           <div
-            id="scrollableDiv"
             className="overflow-x-hidden overflow-y-auto"
+            id="scrollableDiv"
             style={{ height: "calc(100vh - 52px)" }}
           >
             <InfiniteScroll
@@ -89,11 +90,11 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
 };
 
 export const getStaticPaths: GetStaticPaths = async () => ({
+  // Generate pages on first request
+  fallback: "blocking",
   // Don't pre-generate any pages at build time
   // Pages will be generated on-demand and cached
   paths: [],
-  // Generate pages on first request
-  fallback: "blocking",
 });
 
 export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (context) => {
@@ -111,22 +112,22 @@ export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (co
       console.error(
         `[${ROUTE}] Failed to fetch public category bookmarks: HTTP ${response.status}`,
         {
+          categorySlug,
           status: response.status,
           statusText: response.statusText,
-          categorySlug,
           userName,
         },
       );
       Sentry.captureException(new Error(`HTTP ${response.status}: ${response.statusText}`), {
-        tags: {
-          operation: "fetch_public_category",
-          context: "static_generation",
-        },
         extra: {
+          categorySlug,
           status: response.status,
           statusText: response.statusText,
-          categorySlug,
           userName,
+        },
+        tags: {
+          context: "static_generation",
+          operation: "fetch_public_category",
         },
       });
       return { notFound: true };
@@ -148,16 +149,16 @@ export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (co
   } catch (error) {
     // Network failures, API errors are system errors (5xx) - console.error + Sentry
     console.error(`[${ROUTE}] Failed to fetch public category bookmarks`, {
-      error,
       categorySlug,
+      error,
       userName,
     });
     Sentry.captureException(error, {
-      tags: {
-        operation: "fetch_public_category",
-        context: "static_generation",
-      },
       extra: { categorySlug, userName },
+      tags: {
+        context: "static_generation",
+        operation: "fetch_public_category",
+      },
     });
     return { notFound: true };
   }

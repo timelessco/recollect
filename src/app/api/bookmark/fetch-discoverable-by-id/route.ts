@@ -1,3 +1,5 @@
+import type { FetchDiscoverableByIdResponse } from "./schema";
+
 import { createGetApiHandler } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { createApiClient } from "@/lib/supabase/api";
@@ -8,18 +10,11 @@ import {
 } from "@/utils/constants";
 import { HttpStatus } from "@/utils/error-utils/common";
 
-import {
-  FetchDiscoverableByIdQuerySchema,
-  FetchDiscoverableByIdResponseSchema,
-  type FetchDiscoverableByIdResponse,
-} from "./schema";
+import { FetchDiscoverableByIdQuerySchema, FetchDiscoverableByIdResponseSchema } from "./schema";
 
 const ROUTE = "fetch-discoverable-by-id";
 
 export const GET = createGetApiHandler({
-  inputSchema: FetchDiscoverableByIdQuerySchema,
-  outputSchema: FetchDiscoverableByIdResponseSchema,
-  route: ROUTE,
   handler: async ({ input, route }) => {
     const { id } = input;
 
@@ -53,20 +48,20 @@ export const GET = createGetApiHandler({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to fetch discoverable bookmark",
         error,
-        operation: "fetch_discoverable_bookmark_by_id",
         extra: { id },
+        message: "Failed to fetch discoverable bookmark",
+        operation: "fetch_discoverable_bookmark_by_id",
+        route,
       });
     }
 
     if (!data) {
       return apiWarn({
-        route,
-        message: "Bookmark not found or not discoverable",
-        status: HttpStatus.NOT_FOUND,
         context: { id },
+        message: "Bookmark not found or not discoverable",
+        route,
+        status: HttpStatus.NOT_FOUND,
       });
     }
 
@@ -86,11 +81,11 @@ export const GET = createGetApiHandler({
 
     if (tagsError) {
       return apiError({
-        route,
-        message: "Failed to fetch bookmark tags",
         error: tagsError,
-        operation: "fetch_bookmark_tags",
         extra: { id },
+        message: "Failed to fetch bookmark tags",
+        operation: "fetch_bookmark_tags",
+        route,
       });
     }
 
@@ -113,21 +108,21 @@ export const GET = createGetApiHandler({
 
     if (categoriesError) {
       return apiError({
-        route,
-        message: "Failed to fetch bookmark categories",
         error: categoriesError,
-        operation: "fetch_bookmark_categories",
         extra: { id },
+        message: "Failed to fetch bookmark categories",
+        operation: "fetch_bookmark_categories",
+        route,
       });
     }
 
     // Map tags to the expected format, filtering out null join rows
     const addedTags =
       (
-        tagsData as unknown as Array<{
+        tagsData as unknown as {
           bookmark_id: number;
           tag_id: { id: number; name: string } | null;
-        }>
+        }[]
       )
         ?.filter((item) => item.tag_id !== null)
         .map((item) => ({
@@ -138,39 +133,42 @@ export const GET = createGetApiHandler({
     // Map categories to the expected format, filtering out null join rows
     const addedCategories =
       (
-        categoriesData as unknown as Array<{
+        categoriesData as unknown as {
           bookmark_id: number;
           category_id: {
-            id: number;
             category_name: string;
             category_slug: string;
-            icon: string | null;
+            icon: null | string;
             icon_color: string;
+            id: number;
           } | null;
-        }>
+        }[]
       )
         ?.filter((item) => item.category_id !== null)
         .map((item) => ({
-          id: item.category_id?.id ?? 0,
           category_name: item.category_id?.category_name ?? "",
           category_slug: item.category_id?.category_slug ?? "",
           icon: item.category_id?.icon ?? "",
           icon_color: item.category_id?.icon_color ?? "",
+          id: item.category_id?.id ?? 0,
         })) ?? [];
 
     console.log(`[${route}] Discoverable bookmark fetched successfully:`, {
       bookmarkId: data.id,
-      tagsCount: addedTags.length,
       categoriesCount: addedCategories.length,
+      tagsCount: addedTags.length,
     });
 
     // Type assertion for the complete response
     const response = {
       ...data,
-      addedTags,
       addedCategories,
+      addedTags,
     } as FetchDiscoverableByIdResponse;
 
     return response;
   },
+  inputSchema: FetchDiscoverableByIdQuerySchema,
+  outputSchema: FetchDiscoverableByIdResponseSchema,
+  route: ROUTE,
 });
