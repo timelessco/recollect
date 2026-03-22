@@ -51,7 +51,7 @@
 - `oxlint-disable-next-line` doesn't work for JSX props on different lines — use block-level `/* oxlint-disable rule */` instead
 - Comment directive split: native oxlint rules use `oxlint-disable`, jsPlugin rules (`@tanstack/query/*`, `regexp/*`, `perfectionist/*`, `react-x/*`) keep `eslint-disable`
 - `promise-function-async` is off — it auto-adds `async` to Promise-returning functions, but the rule is: only add `async` when `await` is present in the function body
-- oxlint `--deny RULE` CLI flag does NOT override config-level `"off"` — to test a disabled rule, temporarily remove it from `.oxlintrc.json` and re-run
+- oxlint `--deny RULE` CLI flag does NOT override config-level `"off"` — to test a disabled rule, copy `.oxlintrc.json` to a temp file, edit the copy, run `npx oxlint -c <copy>` from project root (relative `extends` paths require it), then `trash` the copy
 - `oxlint-disable-next-line` must be on the line immediately before the violation — for multi-line expressions, place on the line with the violation, not the wrapping expression above
 - `typeAware: true` and `typeCheck: true` are enabled — all type-aware rules active globally. `no-unsafe-*` + `no-non-null-assertion` disabled in legacy folders via `.oxlintrc.json` overrides (`src/pages/api/`, `src/async/`, `src/pageComponents/`, `src/utils/{worker,file-upload,helpers,apiHelpers}.ts`, `scripts/`). New code is fully enforced
 - `database-generated.types.ts` is in oxlint `ignorePatterns` — Supabase CLI generates types that trigger `no-redundant-type-constituents`
@@ -61,3 +61,4 @@
 - `createServerServiceClient()` (`@/lib/supabase/service`) is synchronous — don't `await` it
 - `require-await` checks the OUTER function scope only — `await` inside nested callbacks (`startTransition(async () => { await ... })`) doesn't count. Remove `async` from the outer function, keep it on the inner callback
 - `npx oxlint <changed-files>` only checks listed files — CI runs `pnpm lint:ultracite` on ALL files. When enabling new rules, run full `pnpm lint:ultracite` locally before pushing
+- `perfectionist/sort-objects` + `sort-union-types` auto-fix oscillates with oxfmt on multi-line objects — upstream wontfix (oxc#20210). To enable: fix all violations manually first; auto-fix is stable only on already-sorted code
