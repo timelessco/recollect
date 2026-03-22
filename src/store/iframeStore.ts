@@ -29,7 +29,9 @@ type StoreWithPersist = Mutate<StoreApi<IframeState>, [["zustand/persist", unkno
  */
 const withStorageDOMEvents = (store: StoreWithPersist) => {
   if (!isBrowser) {
-    return () => {};
+    return () => {
+      // no-op: storage events are browser-only
+    };
   }
 
   const storageEventCallback = (event: StorageEvent) => {

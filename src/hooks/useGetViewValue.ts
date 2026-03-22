@@ -23,7 +23,7 @@ const useGetViewValue = (
   viewType: "bookmarksView" | "cardContentViewArray" | "moodboardColumns",
   defaultReturnValue: [] | [number] | string,
   isPublicPage = false,
-  categoryViewsFromProps: BookmarkViewDataTypes | undefined = undefined,
+  categoryViewsFromProps?: BookmarkViewDataTypes,
 ) => {
   const queryClient = useQueryClient();
   const router = useRouter();

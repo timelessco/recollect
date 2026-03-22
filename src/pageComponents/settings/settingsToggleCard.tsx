@@ -42,7 +42,12 @@ export const SettingsToggleCard: React.FC<SettingsCardProps> = ({
         <Switch
           checked={enabled}
           disabled={!onToggle}
-          onCheckedChange={onToggle ?? (() => {})}
+          onCheckedChange={
+            onToggle ??
+            (() => {
+              // intentional no-op: fallback when onToggle is not provided
+            })
+          }
           size="medium"
         />
       </div>

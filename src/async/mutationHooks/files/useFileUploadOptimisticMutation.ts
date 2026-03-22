@@ -145,8 +145,6 @@ export default function useFileUploadOptimisticMutation() {
             };
             return latestData as BookmarksPaginatedDataTypes;
           }
-
-          return undefined;
         },
       );
 

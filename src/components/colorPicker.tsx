@@ -60,7 +60,7 @@ export const ColorPicker = ({ onChange, selectedColor }: ColorPickerProps) => {
 
   const mappedSelected = swapFirstTwo(selectedColor);
 
-  const baseLightColor = colorPickerColors[0];
+  const [baseLightColor] = colorPickerColors;
 
   return (
     <div className={colorBlockWrapper}>
@@ -72,22 +72,15 @@ export const ColorPicker = ({ onChange, selectedColor }: ColorPickerProps) => {
           })}
           key={colorItem}
         >
-          <div
+          <button
             aria-label={`Select ${colorItem} color`}
             aria-pressed={colorItem === mappedSelected}
             className={colorBlockItemBorder(colorItem, baseLightColor)}
             onClick={() => {
               onChange(swapFirstTwo(colorItem));
             }}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onChange(swapFirstTwo(colorItem));
-              }
-            }}
-            role="button"
             style={{ backgroundColor: colorItem }}
-            tabIndex={0}
+            type="button"
           />
         </div>
       ))}

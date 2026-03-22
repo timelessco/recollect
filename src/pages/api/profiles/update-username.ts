@@ -38,7 +38,8 @@ export default async function handler(
 ) {
   const supabase = apiSupabaseClient(request, response);
 
-  const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
+  const authResult = await supabase?.auth?.getUser();
+  const userId = authResult?.data?.user?.id!;
 
   const username = slugify(request?.body?.username ?? "", {
     lower: true,

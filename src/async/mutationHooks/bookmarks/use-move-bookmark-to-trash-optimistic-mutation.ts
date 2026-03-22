@@ -41,7 +41,7 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
           }
           // Moving FROM trash (restore) - update the target category page
           // Use the first category from the first bookmark's addedCategories, or uncategorized if none
-          const firstBookmark = variables.data[0];
+          const [firstBookmark] = variables.data;
           const categoryIds = firstBookmark?.addedCategories?.map((cat) => cat.id) ?? [];
           const targetCategoryId = categoryIds.length > 0 ? categoryIds[0] : UNCATEGORIZED_URL;
           return [BOOKMARKS_KEY, session?.user?.id, targetCategoryId, sortBy];

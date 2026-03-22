@@ -26,8 +26,8 @@ const getBodySchema = () =>
 
 /**
  * This api only deletes the bookmark and not all the forgin keys data or s3 bucket data. This is used on test cases
- * @param {NextApiRequest<RequestType>} request
- * @param {NextApiResponse<ResponseType>} response
+ * @param {NextApiRequest<RequestType>} request - The incoming API request
+ * @param {NextApiResponse<ResponseType>} response - The outgoing API response
  * @returns {ResponseType} Success or error response
  */
 export default async function handler(
@@ -44,7 +44,8 @@ export default async function handler(
     const bodyData = schema.parse(request.body);
     const supabase = apiSupabaseClient(request, response);
 
-    const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
+    const authResult = await supabase?.auth?.getUser();
+    const userId = authResult?.data?.user?.id!;
 
     const { error } = await supabase
       .from(MAIN_TABLE_NAME)

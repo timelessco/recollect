@@ -16,7 +16,7 @@ import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
 import { Spinner } from "../../components/spinner";
 import { BackIconBlack } from "../../icons/actionIcons/backIconBlack";
-import TrashIconGray from "../../icons/trash-icon-gray";
+import { TrashIconGray } from "../../icons/trash-icon-gray";
 import { useSupabaseSession } from "../../store/componentStore";
 import { mutationApiCall } from "../../utils/apiHelpers";
 import {

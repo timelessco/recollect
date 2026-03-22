@@ -66,7 +66,7 @@ export async function revalidatePublicCategoryPage(
       const maxRetries = 3;
       const timeoutMs = 10_000;
 
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
         try {
           // Create AbortController for timeout
           const controller = new AbortController();

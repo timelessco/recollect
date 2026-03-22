@@ -83,8 +83,6 @@ export const getCategoryIdFromSlug = (
   if (allCategories) {
     return find(allCategories, (item) => item?.category_slug === slug)?.id;
   }
-
-  return undefined;
 };
 
 export const urlInputErrorText = (errors: FieldErrorsImpl<DeepRequired<UrlInput>>) => {
@@ -297,8 +295,8 @@ export const fileTypeIdentifier = (type: string) => {
 
 const gcd = (...array: number[]): number => {
   const _gcd = (x: number, y: number): number => (!y ? x : gcd(y, x % y));
-  let result = array[0];
-  for (let i = 1; i < array.length; i++) {
+  let [result] = array;
+  for (let i = 1; i < array.length; i += 1) {
     result = _gcd(result, array[i]);
   }
   return result;

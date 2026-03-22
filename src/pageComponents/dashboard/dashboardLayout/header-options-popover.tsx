@@ -17,7 +17,7 @@ import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import RenameIcon from "../../../icons/actionIcons/renameIcon";
 import OptionsIcon from "../../../icons/optionsIcon";
 import ShareIcon from "../../../icons/shareIcon";
-import TrashIconGray from "../../../icons/trash-icon-gray";
+import { TrashIconGray } from "../../../icons/trash-icon-gray";
 import { useMiscellaneousStore } from "../../../store/componentStore";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import { DISCOVER_URL, TRASH_URL } from "../../../utils/constants";

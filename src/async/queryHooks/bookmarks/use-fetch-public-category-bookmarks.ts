@@ -53,7 +53,7 @@ export const useFetchPublicCategoryBookmarks = ({
 
         // If the last page has fewer items than the limit, we've reached the end
         if (lastPageLength < PAGINATION_LIMIT) {
-          return undefined;
+          return;
         }
 
         // Return the next page number

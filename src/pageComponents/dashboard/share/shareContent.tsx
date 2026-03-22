@@ -163,7 +163,7 @@ const ShareContent = (props: ShareContentProps) => {
   const onSubmit: SubmitHandler<EmailInput> = async (data) => {
     const emailList = data?.email?.split(",");
     try {
-      const email = emailList[0];
+      const [email] = emailList;
 
       const isEmailExist = find(currentCategory?.collabData, (item) => item?.userEmail === email);
 

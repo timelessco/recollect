@@ -28,7 +28,8 @@ let optimisticIdCounter = 0;
  * ]
  */
 export function generateOptimisticId(): string {
-  return `optimistic-${++optimisticIdCounter}`;
+  optimisticIdCounter += 1;
+  return `optimistic-${optimisticIdCounter}`;
 }
 
 /**

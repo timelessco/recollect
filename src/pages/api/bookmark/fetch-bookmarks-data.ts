@@ -49,10 +49,10 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   const supabase = apiSupabaseClient(request, response);
 
-  const userData = await supabase?.auth?.getUser();
+  const authResult = await supabase?.auth?.getUser();
 
-  const userId = userData?.data?.user?.id!;
-  const email = userData?.data?.user?.email!;
+  const userId = authResult?.data?.user?.id!;
+  const email = authResult?.data?.user?.email!;
 
   // tells if user is in a category or not
   const categoryCondition = isUserInACategoryInApi(category_id as string);
@@ -154,11 +154,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
     .range(from, from + PAGINATION_LIMIT - 1);
 
   // Filter by trash status: trash IS NULL for non-trash, trash IS NOT NULL for trash page
-  if (isTrashPage) {
-    query = query.not("trash", "is", null);
-  } else {
-    query = query.is("trash", null);
-  }
+  query = isTrashPage ? query.not("trash", "is", null) : query.is("trash", null);
 
   if (categoryCondition) {
     // Use JOIN filter for category - handles unlimited bookmarks efficiently

@@ -27,8 +27,9 @@ export const useBookmarkRelation = (
   // Cache previous result to avoid returning new array reference when contents unchanged
   const cachedRef = useRef<number[]>([]);
 
-  // Subscribe to React Query cache changes
+  // Subscribe to React Query cache changes (useSyncExternalStore pattern, not async callback)
   const subscribe = useCallback(
+    // oxlint-disable-next-line promise/prefer-await-to-callbacks
     (callback: () => void) =>
       queryClient.getQueryCache().subscribe((event) => {
         // Only trigger for bookmark-related query changes
@@ -38,6 +39,7 @@ export const useBookmarkRelation = (
           (searchQueryKey && eventKey[0] === searchQueryKey[0]) ||
           (eventKey[0] === BOOKMARKS_KEY && eventKey[1] === String(bookmarkId))
         ) {
+          // oxlint-disable-next-line promise/prefer-await-to-callbacks
           callback();
         }
       }),

@@ -33,7 +33,9 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
 
   useEffect(() => {
     if (!enabled) {
-      return () => {};
+      return () => {
+        /* intentional no-op — useEffect cleanup when not enabled */
+      };
     }
 
     // Maximum pull distance = slide height

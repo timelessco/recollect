@@ -61,7 +61,7 @@ export default function useSearchBookmarks(options: UseSearchBookmarksOptions = 
     getNextPageParam: (lastPage, pages) => {
       // If last page has fewer results than limit, no more pages
       if (!lastPage?.data || lastPage.data.length < PAGINATION_LIMIT) {
-        return undefined;
+        return;
       }
 
       // Return offset for next page

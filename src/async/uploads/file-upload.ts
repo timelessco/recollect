@@ -23,7 +23,7 @@ export const fileUpload = async (
     return;
   }
 
-  for (let index = 0; index < acceptedFiles?.length; index++) {
+  for (let index = 0; index < acceptedFiles?.length; index += 1) {
     if (acceptedFiles[index] && isAcceptedMimeType(acceptedFiles[index]?.type)) {
       const uploadFileNamePath = uniqid.time(
         "",
@@ -35,19 +35,21 @@ export const fileUpload = async (
         continue;
       }
 
-      // Call mutation immediately for all file types
+      // Call mutation immediately for all file types (fire-and-forget, concurrent uploads)
       // This triggers optimistic update immediately via onMutate
       // For videos, thumbnail generation will happen in onMutate if not provided
-      mutationApiCall(
+      /* oxlint-disable promise/prefer-await-to-then, promise/prefer-await-to-callbacks */
+      void mutationApiCall(
         fileUploadOptimisticMutation.mutateAsync({
           category_id,
           file: acceptedFiles[index],
           thumbnailPath: null,
           uploadFileNamePath,
         }),
-      ).catch((error) => {
+      ).catch((error: unknown) => {
         console.error(error);
       });
+      /* oxlint-enable promise/prefer-await-to-then, promise/prefer-await-to-callbacks */
     } else {
       errorToast(`File type ${acceptedFiles[index]?.type} is not accepted`);
     }

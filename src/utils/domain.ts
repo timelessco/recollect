@@ -50,11 +50,11 @@ export const hasDomain = (domains: string[], domain: string): boolean =>
  * @returns New array with domain toggled
  */
 export const toggleDomainInArray = (domains: string[], domain: string): string[] => {
-  const hasDomain = domains.some(
+  const domainExists = domains.some(
     (existingDomain) => existingDomain.toLowerCase() === domain.toLowerCase(),
   );
 
-  return hasDomain
+  return domainExists
     ? domains.filter((existingDomain) => existingDomain.toLowerCase() !== domain.toLowerCase())
     : [...domains, domain];
 };

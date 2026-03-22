@@ -17,7 +17,7 @@ const ICONS_PER_PAGE = 99;
 const ROW_SIZE = 11;
 
 const allLabels = iconOptions.map((item) => item.label);
-const totalPages = Math.ceil(iconOptions.length / ICONS_PER_PAGE);
+const TOTAL_PAGES = Math.ceil(iconOptions.length / ICONS_PER_PAGE);
 
 interface CategoryIconsDropdownProps {
   buttonIconSize?: number;
@@ -106,7 +106,7 @@ export const CategoryIconsDropdown = (props: CategoryIconsDropdownProps) => {
                   onPrev={() => {
                     setPageIndex((prev) => prev - 1);
                   }}
-                  totalPages={totalPages}
+                  totalPages={TOTAL_PAGES}
                 />
               )}
             </div>

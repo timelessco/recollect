@@ -82,7 +82,9 @@ const PublicPreview = (props: PublicPreviewProps) => {
         bookmarks={[bookmark]}
         handleClose={handleClose}
         isOpen={isOpen}
-        setActiveIndex={() => {}}
+        setActiveIndex={() => {
+          // intentional no-op: single bookmark preview has no navigation
+        }}
       />
     </>
   );

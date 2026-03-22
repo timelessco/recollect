@@ -60,7 +60,7 @@ export async function sendCollectionDeletedNotification(
 
   for (const result of results) {
     if (result.status === "rejected") {
-      failureCount++;
+      failureCount += 1;
       const error =
         result.reason instanceof Error ? result.reason : new Error(String(result.reason));
       console.error(`${LOG_PREFIX} Send error:`, error);
@@ -69,7 +69,7 @@ export async function sendCollectionDeletedNotification(
         tags: { operation: "send_collection_deleted_notification" },
       });
     } else if (result.value.error) {
-      failureCount++;
+      failureCount += 1;
       const apiError = new Error(result.value.error.message);
       console.error(`${LOG_PREFIX} API error:`, result.value.error);
       Sentry.captureException(apiError, {

@@ -191,7 +191,7 @@ export function SidepaneContent({
                     className="align-middle text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-600"
                     key={tag?.id}
                   >
-                    {highlightSearch("#" + tag.name, trimmedSearchText)}
+                    {highlightSearch(`#${tag.name}`, trimmedSearchText)}
                   </span>
                 ))}
               </div>

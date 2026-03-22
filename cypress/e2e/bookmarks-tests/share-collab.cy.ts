@@ -38,10 +38,11 @@ describe("share test", () => {
     cy.get("#collab-email-input").type("test@test.com{enter}");
 
     // accept invite
+    // eslint-disable-next-line promise/prefer-await-to-then -- Cypress idiomatic .then() chaining
     cy.wait("@invite").then((intercept) => {
       // you can now access the request body, response body, status, ...
 
-      // eslint-disable-next-line promise/no-nesting -- Cypress idiomatic chaining within .then()
+      // eslint-disable-next-line promise/no-nesting, promise/prefer-await-to-then -- Cypress idiomatic chaining within .then()
       cy.request("GET", intercept?.response?.body?.url).then((response) => {
         expect(response).property("status").to.equal(200);
         expect(response).property("body").to.contain({

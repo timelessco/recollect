@@ -23,7 +23,7 @@ import { fetchAiToggles } from "@/utils/ai-feature-toggles";
 import { autoAssignCollections, fetchUserCollections } from "@/utils/auto-assign-collections";
 import { resolveContentType } from "@/utils/resolve-content-type";
 
-import imageToText from "../../../async/ai/imageToText";
+import { imageToText } from "../../../async/ai/imageToText";
 import {
   BOOKMARK_CATEGORIES_TABLE_NAME,
   IMAGE_JPEG_MIME_TYPE,
@@ -94,7 +94,8 @@ export default async function handler(
   }
 
   const supabase = apiSupabaseClient(request, response);
-  const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
+  const authResult = await supabase?.auth?.getUser();
+  const userId = authResult?.data?.user?.id!;
 
   if (!userId) {
     response.status(401).json({ data: null, error: "User not authenticated", message: null });

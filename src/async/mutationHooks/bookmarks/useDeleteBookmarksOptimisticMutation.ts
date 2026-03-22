@@ -49,8 +49,6 @@ export default function useDeleteBookmarksOptimisticMutation() {
               })),
             };
           }
-
-          return undefined;
         },
       );
 
@@ -83,8 +81,6 @@ export default function useDeleteBookmarksOptimisticMutation() {
                 })),
               };
             }
-
-            return undefined;
           },
         );
       }

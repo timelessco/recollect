@@ -99,16 +99,20 @@ export const POST = createPostApiHandlerWithAuth({
 
     // Trigger revalidation if category is public (non-blocking)
     // Don't await - failed revalidation shouldn't fail the mutation
-    void revalidateCategoryIfPublic(categoryId, {
-      operation: "remove_category_from_bookmark",
-      userId,
-    }).catch((error) => {
-      console.error(`[${route}] Revalidation failed:`, {
-        categoryId,
-        error,
-        userId,
-      });
-    });
+    void (async () => {
+      try {
+        await revalidateCategoryIfPublic(categoryId, {
+          operation: "remove_category_from_bookmark",
+          userId,
+        });
+      } catch (revalidationError) {
+        console.error(`[${route}] Revalidation failed:`, {
+          categoryId,
+          error: revalidationError,
+          userId,
+        });
+      }
+    })();
 
     return [{ bookmark_id: bookmarkId, category_id: categoryId }];
   },

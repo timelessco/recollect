@@ -64,8 +64,6 @@ export default function useGetSortBy() {
       const pageView = getPageViewData(bookmarksView, pageKey);
       return pageView?.sortBy as string | undefined;
     }
-
-    return undefined;
   };
 
   const sortBy = getSortValue();

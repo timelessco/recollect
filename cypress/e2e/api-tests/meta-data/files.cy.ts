@@ -29,6 +29,7 @@ describe("Meta data testing", () => {
       url: "/api/v1/tests/file/post/upload",
     }).as("uploadRequest");
 
+    // eslint-disable-next-line promise/prefer-await-to-then -- Cypress idiomatic .then() chaining
     cy.get("@uploadRequest")?.then((addBookmarkData) => {
       bookmarkId = addBookmarkData?.body?.data?.[0]?.id;
 
@@ -47,7 +48,7 @@ describe("Meta data testing", () => {
         {},
       ).as("fetchRequest");
 
-      // eslint-disable-next-line promise/no-nesting -- Cypress idiomatic chaining within .then()
+      // eslint-disable-next-line promise/no-nesting, promise/prefer-await-to-then -- Cypress idiomatic chaining within .then()
       cy.get("@fetchRequest").then((data) => {
         cy.wait(1000);
 
@@ -65,7 +66,7 @@ describe("Meta data testing", () => {
         },
       }).as("deleteRequest");
 
-      // eslint-disable-next-line promise/no-nesting -- Cypress idiomatic chaining within .then()
+      // eslint-disable-next-line promise/no-nesting, promise/prefer-await-to-then -- Cypress idiomatic chaining within .then()
       cy.get("@deleteRequest").then((data) => {
         cy.wait(1000);
 

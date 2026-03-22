@@ -40,7 +40,7 @@ export const useFetchDiscoverBookmarks = (options: UseFetchDiscoverBookmarksProp
       const lastPageLength = lastPage?.data?.length ?? 0;
 
       if (lastPageLength < PAGINATION_LIMIT) {
-        return undefined;
+        return;
       }
 
       return pages.length;

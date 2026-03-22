@@ -128,7 +128,8 @@ export default async function handler(
     return;
   }
 
-  const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
+  const authResult = await supabase?.auth?.getUser();
+  const userId = authResult?.data?.user?.id!;
 
   const arrayBuffer = await file.arrayBuffer();
   const contents = Buffer.from(arrayBuffer).toString("base64");

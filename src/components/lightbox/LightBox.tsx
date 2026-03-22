@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useMediaQuery } from "@react-hookz/web";
-import Lightbox from "yet-another-react-lightbox";
+import { Lightbox } from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 import type { SingleListData } from "../../types/apiTypes";
@@ -145,13 +145,11 @@ export const CustomLightBox = ({
       ) {
         const hasAudioError = typeof bookmark.id === "number" && audioErrorIds.has(bookmark.id);
 
-        if (hasAudioError) {
-          content = <WebEmbedSlide bookmark={bookmark} isActive={isActive} zoomRef={zoomRef} />;
-        } else {
-          content = (
-            <AudioSlide bookmark={bookmark} isActive={isActive} onAudioError={handleAudioError} />
-          );
-        }
+        content = hasAudioError ? (
+          <WebEmbedSlide bookmark={bookmark} isActive={isActive} zoomRef={zoomRef} />
+        ) : (
+          <AudioSlide bookmark={bookmark} isActive={isActive} onAudioError={handleAudioError} />
+        );
       }
       // Check video - fallback to WebEmbedSlide if video failed to load
       else if (
@@ -162,14 +160,12 @@ export const CustomLightBox = ({
       ) {
         const hasVideoError = typeof bookmark.id === "number" && videoErrorIds.has(bookmark.id);
 
-        if (hasVideoError) {
-          // Render as image slide when video fails - this ensures proper zoom support
-          content = <WebEmbedSlide bookmark={bookmark} isActive={isActive} zoomRef={zoomRef} />;
-        } else {
-          content = (
-            <VideoSlide bookmark={bookmark} isActive={isActive} onVideoError={handleVideoError} />
-          );
-        }
+        // Render as image slide when video fails - this ensures proper zoom support
+        content = hasVideoError ? (
+          <WebEmbedSlide bookmark={bookmark} isActive={isActive} zoomRef={zoomRef} />
+        ) : (
+          <VideoSlide bookmark={bookmark} isActive={isActive} onVideoError={handleVideoError} />
+        );
       }
       // Then check image
       else if (

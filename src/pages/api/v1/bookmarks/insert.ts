@@ -45,7 +45,8 @@ export default async function handler(
     const bodyData = schema.parse(request.body);
     const supabase = apiSupabaseClient(request, response);
 
-    const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
+    const authResult = await supabase?.auth?.getUser();
+    const userId = authResult?.data?.user?.id!;
 
     // adding user_id in the data to be inserted
     const insertData = bodyData?.data?.map((item) => ({

@@ -47,7 +47,7 @@ export const NavBarHeading = (props: NavBarHeadingProps) => {
   if (!showHeadingInput) {
     return (
       <>
-        <div
+        <button
           className="truncate text-xl font-semibold text-gray-950"
           onClick={(event) => {
             event.preventDefault();
@@ -60,11 +60,11 @@ export const NavBarHeading = (props: NavBarHeadingProps) => {
               handleEditMode();
             }
           }}
-          role="button"
           tabIndex={currentCategoryData ? 0 : -1}
+          type="button"
         >
           {headingInputValue}
-        </div>
+        </button>
 
         <CollectionStatusIcons currentCategoryData={currentCategoryData} />
       </>

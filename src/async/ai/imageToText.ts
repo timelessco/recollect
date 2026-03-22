@@ -335,7 +335,7 @@ export const imageToText = async (
 
     let image_keywords: string[] = [];
     if (activeToggles.imageKeywords && text.includes("KEYWORDS:")) {
-      const keywordsPart = text.split("KEYWORDS:")[1];
+      const [, keywordsPart] = text.split("KEYWORDS:");
       const keywordsBeforeNext = keywordsPart?.split("OCR_TEXT:")[0]?.split("COLLECTIONS:")[0];
       const rawKeywords = keywordsBeforeNext?.trim() ?? "";
       // Strip outer brackets Gemini may copy from format template

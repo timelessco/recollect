@@ -154,7 +154,9 @@ export const BookmarkCards = () => {
                     if (CATEGORY_ID === TRASH_URL) {
                       handleBulkBookmarkDelete({
                         bookmarkIds: item?.map((delItem) => delItem?.id),
-                        clearSelection: () => {},
+                        clearSelection: () => {
+                          // intentional no-op: single-item delete doesn't need selection clearing
+                        },
                         deleteBookmarkId,
                         deleteBookmarkOptismicMutation,
                         deleteForever: true,
@@ -171,12 +173,16 @@ export const BookmarkCards = () => {
                     } else if (!isEmpty(item) && item?.length > 0) {
                       const firstItem = item.at(0);
                       if (firstItem) {
+                        /* eslint-disable promise/prefer-await-to-then -- fire-and-forget, .catch prevents unhandled rejection */
                         void mutationApiCall(
                           moveBookmarkToTrashOptimisticMutation.mutateAsync({
                             data: [firstItem],
                             isTrash: true,
                           }),
-                        ).catch(() => {});
+                        ).catch(() => {
+                          // error already handled by mutationApiCall's onError callback
+                        });
+                        /* eslint-enable promise/prefer-await-to-then */
                       }
                     }
                   }}

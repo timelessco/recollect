@@ -19,11 +19,11 @@ export const FILES_STORAGE_NAME = "files";
 export const USER_PROFILE_STORAGE_NAME = "user_profile";
 export const R2_MAIN_BUCKET_NAME = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_BUCKET_NAME;
 
-export const STORAGE_SCRAPPED_IMAGES_PATH = BOOKMARKS_STORAGE_NAME + "/public/scrapped_imgs";
-export const STORAGE_SCREENSHOT_IMAGES_PATH = BOOKMARKS_STORAGE_NAME + "/public/screenshot_imgs";
-export const STORAGE_SCREENSHOT_VIDEOS_PATH = BOOKMARKS_STORAGE_NAME + "/public/screenshot_videos";
-export const STORAGE_FILES_PATH = FILES_STORAGE_NAME + "/public";
-export const STORAGE_USER_PROFILE_PATH = USER_PROFILE_STORAGE_NAME + "/public";
+export const STORAGE_SCRAPPED_IMAGES_PATH = `${BOOKMARKS_STORAGE_NAME}/public/scrapped_imgs`;
+export const STORAGE_SCREENSHOT_IMAGES_PATH = `${BOOKMARKS_STORAGE_NAME}/public/screenshot_imgs`;
+export const STORAGE_SCREENSHOT_VIDEOS_PATH = `${BOOKMARKS_STORAGE_NAME}/public/screenshot_videos`;
+export const STORAGE_FILES_PATH = `${FILES_STORAGE_NAME}/public`;
+export const STORAGE_USER_PROFILE_PATH = `${USER_PROFILE_STORAGE_NAME}/public`;
 
 // Fallback ogImage for audio bookmarks; matches waveform in @/icons/audio-icon.tsx
 export const AUDIO_OG_IMAGE_FALLBACK_URL = `${BASE_URL}/audio-icon.svg`;
@@ -404,8 +404,7 @@ export const isPublicPath = (pathname: string) =>
 
 export const MAX_TAG_COLLECTION_NAME_LENGTH = 20;
 export const MIN_TAG_COLLECTION_NAME_LENGTH = 1;
-export const WHITE_COLOR = colorPickerColors[0];
-export const BLACK_COLOR = colorPickerColors[1];
+export const [WHITE_COLOR, BLACK_COLOR] = colorPickerColors;
 
 // Queue names (sync with SQL migrations and Edge Functions)
 export const INSTAGRAM_IMPORTS_QUEUE = "instagram_imports";

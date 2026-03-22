@@ -49,7 +49,7 @@ async function handlePost(request: NextRequest) {
 
     const parsed = InputSchema.safeParse(body);
     if (!parsed.success) {
-      const firstError = parsed.error.issues[0];
+      const [firstError] = parsed.error.issues;
       return NextResponse.json(
         { data: null, error: firstError?.message || "Invalid input" },
         { status: 400 },

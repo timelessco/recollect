@@ -331,7 +331,7 @@ const ListBox = (props: ListBoxDropTypes) => {
           </div>
           <div className="flex items-center">
             {!isTrashPage ? (
-              <div
+              <button
                 className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
                 onClick={() => {
                   onBulkBookmarkDelete(
@@ -341,12 +341,10 @@ const ListBox = (props: ListBoxDropTypes) => {
                   );
                   state.selectionManager.clearSelection();
                 }}
-                onKeyDown={() => {}}
-                role="button"
-                tabIndex={0}
+                type="button"
               >
                 Delete
-              </div>
+              </button>
             ) : (
               <ClearTrashDropdown
                 isBottomBar
@@ -366,7 +364,7 @@ const ListBox = (props: ListBoxDropTypes) => {
               />
             )}
             {isTrashPage && (
-              <div
+              <button
                 className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
                 onClick={() => {
                   onBulkBookmarkDelete(
@@ -376,12 +374,10 @@ const ListBox = (props: ListBoxDropTypes) => {
                   );
                   state.selectionManager.clearSelection();
                 }}
-                onKeyDown={() => {}}
-                role="button"
-                tabIndex={0}
+                type="button"
               >
                 Recover
-              </div>
+              </button>
             )}
             {!isTrashPage && (
               <AddToCollectionPopover

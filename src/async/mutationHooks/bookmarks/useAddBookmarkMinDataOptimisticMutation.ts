@@ -106,8 +106,6 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
             };
             return latestData as BookmarksPaginatedDataTypes;
           }
-
-          return undefined;
         },
       );
 

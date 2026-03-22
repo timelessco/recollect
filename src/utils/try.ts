@@ -237,9 +237,11 @@ export class Try {
   static catch<T>(fn: () => Promise<T> | T): Promise<TryResult<T>> | TryResult<T> {
     try {
       const output = fn();
+      /* eslint-disable promise/prefer-await-to-then, promise/prefer-await-to-callbacks -- sync/async dual return requires .then/.catch; async would change the return type */
       return output instanceof Promise
         ? output.then((value) => Res.ok(value)).catch((error: unknown) => Res.err(error))
         : Res.ok(output);
+      /* eslint-enable promise/prefer-await-to-then, promise/prefer-await-to-callbacks */
     } catch (error) {
       return Res.err(error);
     }

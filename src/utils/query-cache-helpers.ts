@@ -74,7 +74,7 @@ export function swapTempTagId(
 
   logCacheMiss("Cache Update", "Temp tag not found in bookmark", {
     bookmarkId: bookmark.id,
-    existingTagIds: bookmark.addedTags?.map((tag) => tag.id) ?? [],
+    existingTagIds: bookmark.addedTags?.map((t) => t.id) ?? [],
     realTagId: realTag.id,
     tempId,
   });

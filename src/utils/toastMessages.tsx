@@ -31,7 +31,7 @@ function pulseExistingToast() {
     return;
   }
 
-  let frontToast = toastElements[0];
+  let [frontToast] = toastElements;
   for (const el of toastElements) {
     const zIndex = Number.parseInt(getComputedStyle(el).zIndex, 10) || 0;
     const frontZ = Number.parseInt(getComputedStyle(frontToast).zIndex, 10) || 0;

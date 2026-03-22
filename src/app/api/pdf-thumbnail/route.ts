@@ -10,7 +10,7 @@ const ROUTE = "pdf-thumbnail";
 
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, user }) => {
-    const sanitizedUrl = data.url.split("?")[0];
+    const [sanitizedUrl] = data.url.split("?");
 
     console.log(`[${route}] API called:`, {
       url: sanitizedUrl,

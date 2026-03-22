@@ -143,7 +143,7 @@ export const DiscoverBookmarkCards = ({ isDiscoverPage }: DiscoverBookmarkCardsP
   );
 
   if (isDiscoverLoading) {
-    const cols = discoverMoodboardColumnsResponsive[0];
+    const [cols] = discoverMoodboardColumnsResponsive;
     const skeletonCount = cols * 2;
     return (
       <BookmarksSkeletonLoader colCount={cols} count={skeletonCount} type={viewValues.moodboard} />

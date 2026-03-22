@@ -178,25 +178,29 @@ export const POST = createPostApiHandlerWithAuth({
         userId,
       });
 
-      void revalidateCategoryIfPublic(categoryId, {
-        operation: "add_category_to_bookmarks",
-        userId,
-      }).catch((error) => {
-        console.error(`[${route}] Revalidation failed:`, {
-          categoryId,
-          error,
-          errorMessage:
-            error instanceof Error
-              ? error.message
-              : "revalidation failed in add-category-to-bookmarks",
-          errorStack: error instanceof Error ? error.stack : undefined,
-          userId,
-        });
-        Sentry.captureException(error, {
-          extra: { categoryId, operation: "revalidation", userId },
-          tags: { route: ROUTE },
-        });
-      });
+      void (async () => {
+        try {
+          await revalidateCategoryIfPublic(categoryId, {
+            operation: "add_category_to_bookmarks",
+            userId,
+          });
+        } catch (revalidationError) {
+          console.error(`[${route}] Revalidation failed:`, {
+            categoryId,
+            error: revalidationError,
+            errorMessage:
+              revalidationError instanceof Error
+                ? revalidationError.message
+                : "revalidation failed in add-category-to-bookmarks",
+            errorStack: revalidationError instanceof Error ? revalidationError.stack : undefined,
+            userId,
+          });
+          Sentry.captureException(revalidationError, {
+            extra: { categoryId, operation: "revalidation", userId },
+            tags: { route: ROUTE },
+          });
+        }
+      })();
     }
 
     return transformedData;

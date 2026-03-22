@@ -126,11 +126,11 @@ const Option = ({
               void router.push({ pathname, query }, as, { shallow: true });
             }
           } else {
-            const categorySlug = getCategorySlugFromRouter(router);
-            if (categorySlug) {
+            const currentCategorySlug = getCategorySlugFromRouter(router);
+            if (currentCategorySlug) {
               const { as, pathname, query } = buildAuthenticatedPreviewUrl({
                 bookmarkId: item?.key,
-                categorySlug,
+                categorySlug: currentCategorySlug,
               });
               void router.push({ pathname, query }, as, { shallow: true });
             }

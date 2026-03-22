@@ -68,7 +68,7 @@ const renderStatusMessage = (message: string) => (
 );
 
 const CardSection = ({
-  categoryViewsFromProps = undefined,
+  categoryViewsFromProps,
   flattendPaginationBookmarkData = [],
   isDiscoverPage = false,
   isLoading = false,

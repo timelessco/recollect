@@ -65,7 +65,7 @@ export const POST = createPostApiHandlerWithAuth({
       });
     }
 
-    const rpcRow = rpcData[0];
+    const [rpcRow] = rpcData;
 
     console.log(`[${route}] Tag created and assigned:`, {
       bookmarkId: rpcRow.bookmark_tag_bookmark_id,

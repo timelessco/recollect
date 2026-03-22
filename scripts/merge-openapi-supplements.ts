@@ -212,7 +212,7 @@ export function mergeSupplements(specPath: string, supplements: EndpointSuppleme
     }
 
     applySupplementToOperation(spec, op, supplement);
-    applied++;
+    applied += 1;
   }
 
   if (missing.length > 0) {

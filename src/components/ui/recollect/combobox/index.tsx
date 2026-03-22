@@ -220,6 +220,8 @@ function Chip<T>({ className, item, ...props }: ComboboxPrimitive.Chip.Props & {
       data-slot="combobox-chip"
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      // Base UI ComboboxChip renders a <div> — can't change to <button> without type mismatch
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
       role="button"
       tabIndex={0}
     />

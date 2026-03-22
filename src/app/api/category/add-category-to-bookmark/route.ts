@@ -171,16 +171,20 @@ export const POST = createPostApiHandlerWithAuth({
 
     // Trigger revalidation if category is public
     if (categoryId !== UNCATEGORIZED_CATEGORY_ID) {
-      void revalidateCategoryIfPublic(categoryId, {
-        operation: "add_category_to_bookmark",
-        userId,
-      }).catch((error) => {
-        console.error(`[${route}] Revalidation failed`, {
-          categoryId,
-          error,
-          userId,
-        });
-      });
+      void (async () => {
+        try {
+          await revalidateCategoryIfPublic(categoryId, {
+            operation: "add_category_to_bookmark",
+            userId,
+          });
+        } catch (revalidationError) {
+          console.error(`[${route}] Revalidation failed`, {
+            categoryId,
+            error: revalidationError,
+            userId,
+          });
+        }
+      })();
     }
 
     return transformedData;

@@ -169,16 +169,20 @@ export const POST = createPostApiHandlerWithAuth({
     );
 
     if (allAffectedCategoryIds.length > 0) {
-      revalidateCategoriesIfPublic(allAffectedCategoryIds, {
-        operation: "set_bookmark_categories",
-        userId,
-      }).catch((error) => {
-        console.error(`[${route}] Revalidation failed:`, {
-          categoryIds: allAffectedCategoryIds,
-          error,
-          userId,
-        });
-      });
+      void (async () => {
+        try {
+          await revalidateCategoriesIfPublic(allAffectedCategoryIds, {
+            operation: "set_bookmark_categories",
+            userId,
+          });
+        } catch (revalidationError) {
+          console.error(`[${route}] Revalidation failed:`, {
+            categoryIds: allAffectedCategoryIds,
+            error: revalidationError,
+            userId,
+          });
+        }
+      })();
     }
 
     return insertedData;

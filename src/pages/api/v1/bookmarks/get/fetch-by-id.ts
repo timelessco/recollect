@@ -28,14 +28,8 @@ const getBodySchema = () =>
 
 /**
  * This api fetches bookmark by its id
- * @param {NextApiRequest<RequestType>} request
- * @param {NextApiResponse<ResponseType>} response
- * @returns {ResponseType} The bookmark data or error response
- */
-/**
- * This api fetches bookmark by its id
- * @param {NextApiRequest<RequestType>} request - Request object
- * @param {NextApiResponse<ResponseType>} response - Response object
+ * @param {NextApiRequest<RequestType>} request - The incoming API request
+ * @param {NextApiResponse<ResponseType>} response - The outgoing API response
  * @returns {Promise<NextApiResponse<ResponseType>>} - Fetched bookmark or error
  */
 export default async function handler(
@@ -52,7 +46,8 @@ export default async function handler(
     const bodyData = schema.parse(request.query);
     const supabase = apiSupabaseClient(request, response);
 
-    const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
+    const authResult = await supabase?.auth?.getUser();
+    const userId = authResult?.data?.user?.id!;
 
     const bookmarkId = Number.parseInt(bodyData?.id, 10);
 

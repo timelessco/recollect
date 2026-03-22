@@ -51,6 +51,7 @@
     // implementation-below" pattern for component dispatch maps. Functions hoist in JS.
     "no-use-before-define": "off",
 
+    // Project Rules
     // jsx-no-new-function-as-prop: off — premature optimization without React.memo.
     // Inline handlers are idiomatic React; useCallback wrapping adds complexity for no measurable gain.
     "react-perf/jsx-no-new-function-as-prop": "off",
@@ -64,25 +65,12 @@
     // Disabled during migration — enable incrementally
     "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
-    "import/no-named-as-default": "off",
-    "jsdoc/require-param-description": "off",
-    "jsx-a11y/prefer-tag-over-role": "off",
-    "no-empty-function": "off",
     "no-negated-condition": "off",
     "no-nested-ternary": "off",
-    "no-plusplus": "off",
-    "no-shadow": "off",
     "no-unused-vars": "off",
-    "prefer-destructuring": "off",
-    "prefer-template": "off",
-    "promise/prefer-await-to-callbacks": "off",
-    "promise/prefer-await-to-then": "off",
     "require-await": "off",
     "unicorn/filename-case": "off",
-    "unicorn/no-await-expression-member": "off",
     "unicorn/no-nested-ternary": "off",
-    "unicorn/no-useless-undefined": "off",
-    "unicorn/prefer-ternary": "off",
 
     // Requires typeCheck: true — enable after fixing ~100 pre-existing type errors
     "@typescript-eslint/no-confusing-void-expression": "off",

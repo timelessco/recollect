@@ -241,7 +241,7 @@ async function scanAndRegisterRoutes() {
       }
 
       registry.registerPath(pathRegistration);
-      registered++;
+      registered += 1;
     }
   }
 

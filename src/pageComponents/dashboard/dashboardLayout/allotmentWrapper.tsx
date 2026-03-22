@@ -86,7 +86,7 @@ export const AllotmentWrapper = (props: AllotmentWrapperProps) => {
     // https://github.com/johnwalley/allotment/issues/833
     <Allotment
       onChange={(values) => {
-        const sidePaneSize = values[0];
+        const [sidePaneSize] = values;
         if (sidePaneSize === 0) {
           setShowSidePane(false);
         }
@@ -96,7 +96,7 @@ export const AllotmentWrapper = (props: AllotmentWrapperProps) => {
         }
       }}
       onDragEnd={(values) => {
-        const sidePaneSize = values[0];
+        const [sidePaneSize] = values;
         if (sidePaneSize === 0 && sidePaneRef?.current?.clientWidth === 0) {
           // open side pane when its fully closed and on the resize pane click
           setShowSidePane(true);

@@ -131,11 +131,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
       .range(offset, offset + limit - 1);
 
     // Filter by trash status: trash IS NULL for non-trash, trash IS NOT NULL for trash page
-    if (isTrashPage) {
-      query = query.not("trash", "is", null);
-    } else {
-      query = query.is("trash", null);
-    }
+    query = isTrashPage ? query.not("trash", "is", null) : query.is("trash", null);
 
     if (isDiscoverPage) {
       query = query.not("make_discoverable", "is", null);

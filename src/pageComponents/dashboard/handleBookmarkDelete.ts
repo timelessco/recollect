@@ -54,7 +54,7 @@ export const handleBulkBookmarkDelete = ({
       if (isBookmarkOwner(bookmark.user_id, sessionUserId)) {
         ownedBookmarks.push(bookmark);
       } else {
-        skippedCount++;
+        skippedCount += 1;
       }
     }
 

@@ -61,8 +61,8 @@ export const getPublicPageInfo = (
 
   // Check if this is a public route: /public/[user_name]/[category_slug]
   if (pathSegments[0] === "public" && pathSegments.length >= 3) {
-    const user_name = pathSegments[1];
-    const category_slug = pathSegments[2]?.split("?")?.[0];
+    const [, user_name, rawCategorySlug] = pathSegments;
+    const category_slug = rawCategorySlug?.split("?")?.[0];
 
     if (user_name && category_slug) {
       return { category_slug, user_name };

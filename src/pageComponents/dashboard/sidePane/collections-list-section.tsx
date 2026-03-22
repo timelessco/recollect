@@ -56,20 +56,13 @@ export function CollectionsListSection({ children, isLoading }: CollectionsListS
           }}
           show={showAddCategoryInput}
         />
-        <div
+        <button
           className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] outline-hidden hover:bg-gray-100 focus-visible:ring-1 focus-visible:ring-gray-200 focus-visible:ring-inset"
           id="add-category-button"
           onClick={() => {
             setShowAddCategoryInput(true);
           }}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              setShowAddCategoryInput(true);
-            }
-          }}
-          role="button"
-          tabIndex={0}
+          type="button"
         >
           <figure className="text-gray-500">
             <AddCategoryIcon />
@@ -77,7 +70,7 @@ export function CollectionsListSection({ children, isLoading }: CollectionsListS
           <p className="ml-2 flex-1 truncate text-sm leading-[16px] font-450 text-gray-600">
             Add Collection
           </p>
-        </div>
+        </button>
       </Collapsible.Panel>
     </Collapsible.Root>
   );

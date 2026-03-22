@@ -24,7 +24,9 @@ export function AnimatedSize({ children }: AnimatedSizeProps) {
   useEffect(() => {
     const el = ref.current;
     if (!el) {
-      return () => {};
+      return () => {
+        /* intentional no-op — useEffect cleanup when ref is null */
+      };
     }
 
     const observer = new ResizeObserver(([entry]) => {

@@ -81,8 +81,12 @@ export const DiscoverGuestView = ({ discoverData }: DiscoverGuestViewProps) => {
                 isDiscoverPage
                 isPublicPage
                 listData={flattenedData}
-                onDeleteClick={() => {}}
-                onMoveOutOfTrashClick={() => {}}
+                onDeleteClick={() => {
+                  // intentional no-op: guest view has no delete capability
+                }}
+                onMoveOutOfTrashClick={() => {
+                  // intentional no-op: guest view has no trash capability
+                }}
               />
             </InfiniteScroll>
           </div>

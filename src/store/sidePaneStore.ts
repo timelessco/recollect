@@ -26,7 +26,9 @@ type StoreWithPersist = Mutate<StoreApi<SidePaneState>, [["zustand/persist", unk
 
 export const withStorageDOMEvents = (store: StoreWithPersist) => {
   if (!isBrowser) {
-    return () => {};
+    return () => {
+      // no-op: storage events are browser-only
+    };
   }
 
   const storageEventCallback = (event: StorageEvent) => {

@@ -72,9 +72,9 @@ export const BookmarksSkeletonLoader = ({
 
     return (
       <div className="flex gap-6">
-        {Array.from({ length: columnCount }).map((_, colIndex) => (
+        {Array.from({ length: columnCount }).map((_col, colIndex) => (
           <div className="flex flex-1 flex-col gap-6" key={columnKeys[colIndex]}>
-            {Array.from({ length: itemsPerColumn }).map((_, index) => (
+            {Array.from({ length: itemsPerColumn }).map((_item, index) => (
               <div
                 className="animate-pulse rounded-lg bg-gray-100"
                 key={`skeleton-card-${colIndex}-${index}`}

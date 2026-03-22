@@ -153,7 +153,7 @@ export async function parseBody<T>({
 
   if (!parsed.success) {
     // Use first Zod error message for user-friendly display
-    const firstError = parsed.error.issues[0];
+    const [firstError] = parsed.error.issues;
     const userMessage = firstError?.message || "Invalid input";
 
     return {
@@ -192,7 +192,7 @@ export function parseQuery<T>({ request, route, schema }: ParseQueryProps<T>): P
   const parsed = schema.safeParse(params);
 
   if (!parsed.success) {
-    const firstError = parsed.error.issues[0];
+    const [firstError] = parsed.error.issues;
     const userMessage = firstError?.message || "Invalid query parameters";
 
     return {

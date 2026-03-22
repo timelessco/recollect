@@ -95,8 +95,8 @@ interface InviteRoleSelectProps {
 export const InviteRoleSelect = ({ disabled, onChange, value }: InviteRoleSelectProps) => (
   <Select.Root
     disabled={disabled}
-    onValueChange={(value) => {
-      onChange(value === "Editor");
+    onValueChange={(selectedValue) => {
+      onChange(selectedValue === "Editor");
     }}
     value={value ? "Editor" : "Viewer"}
   >

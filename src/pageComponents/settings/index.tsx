@@ -185,15 +185,14 @@ const Settings = ({ onNavigate }: SettingsProps) => {
       <div>
         <p className={`${settingsMainHeadingClassName} mb-4`}>Account</p>
         <div className="flex w-full items-center space-x-3">
-          <div
+          <button
             onClick={() => {
               if (inputFileRef.current) {
                 inputFileRef.current.click();
               }
             }}
-            onKeyDown={() => {}}
-            role="button"
             tabIndex={-1}
+            type="button"
           >
             <figure className="h-11.5 w-11.5 cursor-pointer transition ease-in-out hover:opacity-50">
               <UserAvatar
@@ -204,7 +203,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                 width={46}
               />
             </figure>
-          </div>
+          </button>
           <div className="max-sm:mt-2">
             <div className="flex gap-2 text-sm leading-[21px] font-semibold text-black">
               <Button

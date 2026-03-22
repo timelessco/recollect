@@ -19,6 +19,7 @@ describe("Meta data testing", () => {
 
     let bookmarkId;
 
+    // eslint-disable-next-line promise/prefer-await-to-then -- Cypress idiomatic .then() chaining
     cy.get("@addRequest")?.then((addBookmarkData) => {
       bookmarkId = addBookmarkData?.body?.data?.[0]?.id;
 
@@ -33,7 +34,7 @@ describe("Meta data testing", () => {
         {},
       ).as("fetchRequest");
 
-      // eslint-disable-next-line promise/no-nesting -- Cypress idiomatic chaining within .then()
+      // eslint-disable-next-line promise/no-nesting, promise/prefer-await-to-then -- Cypress idiomatic chaining within .then()
       cy.get("@fetchRequest").then((data) => {
         expect(data?.body?.data?.[0]?.meta_data).to.not.be.null;
         expect(data?.body?.data?.[0]?.meta_data?.ocr).to.not.be.null;

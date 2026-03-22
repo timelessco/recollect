@@ -82,27 +82,31 @@ export const POST = createPostApiHandlerWithAuth({
           categoryIds,
         });
 
-        // Non-blocking revalidation - don't await but catch errors
-        revalidateCategoriesIfPublic(categoryIds, {
-          operation: isTrash ? "bookmark_trashed" : "bookmark_restored",
-          userId,
-        }).catch((error) => {
-          console.error(`[${route}] Revalidation failed:`, {
-            categoryIds,
-            error,
-            errorMessage:
-              error instanceof Error
-                ? error.message
-                : "revalidation failed in move-bookmark-to-trash",
-            errorStack: error instanceof Error ? error.stack : undefined,
-            isTrash,
-            userId,
-          });
-          Sentry.captureException(error, {
-            extra: { categoryIds, isTrash, operation: "revalidation", userId },
-            tags: { route: ROUTE },
-          });
-        });
+        // Non-blocking revalidation
+        void (async () => {
+          try {
+            await revalidateCategoriesIfPublic(categoryIds, {
+              operation: isTrash ? "bookmark_trashed" : "bookmark_restored",
+              userId,
+            });
+          } catch (revalidationError) {
+            console.error(`[${route}] Revalidation failed:`, {
+              categoryIds,
+              error: revalidationError,
+              errorMessage:
+                revalidationError instanceof Error
+                  ? revalidationError.message
+                  : "revalidation failed in move-bookmark-to-trash",
+              errorStack: revalidationError instanceof Error ? revalidationError.stack : undefined,
+              isTrash,
+              userId,
+            });
+            Sentry.captureException(revalidationError, {
+              extra: { categoryIds, isTrash, operation: "revalidation", userId },
+              tags: { route: ROUTE },
+            });
+          }
+        })();
       }
     }
 

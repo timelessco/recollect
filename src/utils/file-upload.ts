@@ -107,7 +107,7 @@ export const handlePdfThumbnailAndUpload = async ({
     if (!uploadResponse.ok) {
       const message = await uploadResponse.text();
       console.error("Thumbnail upload failed:", message);
-      throw new Error("Thumbnail upload failed: " + message);
+      throw new Error(`Thumbnail upload failed: ${message}`);
     }
 
     const publicUrl = `${getStoragePublicBaseUrl()}/${STORAGE_FILES_PATH}/${sessionUserId}/${thumbnailFileName}`;
