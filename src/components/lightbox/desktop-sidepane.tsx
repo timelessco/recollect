@@ -190,9 +190,10 @@ export function DesktopSidepane({
               <CategoryMultiSelect bookmarkId={currentBookmark?.id} shouldFetch={shouldFetch} />
             )}
           </div>
-          {((currentBookmark?.addedTags?.length > 0 || metaData?.img_caption) ??
-            metaData?.ocr ??
-            metaData?.image_caption ??
+          {(currentBookmark?.addedTags?.length > 0 ||
+            metaData?.img_caption ||
+            metaData?.ocr ||
+            metaData?.image_caption ||
             (metaData?.image_keywords?.length ?? 0) > 0) && (
             <motion.div
               animate={{
@@ -224,9 +225,9 @@ export function DesktopSidepane({
                   </div>
                 </div>
               )}
-              {(metaData?.img_caption ??
-                metaData?.ocr ??
-                metaData?.image_caption ??
+              {(metaData?.img_caption ||
+                metaData?.ocr ||
+                metaData?.image_caption ||
                 (metaData?.image_keywords?.length ?? 0) > 0) && (
                 <motion.div
                   className={`relative px-5 py-3 text-sm ${

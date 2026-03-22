@@ -61,7 +61,6 @@ noimageindex
 normalised
 Normalised
 notooltip
-nums
 nuqs
 Nuqs
 ogimage

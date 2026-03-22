@@ -16,7 +16,6 @@ const config: KnipConfig = {
     "eslint-plugin-perfectionist",
     "eslint-plugin-regexp",
     "eslint-plugin-react-dom",
-    "eslint-plugin-react-hooks-extra",
     "eslint-plugin-react-naming-convention",
     "eslint-plugin-react-rsc",
     "eslint-plugin-react-web-api",

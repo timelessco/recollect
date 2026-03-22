@@ -2,11 +2,10 @@
 
 - `middleware.ts` is named `proxy.ts` — exports `proxy` function, not `middleware`
 - Dev server is usually running in another terminal — check `lsof -iTCP:3000` before starting `pnpm dev`
-- `pnpm fix` runs the full fix chain via Turbo dependency graph (`fix:spelling → fix:css → fix:md → fix:oxfmt → fix:eslint`)
+- `pnpm fix` runs the full fix chain via Turbo dependency graph (`fix:spelling → fix:css → fix:md → fix:ultracite`)
 - `build:ci` skips env validation, OpenAPI gen, and sitemap — use `pnpm build` for local verification
 - `typescript.ignoreBuildErrors: true` in next.config — TS errors do NOT fail production builds
 - `reactStrictMode` is disabled (commented out)
-- `lint:types` also runs `deno check` for the Supabase Edge Function
 - No test suite — `pnpm test` exits 0 with "no test specified". Cypress installed but no specs
 - CI runs lint checks only (no build gate) — build failures surface on Vercel
 - `prebuild:next` generates OpenAPI spec before every `next build`
@@ -19,7 +18,7 @@
 - `profiles.category_order` updates: use batch concatenation (`|| v_new_category_ids`), NOT read-modify-write loops — the Edge Function processes queue messages in parallel (`Promise.allSettled`), and a for-loop that SELECTs the full array into a variable then UPDATEs will cause lost writes. See `20260209` migration for the correct pattern.
 - `src/pages/[category_id].tsx` catches ALL single-segment paths — new App Router pages at `/foo` will 404 in dev because Pages Router dynamic routes take precedence
 - New public pages must be added to `PUBLIC_PATHS` in `src/utils/constants.ts` — otherwise `proxy.ts` middleware treats them as auth-protected
-- `.agents/` and `.claude/` are excluded from all linters/formatters (eslint, oxfmt, cspell, markdownlint) — but NOT gitignored as directories
+- `.agents/` and `.claude/` are excluded from all linters/formatters (oxlint, oxfmt, cspell, markdownlint) — but NOT gitignored as directories
 - `AGENTS.md` is a symlink to `CLAUDE.md` — do not replace with a regular file
 - `next.config.ts` has experimental flags (`prefetchInlining`, `appNewScrollHandler`, `sri`) — check Next.js docs before adding/removing
 - Error boundaries (`error.tsx`, `global-error.tsx`) use `unstable_retry()` from `next/error` (not `reset()`) — re-fetches RSC data on retry
@@ -47,6 +46,9 @@
 - `docs/API_CHANGELOG.md` is auto-appended by CI on each push to `dev`, posted as PR comment during release, and cleared during backmerge
 - `.ncurc.cjs` pins packages that can't be upgraded (mirrors `.github/renovate.json` blocks) — keep both in sync
 - GitHub Actions use pinned commit SHAs with version comments — use `gh api repos/{owner}/{repo}/git/ref/tags/{tag}` to get SHAs when upgrading
-- `eslint-config-prettier` must remain as devDep even without Prettier — `eslint-config-canonical` configures deprecated rules (e.g. `@typescript-eslint/indent`) that crash ESLint without formatting rule suppression
-- oxfmt `sortPackageJson.sortScripts` conflicts with ESLint `package-json/sort-collections` — the ESLint rule is disabled in favor of oxfmt
 - CI cspell may flag words the local `fix:spelling` misses — hyphen-split words (e.g. "app-svgs" → "svgs") may need manual dictionary additions
+- `lint-staged` glob must be `*.{js,jsx,ts,tsx,cjs,mjs,json,jsonc}` not `*` — ultracite crashes on non-JS files like `.txt`
+- `oxlint-disable-next-line` doesn't work for JSX props on different lines — use block-level `/* oxlint-disable rule */` instead
+- Comment directive split: native oxlint rules use `oxlint-disable`, jsPlugin rules (`@tanstack/query/*`, `regexp/*`, `perfectionist/*`, `react-x/*`) keep `eslint-disable`
+- `promise-function-async` conflicts with `require-await` — both disabled, only add `async` when `await` is present
+- `.oxlintrc.json` has `typeCheck: false` / `typeAware: false` — ~100 pre-existing type errors need fixing before re-enabling

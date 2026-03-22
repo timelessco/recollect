@@ -140,7 +140,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
           if (isDraggingRef.current) {
             cancelAnimationFrame(rafRef.current);
             reset(element);
-            delete getSlideWrapper(element).dataset.pulling;
+            getSlideWrapper(element)?.removeAttribute("data-pulling");
             isDraggingRef.current = false;
           }
 
@@ -191,7 +191,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
       const element = event.currentTarget as HTMLElement;
       cancelAnimationFrame(rafRef.current);
       isDraggingRef.current = false;
-      delete getSlideWrapper(element).dataset.pulling;
+      getSlideWrapper(element)?.removeAttribute("data-pulling");
 
       // Check velocity: close on quick downward flick even if distance < THRESHOLD
       const sample = velocitySampleRef.current;

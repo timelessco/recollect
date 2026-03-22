@@ -31,7 +31,17 @@
   ],
   "rules": {
     "func-style": ["error", "declaration", { "allowArrowFunctions": true }],
+
+    // void operator is used idiomatically to discard Promise return values (void someAsync())
+    // without triggering no-floating-promises
     "no-void": "off",
+    // perfectionist/sort-objects handles this with natural (case-insensitive) ordering
+    "sort-keys": "off",
+    // promise-function-async conflicts with require-await: it auto-adds async
+    // to functions returning Promises, but require-await then complains about
+    // no await. We prefer: only add async when await is present.
+    "@typescript-eslint/promise-function-async": "off",
+
     // Disabled: jsPlugin auto-fix oscillates on multi-line objects/unions/query hooks
     "@tanstack/query/mutation-property-order": "off",
     "@tanstack/query/infinite-query-property-order": "off",
@@ -39,7 +49,7 @@
     "perfectionist/sort-union-types": "off",
 
     // Disabled: common codebase patterns, not worth enforcing
-    "react-hooks-extra/no-direct-set-state-in-use-effect": "off",
+    "react-x/set-state-in-effect": "off",
     "react-x/no-array-index-key": "off",
 
     // Disabled during migration — enable incrementally
@@ -73,11 +83,6 @@
     "prefer-destructuring": "off",
     "prefer-template": "off",
     "require-await": "off",
-    // promise-function-async conflicts with require-await: it auto-adds async
-    // to functions returning Promises, but require-await then complains about
-    // no await. We prefer: only add async when await is present.
-    "@typescript-eslint/promise-function-async": "off",
-    "sort-keys": "off",
     "import/namespace": "off",
     "import/no-cycle": "off",
     "import/no-named-as-default": "off",
@@ -120,7 +125,6 @@
     "@typescript-eslint/no-unsafe-member-access": "off",
     "@typescript-eslint/no-unsafe-return": "off",
     "@typescript-eslint/no-unsafe-type-assertion": "off",
-    "@typescript-eslint/promise-function-async": "off",
     "@typescript-eslint/restrict-template-expressions": "off",
     "@typescript-eslint/strict-boolean-expressions": "off",
     "@typescript-eslint/unbound-method": "off"
@@ -129,7 +133,8 @@
     {
       "files": ["**/*.{js,cjs,jsx,ts,tsx}"],
       "rules": {
-        "react-hooks-extra/no-direct-set-state-in-use-effect": "off",
+        // TODO: Should fix these issues in multiple files
+        "react-x/set-state-in-effect": "off",
         "react-x/no-array-index-key": "off"
       }
     },
