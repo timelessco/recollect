@@ -81,7 +81,7 @@ if (Object.keys(args).length > 0) {
     value = "";
   }
 } else {
-  const selectResult = await vet(async () =>
+  const selectResult = await vet(() =>
     select({
       choices: options,
       message: "Select what to clean",
@@ -103,9 +103,9 @@ const $$ = $({ stdio: "inherit" });
 switch (value) {
   case "all": {
     const results = await Promise.all([
-      vet(async () => $$`rimraf ./.next`),
-      vet(async () => $$`rimraf --glob **/node_modules`),
-      vet(async () => $$`rimraf ./.turbo`),
+      vet(() => $$`rimraf ./.next`),
+      vet(() => $$`rimraf --glob **/node_modules`),
+      vet(() => $$`rimraf ./.turbo`),
     ]);
 
     const errors = results.filter((result) => result.isErr());
@@ -122,7 +122,7 @@ switch (value) {
   }
 
   case NEXT: {
-    const [error] = await vet(async () => $$`rimraf ./.next`);
+    const [error] = await vet(() => $$`rimraf ./.next`);
     if (error) {
       console.error("Failed to clean next directory:", error);
     } else {
@@ -133,7 +133,7 @@ switch (value) {
   }
 
   case NODE_MODULES: {
-    const [error] = await vet(async () => $$`rimraf --glob **/node_modules`);
+    const [error] = await vet(() => $$`rimraf --glob **/node_modules`);
     if (error) {
       console.error("Failed to clean node_modules:", error);
     } else {
@@ -144,7 +144,7 @@ switch (value) {
   }
 
   case TURBO: {
-    const [error] = await vet(async () => $$`rimraf ./.turbo`);
+    const [error] = await vet(() => $$`rimraf ./.turbo`);
     if (error) {
       console.error("Failed to clean turbo directory:", error);
     } else {

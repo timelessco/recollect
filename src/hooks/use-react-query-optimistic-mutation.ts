@@ -340,7 +340,7 @@ export function useReactQueryMultiOptimisticMutation<
 
       // Cancel all queries in parallel
       await Promise.all(
-        optimisticFns.map(async ({ queryKey }) => queryClient.cancelQueries({ queryKey })),
+        optimisticFns.map(({ queryKey }) => queryClient.cancelQueries({ queryKey })),
       );
 
       // Snapshot each cache location after cancellation

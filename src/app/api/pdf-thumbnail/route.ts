@@ -30,7 +30,7 @@ export const POST = createPostApiHandlerWithAuth({
       });
     }
 
-    const [fetchError, response] = await vet(async () =>
+    const [fetchError, response] = await vet(() =>
       fetch(pdfApiUrl, {
         body: JSON.stringify({ url: data.url, userId: user.id }),
         headers: {

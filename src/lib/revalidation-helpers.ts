@@ -74,7 +74,7 @@ export async function revalidatePublicCategoryPage(
             controller.abort();
           }, timeoutMs);
 
-          const [error, response] = await vet(async () =>
+          const [error, response] = await vet(() =>
             fetch(revalidateUrl, {
               body: JSON.stringify({ path }),
               cache: "no-store",
@@ -324,7 +324,7 @@ export async function revalidateCategoriesIfPublic(
 
   // Process all revalidations in parallel and await completion
   await Promise.all(
-    categoryIds.map(async (categoryId) => revalidateCategoryIfPublic(categoryId, context)),
+    categoryIds.map((categoryId) => revalidateCategoryIfPublic(categoryId, context)),
   );
 
   console.log("[revalidateCategoriesIfPublic] Completed for:", { categoryIds });

@@ -141,7 +141,7 @@ export default async function handler(
       return;
     }
 
-    const [emailError] = await vet(async () =>
+    const [emailError] = await vet(() =>
       axios.post(`${getBaseUrl()}${NEXT_API_URL}${SEND_EMAIL}`, {
         category_name: categoryData?.category_name,
         display_name: categoryData?.profiles?.display_name ?? categoryData?.profiles?.user_name,

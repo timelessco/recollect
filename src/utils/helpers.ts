@@ -822,7 +822,7 @@ export const collectVideo = async ({
     }
 
     // Fetch with timeout
-    const [downloadError, videoResponse] = await vet(async () =>
+    const [downloadError, videoResponse] = await vet(() =>
       fetch(videoUrl, {
         method: "GET",
         signal: AbortSignal.timeout(VIDEO_DOWNLOAD_TIMEOUT_MS),
@@ -891,7 +891,7 @@ export const collectVideo = async ({
     }
 
     // Download ArrayBuffer (only if size check passed)
-    const [arrayBufferError, arrayBuffer] = await vet(async () => videoResponse.arrayBuffer());
+    const [arrayBufferError, arrayBuffer] = await vet(() => videoResponse.arrayBuffer());
 
     if (arrayBufferError || !arrayBuffer) {
       const errorMessage =
@@ -945,7 +945,7 @@ export const collectVideo = async ({
       };
     }
 
-    const [uploadError, uploadedUrl] = await vet(async () =>
+    const [uploadError, uploadedUrl] = await vet(() =>
       uploadVideo(arrayBuffer, userId, normalizedContentType),
     );
 

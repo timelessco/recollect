@@ -161,7 +161,7 @@ export function useCreateAndAssignTagOptimisticMutation() {
       };
       baseMutation.mutate(enrichedVariables, options);
     },
-    mutateAsync: async (
+    mutateAsync: (
       variables: CreateAndAssignTagMutationPayload,
       options?: Parameters<typeof baseMutation.mutateAsync>[1],
     ) => {

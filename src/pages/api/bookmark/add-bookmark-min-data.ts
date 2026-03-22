@@ -211,7 +211,7 @@ export default async function handler(
     const userAgent =
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36";
 
-    const [scrapperError, ogsResult] = await vet(async () =>
+    const [scrapperError, ogsResult] = await vet(() =>
       ogs({
         fetchOptions: { headers: { "user-agent": userAgent } },
         url,
@@ -413,7 +413,7 @@ export default async function handler(
       };
       console.log("Calling add-remaining-bookmark-data API:", { requestBody });
 
-      const [remainingApiError] = await vet(async () =>
+      const [remainingApiError] = await vet(() =>
         axios.post(
           `${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
           requestBody,

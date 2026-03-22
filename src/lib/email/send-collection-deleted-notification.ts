@@ -38,7 +38,7 @@ export async function sendCollectionDeletedNotification(
   const html = buildEmailHtml({ categoryName, ownerDisplayName });
 
   const results = await Promise.allSettled(
-    collaboratorEmails.map(async (email) =>
+    collaboratorEmails.map((email) =>
       resend.emails.send({
         attachments: [
           {

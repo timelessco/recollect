@@ -61,7 +61,7 @@ export default async function handler(
       userId,
     });
 
-    const [screenshotError, screenShotResponse] = await vet(async () =>
+    const [screenshotError, screenShotResponse] = await vet(() =>
       axios.get(`${SCREENSHOT_API}/try?url=${encodeURIComponent(request.body.url)}`, {
         responseType: "json",
       }),
@@ -85,7 +85,7 @@ export default async function handler(
         requestBody,
       });
 
-      const [remainingApiError] = await vet(async () =>
+      const [remainingApiError] = await vet(() =>
         axios.post(
           `${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
           requestBody,
@@ -285,7 +285,7 @@ export default async function handler(
       requestBody,
     });
 
-    const [remainingApiError] = await vet(async () =>
+    const [remainingApiError] = await vet(() =>
       axios.post(
         `${getBaseUrl()}${NEXT_API_URL}${ADD_REMAINING_BOOKMARK_API}`,
         requestBody,

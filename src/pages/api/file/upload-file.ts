@@ -394,7 +394,7 @@ export default async (
     };
     console.log("Calling remaining upload API:", { remainingUploadBody });
 
-    const [remainingUploadError] = await vet(async () =>
+    const [remainingUploadError] = await vet(() =>
       axios.post(
         `${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`,
         remainingUploadBody,
