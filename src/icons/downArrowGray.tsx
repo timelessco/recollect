@@ -1,6 +1,6 @@
 import { Icon } from "../components/atoms/icon";
 
-const DownArrowGray = ({ size = 12, className = "" }) => (
+const DownArrowGray = ({ className = "", size = 12 }) => (
   <Icon
     className={className}
     fill="none"

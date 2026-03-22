@@ -1,15 +1,16 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { type NextApiResponse } from "next";
+import type { NextApiResponse } from "next";
 
-import { type PostgrestError } from "@supabase/supabase-js";
 import isNull from "lodash/isNull";
 
-import {
-  type NextApiRequest,
-  type SingleListData,
-  type UpdateCategoryOrderApiPayload,
+import type {
+  NextApiRequest,
+  SingleListData,
+  UpdateCategoryOrderApiPayload,
 } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+
 import { PROFILES } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -18,10 +19,10 @@ type responseType = {
   id: string;
 } | null;
 
-type Data = {
+interface Data {
   data: responseType;
-  error: PostgrestError | string | { message: string } | null;
-};
+  error: { message: string } | null | PostgrestError | string;
+}
 
 /**
  * Updates category order for a user
@@ -36,7 +37,7 @@ export default async function handler(
 ) {
   const supabase = apiSupabaseClient(request, response);
 
-  const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+  const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
 
   const { data: updateTargetCategoryData, error: updateTargetCategoryError } = (await supabase
     .from(PROFILES)

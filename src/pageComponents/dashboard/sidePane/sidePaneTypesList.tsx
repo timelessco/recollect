@@ -1,12 +1,13 @@
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+
+import type { BookmarksCountTypes } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 import { Collapsible } from "@/components/ui/recollect/collapsible";
 
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import DownArrowGray from "../../../icons/downArrowGray";
 import { useSupabaseSession } from "../../../store/componentStore";
-import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import { optionsMenuListArray } from "../../../utils/commonData";
 import { BOOKMARKS_COUNT_KEY, menuListItemName } from "../../../utils/constants";
 import SingleListItemComponent from "./singleListItemComponent";
@@ -16,20 +17,17 @@ const SidePaneTypesList = () => {
   const session = useSupabaseSession((state) => state.session);
 
   const queryClient = useQueryClient();
-  const bookmarksCountData = queryClient.getQueryData([BOOKMARKS_COUNT_KEY, session?.user?.id]) as {
-    data: BookmarksCountTypes;
-    error: PostgrestError;
-  };
+  const bookmarksCountData = queryClient.getQueryData([BOOKMARKS_COUNT_KEY, session?.user?.id])!;
 
   const optionsMenuList = optionsMenuListArray(currentPath, bookmarksCountData).filter((item) =>
     [
-      menuListItemName.links,
-      menuListItemName.image,
-      menuListItemName.videos,
-      menuListItemName.documents,
-      menuListItemName.tweets,
-      menuListItemName.instagram,
       menuListItemName.audio,
+      menuListItemName.documents,
+      menuListItemName.image,
+      menuListItemName.instagram,
+      menuListItemName.links,
+      menuListItemName.tweets,
+      menuListItemName.videos,
     ].includes(item.name),
   );
 

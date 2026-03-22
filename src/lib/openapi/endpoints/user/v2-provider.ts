@@ -1,77 +1,77 @@
 /**
  * @module Build-time only
  */
-import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
+import type { EndpointSupplement } from "@/lib/openapi/supplement-types";
 
 export const v2ProviderSupplement = {
-  path: "/v2/user/get/provider",
-  method: "get",
-  tags: ["User"],
-  summary: "Look up OAuth provider by email",
+  additionalResponses: {
+    400: { description: "Invalid or missing email query parameter" },
+  },
   description:
     "Returns the OAuth provider (e.g. google, email) for a given email address. No authentication required. Returns null if the email has no provider or does not exist.",
-  security: [],
+  method: "get",
   parameterExamples: {
     email: {
-      "google-user": {
-        summary: "Google OAuth user",
-        description: "Returns provider: google.",
-        value: "user@example.com",
-      },
       "email-user": {
-        summary: "Email/password user",
         description: "Returns provider: email.",
+        summary: "Email/password user",
         value: "another@example.com",
       },
-      "no-provider": {
-        summary: "Unknown email",
-        description: "Returns provider: null.",
-        value: "nobody@example.com",
+      "google-user": {
+        description: "Returns provider: google.",
+        summary: "Google OAuth user",
+        value: "user@example.com",
       },
       "invalid-email": {
-        summary: "Invalid email format",
         description: "Returns 400 validation error.",
+        summary: "Invalid email format",
         value: "not-an-email",
+      },
+      "no-provider": {
+        description: "Returns provider: null.",
+        summary: "Unknown email",
+        value: "nobody@example.com",
       },
     },
   },
-  responseExamples: {
-    "google-provider": {
-      summary: "Google OAuth user",
-      description: "Send `?email=user@example.com` where the user signed up with Google OAuth.",
-      value: {
-        data: { provider: "google" },
-        error: null,
-      } as const,
-    },
-    "email-provider": {
-      summary: "Email/password user",
-      description: "Send `?email=user@example.com` where the user signed up with email/password.",
-      value: {
-        data: { provider: "email" },
-        error: null,
-      } as const,
-    },
-    "no-provider": {
-      summary: "Unknown or nonexistent email",
-      description: "Send `?email=nobody@example.com` — email doesn't exist or has no provider.",
-      value: {
-        data: { provider: null },
-        error: null,
-      } as const,
-    },
-  },
+  path: "/v2/user/get/provider",
   response400Examples: {
     "invalid-email": {
-      summary: "Invalid or missing email",
       description: "Omit the `email` parameter or send an invalid value — returns 400.",
+      summary: "Invalid or missing email",
       value: {
         data: null,
         error: "Invalid email",
       } as const,
     },
   },
-  additionalResponses: {
-    400: { description: "Invalid or missing email query parameter" },
+  responseExamples: {
+    "email-provider": {
+      description: "Send `?email=user@example.com` where the user signed up with email/password.",
+      summary: "Email/password user",
+      value: {
+        data: { provider: "email" },
+        error: null,
+      } as const,
+    },
+    "google-provider": {
+      description: "Send `?email=user@example.com` where the user signed up with Google OAuth.",
+      summary: "Google OAuth user",
+      value: {
+        data: { provider: "google" },
+        error: null,
+      } as const,
+    },
+    "no-provider": {
+      description: "Send `?email=nobody@example.com` — email doesn't exist or has no provider.",
+      summary: "Unknown or nonexistent email",
+      value: {
+        data: { provider: null },
+        error: null,
+      } as const,
+    },
   },
+  security: [],
+  summary: "Look up OAuth provider by email",
+  tags: ["User"],
 } satisfies EndpointSupplement;

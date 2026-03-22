@@ -1,7 +1,8 @@
 import * as Sentry from "@sentry/nextjs";
-import { type SupabaseClient } from "@supabase/supabase-js";
 
-import { type AiFeaturesToggle } from "@/types/apiTypes";
+import type { AiFeaturesToggle } from "@/types/apiTypes";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { PROFILES } from "@/utils/constants";
 
 export interface AiToggles {
@@ -31,8 +32,8 @@ export async function fetchAiToggles(props: FetchAiTogglesProps): Promise<AiTogg
 
   if (error) {
     console.error("[fetchAiToggles] Failed to fetch toggles:", {
-      userId,
       error: error.message,
+      userId,
     });
     Sentry.captureException(error, {
       tags: { operation: "fetch_ai_toggles", userId },

@@ -7,20 +7,20 @@ import { getCategorySlugFromRouter } from "@/utils/url";
 /**
  * Page context information derived from router
  */
-export type PageContext = {
+export interface PageContext {
   /**
-   * Whether the current page is a public page (e.g., /public/user/collection)
+   * Current category slug from the URL, or null if not in a category route
    */
-  isPublicPage: boolean;
+  categorySlug: null | string;
   /**
    * Whether the current page is the discover page
    */
   isDiscoverPage: boolean;
   /**
-   * Current category slug from the URL, or null if not in a category route
+   * Whether the current page is a public page (e.g., /public/user/collection)
    */
-  categorySlug: string | null;
-};
+  isPublicPage: boolean;
+}
 
 /**
  * Hook to get page context information from the router
@@ -48,9 +48,9 @@ export const usePageContext = (): PageContext => {
     const categorySlug = getCategorySlugFromRouter(router);
 
     return {
-      isPublicPage: isPublicPath(router.asPath),
-      isDiscoverPage: categorySlug === DISCOVER_URL,
       categorySlug,
+      isDiscoverPage: categorySlug === DISCOVER_URL,
+      isPublicPage: isPublicPath(router.asPath),
     };
   }, [router]);
 };

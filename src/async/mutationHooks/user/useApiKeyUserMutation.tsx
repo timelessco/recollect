@@ -6,17 +6,17 @@ import { API_KEY_CHECK_KEY } from "../../../utils/constants";
 import { successToast } from "../../../utils/toastMessages";
 import { saveApiKey } from "../../supabaseCrudHelpers";
 
-type SaveApiKeyParameters = {
+interface SaveApiKeyParameters {
   apikey: string;
-};
+}
 
-type ApiKeyResponse = {
+interface ApiKeyResponse {
   data: {
     api_key: string;
     id: string;
   };
   message: string;
-};
+}
 
 export const useApiKeyMutation = () => {
   const queryClient = useQueryClient();
@@ -27,13 +27,13 @@ export const useApiKeyMutation = () => {
       // saveApiKey already throws/returns error-like object; let the caller handle toast via mutationApiCall if used
       return response as unknown as ApiKeyResponse;
     },
+    onError: (error) => {
+      handleClientError(error, "Failed to update API key. Please try again.");
+    },
     onSuccess: async () => {
       successToast("API key saved successfully");
       // Invalidate the API key check query to refetch the latest status
       await queryClient.invalidateQueries({ queryKey: [API_KEY_CHECK_KEY] });
-    },
-    onError: (error) => {
-      handleClientError(error, "Failed to update API key. Please try again.");
     },
   });
 };

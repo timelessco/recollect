@@ -12,10 +12,6 @@ const BATCH_SIZE = 1000;
 const TRASH_RETENTION_DAYS = 30;
 
 export const GET = createGetApiHandlerWithSecret({
-  route: ROUTE,
-  inputSchema: ClearTrashInputSchema,
-  outputSchema: ClearTrashOutputSchema,
-  secretEnvVar: "CRON_SECRET",
   handler: async ({ route }) => {
     const supabase = await createServerServiceClient();
 
@@ -60,23 +56,23 @@ export const GET = createGetApiHandlerWithSecret({
 
       for (const [userId, bookmarkIds] of byUser) {
         console.log(`[${route}] Deleting batch:`, {
-          userId,
           count: bookmarkIds.length,
+          userId,
         });
 
         const result = await deleteBookmarksByIds(supabase, bookmarkIds, userId, route);
 
         if (result.error) {
           console.error(`[${route}] Batch delete failed:`, {
-            userId,
             error: result.error,
+            userId,
           });
           Sentry.captureException(new Error(result.error), {
+            extra: { count: bookmarkIds.length },
             tags: {
               operation: "cron_clear_old_trash_batch_delete",
               userId,
             },
-            extra: { count: bookmarkIds.length },
           });
           continue;
         }
@@ -93,4 +89,8 @@ export const GET = createGetApiHandlerWithSecret({
 
     return { deletedCount: totalDeleted };
   },
+  inputSchema: ClearTrashInputSchema,
+  outputSchema: ClearTrashOutputSchema,
+  route: ROUTE,
+  secretEnvVar: "CRON_SECRET",
 });

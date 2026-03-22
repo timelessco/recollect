@@ -10,10 +10,7 @@ import { MoveBookmarkToTrashInputSchema, MoveBookmarkToTrashOutputSchema } from 
 const ROUTE = "move-bookmark-to-trash";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: MoveBookmarkToTrashInputSchema,
-  outputSchema: MoveBookmarkToTrashOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const { data: bookmarkData, isTrash } = data;
     const userId = user.id;
 
@@ -21,19 +18,19 @@ export const POST = createPostApiHandlerWithAuth({
     const bookmarkIds = bookmarkData.map((item) => item.id);
 
     console.log(`[${route}] API called:`, {
-      userId,
       bookmarkIds,
-      isTrash,
       count: bookmarkIds.length,
+      isTrash,
+      userId,
     });
 
     // This should never happen due to Zod validation, but double-check
     if (bookmarkIds.length === 0) {
       return apiWarn({
-        route,
-        message: "No valid bookmark IDs provided",
-        status: 400,
         context: { bookmarkData },
+        message: "No valid bookmark IDs provided",
+        route,
+        status: 400,
       });
     }
 
@@ -49,20 +46,20 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to move bookmarks to trash",
         error,
-        operation: "update_bookmark_trash",
-        userId,
         extra: { bookmarkIds, isTrash },
+        message: "Failed to move bookmarks to trash",
+        operation: "update_bookmark_trash",
+        route,
+        userId,
       });
     }
 
     // Check if any bookmarks were actually updated
     if (!updatedBookmarks || updatedBookmarks.length === 0) {
       console.warn(`[${route}] No bookmarks updated - may not exist or not owned by user:`, {
-        userId,
         bookmarkIds,
+        userId,
       });
     } else {
       console.log(
@@ -81,30 +78,29 @@ export const POST = createPostApiHandlerWithAuth({
         const categoryIds = [...new Set(categoryAssociations.map((assoc) => assoc.category_id))];
 
         console.log(`[${route}] Triggering revalidation for categories:`, {
-          categoryIds,
           bookmarkCount: updatedBookmarks.length,
+          categoryIds,
         });
 
         // Non-blocking revalidation - don't await but catch errors
         revalidateCategoriesIfPublic(categoryIds, {
           operation: isTrash ? "bookmark_trashed" : "bookmark_restored",
           userId,
-          // eslint-disable-next-line promise/prefer-await-to-then
         }).catch((error) => {
           console.error(`[${route}] Revalidation failed:`, {
+            categoryIds,
             error,
             errorMessage:
               error instanceof Error
                 ? error.message
                 : "revalidation failed in move-bookmark-to-trash",
             errorStack: error instanceof Error ? error.stack : undefined,
-            categoryIds,
-            userId,
             isTrash,
+            userId,
           });
           Sentry.captureException(error, {
+            extra: { categoryIds, isTrash, operation: "revalidation", userId },
             tags: { route: ROUTE },
-            extra: { categoryIds, userId, operation: "revalidation", isTrash },
           });
         });
       }
@@ -112,4 +108,7 @@ export const POST = createPostApiHandlerWithAuth({
 
     return updatedBookmarks ?? [];
   },
+  inputSchema: MoveBookmarkToTrashInputSchema,
+  outputSchema: MoveBookmarkToTrashOutputSchema,
+  route: ROUTE,
 });

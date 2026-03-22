@@ -1,15 +1,16 @@
-import { type NextApiResponse } from "next";
+import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError, type PostgrestResponse } from "@supabase/supabase-js";
 import { find, isEmpty } from "lodash";
 
-import {
-  type CategoriesData,
-  type CollabDataInCategory,
-  type FetchSharedCategoriesData,
-  type NextApiRequest,
+import type {
+  CategoriesData,
+  CollabDataInCategory,
+  FetchSharedCategoriesData,
+  NextApiRequest,
 } from "../../../types/apiTypes";
+import type { PostgrestError, PostgrestResponse } from "@supabase/supabase-js";
+
 import {
   CATEGORIES_TABLE_NAME,
   PROFILES,
@@ -21,10 +22,10 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
  * Fetches user categories and builds it so that we get all its colaborators data
  */
 
-type Data = {
+interface Data {
   data: CategoriesData[] | null;
-  error: PostgrestError | string | { message: string } | null;
-};
+  error: { message: string } | null | PostgrestError | string;
+}
 
 export default async function handler(
   request: NextApiRequest<{}>,
@@ -63,8 +64,8 @@ export default async function handler(
     if (!userId || !userEmail) {
       const errorMessage = "User ID or email not found";
       console.error(`[fetch-user-categories][user-validation] ${errorMessage}`, {
-        hasUserId: Boolean(userId),
         hasEmail: Boolean(userEmail),
+        hasUserId: Boolean(userId),
       });
       Sentry.captureException(
         new Error(`[fetch-user-categories][user-validation] ${errorMessage}`),
@@ -96,8 +97,8 @@ export default async function handler(
         userId,
       });
       Sentry.captureException(profileError, {
-        tags: { operation: "fetch_user_profile", userId },
         extra: { userId },
+        tags: { operation: "fetch_user_profile", userId },
       });
     }
 
@@ -168,8 +169,8 @@ export default async function handler(
       data?.map((item) => ({
         ...item,
         user_id: {
-          id: userId,
           email: userEmail,
+          id: userId,
           profile_pic: userProfile?.profile_pic ?? "",
           user_name: userProfile?.user_name ?? "",
         },
@@ -191,12 +192,12 @@ export default async function handler(
             collabData = [
               ...collabData,
               {
-                userEmail: catItem?.email,
                 edit_access: catItem?.edit_access,
-                share_id: catItem?.id,
-                isOwner: false,
                 is_accept_pending: catItem?.is_accept_pending,
+                isOwner: false,
                 profile_pic: null,
+                share_id: catItem?.id,
+                userEmail: catItem?.email,
               },
             ];
           }
@@ -206,12 +207,12 @@ export default async function handler(
       const collabDataWithOwnerData = [
         ...collabData,
         {
-          userEmail: item?.user_id?.email,
           edit_access: true,
-          share_id: null,
-          isOwner: true,
           is_accept_pending: false,
+          isOwner: true,
           profile_pic: item?.user_id?.profile_pic,
+          share_id: null,
+          userEmail: item?.user_id?.email,
         },
       ];
 

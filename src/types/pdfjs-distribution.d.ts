@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable @typescript-eslint/no-explicit-any */
 declare module "pdfjs-dist/build/pdf" {
   const pdfjsLibrary: any;
   export = pdfjsLibrary;

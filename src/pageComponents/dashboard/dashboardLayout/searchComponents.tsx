@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Mention, MentionsInput, type MentionsInputProps } from "react-mentions";
+import { Mention, MentionsInput } from "react-mentions";
+import type { MentionsInputProps } from "react-mentions";
 
 import { isEmpty } from "lodash";
+
+import type { CategoriesData } from "@/types/apiTypes";
+import type { CategoryIdUrlTypes } from "@/types/componentTypes";
 
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import Button from "@/components/atoms/button";
@@ -9,29 +13,27 @@ import { Spinner } from "@/components/spinner";
 import useDebounce from "@/hooks/useDebounce";
 import SearchInputSearchIcon from "@/icons/searchInputSearchIcon";
 import { useLoadersStore, useMiscellaneousStore } from "@/store/componentStore";
-import { type CategoriesData } from "@/types/apiTypes";
-import { type CategoryIdUrlTypes } from "@/types/componentTypes";
 import { extractTagNamesFromSearch } from "@/utils/helpers";
 
 const SEARCH_DEBOUNCE_MS = 500;
 
-type SearchBarProps = {
-  showSearchBar: boolean;
-  isDesktop: boolean;
-  currentCategoryData: CategoriesData | undefined;
-  currentPath: string | null;
+interface SearchBarProps {
   categoryId: CategoryIdUrlTypes;
+  currentCategoryData: CategoriesData | undefined;
+  currentPath: null | string;
+  isDesktop: boolean;
   onShowSearchBar: (value: boolean) => void;
-};
+  showSearchBar: boolean;
+}
 
 export function SearchBar(props: SearchBarProps) {
   const {
-    showSearchBar,
-    isDesktop,
+    categoryId,
     currentCategoryData,
     currentPath,
-    categoryId,
+    isDesktop,
     onShowSearchBar,
+    showSearchBar,
   } = props;
 
   const setSearchText = useMiscellaneousStore((state) => state.setSearchText);
@@ -55,20 +57,22 @@ export function SearchBar(props: SearchBarProps) {
   return (
     <Button
       className="mr-1 bg-transparent hover:bg-transparent"
-      onClick={() => onShowSearchBar(true)}
+      onClick={() => {
+        onShowSearchBar(true);
+      }}
     >
       <SearchInputSearchIcon color="var(--color-gray-1000)" size="16" />
     </Button>
   );
 }
 
-type SearchInputTypes = {
+interface SearchInputTypes {
   onBlur: () => void;
   placeholder: string;
-};
+}
 
 const SearchInput = (props: SearchInputTypes) => {
-  const { placeholder, onBlur } = props;
+  const { onBlur, placeholder } = props;
   const [addedTags, setAddedTags] = useState<string[] | undefined>([]);
   const [isFocused, setIsFocused] = useState(false);
   const setSearchText = useMiscellaneousStore((state) => state.setSearchText);
@@ -89,8 +93,8 @@ const SearchInput = (props: SearchInputTypes) => {
     () =>
       userTagsData
         ?.map((item) => ({
-          id: String(item?.id || ""),
           display: String(item?.name || ""),
+          id: String(item?.id || ""),
         }))
         ?.filter((filterItem) => !addedTags?.includes(String(filterItem?.display || ""))),
     [userTagsData, addedTags],
@@ -121,7 +125,9 @@ const SearchInput = (props: SearchInputTypes) => {
         onChange={(event: { target: { value: string } }) => {
           handleChange(event.target.value);
         }}
-        onFocus={() => setIsFocused(true)}
+        onFocus={() => {
+          setIsFocused(true);
+        }}
         placeholder={placeholder}
         singleLine
         style={styles}
@@ -148,63 +154,63 @@ const SearchInput = (props: SearchInputTypes) => {
 };
 
 const styles: MentionsInputProps["style"] = {
-  input: {
-    left: 27,
-    top: 6.5,
-    width: "80%",
-  },
-  control: {
-    backgroundColor: "var(--color-gray-alpha-100)",
-
-    fontSize: 14,
-    fontWeight: 400,
-    lineHeight: "16px",
-    color: "var(--color-gray-800)",
-
-    width: "100%",
-    padding: "6px",
-    borderRadius: 11,
-    height: 30,
-  },
   "&multiLine": {
     control: {},
     highlighter: {},
     input: {
       border: "unset",
       borderRadius: 8,
-      padding: "inherit",
       outline: "unset",
+      padding: "inherit",
     },
+  },
+  control: {
+    backgroundColor: "var(--color-gray-alpha-100)",
+
+    borderRadius: 11,
+    color: "var(--color-gray-800)",
+    fontSize: 14,
+    fontWeight: 400,
+
+    height: 30,
+    lineHeight: "16px",
+    padding: "6px",
+    width: "100%",
+  },
+  input: {
+    left: 27,
+    top: 6.5,
+    width: "80%",
   },
 
   suggestions: {
     backgroundColor: "transparent",
-    zIndex: 5,
-    list: {
-      marginTop: "20px",
-
-      backgroundColor: "var(--color-plain)",
-      padding: "4px",
-      borderRadius: "12px",
-      overflowY: "auto",
-      maxHeight: "220px",
-      maxWidth: "260px",
-      boxShadow:
-        "0px 0px 1px rgba(0, 0, 0, 0.19), 0px 1px 2px rgba(0, 0, 0, 0.07), 0px 6px 15px -5px rgba(0, 0, 0, 0.11)",
-    },
     item: {
-      padding: "7px 8px",
-      borderRadius: "8px",
-      fontWeight: "450",
-      fontSize: "13px",
-      lineHeight: "15px",
-      color: "var(--color-gray-800)",
-      cursor: "pointer",
-      transition: "plain-color 0.2s ease",
-
       "&focused": {
         backgroundColor: "var(--color-gray-200)",
       },
+      borderRadius: "8px",
+      color: "var(--color-gray-800)",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: "450",
+      lineHeight: "15px",
+      padding: "7px 8px",
+
+      transition: "plain-color 0.2s ease",
     },
+    list: {
+      backgroundColor: "var(--color-plain)",
+
+      borderRadius: "12px",
+      boxShadow:
+        "0px 0px 1px rgba(0, 0, 0, 0.19), 0px 1px 2px rgba(0, 0, 0, 0.07), 0px 6px 15px -5px rgba(0, 0, 0, 0.11)",
+      marginTop: "20px",
+      maxHeight: "220px",
+      maxWidth: "260px",
+      overflowY: "auto",
+      padding: "4px",
+    },
+    zIndex: 5,
   },
 };

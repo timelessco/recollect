@@ -1,4 +1,7 @@
-import { useMemo, type ReactNode } from "react";
+import { useMemo } from "react";
+import type { ReactNode } from "react";
+
+import type { CategoriesData, SingleListData, UserTagsData } from "@/types/apiTypes";
 
 import { useAddTagToBookmarkOptimisticMutation } from "@/async/mutationHooks/tags/use-add-tag-to-bookmark-optimistic-mutation";
 import { useCreateAndAssignTagOptimisticMutation } from "@/async/mutationHooks/tags/use-create-and-assign-tag-optimistic-mutation";
@@ -16,15 +19,14 @@ import { HashIcon } from "@/icons/hash-icon";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { DiscoverSwitch } from "@/pageComponents/dashboard/cardSection/discover-switch";
 import { OgPreferenceSwitch } from "@/pageComponents/dashboard/cardSection/og-preference-switch";
-import { type CategoriesData, type SingleListData, type UserTagsData } from "@/types/apiTypes";
 import { SKIP_OG_IMAGE_DOMAINS } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
 import { cn } from "@/utils/tailwind-merge";
 
-type EditPopoverProps = {
+interface EditPopoverProps {
   post: SingleListData;
   userId: string;
-};
+}
 
 export const EditPopover = ({ post, userId }: EditPopoverProps) => {
   const postUserId = typeof post?.user_id === "object" ? post?.user_id?.id : post?.user_id;
@@ -95,7 +97,7 @@ function EditPopoverShell({ children }: { children: ReactNode }) {
       </Popover.Trigger>
 
       <Popover.Portal>
-        <Popover.Positioner sideOffset={4} align="start">
+        <Popover.Positioner align="start" sideOffset={4}>
           <Popover.Popup className="p-1.5">{children}</Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
@@ -103,9 +105,9 @@ function EditPopoverShell({ children }: { children: ReactNode }) {
   );
 }
 
-type TagMultiSelectProps = {
+interface TagMultiSelectProps {
   bookmarkId: number;
-};
+}
 
 export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
   const { userTags } = useFetchUserTags();
@@ -142,23 +144,23 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 
   const handleCreate = (tagName: string) => {
     createAndAssignTagOptimisticMutation.mutate({
-      name: tagName,
-      bookmarkId,
       // Pre-generate temp ID so both BOOKMARKS_KEY and USER_TAGS_KEY caches use same ID
       _tempId: -Date.now(),
+      bookmarkId,
+      name: tagName,
     });
   };
 
   return (
     <Combobox.Root
-      items={allTags}
-      selectedItems={selectedTags}
+      createSchema={tagCategoryNameSchema}
       getItemId={(tag) => tag.id}
       getItemLabel={(tag) => tag.name}
+      items={allTags}
       onAdd={handleAdd}
-      onRemove={handleRemove}
       onCreate={handleCreate}
-      createSchema={tagCategoryNameSchema}
+      onRemove={handleRemove}
+      selectedItems={selectedTags}
     >
       <Combobox.Chips>
         <Combobox.Value>
@@ -166,16 +168,16 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
             <>
               {value.map((tag) => (
                 <Combobox.Chip
-                  key={tag.id}
-                  item={tag}
                   className="bg-plain shadow-[0_1px_1px_0_rgba(0,0,0,0.10),0_0_0.5px_0_rgba(0,0,0,0.60)]"
+                  item={tag}
+                  key={tag.id}
                 >
                   <HashIcon className="h-3.5 w-3.5 text-gray-600" />
                   <Combobox.ChipContent item={tag} />
                 </Combobox.Chip>
               ))}
 
-              <Combobox.Input placeholder="Add tags" className="py-[4.5px]" />
+              <Combobox.Input className="py-[4.5px]" placeholder="Add tags" />
             </>
           )}
         </Combobox.Value>
@@ -184,11 +186,11 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
         <Combobox.Positioner>
           <Combobox.Popup>
             <ScrollArea
+              className="rounded-lg bg-gray-90"
+              hideScrollbar
               scrollbarGutter
               scrollFade
               scrollHeight={220}
-              hideScrollbar
-              className="rounded-lg bg-gray-90"
             >
               <Combobox.Empty>No tags found</Combobox.Empty>
               <Combobox.List>
@@ -207,28 +209,28 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
   );
 };
 
-type CategoryMultiSelectProps = {
+interface CategoryMultiSelectProps {
   bookmarkId: number;
-};
+}
 
 export const CategoryMultiSelect = ({ bookmarkId }: CategoryMultiSelectProps) => {
   const {
-    visibleCategories,
-    selectedCategories,
-    handleAdd,
-    handleRemove,
     getItemId,
     getItemLabel,
+    handleAdd,
+    handleRemove,
+    selectedCategories,
+    visibleCategories,
   } = useCategoryMultiSelect({ bookmarkId });
 
   return (
     <Combobox.Root
-      items={visibleCategories}
-      selectedItems={selectedCategories}
       getItemId={getItemId}
       getItemLabel={getItemLabel}
+      items={visibleCategories}
       onAdd={handleAdd}
       onRemove={handleRemove}
+      selectedItems={selectedCategories}
     >
       <Combobox.Chips>
         <Combobox.Value>
@@ -236,9 +238,9 @@ export const CategoryMultiSelect = ({ bookmarkId }: CategoryMultiSelectProps) =>
             <>
               {value.map((category) => (
                 <Combobox.Chip
-                  key={category.id}
-                  item={category}
                   className="bg-plain shadow-[0_1px_1px_0_rgba(0,0,0,0.10),0_0_0.5px_0_rgba(0,0,0,0.60)]"
+                  item={category}
+                  key={category.id}
                 >
                   <CollectionIcon bookmarkCategoryData={category} iconSize="8" size="14" />
                   <Combobox.ChipContent item={category}>
@@ -246,7 +248,7 @@ export const CategoryMultiSelect = ({ bookmarkId }: CategoryMultiSelectProps) =>
                   </Combobox.ChipContent>
                 </Combobox.Chip>
               ))}
-              <Combobox.Input placeholder="Add collection" className="py-[4.5px]" />
+              <Combobox.Input className="py-[4.5px]" placeholder="Add collection" />
             </>
           )}
         </Combobox.Value>
@@ -255,11 +257,11 @@ export const CategoryMultiSelect = ({ bookmarkId }: CategoryMultiSelectProps) =>
         <Combobox.Positioner>
           <Combobox.Popup>
             <ScrollArea
+              className="rounded-lg bg-gray-90"
+              hideScrollbar
               scrollbarGutter
               scrollFade
               scrollHeight={220}
-              hideScrollbar
-              className="rounded-lg bg-gray-90"
             >
               <Combobox.Empty>No collections found</Combobox.Empty>
               <Combobox.List>

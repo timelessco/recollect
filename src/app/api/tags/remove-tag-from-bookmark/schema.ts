@@ -10,14 +10,14 @@ export type RemoveTagFromBookmarkPayload = z.infer<typeof RemoveTagFromBookmarkP
 export const RemoveTagFromBookmarkResponseSchema = z
   .array(
     z.object({
-      id: z.number().meta({ description: "Bookmark-tag junction record ID" }),
       bookmark_id: z.number().meta({ description: "Associated bookmark ID" }),
-      tag_id: z.number().meta({ description: "Associated tag ID" }),
-      user_id: z.string().nullable().meta({ description: "Owner user ID" }),
       created_at: z
         .string()
         .nullable()
         .meta({ description: "ISO timestamp when assignment was created" }),
+      id: z.number().meta({ description: "Bookmark-tag junction record ID" }),
+      tag_id: z.number().meta({ description: "Associated tag ID" }),
+      user_id: z.string().nullable().meta({ description: "Owner user ID" }),
     }),
   )
   .nonempty();

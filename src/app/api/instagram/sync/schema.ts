@@ -6,16 +6,16 @@ export const InstagramSyncInputSchema = z.object({
   bookmarks: z
     .array(
       z.object({
+        description: z.string().default(""),
+        meta_data: z.record(z.string(), z.unknown()).default({}),
+        ogImage: z.string().nullish(),
+        saved_at: z.iso.datetime(),
+        title: z.string().default(""),
+        type: z.literal(instagramType).default(instagramType),
         url: z.url().refine((url) => {
           const parsed = new URL(url);
           return parsed.hostname === "instagram.com" || parsed.hostname === "www.instagram.com";
         }, "Must be a valid Instagram URL"),
-        title: z.string().default(""),
-        description: z.string().default(""),
-        ogImage: z.string().nullish(),
-        type: z.literal(instagramType).default(instagramType),
-        meta_data: z.record(z.string(), z.unknown()).default({}),
-        saved_at: z.iso.datetime(),
       }),
     )
     .min(1, "At least one bookmark required")

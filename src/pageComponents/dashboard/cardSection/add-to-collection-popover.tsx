@@ -1,4 +1,5 @@
-import { useState, type Key } from "react";
+import { useState } from "react";
+import type { Key } from "react";
 
 import isEmpty from "lodash/isEmpty";
 
@@ -17,7 +18,7 @@ interface AddToCollectionPopoverProps {
 }
 
 export function AddToCollectionPopover({ onSuccess, selectedKeys }: AddToCollectionPopoverProps) {
-  const [addedCategoryIds, setAddedCategoryIds] = useState<Set<number>>(new Set());
+  const [addedCategoryIds, setAddedCategoryIds] = useState<Set<number>>(() => new Set());
 
   const handleOpenChange = (open: boolean) => {
     if (open) {
@@ -34,7 +35,7 @@ export function AddToCollectionPopover({ onSuccess, selectedKeys }: AddToCollect
   return (
     <Menu.Root onOpenChange={handleOpenChange}>
       <Menu.Trigger className="flex items-center rounded-lg bg-gray-200 px-2 py-[5px] text-13 leading-4 font-450 text-gray-900">
-        <span className="mr-[6px] text-gray-1000" aria-hidden="true">
+        <span aria-hidden="true" className="mr-[6px] text-gray-1000">
           <MoveIcon />
         </span>
         <p>Add to</p>
@@ -78,7 +79,7 @@ function AddToCollectionMenuItems({
   const categories = allCategories?.data ?? [];
 
   const handleToggle = (categoryId: number, checked: boolean) => {
-    const selectedIds = Array.from(selectedKeys).map(Number);
+    const selectedIds = [...selectedKeys].map(Number);
 
     if (!checked) {
       for (const bookmarkId of selectedIds) {
@@ -108,13 +109,15 @@ function AddToCollectionMenuItems({
   };
 
   return (
-    <ScrollArea scrollbarGutter scrollFade scrollHeight={220} hideScrollbar>
+    <ScrollArea hideScrollbar scrollbarGutter scrollFade scrollHeight={220}>
       {categories.map((item) => (
         <Menu.CheckboxItem
           checked={addedCategoryIds.has(item.id)}
           className="gap-2"
           key={item.id}
-          onCheckedChange={(checked) => handleToggle(item.id, checked)}
+          onCheckedChange={(checked) => {
+            handleToggle(item.id, checked);
+          }}
         >
           <CollectionIcon bookmarkCategoryData={item} iconSize="10" size="16" />
           <span className="flex-1 truncate">{item.category_name}</span>

@@ -1,11 +1,13 @@
 import { isBrowser } from "@react-hookz/web/util/const.js";
-import { create, type Mutate, type StoreApi } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type IframeState = {
+import type { Mutate, StoreApi } from "zustand";
+
+interface IframeState {
   iframeEnabled: boolean;
   setIframeEnabled: (value: boolean) => void;
-};
+}
 
 export const useIframeStore = create<IframeState>()(
   persist(
@@ -37,7 +39,9 @@ const withStorageDOMEvents = (store: StoreWithPersist) => {
   };
 
   window.addEventListener("storage", storageEventCallback);
-  return () => window.removeEventListener("storage", storageEventCallback);
+  return () => {
+    window.removeEventListener("storage", storageEventCallback);
+  };
 };
 
 withStorageDOMEvents(useIframeStore as StoreWithPersist);

@@ -1,17 +1,18 @@
-import { bearerAuth } from "@/lib/openapi/registry";
 /**
  * @module Build-time only
  */
-import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
+import type { EndpointSupplement } from "@/lib/openapi/supplement-types";
+
+import { bearerAuth } from "@/lib/openapi/registry";
 
 export const togglePreferredOgDomainSupplement = {
-  path: "/profiles/toggle-preferred-og-domain",
-  method: "post",
-  tags: ["Profiles"],
-  summary: "Toggle preferred OG image domain",
+  additionalResponses: {
+    400: { description: "Invalid domain format" },
+  },
   description:
     "Adds or removes a domain from the user's preferred OG image domain list. When a domain is in the preferred list, Recollect will use OG images from that domain over others. Returns the updated profile with the full domain list.",
-  security: [{ [bearerAuth.name]: [] }, {}],
+  method: "post",
+  path: "/profiles/toggle-preferred-og-domain",
   requestExample: {
     domain: "substack.com",
   },
@@ -22,7 +23,7 @@ export const togglePreferredOgDomainSupplement = {
     },
     error: null,
   },
-  additionalResponses: {
-    400: { description: "Invalid domain format" },
-  },
+  security: [{ [bearerAuth.name]: [] }, {}],
+  summary: "Toggle preferred OG image domain",
+  tags: ["Profiles"],
 } satisfies EndpointSupplement;

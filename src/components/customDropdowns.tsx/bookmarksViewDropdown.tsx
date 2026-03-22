@@ -9,11 +9,11 @@ import { bookmarksViewOptions, RadioGroup } from "../radioGroup";
 import { BookmarkCardContentSwitch } from "./bookmark-card-content-switch";
 import { BookmarksViewSlider } from "./bookmarks-view-slider";
 
-type BookmarksViewDropdownProps = {
+interface BookmarksViewDropdownProps {
   // based on this it is either rendered in dropdown or in the sliding menu component if its in responsive mobile page
   isDropdown?: boolean;
   renderOnlyButton?: boolean;
-};
+}
 
 // This renders the view options
 export const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
@@ -67,11 +67,11 @@ export const BookmarksViewDropdown = (props: BookmarksViewDropdownProps) => {
 };
 
 interface BookmarksViewPopoverProps {
-  trigger: React.ReactNode;
   children: React.ReactNode;
+  trigger: React.ReactNode;
 }
 
-const BookmarksViewPopover = ({ trigger, children }: BookmarksViewPopoverProps) => (
+const BookmarksViewPopover = ({ children, trigger }: BookmarksViewPopoverProps) => (
   <Popover.Root>
     <Popover.Trigger
       className="flex items-center rounded-lg bg-transparent px-2 py-[5px] text-13 leading-[14px] font-medium outline-hidden hover:bg-gray-100 data-popup-open:bg-gray-100"
@@ -89,10 +89,10 @@ const BookmarksViewPopover = ({ trigger, children }: BookmarksViewPopoverProps) 
   </Popover.Root>
 );
 
-type CardContentOptionsTypes = {
+interface CardContentOptionsTypes {
   label: string;
   value: string;
-};
+}
 const cardContentOptions: CardContentOptionsTypes[] = [
   {
     label: "Cover",

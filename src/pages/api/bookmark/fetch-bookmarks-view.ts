@@ -1,19 +1,20 @@
-import { type NextApiResponse } from "next";
+import type { NextApiResponse } from "next";
 
-import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import isNull from "lodash/isNull";
 
-import { type BookmarkViewDataTypes, type NextApiRequest } from "../../../types/apiTypes";
+import type { BookmarkViewDataTypes, NextApiRequest } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
+
 import { CATEGORIES_TABLE_NAME } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
 // this fetches bookmarks view based on category
 
-type Data = {
-  data: Array<{ category_views: BookmarkViewDataTypes }> | null;
-  error: PostgrestError | VerifyErrors | string | null;
-};
+interface Data {
+  data: { category_views: BookmarkViewDataTypes }[] | null;
+  error: null | PostgrestError | string | VerifyErrors;
+}
 
 export default async function handler(
   request: NextApiRequest<{ category_id: number }>,
@@ -23,7 +24,7 @@ export default async function handler(
 
   const { category_id: categorieId } = request.body;
 
-  const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+  const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
 
   const { data, error } = await supabase
     .from(CATEGORIES_TABLE_NAME)

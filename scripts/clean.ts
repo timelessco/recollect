@@ -9,11 +9,11 @@ const NEXT = "next";
 const NODE_MODULES = "node_modules";
 const TURBO = "turbo";
 
-type CleanOption = {
+interface CleanOption {
   description: string;
   name: string;
   value: string;
-};
+}
 
 const options: CleanOption[] = [
   {
@@ -38,12 +38,12 @@ const options: CleanOption[] = [
   },
 ];
 
-type ArgValues = {
+interface ArgValues {
   all?: boolean;
   next?: boolean;
   "node-modules"?: boolean;
   turbo?: boolean;
-};
+}
 
 const argsResult = vet(
   () =>
@@ -93,7 +93,7 @@ if (Object.keys(args).length > 0) {
     throw selectResult.error;
   }
 
-  value = selectResult.value;
+  ({ value } = selectResult);
 }
 
 const $$ = $({ stdio: "inherit" });

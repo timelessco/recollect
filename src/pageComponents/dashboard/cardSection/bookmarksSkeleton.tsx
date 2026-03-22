@@ -1,4 +1,4 @@
-/* eslint-disable react/no-array-index-key */
+/* oxlint-disable react/no-array-index-key */
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { viewValues } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
@@ -10,13 +10,13 @@ const PRECOMPUTED_HEIGHTS = [
 ];
 
 export const BookmarksSkeletonLoader = ({
+  colCount,
   count = 26,
   type,
-  colCount,
 }: {
-  count?: number;
-  type?: string | number[] | string[] | undefined;
   colCount?: number;
+  count?: number;
+  type?: number[] | string | string[] | undefined;
 }) => {
   const { isDesktop } = useIsMobileView();
 
@@ -31,7 +31,7 @@ export const BookmarksSkeletonLoader = ({
     return (
       <div className="flex flex-col gap-4 px-2 py-2">
         {Array.from({ length: count }).map((_, index) => (
-          <div key={`skeleton-list-${index}`} className="flex items-center gap-3">
+          <div className="flex items-center gap-3" key={`skeleton-list-${index}`}>
             <div className="h-12 w-20 shrink-0 animate-pulse rounded bg-gray-100" />
             <div className="flex-1 space-y-2">
               <div className="h-4 w-1/3 animate-pulse rounded bg-gray-100" />
@@ -50,8 +50,8 @@ export const BookmarksSkeletonLoader = ({
         <div className="w-[600px] space-y-6">
           {Array.from({ length: Math.min(count, 10) }).map((_, index) => (
             <div
-              key={`skeleton-timeline-${index}`}
               className="h-[500px] animate-pulse rounded-lg bg-gray-100"
+              key={`skeleton-timeline-${index}`}
             />
           ))}
         </div>
@@ -73,11 +73,11 @@ export const BookmarksSkeletonLoader = ({
     return (
       <div className="flex gap-6">
         {Array.from({ length: columnCount }).map((_, colIndex) => (
-          <div key={columnKeys[colIndex]} className="flex flex-1 flex-col gap-6">
+          <div className="flex flex-1 flex-col gap-6" key={columnKeys[colIndex]}>
             {Array.from({ length: itemsPerColumn }).map((_, index) => (
               <div
-                key={`skeleton-card-${colIndex}-${index}`}
                 className="animate-pulse rounded-lg bg-gray-100"
+                key={`skeleton-card-${colIndex}-${index}`}
                 style={{
                   height: `${fixedHeight}px`,
                 }}
@@ -100,11 +100,11 @@ export const BookmarksSkeletonLoader = ({
   return (
     <div className="flex gap-6">
       {columns.map((colh, colIndex) => (
-        <div key={columnKeys[colIndex]} className="flex flex-1 flex-col gap-6">
+        <div className="flex flex-1 flex-col gap-6" key={columnKeys[colIndex]}>
           {colh.map((height, index) => (
             <div
-              key={`skeleton-moodboard-${colIndex}-${index}`}
               className="animate-pulse rounded-lg bg-gray-100"
+              key={`skeleton-moodboard-${colIndex}-${index}`}
               style={{
                 height: `${height - 16}px`,
               }}

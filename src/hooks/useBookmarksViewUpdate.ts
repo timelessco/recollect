@@ -5,6 +5,13 @@ import find from "lodash/find";
 import isNil from "lodash/isNil";
 import isNull from "lodash/isNull";
 
+import type { BookmarkViewDataTypes, ProfilesBookmarksView } from "../types/apiTypes";
+import type {
+  BookmarksSortByTypes,
+  BookmarksViewTypes,
+  BookmarkViewCategories,
+} from "../types/componentStoreTypes";
+
 import { useUpdateCategoryOptimisticMutation } from "../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
 import useUpdateUserProfileOptimisticMutation from "../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
@@ -12,12 +19,6 @@ import useFetchCategories from "../async/queryHooks/category/useFetchCategories"
 import useFetchSharedCategories from "../async/queryHooks/share/useFetchSharedCategories";
 import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";
 import { useLoadersStore, useSupabaseSession } from "../store/componentStore";
-import { type BookmarkViewDataTypes, type ProfilesBookmarksView } from "../types/apiTypes";
-import {
-  type BookmarksSortByTypes,
-  type BookmarksViewTypes,
-  type BookmarkViewCategories,
-} from "../types/componentStoreTypes";
 import { mutationApiCall } from "../utils/apiHelpers";
 import {
   getPageViewData,
@@ -75,16 +76,21 @@ export function useBookmarksViewUpdate() {
 
       const updateField = (() => {
         switch (type) {
-          case "view":
-            return "bookmarksView";
-          case "info":
-            return "cardContentViewArray";
-          case "columns":
+          case "columns": {
             return "moodboardColumns";
-          case "sort":
+          }
+          case "info": {
+            return "cardContentViewArray";
+          }
+          case "sort": {
             return "sortBy";
-          default:
-            return undefined;
+          }
+          case "view": {
+            return "bookmarksView";
+          }
+          default: {
+            return;
+          }
         }
       })();
 
@@ -165,7 +171,7 @@ export function useBookmarksViewUpdate() {
           ...pageView,
           cardContentViewArray: ensureCardContentView(
             value,
-            (pageView.cardContentViewArray ?? defaultPageView.cardContentViewArray) as string[],
+            pageView.cardContentViewArray ?? defaultPageView.cardContentViewArray,
           ),
           [updateField]: value,
         };

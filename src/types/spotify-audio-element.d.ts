@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unassigned-import -- required for module augmentation
 import "react";
 
 declare module "react" {

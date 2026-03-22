@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Drawer } from "@base-ui/react/drawer";
 import { Tabs } from "@base-ui/react/tabs";
 
+import type { SettingsPage } from "./settings-modal";
+
 import { AvatarIcon } from "@/icons/avatarIcon";
 import { ImportIcon } from "@/icons/importIcon";
 import { SettingsAiIcon } from "@/icons/settingsAiIcon";
@@ -12,8 +14,6 @@ import ChangeEmail from "@/pageComponents/settings/changeEmail";
 import { DeleteAccount } from "@/pageComponents/settings/deleteAccount";
 import { ImportBookmarks } from "@/pageComponents/settings/import";
 import { useSettingsModalStore } from "@/store/settingsModalStore";
-
-import { type SettingsPage } from "./settings-modal";
 
 export function MobileSettingsDrawer() {
   const open = useSettingsModalStore((state) => state.open);
@@ -32,8 +32,8 @@ export function MobileSettingsDrawer() {
         <Drawer.Backdrop className="data-ending-style:backdrop-blur-0 data-starting-style:backdrop-blur-0 fixed inset-0 z-102 bg-black/36 backdrop-blur-sm transition-[opacity,backdrop-filter] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0" />
         <Drawer.Viewport className="fixed inset-0 z-102 flex items-end">
           <Drawer.Popup
-            className="skip-global-paste flex h-[70dvh] w-full translate-y-[calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y))] flex-col rounded-t-[20px] bg-gray-0 shadow-[0_-4px_20px_rgb(0_0_0/10%)] outline-hidden transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:translate-y-full data-starting-style:translate-y-full data-swiping:duration-0 data-swiping:select-none"
             aria-label="Settings"
+            className="skip-global-paste flex h-[70dvh] w-full translate-y-[calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y))] flex-col rounded-t-[20px] bg-gray-0 shadow-[0_-4px_20px_rgb(0_0_0/10%)] outline-hidden transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:translate-y-full data-starting-style:translate-y-full data-swiping:duration-0 data-swiping:select-none"
           >
             <DrawerContent />
           </Drawer.Popup>
@@ -56,7 +56,7 @@ function DrawerContent() {
   const isSubPage = currentPage === "change-email" || currentPage === "delete";
   const activeTab = isSubPage ? "main" : currentPage;
 
-  const handleTabChange = (value: string | null) => {
+  const handleTabChange = (value: null | string) => {
     if (value === null) {
       return;
     }

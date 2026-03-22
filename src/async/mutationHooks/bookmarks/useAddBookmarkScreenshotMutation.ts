@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import type { SingleListData } from "../../../types/apiTypes";
+
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useLoadersStore, useSupabaseSession } from "../../../store/componentStore";
-import { type SingleListData } from "../../../types/apiTypes";
 import { BOOKMARKS_KEY } from "../../../utils/constants";
 import { errorToast } from "../../../utils/toastMessages";
 import { addBookmarkScreenshot } from "../../supabaseCrudHelpers";

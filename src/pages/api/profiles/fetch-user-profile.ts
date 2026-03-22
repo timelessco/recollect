@@ -1,14 +1,15 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty, isNil } from "lodash";
 import uniqid from "uniqid";
 
-import { type ProfilesTableTypes } from "../../../types/apiTypes";
+import type { ProfilesTableTypes } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
+
 import { PROFILES } from "../../../utils/constants";
 import { getUserNameFromEmail } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
@@ -18,15 +19,14 @@ import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 // if its not present and in session data some oauth profile pic is there, then we update the oauth profile pic in profiles table
 // we are doing this because in auth triggers we do not get the oauth profile pic
 
-type DataResponse = ProfilesTableTypes[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | string | null;
+type DataResponse = null | ProfilesTableTypes[];
+type ErrorResponse = null | PostgrestError | string | VerifyErrors;
 
-type Data = {
+interface Data {
   data: DataResponse;
   error: ErrorResponse;
-};
+}
 
-// eslint-disable-next-line consistent-return
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse<Data>,
@@ -41,7 +41,6 @@ export default async function handler(
     // Check if user is authenticated
     if (!userData?.data?.user) {
       console.warn("[fetch-user-profile] Unauthorized: User not authenticated");
-      // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
       return response.status(401).json({
         data: null,
         error: "Unauthorized: Please log in to access your profile",
@@ -55,7 +54,6 @@ export default async function handler(
     if (!userId || isEmpty(userId)) {
       console.error("[fetch-user-profile] Invalid user data: Missing userId");
       Sentry.captureException(new Error("[fetch-user-profile] Invalid user data: Missing userId"));
-      // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
       return response.status(400).json({
         data: null,
         error: "Invalid user data: Missing user ID",
@@ -77,11 +75,10 @@ export default async function handler(
     if (error) {
       console.error("[fetch-user-profile] Database error fetching profile:", {
         error,
-        userId,
         table: PROFILES,
+        userId,
       });
       Sentry.captureException(error);
-      // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
       return response.status(500).json({ data: null, error });
     }
 
@@ -108,7 +105,6 @@ export default async function handler(
           userId,
         });
         Sentry.captureException(updateProfilePicError);
-        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
         return response.status(500).json({ data: null, error: updateProfilePicError });
       }
 
@@ -131,7 +127,6 @@ export default async function handler(
           username: newUsername,
         });
         Sentry.captureException(checkError);
-        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
         return response.status(500).json({
           data: null,
           error: "Failed to check username availability",
@@ -151,11 +146,10 @@ export default async function handler(
         if (updateUsernameError) {
           console.error("[fetch-user-profile] Error updating username:", {
             error: updateUsernameError,
-            username: newUsername,
             userId,
+            username: newUsername,
           });
           Sentry.captureException(updateUsernameError);
-          // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
           return response.status(500).json({
             data: null,
             error: "Failed to update username",
@@ -178,11 +172,10 @@ export default async function handler(
         if (updateUniqueUsernameError) {
           console.error("[fetch-user-profile] Error updating unique username:", {
             error: updateUniqueUsernameError,
-            username: uniqueUsername,
             userId,
+            username: uniqueUsername,
           });
           Sentry.captureException(updateUniqueUsernameError);
-          // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
           return response.status(500).json({
             data: null,
             error: "Failed to create unique username",
@@ -194,7 +187,6 @@ export default async function handler(
     }
 
     // Success - return profile data
-    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
     return response.status(200).json({ data: finalData, error: null });
   } catch (unexpectedError) {
     // Catch any unexpected errors
@@ -206,7 +198,6 @@ export default async function handler(
 
     // Check if response was already sent
     if (!response.headersSent) {
-      // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
       return response.status(500).json({
         data: null,
         error: "An unexpected error occurred while fetching profile",

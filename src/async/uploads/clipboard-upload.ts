@@ -1,12 +1,13 @@
-import { type UseMutationResult } from "@tanstack/react-query";
 import { isEmpty } from "lodash";
 
-import {
-  type AddBookmarkMinDataPayloadTypes,
-  type BookmarksPaginatedDataTypes,
-  type UploadFileApiPayload,
+import type {
+  AddBookmarkMinDataPayloadTypes,
+  BookmarksPaginatedDataTypes,
+  UploadFileApiPayload,
 } from "../../types/apiTypes";
-import { type CategoryIdUrlTypes } from "../../types/componentTypes";
+import type { CategoryIdUrlTypes } from "../../types/componentTypes";
+import type { UseMutationResult } from "@tanstack/react-query";
+
 import { mutationApiCall } from "../../utils/apiHelpers";
 import { URL_PATTERN } from "../../utils/constants";
 import { fileUpload } from "./file-upload";
@@ -51,9 +52,9 @@ export const clipboardUpload = async (
     if (isUrl && !isEmpty(isUrl)) {
       await mutationApiCall(
         addBookmarkMinDataOptimisticMutation.mutateAsync({
-          url: text.trim(),
           category_id,
           update_access: true,
+          url: text.trim(),
         }),
       );
     }

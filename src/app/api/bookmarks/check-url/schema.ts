@@ -5,6 +5,6 @@ export const CheckUrlInputSchema = z.object({
 });
 
 export const CheckUrlOutputSchema = z.discriminatedUnion("exists", [
-  z.object({ exists: z.literal(true), bookmarkId: z.string() }),
+  z.object({ bookmarkId: z.string(), exists: z.literal(true) }),
   z.object({ exists: z.literal(false) }),
 ]);

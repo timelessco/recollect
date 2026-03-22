@@ -7,10 +7,7 @@ import { FetchUserTagsInputSchema, FetchUserTagsOutputSchema } from "./schema";
 const ROUTE = "v2-tags-fetch-user-tags";
 
 export const GET = createGetApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: FetchUserTagsInputSchema,
-  outputSchema: FetchUserTagsOutputSchema,
-  handler: async ({ supabase, user, route }) => {
+  handler: async ({ route, supabase, user }) => {
     const userId = user.id;
 
     console.log(`[${route}] API called:`, { userId });
@@ -19,14 +16,17 @@ export const GET = createGetApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to fetch user tags",
         error,
+        message: "Failed to fetch user tags",
         operation: "tags_fetch",
+        route,
         userId,
       });
     }
 
     return data;
   },
+  inputSchema: FetchUserTagsInputSchema,
+  outputSchema: FetchUserTagsOutputSchema,
+  route: ROUTE,
 });

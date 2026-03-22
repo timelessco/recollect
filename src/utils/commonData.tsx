@@ -1,4 +1,5 @@
-import { type PostgrestError } from "@supabase/supabase-js";
+import type { BookmarksCountTypes } from "../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 import { AudioIcon } from "@/icons/audio-icon";
 import { DiscoverIcon } from "@/icons/discover-icon";
@@ -13,7 +14,6 @@ import { XIcon } from "@/icons/social/x-icon";
 import TrashIconGray from "@/icons/trash-icon-gray";
 import VideoIcon from "@/icons/videoIcon";
 
-import { type BookmarksCountTypes } from "../types/apiTypes";
 import {
   AUDIO_URL,
   DISCOVER_URL,
@@ -3565,12 +3565,12 @@ const object = [
   },
 ];
 export const iconOptions = object.map((index) => ({
-  label: index.name,
   icon: (iconColor: string, size: string = "16", className: string = "") => (
     <svg className={className} fill={iconColor} height={size} viewBox="0 0 18 18" width={size}>
       <use href={`/sprite.svg#${index.name}`} />
     </svg>
   ),
+  label: index.name,
 }));
 
 /**
@@ -3585,142 +3585,142 @@ export const iconMap = new Map(iconOptions.map((opt) => [opt.label, opt]));
 export const options = () => iconOptions;
 
 export const optionsMenuListArray = (
-  currentPath: string | null,
+  currentPath: null | string,
   bookmarksCountData: {
     data: BookmarksCountTypes;
     error: PostgrestError;
   },
 ) => [
   {
-    icon: <HomeIconGray />,
-    name: menuListItemName.everything,
-    href: `/${EVERYTHING_URL}`,
-    current: currentPath === EVERYTHING_URL,
-    id: 0,
     count: bookmarksCountData?.data?.everything,
+    current: currentPath === EVERYTHING_URL,
+    href: `/${EVERYTHING_URL}`,
+    icon: <HomeIconGray />,
     iconColor: "",
+    id: 0,
+    name: menuListItemName.everything,
   },
   {
-    icon: <DiscoverIcon className="h-[18px] w-[18px]" />,
-    name: menuListItemName.discover,
-    href: `/${DISCOVER_URL}`,
+    count: undefined,
     current: currentPath === DISCOVER_URL,
+    href: `/${DISCOVER_URL}`,
+    icon: <DiscoverIcon className="h-[18px] w-[18px]" />,
+    iconColor: "",
     id: 1,
-    count: undefined,
-    iconColor: "",
+    name: menuListItemName.discover,
   },
   {
-    icon: <InboxIconGray />,
-    name: menuListItemName.inbox,
-    href: `/${UNCATEGORIZED_URL}`,
-    current: currentPath === UNCATEGORIZED_URL,
-    id: 2,
     count: bookmarksCountData?.data?.uncategorized,
+    current: currentPath === UNCATEGORIZED_URL,
+    href: `/${UNCATEGORIZED_URL}`,
+    icon: <InboxIconGray />,
     iconColor: "",
+    id: 2,
+    name: menuListItemName.inbox,
   },
   {
-    icon: <TrashIconGray />,
-    name: menuListItemName.trash,
-    href: `/${TRASH_URL}`,
-    current: currentPath === TRASH_URL,
-    id: 3,
     count: bookmarksCountData?.data?.trash,
+    current: currentPath === TRASH_URL,
+    href: `/${TRASH_URL}`,
+    icon: <TrashIconGray />,
     iconColor: "",
+    id: 3,
+    name: menuListItemName.trash,
   },
   {
-    icon: <SettingsIcon />,
-    name: menuListItemName.settings,
-    href: `/${SETTINGS_URL}`,
-    current: currentPath === SETTINGS_URL,
-    id: 4,
     count: undefined,
+    current: currentPath === SETTINGS_URL,
+    href: `/${SETTINGS_URL}`,
+    icon: <SettingsIcon />,
     iconColor: "",
+    id: 4,
+    name: menuListItemName.settings,
   },
   {
+    count: bookmarksCountData?.data?.images,
+    current: currentPath === IMAGES_URL,
+    href: `/${IMAGES_URL}`,
     icon: (
       <figure className="flex h-[18px] w-[18px] items-center justify-center">
         <ImageIcon />
       </figure>
     ),
-    name: menuListItemName.image,
-    href: `/${IMAGES_URL}`,
-    current: currentPath === IMAGES_URL,
-    id: 5,
-    count: bookmarksCountData?.data?.images,
     iconColor: "",
+    id: 5,
+    name: menuListItemName.image,
   },
   {
+    count: bookmarksCountData?.data?.videos,
+    current: currentPath === VIDEOS_URL,
+    href: `/${VIDEOS_URL}`,
     icon: (
       <figure className="flex h-[18px] w-[18px] items-center justify-center">
         <VideoIcon />
       </figure>
     ),
-    name: menuListItemName.videos,
-    href: `/${VIDEOS_URL}`,
-    current: currentPath === VIDEOS_URL,
-    id: 6,
-    count: bookmarksCountData?.data?.videos,
     iconColor: "",
+    id: 6,
+    name: menuListItemName.videos,
   },
   {
+    count: bookmarksCountData?.data?.links,
+    current: currentPath === LINKS_URL,
+    href: `/${LINKS_URL}`,
     icon: (
       <figure className="flex h-[18px] w-[18px] items-center justify-center">
         <GlobeLinkIcon />
       </figure>
     ),
-    name: menuListItemName.links,
-    href: `/${LINKS_URL}`,
-    current: currentPath === LINKS_URL,
-    id: 7,
-    count: bookmarksCountData?.data?.links,
     iconColor: "",
+    id: 7,
+    name: menuListItemName.links,
   },
   {
+    count: bookmarksCountData?.data?.documents,
+    current: currentPath === DOCUMENTS_URL,
+    href: `/${DOCUMENTS_URL}`,
     icon: (
       <figure className="flex h-[18px] w-[18px] items-center justify-center">
         <FolderIcon />
       </figure>
     ),
-    name: menuListItemName.documents,
-    href: `/${DOCUMENTS_URL}`,
-    current: currentPath === DOCUMENTS_URL,
-    id: 8,
-    count: bookmarksCountData?.data?.documents,
     iconColor: "",
+    id: 8,
+    name: menuListItemName.documents,
   },
   {
+    count: bookmarksCountData?.data?.tweets,
+    current: currentPath === TWEETS_URL,
+    href: `/${TWEETS_URL}`,
     icon: (
       <figure className="flex h-[18px] w-[18px] items-center justify-center">
         <XIcon />
       </figure>
     ),
-    name: menuListItemName.tweets,
-    href: `/${TWEETS_URL}`,
-    current: currentPath === TWEETS_URL,
-    id: 9,
-    count: bookmarksCountData?.data?.tweets,
     iconColor: "",
+    id: 9,
+    name: menuListItemName.tweets,
   },
   {
+    count: bookmarksCountData?.data?.instagram,
+    current: currentPath === INSTAGRAM_URL,
+    href: `/${INSTAGRAM_URL}`,
     icon: (
       <figure className="flex h-[18px] w-[18px] items-center justify-center">
         <InstagramIcon className="h-4.5 w-4.5 text-gray-900" />
       </figure>
     ),
-    name: menuListItemName.instagram,
-    href: `/${INSTAGRAM_URL}`,
-    current: currentPath === INSTAGRAM_URL,
-    id: 10,
-    count: bookmarksCountData?.data?.instagram,
     iconColor: "",
+    id: 10,
+    name: menuListItemName.instagram,
   },
   {
-    icon: <AudioIcon className="h-4.5 w-4.5 text-gray-900" />,
-    name: menuListItemName.audio,
-    href: `/${AUDIO_URL}`,
-    current: currentPath === AUDIO_URL,
-    id: 11,
     count: bookmarksCountData?.data?.audio,
+    current: currentPath === AUDIO_URL,
+    href: `/${AUDIO_URL}`,
+    icon: <AudioIcon className="h-4.5 w-4.5 text-gray-900" />,
     iconColor: "",
+    id: 11,
+    name: menuListItemName.audio,
   },
 ];

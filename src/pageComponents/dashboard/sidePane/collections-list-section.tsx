@@ -1,5 +1,6 @@
 import router from "next/router";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
+import type { ReactNode } from "react";
 
 import { isNull } from "lodash";
 
@@ -16,13 +17,13 @@ import DownArrowGray from "../../../icons/downArrowGray";
 import OptionsIcon from "../../../icons/optionsIcon";
 import { CollectionsListSkeleton } from "./collectionLIstSkeleton";
 
-type CollectionsListSectionHeaderProps = {
+interface CollectionsListSectionHeaderProps {
   onAddCollectionClick: () => void;
-};
-type CollectionsListSectionProps = {
+}
+interface CollectionsListSectionProps {
   children: ReactNode;
   isLoading: boolean;
-};
+}
 
 export function CollectionsListSection({ children, isLoading }: CollectionsListSectionProps) {
   const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
@@ -41,20 +42,26 @@ export function CollectionsListSection({ children, isLoading }: CollectionsListS
             </div>
           </Collapsible.Trigger>
           <CollectionsHeaderOptionsPopover
-            onAddCollectionClick={() => setShowAddCategoryInput(true)}
+            onAddCollectionClick={() => {
+              setShowAddCategoryInput(true);
+            }}
           />
         </div>
       </div>
       <Collapsible.Panel>
         <div id="collections-wrapper">{isLoading ? <CollectionsListSkeleton /> : children}</div>
         <AddCategoryInput
-          onClose={() => setShowAddCategoryInput(false)}
+          onClose={() => {
+            setShowAddCategoryInput(false);
+          }}
           show={showAddCategoryInput}
         />
         <div
           className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] outline-hidden hover:bg-gray-100 focus-visible:ring-1 focus-visible:ring-gray-200 focus-visible:ring-inset"
           id="add-category-button"
-          onClick={() => setShowAddCategoryInput(true)}
+          onClick={() => {
+            setShowAddCategoryInput(true);
+          }}
           onKeyDown={(event) => {
             if (event.key === "Enter" || event.key === " ") {
               event.preventDefault();
@@ -84,7 +91,9 @@ function CollectionsHeaderOptionsPopover({
       <Menu.Trigger
         aria-label="Collection options"
         className="invisible text-gray-500 outline-hidden group-hover:visible focus-visible:ring-1 focus-visible:ring-gray-200 data-popup-open:visible"
-        onClick={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+        }}
       >
         <OptionsIcon />
       </Menu.Trigger>
@@ -106,10 +115,10 @@ function CollectionsHeaderOptionsPopover({
   );
 }
 
-type AddCategoryInputProps = {
+interface AddCategoryInputProps {
   onClose: () => void;
   show: boolean;
-};
+}
 
 function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
   const { userProfileData } = useFetchUserProfile();
@@ -129,10 +138,10 @@ function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
     if (userProfileData && !isNull(userProfileData.data)) {
       addCategoryOptimisticMutation.mutate(
         {
-          name: result.data,
           category_order: (userProfileData.data[0]?.category_order ?? []).filter(
             (id): id is number => id !== null,
           ),
+          name: result.data,
         },
         {
           onSuccess: (data) => {
@@ -156,10 +165,10 @@ function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
           </svg>
         </figure>
         <input
+          aria-label="New collection name"
           autoFocus
           className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! outline-hidden! placeholder:text-plain-reverse focus-visible:ring-1! focus-visible:ring-gray-200!"
           id="add-category-input"
-          aria-label="New collection name"
           onBlur={async (event) => {
             const inputValue = (event.target as HTMLInputElement)?.value;
             if (inputValue) {

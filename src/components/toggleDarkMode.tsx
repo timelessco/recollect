@@ -6,9 +6,9 @@ import { ThemeSwitchIcon } from "@/icons/theme-switch-icon";
 import { Select } from "./ui/recollect/select";
 
 const THEME_OPTIONS = [
-  { value: "system", label: "System" },
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
+  { label: "System", value: "system" },
+  { label: "Light", value: "light" },
+  { label: "Dark", value: "dark" },
 ] as const;
 
 export const ToggleDarkMode = () => (
@@ -31,7 +31,7 @@ export const ToggleDarkMode = () => (
 );
 
 const ThemeSelect = () => {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { resolvedTheme, setTheme, theme } = useTheme();
 
   if (!resolvedTheme) {
     return null;
@@ -39,12 +39,12 @@ const ThemeSelect = () => {
 
   return (
     <Select.Root
-      value={theme}
       onValueChange={(value) => {
         if (value) {
           setTheme(value);
         }
       }}
+      value={theme}
     >
       <Select.Trigger className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-gray-50 py-[7.5px] pr-[10px] pl-3 text-sm leading-[115%] font-medium text-gray-800 capitalize filter-[drop-shadow(0_0_0.5px_rgba(0,0,0,0.6))_drop-shadow(0_1px_1px_rgba(0,0,0,0.1))] hover:bg-gray-200">
         <Select.Value />
@@ -53,14 +53,14 @@ const ThemeSelect = () => {
         </Select.Icon>
       </Select.Trigger>
       <Select.Portal>
-        <Select.Positioner sideOffset={4} className="z-103">
+        <Select.Positioner className="z-103" sideOffset={4}>
           <Select.Popup>
             <Select.List>
               {THEME_OPTIONS.map((option) => (
                 <Select.Item
+                  className="text-sm font-medium"
                   key={option.value}
                   value={option.value}
-                  className="text-sm font-medium"
                 >
                   <Select.ItemText>{option.label}</Select.ItemText>
                   <Select.ItemIndicator />

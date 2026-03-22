@@ -1,14 +1,15 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
 
-import {
-  type CreateCategoryPayload,
-  type CreateCategoryResponse,
+import type {
+  CreateCategoryPayload,
+  CreateCategoryResponse,
 } from "@/app/api/category/create-user-category/schema";
+import type { CategoriesData } from "@/types/apiTypes";
+
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { useSupabaseSession } from "@/store/componentStore";
-import { type CategoriesData } from "@/types/apiTypes";
 import {
   BOOKMARKS_COUNT_KEY,
   CATEGORIES_KEY,
@@ -31,25 +32,6 @@ export function useAddCategoryOptimisticMutation() {
   >({
     mutationFn: (payload) =>
       postApi<CreateCategoryResponse>(`/api${CREATE_USER_CATEGORIES_API}`, payload),
-    queryKey,
-    updater: (currentData, variables) => {
-      if (!currentData?.data) {
-        return currentData;
-      }
-
-      // Optimistic placeholder - only includes fields needed for UI display.
-      // Full data comes from server response after invalidation.
-      const optimisticCategory = {
-        category_name: variables.name,
-        user_id: session?.user?.id,
-        icon: "star-04",
-        icon_color: "#000000",
-      } as unknown as CategoriesData;
-
-      return produce(currentData, (draft) => {
-        draft.data.push(optimisticCategory);
-      });
-    },
     onSettled: (_data, error) => {
       if (error) {
         return;
@@ -65,8 +47,27 @@ export function useAddCategoryOptimisticMutation() {
         queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
       });
     },
+    queryKey,
     showSuccessToast: true,
     successMessage: "Collection created",
+    updater: (currentData, variables) => {
+      if (!currentData?.data) {
+        return currentData;
+      }
+
+      // Optimistic placeholder - only includes fields needed for UI display.
+      // Full data comes from server response after invalidation.
+      const optimisticCategory = {
+        category_name: variables.name,
+        icon: "star-04",
+        icon_color: "#000000",
+        user_id: session?.user?.id,
+      } as unknown as CategoriesData;
+
+      return produce(currentData, (draft) => {
+        draft.data.push(optimisticCategory);
+      });
+    },
   });
 
   return { addCategoryOptimisticMutation };

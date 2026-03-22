@@ -1,49 +1,50 @@
 import { find } from "lodash";
 
-import { type SingleListData } from "@/types/apiTypes";
+import type { SingleListData } from "@/types/apiTypes";
+
 import { isBookmarkOwner } from "@/utils/helpers";
 
-type BulkDeleteBookmarkParams = {
+interface BulkDeleteBookmarkParams {
   bookmarkIds: number[];
-  deleteForever: boolean;
-  isTrash: boolean;
-  isSearching: boolean;
-  flattenedSearchData: SingleListData[];
-  flattendPaginationBookmarkData: SingleListData[];
+  clearSelection: () => void;
   deleteBookmarkId: number[] | undefined;
-  setDeleteBookmarkId: (bookmarkIds: number[]) => void;
-  sessionUserId: string | undefined;
+  deleteBookmarkOptismicMutation: {
+    mutateAsync: (data: { deleteData: { id: number }[] }) => Promise<unknown>;
+  };
+  deleteForever: boolean;
+  errorToast: (message: string) => void;
+  flattendPaginationBookmarkData: SingleListData[];
+  flattenedSearchData: SingleListData[];
+  isSearching: boolean;
+  isTrash: boolean;
   moveBookmarkToTrashOptimisticMutation: {
     mutateAsync: (data: { data: SingleListData[]; isTrash: boolean }) => Promise<unknown>;
   };
-  deleteBookmarkOptismicMutation: {
-    mutateAsync: (data: { deleteData: Array<{ id: number }> }) => Promise<unknown>;
-  };
-  clearSelection: () => void;
   mutationApiCall: (apiCall: Promise<unknown>) => Promise<unknown>;
-  errorToast: (message: string) => void;
-};
+  sessionUserId: string | undefined;
+  setDeleteBookmarkId: (bookmarkIds: number[]) => void;
+}
 
 export const handleBulkBookmarkDelete = ({
   bookmarkIds,
-  deleteForever,
-  isTrash,
-  isSearching,
-  flattenedSearchData,
-  flattendPaginationBookmarkData,
-  deleteBookmarkId,
-  setDeleteBookmarkId,
-  sessionUserId,
-  moveBookmarkToTrashOptimisticMutation,
-  deleteBookmarkOptismicMutation,
   clearSelection,
-  mutationApiCall,
+  deleteBookmarkId,
+  deleteBookmarkOptismicMutation,
+  deleteForever,
   errorToast,
+  flattendPaginationBookmarkData,
+  flattenedSearchData,
+  isSearching,
+  isTrash,
+  moveBookmarkToTrashOptimisticMutation,
+  mutationApiCall,
+  sessionUserId,
+  setDeleteBookmarkId,
 }: BulkDeleteBookmarkParams) => {
   const currentBookmarksData = isSearching ? flattenedSearchData : flattendPaginationBookmarkData;
   if (!deleteForever) {
     const foundBookmarks = bookmarkIds
-      .map((id) => find(currentBookmarksData, (item) => item?.id === id) as SingleListData)
+      .map((id) => find(currentBookmarksData, (item) => item?.id === id)!)
       .filter(Boolean);
 
     const ownedBookmarks: SingleListData[] = [];

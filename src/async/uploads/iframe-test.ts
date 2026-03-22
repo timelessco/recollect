@@ -1,4 +1,6 @@
-import axios, { type AxiosResponseHeaders, type RawAxiosResponseHeaders } from "axios";
+import axios from "axios";
+
+import type { AxiosResponseHeaders, RawAxiosResponseHeaders } from "axios";
 
 /**
  * Checks if a URL can be embedded in an iframe.
@@ -25,15 +27,17 @@ export const canEmbedInIframe = async (url: string): Promise<boolean> => {
     // Abort controller to handle timeout
     const controller = new AbortController();
     // 5 seconds timeout
-    const timeoutId = setTimeout(() => controller?.abort(), 5_000);
+    const timeoutId = setTimeout(() => {
+      controller?.abort();
+    }, 5000);
 
     // Send HEAD request to minimize data transfer
     const response = await axios?.head(url, {
+      // Avoid infinite redirects
+      maxRedirects: 5,
       signal: controller?.signal,
       // Only allow 2xx and 3xx
       validateStatus: (status) => status >= 200 && status < 400,
-      // Avoid infinite redirects
-      maxRedirects: 5,
     });
     // Clear timeout on success
     clearTimeout(timeoutId);
@@ -47,7 +51,7 @@ export const canEmbedInIframe = async (url: string): Promise<boolean> => {
 };
 
 // Type for normalized headers for easier access
-type NormalizedHeaders = Record<string, string[] | string>;
+type NormalizedHeaders = Record<string, string | string[]>;
 
 /**
  * Examines response headers to determine if iframe embedding is allowed.
@@ -58,7 +62,7 @@ const checkIframeHeaders = (headers: AxiosResponseHeaders | RawAxiosResponseHead
   // Normalize header names to lowercase for consistent access
   const normalizedHeaders: NormalizedHeaders = Object?.keys(headers)?.reduce<NormalizedHeaders>(
     (accumulator, key) => {
-      accumulator[key?.toLowerCase()] = headers?.[key] as string[] | string;
+      accumulator[key?.toLowerCase()] = headers?.[key] as string | string[];
       return accumulator;
     },
     {},
@@ -107,7 +111,7 @@ const checkIframeHeaders = (headers: AxiosResponseHeaders | RawAxiosResponseHead
           }
 
           // These are all restrictive cases that would prevent embedding
-          if (["'self'", "'none'"].includes(source)) {
+          if (["'none'", "'self'"].includes(source)) {
             return false;
           }
 

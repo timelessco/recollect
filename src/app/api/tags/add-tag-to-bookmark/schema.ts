@@ -10,11 +10,11 @@ export type AddTagToBookmarkPayload = z.infer<typeof AddTagToBookmarkPayloadSche
 export const AddTagToBookmarkResponseSchema = z
   .array(
     z.object({
-      id: z.number(),
       bookmark_id: z.number(),
+      created_at: z.string().nullable(),
+      id: z.number(),
       tag_id: z.number(),
       user_id: z.string().nullable(),
-      created_at: z.string().nullable(),
     }),
   )
   .nonempty();

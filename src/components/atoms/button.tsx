@@ -1,9 +1,11 @@
-import { type FC } from "react";
+import type { FC } from "react";
 
-import { type ChildrenTypes } from "../../types/componentTypes";
+import type { ChildrenTypes } from "../../types/componentTypes";
+
 import { cn } from "../../utils/tailwind-merge";
 
-type ButtonProps = {
+interface ButtonProps {
+  buttonType?: "button" | "reset" | "submit";
   children: ChildrenTypes;
   className?: string;
   disabledClassName?: string;
@@ -15,31 +17,30 @@ type ButtonProps = {
   tabIndex?: number;
   title?: string;
   type?: "dark" | "light";
-  buttonType?: "submit" | "button" | "reset";
-};
+}
 
 const Button: FC<ButtonProps> = (props) => {
   const {
+    buttonType = "button",
     children,
-    onClick,
     className,
     disabledClassName,
-    isDisabled = false,
-    type = "light",
     id = "",
-    style,
     isActive = false,
+    isDisabled = false,
+    onClick,
+    style,
     tabIndex = -1,
     title = "",
-    buttonType = "button",
+    type = "light",
   } = props;
 
   const buttonClassNames = cn(
     {
-      "flex items-center rounded-lg px-2 py-[5px] text-13 leading-[14px] font-medium": true,
+      "bg-gray-100": isActive,
       "bg-gray-950 text-white hover:bg-gray-800": type === "dark",
       "bg-transparent hover:bg-gray-100": type === "light",
-      "bg-gray-100": isActive,
+      "flex items-center rounded-lg px-2 py-[5px] text-13 leading-[14px] font-medium": true,
     },
     className,
     isDisabled ? disabledClassName : "",
@@ -54,7 +55,7 @@ const Button: FC<ButtonProps> = (props) => {
       style={style}
       tabIndex={tabIndex}
       title={title}
-      // eslint-disable-next-line react/button-has-type
+      // oxlint-disable-next-line react/button-has-type
       type={buttonType}
     >
       {children}

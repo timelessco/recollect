@@ -6,9 +6,9 @@ import { Switch } from "@/components/ui/recollect/switch";
 import useGetCurrentCategoryId from "@/hooks/useGetCurrentCategoryId";
 import { useMiscellaneousStore } from "@/store/componentStore";
 
-type SharePublicSwitchProps = {
-  categoryId?: string | number | null;
-};
+interface SharePublicSwitchProps {
+  categoryId?: null | number | string;
+}
 
 export function SharePublicSwitch({ categoryId }: SharePublicSwitchProps) {
   const { category_id: currentCategoryId } = useGetCurrentCategoryId();
@@ -45,8 +45,8 @@ export function SharePublicSwitch({ categoryId }: SharePublicSwitchProps) {
   return (
     <Switch
       aria-label="Make collection public"
-      disabled={!canToggle}
       checked={currentCategory?.is_public ?? false}
+      disabled={!canToggle}
       onClick={handleToggle}
       size="small"
     />

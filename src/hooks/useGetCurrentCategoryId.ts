@@ -1,11 +1,12 @@
 import { useRouter } from "next/router";
 
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 
+import type { CategoriesData } from "../types/apiTypes";
+import type { CategoryIdUrlTypes } from "../types/componentTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+
 import { useSupabaseSession } from "../store/componentStore";
-import { type CategoriesData } from "../types/apiTypes";
-import { type CategoryIdUrlTypes } from "../types/componentTypes";
 import { CATEGORIES_KEY } from "../utils/constants";
 import { getCategoryIdFromSlug } from "../utils/helpers";
 import { getCategorySlugFromRouter } from "../utils/url";
@@ -16,10 +17,7 @@ export default function useGetCurrentCategoryId() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const allCategories = queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]) as {
-    data: CategoriesData[];
-    error: PostgrestError;
-  };
+  const allCategories = queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])!;
 
   const categorySlug = getCategorySlugFromRouter(router);
   // disabling here as everywhere else is correct case

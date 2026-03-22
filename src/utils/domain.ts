@@ -8,7 +8,7 @@
  * @param input - Domain string or URL
  * @returns Normalized domain (lowercase, without www.) or null if invalid
  */
-export const normalizeDomain = (input: string): string | null => {
+export const normalizeDomain = (input: string): null | string => {
   try {
     const url = input.includes("://") ? new URL(input) : new URL(`https://${input}`);
     const hostname = url.hostname.toLowerCase();
@@ -24,7 +24,7 @@ export const normalizeDomain = (input: string): string | null => {
  * @param url - Valid URL string
  * @returns Domain (lowercase, without www.) or null if invalid
  */
-export const getDomain = (url: string): string | null => {
+export const getDomain = (url: string): null | string => {
   try {
     const parsed = new URL(url);
     const host = parsed.hostname.toLowerCase();

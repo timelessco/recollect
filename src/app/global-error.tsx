@@ -2,7 +2,7 @@
 
 import "@/styles/globals.css";
 
-import { type ErrorInfo } from "next/error";
+import type { ErrorInfo } from "next/error";
 import * as React from "react";
 
 import * as Sentry from "@sentry/nextjs";

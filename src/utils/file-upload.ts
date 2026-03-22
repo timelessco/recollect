@@ -57,13 +57,13 @@ export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
     });
   } catch (error) {
     console.error("Thumbnail generation error", error);
-    throw new Error("No thumbnail generated.");
+    throw new Error("No thumbnail generated.", { cause: error });
   }
 }
 
 export const handlePdfThumbnailAndUpload = async ({
-  fileUrl,
   fileId,
+  fileUrl,
   sessionUserId,
 }: {
   fileId: number;
@@ -96,11 +96,11 @@ export const handlePdfThumbnailAndUpload = async ({
     }
 
     const uploadResponse = await fetch(thumbUploadUrl?.signedUrl, {
-      method: "PUT",
       body: thumbnailBlob,
       headers: {
         "Content-Type": "image/png",
       },
+      method: "PUT",
     });
 
     if (!uploadResponse.ok) {

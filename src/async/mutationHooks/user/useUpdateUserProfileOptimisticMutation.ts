@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import type { ProfilesTableTypes } from "../../../types/apiTypes";
+
 import { useSupabaseSession } from "../../../store/componentStore";
-import { type ProfilesTableTypes } from "../../../types/apiTypes";
 import { USER_PROFILE } from "../../../utils/constants";
 import { updateUserProfile } from "../../supabaseCrudHelpers";
 

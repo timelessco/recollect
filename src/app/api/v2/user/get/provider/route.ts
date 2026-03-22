@@ -8,9 +8,6 @@ import { GetProviderInputSchema, GetProviderOutputSchema } from "./schema";
 const ROUTE = "v2-user-get-provider";
 
 export const GET = createGetApiHandler({
-  route: ROUTE,
-  inputSchema: GetProviderInputSchema,
-  outputSchema: GetProviderOutputSchema,
   handler: async ({ input, route }) => {
     const { email } = input;
 
@@ -22,10 +19,10 @@ export const GET = createGetApiHandler({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to fetch provider",
         error,
+        message: "Failed to fetch provider",
         operation: "fetch_provider",
+        route,
       });
     }
 
@@ -33,4 +30,7 @@ export const GET = createGetApiHandler({
 
     return { provider };
   },
+  inputSchema: GetProviderInputSchema,
+  outputSchema: GetProviderOutputSchema,
+  route: ROUTE,
 });

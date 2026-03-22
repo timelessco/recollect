@@ -11,17 +11,17 @@ export type LinkProps = AriaCurrentLinkProps & {
 };
 
 export function Link(props: LinkProps) {
-  const { className, children, hasImageChildren, ...rest } = props;
+  const { children, className, hasImageChildren, ...rest } = props;
 
   return (
     <AriaCurrentLink
-      data-slot="aria-current-link"
       className={cn(
         "rounded-xs underline transition data-disabled:cursor-default data-disabled:no-underline",
         !hasImageChildren && "outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
         hasImageChildren && "group",
         className,
       )}
+      data-slot="aria-current-link"
       {...rest}
     >
       {children}

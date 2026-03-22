@@ -22,14 +22,14 @@ import { defaultBlur, viewValues } from "../../../utils/constants";
 /**
  * Props for the ImgLogicComponent
  */
-type ImgLogicProps = {
+interface ImgLogicProps {
   // Image dimensions
   _height: number;
   _width: number;
   // Blurhash URL for progressive image loading
-  blurUrl: string | null;
+  blurUrl: null | string;
   // Type of the bookmark
-  cardTypeCondition: number[] | string[] | string | undefined;
+  cardTypeCondition: number[] | string | string[] | undefined;
   // Whether to show the cover image
   hasCoverImg: boolean;
   // Unique identifier for the bookmark
@@ -40,21 +40,21 @@ type ImgLogicProps = {
   isPublicPage: boolean;
   // Sizes attribute for responsive images
   sizesLogic: string;
-};
+}
 
 /**
  * Main component for rendering bookmark images with loading and error states
  */
 const ImgLogicComponent = ({
-  id,
-  hasCoverImg,
-  img,
-  blurUrl,
-  cardTypeCondition,
   _height,
   _width,
-  sizesLogic,
+  blurUrl,
+  cardTypeCondition,
+  hasCoverImg,
+  id,
+  img,
   isPublicPage,
+  sizesLogic,
 }: ImgLogicProps) => {
   // image class name for all views
   const imgClassName = cn({
@@ -71,7 +71,7 @@ const ImgLogicComponent = ({
   // State and store
   const { loadingBookmarkIds } = useLoadersStore();
   // Tracks which image URL failed to load
-  const [errorImg, setErrorImg] = useState<string | null>(null);
+  const [errorImg, setErrorImg] = useState<null | string>(null);
   // Whether the current bookmark is being loaded
   const isLoading = loadingBookmarkIds.has(id);
 
@@ -106,7 +106,9 @@ const ImgLogicComponent = ({
             className={imgClassName}
             height={_height}
             key={img}
-            onError={() => setErrorImg(img)}
+            onError={() => {
+              setErrorImg(img);
+            }}
             placeholder="blur"
             sizes={sizesLogic}
             src={`${img}`}
@@ -141,11 +143,11 @@ export const ImgLogic = memo(
  * Loading and error state placeholder component
  */
 const LoaderImgPlaceholder = ({
-  id,
   cardTypeCondition,
+  id,
 }: {
   // Type of the bookmark
-  cardTypeCondition: number[] | string[] | string | undefined;
+  cardTypeCondition: number[] | string | string[] | undefined;
   // Bookmark ID
   id: number;
 }) => {
@@ -153,12 +155,12 @@ const LoaderImgPlaceholder = ({
   const isLoading = loadingBookmarkIds.has(id);
   // loader class name for all views
   const loaderClassName = cn({
-    "flex h-[48px] w-[80px] items-center justify-center rounded-lg bg-gray-100":
-      cardTypeCondition === viewValues.list,
-    "flex aspect-[1.9047] w-full flex-col items-center justify-center gap-2 rounded-lg bg-gray-100 text-center duration-150 group-hover:rounded-b-none":
-      cardTypeCondition === viewValues.card || cardTypeCondition === viewValues.timeline,
     "flex aspect-[1.8] w-full flex-col items-center justify-center gap-2 rounded-lg bg-gray-100 text-center duration-150 group-hover:rounded-b-none":
       cardTypeCondition === viewValues.moodboard,
+    "flex aspect-[1.9047] w-full flex-col items-center justify-center gap-2 rounded-lg bg-gray-100 text-center duration-150 group-hover:rounded-b-none":
+      cardTypeCondition === viewValues.card || cardTypeCondition === viewValues.timeline,
+    "flex h-[48px] w-[80px] items-center justify-center rounded-lg bg-gray-100":
+      cardTypeCondition === viewValues.list,
   });
   return (
     <div className={`${loaderClassName}`}>

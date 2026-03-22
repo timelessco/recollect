@@ -1,4 +1,4 @@
-import { type Config } from "release-it";
+import type { Config } from "release-it";
 
 import {
   commitGroupsSort,

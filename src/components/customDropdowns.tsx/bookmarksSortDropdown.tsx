@@ -1,30 +1,31 @@
 import { Button } from "@base-ui/react/button";
 import find from "lodash/find";
 
+import type { BookmarksSortByTypes } from "../../types/componentStoreTypes";
+
 import { useBookmarksViewUpdate } from "../../hooks/useBookmarksViewUpdate";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import AlphabeticalIcon from "../../icons/sortByIcons/alphabeticalIcon";
 import ClockRewindIcon from "../../icons/sortByIcons/clockRewindIcon";
 import DateIcon from "../../icons/sortByIcons/dateIcon";
 import { TickIcon } from "../../icons/tickIcon";
-import { type BookmarksSortByTypes } from "../../types/componentStoreTypes";
 import { dropdownMenuItemClassName } from "../../utils/commonClassNames";
 
 const sortOptions = [
   {
+    icon: <DateIcon />,
     label: "Recent First",
     value: "date-sort-ascending",
-    icon: <DateIcon />,
   },
   {
+    icon: <ClockRewindIcon />,
     label: "Oldest First",
     value: "date-sort-descending",
-    icon: <ClockRewindIcon />,
   },
   {
+    icon: <AlphabeticalIcon />,
     label: "Alphabetical",
     value: "alphabetical-sort-descending",
-    icon: <AlphabeticalIcon />,
   },
 ];
 
@@ -68,7 +69,9 @@ function BookmarksSortItems() {
         <Button
           className={`w-full text-left ${dropdownMenuItemClassName}`}
           key={item.value}
-          onClick={() => setBookmarksView(item.value as BookmarksSortByTypes, "sort")}
+          onClick={() => {
+            setBookmarksView(item.value as BookmarksSortByTypes, "sort");
+          }}
         >
           <SortItemContent icon={item.icon} isSelected={item.value === sortBy} label={item.label} />
         </Button>

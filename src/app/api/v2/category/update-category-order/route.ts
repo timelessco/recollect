@@ -7,10 +7,7 @@ import { UpdateCategoryOrderInputSchema, UpdateCategoryOrderOutputSchema } from 
 const ROUTE = "v2-category-update-category-order";
 
 export const PATCH = createPatchApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: UpdateCategoryOrderInputSchema,
-  outputSchema: UpdateCategoryOrderOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const userId = user.id;
     const categoryOrder = data.category_order ?? [];
 
@@ -24,14 +21,17 @@ export const PATCH = createPatchApiHandlerWithAuth({
 
     if (updateError) {
       return apiError({
-        route,
-        message: "Failed to update category order",
         error: updateError,
+        message: "Failed to update category order",
         operation: "update_category_order",
+        route,
         userId,
       });
     }
 
     return updateData;
   },
+  inputSchema: UpdateCategoryOrderInputSchema,
+  outputSchema: UpdateCategoryOrderOutputSchema,
+  route: ROUTE,
 });

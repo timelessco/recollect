@@ -3,14 +3,15 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
 
-import {
-  type UpdateCategoryPayload,
-  type UpdateCategoryResponse,
+import type {
+  UpdateCategoryPayload,
+  UpdateCategoryResponse,
 } from "@/app/api/category/update-user-category/schema";
+import type { CategoriesData } from "@/types/apiTypes";
+
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
 import { useSupabaseSession } from "@/store/componentStore";
-import { type CategoriesData } from "@/types/apiTypes";
 import { CATEGORIES_KEY, UPDATE_USER_CATEGORIES_API } from "@/utils/constants";
 
 export function useUpdateCategoryOptimisticMutation() {
@@ -28,7 +29,17 @@ export function useUpdateCategoryOptimisticMutation() {
   >({
     mutationFn: (payload) =>
       postApi<UpdateCategoryResponse>(`/api${UPDATE_USER_CATEGORIES_API}`, payload),
+    onSettled: (_data, error) => {
+      if (error) {
+        return;
+      }
+
+      void queryClient.invalidateQueries({
+        queryKey: [CATEGORIES_KEY, session?.user?.id],
+      });
+    },
     queryKey,
+    showSuccessToast: false,
     updater: (currentData, variables) => {
       if (!currentData?.data) {
         return currentData;
@@ -62,16 +73,6 @@ export function useUpdateCategoryOptimisticMutation() {
         }
       });
     },
-    onSettled: (_data, error) => {
-      if (error) {
-        return;
-      }
-
-      void queryClient.invalidateQueries({
-        queryKey: [CATEGORIES_KEY, session?.user?.id],
-      });
-    },
-    showSuccessToast: false,
   });
 
   return { updateCategoryOptimisticMutation };

@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
+
+import type { FileType } from "@/types/componentTypes";
 
 import { Button } from "@/components/ui/recollect/button";
 import { Popover } from "@/components/ui/recollect/popover";
@@ -10,7 +13,6 @@ import { useAddBookmark } from "@/hooks/useAddBookmark";
 import { useFileUploadDrop } from "@/hooks/useFileUploadDrop";
 import { AddBookmarkInputIcon } from "@/icons/miscellaneousIcons/add-bookmark-input-icon";
 import PlusIconWhite from "@/icons/plusIconWhite";
-import { type FileType } from "@/types/componentTypes";
 import { grayInputClassName } from "@/utils/commonClassNames";
 import { URL_PATTERN } from "@/utils/constants";
 
@@ -28,11 +30,13 @@ const AddBookmarkDropdown = () => {
     };
 
     document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    return () => {
+      document.removeEventListener("keydown", down);
+    };
   }, []);
 
   return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
+    <Popover.Root onOpenChange={setOpen} open={open}>
       <Popover.Trigger
         className="flex items-center rounded-full bg-gray-950 p-[7px] text-white outline-hidden filter-[drop-shadow(0_3px_6px_rgba(0,0,0,0.07))_drop-shadow(0_11px_11px_rgba(0,0,0,0.06))] hover:bg-gray-800"
         title="create"
@@ -44,7 +48,11 @@ const AddBookmarkDropdown = () => {
       <Popover.Portal>
         <Popover.Positioner align="end">
           <Popover.Popup className="w-auto p-0 leading-5">
-            <AddBookmarkPopupContent onClose={() => setOpen(false)} />
+            <AddBookmarkPopupContent
+              onClose={() => {
+                setOpen(false);
+              }}
+            />
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
@@ -61,11 +69,11 @@ const AddBookmarkPopupContent = ({ onClose }: AddBookmarkPopupContentProps) => {
   const { onDrop } = useFileUploadDrop();
 
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
     clearErrors,
+    formState: { errors },
+    handleSubmit,
+    register,
+    reset,
   } = useForm<{ url: string }>();
 
   const onSubmit: SubmitHandler<{ url: string }> = useCallback(
@@ -81,13 +89,13 @@ const AddBookmarkPopupContent = ({ onClose }: AddBookmarkPopupContentProps) => {
   const fileUploadInputRef = useRef<HTMLInputElement>(null);
 
   const { ref, ...rest } = register("url", {
-    required: true,
-    pattern: URL_PATTERN,
     onChange: () => {
       if (!isEmpty(errors)) {
         clearErrors();
       }
     },
+    pattern: URL_PATTERN,
+    required: true,
   });
 
   return (

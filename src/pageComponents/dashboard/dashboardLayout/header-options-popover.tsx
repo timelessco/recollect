@@ -48,7 +48,7 @@ export function HeaderOptionsPopover() {
   };
 
   return (
-    <Menu.Root open={popoverOpen} onOpenChange={handleMenuOpenChange}>
+    <Menu.Root onOpenChange={handleMenuOpenChange} open={popoverOpen}>
       <Menu.Trigger
         aria-label="Page options"
         className="rounded-lg bg-transparent p-[7px] text-gray-600 hover:bg-gray-100 hover:text-plain-reverse"
@@ -59,14 +59,14 @@ export function HeaderOptionsPopover() {
         <Menu.Positioner align="end">
           <Menu.Popup className="w-auto overflow-clip p-0 leading-[20px]">
             <AnimatedSize>
-              <AnimatePresence mode="popLayout" initial={false}>
+              <AnimatePresence initial={false} mode="popLayout">
                 {view === "menu" && (
                   <motion.div
-                    key="menu"
-                    className="w-[180px] p-1"
-                    initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
+                    className="w-[180px] p-1"
                     exit={{ opacity: 0 }}
+                    initial={{ opacity: 0 }}
+                    key="menu"
                     transition={fade}
                   >
                     <HeaderMenuItems isItemClickRef={isItemClickRef} onSelectView={setView} />
@@ -74,11 +74,11 @@ export function HeaderOptionsPopover() {
                 )}
                 {view === "view" && (
                   <motion.div
-                    key="view"
-                    className="w-[180px] p-1"
-                    initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
+                    className="w-[180px] p-1"
                     exit={{ opacity: 0 }}
+                    initial={{ opacity: 0 }}
+                    key="view"
                     transition={fade}
                   >
                     <BookmarksViewDropdown isDropdown={false} />
@@ -86,11 +86,11 @@ export function HeaderOptionsPopover() {
                 )}
                 {view === "sort" && (
                   <motion.div
-                    key="sort"
-                    className="w-[180px] p-1"
-                    initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
+                    className="w-[180px] p-1"
                     exit={{ opacity: 0 }}
+                    initial={{ opacity: 0 }}
+                    key="sort"
                     transition={fade}
                   >
                     <BookmarksSortDropdown isDropdown={false} />
@@ -98,11 +98,11 @@ export function HeaderOptionsPopover() {
                 )}
                 {view === "share" && (
                   <motion.div
-                    key="share"
-                    className="p-1"
-                    initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
+                    className="p-1"
                     exit={{ opacity: 0 }}
+                    initial={{ opacity: 0 }}
+                    key="share"
                     transition={fade}
                   >
                     <div className="w-[300px]">
@@ -112,23 +112,27 @@ export function HeaderOptionsPopover() {
                 )}
                 {view === "trash" && (
                   <motion.div
-                    key="trash"
-                    className="w-[180px] p-1"
-                    initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
+                    className="w-[180px] p-1"
                     exit={{ opacity: 0 }}
+                    initial={{ opacity: 0 }}
+                    key="trash"
                     transition={fade}
                   >
-                    <ClearTrashTabContent onClose={() => setView("closed")} />
+                    <ClearTrashTabContent
+                      onClose={() => {
+                        setView("closed");
+                      }}
+                    />
                   </motion.div>
                 )}
                 {view === "delete-collection" && (
                   <motion.div
-                    key="delete-collection"
-                    className="w-56 p-1"
-                    initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
+                    className="w-56 p-1"
                     exit={{ opacity: 0 }}
+                    initial={{ opacity: 0 }}
+                    key="delete-collection"
                     transition={fade}
                   >
                     <DeleteCollectionTabContent />
@@ -165,14 +169,18 @@ function HeaderMenuItems({ isItemClickRef, onSelectView }: HeaderMenuItemsProps)
     <>
       <Menu.Item
         className="rounded-lg p-0 data-highlighted:bg-gray-200"
-        onClick={() => selectView("view")}
+        onClick={() => {
+          selectView("view");
+        }}
       >
         <BookmarksViewDropdown renderOnlyButton />
       </Menu.Item>
       {showSort && (
         <Menu.Item
           className="rounded-lg p-0 data-highlighted:bg-gray-200"
-          onClick={() => selectView("sort")}
+          onClick={() => {
+            selectView("sort");
+          }}
         >
           <BookmarksSortDropdown renderOnlyButton />
         </Menu.Item>
@@ -180,7 +188,9 @@ function HeaderMenuItems({ isItemClickRef, onSelectView }: HeaderMenuItemsProps)
       {showTrash && (
         <Menu.Item
           className="text-red-600 data-highlighted:text-red-600"
-          onClick={() => selectView("trash")}
+          onClick={() => {
+            selectView("trash");
+          }}
         >
           <TrashIconGray className="size-4" />
           <span className="ml-[6px]">Clear Trash</span>
@@ -188,14 +198,20 @@ function HeaderMenuItems({ isItemClickRef, onSelectView }: HeaderMenuItemsProps)
       )}
       {isCategory && (
         <>
-          <Menu.Item onClick={() => selectView("share")}>
+          <Menu.Item
+            onClick={() => {
+              selectView("share");
+            }}
+          >
             <ShareIcon />
             <span className="ml-[6px]">Share</span>
           </Menu.Item>
           <RenameMenuItem />
           <Menu.Item
             className="text-red-600 data-highlighted:text-red-600"
-            onClick={() => selectView("delete-collection")}
+            onClick={() => {
+              selectView("delete-collection");
+            }}
           >
             <TrashIconGray className="size-4" />
             <span className="ml-[6px]">Delete collection</span>
@@ -213,7 +229,9 @@ function RenameMenuItem() {
     <Menu.Item
       onClick={() => {
         setTriggerHeadingEdit(true);
-        setTimeout(() => setTriggerHeadingEdit(false), 0);
+        setTimeout(() => {
+          setTriggerHeadingEdit(false);
+        }, 0);
       }}
     >
       <RenameIcon />
@@ -230,13 +248,13 @@ function ClearTrashTabContent({ onClose }: { onClose: () => void }) {
 
   return (
     <DestructiveConfirmContent
+      description={`${trashCount} ${trashCount === 1 ? "bookmark" : "bookmarks"}`}
+      label="Clear All Trash"
       onConfirm={async () => {
         await mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
         onClose();
       }}
       pending={isClearingTrash}
-      label="Clear All Trash"
-      description={`${trashCount} ${trashCount === 1 ? "bookmark" : "bookmarks"}`}
     />
   );
 }
@@ -244,7 +262,7 @@ function ClearTrashTabContent({ onClose }: { onClose: () => void }) {
 function DeleteCollectionTabContent() {
   const { category_id: categoryId } = useGetCurrentCategoryId();
   const { bookmarksCountData } = useFetchBookmarksCount();
-  const { pendingMode, handleDeleteAll, handleKeepBookmarks } = useDeleteCollectionActions({
+  const { handleDeleteAll, handleKeepBookmarks, pendingMode } = useDeleteCollectionActions({
     categoryId: categoryId as number,
     isCurrent: true,
   });
@@ -255,8 +273,8 @@ function DeleteCollectionTabContent() {
   return (
     <DeleteCollectionConfirm
       count={count}
-      onDeleteCollection={handleKeepBookmarks}
       onDeleteAll={handleDeleteAll}
+      onDeleteCollection={handleKeepBookmarks}
       pendingMode={pendingMode}
     />
   );

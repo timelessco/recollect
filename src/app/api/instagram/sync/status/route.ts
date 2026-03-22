@@ -10,10 +10,7 @@ const ROUTE = "instagram-sync-status";
 const StatusInputSchema = z.object({});
 
 export const GET = createGetApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: StatusInputSchema,
-  outputSchema: InstagramSyncStatusOutputSchema,
-  handler: async ({ supabase, user, route }) => {
+  handler: async ({ route, supabase, user }) => {
     const { data, error } = await supabase.rpc("get_instagram_sync_status", {
       p_user_id: user.id,
     });
@@ -21,14 +18,17 @@ export const GET = createGetApiHandlerWithAuth({
     if (error) {
       console.error(`[${route}] Status error:`, error);
       return apiError({
-        route,
-        message: "Failed to get sync status",
         error,
+        message: "Failed to get sync status",
         operation: "get_status",
+        route,
         userId: user.id,
       });
     }
 
     return data;
   },
+  inputSchema: StatusInputSchema,
+  outputSchema: InstagramSyncStatusOutputSchema,
+  route: ROUTE,
 });

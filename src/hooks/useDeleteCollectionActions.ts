@@ -13,9 +13,9 @@ export function useDeleteCollectionActions({
   categoryId,
   isCurrent,
 }: UseDeleteCollectionActionsProps): {
-  pendingMode: PendingMode;
   handleDeleteAll: () => Promise<void>;
   handleKeepBookmarks: () => Promise<void>;
+  pendingMode: PendingMode;
 } {
   const { onDeleteCollection } = useDeleteCollection();
   const [pendingMode, setPendingMode] = useState<PendingMode>(null);
@@ -24,8 +24,8 @@ export function useDeleteCollectionActions({
     setPendingMode("delete-all");
     try {
       await onDeleteCollection({
-        current: isCurrent,
         categoryId,
+        current: isCurrent,
         keepBookmarks: false,
       });
     } finally {
@@ -37,8 +37,8 @@ export function useDeleteCollectionActions({
     setPendingMode("keep-bookmarks");
     try {
       await onDeleteCollection({
-        current: isCurrent,
         categoryId,
+        current: isCurrent,
         keepBookmarks: true,
       });
     } finally {
@@ -46,5 +46,5 @@ export function useDeleteCollectionActions({
     }
   }, [isCurrent, categoryId, onDeleteCollection]);
 
-  return { pendingMode, handleDeleteAll, handleKeepBookmarks };
+  return { handleDeleteAll, handleKeepBookmarks, pendingMode };
 }

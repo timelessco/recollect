@@ -1,4 +1,6 @@
-import { Icon, type IconProps } from "@/components/atoms/icon";
+import type { IconProps } from "@/components/atoms/icon";
+
+import { Icon } from "@/components/atoms/icon";
 
 export const AudioIcon = ({ ...props }: IconProps) => (
   <Icon

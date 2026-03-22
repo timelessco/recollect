@@ -1,13 +1,13 @@
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 
 const ROUTE = "revalidate";
 
-type RevalidateResponse = {
-  revalidated: boolean;
+interface RevalidateResponse {
   message?: string;
-};
+  revalidated: boolean;
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -16,8 +16,8 @@ export default async function handler(
   // Only allow POST requests
   if (req.method !== "POST") {
     res.status(405).json({
-      revalidated: false,
       message: "Method not allowed",
+      revalidated: false,
     });
     return;
   }
@@ -30,8 +30,8 @@ export default async function handler(
       path: req.body.path,
     });
     res.status(401).json({
-      revalidated: false,
       message: "Invalid token",
+      revalidated: false,
     });
     return;
   }
@@ -41,8 +41,8 @@ export default async function handler(
 
     if (!path) {
       res.status(400).json({
-        revalidated: false,
         message: "Path is required",
+        revalidated: false,
       });
       return;
     }
@@ -61,17 +61,17 @@ export default async function handler(
       path: req.body.path,
     });
     Sentry.captureException(error, {
-      tags: {
-        operation: "revalidate_path",
-        context: "isr",
-      },
       extra: { path: req.body.path },
+      tags: {
+        context: "isr",
+        operation: "revalidate_path",
+      },
     });
     // If there was an error, Next.js will continue
     // to show the last successfully generated page
     res.status(500).json({
-      revalidated: false,
       message: "Error revalidating",
+      revalidated: false,
     });
   }
 }

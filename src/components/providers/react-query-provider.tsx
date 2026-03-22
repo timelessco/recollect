@@ -8,9 +8,9 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { getQueryClient } from "@/lib/react-query/get-query-client";
 
-type ReactQueryProviderProps = {
+interface ReactQueryProviderProps {
   children: React.ReactNode;
-};
+}
 
 export const ReactQueryProvider = (props: ReactQueryProviderProps) => {
   const { children } = props;

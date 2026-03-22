@@ -1,21 +1,22 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 
+import type { SingleListData } from "../../../types/apiTypes";
+
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
-import { type SingleListData } from "../../../types/apiTypes";
 import { getColumnCount } from "../../../utils/helpers";
 
-type CardViewVirtualizedProps = {
-  bookmarksList: SingleListData[];
+interface CardViewVirtualizedProps {
   bookmarksColumns: number[];
-  renderOption: (index: number) => React.ReactNode;
+  bookmarksList: SingleListData[];
   getScrollElement: () => HTMLElement | null;
-};
+  renderOption: (index: number) => React.ReactNode;
+}
 
 export const CardViewVirtualized = ({
-  bookmarksList,
   bookmarksColumns,
-  renderOption,
+  bookmarksList,
   getScrollElement,
+  renderOption,
 }: CardViewVirtualizedProps) => {
   const { isMobile, isTablet } = useIsMobileView();
 
@@ -28,12 +29,11 @@ export const CardViewVirtualized = ({
   // Row virtualizer
   const rowVirtualizer = useVirtualizer({
     count: totalRows,
-    getScrollElement,
     estimateSize: () => {
       const containerWidth =
         typeof document !== "undefined"
-          ? (document.querySelector("#scrollableDiv")?.clientWidth ?? 1_200)
-          : 1_200;
+          ? (document.querySelector("#scrollableDiv")?.clientWidth ?? 1200)
+          : 1200;
 
       const cardWidth = containerWidth / lanes;
 
@@ -42,8 +42,9 @@ export const CardViewVirtualized = ({
 
       return cardHeight + 42;
     },
-    overscan: 5,
+    getScrollElement,
     measureElement: (element) => element.getBoundingClientRect().height,
+    overscan: 5,
   });
 
   return (
@@ -62,9 +63,9 @@ export const CardViewVirtualized = ({
 
         return (
           <div
-            key={virtualRow.key}
-            data-index={rowIndex}
             className="absolute top-0 left-0 flex w-full pb-10.5"
+            data-index={rowIndex}
+            key={virtualRow.key}
             ref={rowVirtualizer.measureElement}
             style={{
               transform: `translateY(${virtualRow.start}px)`,
@@ -75,8 +76,8 @@ export const CardViewVirtualized = ({
 
               return (
                 <div
-                  key={bookmark.id}
                   className="pr-3 pl-3"
+                  key={bookmark.id}
                   style={{
                     width: `${columnWidth}%`,
                   }}

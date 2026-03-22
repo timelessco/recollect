@@ -1,4 +1,4 @@
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import CryptoJS from "crypto-js";
 import { z } from "zod";
@@ -35,8 +35,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   if (!parsed.success) {
     response.status(400).json({
-      error: "Invalid request body",
       details: parsed.error.issues.map((issue) => issue.message),
+      error: "Invalid request body",
     });
     return;
   }
@@ -45,7 +45,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
   const userId = user.id;
 
   try {
-    await validateApiKey(apikey as string);
+    await validateApiKey(apikey);
   } catch (error) {
     console.error(error);
     response.status(400).json({ error: "Invalid API key" });
@@ -59,8 +59,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
     ).toString();
 
     const { data: DataResponse, error: ErrorResponse } = await supabase.from(PROFILES).upsert({
-      id: userId,
       api_key: encryptedApiKey,
+      id: userId,
     });
 
     if (ErrorResponse) {
@@ -70,8 +70,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
     }
 
     response.status(200).json({
-      message: "API key saved successfully",
       data: DataResponse,
+      message: "API key saved successfully",
     });
   } catch (error) {
     console.error(error);

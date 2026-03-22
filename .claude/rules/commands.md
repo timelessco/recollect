@@ -6,8 +6,7 @@
 2. Run quality checks:
 
 ```bash
-pnpm fix        # Auto-fix all (spelling → css → md → oxfmt → eslint)
-pnpm lint:types # TypeScript strict checks (includes next typegen + deno check)
+pnpm fix        # Auto-fix all (spelling → css → md → ultracite)
 pnpm lint:knip  # Detect unused code (especially after large changes)
 ```
 
@@ -19,9 +18,9 @@ pnpm build      # Runs OpenAPI gen → next build → next-sitemap
 
 ### Quality Gates by Task Type
 
-- **Components**: `pnpm fix:eslint` → `pnpm lint:types` → verify ARIA → `pnpm build`
-- **Styling**: `pnpm lint:css` → `pnpm fix:oxfmt` → `pnpm build`
-- **Utilities**: `pnpm lint:types` → `pnpm lint:knip`
+- **Components**: `pnpm fix` → verify ARIA → `pnpm build`
+- **Styling**: `pnpm lint:css` → `pnpm fix` → `pnpm build`
+- **Utilities**: `pnpm fix` → `pnpm lint:knip`
 - **Documentation**: `pnpm fix:md` → `pnpm fix:spelling`
 - **Dependencies**: `pnpm check:packages` → `pnpm lint:knip` → `pnpm build`
 - **Supabase migrations**: `pnpm db:types` → verify `database-generated.types.ts`
@@ -53,9 +52,8 @@ pnpm start            # Start production server
 #### Fix (auto-fix)
 
 ```bash
-pnpm fix              # Turbo: full fix chain (spelling → css → md → oxfmt → eslint via dependsOn)
-pnpm fix:eslint       # Auto-fix ESLint issues
-pnpm fix:oxfmt        # Auto-fix formatting
+pnpm fix              # Turbo: full fix chain (spelling → css → md → ultracite via dependsOn)
+pnpm fix:ultracite    # Auto-fix linting + formatting (Oxlint + Oxfmt)
 pnpm fix:css          # Auto-fix Stylelint issues
 pnpm fix:md           # Auto-fix markdown issues
 pnpm fix:spelling     # Rebuild cspell dictionary from scratch
@@ -65,13 +63,12 @@ pnpm fix:spelling     # Rebuild cspell dictionary from scratch
 
 ```bash
 pnpm lint             # Turbo: all lint tasks in parallel
-pnpm lint:eslint      # Check ESLint
-pnpm lint:types       # next typegen → tsc --noEmit → deno check edge function
+pnpm lint:ultracite   # Check linting + formatting (Oxlint + Oxfmt)
 pnpm lint:css         # Check Stylelint
 pnpm lint:md          # Check markdown
 pnpm lint:knip        # Check unused code/exports/deps
 pnpm lint:spelling    # Check spelling
-pnpm lint:oxfmt       # Check formatting
+pnpm lint:types:deno  # Deno type checks for Supabase Edge Functions
 ```
 
 #### Database
@@ -99,7 +96,7 @@ pnpm cypress:open     # Open Cypress (no specs exist)
 
 ### Pre-Commit (Automatic)
 
-- **pre-commit** (lint-staged): Oxfmt formatting on all staged files
+- **pre-commit** (lint-staged): Ultracite fix on staged JS/TS/JSON files
 - **commit-msg** (commitlint): Conventional commit message validation (`@commitlint/config-conventional`)
 
 ### Self-Improvement

@@ -1,13 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import type {
+  BookmarksPaginatedDataTypes,
+  CategoriesData,
+  SingleListData,
+} from "../../../types/apiTypes";
+
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useLoadersStore, useSupabaseSession } from "../../../store/componentStore";
-import {
-  type BookmarksPaginatedDataTypes,
-  type CategoriesData,
-  type SingleListData,
-} from "../../../types/apiTypes";
 import {
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
@@ -41,6 +42,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
   const addBookmarkMinDataOptimisticMutation = useMutation({
     mutationFn: addBookmarkMinData,
+    // If the mutation fails, use the context returned from onMutate to roll back
     onMutate: async (data) => {
       setIsBookmarkAdding(true);
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
@@ -58,11 +60,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
       // Fetch category from cache to build addedCategories
       const allCategories =
-        (
-          queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]) as
-            | { data: CategoriesData[] }
-            | undefined
-        )?.data ?? [];
+        queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])?.data ?? [];
 
       const categoryEntry = allCategories.find((cat) => cat.id === data?.category_id);
 
@@ -116,7 +114,6 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       // Return a context object with the snapshotted value
       return { previousData };
     },
-    // If the mutation fails, use the context returned from onMutate to roll back
     onError: (context: { previousData: BookmarksPaginatedDataTypes }) => {
       queryClient.setQueryData(
         [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
@@ -166,8 +163,8 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
             addLoadingBookmarkId(data?.id);
             successToast("Generating thumbnail");
             await handlePdfThumbnailAndUpload({
-              fileUrl: data?.url,
               fileId: data?.id,
+              fileUrl: data?.url,
               sessionUserId: session?.user?.id,
             });
           } catch (error) {
@@ -175,8 +172,8 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
             try {
               errorToast("retry thumbnail generation");
               await handlePdfThumbnailAndUpload({
-                fileUrl: data?.url,
                 fileId: data?.id,
+                fileUrl: data?.url,
                 sessionUserId: session?.user?.id,
               });
             } catch (retryError) {
@@ -200,13 +197,13 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
         // update to zustand here
         addBookmarkScreenshotMutation.mutate({
-          url: data?.url,
           id: data?.id,
+          url: data?.url,
         });
       }
     },
     onSuccess: (apiResponse) => {
-      const apiResponseTyped = apiResponse as unknown as { status: number };
+      const apiResponseTyped = apiResponse as { status: number };
       if (
         (CATEGORY_ID === VIDEOS_URL ||
           CATEGORY_ID === DOCUMENTS_URL ||

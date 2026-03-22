@@ -1,18 +1,19 @@
 // you might want to use regular 'fs' and not a promise one
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
 import axios from "axios";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 import isNil from "lodash/isNil";
 
-import {
-  type FileNameType,
-  type ImgMetadataType,
-  type SingleListData,
+import type {
+  FileNameType,
+  ImgMetadataType,
+  SingleListData,
 } from "../../../../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
+
 import {
   BOOKMARK_CATEGORIES_TABLE_NAME,
   getBaseUrl,
@@ -46,7 +47,7 @@ const videoLogic = async (
   data: {
     category_id: string;
     name: string;
-    thumbnailPath: string | null;
+    thumbnailPath: null | string;
     type: string;
     uploadFileNamePath: string;
   },
@@ -68,7 +69,6 @@ const videoLogic = async (
   const { error: getError } = await storageHelpers.listObjects(R2_MAIN_BUCKET_NAME, thumbnailPath);
 
   if (!isNil(getError)) {
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     throw new Error(`ERROR: getError ${getError}`);
   }
 
@@ -100,33 +100,35 @@ const videoLogic = async (
   }
 
   const meta_data = {
-    img_caption: null,
-    image_caption: null,
-    width: imgData?.width ?? null,
-    height: imgData?.height ?? null,
-    ogImgBlurUrl: imgData?.encoded ?? null,
-    favIcon: null,
-    twitter_avatar_url: null,
-    ocr: null,
     coverImage: null,
-    screenshot: null,
-    isOgImagePreferred: false,
-    mediaType: "",
+    favIcon: null,
+    height: imgData?.height ?? null,
     iframeAllowed: false,
+    image_caption: null,
+    img_caption: null,
+    isOgImagePreferred: false,
     isPageScreenshot: null,
+    mediaType: "",
+    ocr: null,
+    ogImgBlurUrl: imgData?.encoded ?? null,
+    screenshot: null,
+    twitter_avatar_url: null,
     video_url: null,
+    width: imgData?.width ?? null,
   };
 
-  return { ogImage, meta_data };
+  return { meta_data, ogImage };
 };
 
 export default async (
   request: NextApiRequest,
   response: NextApiResponse<{
-    data?: Array<{
-      id: SingleListData["id"];
-    }> | null;
-    error: string | null;
+    data?:
+      | {
+          id: SingleListData["id"];
+        }[]
+      | null;
+    error: null | string;
     success: boolean;
   }>,
 ) => {
@@ -135,7 +137,7 @@ export default async (
   const data = request.body as {
     category_id: string;
     name: string;
-    thumbnailPath: string | null;
+    thumbnailPath: null | string;
     type: string;
     uploadFileNamePath: string;
   };
@@ -156,13 +158,13 @@ export default async (
   // if the uploaded file is valid this happens
   const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
 
-  if (Number.parseInt(categoryId as string, 10) !== 0 && typeof categoryId === "number") {
+  if (Number.parseInt(categoryId, 10) !== 0 && typeof categoryId === "number") {
     const checkIfUserIsCategoryOwnerOrCollaboratorValue =
       await checkIfUserIsCategoryOwnerOrCollaborator(
         supabase,
         categoryId as number,
-        userId as string,
-        email as string,
+        userId!,
+        email!,
         response,
       );
 
@@ -181,21 +183,21 @@ export default async (
   const { data: storageData, error: publicUrlError } = storageHelpers.getPublicUrl(storagePath);
 
   let meta_data: ImgMetadataType = {
-    img_caption: null,
-    image_caption: null,
-    width: null,
-    height: null,
-    ogImgBlurUrl: null,
-    favIcon: null,
-    twitter_avatar_url: null,
-    ocr: null,
     coverImage: null,
-    screenshot: null,
-    isOgImagePreferred: false,
+    favIcon: null,
+    height: null,
     iframeAllowed: false,
-    mediaType: "",
+    image_caption: null,
+    img_caption: null,
+    isOgImagePreferred: false,
     isPageScreenshot: null,
+    mediaType: "",
+    ocr: null,
+    ogImgBlurUrl: null,
+    screenshot: null,
+    twitter_avatar_url: null,
     video_url: null,
+    width: null,
   };
   const isVideo = fileType?.includes("video");
 
@@ -210,11 +212,7 @@ export default async (
     // meta_data = metaData;
   } else {
     // if file is a video
-    const { ogImage: image, meta_data: metaData } = await videoLogic(
-      data,
-      userId as string,
-      uploadPath,
-    );
+    const { meta_data: metaData, ogImage: image } = await videoLogic(data, userId!, uploadPath);
 
     ogImage = image;
     meta_data = metaData;
@@ -225,18 +223,18 @@ export default async (
     .from(MAIN_TABLE_NAME)
     .insert([
       {
-        url: storageData?.publicUrl,
-        title: fileName,
-        user_id: userId,
-        description: (meta_data?.img_caption as string) || "",
-        ogImage,
-        type: fileType,
+        description: meta_data?.img_caption! || "",
         meta_data,
+        ogImage,
+        title: fileName,
+        type: fileType,
+        url: storageData?.publicUrl,
+        user_id: userId,
       },
     ])
     .select(`id`)) as unknown as {
-    data: Array<{ id: SingleListData["id"] }>;
-    error: PostgrestError | VerifyErrors | string | null;
+    data: { id: SingleListData["id"] }[];
+    error: null | PostgrestError | string | VerifyErrors;
   };
 
   // Add category association via junction table
@@ -250,10 +248,10 @@ export default async (
     if (junctionError) {
       console.error("Error inserting category association:", junctionError);
       Sentry.captureException(junctionError, {
+        extra: { bookmarkId: DatabaseData[0].id, categoryId: categoryIdLogic },
         tags: {
           operation: "insert_bookmark_category_junction",
         },
-        extra: { bookmarkId: DatabaseData[0].id, categoryId: categoryIdLogic },
       });
     }
   }
@@ -281,8 +279,8 @@ export default async (
     }
   } else {
     response.status(500).json({
-      success: false,
       error: (publicUrlError ?? DBerror) as string,
+      success: false,
     });
   }
 };

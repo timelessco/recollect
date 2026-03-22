@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { createServerClient } from "@supabase/ssr";
 import { isAuthRetryableFetchError } from "@supabase/supabase-js";
@@ -12,7 +13,7 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
-  const pathname = request.nextUrl.pathname;
+  const { pathname } = request.nextUrl;
 
   // Skip authentication for public paths - allow anyone to view public collections
   if (isPublicPath(pathname)) {
@@ -34,7 +35,7 @@ export async function updateSession(request: NextRequest) {
         supabaseResponse = NextResponse.next({
           request,
         });
-        for (const { name, value, options } of cookiesToSet) {
+        for (const { name, options, value } of cookiesToSet) {
           supabaseResponse.cookies.set(name, value, options);
         }
       },

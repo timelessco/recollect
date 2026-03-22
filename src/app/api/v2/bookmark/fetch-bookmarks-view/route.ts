@@ -7,14 +7,11 @@ import { FetchBookmarksViewInputSchema, FetchBookmarksViewOutputSchema } from ".
 const ROUTE = "v2-bookmark-fetch-bookmarks-view";
 
 export const GET = createGetApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: FetchBookmarksViewInputSchema,
-  outputSchema: FetchBookmarksViewOutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const { category_id } = data;
     const userId = user.id;
 
-    console.log(`[${route}] API called:`, { userId, category_id });
+    console.log(`[${route}] API called:`, { category_id, userId });
 
     const { data: viewData, error } = await supabase
       .from(CATEGORIES_TABLE_NAME)
@@ -24,15 +21,18 @@ export const GET = createGetApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to fetch bookmarks view",
         error,
-        operation: "bookmarks_view_fetch",
-        userId,
         extra: { category_id },
+        message: "Failed to fetch bookmarks view",
+        operation: "bookmarks_view_fetch",
+        route,
+        userId,
       });
     }
 
     return viewData;
   },
+  inputSchema: FetchBookmarksViewInputSchema,
+  outputSchema: FetchBookmarksViewOutputSchema,
+  route: ROUTE,
 });

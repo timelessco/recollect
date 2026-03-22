@@ -11,21 +11,21 @@ import { DISCOVER_URL, isPublicPath, PAGINATION_LIMIT } from "@/utils/constants"
 import { handleClientError } from "@/utils/error-utils/client";
 import { getCategorySlugFromRouter } from "@/utils/url";
 
-type UseLightboxPrefetchParams = {
+interface UseLightboxPrefetchParams {
   activeIndex: number;
   bookmarksLength: number;
   open: boolean;
-  pages: Array<{ data: unknown[] }> | undefined;
-};
+  pages: { data: unknown[] }[] | undefined;
+}
 
 /**
  * Hook to prefetch the next page of bookmarks when approaching the end of current data
  * in the lightbox view.
  */
 export function useLightboxPrefetch({
-  open,
   activeIndex,
   bookmarksLength,
+  open,
   pages,
 }: UseLightboxPrefetchParams) {
   const router = useRouter();

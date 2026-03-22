@@ -3,9 +3,17 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo } from "react";
 import { Item } from "react-stately";
 
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { find, flatten, isEmpty, type Many } from "lodash";
+import { find, flatten, isEmpty } from "lodash";
+
+import type {
+  BookmarkViewDataTypes,
+  CategoriesData,
+  SingleListData,
+} from "../../../types/apiTypes";
+import type { BookmarksViewTypes } from "../../../types/componentStoreTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { Many } from "lodash";
 
 import { cn } from "@/utils/tailwind-merge";
 
@@ -21,12 +29,6 @@ import {
   useMiscellaneousStore,
   useSupabaseSession,
 } from "../../../store/componentStore";
-import {
-  type BookmarkViewDataTypes,
-  type CategoriesData,
-  type SingleListData,
-} from "../../../types/apiTypes";
-import { type BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import {
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
@@ -45,34 +47,34 @@ import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import ListBox from "./listBox";
 import { PublicMoodboardVirtualized } from "./public-moodboard-virtualized";
 
-export type CardSectionProps = {
+export interface CardSectionProps {
   categoryViewsFromProps?: BookmarkViewDataTypes;
   flattendPaginationBookmarkData?: SingleListData[];
-  isLoading?: boolean;
   /**
    * When true, use discover layout (e.g. top margin) so SSR and client match without relying on router.
    */
   isDiscoverPage?: boolean;
+  isLoading?: boolean;
   isPublicPage?: boolean;
   listData: SingleListData[];
   onDeleteClick?: (post: SingleListData[]) => void;
   onMoveOutOfTrashClick?: (post: SingleListData) => void;
-};
+}
 
 const CardSection = ({
-  listData = [],
+  categoryViewsFromProps = undefined,
   flattendPaginationBookmarkData = [],
+  isDiscoverPage = false,
   isLoading = false,
+  isPublicPage = false,
+  listData = [],
   onDeleteClick,
   onMoveOutOfTrashClick,
-  isPublicPage = false,
-  isDiscoverPage = false,
-  categoryViewsFromProps = undefined,
 }: CardSectionProps) => {
   const router = useRouter();
   const userId = useSupabaseSession((state) => state.session)?.user?.id ?? "";
   const { category_id: categoryId } = useGetCurrentCategoryId();
-  const { userProfileData: profileData, isLoading: isLoadingProfile } = useFetchUserProfile();
+  const { isLoading: isLoadingProfile, userProfileData: profileData } = useFetchUserProfile();
   const { allCategories } = useFetchCategories();
   const { bookmarksCountData } = useFetchBookmarksCount();
 
@@ -87,7 +89,7 @@ const CardSection = ({
     (find(allCategories?.data, (item) => item?.category_slug === categorySlug)?.collabData
       ?.length ?? 0) > 1;
   const isBookmarkLoading = useLoadersStore((state) => state.isBookmarkAdding);
-  const { setLightboxId, setLightboxOpen, lightboxOpen, lightboxId } = useMiscellaneousStore();
+  const { lightboxId, lightboxOpen, setLightboxId, setLightboxOpen } = useMiscellaneousStore();
   // Handle route changes for lightbox
   useEffect(() => {
     const { isPreviewPath, previewId } = getPreviewPathInfo(router?.asPath, PREVIEW_ALT_TEXT);
@@ -103,17 +105,14 @@ const CardSection = ({
       setLightboxOpen(false);
       setLightboxId(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [router?.asPath]);
 
   const queryClient = useQueryClient();
   const searchText = useMiscellaneousStore((state) => state.searchText);
   const setCurrentBookmarkView = useMiscellaneousStore((state) => state.setCurrentBookmarkView);
 
-  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId]) as {
-    data: CategoriesData[];
-    error: PostgrestError;
-  };
+  const categoryData = queryClient.getQueryData([CATEGORIES_KEY, userId])!;
 
   const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
   // gets from the trigram search api
@@ -122,10 +121,7 @@ const CardSection = ({
     userId,
     searchSlugKey(categoryData),
     searchText,
-  ]) as {
-    error: PostgrestError;
-    pages: Array<{ data: SingleListData[]; error: PostgrestError }>;
-  };
+  ])!;
 
   const bookmarksList =
     isPublicPage || isEmpty(searchText)
@@ -177,10 +173,10 @@ const CardSection = ({
 
   const listWrapperClass = cn({
     "mt-[47px]": !isPublicPage || (isDiscoverPage && Boolean(userId)),
-    "px-4 py-2": cardTypeCondition === viewValues.list || cardTypeCondition === viewValues.timeline,
-
     "px-3 py-2":
       cardTypeCondition === viewValues.moodboard || cardTypeCondition === viewValues.card,
+
+    "px-4 py-2": cardTypeCondition === viewValues.list || cardTypeCondition === viewValues.timeline,
   });
 
   const renderItem = () => {
@@ -188,10 +184,10 @@ const CardSection = ({
       return (
         <div className="absolute inset-0 flex items-center justify-center dark:brightness-0 dark:invert">
           <Image
-            src={loaderGif}
             alt="loader"
             className="h-12 w-12"
             loader={(source) => source.src}
+            src={loaderGif}
           />
         </div>
       );
@@ -200,9 +196,9 @@ const CardSection = ({
     if (isLoading) {
       return (
         <BookmarksSkeletonLoader
+          colCount={bookmarksColumns?.[0]}
           count={getBookmarkCountForCurrentPage(bookmarksCountData?.data ?? undefined, categoryId)}
           type={cardTypeCondition}
-          colCount={bookmarksColumns?.[0]}
         />
       );
     }

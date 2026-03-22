@@ -25,7 +25,7 @@ export function SignInWithGoogleForm() {
       return next ?? undefined;
     }
 
-    return undefined;
+    return;
   });
 
   const [isPending, startTransition] = React.useTransition();
@@ -40,8 +40,8 @@ export function SignInWithGoogleForm() {
       try {
         const supabase = createClient();
         const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
           options: { redirectTo },
+          provider: "google",
         });
 
         if (error) {
@@ -54,9 +54,8 @@ export function SignInWithGoogleForm() {
   };
 
   return (
-    <form onSubmit={handleSocialLogin} className="w-full">
+    <form className="w-full" onSubmit={handleSocialLogin}>
       <Button
-        type="submit"
         aria-label="Sign in with Google"
         className="w-full rounded-[10px] bg-gray-alpha-100 py-2 text-13 leading-[13px] font-medium text-gray-800 hover:not-data-disabled:bg-gray-300"
         pending={extendedIsPending}
@@ -65,6 +64,7 @@ export function SignInWithGoogleForm() {
             <span className="py-[3.5px]">Logging in...</span>
           </ButtonDefaultPendingComp>
         }
+        type="submit"
       >
         <GoogleIcon className="size-5" />
       </Button>
@@ -81,7 +81,7 @@ export function SignInWithAppleForm() {
       return next ?? undefined;
     }
 
-    return undefined;
+    return;
   });
 
   const [isPending, startTransition] = React.useTransition();
@@ -96,8 +96,8 @@ export function SignInWithAppleForm() {
       try {
         const supabase = createClient();
         const { error } = await supabase.auth.signInWithOAuth({
-          provider: "apple",
           options: { redirectTo },
+          provider: "apple",
         });
 
         if (error) {
@@ -110,9 +110,8 @@ export function SignInWithAppleForm() {
   };
 
   return (
-    <form onSubmit={handleSocialLogin} className="w-full">
+    <form className="w-full" onSubmit={handleSocialLogin}>
       <Button
-        type="submit"
         aria-label="Sign in with Apple"
         className="w-full rounded-[10px] bg-gray-alpha-100 py-2 text-13 leading-[13px] font-medium text-gray-800 hover:not-data-disabled:bg-gray-300"
         pending={extendedIsPending}
@@ -121,6 +120,7 @@ export function SignInWithAppleForm() {
             <span className="py-[3.5px]">Logging in...</span>
           </ButtonDefaultPendingComp>
         }
+        type="submit"
       >
         <AppleIcon className="size-5" />
       </Button>

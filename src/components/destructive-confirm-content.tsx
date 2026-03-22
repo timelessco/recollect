@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { Button } from "@base-ui/react/button";
 
@@ -7,27 +7,27 @@ import TrashIconGray from "@/icons/trash-icon-gray";
 import { Spinner } from "./spinner";
 
 interface DestructiveConfirmContentProps {
-  onConfirm: () => void;
-  label: string;
   description?: string;
-  pending?: boolean;
   icon?: ReactNode;
-  onConfirmSecondary?: () => void;
-  labelSecondary?: string;
-  pendingSecondary?: boolean;
   iconSecondary?: ReactNode;
+  label: string;
+  labelSecondary?: string;
+  onConfirm: () => void;
+  onConfirmSecondary?: () => void;
+  pending?: boolean;
+  pendingSecondary?: boolean;
 }
 
 export function DestructiveConfirmContent({
-  onConfirm,
-  label,
   description,
-  pending = false,
   icon = <TrashIconGray className="size-4" />,
-  onConfirmSecondary,
-  labelSecondary,
-  pendingSecondary = false,
   iconSecondary = <TrashIconGray className="size-4" />,
+  label,
+  labelSecondary,
+  onConfirm,
+  onConfirmSecondary,
+  pending = false,
+  pendingSecondary = false,
 }: DestructiveConfirmContentProps) {
   return (
     <>

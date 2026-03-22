@@ -1,19 +1,21 @@
 import { isBrowser } from "@react-hookz/web/util/const.js";
-import { create, type Mutate, type StoreApi } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type SidePaneState = {
+import type { Mutate, StoreApi } from "zustand";
+
+interface SidePaneState {
   setShowSidePane: (value: boolean) => void;
   showSidePane: boolean;
-};
+}
 
 // We are unable to store the width and apply it to the side pane
 // Issues related to allotment and its storing width logic - https://github.com/johnwalley/allotment/issues?q=sort%3Aupdated-desc%20is%3Aissue%20is%3Aopen%20width
 export const useSidePaneStore = create<SidePaneState>()(
   persist(
     (set) => ({
-      showSidePane: true,
       setShowSidePane: (value) => set({ showSidePane: value }),
+      showSidePane: true,
     }),
     { name: "sidePaneOpen" },
   ),
@@ -34,7 +36,9 @@ export const withStorageDOMEvents = (store: StoreWithPersist) => {
   };
 
   window.addEventListener("storage", storageEventCallback);
-  return () => window.removeEventListener("storage", storageEventCallback);
+  return () => {
+    window.removeEventListener("storage", storageEventCallback);
+  };
 };
 
 withStorageDOMEvents(useSidePaneStore as StoreWithPersist);

@@ -19,14 +19,19 @@ Before any Next.js work, read the relevant doc in `node_modules/next/dist/docs/`
 - OpenAPI tags are capitalized: `"Bookmarks"`, `"Categories"`, `"iPhone"`
 - `knip` for detecting unused code when making large changes
 
+## Tooling
+
+**Ultracite** (Oxlint + Oxfmt) enforces code quality. Most issues auto-fix with `pnpm fix`. Diagnose setup issues: `pnpm dlx ultracite doctor`.
+
 ## Commands
 
 ```bash
-pnpm fix        # Auto-fix all (spelling → css → md → oxfmt → eslint)
-pnpm lint:types # TypeScript strict checks
-pnpm lint:knip  # Detect unused code/exports/deps
-pnpm build      # Verify build passes
-pnpm db:types   # Generate Supabase types from local schema
+pnpm fix                  # Fix ALL auto-fixable issues (Ultracite + CSS + spelling + MD)
+pnpm lint                 # Run ALL quality checks
+pnpm lint:knip            # Detect unused code/exports/deps
+pnpm lint:types:deno      # Deno type checks for Supabase Edge Functions
+pnpm build                # Verify build passes
+pnpm db:types             # Generate Supabase types from local schema
 ```
 
 ## References
@@ -41,6 +46,5 @@ pnpm db:types   # Generate Supabase types from local schema
 After changes, run in order:
 
 1. `pnpm fix` — auto-fix all quality issues
-2. `pnpm lint:types` — TypeScript strict checks
-3. `pnpm lint:knip` — detect unused code (especially after large changes)
-4. `pnpm build` — confirm build passes (non-trivial changes)
+2. `pnpm lint:knip` — detect unused code (especially after large changes)
+3. `pnpm build` — confirm build passes (non-trivial changes)

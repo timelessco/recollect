@@ -1,7 +1,9 @@
-import { Icon, type IconProps } from "@/components/atoms/icon";
+import type { IconProps } from "@/components/atoms/icon";
+
+import { Icon } from "@/components/atoms/icon";
 
 export const OcrIcon = (props: IconProps) => (
-  <Icon {...props} viewBox="0 0 22 22" fill="none">
+  <Icon {...props} fill="none" viewBox="0 0 22 22">
     <path
       d="M2.75 6.41667V4.58333C2.75 4.0971 2.94315 3.63079 3.28697 3.28697C3.63079 2.94315 4.0971 2.75 4.58333 2.75H6.41667"
       stroke="currentColor"

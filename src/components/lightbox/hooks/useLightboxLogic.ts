@@ -3,12 +3,14 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
 
+import type { SingleListData } from "../../../types/apiTypes";
+import type { CustomSlide } from "../LightboxUtils";
+
 import { handleClientError } from "@/utils/error-utils/client";
 
 import { usePageContext } from "../../../hooks/use-page-context";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
 import { useIframeStore } from "../../../store/iframeStore";
-import { type SingleListData } from "../../../types/apiTypes";
 import {
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
@@ -21,7 +23,7 @@ import {
 } from "../../../utils/constants";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../../utils/url";
 import { buildAuthenticatedPreviewUrl, buildPublicPreviewUrl } from "../../../utils/url-builders";
-import { isYouTubeVideo, type CustomSlide } from "../LightboxUtils";
+import { isYouTubeVideo } from "../LightboxUtils";
 
 /**
  * Hook to transform bookmarks into lightbox slides
@@ -58,22 +60,22 @@ export const useLightboxSlides = (
           Boolean(bookmark?.meta_data?.additionalVideos?.[0]));
 
       return {
-        src: bookmark?.url,
-        // Set slide type for lightbox to handle appropriately
-        type: isVideo ? VIDEO_TYPE_PREFIX : isImage ? IMAGE_TYPE_PREFIX : undefined,
         // Embed bookmark data in slide for plugin access
         data: {
           bookmark,
           type: isVideo ? VIDEO_TYPE_PREFIX : isImage ? IMAGE_TYPE_PREFIX : undefined,
         },
+        src: bookmark?.url,
+        // Set slide type for lightbox to handle appropriately
+        type: isVideo ? VIDEO_TYPE_PREFIX : isImage ? IMAGE_TYPE_PREFIX : undefined,
         // Only include dimensions if not a PDF or not a YouTube video
         ...(bookmark?.meta_data?.mediaType !== PDF_MIME_TYPE &&
           !bookmark?.type?.includes(PDF_TYPE) &&
           !isYouTubeVideo(bookmark?.url) &&
           (!bookmark?.meta_data?.iframeAllowed || !iframeEnabled) && {
+            height: bookmark?.meta_data?.height ?? 1200,
             // using || instead of ?? to include 0
-            width: bookmark?.meta_data?.width || 1_200,
-            height: bookmark?.meta_data?.height || 1_200,
+            width: bookmark?.meta_data?.width ?? 1200,
           }),
         // Add video-specific properties
         ...(isVideo && {
@@ -111,12 +113,12 @@ export const useLightboxNavigation = ({
 }: UseLightboxNavigationProps) => {
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state?.session);
-  const lastInvalidatedIndex = useRef<number | null>(null);
+  const lastInvalidatedIndexRef = useRef<null | number>(null);
   const isCollectionChanged = useMiscellaneousStore((state) => state.isCollectionChanged);
   const setIsCollectionChanged = useMiscellaneousStore((state) => state.setIsCollectionChanged);
   const router = useRouter();
 
-  const { isPublicPage, isDiscoverPage } = usePageContext();
+  const { isDiscoverPage, isPublicPage } = usePageContext();
 
   /**
    * Invalidate queries for a given bookmark index.
@@ -143,7 +145,7 @@ export const useLightboxNavigation = ({
         ]);
 
         if (updateLastInvalidated) {
-          lastInvalidatedIndex.current = index;
+          lastInvalidatedIndexRef.current = index;
         }
       } catch (error) {
         handleClientError(error, "Error invalidating queries", false);
@@ -170,7 +172,7 @@ export const useLightboxNavigation = ({
 
     // Invalidate queries when slide changes (only for authenticated pages)
     if (
-      index !== lastInvalidatedIndex.current &&
+      index !== lastInvalidatedIndexRef.current &&
       isCollectionChanged &&
       !isPublicPage &&
       !isDiscoverPage
@@ -182,18 +184,18 @@ export const useLightboxNavigation = ({
     if (isPublicPage && !isDiscoverPage) {
       const publicInfo = getPublicPageInfo(router);
       if (publicInfo && bookmarks?.[index]?.id) {
-        const { pathname, query, as } = buildPublicPreviewUrl({
-          publicInfo,
+        const { as, pathname, query } = buildPublicPreviewUrl({
           bookmarkId: bookmarks[index].id,
+          publicInfo,
         });
         void router?.push({ pathname, query }, as, { shallow: true });
       }
     } else {
       const categorySlug = getCategorySlugFromRouter(router);
       if (categorySlug) {
-        const { pathname, query, as } = buildAuthenticatedPreviewUrl({
-          categorySlug,
+        const { as, pathname, query } = buildAuthenticatedPreviewUrl({
           bookmarkId: bookmarks?.[index]?.id,
+          categorySlug,
         });
         void router?.push({ pathname, query }, as, { shallow: true });
       }
@@ -223,5 +225,5 @@ export const useLightboxNavigation = ({
     onViewRef.current = handleViewChange;
   });
 
-  return { onViewRef, handleClose };
+  return { handleClose, onViewRef };
 };

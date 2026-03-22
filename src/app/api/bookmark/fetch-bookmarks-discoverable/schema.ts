@@ -11,6 +11,11 @@ export const FetchDiscoverBookmarksQuerySchema = z.object({
 export type FetchDiscoverBookmarksQuery = z.infer<typeof FetchDiscoverBookmarksQuerySchema>;
 
 const MetadataSchema = z.object({
+  additionalVideos: z
+    .array(z.string())
+    .nullable()
+    .optional()
+    .meta({ description: "Additional video URLs" }),
   coverImage: z.string().nullable().optional().meta({ description: "Cover image URL" }),
   favIcon: z.string().nullable().optional().meta({ description: "Favicon URL" }),
   height: z.number().nullable().optional().meta({ description: "Image height in pixels" }),
@@ -19,11 +24,11 @@ const MetadataSchema = z.object({
     .nullable()
     .optional()
     .meta({ description: "Whether iframe embedding is allowed" }),
-  img_caption: z.string().nullable().optional().meta({ description: "Image caption text" }),
   image_keywords: z
     .array(z.string())
     .optional()
     .meta({ description: "Keywords extracted from image" }),
+  img_caption: z.string().nullable().optional().meta({ description: "Image caption text" }),
   isOgImagePreferred: z
     .boolean()
     .optional()
@@ -56,34 +61,29 @@ const MetadataSchema = z.object({
     .optional()
     .meta({ description: "Video URL if content is a video" }),
   width: z.number().nullable().optional().meta({ description: "Image width in pixels" }),
-  additionalVideos: z
-    .array(z.string())
-    .nullable()
-    .optional()
-    .meta({ description: "Additional video URLs" }),
 });
 
 const DiscoverableBookmarkRowSchema = z.object({
+  category_id: z.number().meta({ description: "Primary category ID for this bookmark" }),
+  description: z.string().nullable().meta({ description: "Page or OG description" }),
   id: z.number().meta({ description: "Bookmark ID" }),
   inserted_at: z.string().meta({ description: "ISO timestamp when bookmark was created" }),
-  title: z.string().nullable().meta({ description: "Page title" }),
-  url: z.string().nullable().meta({ description: "Bookmarked URL" }),
-  description: z.string().nullable().meta({ description: "Page or OG description" }),
+  make_discoverable: z.string().nullable().meta({
+    description: "ISO timestamp when made discoverable, null if not discoverable",
+  }),
+  meta_data: MetadataSchema.nullable().meta({
+    description: "Extended metadata JSONB",
+  }),
   ogImage: z.string().nullable().meta({ description: "OG image URL" }),
   screenshot: z.string().nullable().meta({ description: "Screenshot URL" }),
-  category_id: z.number().meta({ description: "Primary category ID for this bookmark" }),
+  sort_index: z.string().nullable().meta({ description: "Fractional index for manual ordering" }),
+  title: z.string().nullable().meta({ description: "Page title" }),
   trash: z
     .string()
     .nullable()
     .meta({ description: "ISO timestamp when trashed, null if not trashed" }),
   type: z.string().nullable().meta({ description: "Content type" }),
-  meta_data: MetadataSchema.nullable().meta({
-    description: "Extended metadata JSONB",
-  }),
-  sort_index: z.string().nullable().meta({ description: "Fractional index for manual ordering" }),
-  make_discoverable: z.string().nullable().meta({
-    description: "ISO timestamp when made discoverable, null if not discoverable",
-  }),
+  url: z.string().nullable().meta({ description: "Bookmarked URL" }),
 });
 
 export const FetchDiscoverBookmarksResponseSchema = z.array(DiscoverableBookmarkRowSchema);

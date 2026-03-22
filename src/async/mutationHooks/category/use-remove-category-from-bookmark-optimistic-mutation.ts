@@ -1,13 +1,14 @@
 import { produce } from "immer";
 
-import {
-  type RemoveCategoryFromBookmarkPayload,
-  type RemoveCategoryFromBookmarkResponse,
+import type {
+  RemoveCategoryFromBookmarkPayload,
+  RemoveCategoryFromBookmarkResponse,
 } from "@/app/api/category/remove-category-from-bookmark/schema";
+import type { CategoriesData, PaginatedBookmarks } from "@/types/apiTypes";
+
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
-import { type CategoriesData, type PaginatedBookmarks } from "@/types/apiTypes";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
   BOOKMARKS_COUNT_KEY,
@@ -17,20 +18,20 @@ import {
   UNCATEGORIZED_CATEGORY_ID,
 } from "@/utils/constants";
 
-type RemoveCategoryMutationOptions = {
-  skipInvalidation?: boolean;
+interface RemoveCategoryMutationOptions {
   preserveInList?: boolean;
-};
+  skipInvalidation?: boolean;
+}
 
 /**
  * Mutation hook for removing a single category from a bookmark.
  * Removes only the specified category, keeping other categories intact.
  */
 export function useRemoveCategoryFromBookmarkOptimisticMutation({
-  skipInvalidation = false,
   preserveInList = false,
+  skipInvalidation = false,
 }: RemoveCategoryMutationOptions = {}) {
-  const { queryClient, session, queryKey, searchQueryKey, CATEGORY_ID } =
+  const { CATEGORY_ID, queryClient, queryKey, searchQueryKey, session } =
     useBookmarkMutationContext();
 
   const removeCategoryFromBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
@@ -40,18 +41,90 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
     typeof queryKey,
     PaginatedBookmarks
   >({
+    // Additional optimistic update for single bookmark cache (preview route support)
+    additionalOptimisticUpdates: [
+      {
+        getQueryKey: (variables) => [BOOKMARKS_KEY, String(variables.bookmark_id)],
+        updater: (currentData, variables) => {
+          const data = currentData as
+            | { data: { addedCategories?: CategoriesData[] }[] }
+            | undefined;
+          if (!data?.data?.[0]) {
+            return currentData;
+          }
+
+          const existingCategories = data.data[0].addedCategories ?? [];
+          const filteredCategories = existingCategories.filter(
+            (cat) => cat.id !== variables.category_id,
+          );
+
+          // Check if any non-zero categories remain
+          const hasNonZeroCategories = filteredCategories.some(
+            (cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
+          );
+
+          let finalCategories = filteredCategories;
+          if (!hasNonZeroCategories) {
+            // Get uncategorized entry from cache
+            const allCategories =
+              queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])?.data ?? [];
+            const uncategorizedEntry = allCategories.find(
+              (cat) => cat.id === UNCATEGORIZED_CATEGORY_ID,
+            );
+
+            if (uncategorizedEntry) {
+              finalCategories = [uncategorizedEntry];
+            } else {
+              logCacheMiss(
+                "Optimistic Update",
+                "Uncategorized category not found in cache (single bookmark)",
+                {
+                  bookmarkId: variables.bookmark_id,
+                  categoryId: variables.category_id,
+                },
+              );
+            }
+          }
+
+          return produce(data, (draft) => {
+            for (const bookmark of draft.data) {
+              bookmark.addedCategories = finalCategories;
+            }
+          });
+        },
+      },
+    ],
     mutationFn: (payload) =>
       postApi<RemoveCategoryFromBookmarkResponse>(
         `/api${REMOVE_CATEGORY_FROM_BOOKMARK_API}`,
         payload,
       ),
-    queryKey,
-    secondaryQueryKey: searchQueryKey,
-    skipSecondaryInvalidation: skipInvalidation,
+    onSettled: (_data, error) => {
+      // Single bookmark cache is now updated optimistically via additionalOptimisticUpdates
+      if (error || skipInvalidation) {
+        return;
+      }
 
+      // Invalidate bookmark counts
+      void queryClient.invalidateQueries({
+        queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+      });
+
+      // Invalidate ALL bookmark queries for user (covers all collections)
+      void queryClient.invalidateQueries({
+        queryKey: [BOOKMARKS_KEY, session?.user?.id],
+      });
+    },
+    queryKey,
+
+    secondaryQueryKey: searchQueryKey,
+
+    showSuccessToast: false,
+
+    skipSecondaryInvalidation: skipInvalidation,
     updater: (currentData, variables) => {
       if (!currentData?.pages) {
-        return currentData as PaginatedBookmarks;
+        return currentData!;
       }
 
       // If removing the current collection from a bookmark, remove from list
@@ -60,11 +133,7 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
 
       // Get uncategorized entry upfront (may be needed for exclusive model)
       const allCategories =
-        (
-          queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]) as
-            | { data: CategoriesData[] }
-            | undefined
-        )?.data ?? [];
+        queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])?.data ?? [];
       const uncategorizedEntry = allCategories.find((cat) => cat.id === UNCATEGORIZED_CATEGORY_ID);
 
       return produce(currentData, (draft) => {
@@ -112,82 +181,6 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
         }
       });
     },
-
-    // Additional optimistic update for single bookmark cache (preview route support)
-    additionalOptimisticUpdates: [
-      {
-        getQueryKey: (variables) => [BOOKMARKS_KEY, String(variables.bookmark_id)],
-        updater: (currentData, variables) => {
-          const data = currentData as
-            | { data: Array<{ addedCategories?: CategoriesData[] }> }
-            | undefined;
-          if (!data?.data?.[0]) {
-            return currentData;
-          }
-
-          const existingCategories = data.data[0].addedCategories ?? [];
-          const filteredCategories = existingCategories.filter(
-            (cat) => cat.id !== variables.category_id,
-          );
-
-          // Check if any non-zero categories remain
-          const hasNonZeroCategories = filteredCategories.some(
-            (cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID,
-          );
-
-          let finalCategories = filteredCategories;
-          if (!hasNonZeroCategories) {
-            // Get uncategorized entry from cache
-            const allCategories =
-              (
-                queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]) as
-                  | { data: CategoriesData[] }
-                  | undefined
-              )?.data ?? [];
-            const uncategorizedEntry = allCategories.find(
-              (cat) => cat.id === UNCATEGORIZED_CATEGORY_ID,
-            );
-
-            if (uncategorizedEntry) {
-              finalCategories = [uncategorizedEntry];
-            } else {
-              logCacheMiss(
-                "Optimistic Update",
-                "Uncategorized category not found in cache (single bookmark)",
-                {
-                  bookmarkId: variables.bookmark_id,
-                  categoryId: variables.category_id,
-                },
-              );
-            }
-          }
-
-          return produce(data, (draft) => {
-            for (const bookmark of draft.data) {
-              bookmark.addedCategories = finalCategories;
-            }
-          });
-        },
-      },
-    ],
-
-    onSettled: (_data, error) => {
-      // Single bookmark cache is now updated optimistically via additionalOptimisticUpdates
-      if (error || skipInvalidation) {
-        return;
-      }
-
-      // Invalidate bookmark counts
-      void queryClient.invalidateQueries({
-        queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
-      });
-
-      // Invalidate ALL bookmark queries for user (covers all collections)
-      void queryClient.invalidateQueries({
-        queryKey: [BOOKMARKS_KEY, session?.user?.id],
-      });
-    },
-    showSuccessToast: false,
   });
 
   return { removeCategoryFromBookmarkOptimisticMutation };

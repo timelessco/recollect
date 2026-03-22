@@ -3,6 +3,7 @@
   "version": "0.2",
   "language": "en",
   "allowCompoundWords": true,
+  "words": ["nums"],
   "dictionaries": [
     "bash",
     "node",

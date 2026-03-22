@@ -1,7 +1,9 @@
-import { Icon, type IconProps } from "@/components/atoms/icon";
+import type { IconProps } from "@/components/atoms/icon";
+
+import { Icon } from "@/components/atoms/icon";
 
 export const ImageKeywordsIcon = (props: IconProps) => (
-  <Icon {...props} viewBox="0 0 22 22" fill="none">
+  <Icon {...props} fill="none" viewBox="0 0 22 22">
     <path
       d="M7.33337 2.75H4.58337C4.0971 2.75 3.63079 2.94315 3.28697 3.28697C2.94315 3.63079 2.75 4.0971 2.75 4.58333V7.33333"
       stroke="currentColor"

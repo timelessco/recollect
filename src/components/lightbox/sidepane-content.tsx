@@ -3,12 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { motion } from "motion/react";
 
+import type { SingleListData } from "../../types/apiTypes";
+
 import { usePageContext } from "@/hooks/use-page-context";
 import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
 import { GeminiAiIcon } from "@/icons/geminiAiIcon";
 import { useMiscellaneousStore } from "@/store/componentStore";
 
-import { type SingleListData } from "../../types/apiTypes";
 import { Icon } from "../atoms/icon";
 import { GetBookmarkIcon } from "../get-bookmark-icon";
 import { CategoryMultiSelect } from "./category-multi-select";
@@ -42,7 +43,7 @@ export function SidepaneContent({
   const expandableRef = useRef<HTMLDivElement>(null);
 
   const isUserInTweetsPage = useIsUserInTweetsPage();
-  const { isPublicPage, isDiscoverPage } = usePageContext();
+  const { isDiscoverPage, isPublicPage } = usePageContext();
 
   const searchText = useMiscellaneousStore((state) => state.searchText);
   const trimmedSearchText = searchText?.trim() ?? "";
@@ -67,7 +68,9 @@ export function SidepaneContent({
       }
     }, 0);
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, [
     currentBookmark?.id,
     currentBookmark?.description,
@@ -106,8 +109,8 @@ export function SidepaneContent({
               <div className="flex h-[15px] w-[15px] items-center text-gray-600">
                 {currentBookmark ? (
                   <GetBookmarkIcon
-                    item={currentBookmark}
                     isUserInTweetsPage={isUserInTweetsPage}
+                    item={currentBookmark}
                     size={15}
                   />
                 ) : null}
@@ -133,7 +136,9 @@ export function SidepaneContent({
               {showMore && isOverflowing && (
                 <button
                   className="ml-1 inline text-13 leading-[138%] tracking-[0.01em] text-gray-700"
-                  onClick={() => setShowMore(false)}
+                  onClick={() => {
+                    setShowMore(false);
+                  }}
                   type="button"
                 >
                   Show less
@@ -143,7 +148,9 @@ export function SidepaneContent({
             {isOverflowing && !showMore && (
               <button
                 className="absolute right-0 bottom-0 inline bg-gray-0 pl-1 text-13 leading-[138%] tracking-[0.01em] text-gray-700"
-                onClick={() => setShowMore(true)}
+                onClick={() => {
+                  setShowMore(true);
+                }}
                 type="button"
               >
                 Show more
@@ -171,9 +178,9 @@ export function SidepaneContent({
           key={currentBookmark?.id}
           ref={expandableRef}
           transition={{
-            type: "spring",
             damping: 25,
             stiffness: 300,
+            type: "spring",
           }}
         >
           {currentBookmark?.addedTags?.length > 0 && (
@@ -224,19 +231,19 @@ export function SidepaneContent({
                 </p>
               </div>
               <div
-                ref={aiSummaryScrollRef}
                 className={`max-h-[200px] ${isExpanded ? "hide-scrollbar scroll-shadows" : ""}`}
+                ref={aiSummaryScrollRef}
               >
                 <p className="text-13 leading-[138%] tracking-[0.01em] text-gray-500">
                   {highlightSearch(
-                    metaData?.img_caption || metaData?.image_caption || "",
+                    metaData?.img_caption ?? metaData?.image_caption ?? "",
                     trimmedSearchText,
                   )}
-                  {(metaData?.img_caption || metaData?.image_caption) && metaData?.ocr && <br />}
+                  {(metaData?.img_caption ?? metaData?.image_caption) && metaData?.ocr && <br />}
                   {highlightSearch(metaData?.ocr ?? "", trimmedSearchText)}
                   {(metaData?.image_keywords?.length ?? 0) > 0 && (
                     <>
-                      {(metaData?.img_caption || metaData?.image_caption || metaData?.ocr) && (
+                      {(metaData?.img_caption ?? metaData?.image_caption ?? metaData?.ocr) && (
                         <br />
                       )}
                       <span className="font-450">Keywords: </span>

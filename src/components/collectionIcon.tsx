@@ -1,6 +1,7 @@
 import { useTheme } from "next-themes";
 
-import { type CategoriesData } from "../types/apiTypes";
+import type { CategoriesData } from "../types/apiTypes";
+
 import { iconMap } from "../utils/commonData";
 import { BLACK_COLOR, WHITE_COLOR } from "../utils/constants";
 
@@ -23,11 +24,11 @@ const getAdjustedColor = (color: string | undefined, isDarkMode: boolean) => {
   return color;
 };
 
-type CollectionIconProps = {
+interface CollectionIconProps {
   bookmarkCategoryData: Pick<CategoriesData, "icon_color" | "icon">;
   iconSize?: string;
   size?: string;
-};
+}
 
 export const CollectionIcon = ({
   bookmarkCategoryData,
@@ -50,8 +51,8 @@ export const CollectionIcon = ({
       className="flex items-center justify-center rounded-full"
       style={{
         backgroundColor: adjustedBgColor,
-        width: `${size}px`,
         height: `${size}px`,
+        width: `${size}px`,
       }}
     >
       {matchedIcon?.icon(iconColor, iconSize)}

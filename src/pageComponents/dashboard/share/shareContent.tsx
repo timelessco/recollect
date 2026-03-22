@@ -1,9 +1,12 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 
 import { TrashIcon } from "@heroicons/react/20/solid";
 import { find, isEmpty, isNull } from "lodash";
+
+import type { CollabDataInCategory } from "../../../types/apiTypes";
 
 import { cn } from "@/utils/tailwind-merge";
 
@@ -18,7 +21,6 @@ import { CopyIcon } from "../../../icons/copy-icon";
 import { GlobeIcon } from "../../../icons/globe-icon";
 import { DefaultUserIcon } from "../../../icons/user/defaultUserIcon";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
-import { type CollabDataInCategory } from "../../../types/apiTypes";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import { EMAIL_CHECK_PATTERN } from "../../../utils/constants";
 import { errorToast, successToast } from "../../../utils/toastMessages";
@@ -28,7 +30,7 @@ import { AccessRoleSelect, InviteRoleSelect } from "./share-role-selects";
 const rightTextStyles = "text-13 font-medium leading-[15px] text-gray-600";
 
 const AccessUserInfo = (props: { isLoggedinUserTheOwner: boolean; item: CollabDataInCategory }) => {
-  const { item, isLoggedinUserTheOwner } = props;
+  const { isLoggedinUserTheOwner, item } = props;
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
 
@@ -47,7 +49,7 @@ const AccessUserInfo = (props: { isLoggedinUserTheOwner: boolean; item: CollabDa
                   if (isLoggedinUserTheOwner) {
                     void mutationApiCall(
                       deleteSharedCategoriesUserMutation.mutateAsync({
-                        id: item.share_id as number,
+                        id: item.share_id!,
                       }),
                     );
                   } else {
@@ -68,7 +70,7 @@ const AccessUserInfo = (props: { isLoggedinUserTheOwner: boolean; item: CollabDa
         {item.isOwner ? (
           <p className={rightTextStyles}>Owner</p>
         ) : (
-          <AccessRoleSelect item={item} isLoggedinUserTheOwner={isLoggedinUserTheOwner} />
+          <AccessRoleSelect isLoggedinUserTheOwner={isLoggedinUserTheOwner} item={item} />
         )}
       </>
     );
@@ -91,8 +93,6 @@ const AccessUserInfo = (props: { isLoggedinUserTheOwner: boolean; item: CollabDa
               alt="profile-pic"
               className="h-5 w-5 rounded-full object-cover"
               height={20}
-              width={20}
-              src={profilePicUrl}
               onError={() => {
                 setImageError(true);
                 setImageLoading(false);
@@ -100,9 +100,11 @@ const AccessUserInfo = (props: { isLoggedinUserTheOwner: boolean; item: CollabDa
               onLoad={() => {
                 setImageLoading(false);
               }}
+              src={profilePicUrl}
               style={{
                 visibility: imageLoading || imageError ? "hidden" : "visible",
               }}
+              width={20}
             />
           )}
         </div>
@@ -115,13 +117,13 @@ const AccessUserInfo = (props: { isLoggedinUserTheOwner: boolean; item: CollabDa
   );
 };
 
-type EmailInput = {
+interface EmailInput {
   email: string;
-};
+}
 
-type ShareContentProps = {
-  categoryId?: string | number | null;
-};
+interface ShareContentProps {
+  categoryId?: null | number | string;
+}
 
 const ShareContent = (props: ShareContentProps) => {
   const [publicUrl, setPublicUrl] = useState("");
@@ -140,18 +142,18 @@ const ShareContent = (props: ShareContentProps) => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const categorySlug = currentCategory?.category_slug as string;
+      const categorySlug = currentCategory?.category_slug!;
       const userName = currentCategory?.user_id?.user_name;
       const url = `${window?.location?.origin}/public/${userName}/${categorySlug}`;
       setPublicUrl(url);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id, dynamicCategoryId]);
 
   const {
-    register,
-    handleSubmit,
     formState: { errors },
+    handleSubmit,
+    register,
     reset,
   } = useForm<EmailInput>();
 
@@ -172,9 +174,9 @@ const ShareContent = (props: ShareContentProps) => {
       if (!isEmailExist) {
         await mutationApiCall(
           sendCollaborationEmailInviteMutation.mutateAsync({
-            emailList,
-            edit_access: inviteUserEditAccess,
             category_id: dynamicCategoryId as number,
+            edit_access: inviteUserEditAccess,
+            emailList,
             hostUrl: window?.location?.origin,
           }),
         );
@@ -194,8 +196,8 @@ const ShareContent = (props: ShareContentProps) => {
   const isUserTheCategoryOwner = currentCategory?.user_id?.id === session?.user?.id;
 
   const inputClassName = cn({
-    "rounded-none bg-transparent text-sm leading-4 text-gray-800 shadow-none outline-none placeholder:text-gray-alpha-600": true,
     "cursor-not-allowed": !isUserTheCategoryOwner,
+    "rounded-none bg-transparent text-sm leading-4 text-gray-800 shadow-none outline-none placeholder:text-gray-alpha-600": true,
   });
 
   return (
@@ -208,8 +210,8 @@ const ShareContent = (props: ShareContentProps) => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <Input
           {...register("email", {
-            required: true,
             pattern: EMAIL_CHECK_PATTERN,
+            required: true,
           })}
           className={inputClassName}
           errorClassName="ml-2"
@@ -238,9 +240,9 @@ const ShareContent = (props: ShareContentProps) => {
               </div>
             ) : (
               <InviteRoleSelect
-                value={inviteUserEditAccess}
-                onChange={setInviteUserEditAccess}
                 disabled={!isUserTheCategoryOwner}
+                onChange={setInviteUserEditAccess}
+                value={inviteUserEditAccess}
               />
             )
           }
@@ -252,8 +254,7 @@ const ShareContent = (props: ShareContentProps) => {
           People with access
         </p>
         <div className="pb-2">
-          {currentCategory?.collabData
-            ?.slice()
+          {[...(currentCategory?.collabData ?? [])]
             .toSorted((a, b) => {
               // Move owner to the top
               if (a.isOwner) {
@@ -276,7 +277,6 @@ const ShareContent = (props: ShareContentProps) => {
         </div>
         <div className="mx-2 flex items-center justify-between border-t py-2">
           <button
-            type="button"
             className={`flex items-center ${
               currentCategory?.is_public ? "cursor-pointer" : "cursor-not-allowed opacity-50"
             }`}
@@ -293,6 +293,7 @@ const ShareContent = (props: ShareContentProps) => {
               }
             }}
             tabIndex={currentCategory?.is_public ? 0 : -1}
+            type="button"
           >
             <figure className="flex items-center justify-center text-gray-900">
               <GlobeIcon className="ml-0.5 h-4 w-4" />

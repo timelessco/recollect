@@ -9,16 +9,13 @@ import { ProcessQueueInputSchema, ProcessQueueOutputSchema } from "./schema";
 const ROUTE = "v2-process-queue";
 
 export const POST = createPostApiHandler({
-  inputSchema: ProcessQueueInputSchema,
-  outputSchema: ProcessQueueOutputSchema,
-  route: ROUTE,
   handler: async ({ route }) => {
     const supabase = createServiceClient();
 
     try {
       const result = await processImageQueue(supabase, {
-        queue_name: "ai-embeddings",
         batchSize: 1,
+        queue_name: "ai-embeddings",
       });
 
       console.log(
@@ -36,4 +33,7 @@ export const POST = createPostApiHandler({
       throw error;
     }
   },
+  inputSchema: ProcessQueueInputSchema,
+  outputSchema: ProcessQueueOutputSchema,
+  route: ROUTE,
 });

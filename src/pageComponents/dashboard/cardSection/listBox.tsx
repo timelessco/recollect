@@ -1,13 +1,18 @@
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useRef, type Key } from "react";
-import { DragPreview, useDraggableCollection, useListBox, type DragItem } from "react-aria";
-import { useDraggableCollectionState, useListState, type ListProps } from "react-stately";
+import { useCallback, useEffect, useRef } from "react";
+import type { Key } from "react";
+import { DragPreview, useDraggableCollection, useListBox } from "react-aria";
+import type { DragItem } from "react-aria";
+import { useDraggableCollectionState, useListState } from "react-stately";
+import type { ListProps } from "react-stately";
 
 import { useVirtualizer } from "@tanstack/react-virtual";
 import find from "lodash/find";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 import omit from "lodash/omit";
+
+import type { SingleListData } from "../../../types/apiTypes";
 
 import { useMoveBookmarkToTrashOptimisticMutation } from "@/async/mutationHooks/bookmarks/use-move-bookmark-to-trash-optimistic-mutation";
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
@@ -21,7 +26,6 @@ import { errorToast } from "@/utils/toastMessages";
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
-import { type SingleListData } from "../../../types/apiTypes";
 import { TRASH_URL, viewValues } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
@@ -39,17 +43,17 @@ type ListBoxDropTypes = ListProps<object> & {
   flattendPaginationBookmarkData?: SingleListData[];
   getItems?: (keys: Set<Key>) => DragItem[];
   isPublicPage?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
   onItemDrop?: (event: any) => void;
 };
 
 const ListBox = (props: ListBoxDropTypes) => {
   const {
-    getItems,
     bookmarksColumns,
-    cardTypeCondition,
     bookmarksList,
+    cardTypeCondition,
     flattendPaginationBookmarkData = [],
+    getItems,
     isPublicPage,
   } = props;
 
@@ -90,9 +94,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 
   // ---- Virtualizer Setup ----
   const rowVirtualizer = useVirtualizer({
-    measureElement: (element) => element.getBoundingClientRect().height,
     count: bookmarksList.length,
-    getScrollElement,
     estimateSize: () => {
       // Default heights if not grid-based
       if (cardTypeCondition === viewValues.list) {
@@ -108,8 +110,8 @@ const ListBox = (props: ListBoxDropTypes) => {
       // Get container width (fallback to 1200 if unknown)
       const containerWidth =
         typeof document !== "undefined"
-          ? (document.querySelector("#scrollableDiv")?.clientWidth ?? 1_200)
-          : 1_200;
+          ? (document.querySelector("#scrollableDiv")?.clientWidth ?? 1200)
+          : 1200;
 
       // Each card width
       const cardWidth = containerWidth / lanes;
@@ -118,7 +120,7 @@ const ListBox = (props: ListBoxDropTypes) => {
       const aspectRatio = 4 / 3;
       return cardWidth * aspectRatio;
     },
-    overscan: 5,
+    getScrollElement,
     lanes: (() => {
       if (cardTypeCondition !== viewValues.card && cardTypeCondition !== viewValues.moodboard) {
         return 1;
@@ -126,6 +128,8 @@ const ListBox = (props: ListBoxDropTypes) => {
 
       return getColumnCount(!isMobile && !isTablet, bookmarksColumns[0]);
     })(),
+    measureElement: (element) => element.getBoundingClientRect().height,
+    overscan: 5,
   });
   const bookmarksInfoValue = useGetViewValue("cardContentViewArray", []);
 
@@ -138,16 +142,16 @@ const ListBox = (props: ListBoxDropTypes) => {
     rowVirtualizer.scrollToIndex(0);
   }, [rowVirtualizer, cardTypeCondition, bookmarksInfoValue, categorySlug]);
   // Setup listbox as normal. See the useListBox docs for more details.
-  const preview = useRef(null);
+  const previewRef = useRef(null);
   const state = useListState(props);
 
   // hook up aria listbox
   const { listBoxProps } = useListBox(
     {
       ...props,
+      autoFocus: false,
       // Prevent dragging from changing selection.
       shouldSelectOnPressUp: true,
-      autoFocus: false,
     },
     state,
     ariaRef,
@@ -155,7 +159,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 
   useEffect(() => {
     state.selectionManager.clearSelection();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [router.asPath]);
 
   // Setup drag state for the collection.
@@ -164,15 +168,6 @@ const ListBox = (props: ListBoxDropTypes) => {
     ...props,
     // Collection and selection manager come from list state.
     collection: state.collection,
-    selectionManager: state.selectionManager,
-    onDragStart() {
-      setIsCardDragging(true);
-    },
-    onDragEnd() {
-      setIsCardDragging(false);
-      state.selectionManager.clearSelection();
-    },
-    preview,
     // Provide data for each dragged item. This function could
     // also be provided by the user of the component.
     getItems:
@@ -184,6 +179,15 @@ const ListBox = (props: ListBoxDropTypes) => {
             "text/plain": !isNull(item) ? item.textValue : "",
           };
         })),
+    onDragEnd() {
+      setIsCardDragging(false);
+      state.selectionManager.clearSelection();
+    },
+    onDragStart() {
+      setIsCardDragging(true);
+    },
+    previewRef,
+    selectionManager: state.selectionManager,
   });
 
   // IMPORTANT: ariaRef is passed here so listeners attach properly
@@ -201,19 +205,21 @@ const ListBox = (props: ListBoxDropTypes) => {
     (bookmarkIds: Key[], deleteForever: boolean, isTrash: boolean) => {
       handleBulkBookmarkDelete({
         bookmarkIds: bookmarkIds.map(Number),
-        deleteForever,
-        isTrash,
-        isSearching,
-        flattenedSearchData,
-        flattendPaginationBookmarkData,
+        clearSelection: () => {
+          state.selectionManager.clearSelection();
+        },
         deleteBookmarkId,
-        setDeleteBookmarkId,
-        sessionUserId: session?.user?.id,
-        moveBookmarkToTrashOptimisticMutation,
         deleteBookmarkOptismicMutation,
-        clearSelection: () => state.selectionManager.clearSelection(),
-        mutationApiCall,
+        deleteForever,
         errorToast,
+        flattendPaginationBookmarkData,
+        flattenedSearchData,
+        isSearching,
+        isTrash,
+        moveBookmarkToTrashOptimisticMutation,
+        mutationApiCall,
+        sessionUserId: session?.user?.id,
+        setDeleteBookmarkId,
       });
     },
     [
@@ -260,7 +266,7 @@ const ListBox = (props: ListBoxDropTypes) => {
         ref={ariaRef}
       >
         {cardTypeCondition === viewValues.moodboard ? (
-          <MoodboardViewVirtualized rowVirtualizer={rowVirtualizer} renderOption={renderOption} />
+          <MoodboardViewVirtualized renderOption={renderOption} rowVirtualizer={rowVirtualizer} />
         ) : (
           <div
             style={
@@ -274,21 +280,21 @@ const ListBox = (props: ListBoxDropTypes) => {
           >
             {cardTypeCondition === viewValues.card ? (
               <CardViewVirtualized
-                bookmarksList={bookmarksList}
                 bookmarksColumns={bookmarksColumns}
-                renderOption={renderOption}
+                bookmarksList={bookmarksList}
                 getScrollElement={getScrollElement}
+                renderOption={renderOption}
               />
             ) : (
               <SingleRowViewVirtualized
-                rowVirtualizer={rowVirtualizer}
                 cardTypeCondition={cardTypeCondition}
                 renderOption={renderOption}
+                rowVirtualizer={rowVirtualizer}
               />
             )}
           </div>
         )}
-        <DragPreview ref={preview}>
+        <DragPreview ref={previewRef}>
           {(items) => (
             <div className="rounded-lg bg-slate-200 px-2 py-1 text-sm leading-4 dark:bg-gray-alpha-100">
               {items.length > 1
@@ -306,12 +312,14 @@ const ListBox = (props: ListBoxDropTypes) => {
           <div className="flex items-center gap-1">
             <label className="group relative flex cursor-pointer items-center justify-center gap-2">
               <Checkbox
-                checked={Array.from(state.selectionManager.selectedKeys.keys())?.length > 0}
-                onCheckedChange={() => state.selectionManager.clearSelection()}
+                checked={[...state.selectionManager.selectedKeys.keys()]?.length > 0}
                 className="flex size-4 items-center justify-center gap-3 rounded-[5px] text-[10px] leading-[21px] font-450 tracking-[1%] text-gray-900 data-checked:bg-plain-reverse data-checked:text-plain data-unchecked:bg-plain data-unchecked:text-plain-reverse"
+                onCheckedChange={() => {
+                  state.selectionManager.clearSelection();
+                }}
               />
 
-              {`${Array.from(state.selectionManager.selectedKeys.keys())?.length} bookmarks`}
+              {`${[...state.selectionManager.selectedKeys.keys()]?.length} bookmarks`}
             </label>
 
             {/* <Button
@@ -327,7 +335,7 @@ const ListBox = (props: ListBoxDropTypes) => {
                 className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
                 onClick={() => {
                   onBulkBookmarkDelete(
-                    Array.from(state.selectionManager.selectedKeys.keys()),
+                    [...state.selectionManager.selectedKeys.keys()],
                     false,
                     true,
                   );
@@ -342,19 +350,19 @@ const ListBox = (props: ListBoxDropTypes) => {
             ) : (
               <ClearTrashDropdown
                 isBottomBar
+                isClearingTrash={
+                  [...state.selectionManager.selectedKeys.keys()].some((key) =>
+                    deleteBookmarkId?.includes(Number.parseInt(key.toString(), 10)),
+                  ) ?? false
+                }
                 label="Delete Bookmarks"
                 onClearTrash={() => {
                   onBulkBookmarkDelete(
-                    Array.from(state.selectionManager.selectedKeys.keys()) as number[],
+                    [...state.selectionManager.selectedKeys.keys()] as number[],
                     true,
                     true,
                   );
                 }}
-                isClearingTrash={
-                  Array.from(state.selectionManager.selectedKeys.keys()).some((key) =>
-                    deleteBookmarkId?.includes(Number.parseInt(key.toString(), 10)),
-                  ) ?? false
-                }
               />
             )}
             {isTrashPage && (
@@ -362,7 +370,7 @@ const ListBox = (props: ListBoxDropTypes) => {
                 className="mr-[13px] cursor-pointer text-13 leading-[15px] font-450 text-gray-900"
                 onClick={() => {
                   onBulkBookmarkDelete(
-                    Array.from(state.selectionManager.selectedKeys.keys()) as number[],
+                    [...state.selectionManager.selectedKeys.keys()] as number[],
                     false,
                     false,
                   );
@@ -377,7 +385,9 @@ const ListBox = (props: ListBoxDropTypes) => {
             )}
             {!isTrashPage && (
               <AddToCollectionPopover
-                onSuccess={() => state.selectionManager.clearSelection()}
+                onSuccess={() => {
+                  state.selectionManager.clearSelection();
+                }}
                 selectedKeys={state.selectionManager.selectedKeys}
               />
             )}

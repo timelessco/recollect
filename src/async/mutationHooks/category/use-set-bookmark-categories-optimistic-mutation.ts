@@ -1,13 +1,14 @@
 import { produce } from "immer";
 
-import {
-  type SetBookmarkCategoriesPayload,
-  type SetBookmarkCategoriesResponse,
+import type {
+  SetBookmarkCategoriesPayload,
+  SetBookmarkCategoriesResponse,
 } from "@/app/api/category/set-bookmark-categories/schema";
+import type { CategoriesData, PaginatedBookmarks } from "@/types/apiTypes";
+
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
-import { type CategoriesData, type PaginatedBookmarks } from "@/types/apiTypes";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
   BOOKMARKS_COUNT_KEY,
@@ -17,20 +18,20 @@ import {
   UNCATEGORIZED_CATEGORY_ID,
 } from "@/utils/constants";
 
-type SetBookmarkCategoriesMutationOptions = {
-  skipInvalidation?: boolean;
+interface SetBookmarkCategoriesMutationOptions {
   preserveInList?: boolean;
-};
+  skipInvalidation?: boolean;
+}
 
 /**
  * Mutation hook for setting all categories for a bookmark.
  * Replaces existing categories with the new set.
  */
 export function useSetBookmarkCategoriesOptimisticMutation({
-  skipInvalidation = false,
   preserveInList = false,
+  skipInvalidation = false,
 }: SetBookmarkCategoriesMutationOptions = {}) {
-  const { queryClient, session, queryKey, searchQueryKey, CATEGORY_ID } =
+  const { CATEGORY_ID, queryClient, queryKey, searchQueryKey, session } =
     useBookmarkMutationContext();
 
   const setBookmarkCategoriesOptimisticMutation = useReactQueryOptimisticMutation<
@@ -42,20 +43,33 @@ export function useSetBookmarkCategoriesOptimisticMutation({
   >({
     mutationFn: (payload) =>
       postApi<SetBookmarkCategoriesResponse>(`/api${SET_BOOKMARK_CATEGORIES_API}`, payload),
+    onSettled: (_data, error) => {
+      if (error || skipInvalidation) {
+        return;
+      }
+
+      // Invalidate bookmark counts
+      void queryClient.invalidateQueries({
+        queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+      });
+
+      // Invalidate ALL bookmark queries for user (covers all collections)
+      void queryClient.invalidateQueries({
+        queryKey: [BOOKMARKS_KEY, session?.user?.id],
+      });
+    },
     queryKey,
     secondaryQueryKey: searchQueryKey,
+    showSuccessToast: true,
+    successMessage: "Collection updated",
     updater: (currentData, variables) => {
       if (!currentData?.pages) {
-        return currentData as PaginatedBookmarks;
+        return currentData!;
       }
 
       // Resolve categories from cache - skip optimistic update if not found
       const allCategories =
-        (
-          queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]) as
-            | { data: CategoriesData[] }
-            | undefined
-        )?.data ?? [];
+        queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])?.data ?? [];
 
       // EXCLUSIVE MODEL: Filter out 0 from input (users cannot manually assign to 0)
       const nonZeroCategoryIds = variables.category_ids.filter(
@@ -79,8 +93,8 @@ export function useSetBookmarkCategoriesOptimisticMutation({
         );
         logCacheMiss("Optimistic Update", "Categories not found in cache", {
           bookmarkId: variables.bookmark_id,
-          requestedCategoryIds: finalCategoryIds,
           missingCategoryIds,
+          requestedCategoryIds: finalCategoryIds,
         });
         return currentData;
       }
@@ -113,23 +127,6 @@ export function useSetBookmarkCategoriesOptimisticMutation({
         }
       });
     },
-    onSettled: (_data, error) => {
-      if (error || skipInvalidation) {
-        return;
-      }
-
-      // Invalidate bookmark counts
-      void queryClient.invalidateQueries({
-        queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
-      });
-
-      // Invalidate ALL bookmark queries for user (covers all collections)
-      void queryClient.invalidateQueries({
-        queryKey: [BOOKMARKS_KEY, session?.user?.id],
-      });
-    },
-    showSuccessToast: true,
-    successMessage: "Collection updated",
   });
 
   return { setBookmarkCategoriesOptimisticMutation };

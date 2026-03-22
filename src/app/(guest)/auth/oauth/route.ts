@@ -30,11 +30,11 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Error in oauth route:", error);
     Sentry.captureException(error, {
-      tags: {
-        operation: "exchange_code_for_session",
-      },
       extra: {
         url: request.url,
+      },
+      tags: {
+        operation: "exchange_code_for_session",
       },
     });
     redirect(`/auth/error?error=An unexpected error occurred`);

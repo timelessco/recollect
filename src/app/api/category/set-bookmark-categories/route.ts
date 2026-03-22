@@ -14,17 +14,14 @@ import { SetBookmarkCategoriesPayloadSchema, SetBookmarkCategoriesResponseSchema
 const ROUTE = "set-bookmark-categories";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: SetBookmarkCategoriesPayloadSchema,
-  outputSchema: SetBookmarkCategoriesResponseSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const { bookmark_id: bookmarkId, category_ids: categoryIds } = data;
     const userId = user.id;
 
     console.log(`[${route}] API called:`, {
-      userId,
       bookmarkId,
       categoryIds,
+      userId,
     });
 
     // Filter non-zero categories for ownership verification
@@ -51,20 +48,20 @@ export const POST = createPostApiHandlerWithAuth({
     if (bookmarkResult.error) {
       if (bookmarkResult.error.code === "PGRST116") {
         return apiWarn({
-          route,
-          message: "Bookmark not found or not owned by user",
-          status: 404,
           context: { bookmarkId },
+          message: "Bookmark not found or not owned by user",
+          route,
+          status: 404,
         });
       }
 
       return apiError({
-        route,
-        message: "Failed to verify bookmark ownership",
         error: bookmarkResult.error,
-        operation: "fetch_bookmark",
-        userId,
         extra: { bookmarkId },
+        message: "Failed to verify bookmark ownership",
+        operation: "fetch_bookmark",
+        route,
+        userId,
       });
     }
 
@@ -72,12 +69,12 @@ export const POST = createPostApiHandlerWithAuth({
     if (nonZeroCategoryIds.length > 0) {
       if (ownedCategoriesResult.error) {
         return apiError({
-          route,
-          message: "Failed to fetch categories",
           error: ownedCategoriesResult.error,
-          operation: "fetch_owned_categories",
-          userId,
           extra: { categoryIds: nonZeroCategoryIds },
+          message: "Failed to fetch categories",
+          operation: "fetch_owned_categories",
+          route,
+          userId,
         });
       }
 
@@ -85,7 +82,7 @@ export const POST = createPostApiHandlerWithAuth({
       const notOwnedCategoryIds = nonZeroCategoryIds.filter((id) => !ownedCategoryIds.has(id));
 
       // For categories not owned, check shared access
-      const email = user.email;
+      const { email } = user;
       if (notOwnedCategoryIds.length > 0 && email) {
         const { data: sharedCategories, error: sharedCategoriesError } = await supabase
           .from(SHARED_CATEGORIES_TABLE_NAME)
@@ -95,12 +92,12 @@ export const POST = createPostApiHandlerWithAuth({
 
         if (sharedCategoriesError) {
           return apiError({
-            route,
-            message: "Failed to fetch shared categories",
             error: sharedCategoriesError,
-            operation: "fetch_shared_categories",
-            userId,
             extra: { categoryIds: notOwnedCategoryIds, email },
+            message: "Failed to fetch shared categories",
+            operation: "fetch_shared_categories",
+            route,
+            userId,
           });
         }
 
@@ -116,18 +113,18 @@ export const POST = createPostApiHandlerWithAuth({
 
         if (unauthorizedCategoryIds.length > 0) {
           return apiWarn({
-            route,
+            context: { unauthorizedCategoryIds, userId },
             message: `No access to categories: ${unauthorizedCategoryIds.join(", ")}`,
+            route,
             status: 403,
-            context: { userId, unauthorizedCategoryIds },
           });
         }
       } else if (notOwnedCategoryIds.length > 0) {
         return apiWarn({
-          route,
+          context: { notOwnedCategoryIds, userId },
           message: `No access to categories: ${notOwnedCategoryIds.join(", ")}`,
+          route,
           status: 403,
-          context: { userId, notOwnedCategoryIds },
         });
       }
     }
@@ -150,12 +147,12 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (rpcError) {
       return apiError({
-        route,
-        message: "Failed to set bookmark categories",
         error: rpcError,
-        operation: "set_bookmark_categories_rpc",
-        userId,
         extra: { bookmarkId, categoryIds },
+        message: "Failed to set bookmark categories",
+        operation: "set_bookmark_categories_rpc",
+        route,
+        userId,
       });
     }
 
@@ -175,11 +172,10 @@ export const POST = createPostApiHandlerWithAuth({
       revalidateCategoriesIfPublic(allAffectedCategoryIds, {
         operation: "set_bookmark_categories",
         userId,
-        // eslint-disable-next-line promise/prefer-await-to-then
       }).catch((error) => {
         console.error(`[${route}] Revalidation failed:`, {
-          error,
           categoryIds: allAffectedCategoryIds,
+          error,
           userId,
         });
       });
@@ -187,4 +183,7 @@ export const POST = createPostApiHandlerWithAuth({
 
     return insertedData;
   },
+  inputSchema: SetBookmarkCategoriesPayloadSchema,
+  outputSchema: SetBookmarkCategoriesResponseSchema,
+  route: ROUTE,
 });

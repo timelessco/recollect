@@ -11,19 +11,19 @@ import { storageHelpers } from "@/utils/storageClient";
 
 type MediaUploadKind = "image" | "video";
 
-type UploadMediaOptions = {
-  kind: MediaUploadKind;
-  data: Uint8Array;
-  uploadUserId: string;
+interface UploadMediaOptions {
   contentType: string;
-};
+  data: Uint8Array;
+  kind: MediaUploadKind;
+  uploadUserId: string;
+}
 
 const uploadMedia = async ({
-  kind,
-  data,
-  uploadUserId,
   contentType,
-}: UploadMediaOptions): Promise<string | null> => {
+  data,
+  kind,
+  uploadUserId,
+}: UploadMediaOptions): Promise<null | string> => {
   const fileName = kind === "image" ? `img-${uniqid?.time()}.jpg` : `video-${uniqid?.time()}.mp4`;
 
   const basePath =
@@ -42,19 +42,19 @@ const uploadMedia = async ({
     const operation = kind === "image" ? "storage_upload" : "video_storage_upload";
 
     console.error("Media storage upload failed:", {
-      operation,
-      kind,
       error: uploadError,
+      kind,
+      operation,
     });
 
     Sentry.captureException(uploadError, {
+      extra: {
+        kind,
+        storagePath,
+      },
       tags: {
         operation,
         userId: uploadUserId,
-      },
-      extra: {
-        storagePath,
-        kind,
       },
     });
     return null;
@@ -65,22 +65,22 @@ const uploadMedia = async ({
   return storageData?.publicUrl || null;
 };
 
-export const upload = async (base64info: string, uploadUserId: string): Promise<string | null> =>
-  await uploadMedia({
-    kind: "image",
-    data: new Uint8Array(decode(base64info)),
-    uploadUserId,
+export const upload = (base64info: string, uploadUserId: string): Promise<null | string> =>
+  uploadMedia({
     contentType: "image/jpg",
+    data: new Uint8Array(decode(base64info)),
+    kind: "image",
+    uploadUserId,
   });
 
-export const uploadVideo = async (
+export const uploadVideo = (
   videoBuffer: ArrayBuffer,
   uploadUserId: string,
   contentType: string,
-): Promise<string | null> =>
-  await uploadMedia({
-    kind: "video",
-    data: new Uint8Array(videoBuffer),
-    uploadUserId,
+): Promise<null | string> =>
+  uploadMedia({
     contentType,
+    data: new Uint8Array(videoBuffer),
+    kind: "video",
+    uploadUserId,
   });

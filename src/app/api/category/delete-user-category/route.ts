@@ -21,14 +21,11 @@ import { DeleteCategoryInputSchema, DeleteCategoryResponseSchema } from "./schem
 const ROUTE = "delete-user-category";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: DeleteCategoryInputSchema,
-  outputSchema: DeleteCategoryResponseSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const { category_id: categoryId, keep_bookmarks: keepBookmarks } = data;
     const userId = user.id;
 
-    console.log(`[${route}] API called:`, { userId, categoryId });
+    console.log(`[${route}] API called:`, { categoryId, userId });
 
     // Verify the user owns the category
     const { data: categoryData, error: categoryDataError } = await supabase
@@ -39,21 +36,21 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (categoryDataError) {
       return apiError({
-        route,
-        message: "Failed to fetch category data",
         error: categoryDataError,
-        operation: "delete_category_fetch",
-        userId,
         extra: { categoryId },
+        message: "Failed to fetch category data",
+        operation: "delete_category_fetch",
+        route,
+        userId,
       });
     }
 
     if (!categoryData) {
       return apiWarn({
-        route,
-        message: "Category not found",
-        status: 404,
         context: { categoryId, userId },
+        message: "Category not found",
+        route,
+        status: 404,
       });
     }
 
@@ -61,10 +58,10 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (!isOwner) {
       return apiWarn({
-        route,
-        message: "Only collection owner can delete this collection",
-        status: 403,
         context: { categoryId, userId },
+        message: "Only collection owner can delete this collection",
+        route,
+        status: 403,
       });
     }
 
@@ -80,8 +77,8 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (collaboratorsError) {
       console.error(`[${route}] Failed to fetch collaborator emails, skipping notification:`, {
-        error: collaboratorsError,
         categoryId,
+        error: collaboratorsError,
       });
     }
 
@@ -97,12 +94,12 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (sharedCategoryError) {
       return apiError({
-        route,
-        message: "Failed to delete shared category associations",
         error: sharedCategoryError,
-        operation: "delete_shared_categories",
-        userId,
         extra: { categoryId },
+        message: "Failed to delete shared category associations",
+        operation: "delete_shared_categories",
+        route,
+        userId,
       });
     }
 
@@ -118,12 +115,12 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (categoryBookmarksError) {
       return apiError({
-        route,
-        message: "Failed to fetch bookmarks in category",
         error: categoryBookmarksError,
-        operation: "delete_category_fetch_bookmarks",
-        userId,
         extra: { categoryId },
+        message: "Failed to fetch bookmarks in category",
+        operation: "delete_category_fetch_bookmarks",
+        route,
+        userId,
       });
     }
 
@@ -141,12 +138,12 @@ export const POST = createPostApiHandlerWithAuth({
 
         if (multiCategoryError) {
           return apiError({
-            route,
-            message: "Failed to check bookmark category associations",
             error: multiCategoryError,
-            operation: "delete_category_check_orphans",
-            userId,
             extra: { categoryId },
+            message: "Failed to check bookmark category associations",
+            operation: "delete_category_check_orphans",
+            route,
+            userId,
           });
         }
 
@@ -171,15 +168,15 @@ export const POST = createPostApiHandlerWithAuth({
 
           if (uncategorizedError) {
             return apiError({
-              route,
-              message: "Failed to assign Uncategorized to orphaned bookmarks",
               error: uncategorizedError,
-              operation: "delete_category_assign_uncategorized",
-              userId,
               extra: {
                 categoryId,
                 orphanedCount: orphanedBookmarks.length,
               },
+              message: "Failed to assign Uncategorized to orphaned bookmarks",
+              operation: "delete_category_assign_uncategorized",
+              route,
+              userId,
             });
           }
 
@@ -203,15 +200,15 @@ export const POST = createPostApiHandlerWithAuth({
 
           if (trashError) {
             return apiError({
-              route,
-              message: "Failed to move bookmarks to trash",
               error: trashError,
-              operation: "delete_category_trash_bookmarks",
-              userId,
               extra: {
-                categoryId,
                 bookmarkCount: ownerBookmarkIds.length,
+                categoryId,
               },
+              message: "Failed to move bookmarks to trash",
+              operation: "delete_category_trash_bookmarks",
+              route,
+              userId,
             });
           }
 
@@ -231,12 +228,12 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (junctionDeleteError) {
       return apiError({
-        route,
-        message: "Failed to delete category associations",
         error: junctionDeleteError,
-        operation: "delete_category_junction",
-        userId,
         extra: { categoryId },
+        message: "Failed to delete category associations",
+        operation: "delete_category_junction",
+        route,
+        userId,
       });
     }
 
@@ -252,21 +249,21 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (deleteError) {
       return apiError({
-        route,
-        message: "Failed to delete category",
         error: deleteError,
-        operation: "delete_category",
-        userId,
         extra: { categoryId },
+        message: "Failed to delete category",
+        operation: "delete_category",
+        route,
+        userId,
       });
     }
 
     if (!isNonEmptyArray(deletedCategory)) {
       return apiWarn({
-        route,
-        message: "Category not found or already deleted",
-        status: 404,
         context: { categoryId, userId },
+        message: "Category not found or already deleted",
+        route,
+        status: 404,
       });
     }
 
@@ -279,12 +276,12 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (profileFetchError) {
       return apiError({
-        route,
-        message: "Failed to fetch user profile",
         error: profileFetchError,
-        operation: "delete_category_fetch_profile",
-        userId,
         extra: { categoryId },
+        message: "Failed to fetch user profile",
+        operation: "delete_category_fetch_profile",
+        route,
+        userId,
       });
     }
 
@@ -300,12 +297,12 @@ export const POST = createPostApiHandlerWithAuth({
 
       if (orderError) {
         return apiError({
-          route,
-          message: "Failed to update category order",
           error: orderError,
-          operation: "delete_category_update_order",
-          userId,
           extra: { categoryId },
+          message: "Failed to update category order",
+          operation: "delete_category_update_order",
+          route,
+          userId,
         });
       }
     }
@@ -319,17 +316,17 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (favoritesCleanupError) {
       console.error(`[${route}] Failed to clean up favorite_categories:`, {
-        error: favoritesCleanupError,
         categoryId: deletedCategory[0].id,
+        error: favoritesCleanupError,
       });
       Sentry.captureException(new Error(favoritesCleanupError.message), {
-        tags: { operation: "cleanup_all_favorite_categories", userId },
         extra: {
           categoryId: deletedCategory[0].id,
           code: favoritesCleanupError.code,
           details: favoritesCleanupError.details,
           hint: favoritesCleanupError.hint,
         },
+        tags: { operation: "cleanup_all_favorite_categories", userId },
       });
     }
 
@@ -350,8 +347,8 @@ export const POST = createPostApiHandlerWithAuth({
 
       if (profileError) {
         console.error(`[${route}] Failed to fetch user profile for revalidation:`, {
-          error: profileError,
           categoryId,
+          error: profileError,
           userId,
         });
       }
@@ -366,9 +363,9 @@ export const POST = createPostApiHandlerWithAuth({
 
         // Fire and forget - don't block the API response
         void revalidatePublicCategoryPage(userName, categoryData.category_slug, {
+          categoryId,
           operation: "delete_category",
           userId,
-          categoryId,
         });
       }
     }
@@ -390,7 +387,7 @@ export const POST = createPostApiHandlerWithAuth({
         }
 
         const ownerDisplayName =
-          ownerProfile?.display_name || ownerProfile?.user_name || "the collection owner";
+          ownerProfile?.display_name ?? ownerProfile?.user_name ?? "the collection owner";
 
         await sendCollectionDeletedNotification({
           categoryName: deletedCategory[0].category_name ?? "Untitled",
@@ -402,4 +399,7 @@ export const POST = createPostApiHandlerWithAuth({
 
     return deletedCategory;
   },
+  inputSchema: DeleteCategoryInputSchema,
+  outputSchema: DeleteCategoryResponseSchema,
+  route: ROUTE,
 });

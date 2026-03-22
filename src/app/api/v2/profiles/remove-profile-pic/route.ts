@@ -8,10 +8,7 @@ import { RemoveProfilePicInputSchema, RemoveProfilePicOutputSchema } from "./sch
 const ROUTE = "v2-profiles-remove-profile-pic";
 
 export const DELETE = createDeleteApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: RemoveProfilePicInputSchema,
-  outputSchema: RemoveProfilePicOutputSchema,
-  handler: async ({ supabase, user, route }) => {
+  handler: async ({ route, supabase, user }) => {
     const userId = user.id;
 
     console.log(`[${route}] API called:`, { userId });
@@ -24,10 +21,10 @@ export const DELETE = createDeleteApiHandlerWithAuth({
 
     if (removeError) {
       return apiError({
-        route,
-        message: "Failed to remove profile picture",
         error: removeError,
+        message: "Failed to remove profile picture",
         operation: "profile_pic_db_remove",
+        route,
         userId,
       });
     }
@@ -36,4 +33,7 @@ export const DELETE = createDeleteApiHandlerWithAuth({
 
     return removeData;
   },
+  inputSchema: RemoveProfilePicInputSchema,
+  outputSchema: RemoveProfilePicOutputSchema,
+  route: ROUTE,
 });

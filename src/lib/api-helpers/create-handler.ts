@@ -1,47 +1,48 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-import { type SupabaseClient, type User } from "@supabase/supabase-js";
-import { type z } from "zod";
+import type { Database } from "@/types/database.types";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+import type { z } from "zod";
 
 import { requireAuth } from "@/lib/supabase/api";
-import { type Database } from "@/types/database.types";
 
 import { apiError, apiSuccess, parseBody, parseQuery } from "./response";
 
 // Context types for handlers
-type AuthHandlerContext<TInput> = {
+interface AuthHandlerContext<TInput> {
   data: TInput;
   route: string;
   supabase: SupabaseClient<Database>;
   user: User;
-};
+}
 
-type PublicHandlerContext<TInput> = {
+interface PublicHandlerContext<TInput> {
   input: TInput;
   route: string;
-};
+}
 
 // Config types
-type AuthHandlerConfig<TInput, TOutput> = {
+interface AuthHandlerConfig<TInput, TOutput> {
   handler: (ctx: AuthHandlerContext<TInput>) => Promise<NextResponse | TOutput>;
   inputSchema: z.ZodType<TInput>;
   outputSchema: z.ZodType<TOutput>;
   route: string;
-};
+}
 
-type PublicHandlerConfig<TInput, TOutput> = {
+interface PublicHandlerConfig<TInput, TOutput> {
   handler: (ctx: PublicHandlerContext<TInput>) => Promise<NextResponse | TOutput>;
   inputSchema: z.ZodType<TInput>;
   outputSchema: z.ZodType<TOutput>;
   route: string;
-};
+}
 
-export type HandlerConfig = {
+export interface HandlerConfig {
   factoryName: string;
   inputSchema: z.ZodTypeAny;
   outputSchema: z.ZodTypeAny;
   route: string;
-};
+}
 
 type HandlerFn = ((request: NextRequest) => Promise<NextResponse>) & {
   config: HandlerConfig;
@@ -51,17 +52,17 @@ type HandlerFn = ((request: NextRequest) => Promise<NextResponse>) & {
 // Internal helpers
 // ============================================================
 
-async function parseInput<TInput>(
+function parseInput<TInput>(
   request: NextRequest,
   schema: z.ZodType<TInput>,
   route: string,
   method: "body" | "query",
 ) {
   if (method === "query") {
-    return parseQuery({ request, schema, route });
+    return parseQuery({ request, route, schema });
   }
 
-  return await parseBody({ request, schema, route });
+  return parseBody({ request, route, schema });
 }
 
 function createPublicHandlerInternal<TInput, TOutput>(
@@ -69,7 +70,7 @@ function createPublicHandlerInternal<TInput, TOutput>(
   factoryName: string,
   method: "body" | "query",
 ): HandlerFn {
-  const { route, inputSchema, outputSchema, handler } = config;
+  const { handler, inputSchema, outputSchema, route } = config;
 
   const fn = async (request: NextRequest) => {
     try {
@@ -84,13 +85,13 @@ function createPublicHandlerInternal<TInput, TOutput>(
         return result;
       }
 
-      return apiSuccess({ route, data: result, schema: outputSchema });
+      return apiSuccess({ data: result, route, schema: outputSchema });
     } catch (error) {
       return apiError({
-        route,
-        message: "An unexpected error occurred",
         error,
+        message: "An unexpected error occurred",
         operation: `${route}_unexpected`,
+        route,
       });
     }
   };
@@ -105,7 +106,7 @@ function createAuthHandlerInternal<TInput, TOutput>(
   factoryName: string,
   method: "body" | "query",
 ): HandlerFn {
-  const { route, inputSchema, outputSchema, handler } = config;
+  const { handler, inputSchema, outputSchema, route } = config;
 
   const fn = async (request: NextRequest) => {
     try {
@@ -122,22 +123,22 @@ function createAuthHandlerInternal<TInput, TOutput>(
       const { supabase, user } = auth;
       const result = await handler({
         data: parsed.data,
+        route,
         supabase,
         user,
-        route,
       });
 
       if (result instanceof NextResponse) {
         return result;
       }
 
-      return apiSuccess({ route, data: result, schema: outputSchema });
+      return apiSuccess({ data: result, route, schema: outputSchema });
     } catch (error) {
       return apiError({
-        route,
-        message: "An unexpected error occurred",
         error,
+        message: "An unexpected error occurred",
         operation: `${route}_unexpected`,
+        route,
       });
     }
   };
@@ -196,7 +197,7 @@ function createSecretHandlerInternal<TInput, TOutput>(
   factoryName: string,
   method: "body" | "query",
 ): HandlerFn {
-  const { route, inputSchema, outputSchema, handler, secretEnvVar } = config;
+  const { handler, inputSchema, outputSchema, route, secretEnvVar } = config;
 
   const fn = async (request: NextRequest) => {
     try {
@@ -225,13 +226,13 @@ function createSecretHandlerInternal<TInput, TOutput>(
         return result;
       }
 
-      return apiSuccess({ route, data: result, schema: outputSchema });
+      return apiSuccess({ data: result, route, schema: outputSchema });
     } catch (error) {
       return apiError({
-        route,
-        message: "An unexpected error occurred",
         error,
+        message: "An unexpected error occurred",
         operation: `${route}_unexpected`,
+        route,
       });
     }
   };

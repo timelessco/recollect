@@ -1,4 +1,4 @@
-import { type NextRouter } from "next/router";
+import type { NextRouter } from "next/router";
 
 /**
  * Extracts the category slug from the current Next.js router path.
@@ -15,7 +15,7 @@ import { type NextRouter } from "next/router";
  * @param router The Next.js router instance
  * @returns The category slug (string) or null if not found
  */
-export const getCategorySlugFromRouter = (router: NextRouter): string | null => {
+export const getCategorySlugFromRouter = (router: NextRouter): null | string => {
   // Ensure we are running on the client (window is not available on server-side)
   if (typeof window === "undefined") {
     return null;
@@ -51,7 +51,7 @@ export const getCategorySlugFromRouter = (router: NextRouter): string | null => 
  */
 export const getPublicPageInfo = (
   router: NextRouter,
-): { user_name: string; category_slug: string } | null => {
+): { category_slug: string; user_name: string } | null => {
   // Ensure we are running on the client (window is not available on server-side)
   if (typeof window === "undefined") {
     return null;
@@ -65,7 +65,7 @@ export const getPublicPageInfo = (
     const category_slug = pathSegments[2]?.split("?")?.[0];
 
     if (user_name && category_slug) {
-      return { user_name, category_slug };
+      return { category_slug, user_name };
     }
   }
 

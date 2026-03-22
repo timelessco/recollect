@@ -24,7 +24,7 @@ const vercelUrl = vercelEnvironment === "production" ? productionUrl : `https://
 
 export const BASE_URL =
   process.env.NODE_ENV === "development"
-    ? `http://localhost:${process.env.PORT ?? 3_000}`
+    ? `http://localhost:${process.env.PORT ?? 3000}`
     : vercelUrl;
 
 export const SERVICES_OFFERED = [

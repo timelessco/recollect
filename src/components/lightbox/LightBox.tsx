@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useMediaQuery } from "@react-hookz/web";
-import Lightbox, { type ZoomRef } from "yet-another-react-lightbox";
+import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
+
+import type { SingleListData } from "../../types/apiTypes";
+import type { CustomSlide } from "./LightboxUtils";
+import type { ZoomRef } from "yet-another-react-lightbox";
 
 import { LightboxCloseIcon } from "../../icons/lightbox-close-icon";
 import { LightboxExternalLink } from "../../icons/lightboxExternalLink";
 import { ShowSidePaneButton } from "../../icons/showSidePaneButton";
 import { useMiscellaneousStore } from "../../store/componentStore";
-import { type SingleListData } from "../../types/apiTypes";
 import {
   IMAGE_TYPE_PREFIX,
   PDF_MIME_TYPE,
@@ -28,7 +31,7 @@ import {
   WebEmbedSlide,
   YouTubeSlide,
 } from "./LightboxRenderers";
-import { isSpotifyLink, isYouTubeVideo, type CustomSlide } from "./LightboxUtils";
+import { isSpotifyLink, isYouTubeVideo } from "./LightboxUtils";
 
 /**
  * CustomLightBox Component
@@ -43,12 +46,12 @@ import { isSpotifyLink, isYouTubeVideo, type CustomSlide } from "./LightboxUtils
  * - URL routing integration for shareable links
  */
 export const CustomLightBox = ({
-  bookmarks = [],
   activeIndex,
-  setActiveIndex,
-  isOpen,
+  bookmarks = [],
   handleClose: originalHandleClose,
+  isOpen,
   isPage,
+  setActiveIndex,
 }: {
   activeIndex: number;
   bookmarks?: SingleListData[];
@@ -66,8 +69,8 @@ export const CustomLightBox = ({
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Track bookmark IDs that have video/audio errors to render fallback image instead
-  const [videoErrorIds, setVideoErrorIds] = useState<Set<number>>(new Set());
-  const [audioErrorIds, setAudioErrorIds] = useState<Set<number>>(new Set());
+  const [videoErrorIds, setVideoErrorIds] = useState<Set<number>>(() => new Set());
+  const [audioErrorIds, setAudioErrorIds] = useState<Set<number>>(() => new Set());
 
   const handleVideoError = useCallback((bookmarkId: number) => {
     setVideoErrorIds((previous) => new Set(previous).add(bookmarkId));
@@ -94,7 +97,7 @@ export const CustomLightBox = ({
   const slides = useLightboxSlides(bookmarks, videoErrorIds);
 
   // Handle navigation, query invalidation and URL updates using custom hook
-  const { onViewRef, handleClose: handleCloseInvalidation } = useLightboxNavigation({
+  const { handleClose: handleCloseInvalidation, onViewRef } = useLightboxNavigation({
     activeIndex,
     bookmarks,
     isPage,
@@ -228,7 +231,9 @@ export const CustomLightBox = ({
 
   const on = useMemo(
     () => ({
-      view: ({ index }: { index: number }) => onViewRef.current(index),
+      view: ({ index }: { index: number }) => {
+        onViewRef.current(index);
+      },
       zoom: ({ zoom }: { zoom: number }) => {
         setZoomLevel(zoom);
       },
@@ -237,7 +242,7 @@ export const CustomLightBox = ({
   );
 
   const plugins = useMemo(() => [Zoom, MetaButtonPlugin()], []);
-  const zoom = useMemo(() => ({ ref: zoomRef, doubleClickDelay: 100, maxZoomPixelRatio: 100 }), []);
+  const zoom = useMemo(() => ({ doubleClickDelay: 100, maxZoomPixelRatio: 100, ref: zoomRef }), []);
   const animation = useMemo(() => ({ fade: 0, zoom: 200 }), []);
   const carousel = useMemo(() => ({ finite: true, preload: 1 }), []);
   const controller = useMemo(() => ({ closeOnBackdropClick: true }), []);
@@ -245,29 +250,29 @@ export const CustomLightBox = ({
   // Memoize styles configuration
   const styles = useMemo(
     () => ({
-      navigationNext: { top: "55.1px", transform: "none", padding: "0" },
-      navigationPrev: { top: "55.1px", transform: "none", padding: "0" },
-      toolbar: {
-        position: "absolute" as const,
-        top: "0",
-        left: "0",
-      },
       container: {
-        backgroundColor: "var(--color-whites-900)",
+        animation: "custom-fade-scale-in 0.25s ease-in-out",
         backdropFilter: "blur(32px)",
+        backgroundColor: "var(--color-whites-900)",
+        // Prevent browser navigation on swipe gestures
+        overscrollBehavior: "none" as const,
         transition: "all 0.2s ease-in-out",
         // Adjust width when side panel is visible (desktop only — mobile uses bottom sheet overlay)
         width:
           !isMobile && lightboxShowSidepane ? "calc(100% - min(max(320px, 20%), 400px))" : "100%",
-        animation: "custom-fade-scale-in 0.25s ease-in-out",
-        // Prevent browser navigation on swipe gestures
-        overscrollBehavior: "none" as const,
       },
+      navigationNext: { padding: "0", top: "55.1px", transform: "none" },
+      navigationPrev: { padding: "0", top: "55.1px", transform: "none" },
       slide: {
-        height: "100%",
-        display: "flex",
         alignItems: "center",
+        display: "flex",
+        height: "100%",
         justifyContent: "center",
+      },
+      toolbar: {
+        left: "0",
+        position: "absolute" as const,
+        top: "0",
       },
     }),
     [isMobile, lightboxShowSidepane],
@@ -280,10 +285,10 @@ export const CustomLightBox = ({
         // Left: Close button
         <div className="flex items-center" key="left-section">
           <button
+            aria-label="Close lightbox"
             className="group mt-1.5 ml-4 flex h-7 w-7 items-center justify-center rounded-full"
             onClick={handleClose}
             type="button"
-            aria-label="Close lightbox"
           >
             <LightboxCloseIcon className="h-5 w-5 text-gray-alpha-600 transition-colors duration-150 hover:text-gray-alpha-800" />
           </button>
@@ -344,22 +349,21 @@ export const CustomLightBox = ({
   // Memoize render configuration
   const render = useMemo(
     () => ({
-      slide: renderSlide,
-      iconNext: iconRight,
-      iconPrev: iconLeft,
-      buttonPrev:
-        (slides?.length ?? 0) <= 1 || isFirstSlide || isMobile || zoomLevel !== 1
-          ? () => null
-          : undefined,
       buttonNext:
         (slides?.length ?? 0) <= 1 || isLastSlide || isMobile || zoomLevel !== 1
           ? () => null
           : undefined,
+      buttonPrev:
+        (slides?.length ?? 0) <= 1 || isFirstSlide || isMobile || zoomLevel !== 1
+          ? () => null
+          : undefined,
       buttonZoom: () => null,
-      // eslint-disable-next-line react/no-unstable-nested-components
       controls: () => (
         <PullEffect enabled={zoomLevel === 1 && !(isMobile && lightboxShowSidepane)} />
       ),
+      iconNext: iconRight,
+      iconPrev: iconLeft,
+      slide: renderSlide,
     }),
     [
       renderSlide,

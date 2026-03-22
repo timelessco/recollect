@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import { Form } from "@base-ui/react/form";
-import { OTPInput, REGEXP_ONLY_DIGITS, type SlotProps } from "input-otp";
+import { OTPInput, REGEXP_ONLY_DIGITS } from "input-otp";
+
+import type { SlotProps } from "input-otp";
 
 import { Button } from "@/components/ui/recollect/button";
 import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
@@ -58,35 +60,35 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
   };
 
   return (
-    <Form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
+    <Form className="flex w-full flex-col gap-4" onSubmit={handleSubmit}>
       <div className="flex flex-col gap-1">
         <OTPInput
-          name="otp"
+          autoFocus
+          containerClassName="group flex items-center justify-center gap-3"
+          inputMode="numeric"
           maxLength={6}
-          value={otp}
+          name="otp"
           onChange={setOtp}
           onComplete={verifyOtp}
           pattern={REGEXP_ONLY_DIGITS}
-          autoFocus
-          inputMode="numeric"
-          containerClassName="group flex items-center justify-center gap-3"
           render={({ slots }) => (
             <>
               {slots.map((slot, idx) => (
                 // Slots are stable and position-based, so index is appropriate here
-                // eslint-disable-next-line react/no-array-index-key
+                // oxlint-disable-next-line react/no-array-index-key
                 <Slot key={idx} {...slot} />
               ))}
             </>
           )}
+          value={otp}
         />
       </div>
 
       <Button
-        type="submit"
         className="gap-2 rounded-xl bg-gray-950 px-2 py-[10px] text-sm leading-[115%] font-medium text-gray-0 shadow-custom-2 hover:not-data-disabled:bg-gray-700"
-        pending={extendedIsPending}
         disabled={extendedIsPending || otp.length !== 6}
+        pending={extendedIsPending}
+        type="submit"
       >
         Verify Email
       </Button>

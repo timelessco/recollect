@@ -1,4 +1,4 @@
-import { type Metadata } from "next";
+import type { Metadata } from "next";
 
 import { EmailToOtpForm } from "@/components/guest/email-client-components";
 import { BASE_URL } from "@/site-config";

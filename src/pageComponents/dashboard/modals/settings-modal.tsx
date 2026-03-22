@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
+import type { ReactNode } from "react";
 
 import { Dialog } from "@/components/ui/recollect/dialog";
 
@@ -67,8 +68,8 @@ function DesktopSettingsPortal() {
       <Dialog.Portal>
         <Dialog.Backdrop />
         <Dialog.Popup
-          className="skip-global-paste w-full max-w-[740px] rounded-[20px]"
           aria-label="Settings"
+          className="skip-global-paste w-full max-w-[740px] rounded-[20px]"
         >
           <DesktopSettingsContent />
         </Dialog.Popup>
@@ -83,16 +84,20 @@ function DesktopSettingsContent() {
 
   const getSelectedMenuItemId = () => {
     switch (currentPage) {
-      case "main":
+      case "ai-features": {
+        return 1;
+      }
       case "change-email":
       case "delete":
+      case "main": {
         return 0;
-      case "ai-features":
-        return 1;
-      case "import":
+      }
+      case "import": {
         return 2;
-      default:
+      }
+      default: {
         return 0;
+      }
     }
   };
 
@@ -100,43 +105,43 @@ function DesktopSettingsContent() {
 
   const optionsList = [
     {
+      count: undefined,
+      current: selectedMenuItemId === 0,
+      href: ``,
       icon: (
         <figure className="flex h-4.5 w-4.5 items-center justify-center text-gray-900">
           <AvatarIcon />
         </figure>
       ),
-      name: "My Profile",
-      href: ``,
-      current: selectedMenuItemId === 0,
-      id: 0,
-      count: undefined,
       iconColor: "",
+      id: 0,
+      name: "My Profile",
     },
     {
+      count: undefined,
+      current: selectedMenuItemId === 1,
+      href: ``,
       icon: (
         <figure className="flex h-4.5 w-4.5 items-center justify-center text-gray-900">
           <SettingsAiIcon />
         </figure>
       ),
-      name: "AI Features",
-      href: ``,
-      current: selectedMenuItemId === 1,
-      id: 1,
-      count: undefined,
       iconColor: "",
+      id: 1,
+      name: "AI Features",
     },
     {
+      count: undefined,
+      current: selectedMenuItemId === 2,
+      href: ``,
       icon: (
         <figure className="flex items-center justify-center text-gray-900">
           <ImportIcon className="h-4.5 w-4.5" />
         </figure>
       ),
-      name: "Import",
-      href: ``,
-      current: selectedMenuItemId === 2,
-      id: 2,
-      count: undefined,
       iconColor: "",
+      id: 2,
+      name: "Import",
     },
   ];
 
@@ -157,17 +162,21 @@ function DesktopSettingsContent() {
               key={item.id}
               onClick={() => {
                 switch (item.id) {
-                  case 0:
+                  case 0: {
                     setCurrentPage("main");
                     break;
-                  case 1:
+                  }
+                  case 1: {
                     setCurrentPage("ai-features");
                     break;
-                  case 2:
+                  }
+                  case 2: {
                     setCurrentPage("import");
                     break;
-                  default:
+                  }
+                  default: {
                     break;
+                  }
                 }
               }}
               responsiveIcon

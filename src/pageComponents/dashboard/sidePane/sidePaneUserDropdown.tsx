@@ -19,7 +19,6 @@ const SidePaneUserDropdown = () => {
 
   const handleSignOut = async () => {
     await signOut(supabase);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     setSession({});
     void router.push(`/${LOGIN_URL}`);
@@ -34,7 +33,7 @@ const SidePaneUserDropdown = () => {
         >
           <div className="flex w-full items-center justify-between">
             <SidePaneUserTrigger />
-            <span className="mt-px" aria-hidden="true">
+            <span aria-hidden="true" className="mt-px">
               <DownArrowGray />
             </span>
           </div>
@@ -58,7 +57,7 @@ const SidePaneUserDropdown = () => {
 };
 
 const SidePaneUserTrigger = () => {
-  const { userProfileData, isLoading } = useFetchUserProfile();
+  const { isLoading, userProfileData } = useFetchUserProfile();
   const userData = userProfileData?.data?.[0];
 
   return (
@@ -73,7 +72,7 @@ const SidePaneUserTrigger = () => {
       <p className="flex-1 truncate overflow-hidden text-left text-sm leading-4 font-medium text-gray-800">
         {isLoading
           ? "Loading..."
-          : userData?.display_name || userData?.user_name || userData?.email}
+          : (userData?.display_name ?? userData?.user_name ?? userData?.email)}
       </p>
     </div>
   );

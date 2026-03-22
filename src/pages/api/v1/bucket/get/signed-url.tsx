@@ -1,4 +1,4 @@
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
@@ -44,12 +44,12 @@ export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse<{
     data: { signedUrl: string } | null;
-    error: string | null;
+    error: null | string;
   }>,
 ) {
   // Only allow GET requests
   if (request.method !== "GET") {
-    response.status(405).json({ error: "Only GET requests allowed", data: null });
+    response.status(405).json({ data: null, error: "Only GET requests allowed" });
     return;
   }
 
@@ -64,7 +64,7 @@ export default async function handler(
 
     if (userError || !user) {
       console.warn("User authentication failed:", { error: userError });
-      response.status(401).json({ error: "Unauthorized", data: null });
+      response.status(401).json({ data: null, error: "Unauthorized" });
       return;
     }
 
@@ -76,8 +76,8 @@ export default async function handler(
         errors: validatedQuery.error.message,
       });
       response.status(400).json({
-        error: "Invalid request parameters",
         data: null,
+        error: "Invalid request parameters",
       });
       return;
     }
@@ -85,33 +85,33 @@ export default async function handler(
     const { filePath } = validatedQuery.data;
 
     // Entry point log
-    console.log("get-signed-url API called:", { userId: user.id, filePath });
+    console.log("get-signed-url API called:", { filePath, userId: user.id });
 
     // Generate a signed URL for file upload
     // The URL will expire in 1 hour (3600 seconds)
-    const result = await storageHelpers.createSignedUploadUrl(R2_MAIN_BUCKET_NAME, filePath, 3_600);
+    const result = await storageHelpers.createSignedUploadUrl(R2_MAIN_BUCKET_NAME, filePath, 3600);
 
     // Handle errors from R2 URL generation
     if (result.error) {
       console.error("Failed to generate signed URL:", result.error);
       Sentry.captureException(result.error, {
+        extra: { filePath },
         tags: {
           operation: "generate_signed_url",
           userId: user.id,
         },
-        extra: { filePath },
       });
       response.status(500).json({
-        error: "Failed to generate signed URL",
         data: null,
+        error: "Failed to generate signed URL",
       });
       return;
     }
 
     // Success
     console.log("Signed URL generated successfully:", {
-      userId: user.id,
       filePath,
+      userId: user.id,
     });
     response.status(200).json({
       data: result.data,
@@ -125,8 +125,8 @@ export default async function handler(
       },
     });
     response.status(500).json({
-      error: "An unexpected error occurred",
       data: null,
+      error: "An unexpected error occurred",
     });
   }
 }

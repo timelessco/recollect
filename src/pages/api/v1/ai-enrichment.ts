@@ -1,4 +1,4 @@
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
@@ -18,28 +18,28 @@ import { upload } from "../bookmark/add-remaining-bookmark-data";
 
 const requestBodySchema = z.object({
   id: z.number(),
-  ogImage: z.url({ message: "ogImage must be a valid URL" }),
-  user_id: z.uuid({ message: "user_id must be a valid UUID" }),
-  url: z.url({ message: "url must be a valid URL" }),
+  isInstagramBookmark: z.boolean().default(false),
   isRaindropBookmark: z.boolean().default(false),
   isTwitterBookmark: z.boolean().default(false),
-  isInstagramBookmark: z.boolean().default(false),
   message: z.object({
-    msg_id: z.number(),
     message: z.object({
       meta_data: z.object({
-        twitter_avatar_url: z.string().optional(),
-        instagram_username: z.string().max(30).optional(),
-        instagram_profile_pic: z.string().nullable().optional(),
         favIcon: z.string(),
-        video_url: z.string().nullable().optional(),
-        saved_collection_names: z.array(z.string().max(255)).max(100).optional(),
-        isPageScreenshot: z.boolean().nullable().optional(),
+        instagram_profile_pic: z.string().nullable().optional(),
+        instagram_username: z.string().max(30).optional(),
         isOgImagePreferred: z.boolean().optional(),
+        isPageScreenshot: z.boolean().nullable().optional(),
+        saved_collection_names: z.array(z.string().max(255)).max(100).optional(),
+        twitter_avatar_url: z.string().optional(),
+        video_url: z.string().nullable().optional(),
       }),
     }),
+    msg_id: z.number(),
   }),
+  ogImage: z.url({ message: "ogImage must be a valid URL" }),
   queue_name: z.string().min(1, { message: "queue_name is required" }),
+  url: z.url({ message: "url must be a valid URL" }),
+  user_id: z.uuid({ message: "user_id must be a valid UUID" }),
 });
 
 const ROUTE = "ai-enrichment";
@@ -62,9 +62,9 @@ export default async function handler(request: NextApiRequest, response: NextApi
     if (!parseResult.success) {
       console.warn(`[${ROUTE}] Validation error:`, parseResult.error.issues);
       await storeQueueError({
-        queueName,
-        msgId,
         errorReason: "ai_enrichment: validation_failed",
+        msgId,
+        queueName,
         route: ROUTE,
       });
       response.status(400).json({
@@ -75,14 +75,14 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     const {
       id,
-      ogImage: ogImageUrl,
-      user_id,
-      url,
+      isInstagramBookmark,
       isRaindropBookmark,
       isTwitterBookmark,
-      isInstagramBookmark,
       message,
+      ogImage: ogImageUrl,
       queue_name,
+      url,
+      user_id,
     } = parseResult.data;
 
     if (isTwitterBookmark) {
@@ -103,21 +103,21 @@ export default async function handler(request: NextApiRequest, response: NextApi
           videoUrl: message.message.meta_data?.video_url,
         });
         Sentry.captureException(validationError, {
+          extra: {
+            bookmarkId: id,
+            ogImageUrl,
+            url,
+            videoUrl: message.message.meta_data?.video_url,
+          },
           tags: {
             operation: "url_validation_failed",
             userId: user_id,
           },
-          extra: {
-            bookmarkId: id,
-            url,
-            ogImageUrl,
-            videoUrl: message.message.meta_data?.video_url,
-          },
         });
         await storeQueueError({
-          queueName: queue_name,
-          msgId: message.msg_id,
           errorReason: "ai_enrichment: twitter_url_validation_failed",
+          msgId: message.msg_id,
+          queueName: queue_name,
           route: ROUTE,
         });
         response.status(400).json({
@@ -148,21 +148,21 @@ export default async function handler(request: NextApiRequest, response: NextApi
           videoUrl: message.message.meta_data?.video_url,
         });
         Sentry.captureException(validationError, {
+          extra: {
+            bookmarkId: id,
+            ogImageUrl,
+            url,
+            videoUrl: message.message.meta_data?.video_url,
+          },
           tags: {
             operation: "instagram_url_validation_failed",
             userId: user_id,
           },
-          extra: {
-            bookmarkId: id,
-            url,
-            ogImageUrl,
-            videoUrl: message.message.meta_data?.video_url,
-          },
         });
         await storeQueueError({
-          queueName: queue_name,
-          msgId: message.msg_id,
           errorReason: "ai_enrichment: instagram_url_validation_failed",
+          msgId: message.msg_id,
+          queueName: queue_name,
           route: ROUTE,
         });
         response.status(400).json({
@@ -177,13 +177,13 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     console.log(`[${ROUTE}] API called:`, {
       bookmarkId: id,
-      userId: user_id,
-      url,
+      isInstagramBookmark,
       isRaindropBookmark,
       isTwitterBookmark,
-      queueName: queue_name,
       messageId: message.msg_id,
-      isInstagramBookmark,
+      queueName: queue_name,
+      url,
+      userId: user_id,
     });
 
     const supabase = createServiceClient();
@@ -198,8 +198,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
       try {
         const imageResponse = await fetch(ogImage, {
           headers: {
-            "User-Agent": "Mozilla/5.0",
             Accept: "image/*,*/*;q=0.8",
+            "User-Agent": "Mozilla/5.0",
           },
           signal: AbortSignal.timeout(IMAGE_DOWNLOAD_TIMEOUT_MS),
         });
@@ -210,7 +210,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
         const arrayBuffer = await imageResponse.arrayBuffer();
         const returnedB64 = Buffer.from(arrayBuffer).toString("base64");
-        ogImage = (await upload(returnedB64, user_id, null)) || ogImageUrl;
+        ogImage = (await upload(returnedB64, user_id, null)) ?? ogImageUrl;
 
         console.log(
           `[${ROUTE}] ${isRaindropBookmark ? "Raindrop" : "Instagram"} image uploaded successfully`,
@@ -221,14 +221,14 @@ export default async function handler(request: NextApiRequest, response: NextApi
           error,
         );
         Sentry.captureException(error, {
+          extra: {
+            bookmarkId: id,
+            ogImageUrl,
+            url,
+          },
           tags: {
             operation: isRaindropBookmark ? "raindrop_image_upload" : "instagram_image_upload",
             userId: user_id,
-          },
-          extra: {
-            bookmarkId: id,
-            url,
-            ogImageUrl,
           },
         });
       }
@@ -249,37 +249,37 @@ export default async function handler(request: NextApiRequest, response: NextApi
         error: fetchError.message,
       });
       Sentry.captureException(fetchError, {
-        tags: { operation: "fetch_bookmark_context", userId: user_id },
         extra: { bookmarkId: id },
+        tags: { operation: "fetch_bookmark_context", userId: user_id },
       });
     }
 
     const contentType = resolveContentType({
-      type: bookmarkRow?.type ?? undefined,
       mediaType: undefined,
+      type: bookmarkRow?.type ?? undefined,
     });
 
     // Enrich metadata with AI-generated content
     const {
-      metadata: newMeta,
-      matchedCollectionIds,
-      isFailed,
       error,
+      isFailed,
+      matchedCollectionIds,
+      metadata: newMeta,
     } = await enrichMetadata({
-      existingMetadata: message.message.meta_data,
-      ogImage,
-      isTwitterBookmark,
-      videoUrl: message.message.meta_data?.video_url,
-      userId: user_id,
-      supabase,
-      url,
-      isInstagramBookmark,
       contentType,
+      description: bookmarkRow?.description,
+      existingMetadata: message.message.meta_data,
+      isInstagramBookmark,
       isOgImage:
         (message.message.meta_data?.isOgImagePreferred ?? false) ||
         message.message.meta_data?.isPageScreenshot !== true,
+      isTwitterBookmark,
+      ogImage,
+      supabase,
       title: bookmarkRow?.title,
-      description: bookmarkRow?.description,
+      url,
+      userId: user_id,
+      videoUrl: message.message.meta_data?.video_url,
     });
 
     if (isFailed) {
@@ -293,26 +293,26 @@ export default async function handler(request: NextApiRequest, response: NextApi
     // Update database with enriched data
     const { error: updateError } = await supabase
       .from(MAIN_TABLE_NAME)
-      .update({ ogImage, meta_data: newMeta })
+      .update({ meta_data: newMeta, ogImage })
       .eq("id", id);
 
     if (updateError) {
       console.error(`[${ROUTE}] Error updating bookmark:`, updateError);
       Sentry.captureException(updateError, {
+        extra: {
+          bookmarkId: id,
+          ogImage,
+          url,
+        },
         tags: {
           operation: "update_bookmark_metadata",
           userId: user_id,
         },
-        extra: {
-          bookmarkId: id,
-          url,
-          ogImage,
-        },
       });
       await storeQueueError({
-        queueName: queue_name,
-        msgId: message.msg_id,
         errorReason: "ai_enrichment: db_update_failed",
+        msgId: message.msg_id,
+        queueName: queue_name,
         route: ROUTE,
       });
       response.status(500).json({
@@ -333,8 +333,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
     // Delete message from queue on success
     if (!isFailed) {
       const { error: deleteError } = await supabase.schema("pgmq_public").rpc("delete", {
-        queue_name,
         message_id: message.msg_id,
+        queue_name,
       });
 
       if (deleteError) {
@@ -344,15 +344,15 @@ export default async function handler(request: NextApiRequest, response: NextApi
           queueName: queue_name,
         });
         Sentry.captureException(deleteError, {
+          extra: {
+            bookmarkId: id,
+            messageId: message.msg_id,
+            queueName: queue_name,
+            url,
+          },
           tags: {
             operation: "delete_queue_message",
             userId: user_id,
-          },
-          extra: {
-            bookmarkId: id,
-            queueName: queue_name,
-            messageId: message.msg_id,
-            url,
           },
         });
       } else {
@@ -363,56 +363,56 @@ export default async function handler(request: NextApiRequest, response: NextApi
     } else {
       if (error) {
         const { error: rpcError } = await supabase.rpc("update_queue_message_error", {
-          p_queue_name: queue_name,
-          p_msg_id: message.msg_id,
           p_error: `ai_enrichment: ${error}`,
+          p_msg_id: message.msg_id,
+          p_queue_name: queue_name,
         });
 
         if (rpcError) {
           console.error(`[${ROUTE}] Failed to store error on queue message:`, {
-            rpcError,
             messageId: message.msg_id,
             queueName: queue_name,
+            rpcError,
           });
         }
       }
 
       console.warn(`[${ROUTE}] Keeping message in queue due to failures:`, {
+        error,
         messageId: message.msg_id,
         url,
-        error,
       });
     }
 
     console.log(`[${ROUTE}] Request completed:`, {
-      url,
-      success: true,
       isFailed,
+      success: true,
+      url,
     });
 
     response.status(200).json({
-      success: true,
-      isFailed,
       error,
-      ogImage,
+      isFailed,
       meta_data: newMeta,
+      ogImage,
+      success: true,
     });
   } catch (error) {
     console.error(`[${ROUTE}] Unexpected error:`, error);
     Sentry.captureException(error, {
-      tags: {
-        operation: "ai_enrichment_unexpected",
-      },
       extra: {
         bookmarkId: request.body?.id,
         url: request.body?.url,
         userId: request.body?.user_id,
       },
+      tags: {
+        operation: "ai_enrichment_unexpected",
+      },
     });
     await storeQueueError({
-      queueName,
-      msgId,
       errorReason: "ai_enrichment: unexpected_error",
+      msgId,
+      queueName,
       route: ROUTE,
     });
     response.status(500).json({

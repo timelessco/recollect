@@ -7,10 +7,7 @@ import { CheckGeminiApiKeyInputSchema, CheckGeminiApiKeyOutputSchema } from "./s
 const ROUTE = "v2-profiles-check-gemini-api-key";
 
 export const GET = createGetApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: CheckGeminiApiKeyInputSchema,
-  outputSchema: CheckGeminiApiKeyOutputSchema,
-  handler: async ({ supabase, user, route }) => {
+  handler: async ({ route, supabase, user }) => {
     const userId = user.id;
 
     console.log(`[${route}] API called:`, { userId });
@@ -23,10 +20,10 @@ export const GET = createGetApiHandlerWithAuth({
 
     if (profileError) {
       return apiError({
-        route,
-        message: "Failed to check API key status",
         error: profileError,
+        message: "Failed to check API key status",
         operation: "gemini_api_key_check",
+        route,
         userId,
       });
     }
@@ -37,4 +34,7 @@ export const GET = createGetApiHandlerWithAuth({
 
     return { hasApiKey };
   },
+  inputSchema: CheckGeminiApiKeyInputSchema,
+  outputSchema: CheckGeminiApiKeyOutputSchema,
+  route: ROUTE,
 });

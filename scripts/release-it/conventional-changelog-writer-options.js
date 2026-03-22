@@ -63,10 +63,8 @@ const expandTemplate = (templateArgument, context) => {
   let expanded = templateArgument;
 
   for (const key of Object.keys(context)) {
-    // eslint-disable-next-line unicorn/prefer-string-replace-all
     expanded = expanded.replace(
       // Need to disable the rule here because of the runtime error - SyntaxError: Invalid regular expression: /{{host}}/: Lone quantifier brackets
-      // eslint-disable-next-line require-unicode-regexp
       new RegExp(`{{${key}}}`, "g"),
       context[key],
     );
@@ -273,7 +271,6 @@ export const transform = async (commitOriginal, context) => {
     const issueRegEx = `(${issuePrefixes.join("|")})(\\d+)`;
     const re = new RegExp(issueRegEx, "gu");
 
-    // eslint-disable-next-line unicorn/prefer-string-replace-all
     commit.subject = commit.subject.replace(re, (_, prefix, issue) => {
       issues.push(prefix + issue);
 
@@ -288,7 +285,6 @@ export const transform = async (commitOriginal, context) => {
     });
 
     // User URLs.
-    // eslint-disable-next-line unicorn/prefer-string-replace-all
     commit.subject = commit.subject.replace(/\B@([a-z\d](?:-?[a-z\d/]){0,38})/gu, (_, user) => {
       if (user.includes("/")) {
         return `@${user}`;

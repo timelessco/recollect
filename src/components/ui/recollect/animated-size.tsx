@@ -39,18 +39,20 @@ export function AnimatedSize({ children }: AnimatedSizeProps) {
       }
     });
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   return (
     <motion.div
       animate={size ?? undefined}
-      transition={
-        shouldReduceMotion ? { duration: 0 } : { type: "spring", bounce: 0.2, duration: 0.2 }
-      }
       style={{ overflow: "clip" }}
+      transition={
+        shouldReduceMotion ? { duration: 0 } : { bounce: 0.2, duration: 0.2, type: "spring" }
+      }
     >
-      <div ref={ref} className="w-fit">
+      <div className="w-fit" ref={ref}>
         {children}
       </div>
     </motion.div>

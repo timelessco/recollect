@@ -15,17 +15,14 @@ const getRange = (page: number) => {
 };
 
 export const GET = createGetApiHandler({
-  inputSchema: FetchDiscoverBookmarksQuerySchema,
-  outputSchema: FetchDiscoverBookmarksResponseSchema,
-  route: ROUTE,
   handler: async ({ input, route }) => {
     const { page } = input;
     const { rangeEnd, rangeStart } = getRange(page);
 
     console.log(`[${route}] API called:`, {
       page,
-      rangeStart,
       rangeEnd,
+      rangeStart,
     });
 
     const { supabase } = await createApiClient();
@@ -56,15 +53,15 @@ export const GET = createGetApiHandler({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to fetch discoverable bookmarks",
         error,
-        operation: "fetch_discoverable_bookmarks",
         extra: {
           page,
-          rangeStart,
           rangeEnd,
+          rangeStart,
         },
+        message: "Failed to fetch discoverable bookmarks",
+        operation: "fetch_discoverable_bookmarks",
+        route,
       });
     }
 
@@ -74,4 +71,7 @@ export const GET = createGetApiHandler({
 
     return data;
   },
+  inputSchema: FetchDiscoverBookmarksQuerySchema,
+  outputSchema: FetchDiscoverBookmarksResponseSchema,
+  route: ROUTE,
 });

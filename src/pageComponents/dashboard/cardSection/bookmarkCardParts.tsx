@@ -2,10 +2,11 @@ import Image from "next/image";
 
 import { isNil } from "lodash";
 
+import type { SingleListData } from "@/types/apiTypes";
+
 import { CategoryBadges } from "@/components/categoryBadges";
 import { GetBookmarkIcon } from "@/components/get-bookmark-icon";
 import { DefaultUserIcon } from "@/icons/user/defaultUserIcon";
-import { type SingleListData } from "@/types/apiTypes";
 import { EVERYTHING_URL, IMAGE_TYPE_PREFIX } from "@/utils/constants";
 import { cn } from "@/utils/tailwind-merge";
 
@@ -20,8 +21,8 @@ export function BookmarkAvatar({
 }) {
   const className = cn({
     "absolute hidden h-[26px] w-[26px] rounded-full group-hover:flex": true,
-    "top-0 right-[65px]": isCreatedByLoggedInUser,
     "right-[100px]": isListView,
+    "top-0 right-[65px]": isCreatedByLoggedInUser,
     "top-0 right-0": !isCreatedByLoggedInUser,
   });
 
@@ -62,7 +63,7 @@ export function BookmarkFavIcon({
   );
 
   const isImageIcon =
-    (post?.meta_data?.favIcon || post?.meta_data?.twitter_avatar_url) && !hasFavIconError;
+    (post?.meta_data?.favIcon ?? post?.meta_data?.twitter_avatar_url) && !hasFavIconError;
 
   if (isImageIcon) {
     return <figure className="h-[15px] w-[15px]">{icon}</figure>;
@@ -85,7 +86,7 @@ export function BookmarkCategoryBadge({
   categorySlug,
   post,
 }: {
-  categorySlug: string | null;
+  categorySlug: null | string;
   post: SingleListData;
 }) {
   if (categorySlug !== EVERYTHING_URL) {

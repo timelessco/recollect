@@ -1,4 +1,4 @@
-import { type PointerEvent } from "react";
+import type { PointerEvent } from "react";
 
 const BackIcon = ({ onPointerDown }: { onPointerDown?: (event: PointerEvent) => void }) => (
   <svg

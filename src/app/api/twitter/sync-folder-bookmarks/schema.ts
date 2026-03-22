@@ -4,8 +4,8 @@ export const SyncFolderBookmarksInputSchema = z.object({
   mappings: z
     .array(
       z.object({
-        url: z.string().url(),
         category_name: z.string().min(1, { error: "Category name is required" }),
+        url: z.string().url(),
       }),
     )
     .min(1, { error: "At least one mapping required" })

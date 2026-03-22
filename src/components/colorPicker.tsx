@@ -3,10 +3,10 @@ import { useTheme } from "next-themes";
 import { colorPickerColors } from "@/utils/constants";
 import { cn } from "@/utils/tailwind-merge";
 
-type ColorPickerProps = {
+interface ColorPickerProps {
   onChange: (value: string) => void;
   selectedColor: string;
-};
+}
 
 const colorBlockWrapper = cn("flex", "cursor-pointer", "items-center", "space-x-1");
 
@@ -73,16 +73,18 @@ export const ColorPicker = ({ onChange, selectedColor }: ColorPickerProps) => {
           key={colorItem}
         >
           <div
+            aria-label={`Select ${colorItem} color`}
+            aria-pressed={colorItem === mappedSelected}
             className={colorBlockItemBorder(colorItem, baseLightColor)}
-            onClick={() => onChange(swapFirstTwo(colorItem))}
+            onClick={() => {
+              onChange(swapFirstTwo(colorItem));
+            }}
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
                 onChange(swapFirstTwo(colorItem));
               }
             }}
-            aria-label={`Select ${colorItem} color`}
-            aria-pressed={colorItem === mappedSelected}
             role="button"
             style={{ backgroundColor: colorItem }}
             tabIndex={0}

@@ -1,11 +1,8 @@
 "use client";
 
-import {
-  useMutation,
-  type MutationKey,
-  type QueryKey,
-  type UseMutationOptions,
-} from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
+
+import type { MutationKey, QueryKey, UseMutationOptions } from "@tanstack/react-query";
 
 import { handleClientError, handleSuccess } from "@/utils/error-utils/client";
 
@@ -98,31 +95,14 @@ export interface ReactQueryMutationOptions<
   "onError" | "onSettled" | "retry" | "retryDelay"
 > {
   /**
-   * Show success toast when mutation succeeds (default: false)
-   */
-  showSuccessToast?: boolean;
-  /**
-   * Success message to display
-   */
-  successMessage?: string;
-  /**
-   * Skip built-in error handling (default: false)
-   */
-  skipErrorHandling?: boolean;
-  /**
-   * Mutation key for DevTools debugging and useIsMutating
-   */
-  mutationKey?: MutationKey;
-  /**
    * Skip invalidation if other mutations with same key are pending (default: false)
    * Useful for rapid mutations like drag-drop reordering
    */
   guardConcurrentInvalidation?: boolean;
   /**
-   * Retry configuration for failed mutations.
-   * Note: This replaces the built-in retry/retryDelay options with a simpler config.
+   * Mutation key for DevTools debugging and useIsMutating
    */
-  retryConfig?: RetryConfig;
+  mutationKey?: MutationKey;
   /**
    * Callback when mutation errors
    */
@@ -132,10 +112,27 @@ export interface ReactQueryMutationOptions<
    */
   onSettled?: (
     data: TData | undefined,
-    error: TError | null,
+    error: null | TError,
     variables: TVariables,
     context: TContext | undefined,
   ) => void;
+  /**
+   * Retry configuration for failed mutations.
+   * Note: This replaces the built-in retry/retryDelay options with a simpler config.
+   */
+  retryConfig?: RetryConfig;
+  /**
+   * Show success toast when mutation succeeds (default: false)
+   */
+  showSuccessToast?: boolean;
+  /**
+   * Skip built-in error handling (default: false)
+   */
+  skipErrorHandling?: boolean;
+  /**
+   * Success message to display
+   */
+  successMessage?: string;
 }
 
 /**
@@ -149,7 +146,7 @@ export interface RollbackFn {
    * Captured secondary query key (e.g., search results).
    * Used by onSettled to invalidate both primary and secondary caches.
    */
-  capturedSecondaryKey?: QueryKey | null;
+  capturedSecondaryKey?: null | QueryKey;
   /**
    * When true, skip invalidating the secondary query key on success.
    * Used by mutations that defer invalidation (e.g., lightbox category changes).
@@ -174,14 +171,14 @@ export function useReactQueryMutation<
 >(options: ReactQueryMutationOptions<TData, TError, TVariables, TContext>) {
   // guardConcurrentInvalidation is handled by useReactQueryOptimisticMutation
   const {
+    guardConcurrentInvalidation: _guardConcurrentInvalidation,
+    mutationKey,
+    onError: userOnError,
+    onSettled: userOnSettled,
+    retryConfig,
     showSuccessToast = false,
     skipErrorHandling = false,
     successMessage,
-    mutationKey,
-    guardConcurrentInvalidation: _guardConcurrentInvalidation,
-    retryConfig,
-    onSettled: userOnSettled,
-    onError: userOnError,
     ...restOptions
   } = options;
   void _guardConcurrentInvalidation;
@@ -209,15 +206,6 @@ export function useReactQueryMutation<
     mutationKey,
     ...retryOptions,
     ...restOptions,
-    onSettled: (data, error, variables, context) => {
-      // Show success toast if enabled and no error
-      if (!error && showSuccessToast && successMessage) {
-        handleSuccess(successMessage);
-      }
-
-      // Call user's onSettled callback
-      userOnSettled?.(data, error, variables, context);
-    },
     onError: (error, variables, context) => {
       // Handle error with toast unless skipped
       if (!skipErrorHandling) {
@@ -226,6 +214,15 @@ export function useReactQueryMutation<
 
       // Call user's onError callback
       userOnError?.(error, variables, context);
+    },
+    onSettled: (data, error, variables, context) => {
+      // Show success toast if enabled and no error
+      if (!error && showSuccessToast && successMessage) {
+        handleSuccess(successMessage);
+      }
+
+      // Call user's onSettled callback
+      userOnSettled?.(data, error, variables, context);
     },
   });
 }

@@ -1,8 +1,8 @@
-import { type JSX } from "react";
+import type { JSX } from "react";
 
-type BadgeProps = {
+interface BadgeProps {
   renderBadgeContent: () => JSX.Element;
-};
+}
 
 const Badge = (props: BadgeProps) => {
   const { renderBadgeContent } = props;

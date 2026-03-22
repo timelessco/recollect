@@ -6,5 +6,5 @@ export function useIsMobileView() {
   const isTablet = useMediaQuery("(min-width: 601px) and (max-width: 1023px)");
   const isDesktop = !isMobile && !isTablet;
 
-  return { isMobile, isTablet, isDesktop };
+  return { isDesktop, isMobile, isTablet };
 }

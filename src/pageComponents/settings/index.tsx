@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 
 import { isNil, isNull } from "lodash";
 
+import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
+
 import { ToggleDarkMode } from "@/components/toggleDarkMode";
-import { type SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
 import { useSupabaseSession } from "@/store/componentStore";
 import { cn } from "@/utils/tailwind-merge";
 
@@ -35,20 +37,20 @@ import { errorToast, successToast } from "../../utils/toastMessages";
 import { SettingsEmailCard } from "./settings-email-card";
 import { SettingsIframeToggle } from "./settings-iframe-toggle";
 
-type SettingsUsernameFormTypes = {
+interface SettingsUsernameFormTypes {
   username: string;
-};
+}
 
-type SettingsDisplaynameFormTypes = {
+interface SettingsDisplaynameFormTypes {
   displayname: string;
-};
+}
 
-type SettingsProps = {
+interface SettingsProps {
   onNavigate: (page: SettingsPage) => void;
-};
+}
 
 const Settings = ({ onNavigate }: SettingsProps) => {
-  const inputFile = useRef<HTMLInputElement>(null);
+  const inputFileRef = useRef<HTMLInputElement>(null);
   const session = useSupabaseSession((state) => state.session);
 
   const { userProfileData } = useFetchUserProfile();
@@ -73,7 +75,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
     try {
       const response = await mutationApiCall(
         updateUsernameMutation.mutateAsync({
-          id: session?.user?.id as string,
+          id: session?.user?.id!,
           username: data?.username,
         }),
       );
@@ -108,11 +110,11 @@ const Settings = ({ onNavigate }: SettingsProps) => {
   };
 
   const {
-    register,
-    handleSubmit,
     formState: { errors },
-    watch,
+    handleSubmit,
+    register,
     reset,
+    watch,
   } = useForm<SettingsUsernameFormTypes>({
     defaultValues: {
       username: "",
@@ -123,9 +125,9 @@ const Settings = ({ onNavigate }: SettingsProps) => {
   const originalUsername = userData?.user_name ?? "";
 
   const {
-    register: displayNameRegister,
-    handleSubmit: displaynameHandleSubmit,
     formState: { errors: displaynameError },
+    handleSubmit: displaynameHandleSubmit,
+    register: displayNameRegister,
     reset: displaynameReset,
     watch: displaynameWatch,
   } = useForm<SettingsDisplaynameFormTypes>({
@@ -157,10 +159,10 @@ const Settings = ({ onNavigate }: SettingsProps) => {
         onChange={async (event) => {
           const uploadedFile = event?.target?.files ? event?.target?.files[0] : null;
 
-          const size = uploadedFile?.size as number;
+          const size = uploadedFile?.size!;
 
           if (!isNull(uploadedFile)) {
-            if (size < 1000000) {
+            if (size < 1_000_000) {
               // file size is less than 1mb
               const response = await mutationApiCall(
                 uploadProfilePicMutation.mutateAsync({
@@ -176,7 +178,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
             }
           }
         }}
-        ref={inputFile}
+        ref={inputFileRef}
         style={{ display: "none" }}
         type="file"
       />
@@ -185,8 +187,8 @@ const Settings = ({ onNavigate }: SettingsProps) => {
         <div className="flex w-full items-center space-x-3">
           <div
             onClick={() => {
-              if (inputFile.current) {
-                inputFile.current.click();
+              if (inputFileRef.current) {
+                inputFileRef.current.click();
               }
             }}
             onKeyDown={() => {}}
@@ -208,8 +210,8 @@ const Settings = ({ onNavigate }: SettingsProps) => {
               <Button
                 className={`px-2 py-[7px] ${saveButtonClassName}`}
                 onClick={() => {
-                  if (inputFile.current) {
-                    inputFile.current.click();
+                  if (inputFileRef.current) {
+                    inputFileRef.current.click();
                   }
                 }}
               >
@@ -225,7 +227,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                 onClick={async () => {
                   const response = await mutationApiCall(
                     removeProfilePic.mutateAsync({
-                      id: userData?.id as string,
+                      id: userData?.id!,
                     }),
                   );
 
@@ -248,17 +250,17 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                   errorClassName="absolute  top-[29px]"
                   tabIndex={-1}
                   {...displayNameRegister("displayname", {
-                    required: {
-                      value: true,
-                      message: "Name cannot be empty",
-                    },
                     maxLength: {
-                      value: 100,
                       message: "Name must not exceed 100 characters",
+                      value: 100,
                     },
                     pattern: {
-                      value: DISPLAY_NAME_CHECK_PATTERN,
                       message: "Should not contain special characters",
+                      value: DISPLAY_NAME_CHECK_PATTERN,
+                    },
+                    required: {
+                      message: "Name cannot be empty",
+                      value: true,
                     },
                   })}
                   className={settingsInputClassName}
@@ -286,21 +288,21 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                   errorClassName="absolute  top-[29px]"
                   tabIndex={-1}
                   {...register("username", {
-                    required: {
-                      value: true,
-                      message: "Username cannot be empty",
+                    maxLength: {
+                      message: "Username must not exceed 100 characters",
+                      value: 100,
                     },
                     minLength: {
-                      value: 4,
                       message: "Username must have a minimum of 4 characters",
-                    },
-                    maxLength: {
-                      value: 100,
-                      message: "Username must not exceed 100 characters",
+                      value: 4,
                     },
                     pattern: {
-                      value: LETTERS_NUMBERS_CHECK_PATTERN,
                       message: "Only lowercase letters and numbers, no spaces",
+                      value: LETTERS_NUMBERS_CHECK_PATTERN,
+                    },
+                    required: {
+                      message: "Username cannot be empty",
+                      value: true,
                     },
                   })}
                   className={settingsInputClassName}
@@ -355,7 +357,9 @@ const Settings = ({ onNavigate }: SettingsProps) => {
             </p>
             <Button
               className={`w-full rounded-lg ${settingsDeleteButtonRedClassName}`}
-              onClick={() => onNavigate("delete")}
+              onClick={() => {
+                onNavigate("delete");
+              }}
             >
               <p className="flex w-full justify-center">
                 <span className="flex items-center justify-center gap-1.5 text-red-600">

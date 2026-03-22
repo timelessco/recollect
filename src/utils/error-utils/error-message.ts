@@ -3,9 +3,9 @@ import { isNullable } from "../assertion-utils";
 /**
  * Represents an error object with a message.
  */
-type ErrorWithMessage = {
+interface ErrorWithMessage {
   message: string;
-};
+}
 
 /**
  * Determines whether a value is an Error object.

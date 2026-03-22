@@ -1,8 +1,9 @@
 import { useCallback } from "react";
 
+import type { FileType } from "../types/componentTypes";
+
 import useFileUploadOptimisticMutation from "../async/mutationHooks/files/useFileUploadOptimisticMutation";
 import { fileUpload } from "../async/uploads/file-upload";
-import { type FileType } from "../types/componentTypes";
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
 
 export function useFileUploadDrop() {
@@ -16,5 +17,5 @@ export function useFileUploadDrop() {
     [fileUploadOptimisticMutation, CATEGORY_ID],
   );
 
-  return { onDrop, fileUploadOptimisticMutation };
+  return { fileUploadOptimisticMutation, onDrop };
 }

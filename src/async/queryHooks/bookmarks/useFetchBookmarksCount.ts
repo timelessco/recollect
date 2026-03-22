@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 
+import type { BookmarksCountTypes } from "../../../types/apiTypes";
+
 import { useSupabaseSession } from "../../../store/componentStore";
-import { type BookmarksCountTypes } from "../../../types/apiTypes";
 import { BOOKMARKS_COUNT_KEY } from "../../../utils/constants";
 import { getBookmarksCount } from "../../supabaseCrudHelpers";
 
@@ -13,11 +14,11 @@ export default function useFetchBookmarksCount() {
     data: BookmarksCountTypes | null;
     error: Error;
   }>({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id as string],
-    queryFn: async (data) =>
+    queryFn: (data) =>
       // @ts-expect-error - Todo fix this
-      await getBookmarksCount(data, session ?? { user: null }),
+      getBookmarksCount(data, session ?? { user: null }),
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id!],
   });
 
   return {

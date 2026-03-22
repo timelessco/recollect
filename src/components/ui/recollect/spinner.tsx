@@ -1,18 +1,20 @@
+import type { IconProps } from "./icon";
+
 import { cn } from "@/utils/tailwind-merge";
 
-import { Icon, type IconProps } from "./icon";
+import { Icon } from "./icon";
 
 export const Spinner = (props: IconProps) => {
   const { className, ...rest } = props;
 
   return (
     <Icon
-      className={cn("animate-spin", className)}
-      fill="none"
-      viewBox="0 0 18 19"
       aria-label="Loading"
-      role="status"
+      className={cn("animate-spin", className)}
       data-slot="spinner"
+      fill="none"
+      role="status"
+      viewBox="0 0 18 19"
       {...rest}
     >
       <path

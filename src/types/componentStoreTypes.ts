@@ -1,13 +1,12 @@
-import { type User } from "@supabase/supabase-js";
+import type { SingleListData } from "./apiTypes";
+import type { User } from "@supabase/supabase-js";
 
-import { type SingleListData } from "./apiTypes";
-
-export type ModalStoreState = {
+export interface ModalStoreState {
   showVideoModal: boolean;
   toggleShowVideoModal: () => void;
-};
+}
 
-export type LoadersStoreState = {
+export interface LoadersStoreState {
   addLoadingBookmarkId: (id: number) => void;
   isBookmarkAdding: boolean;
   isSearchLoading: boolean;
@@ -17,41 +16,41 @@ export type LoadersStoreState = {
   setIsBookmarkAdding: (value: boolean) => void;
   toggleIsSearchLoading: (value: boolean) => void;
   toggleIsSortByLoading: () => void;
-};
+}
 
-export type MiscellaneousStoreState = {
+export interface MiscellaneousStoreState {
   addScreenshotBookmarkId: number | undefined;
   currentBookmarkView: BookmarksViewTypes;
   deleteBookmarkId: number[] | undefined;
   isCardDragging: boolean;
   isCollectionChanged: boolean;
-  lightboxId: string | null;
+  lightboxId: null | string;
   lightboxOpen: boolean;
   lightboxShowSidepane: boolean;
   renderedBookmarks: Record<string, SingleListData[]>;
   searchText: string;
-  selectedVideoId: number | null;
-  triggerHeadingEdit: boolean;
+  selectedVideoId: null | number;
   setAddScreenshotBookmarkId: (value: number | undefined) => void;
   setCurrentBookmarkView: (value: BookmarksViewTypes) => void;
   setDeleteBookmarkId: (bookmarkIds: number[]) => void;
   setIsCardDragging: (value: boolean) => void;
   setIsCollectionChanged: (value: boolean) => void;
-  setLightboxId: (id: string | null) => void;
+  setLightboxId: (id: null | string) => void;
   setLightboxOpen: (open: boolean) => void;
   setLightboxShowSidepane: (value: boolean) => void;
   setRenderedBookmarks: (categoryId: string, bookmarks: SingleListData[]) => void;
   setSearchText: (value: string) => void;
-  setSelectedVideoId: (id: number | null) => void;
+  setSelectedVideoId: (id: null | number) => void;
   setShareCategoryId: (id: number | undefined) => void;
   setTriggerHeadingEdit: (value: boolean) => void;
   shareCategoryId: number | undefined;
-};
+  triggerHeadingEdit: boolean;
+}
 
-export type SupabaseSessionStore = {
-  session: { user: User | null } | undefined;
+export interface SupabaseSessionStore {
+  session: { user: null | User } | undefined;
   setSession: (value: SupabaseSessionStore["session"]) => void;
-};
+}
 
 export type BookmarksViewTypes = "card" | "list" | "moodboard" | "timeline";
 export type BookmarkViewCategories = "columns" | "info" | "sort" | "view";

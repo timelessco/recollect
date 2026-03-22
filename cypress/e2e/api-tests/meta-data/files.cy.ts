@@ -17,15 +17,15 @@ describe("Meta data testing", () => {
       "Content-Type": "application/json",
     };
     cy.request({
-      method: "POST",
-      // Ensure this URL is correct
-      url: "/api/v1/tests/file/post/upload",
       body: {
         name: "image.png",
         type: "image/png",
         uploadFileNamePath: "m05eqwhx-image.png",
       },
       headers,
+      method: "POST",
+      // Ensure this URL is correct
+      url: "/api/v1/tests/file/post/upload",
     }).as("uploadRequest");
 
     cy.get("@uploadRequest")?.then((addBookmarkData) => {
@@ -35,7 +35,7 @@ describe("Meta data testing", () => {
 
       cy.reload();
 
-      cy.wait(60000);
+      cy.wait(60_000);
 
       cy.reload();
 

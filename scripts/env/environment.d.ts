@@ -1,6 +1,5 @@
-import { type z } from "zod";
-
-import { type clientSchema, type serverSchema } from "./schema.js";
+import type { clientSchema, serverSchema } from "./schema.js";
+import type { z } from "zod";
 
 declare global {
   // By default, we do not want any namespace in Start UI [web] as it is more

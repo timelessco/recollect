@@ -3,7 +3,7 @@
 
 // import * as Sentry from "@sentry/nextjs";
 
-import { type Metadata, type Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 
 import {
   BASE_URL,
@@ -74,14 +74,14 @@ export const sharedMetadata = {
         },
 } satisfies Partial<Metadata>;
 
-type GeneratePageMetadataProps = {
+interface GeneratePageMetadataProps {
   description: string;
   imageHeight: number;
   imageUrl: string;
   imageWidth: number;
   title: string;
   url: string;
-};
+}
 
 export function generatePageMetadata(props: Partial<GeneratePageMetadataProps>): Metadata {
   const {

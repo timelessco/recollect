@@ -2,20 +2,21 @@ import { useRouter } from "next/router";
 
 import { useVirtualizer } from "@tanstack/react-virtual";
 
+import type { SingleListData } from "../../../types/apiTypes";
+
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { useMounted } from "../../../hooks/useMounted";
 import { useMiscellaneousStore } from "../../../store/componentStore";
-import { type SingleListData } from "../../../types/apiTypes";
 import { DISCOVER_URL } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../../utils/url";
 import { buildAuthenticatedPreviewUrl, buildPublicPreviewUrl } from "../../../utils/url-builders";
 
-type PublicMoodboardVirtualizedProps = {
+interface PublicMoodboardVirtualizedProps {
   bookmarksColumns: number[];
   bookmarksList: SingleListData[];
   renderCard: (bookmark: SingleListData) => React.ReactNode;
-};
+}
 export const PublicMoodboardVirtualized = ({
   bookmarksColumns,
   bookmarksList,
@@ -28,18 +29,18 @@ export const PublicMoodboardVirtualized = ({
 
   const rowVirtualizer = useVirtualizer({
     count: bookmarksList.length,
-    getScrollElement,
-    measureElement: (element) => element.getBoundingClientRect().height,
     estimateSize: () => {
       const containerWidth =
         typeof document !== "undefined"
-          ? (document.querySelector("#scrollableDiv")?.clientWidth ?? 1_200)
-          : 1_200;
+          ? (document.querySelector("#scrollableDiv")?.clientWidth ?? 1200)
+          : 1200;
       const cardWidth = containerWidth / lanes;
       return cardWidth * (4 / 3);
     },
-    overscan: 5,
+    getScrollElement,
     lanes,
+    measureElement: (element) => element.getBoundingClientRect().height,
+    overscan: 5,
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
@@ -56,14 +57,14 @@ export const PublicMoodboardVirtualized = ({
 
         return (
           <div
-            key={bookmark.id}
-            data-index={virtualRow.index}
-            ref={rowVirtualizer.measureElement}
             className="absolute top-0 pr-3 pb-6 pl-3"
+            data-index={virtualRow.index}
+            key={bookmark.id}
+            ref={rowVirtualizer.measureElement}
             style={{
               left: `${virtualRow.lane * columnWidth}%`,
-              width: `${columnWidth}%`,
               transform: `translateY(${virtualRow.start}px)`,
+              width: `${columnWidth}%`,
             }}
           >
             <div className="group relative mb-6 flex rounded-lg outline-hidden duration-150 hover:shadow-lg">
@@ -82,7 +83,7 @@ const getScrollElement = (): HTMLElement | null => {
     return null;
   }
 
-  return document.querySelector("#scrollableDiv") as HTMLElement | null;
+  return document.querySelector("#scrollableDiv");
 };
 
 /**
@@ -104,17 +105,17 @@ function BookmarkCardOverlay({ bookmark }: { bookmark: SingleListData }) {
         setLightboxOpen(true);
         const publicInfo = getPublicPageInfo(router);
         if (publicInfo) {
-          const { pathname, query, as } = buildPublicPreviewUrl({
-            publicInfo,
+          const { as, pathname, query } = buildPublicPreviewUrl({
             bookmarkId: bookmark.id,
+            publicInfo,
           });
           void router.push({ pathname, query }, as, { shallow: true });
         } else {
           const categorySlug = getCategorySlugFromRouter(router);
           if (categorySlug === DISCOVER_URL) {
-            const { pathname, query, as } = buildAuthenticatedPreviewUrl({
-              categorySlug,
+            const { as, pathname, query } = buildAuthenticatedPreviewUrl({
               bookmarkId: bookmark.id,
+              categorySlug,
             });
             void router.push({ pathname, query }, as, { shallow: true });
           }

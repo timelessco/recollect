@@ -1,5 +1,7 @@
-import { clsx, type ClassValue } from "clsx";
+import { clsx } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
+
+import type { ClassValue } from "clsx";
 
 // Custom color shades used across all color families
 const COLOR_SHADES = [
@@ -69,22 +71,22 @@ const CUSTOM_COLORS = [
 
 // Comprehensive tailwind-merge configuration
 const twMergeConfig = {
-  theme: {
-    // Colors automatically apply to all color-related utilities
-    // (text-*, bg-*, border-*, ring-*, decoration-*, divide-*, outline-*, etc.)
-    colors: CUSTOM_COLORS,
-  },
   classGroups: {
     // Only define classGroups for theme scales NOT supported by tailwind-merge
-
-    // Custom shadows (no theme.shadow scale exists)
-    shadow: [{ shadow: CUSTOM_SHADOWS }],
 
     // Custom font sizes (theme.fontSize exists but we're adding custom values)
     "font-size": [{ text: CUSTOM_TEXT_SIZES }],
 
     // Custom font weights (theme.fontWeight exists but we're adding custom values)
     "font-weight": [{ font: ["450"] }],
+
+    // Custom shadows (no theme.shadow scale exists)
+    shadow: [{ shadow: CUSTOM_SHADOWS }],
+  },
+  theme: {
+    // Colors automatically apply to all color-related utilities
+    // (text-*, bg-*, border-*, ring-*, decoration-*, divide-*, outline-*, etc.)
+    colors: CUSTOM_COLORS,
   },
 };
 

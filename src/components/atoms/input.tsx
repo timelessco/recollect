@@ -1,11 +1,12 @@
-import { forwardRef, type InputHTMLAttributes } from "react";
+import { forwardRef } from "react";
+import type { InputHTMLAttributes } from "react";
 
 import { ExclamationCircleIcon } from "@heroicons/react/20/solid";
 import omit from "lodash/omit";
 
-import { cn } from "@/utils/tailwind-merge";
+import type { ChildrenTypes } from "../../types/componentTypes";
 
-import { type ChildrenTypes } from "../../types/componentTypes";
+import { cn } from "@/utils/tailwind-merge";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   autoFocus?: boolean;
@@ -26,35 +27,38 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   wrapperClassName?: string;
 };
 
-const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
+const Input = ({
+  ref,
+  ...props
+}: InputProps & { ref?: React.RefObject<HTMLInputElement | null> }) => {
   const {
-    placeholder,
-    value,
-    onChange,
-    onKeyUp,
+    autoFocus = true,
     className = "",
-    isError,
-    errorText = "",
-    isDisabled = false,
-    id = "",
-    wrapperClassName = "relative",
-    rendedRightSideElement,
     errorClassName = "",
     errorIconClassName = "",
-    autoFocus = true,
-    onBlur,
+    errorText = "",
+    id = "",
+    isDisabled = false,
+    isError,
     isFullWidth = true,
-    type = "text",
+    onBlur,
+    onChange,
+    onKeyUp,
+    placeholder,
+    rendedRightSideElement,
     selectTextOnFocus = false,
-    tabIndex = 0,
     showError = true,
+    tabIndex = 0,
+    type = "text",
+    value,
+    wrapperClassName = "relative",
   } = props;
 
   const inputClass = cn(
     {
+      "block w-full border-gray-300": !isError,
       "block w-full border-red-300 pr-10 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 focus:outline-hidden":
         isError,
-      "block w-full border-gray-300": !isError,
     },
     className,
   );
@@ -110,7 +114,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
       )}
     </div>
   );
-});
+};
 
 Input.displayName = "Input";
 

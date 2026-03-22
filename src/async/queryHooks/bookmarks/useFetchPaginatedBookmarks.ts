@@ -3,17 +3,18 @@ import { useEffect, useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { flatten } from "lodash";
 
+import type { SingleListData, SupabaseSessionType } from "../../../types/apiTypes";
+import type { BookmarksSortByTypes } from "../../../types/componentStoreTypes";
+
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useLoadersStore, useSupabaseSession } from "../../../store/componentStore";
-import { type SingleListData, type SupabaseSessionType } from "../../../types/apiTypes";
-import { type BookmarksSortByTypes } from "../../../types/componentStoreTypes";
 import { BOOKMARKS_KEY, DISCOVER_URL, PAGINATION_LIMIT } from "../../../utils/constants";
 import { fetchBookmarksData } from "../../supabaseCrudHelpers";
 
-type UseFetchPaginatedBookmarksOptions = {
+interface UseFetchPaginatedBookmarksOptions {
   enabled?: boolean;
-};
+}
 
 // fetches paginated bookmarks pages on user location like everything or categories etc...
 export default function useFetchPaginatedBookmarks(
@@ -32,21 +33,16 @@ export default function useFetchPaginatedBookmarks(
   const {
     data: everythingData,
     fetchNextPage,
-    isLoading: isEverythingDataLoading,
     isFetching: isFetchingEverythingData,
+    isLoading: isEverythingDataLoading,
   } = useInfiniteQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-    // eslint-disable-next-line @tanstack/query/no-void-query-fn
-    queryFn: async (data) =>
-      await fetchBookmarksData(
-        data,
-        session as SupabaseSessionType,
-        sortBy as BookmarksSortByTypes,
-      ),
+    enabled: enabled && CATEGORY_ID !== DISCOVER_URL,
+    queryFn: (data) =>
+      fetchBookmarksData(data, session as SupabaseSessionType, sortBy as BookmarksSortByTypes),
     initialPageParam: 0,
     getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,
-    enabled: enabled && CATEGORY_ID !== DISCOVER_URL,
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
   });
 
   useEffect(() => {
@@ -63,8 +59,8 @@ export default function useFetchPaginatedBookmarks(
 
   return {
     everythingData,
-    flattendPaginationBookmarkData,
     fetchNextPage,
+    flattendPaginationBookmarkData,
     isEverythingDataLoading,
     isFetchingEverythingData,
   };

@@ -1,7 +1,5 @@
 // @ts-nocheck
 
-/* eslint-disable @typescript-eslint/method-signature-style */
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference types="cypress" />
 // ***********************************************
 // This example commands.ts shows you how to
@@ -44,14 +42,14 @@
 declare global {
   namespace Cypress {
     interface Chainable {
+      addBookmark(url: string): Chainable<JQuery<HTMLElement>>;
+      checkFistBookmarkUrl(url: string): Chainable<JQuery<HTMLElement>>;
+      checkNotFistBookmarkUrl(url: string): Chainable<JQuery<HTMLElement>>;
       /**
        * Custom command to select DOM element by data-cy attribute.
        * @example cy.dataCy('greeting')
        */
       login(email: string, pw: string): Chainable<JQuery<HTMLElement>>;
-      addBookmark(url: string): Chainable<JQuery<HTMLElement>>;
-      checkFistBookmarkUrl(url: string): Chainable<JQuery<HTMLElement>>;
-      checkNotFistBookmarkUrl(url: string): Chainable<JQuery<HTMLElement>>;
     }
   }
 }

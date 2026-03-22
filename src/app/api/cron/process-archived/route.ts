@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
@@ -10,8 +11,8 @@ import { createServiceClient } from "@/utils/supabaseClient";
 const ROUTE = "cron/process-archived";
 
 const RpcResultSchema = z.object({
-  requeued: z.int(),
   requested: z.int().optional(),
+  requeued: z.int(),
 });
 
 const InputSchema = z.union([
@@ -71,10 +72,10 @@ async function handlePost(request: NextRequest) {
       if (error) {
         console.error(`[${ROUTE}] Error retrying archives:`, error);
         return apiError({
-          route: ROUTE,
-          message: "Failed to retry archived queue items",
           error,
+          message: "Failed to retry archived queue items",
           operation: "retry_archives_bulk",
+          route: ROUTE,
         });
       }
 
@@ -82,15 +83,15 @@ async function handlePost(request: NextRequest) {
       if (!rpcParsed.success) {
         console.error(`[${ROUTE}] Unexpected RPC response:`, data);
         return apiError({
-          route: ROUTE,
-          message: "Unexpected response from retry operation",
           error: rpcParsed.error,
+          message: "Unexpected response from retry operation",
           operation: "retry_archives_bulk_parse",
+          route: ROUTE,
         });
       }
 
       return NextResponse.json({
-        data: { requeued: rpcParsed.data.requeued, requested: count ?? null },
+        data: { requested: count ?? null, requeued: rpcParsed.data.requeued },
         error: null,
       });
     }
@@ -102,10 +103,10 @@ async function handlePost(request: NextRequest) {
     if (error) {
       console.error(`[${ROUTE}] Error retrying archives:`, error);
       return apiError({
-        route: ROUTE,
-        message: "Failed to retry archived queue items",
         error,
+        message: "Failed to retry archived queue items",
         operation: "retry_archives",
+        route: ROUTE,
       });
     }
 
@@ -113,17 +114,17 @@ async function handlePost(request: NextRequest) {
     if (!rpcParsed.success) {
       console.error(`[${ROUTE}] Unexpected RPC response:`, data);
       return apiError({
-        route: ROUTE,
-        message: "Unexpected response from retry operation",
         error: rpcParsed.error,
+        message: "Unexpected response from retry operation",
         operation: "retry_archives_parse",
+        route: ROUTE,
       });
     }
 
     return NextResponse.json({
       data: {
-        requeued: rpcParsed.data.requeued,
         requested: rpcParsed.data.requested ?? null,
+        requeued: rpcParsed.data.requeued,
       },
       error: null,
     });

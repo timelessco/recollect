@@ -3,16 +3,16 @@ import { imageSize } from "image-size";
 import fetch from "node-fetch";
 import sharp from "sharp";
 
-export type IOptions = {
+export interface IOptions {
   offline?: boolean;
   size?: number;
-};
+}
 
-export type IOutput = {
+export interface IOutput {
   encoded: string;
   height: number | undefined;
   width: number | undefined;
-};
+}
 
 /**
  * Generate a Blurhash string from a given image URL or local path.
@@ -35,7 +35,7 @@ export type IOutput = {
  * ```
  */
 export const blurhashFromURL = async (source: string, options: IOptions = {}): Promise<IOutput> => {
-  const { size = 32, offline = false } = options;
+  const { offline = false, size = 32 } = options;
 
   let height;
   let returnedBuffer;
@@ -44,7 +44,7 @@ export const blurhashFromURL = async (source: string, options: IOptions = {}): P
   if (offline) {
     const fs = await import("node:fs");
     const fileBuffer = fs.readFileSync(source);
-    const { width: localWidth, height: localHeight } = imageSize(fileBuffer);
+    const { height: localHeight, width: localWidth } = imageSize(fileBuffer);
     width = localWidth;
     height = localHeight;
     returnedBuffer = await sharp(fileBuffer).toBuffer();
@@ -53,12 +53,12 @@ export const blurhashFromURL = async (source: string, options: IOptions = {}): P
     const arrayBuffer = await response.arrayBuffer();
     returnedBuffer = Buffer.from(arrayBuffer);
 
-    const { width: remoteWidth, height: remoteHeight } = imageSize(returnedBuffer);
+    const { height: remoteHeight, width: remoteWidth } = imageSize(returnedBuffer);
     width = remoteWidth;
     height = remoteHeight;
   }
 
-  const { info, data } = await sharp(returnedBuffer)
+  const { data, info } = await sharp(returnedBuffer)
     .resize(size, size, {
       fit: "inside",
     })
@@ -72,8 +72,8 @@ export const blurhashFromURL = async (source: string, options: IOptions = {}): P
 
   const output: IOutput = {
     encoded,
-    width,
     height,
+    width,
   };
 
   return output;

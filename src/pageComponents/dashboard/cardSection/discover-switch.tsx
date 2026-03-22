@@ -42,8 +42,8 @@ function DiscoverSwitchToggle({ bookmarkId, isDiscoverable }: DiscoverSwitchTogg
     <Switch
       aria-label="Show in discover page"
       checked={isDiscoverable}
-      onCheckedChange={handleToggle}
       disabled={false}
+      onCheckedChange={handleToggle}
       size="small"
     />
   );

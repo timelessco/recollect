@@ -11,25 +11,25 @@ import { Spinner } from "./spinner";
 
 export type ButtonProps = BaseButton.Props & {
   /**
-   * Content to show when button is in pending state
-   */
-  pendingSlot?: React.ReactElement;
-  /**
    * Whether the button is in a pending/loading state
    */
   pending?: boolean;
+  /**
+   * Content to show when button is in pending state
+   */
+  pendingSlot?: React.ReactElement;
 };
 
 export function Button(props: ButtonProps) {
-  const { className, children, pending = false, pendingSlot, disabled, ...rest } = props;
+  const { children, className, disabled, pending = false, pendingSlot, ...rest } = props;
 
   return (
     <BaseButton
       {...rest}
-      data-slot="button"
-      disabled={disabled || pending}
-      focusableWhenDisabled={pending}
       className={cn(buttonBaseClasses, className)}
+      data-slot="button"
+      disabled={disabled ?? pending}
+      focusableWhenDisabled={pending}
     >
       {pending ? (pendingSlot ?? <ButtonDefaultPendingComp />) : children}
     </BaseButton>
@@ -52,17 +52,17 @@ type ButtonDefaultPendingCompProps = Omit<Progress.Root.Props, "value"> & {
 };
 
 export function ButtonDefaultPendingComp(props: ButtonDefaultPendingCompProps) {
-  const { children, spinnerSlot, className, ...rest } = props;
+  const { children, className, spinnerSlot, ...rest } = props;
 
   return (
     <Progress.Root
-      value={null}
-      className={cn("contents", className)}
       aria-label="Loading..."
+      className={cn("contents", className)}
+      value={null}
       {...rest}
     >
       {spinnerSlot ?? <Spinner className="mr-2 text-xs" />}
-      {children ? children : <span>Loading...</span>}
+      {children ?? <span>Loading...</span>}
     </Progress.Root>
   );
 }

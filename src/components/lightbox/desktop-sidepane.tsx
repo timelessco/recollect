@@ -4,12 +4,13 @@ import { useFirstMountState } from "@react-hookz/web";
 import { format } from "date-fns";
 import { AnimatePresence, motion } from "motion/react";
 
+import type { SingleListData } from "../../types/apiTypes";
+
 import { usePageContext } from "@/hooks/use-page-context";
 import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
 import { GeminiAiIcon } from "@/icons/geminiAiIcon";
 import { useMiscellaneousStore } from "@/store/componentStore";
 
-import { type SingleListData } from "../../types/apiTypes";
 import { Icon } from "../atoms/icon";
 import { GetBookmarkIcon } from "../get-bookmark-icon";
 import { CategoryMultiSelect } from "./category-multi-select";
@@ -44,7 +45,7 @@ export function DesktopSidepane({
   const expandableRef = useRef<HTMLDivElement>(null);
 
   const isUserInTweetsPage = useIsUserInTweetsPage();
-  const { isPublicPage, isDiscoverPage } = usePageContext();
+  const { isDiscoverPage, isPublicPage } = usePageContext();
 
   const searchText = useMiscellaneousStore((state) => state.searchText);
   const trimmedSearchText = searchText?.trim() ?? "";
@@ -58,7 +59,7 @@ export function DesktopSidepane({
     setShowMore(false);
     setIsExpanded(false);
 
-    setTimeout(() => {
+    const timerId = setTimeout(() => {
       if (expandableRef?.current) {
         const contentHeight = expandableRef?.current?.scrollHeight;
         setHasAIOverflowContent(contentHeight > 120);
@@ -69,6 +70,10 @@ export function DesktopSidepane({
         setIsOverflowing(element?.scrollHeight > element?.clientHeight);
       }
     }, 0);
+
+    return () => {
+      clearTimeout(timerId);
+    };
   }, [currentBookmark?.id, currentIndex, lightboxShowSidepane]);
 
   const domain = new URL(currentBookmark?.url)?.hostname;
@@ -77,13 +82,7 @@ export function DesktopSidepane({
     <AnimatePresence>
       {lightboxShowSidepane && (
         <motion.div
-          initial={
-            isInitialMount && lightboxShowSidepane
-              ? { x: 0, opacity: 0, scale: 0.97 }
-              : { x: "100%" }
-          }
           animate={{
-            x: 0,
             opacity: 1,
             scale: 1,
             transition:
@@ -93,22 +92,28 @@ export function DesktopSidepane({
                     ease: "easeInOut",
                     opacity: { duration: 0.25, ease: "easeInOut" },
                     scale: {
-                      from: 0.97,
                       duration: 0.25,
                       ease: "easeInOut",
+                      from: 0.97,
                     },
                   }
                 : {
-                    type: "tween",
                     duration: 0.15,
                     ease: "easeInOut",
+                    type: "tween",
                   },
-          }}
-          exit={{
-            x: "100%",
-            transition: { type: "tween", duration: 0.25, ease: "easeInOut" },
+            x: 0,
           }}
           className="absolute top-0 right-0 flex h-full w-1/5 max-w-[400px] min-w-[320px] flex-col border-l-[0.5px] border-gray-100 bg-gray-0 backdrop-blur-[41px]"
+          exit={{
+            transition: { duration: 0.25, ease: "easeInOut", type: "tween" },
+            x: "100%",
+          }}
+          initial={
+            isInitialMount && lightboxShowSidepane
+              ? { opacity: 0, scale: 0.97, x: 0 }
+              : { x: "100%" }
+          }
         >
           <div className="flex flex-1 flex-col p-5 text-left">
             {currentBookmark?.title && (
@@ -130,8 +135,8 @@ export function DesktopSidepane({
                   <div className="flex h-[15px] w-[15px] items-center text-gray-600">
                     {currentBookmark ? (
                       <GetBookmarkIcon
-                        item={currentBookmark}
                         isUserInTweetsPage={isUserInTweetsPage}
+                        item={currentBookmark}
                         size={15}
                       />
                     ) : null}
@@ -159,7 +164,9 @@ export function DesktopSidepane({
                   {showMore && isOverflowing && (
                     <button
                       className="ml-1 inline text-13 leading-[138%] tracking-[0.01em] text-gray-700"
-                      onClick={() => setShowMore(false)}
+                      onClick={() => {
+                        setShowMore(false);
+                      }}
                       type="button"
                     >
                       Show less
@@ -169,7 +176,9 @@ export function DesktopSidepane({
                 {isOverflowing && !showMore && (
                   <button
                     className="absolute right-0 bottom-0 inline bg-gray-0 pl-1 text-13 leading-[138%] tracking-[0.01em] text-gray-700"
-                    onClick={() => setShowMore(true)}
+                    onClick={() => {
+                      setShowMore(true);
+                    }}
                     type="button"
                   >
                     Show more
@@ -197,9 +206,9 @@ export function DesktopSidepane({
               key={currentBookmark?.id}
               ref={expandableRef}
               transition={{
-                type: "spring",
                 damping: 25,
                 stiffness: 300,
+                type: "spring",
               }}
             >
               {currentBookmark?.addedTags?.length > 0 && (
@@ -245,21 +254,21 @@ export function DesktopSidepane({
                     </p>
                   </div>
                   <div
-                    ref={aiSummaryScrollRef}
                     className={`max-h-[200px] ${isExpanded ? "hide-scrollbar scroll-shadows" : ""}`}
+                    ref={aiSummaryScrollRef}
                   >
                     <p className="text-13 leading-[138%] tracking-[0.01em] text-gray-500">
                       {highlightSearch(
-                        metaData?.img_caption || metaData?.image_caption || "",
+                        metaData?.img_caption ?? metaData?.image_caption ?? "",
                         trimmedSearchText,
                       )}
-                      {(metaData?.img_caption || metaData?.image_caption) && metaData?.ocr && (
+                      {(metaData?.img_caption ?? metaData?.image_caption) && metaData?.ocr && (
                         <br />
                       )}
                       {highlightSearch(metaData?.ocr ?? "", trimmedSearchText)}
                       {(metaData?.image_keywords?.length ?? 0) > 0 && (
                         <>
-                          {(metaData?.img_caption || metaData?.image_caption || metaData?.ocr) && (
+                          {(metaData?.img_caption ?? metaData?.image_caption ?? metaData?.ocr) && (
                             <br />
                           )}
                           <span className="font-450">Keywords: </span>

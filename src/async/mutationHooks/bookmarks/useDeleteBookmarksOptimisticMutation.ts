@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import type { BookmarksPaginatedDataTypes } from "../../../types/apiTypes";
+
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
-import { type BookmarksPaginatedDataTypes } from "../../../types/apiTypes";
 import { BOOKMARKS_COUNT_KEY, BOOKMARKS_KEY } from "../../../utils/constants";
 import { deleteData } from "../../supabaseCrudHelpers";
 

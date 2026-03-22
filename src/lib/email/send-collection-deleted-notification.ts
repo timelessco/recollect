@@ -40,18 +40,18 @@ export async function sendCollectionDeletedNotification(
   const results = await Promise.allSettled(
     collaboratorEmails.map((email) =>
       resend.emails.send({
-        from: EMAIL_FROM,
-        to: email,
-        subject,
-        html,
         attachments: [
           {
-            filename: "logo.png",
             content: base64Logo,
-            contentType: "image/png",
             contentId: "logo",
+            contentType: "image/png",
+            filename: "logo.png",
           },
         ],
+        from: EMAIL_FROM,
+        html,
+        subject,
+        to: email,
       }),
     ),
   );
@@ -65,24 +65,24 @@ export async function sendCollectionDeletedNotification(
         result.reason instanceof Error ? result.reason : new Error(String(result.reason));
       console.error(`${LOG_PREFIX} Send error:`, error);
       Sentry.captureException(error, {
-        tags: { operation: "send_collection_deleted_notification" },
         extra: { categoryName },
+        tags: { operation: "send_collection_deleted_notification" },
       });
     } else if (result.value.error) {
       failureCount++;
       const apiError = new Error(result.value.error.message);
       console.error(`${LOG_PREFIX} API error:`, result.value.error);
       Sentry.captureException(apiError, {
-        tags: { operation: "send_collection_deleted_notification" },
         extra: { categoryName },
+        tags: { operation: "send_collection_deleted_notification" },
       });
     }
   }
 
   console.log(`${LOG_PREFIX} Done:`, {
     categoryName,
-    sent: collaboratorEmails.length - failureCount,
     failed: failureCount,
+    sent: collaboratorEmails.length - failureCount,
   });
 }
 

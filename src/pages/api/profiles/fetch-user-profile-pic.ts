@@ -1,23 +1,24 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import { isEmpty } from "lodash";
 
-import { type UserProfilePicTypes } from "../../../types/apiTypes";
+import type { UserProfilePicTypes } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
+
 import { PROFILES } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-type DataResponse = UserProfilePicTypes[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | string | { message: string } | null;
+type DataResponse = null | UserProfilePicTypes[];
+type ErrorResponse = { message: string } | null | PostgrestError | string | VerifyErrors;
 
-type Data = {
+interface Data {
   data: DataResponse;
   error: ErrorResponse;
-};
+}
 
 /**
  * Fetches profile picture data for a specific user by email
@@ -88,10 +89,10 @@ export default async function handler(
     // Handle database error
     if (error) {
       console.error("[fetch-user-profile-pic] Database error:", {
-        error,
         email,
-        table: PROFILES,
+        error,
         operation: "select",
+        table: PROFILES,
       });
       Sentry.captureException(error, {
         tags: { operation: "fetch_profile_pic", userId },
@@ -113,8 +114,8 @@ export default async function handler(
     // Catch any unexpected errors
     console.error("[fetch-user-profile-pic] Unexpected error:", unexpectedError, {
       method: request.method,
-      url: request.url,
       query: request.query,
+      url: request.url,
     });
     Sentry.captureException(unexpectedError, {
       tags: { operation: "fetch_profile_pic" },

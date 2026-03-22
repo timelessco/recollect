@@ -1,7 +1,9 @@
-import { type GetServerSideProps, type NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
+
+import type { SingleListData } from "../types/apiTypes";
 
 import { Spinner } from "@/components/spinner";
 
@@ -9,16 +11,15 @@ import { useMounted } from "../hooks/useMounted";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../lib/supabase/constants";
 import Dashboard from "../pageComponents/dashboard";
 import { DiscoverGuestView } from "../pageComponents/discover/DiscoverGuestView";
-import { type SingleListData } from "../types/apiTypes";
 import { DISCOVER_URL, MAIN_TABLE_NAME, PAGINATION_LIMIT } from "../utils/constants";
 
-type CategoryPageProps = {
-  isDiscover?: boolean;
-  isAuthenticated?: boolean;
+interface CategoryPageProps {
   discoverData?: SingleListData[];
-};
+  isAuthenticated?: boolean;
+  isDiscover?: boolean;
+}
 
-const Home: NextPage<CategoryPageProps> = ({ isDiscover, isAuthenticated, discoverData }) => {
+const Home: NextPage<CategoryPageProps> = ({ discoverData, isAuthenticated, isDiscover }) => {
   const isMounted = useMounted();
 
   if (isDiscover && !isAuthenticated && discoverData) {
@@ -42,7 +43,7 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
 
   if (!isDiscover) {
     return {
-      props: { isDiscover: false, isAuthenticated: true, discoverData: [] },
+      props: { discoverData: [], isAuthenticated: true, isDiscover: false },
     };
   }
 
@@ -53,14 +54,14 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
         return context.req.cookies
           ? Object.entries(context.req.cookies).map(([name, value]) => ({
               name,
-              value: value || "",
+              value: value ?? "",
             }))
           : [];
       },
       setAll(cookiesToSet) {
         if (context.res) {
           try {
-            for (const { name, value, options } of cookiesToSet) {
+            for (const { name, options, value } of cookiesToSet) {
               context.res.setHeader("Set-Cookie", serializeCookieHeader(name, value, options));
             }
           } catch {
@@ -112,14 +113,14 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
       if (error) {
         console.error("[discover-ssr] Failed to fetch discoverable bookmarks:", error);
         Sentry.captureException(error, {
-          tags: { route: "discover-ssr" },
           extra: { categoryId, isAuthenticated },
+          tags: { route: "discover-ssr" },
         });
         return {
           props: {
-            isDiscover: true,
-            isAuthenticated: false,
             discoverData: [],
+            isAuthenticated: false,
+            isDiscover: true,
           },
         };
       }
@@ -128,28 +129,28 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
       // Type assertion needed as Supabase returns Json types and nested objects differently than our types
       const discoverData = (data?.map((item) => ({
         ...item,
-        addedTags: [],
         addedCategories: [],
+        addedTags: [],
       })) ?? []) as unknown as SingleListData[];
 
       return {
         props: {
-          isDiscover: true,
-          isAuthenticated: false,
           discoverData,
+          isAuthenticated: false,
+          isDiscover: true,
         },
       };
     } catch (error) {
       console.error("[discover-ssr] Error fetching discoverable bookmarks:", error);
       Sentry.captureException(error, {
-        tags: { route: "discover-ssr" },
         extra: { categoryId, isAuthenticated },
+        tags: { route: "discover-ssr" },
       });
       return {
         props: {
-          isDiscover: true,
-          isAuthenticated: false,
           discoverData: [],
+          isAuthenticated: false,
+          isDiscover: true,
         },
       };
     }
@@ -157,9 +158,9 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
 
   return {
     props: {
-      isDiscover: true,
-      isAuthenticated: true,
       discoverData: [],
+      isAuthenticated: true,
+      isDiscover: true,
     },
   };
 };

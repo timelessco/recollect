@@ -1,3 +1,5 @@
+import type { AddCategoryToBookmarkResponse } from "./schema";
+
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { revalidateCategoryIfPublic } from "@/lib/revalidation-helpers";
@@ -8,26 +10,19 @@ import {
   UNCATEGORIZED_CATEGORY_ID,
 } from "@/utils/constants";
 
-import {
-  AddCategoryToBookmarkPayloadSchema,
-  AddCategoryToBookmarkResponseSchema,
-  type AddCategoryToBookmarkResponse,
-} from "./schema";
+import { AddCategoryToBookmarkPayloadSchema, AddCategoryToBookmarkResponseSchema } from "./schema";
 
 const ROUTE = "add-category-to-bookmark";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: AddCategoryToBookmarkPayloadSchema,
-  outputSchema: AddCategoryToBookmarkResponseSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const { bookmark_id: bookmarkId, category_id: categoryId } = data;
     const userId = user.id;
 
     console.log(`[${route}] API called:`, {
-      userId,
       bookmarkId,
       categoryId,
+      userId,
     });
 
     // 1. Verify bookmark ownership + category ownership in parallel
@@ -47,20 +42,20 @@ export const POST = createPostApiHandlerWithAuth({
     if (bookmarkResult.error) {
       if (bookmarkResult.error.code === "PGRST116") {
         return apiWarn({
-          route,
-          message: "Bookmark not found or not owned by user",
-          status: 404,
           context: { bookmarkId },
+          message: "Bookmark not found or not owned by user",
+          route,
+          status: 404,
         });
       }
 
       return apiError({
-        route,
-        message: "Failed to verify bookmark ownership",
         error: bookmarkResult.error,
-        operation: "fetch_bookmark",
-        userId,
         extra: { bookmarkId },
+        message: "Failed to verify bookmark ownership",
+        operation: "fetch_bookmark",
+        route,
+        userId,
       });
     }
 
@@ -71,33 +66,33 @@ export const POST = createPostApiHandlerWithAuth({
       if (categoryResult.error) {
         if (categoryResult.error.code === "PGRST116") {
           return apiWarn({
-            route,
-            message: "Category not found",
-            status: 404,
             context: { categoryId },
+            message: "Category not found",
+            route,
+            status: 404,
           });
         }
 
         return apiError({
-          route,
-          message: "Failed to fetch category",
           error: categoryResult.error,
-          operation: "fetch_category",
-          userId,
           extra: { categoryId },
+          message: "Failed to fetch category",
+          operation: "fetch_category",
+          route,
+          userId,
         });
       }
 
       // Check if user owns the category
       if (categoryResult.data?.user_id !== userId) {
         // Check if user is a collaborator with edit access
-        const email = user.email;
+        const { email } = user;
         if (!email) {
           return apiWarn({
-            route,
+            context: { categoryId, userId },
             message: "No access to this category",
+            route,
             status: 403,
-            context: { userId, categoryId },
           });
         }
 
@@ -110,26 +105,26 @@ export const POST = createPostApiHandlerWithAuth({
 
         if (sharedError && sharedError.code !== "PGRST116") {
           return apiError({
-            route,
-            message: "Failed to fetch shared category",
             error: sharedError,
-            operation: "fetch_shared_category",
-            userId,
             extra: { categoryId, email },
+            message: "Failed to fetch shared category",
+            operation: "fetch_shared_category",
+            route,
+            userId,
           });
         }
 
         if (!sharedData?.edit_access) {
           return apiWarn({
-            route,
-            message: "No edit access to this category",
-            status: 403,
             context: {
-              userId,
               categoryId,
-              hasSharedAccess: Boolean(sharedData),
               editAccess: sharedData?.edit_access,
+              hasSharedAccess: Boolean(sharedData),
+              userId,
             },
+            message: "No edit access to this category",
+            route,
+            status: 403,
           });
         }
 
@@ -154,12 +149,12 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (insertError) {
       return apiError({
-        route,
-        message: "Failed to add category to bookmark",
         error: insertError,
-        operation: "rpc_add_category_to_bookmarks",
-        userId,
         extra: { bookmarkId, categoryId },
+        message: "Failed to add category to bookmark",
+        operation: "rpc_add_category_to_bookmarks",
+        route,
+        userId,
       });
     }
 
@@ -179,11 +174,10 @@ export const POST = createPostApiHandlerWithAuth({
       void revalidateCategoryIfPublic(categoryId, {
         operation: "add_category_to_bookmark",
         userId,
-        // eslint-disable-next-line promise/prefer-await-to-then
       }).catch((error) => {
         console.error(`[${route}] Revalidation failed`, {
-          error,
           categoryId,
+          error,
           userId,
         });
       });
@@ -191,4 +185,7 @@ export const POST = createPostApiHandlerWithAuth({
 
     return transformedData;
   },
+  inputSchema: AddCategoryToBookmarkPayloadSchema,
+  outputSchema: AddCategoryToBookmarkResponseSchema,
+  route: ROUTE,
 });

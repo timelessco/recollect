@@ -1,17 +1,18 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
-import { type PostgrestError } from "@supabase/supabase-js";
 import isNull from "lodash/isNull";
 import omit from "lodash/omit";
 
-import {
-  type BookmarkViewDataTypes,
-  type CategoriesData,
-  type GetPublicCategoryBookmarksApiResponseType,
-  type ProfilesTableTypes,
+import type {
+  BookmarkViewDataTypes,
+  CategoriesData,
+  GetPublicCategoryBookmarksApiResponseType,
+  ProfilesTableTypes,
 } from "../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+
 import {
   BOOKMARK_CATEGORIES_TABLE_NAME,
   CATEGORIES_TABLE_NAME,
@@ -55,7 +56,7 @@ export default async function handler(
     `,
     )
     .eq("category_slug", request.query.category_slug)) as unknown as {
-    data: Array<{
+    data: {
       category_name: CategoriesData["category_name"];
       category_views: BookmarkViewDataTypes;
       icon: CategoriesData["icon"];
@@ -66,7 +67,7 @@ export default async function handler(
         email: ProfilesTableTypes["email"];
         user_name: ProfilesTableTypes["user_name"];
       };
-    }>;
+    }[];
     error: PostgrestError;
   };
 
@@ -74,12 +75,12 @@ export default async function handler(
     // this is to check if we change user name in url then this page should show 404
     // status is 200 as DB is not giving any error
     response.status(200).json({
+      category_name: null,
+      category_views: null,
       data: null,
       error: "username mismatch from url query",
-      category_views: null,
       icon: null,
       icon_color: null,
-      category_name: null,
       is_public: null,
     });
 
@@ -90,12 +91,12 @@ export default async function handler(
 
     if (!categoryId) {
       response.status(404).json({
+        category_name: null,
+        category_views: null,
         data: null,
         error: "category not found",
-        category_views: null,
         icon: null,
         icon_color: null,
-        category_name: null,
         is_public: null,
       });
       return;
@@ -147,29 +148,29 @@ export default async function handler(
     const { data: rawData, error } = await query;
 
     // Remove junction table field from response (not needed in frontend)
-    const data = (rawData as Array<Record<string, unknown>>)?.map((item) =>
+    const data = (rawData as Record<string, unknown>[])?.map((item) =>
       omit(item, [BOOKMARK_CATEGORIES_TABLE_NAME]),
     ) as GetPublicCategoryBookmarksApiResponseType["data"];
 
     if (!isNull(error) || !isNull(categoryError)) {
       response.status(500).json({
+        category_name: null,
+        category_views: null,
         data: null,
         error,
-        category_views: null,
         icon: null,
         icon_color: null,
-        category_name: null,
         is_public: null,
       });
       throw new Error("ERROR: get public category bookmark error");
     } else {
       response.status(200).json({
+        category_name: categoryData[0]?.category_name,
+        category_views: categoryData[0]?.category_views,
         data,
         error: null,
-        category_views: categoryData[0]?.category_views,
         icon: categoryData[0]?.icon,
         icon_color: categoryData[0]?.icon_color,
-        category_name: categoryData[0]?.category_name,
         is_public: categoryData[0]?.is_public,
       });
     }

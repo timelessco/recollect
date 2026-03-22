@@ -5,10 +5,10 @@ import User from "../icons/toastIcons/user";
 
 const PULSE_DURATION = 200;
 
-let pulseTimeout: ReturnType<typeof setTimeout> | null = null;
+let pulseTimeout: null | ReturnType<typeof setTimeout> = null;
 
 // Track active toast titles to detect duplicates on the frontmost toast
-const activeTitles: Array<{ id: string; title: string }> = [];
+const activeTitles: { id: string; title: string }[] = [];
 
 function removeActiveTitle(id: string) {
   const index = activeTitles.findIndex((toast) => toast.id === id);
@@ -17,12 +17,12 @@ function removeActiveTitle(id: string) {
   }
 }
 
-function getFrontmostTitle(): string | null {
+function getFrontmostTitle(): null | string {
   if (activeTitles.length === 0) {
     return null;
   }
 
-  return activeTitles[activeTitles.length - 1].title;
+  return activeTitles.at(-1).title;
 }
 
 function pulseExistingToast() {
@@ -64,7 +64,9 @@ function addOrPulse(title: string, options: Parameters<typeof toastManager.add>[
   // explicit toastManager.close() calls, not auto-dismiss via timeout.
   const id: string = toastManager.add({
     ...options,
-    onClose: (): void => removeActiveTitle(id),
+    onClose: (): void => {
+      removeActiveTitle(id);
+    },
   });
   activeTitles.push({ id, title });
 }
@@ -76,10 +78,10 @@ export function errorToast(error: string, type?: "fileSizeError") {
 
   if (type === "fileSizeError") {
     addOrPulse("Unable to add item", {
-      title: "Unable to add item",
-      description: "Max file size is 10MB",
-      type: "error",
       data: { icon: <File /> },
+      description: "Max file size is 10MB",
+      title: "Unable to add item",
+      type: "error",
     });
     return;
   }
@@ -94,9 +96,9 @@ export function successToast(message: string, type?: "userInvite") {
 
   if (type === "userInvite") {
     addOrPulse("Share invitation sent", {
+      data: { icon: <User /> },
       title: "Share invitation sent",
       type: "success",
-      data: { icon: <User /> },
     });
     return;
   }

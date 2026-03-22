@@ -10,10 +10,7 @@ import { GetGeminiApiKeyInputSchema, GetGeminiApiKeyOutputSchema } from "./schem
 const ROUTE = "v2-get-gemini-api-key";
 
 export const GET = createGetApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: GetGeminiApiKeyInputSchema,
-  outputSchema: GetGeminiApiKeyOutputSchema,
-  handler: async ({ supabase, user, route }) => {
+  handler: async ({ route, supabase, user }) => {
     const userId = user.id;
 
     console.log(`[${route}] API called:`, { userId });
@@ -22,10 +19,10 @@ export const GET = createGetApiHandlerWithAuth({
 
     if (!encryptionKey) {
       return apiError({
-        route,
-        message: "Server configuration error",
         error: new Error("API_KEY_ENCRYPTION_KEY is not configured"),
+        message: "Server configuration error",
         operation: "api_key_encryption_config",
+        route,
         userId,
       });
     }
@@ -38,18 +35,18 @@ export const GET = createGetApiHandlerWithAuth({
 
     if (profileError) {
       return apiError({
-        route,
-        message: "Failed to retrieve API key",
         error: profileError,
+        message: "Failed to retrieve API key",
         operation: "get_gemini_api_key_fetch",
+        route,
         userId,
       });
     }
 
     if (!profileData?.api_key) {
       return apiWarn({
-        route,
         message: "No API key stored",
+        route,
         status: 404,
       });
     }
@@ -65,10 +62,10 @@ export const GET = createGetApiHandlerWithAuth({
         });
 
         return apiError({
-          route,
-          message: "Failed to process API key",
           error: new Error("Decryption produced empty result"),
+          message: "Failed to process API key",
           operation: "get_gemini_api_key_decrypt",
+          route,
           userId,
         });
       }
@@ -78,12 +75,15 @@ export const GET = createGetApiHandlerWithAuth({
       return { apiKey };
     } catch (decryptError) {
       return apiError({
-        route,
-        message: "Failed to process API key",
         error: decryptError,
+        message: "Failed to process API key",
         operation: "get_gemini_api_key_decrypt",
+        route,
         userId,
       });
     }
   },
+  inputSchema: GetGeminiApiKeyInputSchema,
+  outputSchema: GetGeminiApiKeyOutputSchema,
+  route: ROUTE,
 });

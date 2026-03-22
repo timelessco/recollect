@@ -1,5 +1,7 @@
-import { type DroppableCollectionReorderEvent } from "react-aria";
+import type { DroppableCollectionReorderEvent } from "react-aria";
 import { Item } from "react-stately";
+
+import type { CollectionItemTypes } from "./singleListItemComponent";
 
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 import { useUpdateFavoriteOrderMutation } from "@/async/mutationHooks/user/use-update-favorite-order-mutation";
@@ -9,11 +11,11 @@ import { mutationApiCall } from "@/utils/apiHelpers";
 
 import DownArrowGray from "../../../icons/downArrowGray";
 import { ReorderableListBox } from "./reorderable-list";
-import SingleListItemComponent, { type CollectionItemTypes } from "./singleListItemComponent";
+import SingleListItemComponent from "./singleListItemComponent";
 
-type FavoriteCollectionsListProps = {
+interface FavoriteCollectionsListProps {
   favoriteCollections: CollectionItemTypes[];
-};
+}
 
 export function FavoriteCollectionsList({ favoriteCollections }: FavoriteCollectionsListProps) {
   const { updateFavoriteOrderMutation } = useUpdateFavoriteOrderMutation();
@@ -98,9 +100,9 @@ export function FavoriteCollectionsList({ favoriteCollections }: FavoriteCollect
   );
 }
 
-type FavoriteCollectionItemProps = {
+interface FavoriteCollectionItemProps {
   item: CollectionItemTypes;
-};
+}
 
 function FavoriteCollectionItem({ item }: FavoriteCollectionItemProps) {
   const { addCategoryToBookmarkOptimisticMutation } = useAddCategoryToBookmarkOptimisticMutation();

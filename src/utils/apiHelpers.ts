@@ -7,7 +7,7 @@ const defaultErrorText = "Something went wrong";
 const errorTextLogic = (error: unknown) => (typeof error === "string" ? error : defaultErrorText);
 
 // the apiCall param should have mutateAsync
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 export const mutationApiCall = async (apiCall: Promise<any>) => {
   const response = await apiCall;
 

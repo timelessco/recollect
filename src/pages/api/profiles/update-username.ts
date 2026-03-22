@@ -1,29 +1,32 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { type NextApiResponse } from "next";
+import type { NextApiResponse } from "next";
 
-import { type PostgrestError } from "@supabase/supabase-js";
 import { isEmpty } from "lodash";
 import isNull from "lodash/isNull";
 import slugify from "slugify";
 
-import {
-  type NextApiRequest,
-  type ProfilesTableTypes,
-  type UpdateUsernameApiPayload,
+import type {
+  NextApiRequest,
+  ProfilesTableTypes,
+  UpdateUsernameApiPayload,
 } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+
 import { PROFILES } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-type DataResponse = Array<{
-  user_name: ProfilesTableTypes["user_name"];
-}> | null;
-type ErrorResponse = PostgrestError | string | { message: string } | null;
+type DataResponse =
+  | {
+      user_name: ProfilesTableTypes["user_name"];
+    }[]
+  | null;
+type ErrorResponse = { message: string } | null | PostgrestError | string;
 
-type Data = {
+interface Data {
   data: DataResponse;
   error: ErrorResponse;
-};
+}
 
 /**
  * Updates username for a user
@@ -35,7 +38,7 @@ export default async function handler(
 ) {
   const supabase = apiSupabaseClient(request, response);
 
-  const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+  const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
 
   const username = slugify(request?.body?.username ?? "", {
     lower: true,

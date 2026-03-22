@@ -1,29 +1,30 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
-import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import isNull from "lodash/isNull";
 
-import { type UserProfilePicTypes } from "../../../types/apiTypes";
+import type { UserProfilePicTypes } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
+
 import { PROFILES } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 import { deleteLogic } from "../settings/upload-profile-pic";
 
 // removes user profile pic
 
-type DataResponse = UserProfilePicTypes[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | string | null;
+type DataResponse = null | UserProfilePicTypes[];
+type ErrorResponse = null | PostgrestError | string | VerifyErrors;
 
-type Data = {
+interface Data {
   data: DataResponse;
   error: ErrorResponse;
-};
+}
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse<Data>) {
   const supabase = apiSupabaseClient(request, response);
-  const userId = (await supabase?.auth?.getUser())?.data?.user?.id as string;
+  const userId = (await supabase?.auth?.getUser())?.data?.user?.id!;
 
   if (userId) {
     // remove from DB

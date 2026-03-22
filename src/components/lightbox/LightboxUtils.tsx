@@ -1,6 +1,6 @@
-import { type Slide as BaseSlide } from "yet-another-react-lightbox";
+import type { SingleListData } from "../../types/apiTypes";
+import type { Slide as BaseSlide } from "yet-another-react-lightbox";
 
-import { type SingleListData } from "../../types/apiTypes";
 import { ESCAPE_REGEXP_PATTERN, YOUTU_BE, YOUTUBE_COM } from "../../utils/constants";
 
 const SPOTIFY_HOST = "open.spotify.com";
@@ -13,7 +13,7 @@ type SpotifyContentType = "album" | "artist" | "episode" | "playlist" | "show" |
  * Returns null if the URL is not a valid Spotify content URL.
  */
 function parseSpotifyUrl(
-  urlString: string | null | undefined,
+  urlString: null | string | undefined,
 ): { id: string; type: SpotifyContentType } | null {
   if (!urlString) {
     return null;
@@ -40,7 +40,7 @@ function parseSpotifyUrl(
  * Checks if a given URL is a Spotify content URL
  * Supports tracks, albums, playlists, episodes, shows, and artists
  */
-export function isSpotifyLink(urlString: string | null | undefined): boolean {
+export function isSpotifyLink(urlString: null | string | undefined): boolean {
   return parseSpotifyUrl(urlString) !== null;
 }
 
@@ -81,7 +81,7 @@ export function getSpotifyEmbedInfo(urlString: string): {
  * @param urlString - The URL to check
  * @returns boolean - True if the URL is a YouTube video
  */
-export const isYouTubeVideo = (urlString: string | null | undefined): boolean => {
+export const isYouTubeVideo = (urlString: null | string | undefined): boolean => {
   if (!urlString) {
     return false;
   }
@@ -134,7 +134,7 @@ export type CustomSlide = BaseSlide & {
   placeholder?: string;
 };
 
-export const highlightSearch = (text: string, search: string): Array<string | React.ReactNode> => {
+export const highlightSearch = (text: string, search: string): (React.ReactNode | string)[] => {
   if (!text || !search) {
     return [text ?? ""];
   }
@@ -148,8 +148,8 @@ export const highlightSearch = (text: string, search: string): Array<string | Re
   return parts.map((part, index) =>
     // Captured groups appear at odd indices after split
     index % 2 === 1 ? (
-      // eslint-disable-next-line react/no-array-index-key
-      <span key={`${part}-${index}`} className="bg-yellow-300">
+      // oxlint-disable-next-line react/no-array-index-key
+      <span className="bg-yellow-300" key={`${part}-${index}`}>
         {part}
       </span>
     ) : (

@@ -1,4 +1,4 @@
-import { type Metadata } from "next";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { z } from "zod";
@@ -16,7 +16,7 @@ export const metadata: Metadata = generatePageMetadata({
 const emailSchema = z.email({ message: "Invalid email address" });
 
 interface OtpPageProps {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export default async function OtpPage(props: OtpPageProps) {

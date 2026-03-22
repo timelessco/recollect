@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 
-import { type PostgrestError } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { isNil } from "lodash";
 
-import { type SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
+import type { ProfilesTableTypes } from "../../types/apiTypes";
+import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
@@ -14,7 +16,6 @@ import { Spinner } from "../../components/spinner";
 import { BackIconBlack } from "../../icons/actionIcons/backIconBlack";
 import { MailIconBlack } from "../../icons/miscellaneousIcons/mailIconBlack";
 import { useSupabaseSession } from "../../store/componentStore";
-import { type ProfilesTableTypes } from "../../types/apiTypes";
 import {
   settingsInputClassName,
   settingsInputContainerClassName,
@@ -26,13 +27,13 @@ import { EMAIL_CHECK_PATTERN, USER_PROFILE } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
 import { errorToast, successToast } from "../../utils/toastMessages";
 
-type SettingsFormTypes = {
+interface SettingsFormTypes {
   newEmail: string;
-};
+}
 
-type ChangeEmailProps = {
+interface ChangeEmailProps {
   onNavigate: (page: SettingsPage) => void;
-};
+}
 
 const ChangeEmail = ({ onNavigate }: ChangeEmailProps) => {
   const [changeEmailLoader, setChangeEmailLoader] = useState(false);
@@ -41,10 +42,7 @@ const ChangeEmail = ({ onNavigate }: ChangeEmailProps) => {
   const session = useSupabaseSession((state) => state.session);
   const supabase = createClient();
 
-  const userProfilesData = queryClient.getQueryData([USER_PROFILE, session?.user?.id]) as {
-    data: ProfilesTableTypes[];
-    error: PostgrestError;
-  };
+  const userProfilesData = queryClient.getQueryData([USER_PROFILE, session?.user?.id])!;
 
   const userData = userProfilesData?.data?.[0];
 
@@ -65,9 +63,9 @@ const ChangeEmail = ({ onNavigate }: ChangeEmailProps) => {
   };
 
   const {
-    register,
-    handleSubmit,
     formState: { errors },
+    handleSubmit,
+    register,
     // reset,
   } = useForm<SettingsFormTypes>({
     defaultValues: {
@@ -115,13 +113,13 @@ const ChangeEmail = ({ onNavigate }: ChangeEmailProps) => {
             <Input
               errorClassName="absolute w-full top-[35px]"
               {...register("newEmail", {
-                required: {
-                  value: true,
-                  message: "email cannot be empty",
-                },
                 pattern: {
-                  value: EMAIL_CHECK_PATTERN,
                   message: "Please enter valid email",
+                  value: EMAIL_CHECK_PATTERN,
+                },
+                required: {
+                  message: "email cannot be empty",
+                  value: true,
                 },
               })}
               className={settingsInputClassName}

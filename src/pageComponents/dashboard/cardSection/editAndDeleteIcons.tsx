@@ -3,6 +3,8 @@ import { useState } from "react";
 
 import { Button } from "@base-ui/react/button";
 
+import type { SingleListData } from "@/types/apiTypes";
+
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import BackIcon from "@/icons/actionIcons/backIcon";
@@ -10,19 +12,18 @@ import LinkExternalIcon from "@/icons/linkExternalIcon";
 import TrashIconGray from "@/icons/trash-icon-gray";
 import { EditPopover } from "@/pageComponents/dashboard/cardSection/edit-popover";
 import { useSupabaseSession } from "@/store/componentStore";
-import { type SingleListData } from "@/types/apiTypes";
 import { TRASH_URL, viewValues } from "@/utils/constants";
 import { isBookmarkOwner, isUserInACategory } from "@/utils/helpers";
 import { cn } from "@/utils/tailwind-merge";
 import { getCategorySlugFromRouter } from "@/utils/url";
 
-export type EditAndDeleteIconsProps = {
+export interface EditAndDeleteIconsProps {
   cardTypeCondition: string;
   isPublicPage: boolean;
   onDeleteClick?: (post: SingleListData[]) => void;
   onMoveOutOfTrashClick?: (post: SingleListData) => void;
   post: SingleListData;
-};
+}
 
 export function EditAndDeleteIcons({
   cardTypeCondition,
@@ -40,7 +41,7 @@ export function EditAndDeleteIcons({
   const { allCategories } = useFetchCategories();
 
   const isCategoryOwner =
-    !isUserInACategory(categorySlug as string) ||
+    !isUserInACategory(categorySlug!) ||
     allCategories?.data?.find((item) => item?.category_slug === categorySlug)?.user_id?.id ===
       userId;
 
@@ -80,8 +81,8 @@ export function EditAndDeleteIcons({
     return (
       <div
         className={cn("absolute top-0", {
-          "right-[8px]": isStandardView,
           "left-[-34px]": isListView,
+          "right-[8px]": isStandardView,
         })}
       >
         <a

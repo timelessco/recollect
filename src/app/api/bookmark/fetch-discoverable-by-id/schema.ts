@@ -15,11 +15,11 @@ const MetadataSchema = z.object({
     .nullable()
     .optional()
     .meta({ description: "Whether iframe embedding is allowed" }),
-  img_caption: z.string().nullable().optional().meta({ description: "Image caption text" }),
   image_keywords: z
     .array(z.string())
     .optional()
     .meta({ description: "Keywords extracted from image" }),
+  img_caption: z.string().nullable().optional().meta({ description: "Image caption text" }),
   isOgImagePreferred: z
     .boolean()
     .optional()
@@ -60,39 +60,39 @@ const TagSchema = z.object({
 });
 
 const CategorySchema = z.object({
-  id: z.number().meta({ description: "Category ID" }),
   category_name: z.string().meta({ description: "Category display name" }),
   category_slug: z.string().meta({ description: "URL-safe category slug" }),
   icon: z.string().nullable().meta({ description: "Icon identifier" }),
   icon_color: z.string().meta({ description: "Icon color hex code" }),
+  id: z.number().meta({ description: "Category ID" }),
 });
 
 export const FetchDiscoverableByIdResponseSchema = z.object({
+  addedCategories: z
+    .array(CategorySchema)
+    .optional()
+    .meta({ description: "Categories assigned to this bookmark" }),
+  addedTags: z.array(TagSchema).optional().meta({ description: "Tags assigned to this bookmark" }),
+  category_id: z.number().meta({ description: "Primary category ID for this bookmark" }),
+  description: z.string().nullable().meta({ description: "Page or OG description" }),
   id: z.number().meta({ description: "Bookmark ID" }),
   inserted_at: z.string().meta({ description: "ISO timestamp when bookmark was created" }),
-  title: z.string().nullable().meta({ description: "Page title" }),
-  url: z.string().nullable().meta({ description: "Bookmarked URL" }),
-  description: z.string().nullable().meta({ description: "Page or OG description" }),
+  make_discoverable: z.string().nullable().meta({
+    description: "ISO timestamp when made discoverable, null if not discoverable",
+  }),
+  meta_data: MetadataSchema.nullable().meta({
+    description: "Extended metadata JSONB",
+  }),
   ogImage: z.string().nullable().meta({ description: "OG image URL" }),
   screenshot: z.string().nullable().meta({ description: "Screenshot URL" }),
-  category_id: z.number().meta({ description: "Primary category ID for this bookmark" }),
+  sort_index: z.string().nullable().meta({ description: "Fractional index for manual ordering" }),
+  title: z.string().nullable().meta({ description: "Page title" }),
   trash: z
     .string()
     .nullable()
     .meta({ description: "ISO timestamp when trashed, null if not trashed" }),
   type: z.string().nullable().meta({ description: "Content type" }),
-  meta_data: MetadataSchema.nullable().meta({
-    description: "Extended metadata JSONB",
-  }),
-  sort_index: z.string().nullable().meta({ description: "Fractional index for manual ordering" }),
-  make_discoverable: z.string().nullable().meta({
-    description: "ISO timestamp when made discoverable, null if not discoverable",
-  }),
-  addedTags: z.array(TagSchema).optional().meta({ description: "Tags assigned to this bookmark" }),
-  addedCategories: z
-    .array(CategorySchema)
-    .optional()
-    .meta({ description: "Categories assigned to this bookmark" }),
+  url: z.string().nullable().meta({ description: "Bookmarked URL" }),
 });
 
 export type FetchDiscoverableByIdResponse = z.infer<typeof FetchDiscoverableByIdResponseSchema>;

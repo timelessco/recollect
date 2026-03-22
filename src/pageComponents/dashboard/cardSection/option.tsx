@@ -1,25 +1,22 @@
 import "yet-another-react-lightbox/styles.css";
 
 import { useRouter } from "next/router";
-import { useRef, type ReactNode } from "react";
-import {
-  mergeProps,
-  useDraggableItem,
-  useFocusRing,
-  useOption,
-  type DraggableItemProps,
-} from "react-aria";
-import { type DraggableCollectionState, type ListState } from "react-stately";
+import { useRef } from "react";
+import type { ReactNode } from "react";
+import { mergeProps, useDraggableItem, useFocusRing, useOption } from "react-aria";
+import type { DraggableItemProps } from "react-aria";
+import type { DraggableCollectionState, ListState } from "react-stately";
 
 import { pick } from "lodash";
 import omit from "lodash/omit";
 
+import type { CardSectionProps } from ".";
+import type { SingleListData } from "../../../types/apiTypes";
+
 import { Checkbox } from "@/components/ui/recollect/checkbox";
 import { cn } from "@/utils/tailwind-merge";
 
-import { type CardSectionProps } from ".";
 import { useMiscellaneousStore } from "../../../store/componentStore";
-import { type SingleListData } from "../../../types/apiTypes";
 import { DISCOVER_URL, viewValues } from "../../../utils/constants";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../../utils/url";
 import { buildAuthenticatedPreviewUrl, buildPublicPreviewUrl } from "../../../utils/url-builders";
@@ -29,13 +26,13 @@ type OptionDropItemTypes = DraggableItemProps & {
 };
 
 const Option = ({
-  item,
-  state,
-  dragState,
   cardTypeCondition,
-  url,
+  dragState,
   isPublicPage,
   isTrashPage,
+  item,
+  state,
+  url,
 }: {
   cardTypeCondition: unknown;
   dragState: DraggableCollectionState;
@@ -48,12 +45,12 @@ const Option = ({
 }) => {
   // Setup listbox option as normal. See useListBox docs for details.
   const ref = useRef(null);
-  const { optionProps, isSelected } = useOption({ key: item.key }, state, ref);
+  const { isSelected, optionProps } = useOption({ key: item.key }, state, ref);
   const { focusProps } = useFocusRing();
   const router = useRouter();
   const categorySlug = getCategorySlugFromRouter(router);
   const isDiscoverPage = categorySlug === DISCOVER_URL;
-  const { setLightboxId, setLightboxOpen, lightboxOpen } = useMiscellaneousStore();
+  const { lightboxOpen, setLightboxId, setLightboxOpen } = useMiscellaneousStore();
   // Register the item as a drag source.
   const { dragProps } = useDraggableItem(
     {
@@ -75,9 +72,9 @@ const Option = ({
         cardTypeCondition === viewValues.moodboard ||
         cardTypeCondition === viewValues.card ||
         cardTypeCondition === viewValues.timeline,
-      "mb-1 hover:bg-gray-100": cardTypeCondition === viewValues.list && !isSelected,
-
       "list-wrapper mb-1": cardTypeCondition === viewValues.list,
+
+      "mb-1 hover:bg-gray-100": cardTypeCondition === viewValues.list && !isSelected,
     },
   );
 
@@ -103,7 +100,7 @@ const Option = ({
         ["values"],
       )}
     >
-      {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
+      {/* oxlint-disable-next-line jsx-a11y/anchor-has-content */}
       <a
         className={`absolute top-0 left-0 h-full w-full rounded-lg ${
           isTrashPage ? "cursor-auto" : "cursor-pointer"
@@ -122,18 +119,18 @@ const Option = ({
           if (isPublicPage && !isDiscoverPage) {
             const publicInfo = getPublicPageInfo(router);
             if (publicInfo) {
-              const { pathname, query, as } = buildPublicPreviewUrl({
-                publicInfo,
+              const { as, pathname, query } = buildPublicPreviewUrl({
                 bookmarkId: item?.key,
+                publicInfo,
               });
               void router.push({ pathname, query }, as, { shallow: true });
             }
           } else {
             const categorySlug = getCategorySlugFromRouter(router);
             if (categorySlug) {
-              const { pathname, query, as } = buildAuthenticatedPreviewUrl({
-                categorySlug,
+              const { as, pathname, query } = buildAuthenticatedPreviewUrl({
                 bookmarkId: item?.key,
+                categorySlug,
               });
               void router.push({ pathname, query }, as, { shallow: true });
             }

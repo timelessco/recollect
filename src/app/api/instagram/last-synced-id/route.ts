@@ -15,10 +15,7 @@ const OutputSchema = z.object({
 });
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: InputSchema,
-  outputSchema: OutputSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const { data: profile, error } = await supabase
       .from(PROFILES)
       .update({ last_synced_instagram_id: data.last_synced_instagram_id })
@@ -28,14 +25,17 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Failed to update last synced Instagram ID",
         error,
+        message: "Failed to update last synced Instagram ID",
         operation: "update_last_synced_instagram_id",
+        route,
         userId: user.id,
       });
     }
 
     return { last_synced_instagram_id: profile.last_synced_instagram_id };
   },
+  inputSchema: InputSchema,
+  outputSchema: OutputSchema,
+  route: ROUTE,
 });

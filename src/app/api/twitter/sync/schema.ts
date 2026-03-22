@@ -6,14 +6,14 @@ export const TwitterSyncInputSchema = z.object({
   bookmarks: z
     .array(
       z.object({
-        url: z.string().url(),
-        title: z.string().default(""),
         description: z.string().default(""),
-        ogImage: z.string().nullish(),
-        type: z.literal(tweetType).default(tweetType),
-        meta_data: z.record(z.string(), z.unknown()).default({}),
-        sort_index: z.string().default(""),
         inserted_at: z.string().datetime().optional(),
+        meta_data: z.record(z.string(), z.unknown()).default({}),
+        ogImage: z.string().nullish(),
+        sort_index: z.string().default(""),
+        title: z.string().default(""),
+        type: z.literal(tweetType).default(tweetType),
+        url: z.string().url(),
       }),
     )
     .min(1, "At least one bookmark required")

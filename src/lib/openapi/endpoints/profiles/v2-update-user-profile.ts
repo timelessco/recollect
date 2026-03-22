@@ -1,35 +1,56 @@
+import type { EndpointSupplement } from "@/lib/openapi/supplement-types";
+
 /**
  * @module Build-time only
  */
 import { bearerAuth } from "@/lib/openapi/registry";
-import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
 
 export const v2UpdateUserProfileSupplement = {
-  path: "/v2/profiles/update-user-profile",
-  method: "patch",
-  tags: ["Profiles"],
-  summary: "Update authenticated user's profile fields",
+  additionalResponses: {
+    401: { description: "Not authenticated" },
+    404: { description: "Profile not found" },
+  },
   description:
     "Updates one or more profile fields for the authenticated user. Accepts a partial `updateData` object — at least one field must be provided. Returns the full updated profile row.",
-  security: [{ [bearerAuth.name]: [] }, {}],
+  method: "patch",
+  path: "/v2/profiles/update-user-profile",
   requestExamples: {
     "update-display-name": {
-      summary: "Update display name",
       description: "Update only the display name field.",
+      summary: "Update display name",
       value: { updateData: { display_name: "Jane Smith" } },
     },
     "update-multiple-fields": {
-      summary: "Update multiple fields",
       description: "Update display name and provider at the same time.",
+      summary: "Update multiple fields",
       value: {
         updateData: { display_name: "Jane Smith", provider: "google" },
       },
     },
   },
+  response400Examples: {
+    "empty-update-data": {
+      description:
+        "Sending an empty `updateData: {}` fails the refine check — at least one field must be provided.",
+      summary: "Empty updateData object",
+      value: {
+        data: null,
+        error: "Invalid request body",
+      } as const,
+    },
+    "missing-update-data": {
+      description: "The top-level `updateData` key was omitted from the request body.",
+      summary: "Missing updateData field",
+      value: {
+        data: null,
+        error: "Invalid request body",
+      } as const,
+    },
+  },
   responseExamples: {
     "profile-updated": {
-      summary: "Profile updated successfully",
       description: "Full profile row returned after update — all columns included.",
+      summary: "Profile updated successfully",
       value: {
         data: [
           {
@@ -56,27 +77,7 @@ export const v2UpdateUserProfileSupplement = {
       } as const,
     },
   },
-  response400Examples: {
-    "empty-update-data": {
-      summary: "Empty updateData object",
-      description:
-        "Sending an empty `updateData: {}` fails the refine check — at least one field must be provided.",
-      value: {
-        data: null,
-        error: "Invalid request body",
-      } as const,
-    },
-    "missing-update-data": {
-      summary: "Missing updateData field",
-      description: "The top-level `updateData` key was omitted from the request body.",
-      value: {
-        data: null,
-        error: "Invalid request body",
-      } as const,
-    },
-  },
-  additionalResponses: {
-    401: { description: "Not authenticated" },
-    404: { description: "Profile not found" },
-  },
+  security: [{ [bearerAuth.name]: [] }, {}],
+  summary: "Update authenticated user's profile fields",
+  tags: ["Profiles"],
 } satisfies EndpointSupplement;

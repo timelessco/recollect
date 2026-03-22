@@ -8,26 +8,26 @@ import {
   settingsParagraphClassName,
 } from "../../utils/commonClassNames";
 
-type SettingsCardProps = {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
+interface SettingsCardProps {
   buttonLabel?: string;
-  onClick?: () => void;
-  isSwitch?: boolean;
+  description: string;
   enabled?: boolean;
+  icon: React.ReactNode;
+  isSwitch?: boolean;
+  onClick?: () => void;
   onToggle?: () => void;
-};
+  title: string;
+}
 
 export const SettingsToggleCard: React.FC<SettingsCardProps> = ({
-  icon,
-  title,
-  description,
   buttonLabel,
-  onClick,
-  isSwitch,
+  description,
   enabled = false,
+  icon,
+  isSwitch,
+  onClick,
   onToggle,
+  title,
 }) => (
   <div className="flex items-center justify-between rounded-xl bg-gray-100">
     <div className="ml-2 flex items-center gap-2">
@@ -42,8 +42,8 @@ export const SettingsToggleCard: React.FC<SettingsCardProps> = ({
         <Switch
           checked={enabled}
           disabled={!onToggle}
+          onCheckedChange={onToggle ?? (() => {})}
           size="medium"
-          onCheckedChange={onToggle || (() => {})}
         />
       </div>
     ) : buttonLabel && onClick ? (

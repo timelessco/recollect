@@ -15,16 +15,13 @@ import {
 const ROUTE = "fetch-public-bookmark-by-id";
 
 export const GET = createGetApiHandler({
-  inputSchema: FetchPublicBookmarkByIdQuerySchema,
-  outputSchema: FetchPublicBookmarkByIdResponseSchema,
-  route: ROUTE,
   handler: async ({ input, route }) => {
-    const { bookmark_id: bookmarkId, user_name: userName, category_slug: categorySlug } = input;
+    const { bookmark_id: bookmarkId, category_slug: categorySlug, user_name: userName } = input;
 
     console.log(`[${route}] API called:`, {
       bookmarkId,
-      userName,
       categorySlug,
+      userName,
     });
 
     const supabase = createServiceClient();
@@ -46,7 +43,7 @@ export const GET = createGetApiHandler({
         id: number;
         is_public: boolean;
         user_id: {
-          user_name: string | null;
+          user_name: null | string;
         };
       } | null;
       error: unknown;
@@ -54,21 +51,21 @@ export const GET = createGetApiHandler({
 
     if (categoryError) {
       return apiError({
-        route,
-        message: "Failed to fetch category",
         error: categoryError,
-        operation: "fetch_category",
         extra: { categorySlug },
+        message: "Failed to fetch category",
+        operation: "fetch_category",
+        route,
       });
     }
 
     if (!categoryData) {
       console.log(`[${route}] Category not found:`, { categorySlug });
       return apiWarn({
-        route,
-        message: "Category not found",
-        status: 404,
         context: { categorySlug },
+        message: "Category not found",
+        route,
+        status: 404,
       });
     }
 
@@ -79,20 +76,20 @@ export const GET = createGetApiHandler({
         provided: userName,
       });
       return apiWarn({
-        route,
+        context: { categorySlug, userName },
         message: "Username mismatch",
+        route,
         status: 404,
-        context: { userName, categorySlug },
       });
     }
 
     if (!categoryData.is_public) {
       console.log(`[${route}] Category is not public:`, { categorySlug });
       return apiWarn({
-        route,
-        message: "Category is not public",
-        status: 403,
         context: { categorySlug },
+        message: "Category is not public",
+        route,
+        status: 403,
       });
     }
 
@@ -123,11 +120,11 @@ export const GET = createGetApiHandler({
 
     if (bookmarkError) {
       return apiError({
-        route,
-        message: "Failed to fetch bookmark",
         error: bookmarkError,
-        operation: "fetch_bookmark",
         extra: { bookmarkId, categoryId },
+        message: "Failed to fetch bookmark",
+        operation: "fetch_bookmark",
+        route,
       });
     }
 
@@ -137,14 +134,13 @@ export const GET = createGetApiHandler({
         categoryId,
       });
       return apiWarn({
-        route,
-        message: "Bookmark not found in category",
-        status: 404,
         context: { bookmarkId, categoryId },
+        message: "Bookmark not found in category",
+        route,
+        status: 404,
       });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [BOOKMARK_CATEGORIES_TABLE_NAME]: _removed, ...cleanedBookmark } = bookmarkData;
 
     console.log(`[${route}] Bookmark fetched successfully:`, {
@@ -153,4 +149,7 @@ export const GET = createGetApiHandler({
 
     return cleanedBookmark;
   },
+  inputSchema: FetchPublicBookmarkByIdQuerySchema,
+  outputSchema: FetchPublicBookmarkByIdResponseSchema,
+  route: ROUTE,
 });

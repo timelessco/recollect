@@ -2,8 +2,9 @@ import { useMemo } from "react";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 
+import type { SingleListData } from "@/types/apiTypes";
+
 import { getApi } from "@/lib/api-helpers/api";
-import { type SingleListData } from "@/types/apiTypes";
 import {
   BOOKMARKS_KEY,
   DISCOVER_URL,
@@ -12,10 +13,10 @@ import {
   PAGINATION_LIMIT,
 } from "@/utils/constants";
 
-type UseFetchDiscoverBookmarksProps = {
+interface UseFetchDiscoverBookmarksProps {
   enabled?: boolean;
   initialData?: SingleListData[];
-};
+}
 
 export const useFetchDiscoverBookmarks = (options: UseFetchDiscoverBookmarksProps = {}) => {
   const { enabled = true, initialData } = options;
@@ -27,7 +28,6 @@ export const useFetchDiscoverBookmarks = (options: UseFetchDiscoverBookmarksProp
     isFetchingNextPage,
     isLoading,
   } = useInfiniteQuery({
-    queryKey: [BOOKMARKS_KEY, DISCOVER_URL],
     enabled,
     queryFn: async ({ pageParam }) => {
       const data = await getApi<SingleListData[]>(
@@ -45,24 +45,25 @@ export const useFetchDiscoverBookmarks = (options: UseFetchDiscoverBookmarksProp
 
       return pages.length;
     },
+    queryKey: [BOOKMARKS_KEY, DISCOVER_URL],
     ...(initialData !== undefined && {
       initialData: {
-        pages: [{ data: initialData }],
         pageParams: [0],
+        pages: [{ data: initialData }],
       },
       staleTime: 60_000,
     }),
   });
 
   const flattenedData = useMemo(
-    () => (discoverData?.pages?.flatMap((page) => page?.data ?? []) ?? []) as SingleListData[],
+    () => discoverData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
     [discoverData],
   );
 
   return {
     discoverData,
-    flattenedData,
     fetchNextPage,
+    flattenedData,
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,
     isLoading,

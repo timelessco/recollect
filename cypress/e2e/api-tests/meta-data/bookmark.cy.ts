@@ -16,7 +16,6 @@ describe("Meta data testing", () => {
       url: "https://unsplash.com/photos/a-city-street-with-a-lot-of-tall-buildings-badrIRxBqmk",
     }).as("addRequest");
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let bookmarkId;
 
     cy.get("@addRequest")?.then((addBookmarkData) => {
@@ -26,7 +25,7 @@ describe("Meta data testing", () => {
 
       cy.reload();
 
-      cy.wait(40000);
+      cy.wait(40_000);
 
       cy.request(
         `/api/v1/bookmarks/get/fetch-by-id?id=${addBookmarkData?.body?.data?.[0]?.id}`,

@@ -1,4 +1,6 @@
-import { Icon, type IconProps } from "@/components/atoms/icon";
+import type { IconProps } from "@/components/atoms/icon";
+
+import { Icon } from "@/components/atoms/icon";
 
 export const HomeIconGray = (props: IconProps) => (
   <Icon {...props} fill="none" height="18" viewBox="0 0 18 18" width="18">

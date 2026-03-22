@@ -1,4 +1,4 @@
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
@@ -17,13 +17,13 @@ import { createServiceClient } from "../../../utils/supabaseClient";
 
 const ScreenshotPayloadSchema = z.object({
   id: z.union([z.string(), z.number()]),
-  url: z.string().url("Invalid URL format"),
-  user_id: z.string().min(1, "user_id is required"),
   mediaType: z.string().nullable().optional(),
-  queue_name: z.string(),
   message: z.object({
     msg_id: z.number(),
   }),
+  queue_name: z.string(),
+  url: z.string().url("Invalid URL format"),
+  user_id: z.string().min(1, "user_id is required"),
 });
 
 type ScreenshotPayload = z.infer<typeof ScreenshotPayloadSchema>;
@@ -45,16 +45,16 @@ export default async function handler(request: NextApiRequest, response: NextApi
   if (!parsed.success) {
     const errors = parsed.error.flatten().fieldErrors;
     await storeQueueError({
-      queueName: rawQueueName,
-      msgId: rawMsgId,
       errorReason: "screenshot: validation_failed",
+      msgId: rawMsgId,
+      queueName: rawQueueName,
       route: ROUTE,
     });
-    response.status(400).json({ error: "Invalid input", details: errors });
+    response.status(400).json({ details: errors, error: "Invalid input" });
     return;
   }
 
-  const { id, url, user_id, mediaType, queue_name, message }: ScreenshotPayload = parsed.data;
+  const { id, mediaType, message, queue_name, url, user_id }: ScreenshotPayload = parsed.data;
 
   const supabase = createServiceClient();
 
@@ -99,7 +99,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
           "base64",
         );
 
-        isPageScreenshot = screenshotData?.metaData?.isPageScreenshot || {};
+        isPageScreenshot = screenshotData?.metaData?.isPageScreenshot ?? {};
 
         // Upload to R2
         publicURL = await upload(base64data, user_id);
@@ -120,16 +120,16 @@ export default async function handler(request: NextApiRequest, response: NextApi
     if (updateError) {
       console.error("Error updating bookmark:", updateError);
       Sentry.captureException(updateError, {
+        extra: { bookmarkId: id, url },
         tags: {
           operation: "screenshot_db_update",
           userId: user_id,
         },
-        extra: { bookmarkId: id, url },
       });
       await storeQueueError({
-        queueName: queue_name,
-        msgId: message.msg_id,
         errorReason: "screenshot: db_update_failed",
+        msgId: message.msg_id,
+        queueName: queue_name,
         route: ROUTE,
       });
       response.status(500).json({ error: "Error updating bookmark" });
@@ -148,13 +148,13 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     const newMeta: Record<string, unknown> = {
       ...existing?.meta_data,
-      mediaType,
       isPageScreenshot,
+      mediaType,
     };
 
     const contentType = resolveContentType({
-      type: existing?.type ?? undefined,
       mediaType: mediaType ?? undefined,
+      type: existing?.type ?? undefined,
     });
 
     // ai-enrichment
@@ -171,8 +171,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
       { contentType, isOgImage: false },
       {
         collections: userCollections,
-        title: existing?.title,
         description: existing?.description,
+        title: existing?.title,
         url,
       },
       aiToggles,
@@ -191,12 +191,12 @@ export default async function handler(request: NextApiRequest, response: NextApi
       newMeta.ocr_status = "no_text";
     }
 
-    const { width, height, encoded } = await blurhashFromURL(ogImage);
+    const { encoded, height, width } = await blurhashFromURL(ogImage);
     if (encoded && width && height) {
       Object.assign(newMeta, {
-        width,
         height,
         ogImgBlurUrl: encoded,
+        width,
       });
     } else {
       console.error("blurhashFromURL returned empty result", url);
@@ -224,8 +224,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
     // Delete message from queue
     if (!isFailed) {
       const { error: deleteError } = await supabase.schema("pgmq_public").rpc("delete", {
-        queue_name,
         message_id: message.msg_id,
+        queue_name,
       });
 
       if (deleteError) {
@@ -234,29 +234,29 @@ export default async function handler(request: NextApiRequest, response: NextApi
     }
 
     response.status(200).json({
-      message: "Screenshot captured and uploaded successfully",
-      image: publicURL,
       data: updatedData,
+      image: publicURL,
+      message: "Screenshot captured and uploaded successfully",
     });
   } catch (error) {
     console.error("Error in screenshot handler:", error);
     Sentry.captureException(error, {
+      extra: {
+        bookmarkId: id,
+        msgId: message.msg_id,
+        queueName: queue_name,
+        url,
+      },
       tags: {
         operation: "screenshot_unexpected",
         userId: user_id,
       },
-      extra: {
-        bookmarkId: id,
-        url,
-        queueName: queue_name,
-        msgId: message.msg_id,
-      },
     });
     const errorMessage = error instanceof Error ? error.message : "unknown_error";
     await storeQueueError({
-      queueName: queue_name,
-      msgId: message.msg_id,
       errorReason: `screenshot: ${errorMessage}`,
+      msgId: message.msg_id,
+      queueName: queue_name,
       route: ROUTE,
     });
     response.status(500).json({ error: "Internal server error" });

@@ -1,20 +1,21 @@
-import { type NextApiRequest } from "next";
+import type { NextApiRequest } from "next";
 import router from "next/router";
-import { type DeepRequired, type FieldErrorsImpl } from "react-hook-form";
+import type { DeepRequired, FieldErrorsImpl } from "react-hook-form";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError, type SupabaseClient } from "@supabase/supabase-js";
 import { getYear } from "date-fns";
 import { isEmpty } from "lodash";
 import find from "lodash/find";
 import slugify from "slugify";
 
+import type { CardSectionProps } from "../pageComponents/dashboard/cardSection";
+import type { CategoriesData, SingleListData, UserTagsData } from "../types/apiTypes";
+import type { UrlInput } from "../types/componentTypes";
+import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
+
 import { upload, uploadVideo } from "@/lib/storage/media-upload";
 
 import { getMediaType } from "../async/supabaseCrudHelpers";
-import { type CardSectionProps } from "../pageComponents/dashboard/cardSection";
-import { type CategoriesData, type SingleListData, type UserTagsData } from "../types/apiTypes";
-import { type UrlInput } from "../types/componentTypes";
 import {
   AUDIO_MIME_PREFIX,
   AUDIO_URL,
@@ -60,7 +61,7 @@ export const getTagAsPerId = (tagIg: number, tagsData: UserTagsData[]) =>
   }) as UserTagsData;
 
 export const getCategoryIdFromSlug = (
-  slug: string | null,
+  slug: null | string,
   allCategories: CategoriesData[] | undefined,
 ) => {
   if (
@@ -82,7 +83,7 @@ export const getCategoryIdFromSlug = (
     return find(allCategories, (item) => item?.category_slug === slug)?.id;
   }
 
-  return undefined;
+  return;
 };
 
 export const urlInputErrorText = (errors: FieldErrorsImpl<DeepRequired<UrlInput>>) => {
@@ -110,13 +111,13 @@ export const getUserNameFromEmail = (email: string) => {
 
 export const extractTagNamesFromSearch = (search: string) => {
   if (typeof search !== "string" || search.length === 0) {
-    return undefined;
+    return;
   }
 
   const matches = search.match(GET_HASHTAG_TAG_PATTERN);
 
   if (!matches || isEmpty(matches)) {
-    return undefined;
+    return;
   }
 
   const tagNames = matches
@@ -201,7 +202,7 @@ export const checker = (array: unknown[], target: unknown[]) =>
 
 // gets thumbnail from image, it gets it from the first frame
 export const generateVideoThumbnail = async (file: File) =>
-  await new Promise((resolve) => {
+  new Promise((resolve) => {
     const canvas = document.createElement("canvas");
     const video = document.createElement("video");
 
@@ -250,14 +251,13 @@ export const isUserInACategoryInApi = (
 
   if (uncategorizedCheck) {
     return condition && category_id !== UNCATEGORIZED_URL;
-  } else {
-    return condition;
   }
+  return condition;
 };
 
 // this is the logic for clicking a bookmark card and when the url need to open in new tab
 export const clickToOpenInNewTabLogic = (
-  event: React.MouseEvent<unknown, MouseEvent>,
+  event: React.MouseEvent<unknown>,
   url: SingleListData["url"],
   isPublicPage: CardSectionProps["isPublicPage"],
   isDesktop: boolean,
@@ -305,8 +305,8 @@ export const aspectRatio = (width: number, height: number): { height: number; wi
   const gcdResult = gcd(width, height);
 
   return {
-    width: width / gcdResult,
     height: height / gcdResult,
+    width: width / gcdResult,
   };
 };
 
@@ -319,7 +319,7 @@ export const parseUploadFileName = (name: string): string =>
 
 // tells if file size is less than 10mb, if it returns true then we have hit the upload limit
 export const uploadFileLimit = (size: number): boolean =>
-  !(Number.parseFloat((size / (1_024 * 1_024)).toFixed(2)) < 10);
+  !(Number.parseFloat((size / (1024 * 1024)).toFixed(2)) < 10);
 
 // deletes a browser cookie
 export const delete_cookie = (name: string, document: Document) => {
@@ -327,7 +327,7 @@ export const delete_cookie = (name: string, document: Document) => {
 };
 
 // this function parses cookies that is to be sent in api calls
-export const apiCookieParser = (cookies: ArrayLike<unknown> | Partial<{ [key: string]: string }>) =>
+export const apiCookieParser = (cookies: ArrayLike<unknown> | Partial<Record<string, string>>) =>
   Object.entries(cookies)
     .map(([key, value]) => `${key}=${value}`)
     .join("; ");
@@ -397,11 +397,10 @@ export const getPathSegments = (path: string): string[] => (path || "").split("/
 export const getPreviewPathInfo = (
   path: string,
   previewText = "preview",
-): { isPreviewPath: boolean; previewId: string | null } => {
+): { isPreviewPath: boolean; previewId: null | string } => {
   const pathSegments = getPathSegments(path);
-  const isPreviewPath =
-    pathSegments.length >= 2 && pathSegments[pathSegments.length - 2] === previewText;
-  const previewId = isPreviewPath ? pathSegments[pathSegments.length - 1] : null;
+  const isPreviewPath = pathSegments.length >= 2 && pathSegments.at(-2) === previewText;
+  const previewId = isPreviewPath ? pathSegments.at(-1) : null;
 
   return { isPreviewPath, previewId };
 };
@@ -429,7 +428,7 @@ export const searchSlugKey = (categoryData: { data: CategoriesData[]; error: Pos
   // Special case: return undefined for 'everything' or 'search' routes
   // This matches the behavior of useGetCurrentCategoryId()/CATEGORY_ID
   if (categorySlug === EVERYTHING_URL || categorySlug === SEARCH_URL) {
-    return undefined;
+    return;
   }
 
   // If we found a matching category with a numeric ID, return the ID
@@ -450,40 +449,47 @@ export const getColumnCount = (isDesktop: boolean, colCount?: number) => {
   const firstColumn = colCount;
 
   switch (firstColumn) {
-    case 10:
+    case 10: {
       return 1;
-    case 20:
+    }
+    case 20: {
       return 2;
-    case 30:
+    }
+    case 30: {
       return 3;
-    case 40:
+    }
+    case 40: {
       return 4;
-    case 50:
+    }
+    case 50: {
       return 5;
-    case undefined:
+    }
+    case undefined: {
       return 2;
-    default:
+    }
+    default: {
       return 1;
+    }
   }
 };
 
 export const getBookmarkCountForCurrentPage = (
   bookmarkCounts:
     | {
-        categoryCount?: Array<{ category_id: number; count: number }>;
-        everything?: number;
-        trash?: number;
-        uncategorized?: number;
-        images?: number;
-        videos?: number;
-        documents?: number;
-        tweets?: number;
-        links?: number;
-        instagram?: number;
         audio?: number;
+        categoryCount?: { category_id: number; count: number }[];
+        documents?: number;
+        everything?: number;
+        images?: number;
+        instagram?: number;
+        links?: number;
+        trash?: number;
+        tweets?: number;
+        uncategorized?: number;
+        videos?: number;
       }
     | undefined,
-  categoryId: string | number | null,
+  categoryId: null | number | string,
 ): number => {
   if (!bookmarkCounts) {
     return 0;
@@ -497,32 +503,43 @@ export const getBookmarkCountForCurrentPage = (
 
   // Handle special category strings
   switch (categoryId) {
-    case null:
-      return bookmarkCounts.everything ?? 0;
-    case TRASH_URL:
-      return bookmarkCounts.trash ?? 0;
-    case UNCATEGORIZED_URL:
-      return bookmarkCounts.uncategorized ?? 0;
-    case IMAGES_URL as unknown as string:
-      return bookmarkCounts.images ?? 0;
-    case VIDEOS_URL as unknown as string:
-      return bookmarkCounts.videos ?? 0;
-    case DOCUMENTS_URL as unknown as string:
-      return bookmarkCounts.documents ?? 0;
-    case TWEETS_URL as unknown as string:
-      return bookmarkCounts.tweets ?? 0;
-    case LINKS_URL as unknown as string:
-      return bookmarkCounts.links ?? 0;
-    case INSTAGRAM_URL as unknown as string:
-      return bookmarkCounts.instagram ?? 0;
-    case AUDIO_URL as unknown as string:
+    case AUDIO_URL as unknown as string: {
       return bookmarkCounts.audio ?? 0;
-    default:
+    }
+    case DOCUMENTS_URL as unknown as string: {
+      return bookmarkCounts.documents ?? 0;
+    }
+    case IMAGES_URL as unknown as string: {
+      return bookmarkCounts.images ?? 0;
+    }
+    case INSTAGRAM_URL as unknown as string: {
+      return bookmarkCounts.instagram ?? 0;
+    }
+    case LINKS_URL as unknown as string: {
+      return bookmarkCounts.links ?? 0;
+    }
+    case null: {
+      return bookmarkCounts.everything ?? 0;
+    }
+    case TRASH_URL: {
+      return bookmarkCounts.trash ?? 0;
+    }
+    case TWEETS_URL as unknown as string: {
+      return bookmarkCounts.tweets ?? 0;
+    }
+    case UNCATEGORIZED_URL: {
+      return bookmarkCounts.uncategorized ?? 0;
+    }
+    case VIDEOS_URL as unknown as string: {
+      return bookmarkCounts.videos ?? 0;
+    }
+    default: {
       return 0;
+    }
   }
 };
 
-export const getNormalisedImageUrl = async (imageUrl: string | null, url: string) => {
+export const getNormalisedImageUrl = async (imageUrl: null | string, url: string) => {
   try {
     const { hostname } = new URL(url);
 
@@ -585,9 +602,9 @@ export const isUserCollaboratorInCategory = async (
   category_id: string,
   email: string,
 ): Promise<{
-  success: boolean;
-  isCollaborator: boolean;
   error?: PostgrestError;
+  isCollaborator: boolean;
+  success: boolean;
 }> => {
   const { data: sharedCategoryData, error: sharedCategoryError } = await supabase
     .from(SHARED_CATEGORIES_TABLE_NAME)
@@ -597,20 +614,20 @@ export const isUserCollaboratorInCategory = async (
 
   if (sharedCategoryError) {
     return {
-      success: false,
-      isCollaborator: false,
       error: sharedCategoryError,
+      isCollaborator: false,
+      success: false,
     };
   }
 
-  return { success: true, isCollaborator: !isEmpty(sharedCategoryData) };
+  return { isCollaborator: !isEmpty(sharedCategoryData), success: true };
 };
 
 export const checkIsUserOwnerOfCategory = async (
   supabase: SupabaseClient,
   category_id: string,
   userId: string,
-): Promise<{ success: boolean; isOwner: boolean; error?: PostgrestError }> => {
+): Promise<{ error?: PostgrestError; isOwner: boolean; success: boolean }> => {
   const { data: categoryData, error: categoryDataError } = await supabase
     .from(CATEGORIES_TABLE_NAME)
     .select("user_id")
@@ -618,19 +635,19 @@ export const checkIsUserOwnerOfCategory = async (
 
   if (categoryDataError) {
     return {
-      success: false,
-      isOwner: false,
       error: categoryDataError,
+      isOwner: false,
+      success: false,
     };
   }
 
-  return { success: true, isOwner: categoryData?.[0]?.user_id === userId };
+  return { isOwner: categoryData?.[0]?.user_id === userId, success: true };
 };
 
 const validateVideoSize = (
   response: Response,
   arrayBuffer: ArrayBuffer,
-): { isValid: boolean; error?: string } => {
+): { error?: string; isValid: boolean } => {
   // 1KB tolerance for size mismatch
   const SIZE_TOLERANCE_BYTES = 1024;
 
@@ -641,8 +658,8 @@ const validateVideoSize = (
     const sizeDiff = Math.abs(arrayBuffer.byteLength - expectedSize);
     if (sizeDiff > SIZE_TOLERANCE_BYTES) {
       return {
-        isValid: false,
         error: `Size mismatch: expected ${expectedSize}, got ${arrayBuffer.byteLength}`,
+        isValid: false,
       };
     }
   }
@@ -650,22 +667,22 @@ const validateVideoSize = (
   return { isValid: true };
 };
 
-type CollectVideoArgs = {
-  videoUrl: string | null;
+interface CollectVideoArgs {
   userId: string;
-};
+  videoUrl: null | string;
+}
 
-type CollectVideoErrorType = "timeout" | "size" | "upload" | "network" | "unknown";
+type CollectVideoErrorType = "network" | "size" | "timeout" | "unknown" | "upload";
 
 type CollectVideoResult =
   | {
-      success: true;
-      url: string | null;
-    }
-  | {
-      success: false;
       error: CollectVideoErrorType;
       message: string;
+      success: false;
+    }
+  | {
+      success: true;
+      url: null | string;
     };
 
 const getErrorTypeFromAbortSignal = (error: unknown): CollectVideoErrorType => {
@@ -673,8 +690,8 @@ const getErrorTypeFromAbortSignal = (error: unknown): CollectVideoErrorType => {
     return "unknown";
   }
 
-  const name = (error as Error).name;
-  const message = (error as Error).message.toLowerCase();
+  const { name } = error;
+  const message = error.message.toLowerCase();
 
   if (name === "AbortError" || name === "TimeoutError") {
     return "timeout";
@@ -694,7 +711,7 @@ const getErrorTypeFromAbortSignal = (error: unknown): CollectVideoErrorType => {
 
 // Domain allowlists matching helpers.server.ts validation
 // These are duplicated here to avoid importing server-only dependencies
-const ALLOWED_TWITTER_DOMAINS = ["video.twimg.com", "pbs.twimg.com"];
+const ALLOWED_TWITTER_DOMAINS = new Set(["pbs.twimg.com", "video.twimg.com"]);
 
 const ALLOWED_INSTAGRAM_DOMAINS = [".fbcdn.net", ".cdninstagram.com", ".instagram.com"];
 
@@ -707,7 +724,7 @@ const ALLOWED_INSTAGRAM_DOMAINS = [".fbcdn.net", ".cdninstagram.com", ".instagra
 export const isTwitterMediaUrl = (urlString: string): boolean => {
   try {
     const url = new URL(urlString);
-    return url.protocol === "https:" && ALLOWED_TWITTER_DOMAINS.includes(url.hostname);
+    return url.protocol === "https:" && ALLOWED_TWITTER_DOMAINS.has(url.hostname);
   } catch {
     return false;
   }
@@ -732,8 +749,8 @@ export const isInstagramMediaUrl = (urlString: string): boolean => {
 };
 
 export const collectVideo = async ({
-  videoUrl,
   userId,
+  videoUrl,
 }: CollectVideoArgs): Promise<CollectVideoResult> => {
   if (!videoUrl) {
     return {
@@ -751,15 +768,15 @@ export const collectVideo = async ({
         const message = "Invalid video URL scheme. Only http and https are allowed.";
 
         console.warn("[collectVideo] Invalid video URL:", {
-          videoUrl,
-          userId,
           protocol: parsedUrl.protocol,
+          userId,
+          videoUrl,
         });
 
         return {
-          success: false,
           error: "unknown",
           message,
+          success: false,
         };
       }
 
@@ -771,36 +788,36 @@ export const collectVideo = async ({
         const message = "Invalid video URL.";
 
         console.warn("[collectVideo] URL not allowlisted (must be Twitter or Instagram):", {
-          videoUrl,
           userId,
+          videoUrl,
         });
 
         return {
-          success: false,
           error: "unknown",
           message,
+          success: false,
         };
       }
 
       if (isTwitter || isInstagram) {
         console.log("[collectVideo] Detected social media URL:", {
-          videoUrl,
-          userId,
           platform: isTwitter ? "twitter" : "instagram",
+          userId,
+          videoUrl,
         });
       }
     } catch {
       const message = "Invalid video URL.";
 
       console.warn("[collectVideo] Failed to parse video URL:", {
-        videoUrl,
         userId,
+        videoUrl,
       });
 
       return {
-        success: false,
         error: "unknown",
         message,
+        success: false,
       };
     }
 
@@ -817,17 +834,17 @@ export const collectVideo = async ({
       const errorType = getErrorTypeFromAbortSignal(downloadError);
 
       console.warn("[collectVideo] Video download failed:", {
-        videoUrl,
         error: errorMessage,
         errorType,
         status: videoResponse?.status,
         userId,
+        videoUrl,
       });
 
       return {
-        success: false,
         error: errorType === "unknown" ? "network" : errorType,
         message: `Failed to download video: ${errorMessage}`,
+        success: false,
       };
     }
 
@@ -838,17 +855,17 @@ export const collectVideo = async ({
     if (!normalizedContentType?.startsWith("video/")) {
       const error = `Invalid video content type: ${rawContentType || "missing"}`;
       console.warn("[collectVideo] Video validation failed:", {
-        videoUrl,
-        error,
-        validationType: "content-type",
         contentType: rawContentType,
+        error,
         userId,
+        validationType: "content-type",
+        videoUrl,
       });
 
       return {
-        success: false,
         error: "unknown",
         message: error,
+        success: false,
       };
     }
 
@@ -859,16 +876,16 @@ export const collectVideo = async ({
       if (size > MAX_VIDEO_SIZE_BYTES) {
         const error = `Video too large: ${size} bytes`;
         console.warn("[collectVideo] Video validation failed:", {
-          videoUrl,
           error,
-          validationType: "size",
           size,
           userId,
+          validationType: "size",
+          videoUrl,
         });
         return {
-          success: false,
           error: "size",
           message: error,
+          success: false,
         };
       }
     }
@@ -882,16 +899,16 @@ export const collectVideo = async ({
       const errorType = getErrorTypeFromAbortSignal(arrayBufferError);
 
       console.warn("[collectVideo] Failed to read video array buffer:", {
-        videoUrl,
         error: errorMessage,
         errorType,
         userId,
+        videoUrl,
       });
 
       return {
-        success: false,
         error: errorType,
         message: `Failed to get array buffer: ${errorMessage}`,
+        success: false,
       };
     }
 
@@ -899,15 +916,15 @@ export const collectVideo = async ({
     const validation = validateVideoSize(videoResponse, arrayBuffer);
     if (!validation.isValid) {
       console.warn("[collectVideo] Video validation failed:", {
-        videoUrl,
         error: validation.error,
-        validationType: "size-validation",
         userId,
+        validationType: "size-validation",
+        videoUrl,
       });
       return {
-        success: false,
         error: "size",
-        message: validation.error || "Validation failed",
+        message: validation.error ?? "Validation failed",
+        success: false,
       };
     }
 
@@ -915,16 +932,16 @@ export const collectVideo = async ({
     if (arrayBuffer.byteLength > MAX_VIDEO_SIZE_BYTES) {
       const error = `Video too large (post-download): ${arrayBuffer.byteLength} bytes`;
       console.warn("[collectVideo] Video validation failed:", {
-        videoUrl,
         error,
-        validationType: "size",
         size: arrayBuffer.byteLength,
         userId,
+        validationType: "size",
+        videoUrl,
       });
       return {
-        success: false,
         error: "size",
         message: error,
+        success: false,
       };
     }
 
@@ -936,28 +953,28 @@ export const collectVideo = async ({
       const message = uploadError instanceof Error ? uploadError.message : "Unknown upload error";
 
       console.warn("[collectVideo] Video upload to R2 failed:", {
-        videoUrl,
         error: message,
         userId,
+        videoUrl,
       });
 
       return {
-        success: false,
         error: "upload",
         message,
+        success: false,
       };
     }
 
     if (!uploadedUrl) {
       console.warn("[collectVideo] Video upload returned empty URL:", {
-        videoUrl,
         userId,
+        videoUrl,
       });
 
       return {
-        success: false,
         error: "upload",
         message: "Upload succeeded but returned empty URL",
+        success: false,
       };
     }
 
@@ -967,10 +984,10 @@ export const collectVideo = async ({
     };
   } catch (error) {
     console.warn("[collectVideo] Video upload failed:", {
+      error,
       operation: "collect_video",
       userId,
       videoUrl,
-      error,
     });
 
     const normalizedError =
@@ -979,27 +996,27 @@ export const collectVideo = async ({
         : new Error(typeof error === "string" ? error : JSON.stringify(error, null, 2));
 
     Sentry.captureException(normalizedError, {
+      extra: {
+        videoUrl,
+      },
       tags: {
         operation: "collect_video",
         userId,
       },
-      extra: {
-        videoUrl,
-      },
     });
 
     return {
-      success: false,
       error: "unknown",
       message: error instanceof Error ? error.message : "Unknown error in collectVideo",
+      success: false,
     };
   }
 };
 
-type CollectAdditionalImagesArgs = {
+interface CollectAdditionalImagesArgs {
   allImages?: string[];
   userId: string;
-};
+}
 export const collectAdditionalImages = async ({
   allImages,
   userId,
@@ -1011,46 +1028,46 @@ export const collectAdditionalImages = async ({
   const settledImages = await Promise.allSettled(
     allImages.map(async (b64buffer) => {
       const base64 = Buffer.from(b64buffer, "binary").toString("base64");
-      return await upload(base64, userId);
+      return upload(base64, userId);
     }),
   );
 
   const failedUploads = settledImages
-    .map((result, index) => ({ result, index }))
+    .map((result, index) => ({ index, result }))
     .filter(
       ({ result }) =>
         result.status === "rejected" || (result.status === "fulfilled" && result.value === null),
-    ) as Array<{
-    result: PromiseRejectedResult | PromiseFulfilledResult<string | null>;
+    ) as {
     index: number;
-  }>;
+    result: PromiseFulfilledResult<null | string> | PromiseRejectedResult;
+  }[];
 
   if (failedUploads.length > 0) {
-    for (const { result, index } of failedUploads) {
+    for (const { index, result } of failedUploads) {
       const error =
         result.status === "rejected" ? result.reason : new Error("Image upload returned null URL");
 
       console.warn("collectAdditionalImages upload failed:", {
+        error,
+        imageIndex: index,
         operation: "collect_additional_images",
         userId,
-        imageIndex: index,
-        error,
       });
 
       Sentry.addBreadcrumb({
         category: "image-upload",
-        message: `Image ${index} failed`,
-        level: "warning",
         data: {
-          index,
-          userId,
           error:
             error instanceof Error
               ? error.message
               : typeof error === "string"
                 ? error
                 : "Unknown error",
+          index,
+          userId,
         },
+        level: "warning",
+        message: `Image ${index} failed`,
       });
     }
 
@@ -1060,14 +1077,14 @@ export const collectAdditionalImages = async ({
     ).length;
 
     Sentry.captureException(new Error("Image uploads failed"), {
+      extra: {
+        failureCount: failedUploads.length,
+        successCount: successfulUploadsCount,
+        totalImages: settledImages.length,
+      },
       tags: {
         operation: "collect_additional_images",
         userId,
-      },
-      extra: {
-        totalImages: settledImages.length,
-        successCount: successfulUploadsCount,
-        failureCount: failedUploads.length,
       },
     });
   }

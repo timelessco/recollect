@@ -8,14 +8,11 @@ import { RemoveTagFromBookmarkPayloadSchema, RemoveTagFromBookmarkResponseSchema
 const ROUTE = "remove-tag-from-bookmark";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: RemoveTagFromBookmarkPayloadSchema,
-  outputSchema: RemoveTagFromBookmarkResponseSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const { bookmarkId, tagId } = data;
     const userId = user.id;
 
-    console.log(`[${route}] API called:`, { userId, bookmarkId, tagId });
+    console.log(`[${route}] API called:`, { bookmarkId, tagId, userId });
 
     // Verify bookmark and tag ownership in parallel
     const [bookmarkResult, tagResult] = await Promise.all([
@@ -28,41 +25,41 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (bookmarkError) {
       return apiError({
-        route,
-        message: "Error verifying bookmark ownership",
         error: bookmarkError,
-        operation: "verify_bookmark_owner",
-        userId,
         extra: { bookmarkId },
+        message: "Error verifying bookmark ownership",
+        operation: "verify_bookmark_owner",
+        route,
+        userId,
       });
     }
 
     if (bookmarkData?.user_id !== userId) {
       return apiWarn({
-        route,
-        message: "User is not the owner of the bookmark",
-        status: 403,
         context: { bookmarkId, userId },
+        message: "User is not the owner of the bookmark",
+        route,
+        status: 403,
       });
     }
 
     if (tagError) {
       return apiError({
-        route,
-        message: "Error verifying tag ownership",
         error: tagError,
-        operation: "verify_tag_owner",
-        userId,
         extra: { tagId },
+        message: "Error verifying tag ownership",
+        operation: "verify_tag_owner",
+        route,
+        userId,
       });
     }
 
     if (tagData?.user_id !== userId) {
       return apiWarn({
-        route,
-        message: "User is not the owner of the tag",
-        status: 403,
         context: { tagId, userId },
+        message: "User is not the owner of the tag",
+        route,
+        status: 403,
       });
     }
 
@@ -76,30 +73,33 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (error) {
       return apiError({
-        route,
-        message: "Error removing tag from bookmark",
         error,
-        operation: "delete_bookmark_tag",
-        userId,
         extra: { bookmarkId, tagId },
+        message: "Error removing tag from bookmark",
+        operation: "delete_bookmark_tag",
+        route,
+        userId,
       });
     }
 
     if (!isNonEmptyArray(deletedData)) {
       return apiWarn({
-        route,
-        message: "Tag was not assigned to this bookmark",
-        status: 404,
         context: { bookmarkId, tagId, userId },
+        message: "Tag was not assigned to this bookmark",
+        route,
+        status: 404,
       });
     }
 
     console.log(`[${route}] Tag removed from bookmark:`, {
-      id: deletedData[0].id,
       bookmarkId,
+      id: deletedData[0].id,
       tagId,
     });
 
     return deletedData;
   },
+  inputSchema: RemoveTagFromBookmarkPayloadSchema,
+  outputSchema: RemoveTagFromBookmarkResponseSchema,
+  route: ROUTE,
 });

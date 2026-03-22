@@ -1,4 +1,4 @@
-import { type Metadata } from "next";
+import type { Metadata } from "next";
 
 import { buttonBaseClasses } from "@/components/ui/recollect/button";
 import { Link } from "@/components/ui/recollect/link";

@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import type { CategoriesData } from "../../../types/apiTypes";
+
 import { useSupabaseSession } from "../../../store/componentStore";
-import { type CategoriesData } from "../../../types/apiTypes";
 import {
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,

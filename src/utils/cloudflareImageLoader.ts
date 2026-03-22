@@ -3,16 +3,16 @@ import { CF_IMAGE_LOADER_URL } from "./constants";
 const normalizeImagePath = (imagePath: string): string =>
   imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
 
-type CloudflareImageLoaderProps = {
+interface CloudflareImageLoaderProps {
   quality?: number;
   src: string;
   width: number;
-};
+}
 
 export default function cloudflareImageLoader({
+  quality,
   src,
   width,
-  quality,
 }: CloudflareImageLoaderProps): string {
   if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") {
     return src;

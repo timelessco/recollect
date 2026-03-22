@@ -6,11 +6,6 @@
   "postUpdateOptions": ["pnpmDedupe"],
   "packageRules": [
     {
-      "matchPackageNames": ["eslint", "@eslint/js"],
-      "allowedVersions": "< 10.0.0",
-      "description": "Blocked until eslint-config-canonical and its transitive plugins ship ESLint 10 support"
-    },
-    {
       "matchPackageNames": ["@release-it/conventional-changelog"],
       "allowedVersions": "< 10.0.0",
       "description": "v10.x has a bug where bumper.loadPreset() is not awaited, causing 'whatBump is not a function' - https://github.com/release-it/conventional-changelog/issues/107"

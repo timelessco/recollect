@@ -1,12 +1,14 @@
 import { useRouter } from "next/router";
 
 import { useMediaQuery } from "@react-hookz/web";
-import { createModule, useLightboxState, type Plugin } from "yet-another-react-lightbox";
+import { createModule, useLightboxState } from "yet-another-react-lightbox";
+
+import type { CustomSlide } from "./LightboxUtils";
+import type { Plugin } from "yet-another-react-lightbox";
 
 import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
 import { Spinner } from "../spinner";
 import { DesktopSidepane } from "./desktop-sidepane";
-import { type CustomSlide } from "./LightboxUtils";
 import { MobileBottomSheet } from "./mobile-bottom-sheet";
 
 const MyComponent = () => {

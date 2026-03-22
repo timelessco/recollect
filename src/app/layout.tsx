@@ -1,6 +1,6 @@
 import "@/styles/globals.css";
 
-import { type Metadata, type Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 
 import { Providers } from "@/components/providers";
 import { AnalyticsScript } from "@/components/scripts/analytics-script";
@@ -10,18 +10,18 @@ import { TailwindIndicator } from "@/components/ui/recollect/tailwind-indicator"
 import { ToastSetup } from "@/components/ui/recollect/toast";
 import { rootMetaData, rootViewport } from "@/utils/metadata-utils";
 
-type RootLayoutProps = {
+interface RootLayoutProps {
   readonly children: React.ReactNode;
-};
+}
 
 export default async function RootLayout(props: RootLayoutProps) {
   const { children } = props;
 
   return (
     <html
-      lang="en"
-      dir="ltr"
       className="antialiased inter-display optimize-legibility"
+      dir="ltr"
+      lang="en"
       suppressHydrationWarning
     >
       <body className="overflow-x-hidden bg-gray-0 outline-hidden">

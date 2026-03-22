@@ -207,7 +207,7 @@ export class Res<T> extends Array {
  * @see https://github.com/asleepace/try
  */
 
-// eslint-disable-next-line unicorn/no-static-only-class, @typescript-eslint/no-extraneous-class
+// oxlint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Try {
   /**
    * Simple error handling utility which will invoke the provided function and
@@ -235,11 +235,7 @@ export class Try {
     try {
       const output = fn();
       return output instanceof Promise
-        ? output
-            // eslint-disable-next-line promise/prefer-await-to-then
-            .then((value) => Res.ok(value))
-            // eslint-disable-next-line promise/prefer-await-to-then
-            .catch((error: unknown) => Res.err(error))
+        ? output.then((value) => Res.ok(value)).catch((error: unknown) => Res.err(error))
         : Res.ok(output);
     } catch (error) {
       return Res.err(error);

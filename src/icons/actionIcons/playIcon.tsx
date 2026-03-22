@@ -1,4 +1,4 @@
-import { type PointerEvent } from "react";
+import type { PointerEvent } from "react";
 
 const PlayIcon = ({
   className,
@@ -9,6 +9,7 @@ const PlayIcon = ({
   onClick?: () => void;
   onPointerDown?: (event: PointerEvent) => void;
 }) => (
+  // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
   <svg
     className={className}
     fill="none"

@@ -1,12 +1,13 @@
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
-import { type PostgrestError } from "@supabase/supabase-js";
-import { type VerifyErrors } from "jsonwebtoken";
 import isEmpty from "lodash/isEmpty";
 import { z } from "zod";
 
-import { type SingleListData } from "../../../types/apiTypes";
+import type { SingleListData } from "../../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { VerifyErrors } from "jsonwebtoken";
+
 import { getBookmarkMediaCategoryPredicate } from "../../../utils/bookmark-category-filters";
 import {
   bookmarkType,
@@ -30,17 +31,17 @@ import {
 } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
-type DataResponse = SingleListData[] | null;
-type ErrorResponse = PostgrestError | VerifyErrors | { message: string } | null;
+type DataResponse = null | SingleListData[];
+type ErrorResponse = { message: string } | null | PostgrestError | VerifyErrors;
 
-type Data = {
+interface Data {
   data: DataResponse;
   error: ErrorResponse;
-};
+}
 
 const querySchema = z.object({
-  search: z.string().min(1, "Search parameter is required"),
   category_id: z.string().optional(),
+  search: z.string().min(1, "Search parameter is required"),
 });
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse<Data>) {
@@ -60,7 +61,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     const supabase = apiSupabaseClient(request, response);
 
-    const { search, category_id } = parseResult.data;
+    const { category_id, search } = parseResult.data;
 
     const isDiscoverPage = category_id === DISCOVER_URL;
 
@@ -71,7 +72,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
     if (!isDiscoverPage) {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       user_id = userData?.user?.id;
-      email = userData?.user?.email as string;
+      email = userData?.user?.email!;
 
       if (userError || !user_id) {
         console.warn("[search-bookmarks] Missing user_id from Supabase auth");
@@ -88,9 +89,9 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     console.log("[search-bookmarks] API called:", {
       category_id,
-      rawSearch: search,
-      offset,
       limit,
+      offset,
+      rawSearch: search,
     });
 
     const matchedSiteScope = search.match(GET_SITE_SCOPE_PATTERN);
@@ -105,7 +106,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     // Determine category_scope for junction table filtering
     // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
-    const userInCollections = isUserInACategoryInApi(category_id as string, false);
+    const userInCollections = isUserInACategoryInApi(category_id!, false);
     const categoryScope = userInCollections
       ? category_id === UNCATEGORIZED_URL
         ? 0
@@ -113,19 +114,19 @@ export default async function handler(request: NextApiRequest, response: NextApi
       : null;
 
     console.log("[search-bookmarks] Parsed search parameters:", {
-      urlScope,
+      categoryScope,
       searchText,
       tagName,
-      categoryScope,
+      urlScope,
     });
 
     const isTrashPage = category_id === TRASH_URL;
     let query = supabase
       .rpc("search_bookmarks_url_tag_scope", {
-        search_text: searchText,
-        url_scope: urlScope,
-        tag_scope: tagName,
         category_scope: isDiscoverPage ? null : categoryScope,
+        search_text: searchText,
+        tag_scope: tagName,
+        url_scope: urlScope,
       })
       .range(offset, offset + limit - 1);
 
@@ -139,8 +140,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
     if (isDiscoverPage) {
       query = query.not("make_discoverable", "is", null);
     } else {
-      const userId = user_id as string;
-      const userEmail = email as string;
+      const userId = user_id!;
+      const userEmail = email!;
 
       if (!userInCollections) {
         query = query.eq("user_id", userId);
@@ -149,10 +150,10 @@ export default async function handler(request: NextApiRequest, response: NextApi
       if (userInCollections) {
         // check if user is a collaborator for the category
         const {
-          success: isUserCollaboratorInCategorySuccess,
-          isCollaborator: isUserCollaboratorInCategoryValue,
           error: isUserCollaboratorInCategoryError,
-        } = await isUserCollaboratorInCategory(supabase, category_id as string, userEmail);
+          isCollaborator: isUserCollaboratorInCategoryValue,
+          success: isUserCollaboratorInCategorySuccess,
+        } = await isUserCollaboratorInCategory(supabase, category_id!, userEmail);
 
         if (!isUserCollaboratorInCategorySuccess) {
           console.error(
@@ -160,13 +161,13 @@ export default async function handler(request: NextApiRequest, response: NextApi
             isUserCollaboratorInCategoryError,
           );
           Sentry.captureException(isUserCollaboratorInCategoryError, {
+            extra: { category_id },
             tags: {
               operation: "check_user_collaborator_of_category",
             },
-            extra: { category_id },
             user: {
-              id: userId,
               email: userEmail,
+              id: userId,
             },
           });
           response.status(500).json({
@@ -180,10 +181,10 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
         // check if user is the owner of the category
         const {
-          success: isUserOwnerOfCategorySuccess,
-          isOwner: isUserOwnerOfCategory,
           error: isUserOwnerOfCategoryError,
-        } = await checkIsUserOwnerOfCategory(supabase, category_id as string, userId);
+          isOwner: isUserOwnerOfCategory,
+          success: isUserOwnerOfCategorySuccess,
+        } = await checkIsUserOwnerOfCategory(supabase, category_id!, userId);
 
         if (!isUserOwnerOfCategorySuccess) {
           console.error(
@@ -191,13 +192,13 @@ export default async function handler(request: NextApiRequest, response: NextApi
             isUserOwnerOfCategoryError,
           );
           Sentry.captureException(isUserOwnerOfCategoryError, {
+            extra: { category_id },
             tags: {
               operation: "check_user_owner_of_category",
             },
-            extra: { category_id },
             user: {
-              id: userId,
               email: userEmail,
+              id: userId,
             },
           });
           response.status(500).json({
@@ -245,18 +246,18 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     if (error) {
       console.error("[search-bookmarks] Error executing search query:", {
-        error,
         category_id,
+        error,
         rawSearch: search,
-        urlScope,
         tagName,
+        urlScope,
       });
       Sentry.captureException(error, {
+        extra: { category_id, rawSearch: search },
         tags: {
           operation: "search_bookmarks",
           userId: user_id ?? "discover_page",
         },
-        extra: { category_id, rawSearch: search },
       });
       response.status(500).json({
         data: null,
@@ -275,25 +276,25 @@ export default async function handler(request: NextApiRequest, response: NextApi
     }
 
     console.log("[search-bookmarks] Search query succeeded:", {
-      resultsCount: data?.length ?? 0,
       category_id,
       hasTagFilter: !isEmpty(tagName),
+      resultsCount: data?.length ?? 0,
     });
 
     const finalData = (data ?? []).map((item) => {
       const {
-        ogimage,
-        added_tags: addedTags,
         added_categories: addedCategories,
+        added_tags: addedTags,
+        ogimage,
         ...rest
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
       } = item as any;
 
       return {
         ...(rest as SingleListData),
-        ogImage: ogimage,
-        addedTags,
         addedCategories,
+        addedTags,
+        ogImage: ogimage,
       };
     }) as SingleListData[];
 

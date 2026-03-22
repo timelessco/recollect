@@ -1,13 +1,14 @@
 import { produce } from "immer";
 
-import {
-  type CreateAndAssignTagPayload,
-  type CreateAndAssignTagResponse,
+import type {
+  CreateAndAssignTagPayload,
+  CreateAndAssignTagResponse,
 } from "@/app/api/tags/create-and-assign-tag/schema";
+import type { PaginatedBookmarks, TempTag, UserTagsData } from "@/types/apiTypes";
+
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
-import { type PaginatedBookmarks, type TempTag, type UserTagsData } from "@/types/apiTypes";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import { BOOKMARKS_KEY, CREATE_AND_ASSIGN_TAG_API, USER_TAGS_KEY } from "@/utils/constants";
 import {
@@ -38,7 +39,7 @@ type InternalPayload = CreateAndAssignTagPayload & {
  * Uses PostgreSQL RPC function for transaction safety.
  */
 export function useCreateAndAssignTagOptimisticMutation() {
-  const { queryClient, session, queryKey, searchQueryKey } = useBookmarkMutationContext();
+  const { queryClient, queryKey, searchQueryKey, session } = useBookmarkMutationContext();
 
   const baseMutation = useReactQueryOptimisticMutation<
     CreateAndAssignTagResponse,
@@ -47,27 +48,6 @@ export function useCreateAndAssignTagOptimisticMutation() {
     typeof queryKey,
     PaginatedBookmarks
   >({
-    mutationFn: (payload) =>
-      postApi<CreateAndAssignTagResponse>(`/api${CREATE_AND_ASSIGN_TAG_API}`, payload),
-    queryKey,
-    secondaryQueryKey: searchQueryKey,
-
-    updater: (currentData, variables) => {
-      if (!currentData?.pages) {
-        return currentData as PaginatedBookmarks;
-      }
-
-      return (
-        updateBookmarkInPaginatedData(currentData, variables.bookmarkId, (bookmark) => {
-          const tempTag: TempTag = {
-            id: variables._tempId,
-            name: variables.name,
-          };
-          bookmark.addedTags = [...(bookmark.addedTags || []), tempTag];
-        }) ?? currentData
-      );
-    },
-
     // Additional optimistic updates for user tags cache
     additionalOptimisticUpdates: [
       // User tags cache
@@ -98,7 +78,8 @@ export function useCreateAndAssignTagOptimisticMutation() {
         },
       },
     ],
-
+    mutationFn: (payload) =>
+      postApi<CreateAndAssignTagResponse>(`/api${CREATE_AND_ASSIGN_TAG_API}`, payload),
     onSettled: (data, error, variables) => {
       if (error || !data) {
         return;
@@ -128,10 +109,10 @@ export function useCreateAndAssignTagOptimisticMutation() {
         [USER_TAGS_KEY, session?.user?.id],
         (current) =>
           swapTempTagInUserTagsCache(current, tempId, {
+            created_at: realTag.created_at ?? undefined,
             id: realTag.id,
             name: realTag.name,
             user_id: realTag.user_id ?? undefined,
-            created_at: realTag.created_at ?? undefined,
           }),
       );
 
@@ -143,8 +124,28 @@ export function useCreateAndAssignTagOptimisticMutation() {
       });
     },
 
+    queryKey,
+
+    secondaryQueryKey: searchQueryKey,
+
     showSuccessToast: true,
+
     successMessage: "Tag created",
+    updater: (currentData, variables) => {
+      if (!currentData?.pages) {
+        return currentData!;
+      }
+
+      return (
+        updateBookmarkInPaginatedData(currentData, variables.bookmarkId, (bookmark) => {
+          const tempTag: TempTag = {
+            id: variables._tempId,
+            name: variables.name,
+          };
+          bookmark.addedTags = [...(bookmark.addedTags || []), tempTag];
+        }) ?? currentData
+      );
+    },
   });
 
   // Wrap mutation to ensure _tempId is generated once before any lifecycle hook runs

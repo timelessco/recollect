@@ -6,16 +6,16 @@ import { isEmpty, isNil } from "lodash";
 import { DefaultUserIcon } from "../icons/user/defaultUserIcon";
 import { defaultBlur } from "../utils/constants";
 
-type UserAvatarTypes = {
+interface UserAvatarTypes {
   alt: string;
   className: string;
   height: number;
   src: string;
   width: number;
-};
+}
 
 const UserAvatar = (props: UserAvatarTypes) => {
-  const { alt, src, className, width, height } = props;
+  const { alt, className, height, src, width } = props;
   const [showPlaceholder, setShowPlaceholder] = useState(true);
 
   if (isNil(src) || isEmpty(src)) {
@@ -34,8 +34,12 @@ const UserAvatar = (props: UserAvatarTypes) => {
         blurDataURL={defaultBlur}
         className={className}
         height={height}
-        onError={() => setShowPlaceholder(true)}
-        onLoad={() => setShowPlaceholder(false)}
+        onError={() => {
+          setShowPlaceholder(true);
+        }}
+        onLoad={() => {
+          setShowPlaceholder(false);
+        }}
         src={src}
         width={width}
       />

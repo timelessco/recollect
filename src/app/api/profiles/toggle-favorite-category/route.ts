@@ -1,4 +1,4 @@
-import { type z } from "zod";
+import type { z } from "zod";
 
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
@@ -15,10 +15,7 @@ export type ToggleFavoriteCategoryPayload = z.infer<typeof ToggleFavoriteCategor
 export type ToggleFavoriteCategoryResponse = z.infer<typeof ToggleFavoriteCategoryResponseSchema>;
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: ToggleFavoriteCategoryPayloadSchema,
-  outputSchema: ToggleFavoriteCategoryResponseSchema,
-  handler: async ({ data, supabase, user, route }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const { category_id } = data;
 
     const { data: rows, error: rpcError } = await supabase.rpc("toggle_favorite_category", {
@@ -27,12 +24,12 @@ export const POST = createPostApiHandlerWithAuth({
 
     if (rpcError) {
       return apiError({
-        route,
-        message: "Failed to toggle favorite category",
         error: rpcError,
-        operation: "rpc_toggle_favorite_category",
-        userId: user.id,
         extra: { category_id },
+        message: "Failed to toggle favorite category",
+        operation: "rpc_toggle_favorite_category",
+        route,
+        userId: user.id,
       });
     }
 
@@ -40,18 +37,21 @@ export const POST = createPostApiHandlerWithAuth({
     if (!row?.out_id) {
       const err = new Error("RPC returned no profile");
       return apiError({
-        route,
-        message: "RPC returned no profile",
         error: err,
-        operation: "rpc_toggle_favorite_category",
-        userId: user.id,
         extra: { category_id },
+        message: "RPC returned no profile",
+        operation: "rpc_toggle_favorite_category",
+        route,
+        userId: user.id,
       });
     }
 
     return {
-      id: row.out_id,
       favorite_categories: row.out_favorite_categories,
+      id: row.out_id,
     };
   },
+  inputSchema: ToggleFavoriteCategoryPayloadSchema,
+  outputSchema: ToggleFavoriteCategoryResponseSchema,
+  route: ROUTE,
 });

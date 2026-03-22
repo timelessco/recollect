@@ -1,13 +1,14 @@
 import { produce } from "immer";
 
-import {
-  type AddCategoryToBookmarkPayload,
-  type AddCategoryToBookmarkResponse,
+import type {
+  AddCategoryToBookmarkPayload,
+  AddCategoryToBookmarkResponse,
 } from "@/app/api/category/add-category-to-bookmark/schema";
+import type { CategoriesData, PaginatedBookmarks } from "@/types/apiTypes";
+
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
-import { type CategoriesData, type PaginatedBookmarks } from "@/types/apiTypes";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
   ADD_CATEGORY_TO_BOOKMARK_API,
@@ -18,9 +19,9 @@ import {
 } from "@/utils/constants";
 import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
 
-type AddCategoryMutationOptions = {
+interface AddCategoryMutationOptions {
   skipInvalidation?: boolean;
-};
+}
 
 /**
  * Mutation hook for adding a single category to a bookmark.
@@ -30,7 +31,7 @@ type AddCategoryMutationOptions = {
 export function useAddCategoryToBookmarkOptimisticMutation({
   skipInvalidation = false,
 }: AddCategoryMutationOptions = {}) {
-  const { queryClient, session, queryKey, searchQueryKey } = useBookmarkMutationContext();
+  const { queryClient, queryKey, searchQueryKey, session } = useBookmarkMutationContext();
 
   const addCategoryToBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
     AddCategoryToBookmarkResponse,
@@ -39,75 +40,20 @@ export function useAddCategoryToBookmarkOptimisticMutation({
     typeof queryKey,
     PaginatedBookmarks
   >({
-    mutationFn: (payload) =>
-      postApi<AddCategoryToBookmarkResponse>(`/api${ADD_CATEGORY_TO_BOOKMARK_API}`, payload),
-    queryKey,
-    secondaryQueryKey: searchQueryKey,
-    skipSecondaryInvalidation: skipInvalidation,
-
-    updater: (currentData, variables) => {
-      if (!currentData?.pages) {
-        return currentData as PaginatedBookmarks;
-      }
-
-      // Resolve category from cache - skip optimistic update if not found
-      const allCategories =
-        (
-          queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]) as
-            | { data: CategoriesData[] }
-            | undefined
-        )?.data ?? [];
-      const newCategoryEntry = allCategories.find((cat) => cat.id === variables.category_id);
-
-      // If category not in cache, skip optimistic update and wait for server response
-      if (!newCategoryEntry) {
-        logCacheMiss("Optimistic Update", "Category not found in cache", {
-          bookmarkId: variables.bookmark_id,
-          categoryId: variables.category_id,
-        });
-        return currentData;
-      }
-
-      return (
-        updateBookmarkInPaginatedData(currentData, variables.bookmark_id, (bookmark) => {
-          // Check for duplicates
-          const existingCategories = bookmark.addedCategories ?? [];
-          const alreadyHasCategory = existingCategories.some(
-            (cat) => cat.id === variables.category_id,
-          );
-          if (alreadyHasCategory) {
-            return;
-          }
-
-          // EXCLUSIVE MODEL: When adding a real category, filter out category 0
-          const isAddingRealCategory = variables.category_id !== UNCATEGORIZED_CATEGORY_ID;
-          const filteredCategories = isAddingRealCategory
-            ? existingCategories.filter((cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID)
-            : existingCategories;
-
-          bookmark.addedCategories = [...filteredCategories, newCategoryEntry];
-        }) ?? currentData
-      );
-    },
-
     // Additional optimistic update for single bookmark cache (preview route support)
     additionalOptimisticUpdates: [
       {
         getQueryKey: (variables) => [BOOKMARKS_KEY, String(variables.bookmark_id)],
         updater: (currentData, variables) => {
           const data = currentData as
-            | { data: Array<{ addedCategories?: CategoriesData[] }> }
+            | { data: { addedCategories?: CategoriesData[] }[] }
             | undefined;
           if (!data?.data?.[0]) {
             return currentData;
           }
 
           const allCategories =
-            (
-              queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]) as
-                | { data: CategoriesData[] }
-                | undefined
-            )?.data ?? [];
+            queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])?.data ?? [];
           const newCategoryEntry = allCategories.find((cat) => cat.id === variables.category_id);
 
           // If category not in cache, skip update
@@ -143,7 +89,8 @@ export function useAddCategoryToBookmarkOptimisticMutation({
         },
       },
     ],
-
+    mutationFn: (payload) =>
+      postApi<AddCategoryToBookmarkResponse>(`/api${ADD_CATEGORY_TO_BOOKMARK_API}`, payload),
     onSettled: (_data, error) => {
       if (error || skipInvalidation) {
         return;
@@ -159,7 +106,53 @@ export function useAddCategoryToBookmarkOptimisticMutation({
         queryKey: [BOOKMARKS_KEY, session?.user?.id],
       });
     },
+    queryKey,
+
+    secondaryQueryKey: searchQueryKey,
+
     showSuccessToast: false,
+
+    skipSecondaryInvalidation: skipInvalidation,
+    updater: (currentData, variables) => {
+      if (!currentData?.pages) {
+        return currentData!;
+      }
+
+      // Resolve category from cache - skip optimistic update if not found
+      const allCategories =
+        queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id])?.data ?? [];
+      const newCategoryEntry = allCategories.find((cat) => cat.id === variables.category_id);
+
+      // If category not in cache, skip optimistic update and wait for server response
+      if (!newCategoryEntry) {
+        logCacheMiss("Optimistic Update", "Category not found in cache", {
+          bookmarkId: variables.bookmark_id,
+          categoryId: variables.category_id,
+        });
+        return currentData;
+      }
+
+      return (
+        updateBookmarkInPaginatedData(currentData, variables.bookmark_id, (bookmark) => {
+          // Check for duplicates
+          const existingCategories = bookmark.addedCategories ?? [];
+          const alreadyHasCategory = existingCategories.some(
+            (cat) => cat.id === variables.category_id,
+          );
+          if (alreadyHasCategory) {
+            return;
+          }
+
+          // EXCLUSIVE MODEL: When adding a real category, filter out category 0
+          const isAddingRealCategory = variables.category_id !== UNCATEGORIZED_CATEGORY_ID;
+          const filteredCategories = isAddingRealCategory
+            ? existingCategories.filter((cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID)
+            : existingCategories;
+
+          bookmark.addedCategories = [...filteredCategories, newCategoryEntry];
+        }) ?? currentData
+      );
+    },
   });
 
   return { addCategoryToBookmarkOptimisticMutation };

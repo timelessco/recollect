@@ -7,18 +7,15 @@ import { IphoneShareErrorPayloadSchema, IphoneShareErrorResponseSchema } from ".
 const ROUTE = "iphone-share-error";
 
 export const POST = createPostApiHandlerWithAuth({
-  route: ROUTE,
-  inputSchema: IphoneShareErrorPayloadSchema,
-  outputSchema: IphoneShareErrorResponseSchema,
-  handler: async ({ data, user, route }) => {
-    const { message, stackTrace, deviceInfo, context } = data;
+  handler: ({ data, route, user }) => {
+    const { context, deviceInfo, message, stackTrace } = data;
     const userId = user.id;
 
     console.log(`[${route}] Error received:`, {
-      userId,
-      message,
-      hasStackTrace: Boolean(stackTrace),
       deviceModel: deviceInfo?.model,
+      hasStackTrace: Boolean(stackTrace),
+      message,
+      userId,
     });
 
     const errorToCapture = new Error(message);
@@ -27,16 +24,16 @@ export const POST = createPostApiHandlerWithAuth({
     }
 
     const sentryEventId = Sentry.captureException(errorToCapture, {
-      tags: {
-        operation: "iphone_share_intent_error",
-        userId,
-        device_model: deviceInfo?.model,
-        os_version: deviceInfo?.osVersion,
-      },
       extra: {
+        action: context?.action,
         appVersion: deviceInfo?.appVersion,
         screen: context?.screen,
-        action: context?.action,
+      },
+      tags: {
+        device_model: deviceInfo?.model,
+        operation: "iphone_share_intent_error",
+        os_version: deviceInfo?.osVersion,
+        userId,
       },
     });
 
@@ -47,4 +44,7 @@ export const POST = createPostApiHandlerWithAuth({
 
     return { sentryEventId };
   },
+  inputSchema: IphoneShareErrorPayloadSchema,
+  outputSchema: IphoneShareErrorResponseSchema,
+  route: ROUTE,
 });

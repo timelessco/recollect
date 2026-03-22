@@ -18,8 +18,8 @@ export function logCacheMiss(
 
   Sentry.addBreadcrumb({
     category: context.toLowerCase().replaceAll(/\s+/gu, "-"),
-    message,
-    level: "warning",
     data,
+    level: "warning",
+    message,
   });
 }

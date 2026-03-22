@@ -7,6 +7,30 @@ export default {
 
   // Add your own rules here
   rules: {
+    // Add your own rules here
+    // tailwindcss
+    "at-rule-no-unknown": [
+      true,
+      {
+        ignoreAtRules: [
+          "tailwind",
+          "config",
+          "plugin",
+          "layer",
+          "theme",
+          "source",
+          "utility",
+          "variant",
+          "custom-variant",
+          "apply",
+          "reference",
+        ],
+      },
+    ],
+
+    // For Tailwind CSS
+    "import-notation": "string",
+
     /**
      * selector class pattern must match [BEM CSS](https://en.bem.info/methodology/css) - [Regex](https://regexr.com/3apms)
      */
@@ -31,29 +55,5 @@ export default {
     // 	},
     // ],
     "selector-class-pattern": null,
-
-    // For Tailwind CSS
-    "import-notation": "string",
-
-    // Add your own rules here
-    // tailwindcss
-    "at-rule-no-unknown": [
-      true,
-      {
-        ignoreAtRules: [
-          "tailwind",
-          "config",
-          "plugin",
-          "layer",
-          "theme",
-          "source",
-          "utility",
-          "variant",
-          "custom-variant",
-          "apply",
-          "reference",
-        ],
-      },
-    ],
   },
 };

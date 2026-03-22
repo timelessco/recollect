@@ -1,4 +1,4 @@
-import { type ApiResponse } from "./response";
+import type { ApiResponse } from "./response";
 
 const handleResponse = async <T>(response: Response): Promise<T> => {
   const json = (await response.json()) as ApiResponse<T>;
@@ -18,16 +18,16 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
 export const postApi = async <T>(
   url: string,
   body?: unknown,
-  options?: Omit<RequestInit, "method" | "body" | "headers">,
+  options?: Omit<RequestInit, "body" | "headers" | "method">,
 ): Promise<T> => {
   const response = await fetch(url, {
     ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
   });
 
-  return await handleResponse<T>(response);
+  return handleResponse<T>(response);
 };
 
 /**
@@ -38,5 +38,5 @@ export const postApi = async <T>(
 export const getApi = async <T>(url: string, options?: Omit<RequestInit, "method">): Promise<T> => {
   const response = await fetch(url, options ?? {});
 
-  return await handleResponse<T>(response);
+  return handleResponse<T>(response);
 };
