@@ -48,11 +48,11 @@
     "dev:scan": "next dev & react-scan localhost:3000",
     "dev:sourcemap": "cross-env SOURCEMAP=true pnpm dev",
     "dev:trace": "cross-env NEXT_TURBOPACK_TRACING=1 next dev",
-    "fix": "npx turbo fix:ultracite",
+    "fix": "turbo run fix:ultracite",
     "fix:css": "stylelint --fix --cache --ignore-path .gitignore --color -f verbose '**/*.css'",
     "fix:md": "markdownlint-cli2 --fix --rules sentences-per-line",
     "fix:ultracite": "ultracite fix",
-    "lint": "npx turbo lint:ultracite lint:knip lint:md lint:spelling lint:css",
+    "lint": "turbo run lint:ultracite lint:knip lint:md lint:spelling lint:css",
     "lint:css": "stylelint --cache --ignore-path .gitignore --color -f verbose '**/*.css'",
     "lint:knip": "knip --production",
     "lint:md": "markdownlint-cli2 --rules sentences-per-line",
@@ -199,8 +199,9 @@
     "ultracite": "7.3.2"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,cjs,mjs,json,jsonc}": [
-      "pnpm dlx ultracite fix"
+    "*": [
+      "pnpm exec oxfmt --write --no-error-on-unmatched-pattern",
+      "pnpm exec oxlint --fix"
     ]
   },
   "commitlint": {

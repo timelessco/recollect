@@ -26,18 +26,18 @@
     "test": {},
     "lint:ultracite": {},
     "lint:css": {
-      "inputs": ["**/*.css"],
+      "inputs": ["**/*.css", "stylelint.config.js"],
       "outputs": [".stylelintcache"]
     },
     "lint:md": {
-      "inputs": ["**/*.md", ".github/**/*.md"]
+      "inputs": ["**/*.md", ".github/**/*.md", ".markdownlint-cli2.jsonc"]
     },
     "lint:spelling": {},
     "fix:md": {
-      "inputs": ["**/*.md", ".github/**/*.md"]
+      "inputs": ["**/*.md", ".github/**/*.md", ".markdownlint-cli2.jsonc"]
     },
     "fix:css": {
-      "inputs": ["**/*.css"],
+      "inputs": ["**/*.css", "stylelint.config.js"],
       "outputs": [".stylelintcache"]
     },
     "fix:ultracite": {

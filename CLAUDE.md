@@ -41,8 +41,7 @@ pnpm db:types             # Generate Supabase types from local schema
 
 ## Verification
 
-After changes, run in parallel:
+After changes, run in order:
 
-1. `pnpm fix` — auto-fix all quality issues
-2. `pnpm lint:knip` — detect unused code (especially after large changes)
-3. `pnpm build` — confirm build passes (non-trivial changes)
+1. `pnpm lint` — runs ALL quality checks in parallel (ultracite, types, knip, css, spelling, md)
+2. `pnpm build` — confirm build passes (non-trivial changes)

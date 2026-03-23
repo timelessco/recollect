@@ -11,7 +11,7 @@ jobs:
       - uses: ./.github/actions/pnpm-install
 
       - name: Check for duplicated packages
-        run: pnpm turbo check:packages
+        run: pnpm turbo run check:packages
 
     timeout-minutes: 15
 
@@ -30,7 +30,7 @@ jobs:
       - uses: ./.github/actions/pnpm-install
 
       - name: Lint CSS
-        run: pnpm turbo lint:css
+        run: pnpm turbo run lint:css
 
     timeout-minutes: 15
 
@@ -54,7 +54,7 @@ jobs:
           SKIP_ENV_VALIDATION: "true"
 
       - name: Lint Ultracite
-        run: pnpm turbo lint:ultracite
+        run: pnpm turbo run lint:ultracite
 
     timeout-minutes: 15
 
@@ -73,7 +73,7 @@ jobs:
       - uses: ./.github/actions/pnpm-install
 
       - name: Lint Knip
-        run: pnpm turbo lint:knip
+        run: pnpm turbo run lint:knip
 
     timeout-minutes: 15
 
@@ -92,7 +92,7 @@ jobs:
       - uses: ./.github/actions/pnpm-install
 
       - name: Lint MD
-        run: pnpm turbo lint:md
+        run: pnpm turbo run lint:md
 
     timeout-minutes: 15
 
