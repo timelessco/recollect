@@ -47,9 +47,10 @@ export function BookmarkOgImage({
   const isAudio = isBookmarkAudio(post.type);
 
   const figureClassName = cn({
+    relative: isAudio || isVideo,
     "aspect-[1.8]": cardTypeCondition === viewValues.moodboard && img === undefined,
     "mr-3 h-[48px] w-[80px]": cardTypeCondition === viewValues.list,
-    "relative z-[-1]": isAudio || isVideo,
+    "z-[-1]": (isAudio || isVideo) && cardTypeCondition !== viewValues.list,
     "w-full rounded-lg shadow-custom-8 group-hover:rounded-b-none":
       cardTypeCondition === viewValues.card || cardTypeCondition === viewValues.moodboard,
   });
