@@ -37,30 +37,28 @@ export function EmailToOtpForm() {
     // Clear errors on valid submission
     setErrors({});
 
-    startTransition(() => {
-      void (async () => {
-        try {
-          const { email } = result.data;
+    startTransition(async () => {
+      try {
+        const { email } = result.data;
 
-          const supabase = createClient();
-          const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-              emailRedirectTo: `${window.location.origin}/${EVERYTHING_URL}`,
-              shouldCreateUser: true,
-            },
-          });
+        const supabase = createClient();
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/${EVERYTHING_URL}`,
+            shouldCreateUser: true,
+          },
+        });
 
-          if (error) {
-            handleClientError(error, "Failed to send verification code");
-            return;
-          }
-
-          router.push(`/${OTP_URL}?email=${encodeURIComponent(email)}`);
-        } catch (error) {
+        if (error) {
           handleClientError(error, "Failed to send verification code");
+          return;
         }
-      })();
+
+        router.push(`/${OTP_URL}?email=${encodeURIComponent(email)}`);
+      } catch (error) {
+        handleClientError(error, "Failed to send verification code");
+      }
     });
   };
 
