@@ -63,7 +63,7 @@
     "lint:ultracite": "ultracite check",
     "next:typegen": "pnpm next typegen",
     "postbuild": "next-sitemap --config next-sitemap.config.cjs",
-    "prebuild:next": "tsx scripts/generate-openapi.ts",
+    "prebuild:next": "SKIP_ENV_VALIDATION=1 tsx scripts/generate-openapi.ts",
     "prepare": "is-ci || husky",
     "release": "release-it --ci",
     "release:cleanup": "./scripts/release-cleanup.sh",
