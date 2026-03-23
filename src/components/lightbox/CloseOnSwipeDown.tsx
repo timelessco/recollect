@@ -25,6 +25,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
   const pointerStartYRef = useRef(0);
   const isDraggingRef = useRef(false);
   const rafRef = useRef(0);
+  const activePointerIdRef = useRef<null | number>(null);
 
   // Velocity tracking for mobile flick-to-close
   // Stores a sample point ~80ms behind the current pointer for stable velocity calculation
@@ -38,8 +39,9 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
       };
     }
 
-    // Maximum pull distance = slide height
-    const maxOffset = slideRect?.height ?? 0;
+    // Cap pull distance at the close threshold, regardless of slide size.
+    // This guarantees users can always reach a closable distance on release.
+    const maxOffset = THRESHOLD;
 
     // Reset styles back to default (no offset, full opacity, normal scale)
     const reset = (element: HTMLElement) => {
@@ -85,7 +87,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
       applyOffset(element);
 
       // Close the lightbox if pull distance exceeds threshold
-      if (offsetRef.current > THRESHOLD) {
+      if (offsetRef.current >= THRESHOLD) {
         close();
         return;
       }
@@ -110,6 +112,13 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
     const unsubscribePointerDown = subscribeSensors("onPointerDown", (event) => {
       if (event.pointerType !== "touch" || isInteractiveTarget(event)) {
         return;
+      }
+
+      activePointerIdRef.current = event.pointerId;
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {
+        // Some browsers may throw if pointer capture isn't available; continue gracefully.
       }
 
       pointerStartYRef.current = event.clientY;
@@ -164,13 +173,6 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
         y: event.clientY,
       };
 
-      if (offsetRef.current > THRESHOLD) {
-        cancelAnimationFrame(rafRef.current);
-        isDraggingRef.current = false;
-        close();
-        return;
-      }
-
       // Batch style updates to next frame to prevent iOS jitter
       cancelAnimationFrame(rafRef.current);
       rafRef.current = requestAnimationFrame(() => {
@@ -188,6 +190,16 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
       }
 
       const element = event.currentTarget;
+      if (activePointerIdRef.current !== null) {
+        try {
+          element.releasePointerCapture(activePointerIdRef.current);
+        } catch {
+          // Ignore if the pointer capture was already released.
+        } finally {
+          activePointerIdRef.current = null;
+        }
+      }
+
       cancelAnimationFrame(rafRef.current);
       isDraggingRef.current = false;
       delete getSlideWrapper(element)?.dataset.pulling;
@@ -196,6 +208,11 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
       const sample = velocitySampleRef.current;
       const dt = event.timeStamp - sample.time;
       const dy = event.clientY - sample.y;
+      if (offsetRef.current >= THRESHOLD) {
+        close();
+        return;
+      }
+
       if (dt > 0 && dy > 0) {
         const velocity = (dy / dt) * 1000;
         if (velocity > VELOCITY_THRESHOLD && offsetRef.current > 30) {
@@ -220,6 +237,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
       unsubscribePointerLeave();
       unsubscribePointerCancel();
       cancelAnimationFrame(rafRef.current);
+      activePointerIdRef.current = null;
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
