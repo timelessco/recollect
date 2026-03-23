@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 
 import { createPostApiHandler } from "@/lib/api-helpers/create-handler";
-import { createServiceClient } from "@/utils/supabaseClient";
+import { createServerServiceClient } from "@/lib/supabase/service";
 import { processImageQueue } from "@/utils/worker";
 
 import { ProcessQueueInputSchema, ProcessQueueOutputSchema } from "./schema";
@@ -10,7 +10,7 @@ const ROUTE = "v2-process-queue";
 
 export const POST = createPostApiHandler({
   handler: async ({ route }) => {
-    const supabase = createServiceClient();
+    const supabase = createServerServiceClient();
 
     try {
       const result = await processImageQueue(supabase, {

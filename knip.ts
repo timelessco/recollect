@@ -8,8 +8,6 @@ const config: KnipConfig = {
     "oxfmt",
   ],
   ignoreDependencies: [
-    // used as CLI binary in scripts/clean.ts via Bun shell ($$`rimraf ...`)
-    "rimraf",
     // eslint@10 kept as transitive dep for jsPlugins using @typescript-eslint/utils
     "eslint",
     "oxfmt",

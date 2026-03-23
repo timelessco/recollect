@@ -594,6 +594,8 @@ When invoking the skill in Step 4b, it automatically selects the applicable patt
 
 21. **Drop lodash in v2 migrations:** Replace `isNull`/`isNil` with `isNullable()` from `@/utils/`, replace `isEmpty` with `array.length === 0`, replace `omit` with destructuring rest `const { removed, ...rest } = obj`.
 
+22. **Output schema parity with read endpoints:** When a write endpoint (PATCH/PUT/DELETE) returns the full record via `.select()`, its output schema MUST match the corresponding GET endpoint's proven output schema for the same table. Three rules: (a) Don't include fields in the write output schema that aren't in the read output schema — Zod silently strips extra fields on read but fails validation on write. (b) Use `z.number()` not `z.int()` for numeric output fields — `z.int()` adds a `Number.isInteger()` refinement that provides no benefit for output validation and creates unnecessary failure risk. (c) When a column exists in `database-generated.types.ts` but the read schema omits it, the write schema should also omit it. Discovered via parity testing: `update-user-profile` included `favorite_categories` (absent from `fetch-user-profile` GET schema) and used `z.int()` where GET used `z.number()` — caused 500 on every PATCH call.
+
 ---
 
 ## Section 9: Output Format

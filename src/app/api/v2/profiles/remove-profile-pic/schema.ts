@@ -4,6 +4,9 @@ export const RemoveProfilePicInputSchema = z.object({});
 
 export const RemoveProfilePicOutputSchema = z.array(
   z.object({
-    profile_pic: z.string().nullable(),
+    profile_pic: z
+      .string()
+      .nullable()
+      .meta({ description: "Profile picture URL, null after removal" }),
   }),
 );
