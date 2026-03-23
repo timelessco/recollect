@@ -32,7 +32,9 @@ export function SignInWithGoogleForm() {
   const handleSocialLogin = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const redirectTo = `${window.location.origin}/auth/oauth?next=${callbackURL ?? `/${EVERYTHING_URL}`}`;
+    const redirectTo = `${window.location.origin}/auth/oauth?next=${
+      callbackURL ?? `/${EVERYTHING_URL}`
+    }`;
 
     startTransition(() => {
       void (async () => {
@@ -66,7 +68,7 @@ export function SignInWithGoogleForm() {
         }
         type="submit"
       >
-        <GoogleIcon className="size-5" />
+        <GoogleIcon className="size-5.5" />
       </Button>
     </form>
   );
@@ -88,7 +90,9 @@ export function SignInWithAppleForm() {
   const handleSocialLogin = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const redirectTo = `${window.location.origin}/auth/oauth?next=${callbackURL ?? `/${EVERYTHING_URL}`}`;
+    const redirectTo = `${window.location.origin}/auth/oauth?next=${
+      callbackURL ?? `/${EVERYTHING_URL}`
+    }`;
 
     startTransition(() => {
       void (async () => {
@@ -122,7 +126,7 @@ export function SignInWithAppleForm() {
         }
         type="submit"
       >
-        <AppleIcon className="size-5" />
+        <AppleIcon className="size-5.5" />
       </Button>
     </form>
   );
