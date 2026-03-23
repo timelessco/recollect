@@ -113,6 +113,9 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
       if (event.pointerType !== "touch" || isInteractiveTarget(event)) {
         return;
       }
+      if (activePointerIdRef.current !== null && activePointerIdRef.current !== event.pointerId) {
+        return;
+      }
 
       activePointerIdRef.current = event.pointerId;
       try {
@@ -135,7 +138,11 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
     });
 
     const unsubscribePointerMove = subscribeSensors("onPointerMove", (event) => {
-      if (event.pointerType !== "touch" || isInteractiveTarget(event)) {
+      if (
+        event.pointerType !== "touch" ||
+        isInteractiveTarget(event) ||
+        event.pointerId !== activePointerIdRef.current
+      ) {
         return;
       }
 
@@ -181,11 +188,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
     });
 
     const handlePointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
-      if (event.pointerType !== "touch") {
-        return;
-      }
-
-      if (!isDraggingRef.current) {
+      if (event.pointerType !== "touch" || event.pointerId !== activePointerIdRef.current) {
         return;
       }
 
@@ -198,6 +201,10 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
         } finally {
           activePointerIdRef.current = null;
         }
+      }
+
+      if (!isDraggingRef.current) {
+        return;
       }
 
       cancelAnimationFrame(rafRef.current);
