@@ -7,16 +7,7 @@ paths:
 
 ### React & State
 
-- Colocate code that changes together
 - **Optimistic mutations**: Add Sentry breadcrumbs for cache misses and state inconsistencies
-
-### React/Next.js Patterns
-
-- **Props**: Always define TypeScript interfaces
-
-### Styling
-
-- **Custom CSS**: Only in `global.css` when absolutely necessary
 
 ### State Management
 

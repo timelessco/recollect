@@ -8,7 +8,6 @@ paths:
 ### Guidelines
 
 1. **Prefer Web APIs and Deno core APIs** over external dependencies
-   - Use `fetch` instead of Axios
    - Use WebSockets API instead of node-ws
 
 2. **Shared utilities** go in `supabase/functions/_shared`
