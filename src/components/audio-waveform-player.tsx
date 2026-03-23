@@ -167,7 +167,7 @@ function AudioWaveformPlayerInner({ isActive, onError, src, title }: AudioWavefo
         event.stopPropagation();
       }}
     >
-      {/* oxlint-disable-next-line eslint-plugin-jsx-a11y/media-has-caption */}
+      {/* oxlint-disable-next-line jsx-a11y/media-has-caption */}
       <audio playsInline ref={audioRef} slot="media" src={src} />
 
       {/* Waveform card */}
