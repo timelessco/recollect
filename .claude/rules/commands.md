@@ -90,10 +90,6 @@ pnpm cypress:open     # Open Cypress (no specs exist)
 - **pre-commit** (lint-staged): Ultracite fix on staged JS/TS/JSON files
 - **commit-msg** (commitlint): Conventional commit message validation (`@commitlint/config-conventional`)
 
-### Self-Improvement
-
-After any correction from the user, update `tasks/lessons.md` with the pattern to prevent repeating the same mistake.
-
 ### Elegance Check
 
 For non-trivial changes: pause and ask "is there a more elegant way?" Skip for simple, obvious fixes.

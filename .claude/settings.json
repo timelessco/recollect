@@ -3,7 +3,7 @@
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
-        "hooks": [{ "type": "command", "command": "pnpm dlx ultracite fix" }]
+        "hooks": [{ "type": "command", "command": "pnpm exec ultracite fix" }]
       }
     ]
   }

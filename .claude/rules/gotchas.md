@@ -8,6 +8,7 @@
 - `reactStrictMode` is disabled (commented out)
 - No test suite — `pnpm test` exits 0 with "no test specified". Cypress installed but no specs
 - CI runs lint checks only (no build gate) — build failures surface on Vercel
+- `pnpm lint:ultracite` requires Next.js generated types — CI runs `pnpm next:typegen` first. Locally, types already exist if `next dev` or `pnpm build` has run; only run `pnpm next:typegen` manually if lint fails on missing generated types
 - `prebuild:next` generates OpenAPI spec before every `next build`
 - Custom image loader: `src/utils/cloudflareImageLoader.ts` (not Next.js default optimizer)
 - Sentry tunnel: events proxied through `/skynet` to bypass ad-blockers
