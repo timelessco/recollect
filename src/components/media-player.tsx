@@ -21,6 +21,7 @@ import {
 import { MediaProvider, useMediaRef } from "media-chrome/react/media-store";
 import { MediaPlaybackRateMenu, MediaPlaybackRateMenuButton } from "media-chrome/react/menu";
 
+import { useIsMobileView } from "@/hooks/useIsMobileView";
 import { cn } from "@/utils/tailwind-merge";
 
 import {
@@ -64,6 +65,7 @@ interface VideoPlayerProps {
 }
 
 function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProps) {
+  const { isMobile } = useIsMobileView();
   const mediaRef = useMediaRef();
   const mediaElRef = useRef<HTMLMediaElement | null>(null);
   const onErrorRef = useRef(onError);
@@ -190,46 +192,50 @@ function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProp
             <PlayPauseIcon />
           </MediaPlayButton>
 
-          <div className="mute-group flex">
-            <div className="mute-group-inner relative shrink-0">
-              <MediaMuteButton ref={(el) => el?.setAttribute("notooltip", "")}>
-                <MuteIcon />
-              </MediaMuteButton>
-              <div className="vol-wrap">
-                <MediaVolumeRange />
+          {!isMobile && (
+            <>
+              <div className="mute-group flex">
+                <div className="mute-group-inner relative shrink-0">
+                  <MediaMuteButton ref={(el) => el?.setAttribute("notooltip", "")}>
+                    <MuteIcon />
+                  </MediaMuteButton>
+                  <div className="vol-wrap">
+                    <MediaVolumeRange />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <MediaTimeDisplay />
-          <MediaTimeDisplay showDuration />
+              <MediaTimeDisplay />
+              <MediaTimeDisplay showDuration />
 
-          <MediaTimeRange>
-            <MediaPreviewThumbnail slot="preview" />
-            <MediaPreviewChapterDisplay slot="preview" />
-            <MediaPreviewTimeDisplay slot="preview" />
-          </MediaTimeRange>
+              <MediaTimeRange>
+                <MediaPreviewThumbnail slot="preview" />
+                <MediaPreviewChapterDisplay slot="preview" />
+                <MediaPreviewTimeDisplay slot="preview" />
+              </MediaTimeRange>
 
-          <div className="relative shrink-0">
-            <MediaPlaybackRateMenuButton ref={(el) => el?.setAttribute("notooltip", "")}>
-              <span className="flex items-center justify-center" slot="icon">
-                <SettingsIcon />
-              </span>
-            </MediaPlaybackRateMenuButton>
-            <div className="settings-menu-wrap">
-              <MediaPlaybackRateMenu hidden />
-            </div>
-          </div>
+              <div className="relative shrink-0">
+                <MediaPlaybackRateMenuButton ref={(el) => el?.setAttribute("notooltip", "")}>
+                  <span className="flex items-center justify-center" slot="icon">
+                    <SettingsIcon />
+                  </span>
+                </MediaPlaybackRateMenuButton>
+                <div className="settings-menu-wrap">
+                  <MediaPlaybackRateMenu hidden />
+                </div>
+              </div>
 
-          {mediaType === "video" && (
-            <MediaPipButton ref={(el) => el?.setAttribute("notooltip", "")}>
-              <PipIcon />
-            </MediaPipButton>
+              {mediaType === "video" && (
+                <MediaPipButton ref={(el) => el?.setAttribute("notooltip", "")}>
+                  <PipIcon />
+                </MediaPipButton>
+              )}
+
+              <MediaFullscreenButton ref={(el) => el?.setAttribute("notooltip", "")}>
+                <FullscreenIcon />
+              </MediaFullscreenButton>
+            </>
           )}
-
-          <MediaFullscreenButton ref={(el) => el?.setAttribute("notooltip", "")}>
-            <FullscreenIcon />
-          </MediaFullscreenButton>
         </MediaControlBar>
       </MediaController>
     </>
