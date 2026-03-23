@@ -25,6 +25,7 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
   const pointerStartYRef = useRef(0);
   const isDraggingRef = useRef(false);
   const rafRef = useRef(0);
+  const activePointerIdRef = useRef<number | null>(null);
 
   // Velocity tracking for mobile flick-to-close
   // Stores a sample point ~80ms behind the current pointer for stable velocity calculation
@@ -111,6 +112,16 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
       if (event.pointerType !== "touch" || isInteractiveTarget(event)) {
         return;
       }
+      if (activePointerIdRef.current !== null && activePointerIdRef.current !== event.pointerId) {
+        return;
+      }
+
+      activePointerIdRef.current = event.pointerId;
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {
+        // Ignore if pointer capture is unavailable for this element/browser.
+      }
 
       pointerStartYRef.current = event.clientY;
       isDraggingRef.current = false;
@@ -126,7 +137,11 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
     });
 
     const unsubscribePointerMove = subscribeSensors("onPointerMove", (event) => {
-      if (event.pointerType !== "touch" || isInteractiveTarget(event)) {
+      if (
+        event.pointerType !== "touch" ||
+        isInteractiveTarget(event) ||
+        event.pointerId !== activePointerIdRef.current
+      ) {
         return;
       }
 
@@ -179,15 +194,25 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
     });
 
     const handlePointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
-      if (event.pointerType !== "touch") {
+      if (event.pointerType !== "touch" || event.pointerId !== activePointerIdRef.current) {
         return;
+      }
+
+      const element = event.currentTarget;
+      if (activePointerIdRef.current !== null) {
+        try {
+          element.releasePointerCapture(activePointerIdRef.current);
+        } catch {
+          // Ignore if the pointer capture was already released.
+        } finally {
+          activePointerIdRef.current = null;
+        }
       }
 
       if (!isDraggingRef.current) {
         return;
       }
 
-      const element = event.currentTarget;
       cancelAnimationFrame(rafRef.current);
       isDraggingRef.current = false;
       delete getSlideWrapper(element)?.dataset.pulling;
