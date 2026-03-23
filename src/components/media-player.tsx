@@ -76,14 +76,16 @@ function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProp
       return;
     }
 
-    void (async () => {
+    async function loadYouTubeElement() {
       try {
         await import("youtube-video-element");
         setYouTubeReady(true);
       } catch {
         onErrorRef.current?.();
       }
-    })();
+    }
+
+    void loadYouTubeElement();
   }, [mediaType]);
 
   useEffect(() => {

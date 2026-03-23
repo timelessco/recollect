@@ -31,27 +31,25 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
       return;
     }
 
-    startTransition(() => {
-      void (async () => {
-        try {
-          const supabase = createClient();
+    startTransition(async () => {
+      try {
+        const supabase = createClient();
 
-          const { error } = await supabase.auth.verifyOtp({
-            email,
-            token: otpValue,
-            type: "email",
-          });
+        const { error } = await supabase.auth.verifyOtp({
+          email,
+          token: otpValue,
+          type: "email",
+        });
 
-          if (error) {
-            handleClientError(error, "Failed to verify OTP");
-            return;
-          }
-
-          router.push(`/${EVERYTHING_URL}`);
-        } catch (error) {
+        if (error) {
           handleClientError(error, "Failed to verify OTP");
+          return;
         }
-      })();
+
+        router.push(`/${EVERYTHING_URL}`);
+      } catch (error) {
+        handleClientError(error, "Failed to verify OTP");
+      }
     });
   };
 

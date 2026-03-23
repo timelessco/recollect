@@ -40,7 +40,7 @@ export const AccessRoleSelect = ({ isLoggedinUserTheOwner, item }: AccessRoleSel
     <Select.Root
       onValueChange={(value) => {
         if (value !== "No Access") {
-          void (async () => {
+          const updateRole = async () => {
             const response = await mutationApiCall(
               updateSharedCategoriesUserAccessMutation.mutateAsync({
                 id: item.share_id!,
@@ -52,7 +52,9 @@ export const AccessRoleSelect = ({ isLoggedinUserTheOwner, item }: AccessRoleSel
             if (isNull((response as { error: Error })?.error)) {
               successToast("User role changed");
             }
-          })();
+          };
+
+          void updateRole();
         } else {
           void mutationApiCall(
             deleteSharedCategoriesUserMutation.mutateAsync({

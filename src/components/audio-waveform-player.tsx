@@ -71,7 +71,7 @@ function AudioWaveformPlayerInner({ isActive, onError, src, title }: AudioWavefo
 
     let destroyed = false;
 
-    void (async () => {
+    async function initWaveSurfer(el: HTMLDivElement, media: HTMLAudioElement) {
       try {
         const WaveSurferModule = await import("wavesurfer.js");
         const WS = WaveSurferModule.default;
@@ -84,11 +84,11 @@ function AudioWaveformPlayerInner({ isActive, onError, src, title }: AudioWavefo
           barGap: 2,
           barRadius: 28,
           barWidth: 2,
-          container,
+          container: el,
           cursorWidth: 0,
           dragToSeek: { debounceTime: 0 },
           height: 48,
-          media: audio,
+          media,
           normalize: true,
           progressColor: WAVEFORM_PROGRESS_COLOR,
           waveColor: WAVEFORM_WAVE_COLOR,
@@ -111,7 +111,9 @@ function AudioWaveformPlayerInner({ isActive, onError, src, title }: AudioWavefo
       } catch {
         onErrorRef.current?.();
       }
-    })();
+    }
+
+    void initWaveSurfer(container, audio);
 
     return () => {
       destroyed = true;

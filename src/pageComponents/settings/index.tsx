@@ -162,7 +162,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
           if (!isNull(uploadedFile)) {
             const { size } = uploadedFile;
             if (size < 1_000_000) {
-              void (async () => {
+              const uploadPic = async () => {
                 const response = await mutationApiCall(
                   uploadProfilePicMutation.mutateAsync({
                     file: uploadedFile,
@@ -171,7 +171,9 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                 if (isNull(response?.error)) {
                   successToast("Profile pic has been updated");
                 }
-              })();
+              };
+
+              void uploadPic();
             } else {
               errorToast("File size is greater then 1MB");
             }
@@ -223,7 +225,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                 disabledClassName="bg-gray-100 text-gray-400 hover:bg-gray-100"
                 isDisabled={isNull(userData?.profile_pic)}
                 onClick={() => {
-                  void (async () => {
+                  async function removePic() {
                     const response = await mutationApiCall(
                       removeProfilePic.mutateAsync({
                         id: userData!.id,
@@ -232,7 +234,9 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                     if (isNull(response?.error)) {
                       successToast("Profile pic has been removed");
                     }
-                  })();
+                  }
+
+                  void removePic();
                 }}
               >
                 Remove

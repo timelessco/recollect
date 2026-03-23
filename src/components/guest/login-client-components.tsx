@@ -36,22 +36,20 @@ export function SignInWithGoogleForm() {
       callbackURL ?? `/${EVERYTHING_URL}`
     }`;
 
-    startTransition(() => {
-      void (async () => {
-        try {
-          const supabase = createClient();
-          const { error } = await supabase.auth.signInWithOAuth({
-            options: { redirectTo },
-            provider: "google",
-          });
+    startTransition(async () => {
+      try {
+        const supabase = createClient();
+        const { error } = await supabase.auth.signInWithOAuth({
+          options: { redirectTo },
+          provider: "google",
+        });
 
-          if (error) {
-            handleClientError(error, "Failed to sign in with Google");
-          }
-        } catch (error) {
+        if (error) {
           handleClientError(error, "Failed to sign in with Google");
         }
-      })();
+      } catch (error) {
+        handleClientError(error, "Failed to sign in with Google");
+      }
     });
   };
 
@@ -94,22 +92,20 @@ export function SignInWithAppleForm() {
       callbackURL ?? `/${EVERYTHING_URL}`
     }`;
 
-    startTransition(() => {
-      void (async () => {
-        try {
-          const supabase = createClient();
-          const { error } = await supabase.auth.signInWithOAuth({
-            options: { redirectTo },
-            provider: "apple",
-          });
+    startTransition(async () => {
+      try {
+        const supabase = createClient();
+        const { error } = await supabase.auth.signInWithOAuth({
+          options: { redirectTo },
+          provider: "apple",
+        });
 
-          if (error) {
-            handleClientError(error, "Failed to sign in with Apple");
-          }
-        } catch (error) {
+        if (error) {
           handleClientError(error, "Failed to sign in with Apple");
         }
-      })();
+      } catch (error) {
+        handleClientError(error, "Failed to sign in with Apple");
+      }
     });
   };
 
