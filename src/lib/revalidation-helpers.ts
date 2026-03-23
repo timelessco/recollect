@@ -204,7 +204,7 @@ export async function getCategoryDetailsForRevalidation(
 				)
 			`,
       )
-      .filter("id", "eq", categoryId)
+      .eq("id", categoryId)
       .single<
         Database["public"]["Tables"]["categories"]["Row"] & {
           user_id: { user_name: null | string };
