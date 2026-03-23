@@ -25,6 +25,7 @@ export async function createServerClient() {
           }
         } catch (error) {
           // Expected when called from Server Component with middleware refreshing sessions
+          // process.env used intentionally — NODE_ENV inlined by Next.js
           if (process.env.NODE_ENV === "development") {
             console.warn("[createServerClient] Cookie setAll failed (expected in RSC):", error);
           }

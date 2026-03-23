@@ -14,6 +14,7 @@ export default function cloudflareImageLoader({
   src,
   width,
 }: CloudflareImageLoaderProps): string {
+  // process.env used intentionally — NEXT_PUBLIC_VERCEL_ENV inlined by Next.js
   if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") {
     return src;
   }

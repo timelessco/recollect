@@ -56,6 +56,7 @@ export async function createApiClient() {
           // The `setAll` method was called from a Server Component.
           // This can be ignored if you have middleware refreshing
           // user sessions.
+          // process.env used intentionally — NODE_ENV inlined by Next.js
           if (process.env.NODE_ENV === "development") {
             console.warn("[createApiClient] Cookie setAll failed (expected in RSC):", error);
           }

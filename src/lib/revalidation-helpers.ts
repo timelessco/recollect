@@ -2,8 +2,9 @@ import * as Sentry from "@sentry/nextjs";
 
 import type { Database } from "@/types/database-generated.types";
 
+import { env } from "@/env/server";
 import { createServerServiceClient } from "@/lib/supabase/service";
-import { CATEGORIES_TABLE_NAME, getBaseUrl, NEXT_API_URL } from "@/utils/constants";
+import { getBaseUrl, NEXT_API_URL } from "@/utils/constants";
 import { vet } from "@/utils/try";
 
 // Track in-flight revalidation requests to prevent duplicate calls
@@ -45,7 +46,7 @@ export async function revalidatePublicCategoryPage(
   const revalidationPromise = (async () => {
     try {
       const revalidateUrl = `${getBaseUrl()}${NEXT_API_URL}/v2/revalidate`;
-      const secret = process.env.REVALIDATE_SECRET_TOKEN;
+      const secret = env.REVALIDATE_SECRET_TOKEN;
 
       if (!secret) {
         console.warn(
@@ -193,7 +194,7 @@ export async function getCategoryDetailsForRevalidation(
     const supabase = createServerServiceClient();
 
     const { data: categoryData, error } = await supabase
-      .from(CATEGORIES_TABLE_NAME)
+      .from("categories")
       .select(
         `
 				is_public,
@@ -203,7 +204,7 @@ export async function getCategoryDetailsForRevalidation(
 				)
 			`,
       )
-      .eq("id", categoryId)
+      .filter("id", "eq", categoryId)
       .single<
         Database["public"]["Tables"]["categories"]["Row"] & {
           user_id: { user_name: null | string };

@@ -8,6 +8,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { Resend } from "resend";
 import { z } from "zod";
 
+import { env } from "@/env/server";
+
 const EmailRequestSchema = z.object({
   category_name: z.string(),
   display_name: z.string(),
@@ -35,7 +37,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   const { data } = parseResult;
 
-  const resend = new Resend(process.env.RESEND_KEY);
+  const resend = new Resend(env.RESEND_KEY);
 
   try {
     const { data: emailResponse, error: emailError } = await resend.emails.send({

@@ -4,25 +4,27 @@ import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { env } from "@/env/client";
+
+// process.env used intentionally — NODE_ENV inlined by Next.js, exported as isProductionEnvironment
 export const isProductionEnvironment = process.env.NODE_ENV === "production";
 
 // in case the user did not add the supabase dev keys in env file then even in dev mode the app will point out to the prod keys mentioned in the env file
 // the below ternary conditions handel this logic
-const developmentSupbaseUrl =
-  process.env.NEXT_PUBLIC_DEV_SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+const developmentSupbaseUrl = env.NEXT_PUBLIC_DEV_SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL;
 
 const developmentSupabaseAnonKey =
-  process.env.NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  env.NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY ?? env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export const supabaseAnonKey = !isProductionEnvironment
   ? developmentSupabaseAnonKey
-  : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  : env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export const apiSupabaseClient = (request: NextApiRequest, response: NextApiResponse) => {
   const authorization = request?.headers?.authorization;
 
   const supabase = createServerClient(
-    isProductionEnvironment ? process.env.NEXT_PUBLIC_SUPABASE_URL : developmentSupbaseUrl,
+    isProductionEnvironment ? env.NEXT_PUBLIC_SUPABASE_URL : developmentSupbaseUrl,
     supabaseAnonKey,
     {
       // This is for Recollect Mobile - Auth context from mobile app is passed to the server via Authorization header

@@ -1,3 +1,6 @@
+import { env } from "@/env/client";
+
+// process.env used intentionally — Vercel auto-injected vars not in client schema, mixed server/client contexts
 export const SITE_TITLE = "Recollect";
 export const SITE_NAME = "Recollect";
 export const SITE_DESCRIPTION =
@@ -13,7 +16,7 @@ export const SITE_SOCIAL_MEDIA_IDS = {
 } as const;
 
 const productionUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ??
+  env.NEXT_PUBLIC_SITE_URL ??
   `https://${
     process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ??
     process.env.VERCEL_PROJECT_PRODUCTION_URL

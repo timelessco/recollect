@@ -10,12 +10,14 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import type { StorageHelpersInterface } from "./storageClient";
 
-// R2 configuration
-const ACCOUNT_ID = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID;
-const ACCESS_KEY_ID = process.env.NEXT_PUBLIC_CLOUDFLARE_ACCESS_KEY_ID;
-const SECRET_ACCESS_KEY = process.env.NEXT_PUBLIC_CLOUDFLARE_SECRET_ACCESS_KEY;
+import { env } from "@/env/client";
 
-const PUBLIC_BUCKET_URL = process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL;
+// R2 configuration
+const ACCOUNT_ID = env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID;
+const ACCESS_KEY_ID = env.NEXT_PUBLIC_CLOUDFLARE_ACCESS_KEY_ID;
+const SECRET_ACCESS_KEY = env.NEXT_PUBLIC_CLOUDFLARE_SECRET_ACCESS_KEY;
+
+const PUBLIC_BUCKET_URL = env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL;
 
 // R2 credentials are only required in production
 // In local dev, storageClient.ts uses Supabase storage instead

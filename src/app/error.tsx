@@ -11,6 +11,7 @@ export default function Error(props: ErrorInfo) {
   const { error, unstable_retry } = props;
 
   React.useEffect(() => {
+    // process.env used intentionally — NODE_ENV inlined by Next.js in client error boundaries
     if (process.env.NODE_ENV === "development") {
       console.error("Root error", error);
     }

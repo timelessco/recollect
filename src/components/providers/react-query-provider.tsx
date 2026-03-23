@@ -24,6 +24,7 @@ export const ReactQueryProvider = (props: ReactQueryProviderProps) => {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
+      {/* process.env used intentionally — NODE_ENV inlined by Next.js in client components */}
       {process.env.NODE_ENV === "development" && <ReactQueryDevtools />}
     </QueryClientProvider>
   );

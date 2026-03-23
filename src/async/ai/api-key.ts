@@ -2,6 +2,8 @@ import CryptoJS from "crypto-js";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { env } from "@/env/server";
+
 import { PROFILES } from "../../utils/constants";
 
 export const getApikeyAndBookmarkCount = async (supabase: SupabaseClient, userId: string) => {
@@ -17,7 +19,7 @@ export const getApikeyAndBookmarkCount = async (supabase: SupabaseClient, userId
   try {
     const enc = (profile as unknown as { api_key?: string })?.api_key ?? "";
     if (enc) {
-      const decryptedBytes = CryptoJS.AES.decrypt(enc, process.env.API_KEY_ENCRYPTION_KEY);
+      const decryptedBytes = CryptoJS.AES.decrypt(enc, env.API_KEY_ENCRYPTION_KEY);
       const decrypted = decryptedBytes.toString(CryptoJS.enc.Utf8);
       userApiKey = decrypted;
     }

@@ -4,6 +4,8 @@ import path from "node:path";
 import * as Sentry from "@sentry/nextjs";
 import { Resend } from "resend";
 
+import { env } from "@/env/server";
+
 const EMAIL_FROM = "admin@share.recollect.so";
 const LOG_PREFIX = "[send-collection-deleted-notification]";
 
@@ -19,14 +21,14 @@ const base64Logo = fs.readFileSync(filePath).toString("base64");
 export async function sendCollectionDeletedNotification(
   props: SendCollectionDeletedNotificationProps,
 ) {
-  if (process.env.NODE_ENV === "development") {
+  if (env.NODE_ENV === "development") {
     console.log(`${LOG_PREFIX} Dev mode - skipped:`, props);
     return;
   }
 
   const { categoryName, collaboratorEmails, ownerDisplayName } = props;
 
-  const resendKey = process.env.RESEND_KEY;
+  const resendKey = env.RESEND_KEY;
   if (!resendKey) {
     console.warn(`${LOG_PREFIX} RESEND_KEY not configured, skipping`);
     return;

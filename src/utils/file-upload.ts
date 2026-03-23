@@ -2,6 +2,8 @@ import axios from "axios";
 import * as pdfjsLib from "pdfjs-dist/build/pdf";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
 
+import { env } from "@/env/client";
+
 import {
   GET_PDF_BUFFER_API,
   getBaseUrl,
@@ -87,7 +89,7 @@ export const handlePdfThumbnailAndUpload = async ({
     const thumbnailFileName = `thumb-${fileName}.jpg`;
 
     const { data: thumbUploadUrl, error: thumbError } = await storageHelpers.createSignedUploadUrl(
-      process.env.NEXT_PUBLIC_CLOUDFLARE_R2_BUCKET_NAME,
+      env.NEXT_PUBLIC_CLOUDFLARE_R2_BUCKET_NAME,
       `${STORAGE_FILES_PATH}/${sessionUserId}/${thumbnailFileName}`,
     );
 

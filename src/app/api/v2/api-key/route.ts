@@ -1,5 +1,6 @@
 import CryptoJS from "crypto-js";
 
+import { env } from "@/env/server";
 import { createPutApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { PROFILES } from "@/utils/constants";
@@ -16,7 +17,7 @@ export const PUT = createPutApiHandlerWithAuth({
 
     console.log(`[${route}] API called:`, { userId });
 
-    const encryptionKey = process.env.API_KEY_ENCRYPTION_KEY;
+    const encryptionKey = env.API_KEY_ENCRYPTION_KEY;
 
     if (!encryptionKey) {
       return apiError({

@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 import CryptoJS from "crypto-js";
 
+import { env } from "@/env/server";
 import { createGetApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError, apiWarn } from "@/lib/api-helpers/response";
 import { PROFILES } from "@/utils/constants";
@@ -15,7 +16,7 @@ export const GET = createGetApiHandlerWithAuth({
 
     console.log(`[${route}] API called:`, { userId });
 
-    const encryptionKey = process.env.API_KEY_ENCRYPTION_KEY;
+    const encryptionKey = env.API_KEY_ENCRYPTION_KEY;
 
     if (!encryptionKey) {
       return apiError({

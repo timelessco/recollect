@@ -5,6 +5,7 @@ import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { BookmarkContentType } from "@/utils/resolve-content-type";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { env } from "@/env/server";
 import { GEMINI_MODEL } from "@/utils/constants";
 
 import { getApikeyAndBookmarkCount, incrementBookmarkCount } from "./api-key";
@@ -109,7 +110,7 @@ export const imageToText = async (
     const imageBytes = Buffer.from(imageResponse.data).toString("base64");
 
     // Initialize the model
-    const key = userApiKey ?? process.env.GOOGLE_GEMINI_TOKEN;
+    const key = userApiKey ?? env.GOOGLE_GEMINI_TOKEN;
 
     const genAI = new GoogleGenerativeAI(key);
     const model = genAI.getGenerativeModel({

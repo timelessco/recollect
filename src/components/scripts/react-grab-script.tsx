@@ -1,8 +1,10 @@
 import Script from "next/script";
 
+import { env } from "@/env/server";
+
 export const ReactGrabScript = () => {
   // Only render in development
-  if (process.env.NODE_ENV !== "development") {
+  if (env.NODE_ENV !== "development") {
     return null;
   }
 

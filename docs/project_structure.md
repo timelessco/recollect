@@ -9,10 +9,10 @@
 │   ├── fixtures/          # Test data
 │   └── support/           # Custom commands and helpers
 │
-├── env/                   # Environment configuration
-│   ├── client.js         # Client-side env schema
-│   ├── server.js         # Server-side env schema
-│   └── schema.js         # Zod validation schemas
+├── src/env/               # Environment validation (@t3-oss/env-nextjs)
+│   ├── server.ts         # Server env schema + Vercel preset
+│   ├── client.ts         # Client (NEXT_PUBLIC_*) env schema
+│   └── index.ts          # Barrel export for build-time validation
 │
 ├── public/                # Static assets
 │   ├── fonts/            # Custom fonts (Inter)

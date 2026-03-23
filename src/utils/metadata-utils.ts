@@ -5,6 +5,7 @@
 
 import type { Metadata, Viewport } from "next";
 
+import { env } from "@/env/server";
 import {
   BASE_URL,
   SERVICES_OFFERED,
@@ -54,7 +55,7 @@ export const sharedMetadata = {
   publisher: "Vercel",
   referrer: "origin-when-cross-origin",
   robots:
-    process.env.VERCEL_ENV === "production"
+    env.VERCEL_ENV === "production"
       ? {
           follow: true,
           googleBot: {

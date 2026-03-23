@@ -86,6 +86,7 @@ export async function getGithubCommits() {
   let afterCursor = "";
   let hasNextPage = false;
 
+  // process.env used intentionally — release script, GITHUB_TOKEN not in env schema
   const octokit = new Octokit({
     auth: `token ${process.env.GITHUB_TOKEN}`,
   });

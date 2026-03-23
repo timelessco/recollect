@@ -1,3 +1,4 @@
+import { env } from "@/env/server";
 import { createGetApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiWarn } from "@/lib/api-helpers/response";
 
@@ -20,7 +21,7 @@ const ROUTE = "dev/session";
  */
 export const GET = createGetApiHandlerWithAuth({
   handler: async ({ route, supabase, user }) => {
-    if (process.env.NODE_ENV !== "development" || process.env.VERCEL_ENV === "production") {
+    if (env.NODE_ENV !== "development" || env.VERCEL_ENV === "production") {
       return apiWarn({ message: "Not found", route, status: 404 });
     }
 

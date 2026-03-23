@@ -1,10 +1,13 @@
+import { env } from "@/env/client";
+
 import { R2_MAIN_BUCKET_NAME } from "./constants";
 import { r2Helpers } from "./r2Client";
 import { createServiceClient } from "./supabaseClient";
 
+// process.env used intentionally — NODE_ENV inlined by Next.js
 // Environment detection
 const isProductionEnvironment = process.env.NODE_ENV === "production";
-const hasDevSupabase = Boolean(process.env.NEXT_PUBLIC_DEV_SUPABASE_URL);
+const hasDevSupabase = Boolean(env.NEXT_PUBLIC_DEV_SUPABASE_URL);
 
 // Use local Supabase storage in development when dev Supabase is configured
 export const useLocalStorage = !isProductionEnvironment && hasDevSupabase;
@@ -12,16 +15,16 @@ export const useLocalStorage = !isProductionEnvironment && hasDevSupabase;
 // Public URL base for storage
 export const getStoragePublicBaseUrl = () => {
   if (useLocalStorage) {
-    return `${process.env.NEXT_PUBLIC_DEV_SUPABASE_URL}/storage/v1/object/public/${R2_MAIN_BUCKET_NAME}`;
+    return `${env.NEXT_PUBLIC_DEV_SUPABASE_URL}/storage/v1/object/public/${R2_MAIN_BUCKET_NAME}`;
   }
 
-  return process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL ?? "";
+  return env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL ?? "";
 };
 
 // Helper to convert relative Supabase URLs to absolute URLs
 const toAbsoluteUrl = (url: string): string => {
   if (url.startsWith("/")) {
-    return `${process.env.NEXT_PUBLIC_DEV_SUPABASE_URL}/storage/v1${url}`;
+    return `${env.NEXT_PUBLIC_DEV_SUPABASE_URL}/storage/v1${url}`;
   }
 
   return url;
