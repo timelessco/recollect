@@ -167,8 +167,9 @@ function AudioWaveformPlayerInner({ isActive, onError, src, title }: AudioWavefo
         event.stopPropagation();
       }}
     >
-      {/* oxlint-disable-next-line jsx-a11y/media-has-caption */}
-      <audio playsInline ref={audioRef} slot="media" src={src} />
+      <audio ref={audioRef} slot="media" src={src}>
+        <track default kind="captions" label="No captions" srcLang="en" />
+      </audio>
 
       {/* Waveform card */}
       <div className="flex w-full items-center rounded-[12px] bg-gray-50 px-2 py-[37px]">

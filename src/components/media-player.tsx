@@ -139,16 +139,15 @@ function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProp
   switch (mediaType) {
     case "video": {
       mediaElement = (
-        <>
-          {/* oxlint-disable-next-line jsx-a11y/media-has-caption */}
-          <video
-            className="h-auto max-h-[80vh] w-auto max-w-[min(1200px,90vw)]"
-            playsInline
-            ref={ref}
-            slot="media"
-            src={src}
-          />
-        </>
+        <video
+          className="h-auto max-h-[80vh] w-auto max-w-[min(1200px,90vw)]"
+          playsInline
+          ref={ref}
+          slot="media"
+          src={src}
+        >
+          <track kind="captions" label="No captions" srcLang="en" />
+        </video>
       );
       break;
     }
