@@ -141,11 +141,12 @@ function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProp
       mediaElement = (
         <video
           className="h-auto max-h-[80vh] w-auto max-w-[min(1200px,90vw)]"
+          playsInline
           ref={ref}
           slot="media"
           src={src}
         >
-          <track default kind="captions" label="No captions" srcLang="en" />
+          <track kind="captions" label="No captions" srcLang="en" />
         </video>
       );
       break;
@@ -189,7 +190,6 @@ function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProp
           <MediaPlayButton ref={(el) => el?.setAttribute("notooltip", "")}>
             <PlayPauseIcon />
           </MediaPlayButton>
-
           <div className="mute-group flex">
             <div className="mute-group-inner relative shrink-0">
               <MediaMuteButton ref={(el) => el?.setAttribute("notooltip", "")}>
