@@ -6,6 +6,6 @@ export const FetchUserProfilePicInputSchema = z.object({
 
 export const FetchUserProfilePicOutputSchema = z.array(
   z.object({
-    profile_pic: z.string().nullable(),
+    profile_pic: z.string().nullable().meta({ description: "URL of the user's profile picture" }),
   }),
 );

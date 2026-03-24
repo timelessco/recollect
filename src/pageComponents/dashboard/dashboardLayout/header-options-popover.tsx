@@ -251,10 +251,12 @@ function ClearTrashTabContent({ onClose }: { onClose: () => void }) {
       description={`${trashCount} ${trashCount === 1 ? "bookmark" : "bookmarks"}`}
       label="Clear All Trash"
       onConfirm={() => {
-        void (async () => {
+        async function clearTrash() {
           await mutationApiCall(clearBookmarksInTrashMutation.mutateAsync());
           onClose();
-        })();
+        }
+
+        void clearTrash();
       }}
       pending={isClearingTrash}
     />

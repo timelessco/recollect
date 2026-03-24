@@ -62,6 +62,7 @@ const MyApp = ({
             />
             <meta content={`${baseUrl}/bookmarks-signup-1.png`} name="twitter:image" />
             {/* analytics script */}
+            {/* process.env used intentionally — NODE_ENV inlined by Next.js during client hydration */}
             {process.env.NODE_ENV === "production" && (
               <script async data-website-id={process.env.UMAMI_ID} src={process.env.UMAMI_SRC} />
             )}

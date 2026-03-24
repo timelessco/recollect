@@ -3,6 +3,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import CryptoJS from "crypto-js";
 import { z } from "zod";
 
+import { env } from "@/env/server";
+
 import { validateApiKey } from "../../../async/supabaseCrudHelpers";
 import { PROFILES } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
@@ -53,10 +55,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
   }
 
   try {
-    const encryptedApiKey = CryptoJS.AES.encrypt(
-      apikey,
-      process.env.API_KEY_ENCRYPTION_KEY,
-    ).toString();
+    const encryptedApiKey = CryptoJS.AES.encrypt(apikey, env.API_KEY_ENCRYPTION_KEY).toString();
 
     const { data: DataResponse, error: ErrorResponse } = await supabase.from(PROFILES).upsert({
       api_key: encryptedApiKey,

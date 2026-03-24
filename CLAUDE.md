@@ -20,6 +20,8 @@ Before any Next.js work, read the relevant doc in `node_modules/next/dist/docs/`
 - `knip` for detecting unused code when making large changes
 - `src/utils/type-utils.ts`: centralized `toJson()` / `toDbType()` for Supabase type boundaries — use instead of inline `as unknown as Json` casts
 - **Ultracite** (Oxlint + Oxfmt) enforces code quality — `pnpm fix` auto-fixes most issues, `pnpm dlx ultracite doctor` for setup diagnostics
+- **Zod `.meta()`**: All schema fields require `.meta({ description })` — flows to OpenAPI spec field descriptions and Scalar UI
+- **Env validation**: `@t3-oss/env-nextjs` in `src/env/` — split server/client pattern. Server env includes Vercel preset. Every `process.env` in codebase has an inline comment explaining why it wasn't migrated
 
 ## Commands
 
@@ -38,11 +40,11 @@ pnpm db:types             # Generate Supabase types from local schema
 - [`docs/OPENAPI_GUIDE.md`](./docs/OPENAPI_GUIDE.md) — OpenAPI endpoint docs (`/openapi-endpoints` skill)
 - [`docs/project_overview.md`](./docs/project_overview.md) — Tech stack, features
 - [`docs/project_structure.md`](./docs/project_structure.md) — Directory layout
+- `.claude/agents/references/` — Migration agent reference data (patterns, templates, pitfalls)
 
 ## Verification
 
-After changes, run in parallel:
+After changes, run in order:
 
-1. `pnpm fix` — auto-fix all quality issues
-2. `pnpm lint:knip` — detect unused code (especially after large changes)
-3. `pnpm build` — confirm build passes (non-trivial changes)
+1. `pnpm lint` — runs ALL quality checks in parallel (ultracite, types, knip, css, spelling, md)
+2. `pnpm build` — confirm build passes (non-trivial changes)

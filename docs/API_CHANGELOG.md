@@ -7,3 +7,17 @@
 
 
 
+## 2026-03-23 [`9cfccef`](https://github.com/timelessco/recollect/commit/9cfccef4352688a30e93bca189a66d64fcb1503b)
+
+
+### GET /v2/profiles/fetch-user-profile
+-  added the required property 'data/items/last_synced_instagram_id' to the response with the '200' status
+-  added the required property 'data/items/last_synced_twitter_id' to the response with the '200' status
+
+
+### PATCH /v2/profiles/update-user-profile
+- :warning: the 'data/items/bookmark_count' response's property type/format changed from 'integer'/'' to 'number'/'' for status '200'
+- :warning: the 'data/items/category_order/items/' response's property type/format changed from 'integer'/'' to 'number'/'' for status '200'
+- :warning: removed the required property 'data/items/favorite_categories' from the response with the '200' status
+-  added the required property 'data/items/last_synced_instagram_id' to the response with the '200' status
+-  added the required property 'data/items/last_synced_twitter_id' to the response with the '200' status

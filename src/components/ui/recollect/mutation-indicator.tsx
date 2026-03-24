@@ -14,6 +14,7 @@ export function MutationIndicator() {
     select: () => 1,
   });
 
+  // process.env used intentionally — NODE_ENV inlined by Next.js in client components
   if (process.env.NODE_ENV === "production") {
     return null;
   }

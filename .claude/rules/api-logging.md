@@ -20,18 +20,24 @@ paths:
 
 ### Handler Factories
 
-Four factories in `/src/lib/api-helpers/create-handler.ts`:
+Nine factories in `/src/lib/api-helpers/create-handler.ts`:
 
-| Function                       | Auth     | Method | Use Case     |
-| ------------------------------ | -------- | ------ | ------------ |
-| `createGetApiHandler`          | Public   | GET    | Public reads |
-| `createPostApiHandler`         | Public   | POST   | Public writes |
-| `createGetApiHandlerWithAuth`  | Required | GET    | Auth reads   |
-| `createPostApiHandlerWithAuth` | Required | POST   | Auth writes  |
+| Function                         | Auth     | Method | Use Case              |
+| -------------------------------- | -------- | ------ | --------------------- |
+| `createGetApiHandler`            | Public   | GET    | Public reads          |
+| `createPostApiHandler`           | Public   | POST   | Public writes         |
+| `createGetApiHandlerWithAuth`    | Required | GET    | Auth reads            |
+| `createPostApiHandlerWithAuth`   | Required | POST   | Auth creates          |
+| `createPatchApiHandlerWithAuth`  | Required | PATCH  | Auth partial updates  |
+| `createPutApiHandlerWithAuth`    | Required | PUT    | Auth upserts/replaces |
+| `createDeleteApiHandlerWithAuth` | Required | DELETE | Auth deletes          |
+| `createGetApiHandlerWithSecret`  | Secret   | GET    | Secret-token GETs     |
+| `createPostApiHandlerWithSecret` | Secret   | POST   | Secret-token POSTs    |
 
 **Config**: `route` (string), `inputSchema` (Zod), `outputSchema` (Zod), `handler` (async fn)
 
-**Context**: `data` (validated input), `supabase` (client), `user` (auth user), `route` (name)
+**Context (auth)**: `data` (validated input), `supabase` (client), `user` (auth user), `route` (name)
+**Context (public/secret)**: `input` (validated input), `route` (name) — no supabase client provided
 
 **Return**: Raw data -> wrapped in `apiSuccess`. `NextResponse` (via `apiWarn`/`apiError`) -> passed through.
 

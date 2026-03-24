@@ -24,12 +24,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "ESNext",
-    "typeRoots": [
-      "./node_modules/@types",
-      "@types",
-      "./env/environment.d.ts"
-      // "@serwist/next/typings"
-    ],
+    "typeRoots": ["./node_modules/@types", "@types"],
     "useUnknownInCatchVariables": true
   },
   "exclude": [".next", "cypress", "public/sw.js"],

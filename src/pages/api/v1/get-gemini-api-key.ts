@@ -3,6 +3,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import * as Sentry from "@sentry/nextjs";
 import CryptoJS from "crypto-js";
 
+import { env } from "@/env/server";
+
 import { PROFILES } from "../../../utils/constants";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
 
@@ -65,10 +67,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     // Decrypt API key
     try {
-      const decryptedBytes = CryptoJS.AES.decrypt(
-        profileData.api_key,
-        process.env.API_KEY_ENCRYPTION_KEY,
-      );
+      const decryptedBytes = CryptoJS.AES.decrypt(profileData.api_key, env.API_KEY_ENCRYPTION_KEY);
       const apiKey = decryptedBytes.toString(CryptoJS.enc.Utf8);
 
       // Validate decryption result is not empty

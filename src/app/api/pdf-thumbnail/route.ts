@@ -1,5 +1,6 @@
 import type { PdfThumbnailOutput } from "./schema";
 
+import { env } from "@/env/server";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { vet } from "@/utils/try";
@@ -17,8 +18,8 @@ export const POST = createPostApiHandlerWithAuth({
       userId: user.id,
     });
 
-    const pdfApiUrl = process.env.PDF_URL_SCREENSHOT_API;
-    const pdfApiKey = process.env.PDF_SECRET_KEY;
+    const pdfApiUrl = env.PDF_URL_SCREENSHOT_API;
+    const pdfApiKey = env.PDF_SECRET_KEY;
 
     if (!pdfApiUrl || !pdfApiKey) {
       return apiError({

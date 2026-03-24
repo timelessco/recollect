@@ -38,8 +38,6 @@ src/
 ### Import Strategy
 
 - `@/*` alias for all internal imports
-- Direct file imports preferred over barrel exports
-- Import order auto-sorted by oxfmt (`sortImports`)
 
 ### Component Patterns
 

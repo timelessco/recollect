@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
 import { z } from "zod";
 
+import { env } from "@/env/server";
 import { storeQueueError } from "@/lib/api-helpers/queue";
 import { upload } from "@/lib/storage/media-upload";
 import { autoAssignCollections, fetchUserCollections } from "@/utils/auto-assign-collections";
@@ -69,14 +70,14 @@ export default async function handler(request: NextApiRequest, response: NextApi
       console.log("######################## Generating PDF Thumbnail ########################");
       try {
         const { data } = await axios.post(
-          process.env.PDF_URL_SCREENSHOT_API,
+          env.PDF_URL_SCREENSHOT_API,
           {
             url,
             userId: user_id,
           },
           {
             headers: {
-              Authorization: `Bearer ${process.env.PDF_SECRET_KEY}`,
+              Authorization: `Bearer ${env.PDF_SECRET_KEY}`,
               "Content-Type": "application/json",
             },
           },

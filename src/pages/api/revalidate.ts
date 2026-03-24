@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 
+import { env } from "@/env/server";
+
 const ROUTE = "revalidate";
 
 interface RevalidateResponse {
@@ -24,7 +26,7 @@ export default async function handler(
 
   // Check for secret to confirm this is a valid request
   const secret = req.headers.authorization?.replace("Bearer ", "");
-  if (!secret || secret !== process.env.REVALIDATE_SECRET_TOKEN) {
+  if (!secret || secret !== env.REVALIDATE_SECRET_TOKEN) {
     console.warn(`[${ROUTE}] Invalid revalidation token attempt`, {
       hasSecret: Boolean(secret),
       path: req.body.path,

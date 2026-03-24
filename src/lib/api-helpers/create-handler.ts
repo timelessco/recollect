@@ -205,6 +205,7 @@ function createSecretHandlerInternal<TInput, TOutput>(
 
   const fn = async (request: NextRequest) => {
     try {
+      // process.env used intentionally — dynamic process.env[secretEnvVar] lookup, not statically analyzable
       const secret = process.env[secretEnvVar];
       if (!secret) {
         console.error(`[${route}] ${secretEnvVar} is not configured`);

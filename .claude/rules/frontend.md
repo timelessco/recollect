@@ -27,9 +27,3 @@ See `/src/components/ui/recollect/combobox/` for implementation.
 ### Recollect-Specific Rules
 
 - Tailwind v4 only (never v3)
-- Make static elements with click handlers use a valid role
-- Never nest block-level elements inside inline elements (causes hydration errors):
-  - No `<figure>`, `<div>`, `<section>`, `<article>` inside `<p>` tags
-  - Use `<div>` instead of `<p>` when containing block-level elements
-- Use function types instead of object types with call signatures
-- Function declarations for named functions, arrow functions for callbacks

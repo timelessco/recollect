@@ -1,18 +1,10 @@
+import "./src/env/index.ts";
+// process.env used intentionally below — build-time config vars (SENTRY_*, SOURCEMAP, ANALYZE, CI) not in env schema
+
 import type { NextConfig } from "next";
 
 import withBundleAnalyzer from "@next/bundle-analyzer";
 import { withSentryConfig } from "@sentry/nextjs";
-
-/**
- * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
- * This is especially useful for Docker builds.
- */
-// eslint-disable-next-line no-eq-null, eqeqeq
-if (process.env.SKIP_ENV_VALIDATION == null) {
-  void (async () => {
-    await import("./scripts/env/server.js");
-  })();
-}
 
 const hasSentry = Boolean(
   process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && process.env.SENTRY_AUTH_TOKEN,

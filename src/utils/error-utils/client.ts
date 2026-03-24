@@ -21,6 +21,7 @@ export function handleClientError(error: unknown, fallbackMessage?: string, show
     errorMessage = error.message;
   }
 
+  // process.env used intentionally — NODE_ENV inlined by Next.js in client utilities
   // Show error details in toast in DEV mode
   if (process.env.NODE_ENV === "development") {
     console.error(error);

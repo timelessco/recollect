@@ -12,6 +12,7 @@ import type {
 import type { PostgrestError } from "@supabase/supabase-js";
 import type { VerifyErrors } from "jsonwebtoken";
 
+import { env } from "@/env/server";
 import { vet } from "@/utils/try";
 
 import {
@@ -135,7 +136,7 @@ export default async function handler(
 
     const categoryData = data?.[0];
 
-    if (process.env.NODE_ENV === "development") {
+    if (env.NODE_ENV === "development") {
       console.log("Dev mode - email not sent:", { url });
       response.status(200).json({ error: null, message: "in dev mode email not sent", url });
       return;

@@ -12,6 +12,7 @@ export function logCacheMiss(
   message: string,
   data: Record<string, unknown>,
 ): void {
+  // process.env used intentionally — NODE_ENV inlined by Next.js in shared utilities
   if (process.env.NODE_ENV === "development") {
     console.warn(`[${context}] ${message}`, data);
   }

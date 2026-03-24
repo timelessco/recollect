@@ -1,9 +1,13 @@
-export type Json = { [key: string]: Json | undefined } | boolean | Json[] | null | number | string;
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
-export interface Database {
+export type Database = {
   pgmq_public: {
-    CompositeTypes: Record<never, never>;
-    Enums: Record<never, never>;
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
     Functions: {
       archive: {
         Args: { message_id: number; queue_name: string };
@@ -18,9 +22,9 @@ export interface Database {
         Returns: unknown[];
         SetofOptions: {
           from: "*";
+          to: "message_record";
           isOneToOne: false;
           isSetofReturn: true;
-          to: "message_record";
         };
       };
       read: {
@@ -28,9 +32,9 @@ export interface Database {
         Returns: unknown[];
         SetofOptions: {
           from: "*";
+          to: "message_record";
           isOneToOne: false;
           isSetofReturn: true;
-          to: "message_record";
         };
       };
       send: {
@@ -42,12 +46,357 @@ export interface Database {
         Returns: number[];
       };
     };
-    Tables: Record<never, never>;
-    Views: Record<never, never>;
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
   public: {
-    CompositeTypes: Record<never, never>;
-    Enums: Record<never, never>;
+    Tables: {
+      bookmark_categories: {
+        Row: {
+          bookmark_id: number;
+          category_id: number;
+          created_at: string;
+          id: number;
+          user_id: string;
+        };
+        Insert: {
+          bookmark_id: number;
+          category_id: number;
+          created_at?: string;
+          id?: number;
+          user_id: string;
+        };
+        Update: {
+          bookmark_id?: number;
+          category_id?: number;
+          created_at?: string;
+          id?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bookmark_categories_bookmark_id_fkey";
+            columns: ["bookmark_id"];
+            isOneToOne: false;
+            referencedRelation: "everything";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bookmark_categories_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bookmark_categories_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      bookmark_tags: {
+        Row: {
+          bookmark_id: number;
+          created_at: string | null;
+          id: number;
+          tag_id: number;
+          user_id: string | null;
+        };
+        Insert: {
+          bookmark_id: number;
+          created_at?: string | null;
+          id?: number;
+          tag_id: number;
+          user_id?: string | null;
+        };
+        Update: {
+          bookmark_id?: number;
+          created_at?: string | null;
+          id?: number;
+          tag_id?: number;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bookmark_tags_bookmark_id_fkey";
+            columns: ["bookmark_id"];
+            isOneToOne: false;
+            referencedRelation: "everything";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bookmark_tags_tag_id_fkey";
+            columns: ["tag_id"];
+            isOneToOne: false;
+            referencedRelation: "tags";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      categories: {
+        Row: {
+          category_name: string | null;
+          category_slug: string;
+          category_views: Json | null;
+          created_at: string | null;
+          icon: string | null;
+          icon_color: string | null;
+          id: number;
+          is_public: boolean;
+          order_index: number | null;
+          user_id: string | null;
+        };
+        Insert: {
+          category_name?: string | null;
+          category_slug: string;
+          category_views?: Json | null;
+          created_at?: string | null;
+          icon?: string | null;
+          icon_color?: string | null;
+          id?: number;
+          is_public?: boolean;
+          order_index?: number | null;
+          user_id?: string | null;
+        };
+        Update: {
+          category_name?: string | null;
+          category_slug?: string;
+          category_views?: Json | null;
+          created_at?: string | null;
+          icon?: string | null;
+          icon_color?: string | null;
+          id?: number;
+          is_public?: boolean;
+          order_index?: number | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "categories_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      everything: {
+        Row: {
+          category_id: number;
+          description: string | null;
+          enriched_at: string | null;
+          enrichment_status: string | null;
+          id: number;
+          inserted_at: string;
+          make_discoverable: string | null;
+          meta_data: Json | null;
+          ogImage: string | null;
+          screenshot: string | null;
+          sort_index: string | null;
+          title: string | null;
+          trash: string | null;
+          type: string | null;
+          url: string | null;
+          user_id: string;
+        };
+        Insert: {
+          category_id?: number;
+          description?: string | null;
+          enriched_at?: string | null;
+          enrichment_status?: string | null;
+          id?: number;
+          inserted_at?: string;
+          make_discoverable?: string | null;
+          meta_data?: Json | null;
+          ogImage?: string | null;
+          screenshot?: string | null;
+          sort_index?: string | null;
+          title?: string | null;
+          trash?: string | null;
+          type?: string | null;
+          url?: string | null;
+          user_id: string;
+        };
+        Update: {
+          category_id?: number;
+          description?: string | null;
+          enriched_at?: string | null;
+          enrichment_status?: string | null;
+          id?: number;
+          inserted_at?: string;
+          make_discoverable?: string | null;
+          meta_data?: Json | null;
+          ogImage?: string | null;
+          screenshot?: string | null;
+          sort_index?: string | null;
+          title?: string | null;
+          trash?: string | null;
+          type?: string | null;
+          url?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "everything_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      profiles: {
+        Row: {
+          ai_features_toggle: Json;
+          api_key: string | null;
+          bookmark_count: number | null;
+          bookmarks_view: Json | null;
+          category_order: number[] | null;
+          display_name: string | null;
+          email: string | null;
+          favorite_categories: number[];
+          id: string;
+          last_synced_instagram_id: string | null;
+          last_synced_twitter_id: string | null;
+          plan: string;
+          plan_updated_at: string | null;
+          polar_customer_id: string | null;
+          polar_subscription_id: string | null;
+          preferred_og_domains: string[] | null;
+          profile_pic: string | null;
+          provider: string | null;
+          subscription_current_period_end: string | null;
+          subscription_status: string | null;
+          user_name: string | null;
+        };
+        Insert: {
+          ai_features_toggle?: Json;
+          api_key?: string | null;
+          bookmark_count?: number | null;
+          bookmarks_view?: Json | null;
+          category_order?: number[] | null;
+          display_name?: string | null;
+          email?: string | null;
+          favorite_categories?: number[];
+          id: string;
+          last_synced_instagram_id?: string | null;
+          last_synced_twitter_id?: string | null;
+          plan?: string;
+          plan_updated_at?: string | null;
+          polar_customer_id?: string | null;
+          polar_subscription_id?: string | null;
+          preferred_og_domains?: string[] | null;
+          profile_pic?: string | null;
+          provider?: string | null;
+          subscription_current_period_end?: string | null;
+          subscription_status?: string | null;
+          user_name?: string | null;
+        };
+        Update: {
+          ai_features_toggle?: Json;
+          api_key?: string | null;
+          bookmark_count?: number | null;
+          bookmarks_view?: Json | null;
+          category_order?: number[] | null;
+          display_name?: string | null;
+          email?: string | null;
+          favorite_categories?: number[];
+          id?: string;
+          last_synced_instagram_id?: string | null;
+          last_synced_twitter_id?: string | null;
+          plan?: string;
+          plan_updated_at?: string | null;
+          polar_customer_id?: string | null;
+          polar_subscription_id?: string | null;
+          preferred_og_domains?: string[] | null;
+          profile_pic?: string | null;
+          provider?: string | null;
+          subscription_current_period_end?: string | null;
+          subscription_status?: string | null;
+          user_name?: string | null;
+        };
+        Relationships: [];
+      };
+      shared_categories: {
+        Row: {
+          category_id: number;
+          category_views: Json;
+          created_at: string | null;
+          edit_access: boolean;
+          email: string | null;
+          id: number;
+          is_accept_pending: boolean | null;
+          user_id: string;
+        };
+        Insert: {
+          category_id: number;
+          category_views?: Json;
+          created_at?: string | null;
+          edit_access?: boolean;
+          email?: string | null;
+          id?: number;
+          is_accept_pending?: boolean | null;
+          user_id: string;
+        };
+        Update: {
+          category_id?: number;
+          category_views?: Json;
+          created_at?: string | null;
+          edit_access?: boolean;
+          email?: string | null;
+          id?: number;
+          is_accept_pending?: boolean | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shared_categories_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shared_categories_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      tags: {
+        Row: {
+          created_at: string | null;
+          id: number;
+          name: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: number;
+          name?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: number;
+          name?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
+    };
+    Views: {
+      [_ in never]: never;
+    };
     Functions: {
       add_category_to_bookmarks: {
         Args: { p_bookmark_ids: number[]; p_category_id: number };
@@ -207,10 +556,7 @@ export interface Database {
         Args: { p_user_id: string };
         Returns: Json;
       };
-      retry_all_raindrop_imports: {
-        Args: { p_user_id: string };
-        Returns: Json;
-      };
+      retry_all_raindrop_imports: { Args: { p_user_id: string }; Returns: Json };
       retry_all_twitter_imports: { Args: { p_user_id: string }; Returns: Json };
       retry_instagram_import: {
         Args: { p_msg_ids: number[]; p_user_id: string };
@@ -253,7 +599,7 @@ export interface Database {
       };
       search_bookmarks_debugging:
         | {
-            Args: { search_text: string; url_scope: string };
+            Args: { search_text: string };
             Returns: {
               category_id: number;
               description: string;
@@ -271,7 +617,7 @@ export interface Database {
             }[];
           }
         | {
-            Args: { search_text: string };
+            Args: { search_text: string; url_scope: string };
             Returns: {
               category_id: number;
               description: string;
@@ -289,6 +635,29 @@ export interface Database {
             }[];
           };
       search_bookmarks_url_tag_scope:
+        | {
+            Args: {
+              search_text?: string;
+              tag_scope?: string[];
+              url_scope?: string;
+            };
+            Returns: {
+              added_tags: Json;
+              category_id: number;
+              description: string;
+              id: number;
+              inserted_at: string;
+              meta_data: Json;
+              ogimage: string;
+              screenshot: string;
+              sort_index: string;
+              title: string;
+              trash: boolean;
+              type: string;
+              url: string;
+              user_id: string;
+            }[];
+          }
         | {
             Args: {
               category_scope?: number;
@@ -313,29 +682,6 @@ export interface Database {
               url: string;
               user_id: string;
             }[];
-          }
-        | {
-            Args: {
-              search_text?: string;
-              tag_scope?: string[];
-              url_scope?: string;
-            };
-            Returns: {
-              added_tags: Json;
-              category_id: number;
-              description: string;
-              id: number;
-              inserted_at: string;
-              meta_data: Json;
-              ogimage: string;
-              screenshot: string;
-              sort_index: string;
-              title: string;
-              trash: boolean;
-              type: string;
-              url: string;
-              user_id: string;
-            }[];
           };
       set_bookmark_categories: {
         Args: { p_bookmark_id: number; p_category_ids: number[] };
@@ -348,9 +694,9 @@ export interface Database {
         }[];
         SetofOptions: {
           from: "*";
+          to: "bookmark_categories";
           isOneToOne: false;
           isSetofReturn: true;
-          to: "bookmark_categories";
         };
       };
       toggle_favorite_category: {
@@ -376,325 +722,14 @@ export interface Database {
         Returns: boolean;
       };
     };
-    Tables: {
-      bookmark_categories: {
-        Insert: {
-          bookmark_id: number;
-          category_id: number;
-          created_at?: string;
-          id?: number;
-          user_id: string;
-        };
-        Relationships: [
-          {
-            columns: ["bookmark_id"];
-            foreignKeyName: "bookmark_categories_bookmark_id_fkey";
-            isOneToOne: false;
-            referencedColumns: ["id"];
-            referencedRelation: "everything";
-          },
-          {
-            columns: ["category_id"];
-            foreignKeyName: "bookmark_categories_category_id_fkey";
-            isOneToOne: false;
-            referencedColumns: ["id"];
-            referencedRelation: "categories";
-          },
-          {
-            columns: ["user_id"];
-            foreignKeyName: "bookmark_categories_user_id_fkey";
-            isOneToOne: false;
-            referencedColumns: ["id"];
-            referencedRelation: "profiles";
-          },
-        ];
-        Row: {
-          bookmark_id: number;
-          category_id: number;
-          created_at: string;
-          id: number;
-          user_id: string;
-        };
-        Update: {
-          bookmark_id?: number;
-          category_id?: number;
-          created_at?: string;
-          id?: number;
-          user_id?: string;
-        };
-      };
-      bookmark_tags: {
-        Insert: {
-          bookmark_id: number;
-          created_at?: null | string;
-          id?: number;
-          tag_id: number;
-          user_id?: null | string;
-        };
-        Relationships: [
-          {
-            columns: ["bookmark_id"];
-            foreignKeyName: "bookmark_tags_bookmark_id_fkey";
-            isOneToOne: false;
-            referencedColumns: ["id"];
-            referencedRelation: "everything";
-          },
-          {
-            columns: ["tag_id"];
-            foreignKeyName: "bookmark_tags_tag_id_fkey";
-            isOneToOne: false;
-            referencedColumns: ["id"];
-            referencedRelation: "tags";
-          },
-        ];
-        Row: {
-          bookmark_id: number;
-          created_at: null | string;
-          id: number;
-          tag_id: number;
-          user_id: null | string;
-        };
-        Update: {
-          bookmark_id?: number;
-          created_at?: null | string;
-          id?: number;
-          tag_id?: number;
-          user_id?: null | string;
-        };
-      };
-      categories: {
-        Insert: {
-          category_name?: null | string;
-          category_slug: string;
-          category_views?: Json | null;
-          created_at?: null | string;
-          icon?: null | string;
-          icon_color?: null | string;
-          id?: number;
-          is_public?: boolean;
-          order_index?: null | number;
-          user_id?: null | string;
-        };
-        Relationships: [
-          {
-            columns: ["user_id"];
-            foreignKeyName: "categories_user_id_fkey";
-            isOneToOne: false;
-            referencedColumns: ["id"];
-            referencedRelation: "profiles";
-          },
-        ];
-        Row: {
-          category_name: null | string;
-          category_slug: string;
-          category_views: Json | null;
-          created_at: null | string;
-          icon: null | string;
-          icon_color: null | string;
-          id: number;
-          is_public: boolean;
-          order_index: null | number;
-          user_id: null | string;
-        };
-        Update: {
-          category_name?: null | string;
-          category_slug?: string;
-          category_views?: Json | null;
-          created_at?: null | string;
-          icon?: null | string;
-          icon_color?: null | string;
-          id?: number;
-          is_public?: boolean;
-          order_index?: null | number;
-          user_id?: null | string;
-        };
-      };
-      everything: {
-        Insert: {
-          category_id?: number;
-          description?: null | string;
-          id?: number;
-          inserted_at?: string;
-          make_discoverable?: null | string;
-          meta_data?: Json | null;
-          ogImage?: null | string;
-          screenshot?: null | string;
-          sort_index?: null | string;
-          title?: null | string;
-          trash?: null | string;
-          type?: null | string;
-          url?: null | string;
-          user_id: string;
-        };
-        Relationships: [
-          {
-            columns: ["user_id"];
-            foreignKeyName: "everything_user_id_fkey";
-            isOneToOne: false;
-            referencedColumns: ["id"];
-            referencedRelation: "profiles";
-          },
-        ];
-        Row: {
-          category_id: number;
-          description: null | string;
-          id: number;
-          inserted_at: string;
-          make_discoverable: null | string;
-          meta_data: Json | null;
-          ogImage: null | string;
-          screenshot: null | string;
-          sort_index: null | string;
-          title: null | string;
-          trash: null | string;
-          type: null | string;
-          url: null | string;
-          user_id: string;
-        };
-        Update: {
-          category_id?: number;
-          description?: null | string;
-          id?: number;
-          inserted_at?: string;
-          make_discoverable?: null | string;
-          meta_data?: Json | null;
-          ogImage?: null | string;
-          screenshot?: null | string;
-          sort_index?: null | string;
-          title?: null | string;
-          trash?: null | string;
-          type?: null | string;
-          url?: null | string;
-          user_id?: string;
-        };
-      };
-      profiles: {
-        Insert: {
-          ai_features_toggle?: Json;
-          api_key?: null | string;
-          bookmark_count?: null | number;
-          bookmarks_view?: Json | null;
-          category_order?: null | number[];
-          display_name?: null | string;
-          email?: null | string;
-          favorite_categories?: number[];
-          id: string;
-          last_synced_instagram_id?: null | string;
-          last_synced_twitter_id?: null | string;
-          preferred_og_domains?: null | string[];
-          profile_pic?: null | string;
-          provider?: null | string;
-          user_name?: null | string;
-        };
-        Relationships: [];
-        Row: {
-          ai_features_toggle: Json;
-          api_key: null | string;
-          bookmark_count: null | number;
-          bookmarks_view: Json | null;
-          category_order: null | number[];
-          display_name: null | string;
-          email: null | string;
-          favorite_categories: number[];
-          id: string;
-          last_synced_instagram_id: null | string;
-          last_synced_twitter_id: null | string;
-          preferred_og_domains: null | string[];
-          profile_pic: null | string;
-          provider: null | string;
-          user_name: null | string;
-        };
-        Update: {
-          ai_features_toggle?: Json;
-          api_key?: null | string;
-          bookmark_count?: null | number;
-          bookmarks_view?: Json | null;
-          category_order?: null | number[];
-          display_name?: null | string;
-          email?: null | string;
-          favorite_categories?: number[];
-          id?: string;
-          last_synced_instagram_id?: null | string;
-          last_synced_twitter_id?: null | string;
-          preferred_og_domains?: null | string[];
-          profile_pic?: null | string;
-          provider?: null | string;
-          user_name?: null | string;
-        };
-      };
-      shared_categories: {
-        Insert: {
-          category_id: number;
-          category_views?: Json;
-          created_at?: null | string;
-          edit_access?: boolean;
-          email?: null | string;
-          id?: number;
-          is_accept_pending?: boolean | null;
-          user_id: string;
-        };
-        Relationships: [
-          {
-            columns: ["category_id"];
-            foreignKeyName: "shared_categories_category_id_fkey";
-            isOneToOne: false;
-            referencedColumns: ["id"];
-            referencedRelation: "categories";
-          },
-          {
-            columns: ["user_id"];
-            foreignKeyName: "shared_categories_user_id_fkey";
-            isOneToOne: false;
-            referencedColumns: ["id"];
-            referencedRelation: "profiles";
-          },
-        ];
-        Row: {
-          category_id: number;
-          category_views: Json;
-          created_at: null | string;
-          edit_access: boolean;
-          email: null | string;
-          id: number;
-          is_accept_pending: boolean | null;
-          user_id: string;
-        };
-        Update: {
-          category_id?: number;
-          category_views?: Json;
-          created_at?: null | string;
-          edit_access?: boolean;
-          email?: null | string;
-          id?: number;
-          is_accept_pending?: boolean | null;
-          user_id?: string;
-        };
-      };
-      tags: {
-        Insert: {
-          created_at?: null | string;
-          id?: number;
-          name?: null | string;
-          user_id?: null | string;
-        };
-        Relationships: [];
-        Row: {
-          created_at: null | string;
-          id: number;
-          name: null | string;
-          user_id: null | string;
-        };
-        Update: {
-          created_at?: null | string;
-          id?: number;
-          name?: null | string;
-          user_id?: null | string;
-        };
-      };
+    Enums: {
+      [_ in never]: never;
     };
-    Views: Record<never, never>;
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
-}
+};
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
@@ -702,8 +737,8 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | { schema: keyof DatabaseWithoutInternals }
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"]),
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
@@ -729,8 +764,8 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | { schema: keyof DatabaseWithoutInternals }
-    | keyof DefaultSchema["Tables"],
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
@@ -754,8 +789,8 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | { schema: keyof DatabaseWithoutInternals }
-    | keyof DefaultSchema["Tables"],
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
@@ -779,8 +814,8 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | { schema: keyof DatabaseWithoutInternals }
-    | keyof DefaultSchema["Enums"],
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
@@ -796,8 +831,8 @@ export type Enums<
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | { schema: keyof DatabaseWithoutInternals }
-    | keyof DefaultSchema["CompositeTypes"],
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }

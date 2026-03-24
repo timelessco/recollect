@@ -1,13 +1,15 @@
 import * as Sentry from "@sentry/nextjs";
 
+import { env } from "@/env/client";
+
 // This file configures the initialization of Sentry on the client.
 // The config you add here will be used whenever a users loads a page in their browser.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 Sentry.init({
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: process.env.NEXT_PUBLIC_LOCAL === "true",
+  debug: env.NEXT_PUBLIC_LOCAL === "true",
 
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  dsn: env.NEXT_PUBLIC_SENTRY_DSN,
 
   // Enable logs to be sent to Sentry
   enableLogs: true,

@@ -36,7 +36,9 @@
     "check:engine": "npx installed-check --fix",
     "check:packages": "pnpm dedupe --check",
     "check:update": "npx npm-check-updates --interactive --format group --target patch",
-    "clean": "tsx scripts/clean.ts",
+    "clean": "rimraf .next .turbo node_modules",
+    "clean:modules": "rimraf node_modules",
+    "clean:turbo": "rimraf .turbo",
     "contributors:add": "all-contributors add",
     "contributors:generate": "all-contributors generate",
     "cypress:open": "cypress open",
@@ -48,11 +50,11 @@
     "dev:scan": "next dev & react-scan localhost:3000",
     "dev:sourcemap": "cross-env SOURCEMAP=true pnpm dev",
     "dev:trace": "cross-env NEXT_TURBOPACK_TRACING=1 next dev",
-    "fix": "npx turbo fix:ultracite",
+    "fix": "turbo run fix:ultracite",
     "fix:css": "stylelint --fix --cache --ignore-path .gitignore --color -f verbose '**/*.css'",
     "fix:md": "markdownlint-cli2 --fix --rules sentences-per-line",
     "fix:ultracite": "ultracite fix",
-    "lint": "npx turbo lint:ultracite lint:knip lint:md lint:spelling lint:css",
+    "lint": "turbo run lint:ultracite lint:knip lint:md lint:spelling lint:css",
     "lint:css": "stylelint --cache --ignore-path .gitignore --color -f verbose '**/*.css'",
     "lint:knip": "knip --production",
     "lint:md": "markdownlint-cli2 --rules sentences-per-line",
@@ -61,7 +63,7 @@
     "lint:ultracite": "ultracite check",
     "next:typegen": "pnpm next typegen",
     "postbuild": "next-sitemap --config next-sitemap.config.cjs",
-    "prebuild:next": "tsx scripts/generate-openapi.ts",
+    "prebuild:next": "SKIP_ENV_VALIDATION=1 tsx scripts/generate-openapi.ts",
     "prepare": "is-ci || husky",
     "release": "release-it --ci",
     "release:cleanup": "./scripts/release-cleanup.sh",
@@ -83,6 +85,7 @@
     "@sentry/nextjs": "10.45.0",
     "@supabase/ssr": "0.9.0",
     "@supabase/supabase-js": "2.99.3",
+    "@t3-oss/env-nextjs": "0.13.11",
     "@tanstack/react-query": "5.91.3",
     "@tanstack/react-virtual": "3.13.23",
     "@total-typescript/ts-reset": "0.6.1",
@@ -132,7 +135,6 @@
     "@asteasolutions/zod-to-openapi": "8.5.0",
     "@commitlint/cli": "20.5.0",
     "@commitlint/config-conventional": "20.5.0",
-    "@inquirer/prompts": "8.3.2",
     "@next/bundle-analyzer": "16.2.1",
     "@next/env": "16.2.1",
     "@octokit/core": "7.0.6",
@@ -166,7 +168,6 @@
     "eslint-plugin-react-web-api": "3.0.0",
     "eslint-plugin-react-x": "3.0.0",
     "eslint-plugin-regexp": "3.1.0",
-    "execa": "9.6.1",
     "fs-extra": "11.3.4",
     "git-remote-origin-url": "4.0.0",
     "git-url-parse": "16.1.0",
@@ -199,8 +200,9 @@
     "ultracite": "7.3.2"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,cjs,mjs,json,jsonc}": [
-      "pnpm dlx ultracite fix"
+    "*": [
+      "pnpm exec oxfmt --write --no-error-on-unmatched-pattern",
+      "pnpm exec oxlint --fix"
     ]
   },
   "commitlint": {
