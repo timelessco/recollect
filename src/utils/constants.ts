@@ -411,3 +411,4 @@ export const [WHITE_COLOR, BLACK_COLOR] = colorPickerColors;
 export const INSTAGRAM_IMPORTS_QUEUE = "instagram_imports";
 export const TWITTER_IMPORTS_QUEUE = "twitter_imports";
 export const RAINDROP_IMPORTS_QUEUE = "raindrop_imports";
+export const CHROME_BOOKMARK_IMPORTS_QUEUE = "chrome_bookmark_imports";
