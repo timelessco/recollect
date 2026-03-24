@@ -414,10 +414,13 @@ Deno.serve(async (req) => {
       } else {
         retry++;
         const msg = validMessages[i];
-        Sentry.captureException(result.reason, {
-          extra: { msg_id: msg.msg_id },
-          tags: { operation: "chrome_bookmark_import_error" },
-        });
+        Sentry.captureException(
+          result.reason instanceof Error ? result.reason : new Error(String(result.reason)),
+          {
+            extra: { msg_id: msg.msg_id },
+            tags: { operation: "chrome_bookmark_import_error" },
+          },
+        );
       }
     }
 
@@ -434,7 +437,7 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error("[chrome-bookmark-worker] Unexpected error:", error);
-    Sentry.captureException(error);
+    Sentry.captureException(error instanceof Error ? error : new Error(String(error)));
     await Sentry.flush(2000);
 
     return Response.json(
