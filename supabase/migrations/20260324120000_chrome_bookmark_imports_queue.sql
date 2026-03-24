@@ -102,6 +102,16 @@ BEGIN
       CONTINUE;
     END IF;
 
+    -- Skip if URL is empty
+    IF v_url IS NULL OR btrim(v_url) = '' THEN
+      v_skipped := v_skipped + 1;
+      CONTINUE;
+    END IF;
+
+    PERFORM pg_advisory_xact_lock(
+      hashtext(p_user_id::text || '|' || lower(btrim(v_url)))
+    );
+
     -- URL-level dedup: check if this URL already exists for this user (any source)
     SELECT EXISTS(
       SELECT 1 FROM everything
