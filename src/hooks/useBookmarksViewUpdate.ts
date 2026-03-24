@@ -20,11 +20,7 @@ import useFetchSharedCategories from "../async/queryHooks/share/useFetchSharedCa
 import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";
 import { useLoadersStore, useSupabaseSession } from "../store/componentStore";
 import { mutationApiCall } from "../utils/apiHelpers";
-import {
-  getPageViewData,
-  getPageViewKey,
-  isLegacyBookmarksView,
-} from "../utils/bookmarksViewKeyed";
+import { getPageViewData, getPageViewKey } from "../utils/bookmarksViewKeyed";
 import { EVERYTHING_URL } from "../utils/constants";
 import { getCategorySlugFromRouter } from "../utils/url";
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
@@ -159,14 +155,8 @@ export function useBookmarksViewUpdate() {
           moodboardColumns: [30],
           sortBy: "date-sort-ascending" as BookmarksSortByTypes,
         };
-        let keyed: ProfilesBookmarksView;
-        if (!raw || typeof raw !== "object") {
-          keyed = { [EVERYTHING_URL]: defaultPageView };
-        } else if (isLegacyBookmarksView(raw)) {
-          keyed = { [EVERYTHING_URL]: raw };
-        } else {
-          keyed = { ...raw } as ProfilesBookmarksView;
-        }
+        const keyed: ProfilesBookmarksView =
+          !raw || typeof raw !== "object" ? { [EVERYTHING_URL]: defaultPageView } : { ...raw };
 
         const pageView = getPageViewData(raw, pageKey) ?? defaultPageView;
         const updatedPageView: BookmarkViewDataTypes = {
