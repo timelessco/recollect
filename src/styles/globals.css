@@ -1123,4 +1123,23 @@
       opacity: 0.15;
     }
   }
+
+  /* Exit animation when a bookmark is deleted — fast so gap is minimal */
+  @keyframes bookmark-exit {
+    to {
+      transform: scale(0.97);
+      opacity: 0;
+    }
+  }
+
+  .bookmark-exit-animation {
+    pointer-events: none;
+    animation: bookmark-exit 150ms ease-out forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bookmark-exit-animation {
+      animation: none;
+    }
+  }
 }

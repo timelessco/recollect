@@ -25,7 +25,11 @@ import { errorToast } from "@/utils/toastMessages";
 
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
-import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
+import {
+  useLoadersStore,
+  useMiscellaneousStore,
+  useSupabaseSession,
+} from "../../../store/componentStore";
 import { TRASH_URL, viewValues } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
@@ -79,6 +83,7 @@ const ListBox = (props: ListBoxDropTypes) => {
 
   const session = useSupabaseSession((storeState) => storeState.session);
   const searchText = useMiscellaneousStore((state) => state.searchText);
+  const isBookmarkAdding = useLoadersStore((state) => state.isBookmarkAdding);
 
   // Hooks for data fetching
   const { flattenedSearchData } = useSearchBookmarks();
@@ -246,6 +251,7 @@ const ListBox = (props: ListBoxDropTypes) => {
       <Option
         cardTypeCondition={cardTypeCondition}
         dragState={dragState}
+        isNew={isBookmarkAdding && bookmarkData?.id === undefined}
         isPublicPage={isPublicPage}
         isTrashPage={isTrashPage}
         item={item}

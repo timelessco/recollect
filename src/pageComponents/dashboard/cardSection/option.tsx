@@ -9,6 +9,7 @@ import type { DraggableCollectionState, ListState } from "react-stately";
 
 import { pick } from "lodash";
 import omit from "lodash/omit";
+import { motion, useReducedMotion } from "motion/react";
 
 import type { CardSectionProps } from ".";
 import type { SingleListData } from "../../../types/apiTypes";
@@ -28,6 +29,7 @@ type OptionDropItemTypes = DraggableItemProps & {
 const Option = ({
   cardTypeCondition,
   dragState,
+  isNew,
   isPublicPage,
   isTrashPage,
   item,
@@ -36,6 +38,7 @@ const Option = ({
 }: {
   cardTypeCondition: unknown;
   dragState: DraggableCollectionState;
+  isNew: boolean;
   isPublicPage: CardSectionProps["isPublicPage"];
   isTrashPage: boolean;
   item: OptionDropItemTypes;
@@ -51,6 +54,7 @@ const Option = ({
   const categorySlug = getCategorySlugFromRouter(router);
   const isDiscoverPage = categorySlug === DISCOVER_URL;
   const { lightboxOpen, setLightboxId, setLightboxOpen } = useMiscellaneousStore();
+  const shouldReduceMotion = useReducedMotion();
   // Register the item as a drag source.
   const { dragProps } = useDraggableItem(
     {
@@ -78,8 +82,18 @@ const Option = ({
     },
   );
 
+  const springAnimation =
+    isNew && !shouldReduceMotion
+      ? {
+          animate: { opacity: 1, scale: 1, y: 0 },
+          initial: { opacity: 0, scale: 0.97, y: 16 },
+          transition: { bounce: 0.35, duration: 0.35, type: "spring" as const },
+        }
+      : { initial: false as const };
+
   return (
-    <li
+    <motion.li
+      {...springAnimation}
       aria-selected={isSelected}
       className={cn(liClassName, {
         "rounded-t-3xl rounded-b-lg":
@@ -151,7 +165,7 @@ const Option = ({
           {...pick(optionProps, ["onClick", "onPointerDown"])}
         />
       )}
-    </li>
+    </motion.li>
   );
 };
 

@@ -17,6 +17,22 @@ import { isBookmarkOwner, isUserInACategory } from "@/utils/helpers";
 import { cn } from "@/utils/tailwind-merge";
 import { getCategorySlugFromRouter } from "@/utils/url";
 
+const BOOKMARK_EXIT_MS = 150;
+const prefersReducedMotion =
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/** Plays exit animation on the bookmark card, then runs action after it completes. */
+function animateExitThenDelete(element: HTMLElement, action: () => void) {
+  const card = element.closest<HTMLElement>(".single-bookmark");
+  if (!card || prefersReducedMotion) {
+    action();
+    return;
+  }
+
+  card.classList.add("bookmark-exit-animation");
+  setTimeout(action, BOOKMARK_EXIT_MS);
+}
+
 export interface EditAndDeleteIconsProps {
   cardTypeCondition: string;
   isPublicPage: boolean;
@@ -71,7 +87,9 @@ export function EditAndDeleteIcons({
     ) : (
       <Button
         className="z-15 ml-2 hidden rounded-lg bg-whites-700 p-[5px] backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"
-        onClick={() => onDeleteClick?.([post])}
+        onClick={(event) => {
+          animateExitThenDelete(event.currentTarget, () => onDeleteClick?.([post]));
+        }}
       >
         <TrashIconGray className="size-4" />
       </Button>

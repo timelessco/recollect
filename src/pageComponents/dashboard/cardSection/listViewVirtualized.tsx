@@ -1,5 +1,7 @@
 import type { Virtualizer } from "@tanstack/react-virtual";
 
+import { cn } from "@/utils/tailwind-merge";
+
 import { viewValues } from "../../../utils/constants";
 
 interface SingleRowViewVirtualizedProps {
@@ -22,7 +24,10 @@ export const SingleRowViewVirtualized = ({
 
       return (
         <div
-          className={`absolute top-0 left-0 w-full pr-0 pl-0 ${cardTypeCondition === viewValues.timeline ? "pb-6" : "pb-0"}`}
+          className={cn(
+            "absolute top-0 left-0 w-full pr-0 pl-0",
+            cardTypeCondition === viewValues.timeline ? "pb-6" : "pb-0",
+          )}
           data-index={virtualRow.index}
           key={virtualRow.key.toString()}
           ref={rowVirtualizer.measureElement}
