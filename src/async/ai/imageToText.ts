@@ -239,7 +239,10 @@ export const imageToText = async (
     if (activeToggles.imageKeywords) {
       const keywordsInstruction = [
         "Return a JSON object describing what you see. Use ONLY these key categories:",
-        '- type: a short label for the category of content — e.g. "ecommerce" (Amazon, Flipkart), "social media" (Twitter, Instagram), "streaming" (Netflix, YouTube), "news", "blog", "developer tools" (GitHub, VS Code), "design" (Dribbble, Figma), "productivity" (Notion, Slack), "movie poster", "album cover", "product photo", "portrait", "landscape", "meme", "infographic", "documentation". Identify the domain, not just the format.',
+        "- type: content type. Use a base type AND a domain qualifier when possible.",
+        '  Base types: "movie", "tvshow", "screenshot", "image", "photo", "poster", "product", "music_album", "portfolio", "repo", "website", "xpost", "instapost", "redditpost".',
+        '  Domain qualifiers: "ecommerce" (Amazon, Flipkart), "social media" (Twitter, Instagram), "streaming" (Netflix, YouTube), "news", "blog", "developer tools" (GitHub, VS Code), "design" (Dribbble, Figma), "productivity" (Notion, Slack), "meme", "infographic", "documentation".',
+        '  Combine them — e.g. "ecommerce product", "streaming screenshot", "developer tools repo", "social media xpost", "news website". Use just the base type if no domain fits.',
         "- person, person2, person3...: named people (celebrities, characters, politicians) or man/woman/person",
         "- object, object2...: physical objects visible",
         "- place, place2...: locations, settings, landmarks",
