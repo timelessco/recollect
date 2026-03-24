@@ -239,7 +239,7 @@ export const imageToText = async (
     if (activeToggles.imageKeywords) {
       const keywordsInstruction = [
         "Return a JSON object describing what you see. Use ONLY these key categories:",
-        '- type: a short, specific label for what the content IS — e.g. "cooking tutorial", "movie poster", "product listing", "architecture portfolio", "open source repo", "political meme", "concert photo", "tech blog", "album cover", "fashion lookbook", "travel vlog screenshot". Be descriptive, not generic.',
+        '- type: a short label for the category of content — e.g. "ecommerce" (Amazon, Flipkart), "social media" (Twitter, Instagram), "streaming" (Netflix, YouTube), "news", "blog", "developer tools" (GitHub, VS Code), "design" (Dribbble, Figma), "productivity" (Notion, Slack), "movie poster", "album cover", "product photo", "portrait", "landscape", "meme", "infographic", "documentation". Identify the domain, not just the format.',
         "- person, person2, person3...: named people (celebrities, characters, politicians) or man/woman/person",
         "- object, object2...: physical objects visible",
         "- place, place2...: locations, settings, landmarks",
