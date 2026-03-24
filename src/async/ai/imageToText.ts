@@ -252,7 +252,7 @@ export const imageToText = async (
         "- capacity, model, material, size: product features (only if visible)",
         "",
         "Rules:",
-        "- Only include a key if you are ≥80% confident about it. Do NOT output confidence scores.",
+        "- Only include a key if you are ≥70% confident about it. Do NOT output confidence scores.",
         "- All values must be strings.",
         "- For numbered keys: use person, person2, person3 (not person_2 or persons).",
         "- Output valid JSON only, no markdown fences.",
