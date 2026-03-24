@@ -146,6 +146,14 @@ export type CustomSlide = BaseSlide & {
   placeholder?: string;
 };
 
+export function searchMatchesText(text: string, search: string): boolean {
+  if (!text || !search) {
+    return false;
+  }
+
+  return text.toLowerCase().includes(search.toLowerCase());
+}
+
 export function hasKeywords(keywords: Record<string, string> | string[] | undefined): boolean {
   if (!keywords) {
     return false;

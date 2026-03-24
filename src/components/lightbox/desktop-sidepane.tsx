@@ -14,7 +14,12 @@ import { useMiscellaneousStore } from "@/store/componentStore";
 import { Icon } from "../atoms/icon";
 import { GetBookmarkIcon } from "../get-bookmark-icon";
 import { CategoryMultiSelect } from "./category-multi-select";
-import { getKeywordsDisplay, hasKeywords, highlightSearch } from "./LightboxUtils";
+import {
+  getKeywordsDisplay,
+  hasKeywords,
+  highlightSearch,
+  searchMatchesText,
+} from "./LightboxUtils";
 
 const formatDate = (dateString: string) => {
   try {
@@ -263,22 +268,28 @@ export function DesktopSidepane({
                         metaData?.img_caption ?? metaData?.image_caption ?? "",
                         trimmedSearchText,
                       )}
-                      {(metaData?.img_caption ?? metaData?.image_caption) && metaData?.ocr && (
-                        <br />
-                      )}
-                      {highlightSearch(metaData?.ocr ?? "", trimmedSearchText)}
-                      {hasKeywords(metaData?.image_keywords) && (
+                      {metaData?.ocr && searchMatchesText(metaData.ocr, trimmedSearchText) && (
                         <>
-                          {(metaData?.img_caption ?? metaData?.image_caption ?? metaData?.ocr) && (
-                            <br />
-                          )}
-                          <span className="font-450">Keywords: </span>
-                          {highlightSearch(
-                            getKeywordsDisplay(metaData?.image_keywords),
-                            trimmedSearchText,
-                          )}
+                          {(metaData?.img_caption ?? metaData?.image_caption) && <br />}
+                          {highlightSearch(metaData.ocr, trimmedSearchText)}
                         </>
                       )}
+                      {hasKeywords(metaData?.image_keywords) &&
+                        searchMatchesText(
+                          getKeywordsDisplay(metaData?.image_keywords),
+                          trimmedSearchText,
+                        ) && (
+                          <>
+                            {(metaData?.img_caption ??
+                              metaData?.image_caption ??
+                              metaData?.ocr) && <br />}
+                            <span className="font-450">Keywords: </span>
+                            {highlightSearch(
+                              getKeywordsDisplay(metaData?.image_keywords),
+                              trimmedSearchText,
+                            )}
+                          </>
+                        )}
                     </p>
                   </div>
                 </motion.div>

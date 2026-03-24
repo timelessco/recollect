@@ -119,10 +119,10 @@ export const imageToText = async (
 
     // Site categories used by SENTENCE (screenshot path)
     const siteCategories = [
-      "- ARTICLE/DOCUMENTATION → main topic, core takeaway, key concepts.",
-      "- ECOMMERCE → product type, brand, model, price (no thousand separators, e.g. ₹8295), colors.",
-      "- IMAGE/CONTENT → people (name if recognizable), place, objects, colors, style.",
-      "- NORMAL WEBSITE → what the site does, key headlines, purpose.",
+      "- ARTICLE/DOCUMENTATION → main topic, core takeaway.",
+      "- ECOMMERCE → product name, brand, what it is.",
+      "- IMAGE/CONTENT → who/what is in it, context.",
+      "- NORMAL WEBSITE → what the site does, purpose.",
     ];
 
     // Build prompt sections dynamically based on active toggles
@@ -140,7 +140,7 @@ export const imageToText = async (
         'Never reference the image itself — no "thumbnail", "screenshot", "OG image", "preview", "the image shows", or "this is a picture of".';
 
       const humanTone =
-        "Write as if telling a friend what this bookmark is about. Be direct — no filler, no introductory phrases. Start with the key info.";
+        "Write as if telling a friend what this bookmark is about. Be direct — no filler, no introductory phrases. Start with the key info. Do NOT describe colors, UI elements, or visual style — keywords handle that.";
 
       let sentenceInstruction: string;
 
@@ -158,7 +158,7 @@ export const imageToText = async (
 
         case "image": {
           sentenceInstruction = [
-            "Describe what you see: people (name if recognizable), place, objects, colors.",
+            "Describe what you see: who or what is in the image, where it is, and the context.",
             humanTone,
           ].join("\n");
           break;
@@ -219,7 +219,7 @@ export const imageToText = async (
 
         default: {
           sentenceInstruction = [
-            "Describe what you see: people (name if recognizable), place, objects, colors.",
+            "Describe what you see: who or what is in the image, where it is, and the context.",
             humanTone,
           ].join("\n");
         }
