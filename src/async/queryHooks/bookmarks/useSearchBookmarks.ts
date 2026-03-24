@@ -3,7 +3,11 @@ import { useEffect } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty } from "lodash";
 
-import type { FetchSharedCategoriesData, SingleListData } from "../../../types/apiTypes";
+import type {
+  CategoriesData,
+  FetchSharedCategoriesData,
+  SingleListData,
+} from "../../../types/apiTypes";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import {
@@ -13,9 +17,11 @@ import {
 } from "../../../store/componentStore";
 import {
   BOOKMARKS_KEY,
+  CATEGORIES_KEY,
   PAGINATION_LIMIT,
   SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
+import { searchSlugKey } from "../../../utils/helpers";
 import { searchBookmarks } from "../../supabaseCrudHelpers";
 
 interface UseSearchBookmarksOptions {
@@ -32,6 +38,11 @@ export default function useSearchBookmarks(options: UseSearchBookmarksOptions = 
   const queryClient = useQueryClient();
 
   const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
+
+  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
+    CATEGORIES_KEY,
+    session?.user?.id,
+  ]);
 
   const sharedCategoriesData = queryClient.getQueryData<{ data: FetchSharedCategoriesData[] }>([
     SHARED_CATEGORIES_TABLE_NAME,
@@ -68,12 +79,12 @@ export default function useSearchBookmarks(options: UseSearchBookmarksOptions = 
       // Return offset for next page
       return pages.length * PAGINATION_LIMIT;
     },
+    // eslint-disable @tanstack/query/exhaustive-deps -- CATEGORY_ID and isSharedCategory are derived from categoryData; key must match cardSection's getQueryData lookup
     queryKey: [
       BOOKMARKS_KEY,
       session?.user?.id,
-      CATEGORY_ID,
+      categoryData ? searchSlugKey(categoryData) : undefined,
       searchText,
-      isSharedCategory,
     ] as const,
     refetchOnWindowFocus: false,
     // Remove initialPageParam completely
