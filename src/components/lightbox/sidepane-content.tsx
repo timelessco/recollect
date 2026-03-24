@@ -13,7 +13,7 @@ import { useMiscellaneousStore } from "@/store/componentStore";
 import { Icon } from "../atoms/icon";
 import { GetBookmarkIcon } from "../get-bookmark-icon";
 import { CategoryMultiSelect } from "./category-multi-select";
-import { highlightSearch } from "./LightboxUtils";
+import { getKeywordsDisplay, hasKeywords, highlightSearch } from "./LightboxUtils";
 
 const formatDate = (dateString: string) => {
   try {
@@ -167,7 +167,7 @@ export function SidepaneContent({
         metaData?.img_caption ||
         metaData?.ocr ||
         metaData?.image_caption ||
-        (metaData?.image_keywords?.length ?? 0) > 0) && (
+        hasKeywords(metaData?.image_keywords)) && (
         <motion.div
           animate={{
             y: isExpanded ? 0 : `max(0px, calc(100% - ${collapsedOffset}px))`,
@@ -201,7 +201,7 @@ export function SidepaneContent({
           {(metaData?.img_caption ||
             metaData?.ocr ||
             metaData?.image_caption ||
-            (metaData?.image_keywords?.length ?? 0) > 0) && (
+            hasKeywords(metaData?.image_keywords)) && (
             <motion.div
               className={`relative px-5 py-3 text-sm ${
                 hasAIOverflowContent ? "cursor-pointer" : ""
@@ -242,14 +242,14 @@ export function SidepaneContent({
                   )}
                   {(metaData?.img_caption ?? metaData?.image_caption) && metaData?.ocr && <br />}
                   {highlightSearch(metaData?.ocr ?? "", trimmedSearchText)}
-                  {(metaData?.image_keywords?.length ?? 0) > 0 && (
+                  {hasKeywords(metaData?.image_keywords) && (
                     <>
                       {(metaData?.img_caption ?? metaData?.image_caption ?? metaData?.ocr) && (
                         <br />
                       )}
                       <span className="font-450">Keywords: </span>
                       {highlightSearch(
-                        metaData?.image_keywords?.join(", ") ?? "",
+                        getKeywordsDisplay(metaData?.image_keywords),
                         trimmedSearchText,
                       )}
                     </>

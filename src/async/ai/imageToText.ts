@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
 
 import type { AiToggles } from "@/utils/ai-feature-toggles";
@@ -22,7 +23,7 @@ export interface ImageToTextContextProps {
 }
 
 export interface ImageToTextResult {
-  image_keywords: string[];
+  image_keywords: Record<string, string>;
   matched_collection_ids: number[];
   ocr_text: null | string;
   sentence: null | string;
@@ -85,7 +86,7 @@ export const imageToText = async (
 
     if (!hasAnyPromptToggle && !hasCollectionsToggle) {
       return {
-        image_keywords: [],
+        image_keywords: {},
         matched_collection_ids: [],
         ocr_text: null,
         sentence: null,
@@ -95,7 +96,7 @@ export const imageToText = async (
     // Audio files use a static SVG waveform — skip AI enrichment entirely
     if (options?.contentType === "audio") {
       return {
-        image_keywords: [],
+        image_keywords: {},
         matched_collection_ids: [],
         ocr_text: null,
         sentence: null,
@@ -116,12 +117,12 @@ export const imageToText = async (
       model: GEMINI_MODEL,
     });
 
-    // For Image Caption: sentence + keywords. OCR handles text separately - do not include readable text.
+    // Site categories used by SENTENCE (screenshot path)
     const siteCategories = [
-      "- ARTICLE/DOCUMENTATION (blog, news, docs, Notion, wiki) → prefer when you see headings, sections, code blocks, or long-form content. Capture the actual intent: what is the content trying to teach, explain, or communicate? Include: page title, main topic, the core message or takeaway (e.g. 'how to style HTML in Tailwind', 'best practices for image attributes'), key concepts, color palette, style.",
-      "- ECOMMERCE (product page, shop, listing) → explain what the product is (type, purpose, key features), brand, product name/model, colors, actual price (write without thousand separators, e.g. ₹8295 not ₹8,295), delivery options. State specific values when visible.",
-      "- IMAGE/CONTENT (photo, artwork, product shot, person, place) → colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place/setting, objects, style, mood, composition type. Ignore minimal chrome.",
-      "- NORMAL WEBSITE (landing, app, dashboard) → key text/headlines, colors, gist of what the site does, UI elements (nav, sidebar, forms, charts), site type or purpose.",
+      "- ARTICLE/DOCUMENTATION → main topic, core takeaway, key concepts.",
+      "- ECOMMERCE → product type, brand, model, price (no thousand separators, e.g. ₹8295), colors.",
+      "- IMAGE/CONTENT → people (name if recognizable), place, objects, colors, style.",
+      "- NORMAL WEBSITE → what the site does, key headlines, purpose.",
     ];
 
     // Build prompt sections dynamically based on active toggles
@@ -138,13 +139,17 @@ export const imageToText = async (
       const noImageMeta =
         'Never reference the image itself — no "thumbnail", "screenshot", "OG image", "preview", "the image shows", or "this is a picture of".';
 
+      const humanTone =
+        "Write as if telling a friend what this bookmark is about. Be direct — no filler, no introductory phrases. Start with the key info.";
+
       let sentenceInstruction: string;
 
       switch (contentType) {
         case "document": {
           sentenceInstruction = [
-            "You are summarizing a document. Identify the platform or source from the URL if recognizable (e.g. 'A Google Docs report on...', 'A Notion page about...', 'A PDF manual for...').",
-            "Combine the metadata and the cover page/preview to write a rich, descriptive summary — the document's subject, type (research paper, report, manual, presentation, etc.), and key topic.",
+            "Summarize this document. Name the platform if recognizable from the URL.",
+            "Cover: subject, document type (report, manual, paper, etc.), key topic.",
+            humanTone,
             noImageMeta,
             metadataBlock,
           ].join("\n");
@@ -152,15 +157,17 @@ export const imageToText = async (
         }
 
         case "image": {
-          sentenceInstruction =
-            "Describe what you see. Focus on: colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place, objects.";
+          sentenceInstruction = [
+            "Describe what you see: people (name if recognizable), place, objects, colors.",
+            humanTone,
+          ].join("\n");
           break;
         }
 
         case "instagram": {
           sentenceInstruction = [
-            "You are summarizing an Instagram post. The image is the post's visual content — use it together with the metadata below.",
-            "Describe what the post is about and its topic.",
+            "Summarize this Instagram post — what it's about and its topic.",
+            humanTone,
             noImageMeta,
             metadataBlock,
           ].join("\n");
@@ -172,17 +179,17 @@ export const imageToText = async (
 
           sentenceInstruction = isOgImage
             ? [
-                "You are summarizing a webpage. Identify the website or platform from the URL and use it to frame your summary (e.g. 'A Pinterest pin about...', 'A Medium article on...', 'A GitHub repository for...').",
-                "Combine the metadata and the image to write a rich, descriptive summary — the page's purpose, main topic, and key details. The image is the Open Graph preview; use it to add visual detail to your description.",
+                "Summarize this webpage. Name the website/platform from the URL.",
+                "Cover: what the page is about, main topic, key details.",
+                humanTone,
                 noImageMeta,
                 metadataBlock,
               ].join("\n")
             : [
-                "You are summarizing a webpage. Identify the website or platform from the URL and use it to frame your summary (e.g. 'A Pinterest pin about...', 'An Amazon product listing for...', 'A documentation page on...').",
-                "The image is a full-page screenshot — use it together with the metadata to write a rich, descriptive summary of the page's content.",
-                "",
-                "Classify the page and focus accordingly:",
+                "Summarize this webpage from its screenshot. Name the website/platform from the URL.",
+                "Classify and focus accordingly:",
                 ...siteCategories,
+                humanTone,
                 noImageMeta,
                 metadataBlock,
               ].join("\n");
@@ -191,8 +198,8 @@ export const imageToText = async (
 
         case "tweet": {
           sentenceInstruction = [
-            "You are summarizing a post from Twitter/X. The image is a capture of the post — use it together with the metadata below.",
-            "Describe the post's topic and main point concisely.",
+            "Summarize this Twitter/X post — topic and main point.",
+            humanTone,
             noImageMeta,
             metadataBlock,
           ].join("\n");
@@ -201,8 +208,9 @@ export const imageToText = async (
 
         case "video": {
           sentenceInstruction = [
-            "You are summarizing a video. Identify the platform from the URL (e.g. 'A YouTube tutorial on...', 'A Vimeo short film about...', 'A TikTok video showing...').",
-            "Combine the metadata and the preview frame to write a rich, descriptive summary — the video's topic, format (tutorial, review, vlog, music video, etc.), and key subject.",
+            "Summarize this video. Name the platform from the URL.",
+            "Cover: topic, format (tutorial, review, vlog, etc.), key subject.",
+            humanTone,
             noImageMeta,
             metadataBlock,
           ].join("\n");
@@ -210,8 +218,10 @@ export const imageToText = async (
         }
 
         default: {
-          sentenceInstruction =
-            "Describe what you see. Focus on: colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place, objects.";
+          sentenceInstruction = [
+            "Describe what you see: people (name if recognizable), place, objects, colors.",
+            humanTone,
+          ].join("\n");
         }
       }
 
@@ -219,34 +229,34 @@ export const imageToText = async (
         "",
         "SENTENCE:",
         sentenceInstruction,
-        "For people: always try to identify and name if recognizable — include celebrities, actors, fictional characters, politicians, historical figures; otherwise use man, woman, person.",
+        "Name recognizable people (celebrities, actors, characters, politicians). Otherwise use man, woman, person.",
       );
       formatLines.push("SENTENCE: <your sentence here>");
     }
 
     // KEYWORDS section (controlled by imageKeywords toggle)
     if (activeToggles.imageKeywords) {
-      const useWebsiteKeywords = contentType === "link";
-
-      const keywordsInstruction = useWebsiteKeywords
-        ? [
-            "List 20 nouns and short descriptive terms. If you can identify the website or service (e.g. Amazon, GitHub, Notion), include it as a keyword. For recognizable characters: include both the person/character name AND the show, movie, or franchise. Only add the source if confident. Match the image type to one below and include the relevant keywords:",
-            ...siteCategories,
-            "",
-            "Describe only what is in the image. Do NOT include readable text or words from the image.",
-          ].join("\n")
-        : [
-            "List 20 nouns and short descriptive terms. MUST include:",
-            "- Objects",
-            "- People (name if recognizable: celebrity, actor, fictional character; otherwise man/woman/person)",
-            "- Place/setting",
-            "- Style, mood, composition type (photo, illustration, diagram, etc.)",
-            "For recognizable characters (actors, fictional characters): include both the person/character name AND the show, movie, or franchise they are from. Only add the source if you are confident.",
-            "Describe only what is in the image. Do NOT include readable text.",
-          ].join("\n");
+      const keywordsInstruction = [
+        "Return a JSON object describing what you see. Use ONLY these key categories:",
+        '- type: one of "movie", "tvshow", "screenshot", "image", "photo", "poster", "product", "music_album", "portfolio", "repo", "website", "xpost", "instapost", "redditpost"',
+        "- person, person2, person3...: named people (celebrities, characters, politicians) or man/woman/person",
+        "- object, object2...: physical objects visible",
+        "- place, place2...: locations, settings, landmarks",
+        "- color, color2...: dominant colors",
+        "- brand: brand name (only if clearly visible/identifiable)",
+        "- price: price (only if visible, no thousand separators e.g. ₹8295)",
+        "- capacity, model, material, size: product features (only if visible)",
+        "",
+        "Rules:",
+        "- Only include a key if you are ≥80% confident about it. Do NOT output confidence scores.",
+        "- All values must be strings.",
+        "- For numbered keys: use person, person2, person3 (not person_2 or persons).",
+        "- Output valid JSON only, no markdown fences.",
+        "- Do NOT include readable text or OCR content as keywords.",
+      ].join("\n");
 
       promptParts.push("", "KEYWORDS:", keywordsInstruction);
-      formatLines.push("KEYWORDS: keyword1, keyword2, keyword3, ...");
+      formatLines.push('KEYWORDS: {"type": "...", "person": "...", ...}');
     }
 
     // OCR section (controlled by ocr toggle)
@@ -291,7 +301,7 @@ export const imageToText = async (
     // Skip API call if no prompt sections were added (e.g., only autoAssignCollections on with no collections)
     if (formatLines.length === 0) {
       return {
-        image_keywords: [],
+        image_keywords: {},
         matched_collection_ids: [],
         ocr_text: null,
         sentence: null,
@@ -333,17 +343,43 @@ export const imageToText = async (
       sentence = rawSentence?.replace(/^\[(.+)\]$/su, "$1")?.trim() ?? null;
     }
 
-    let image_keywords: string[] = [];
+    const image_keywords: Record<string, string> = {};
     if (activeToggles.imageKeywords && text.includes("KEYWORDS:")) {
       const [, keywordsPart] = text.split("KEYWORDS:");
       const keywordsBeforeNext = keywordsPart?.split("OCR_TEXT:")[0]?.split("COLLECTIONS:")[0];
       const rawKeywords = keywordsBeforeNext?.trim() ?? "";
-      // Strip outer brackets Gemini may copy from format template
-      const keywordsStr = rawKeywords.replace(/^\[(.+)\]$/su, "$1").trim();
-      image_keywords = keywordsStr
-        .split(/,\s*/u)
-        .map((keyword) => keyword.trim())
-        .filter(Boolean);
+
+      // Strip markdown fences Gemini may wrap around JSON
+      const unfenced = rawKeywords.replaceAll(/```(?:json)?\n?([\s\S]*?)```/gu, "$1").trim();
+
+      // Extract the first JSON object block
+      const jsonMatch = /\{[\s\S]*\}/u.exec(unfenced);
+      if (jsonMatch) {
+        try {
+          const parsed: unknown = JSON.parse(jsonMatch[0]);
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+            // Only keep string values
+            for (const [k, value] of Object.entries(parsed as Record<string, unknown>)) {
+              if (typeof value === "string" && value.trim()) {
+                image_keywords[k] = value.trim();
+              }
+            }
+          }
+        } catch {
+          Sentry.captureMessage("Failed to parse structured keywords JSON from Gemini", {
+            extra: { imageUrl, rawJson: jsonMatch[0].slice(0, 500) },
+            level: "warning",
+            tags: { operation: "structured_keywords_parse" },
+          });
+        }
+      } else if (unfenced.length > 0) {
+        Sentry.addBreadcrumb({
+          category: "ai.keywords",
+          data: { rawKeywords: unfenced.slice(0, 200) },
+          level: "warning",
+          message: "Gemini returned keywords without valid JSON object",
+        });
+      }
     }
 
     let ocr_text: null | string = null;

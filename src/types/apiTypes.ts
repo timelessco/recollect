@@ -16,7 +16,7 @@ export interface ImgMetadataType {
   height: null | number;
   iframeAllowed: boolean | null;
   image_caption: null | string;
-  image_keywords?: string[];
+  image_keywords?: Record<string, string> | string[];
   img_caption: null | string;
   isOgImagePreferred: boolean;
   isPageScreenshot: boolean | null;

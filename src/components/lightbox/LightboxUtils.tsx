@@ -146,6 +146,32 @@ export type CustomSlide = BaseSlide & {
   placeholder?: string;
 };
 
+export function hasKeywords(keywords: Record<string, string> | string[] | undefined): boolean {
+  if (!keywords) {
+    return false;
+  }
+
+  if (Array.isArray(keywords)) {
+    return keywords.length > 0;
+  }
+
+  return Object.keys(keywords).length > 0;
+}
+
+export function getKeywordsDisplay(
+  keywords: Record<string, string> | string[] | undefined,
+): string {
+  if (!keywords) {
+    return "";
+  }
+
+  if (Array.isArray(keywords)) {
+    return keywords.join(", ");
+  }
+
+  return Object.values(keywords).join(", ");
+}
+
 export const highlightSearch = (text: string, search: string): (React.ReactNode | string)[] => {
   if (!text || !search) {
     return [text ?? ""];
