@@ -239,7 +239,7 @@ export const imageToText = async (
         "Return a nested JSON object with these top-level keys (all arrays of strings):",
         "",
         '- "type": 1–3 content types from the CLOSED list below. Pick the MOST SPECIFIC match first.',
-        '  Allowed values (use EXACTLY — do not invent or combine): "article", "blog", "documentation", "infographic", "meme", "newsletter", "recipe", "tutorial", "image", "photo", "poster",  "video", "music_album", "podcast", "movie", "tvshow", "anime", "game", "xpost", "instapost", "redditpost", "pin", "thread", "product", "deal", "review", "repo", "portfolio", "webapp", "ecommerce", "streaming", "news", "design", "developer tools", "productivity", "social media", "course", "book", "research_paper", "job", "event", "place", "restaurant", "pdf", "profile", "package", "linkedinpost", "tiktok", "hnpost".',
+        '  Allowed values (use EXACTLY — do not invent or combine): "article", "blog", "documentation", "infographic", "meme", "newsletter", "recipe", "tutorial", "image", "photo", "poster",  "video", "music_album", "podcast", "movie", "tvshow", "anime", "game", "xpost", "instapost", "redditpost", "pin", "thread", "product", "deal", "review", "repo", "portfolio", "webapp", "ecommerce", "streaming", "news", "design", "developer tools", "productivity", "social media", "course", "book", "research_paper", "job", "event", "place", "restaurant", "pdf", "profile", "package", "linkedinpost", "tiktok"',
         "",
         '- "people": ONLY named/identifiable people — use their actual name from text, metadata, or URL. Include directors, cast, authors. Do NOT output generic labels like man/woman/person — omit entirely if unknown.',
         '- "object": physical objects visible in the image.',
