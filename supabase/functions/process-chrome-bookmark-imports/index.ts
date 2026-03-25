@@ -90,6 +90,19 @@ function extractMsgId(msg: unknown): number | null {
   return typeof m.msg_id === "number" ? m.msg_id : null;
 }
 
+// Block non-http(s) schemes, loopback, link-local (cloud metadata), and private ranges
+function isSafeUrl(url: string): boolean {
+  try {
+    const { protocol, hostname } = new URL(url);
+    if (protocol !== "http:" && protocol !== "https:") return false;
+    if (/^(localhost|.*\.local)$/.test(hostname)) return false;
+    if (/^(169\.254\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(hostname)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // Fetch favicon URL from Google S2 service
 async function fetchFavicon(url: string): Promise<string | null> {
   try {
@@ -105,7 +118,7 @@ async function fetchFavicon(url: string): Promise<string | null> {
 
 // Validate ogImage URL returns an image content-type
 async function validateOgImage(ogImage: string | null): Promise<string | null> {
-  if (!ogImage) {
+  if (!ogImage || !isSafeUrl(ogImage)) {
     return null;
   }
 
@@ -129,6 +142,10 @@ async function validateOgImage(ogImage: string | null): Promise<string | null> {
 
 // Detect media type of a URL via HEAD request
 async function detectMediaType(url: string): Promise<string | null> {
+  if (!isSafeUrl(url)) {
+    return null;
+  }
+
   try {
     const res = await fetch(url, {
       method: "HEAD",
