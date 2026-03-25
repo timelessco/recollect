@@ -90,7 +90,7 @@ function extractMsgId(msg: unknown): number | null {
   return typeof m.msg_id === "number" ? m.msg_id : null;
 }
 
-// Block non-http(s) schemes, loopback, link-local (cloud metadata), and private ranges
+// Block non-http(s) schemes
 function isSafeUrl(url: string): boolean {
   try {
     const { protocol, hostname } = new URL(url);
