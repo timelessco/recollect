@@ -4,7 +4,7 @@ import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 
-import type { UserCollection } from "../../../async/ai/imageToText";
+import type { StructuredKeywords, UserCollection } from "../../../async/ai/imageToText";
 import type {
   ImgMetadataType,
   NextApiRequest,
@@ -35,7 +35,7 @@ const notVideoLogic = async (
 ) => {
   const ogImage = mediaType?.includes("audio") ? AUDIO_OG_IMAGE_FALLBACK_URL : publicUrl;
   let imageCaption: null | string = null;
-  let imageKeywords: Record<string, string> = {};
+  let imageKeywords: StructuredKeywords = {};
   let imageOcrValue = null;
   let ocrStatus: "limit_reached" | "no_text" | "success" = "no_text";
   let matchedCollectionIds: number[] = [];

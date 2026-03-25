@@ -5,7 +5,7 @@ import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
 import { isEmpty } from "lodash";
 
-import type { UserCollection } from "../../../async/ai/imageToText";
+import type { StructuredKeywords, UserCollection } from "../../../async/ai/imageToText";
 import type {
   ImgMetadataType,
   SingleListData,
@@ -82,7 +82,7 @@ const videoLogic = async (
   let ocrData: null | string = null;
   let ocrStatus: "limit_reached" | "no_text" | "success" = "no_text";
   let imageCaption: null | string = null;
-  let imageKeywords: Record<string, string> = {};
+  let imageKeywords: StructuredKeywords = {};
   let matchedCollectionIds: number[] = [];
   if (thumbnailUrl?.publicUrl) {
     // Handle blurhash generation

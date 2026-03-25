@@ -25,8 +25,17 @@ export interface ImageToTextContextProps {
   url?: null | string;
 }
 
+export interface StructuredKeywords {
+  color?: string[];
+  features?: Record<string, string>;
+  object?: string[];
+  people?: string[];
+  place?: string[];
+  type?: string[];
+}
+
 export interface ImageToTextResult {
-  image_keywords: Record<string, string>;
+  image_keywords: StructuredKeywords;
   matched_collection_ids: number[];
   ocr_text: null | string;
   sentence: null | string;
@@ -227,9 +236,10 @@ export const imageToText = async (
     // KEYWORDS section (controlled by imageKeywords toggle)
     if (activeToggles.imageKeywords) {
       const keywordsInstruction = [
-        "Return a JSON object describing what you see. Use ONLY these key categories:",
-        "- type, type2, type3...: content types from the CLOSED list below. Use 1–3 types that best describe the content. Pick the MOST SPECIFIC match first.",
-        "  Allowed values (use these EXACTLY — do not invent or combine):",
+        "Return a nested JSON object with these top-level keys (all arrays of strings):",
+        "",
+        '- "type": 1–3 content types from the CLOSED list below. Pick the MOST SPECIFIC match first.',
+        "  Allowed values (use EXACTLY — do not invent or combine):",
         '  Content format: "article", "blog", "documentation", "infographic", "meme", "newsletter", "recipe", "tutorial".',
         '  Media: "image", "photo", "poster", "screenshot", "video", "music_album", "podcast".',
         '  Entertainment: "movie", "tvshow", "anime", "game".',
@@ -237,28 +247,33 @@ export const imageToText = async (
         '  Commerce: "product", "deal", "review".',
         '  Dev: "repo", "portfolio", "website", "tool", "api".',
         '  Domain: "ecommerce", "streaming", "news", "design", "developer tools", "productivity", "social media".',
-        "- person, person2, person3...: ONLY named/identifiable people. Use their actual name from text, metadata, or URL. Do NOT output generic labels like man/woman/person — omit the key entirely if you cannot identify who they are.",
-        "- director: director name (for movies, TV shows — infer from page metadata if visible)",
-        "- cast, cast2, cast3...: lead actors/performers (for movies, TV shows, music — infer from page metadata if visible)",
-        "- object, object2...: physical objects visible",
-        "- place, place2...: locations, settings, landmarks",
-        "- color, color2...: dominant colors",
-        "- brand: the brand or company that OWNS the content (e.g. Samsung, Nike, WABC). NOT the hosting platform (Instagram, Twitter, YouTube, Amazon) and NOT tools or sponsors mentioned on the page.",
-        "- price: price (only if visible, no thousand separators e.g. ₹8295)",
-        "- model: product model number/identifier (e.g. RR20C1824CR/HL, iPhone 16 Pro) — extract from title, description, or visible text",
-        "- capacity, material, size: product features (only if visible)",
+        "",
+        '- "people": ONLY named/identifiable people — use their actual name from text, metadata, or URL. Include directors, cast, authors. Do NOT output generic labels like man/woman/person — omit entirely if unknown.',
+        '- "object": physical objects visible in the image.',
+        '- "place": locations, settings, landmarks.',
+        '- "color": dominant colors as hex codes (e.g. "#FF5733", "#1A1A1A").',
+        "",
+        '- "features": a flat object (NOT an array) for product/content metadata:',
+        '  "brand": the brand that OWNS the content (e.g. Samsung, Nike). NOT the hosting platform (Instagram, YouTube, Amazon).',
+        '  "model": product model number/identifier (e.g. RR20C1824CR/HL, iPhone 16 Pro).',
+        '  "price": price if visible (no thousand separators, e.g. ₹8295).',
+        '  "director": director name (movies, TV shows).',
+        '  "capacity", "material", "size": product features if visible.',
+        "  Any other specific attribute that helps identify the content.",
         "",
         "Rules:",
-        "- Only include a key if you are ≥70% confident about it. Do NOT output confidence scores.",
-        "- person = people visible in the image. director/cast = inferred from page content or metadata (title, description, URL). Both can coexist.",
-        "- All values must be strings.",
-        "- For numbered keys: use person, person2, person3 (not person_2 or persons).",
+        "- Only include a key if you are ≥70% confident. Do NOT output confidence scores.",
+        "- Top-level keys (type, people, object, place, color) are arrays of strings.",
+        '- "features" is a flat object of string key-value pairs.',
+        "- Omit empty arrays and empty objects — do not include keys with [] or {}.",
         "- Output valid JSON only, no markdown fences.",
         "- Do NOT duplicate OCR body text as keywords. Product identifiers (model numbers, SKUs) and names ARE keywords.",
       ].join("\n");
 
       promptParts.push("", "KEYWORDS:", keywordsInstruction);
-      formatLines.push('KEYWORDS: {"type": "...", "type2": "...", "person": "...", ...}');
+      formatLines.push(
+        'KEYWORDS: {"type": ["..."], "people": ["..."], "object": ["..."], "place": ["..."], "color": ["..."], "features": {"brand": "...", ...}}',
+      );
     }
 
     // OCR section (controlled by ocr toggle)
@@ -344,7 +359,7 @@ export const imageToText = async (
       sentence = rawSentence?.replace(/^\[(.+)\]$/su, "$1")?.trim() ?? null;
     }
 
-    const image_keywords: Record<string, string> = {};
+    const image_keywords: StructuredKeywords = {};
     if (activeToggles.imageKeywords && text.includes("KEYWORDS:")) {
       const [, keywordsPart] = text.split("KEYWORDS:");
       const keywordsBeforeNext = keywordsPart?.split("OCR_TEXT:")[0]?.split("COLLECTIONS:")[0];
@@ -359,10 +374,30 @@ export const imageToText = async (
         try {
           const parsed: unknown = JSON.parse(jsonMatch[0]);
           if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-            // Only keep string values
-            for (const [k, value] of Object.entries(parsed as Record<string, unknown>)) {
-              if (typeof value === "string" && value.trim()) {
-                image_keywords[k] = value.trim();
+            const obj = parsed as Record<string, unknown>;
+            const ARRAY_KEYS = new Set(["color", "object", "people", "place", "type"]);
+
+            for (const arrayKey of ARRAY_KEYS) {
+              const value = obj[arrayKey];
+              if (Array.isArray(value)) {
+                const filtered = value.filter(
+                  (item): item is string => typeof item === "string" && item.trim().length > 0,
+                );
+                if (filtered.length > 0) {
+                  image_keywords[arrayKey as keyof Omit<StructuredKeywords, "features">] = filtered;
+                }
+              }
+            }
+
+            if (obj.features && typeof obj.features === "object" && !Array.isArray(obj.features)) {
+              const features: Record<string, string> = {};
+              for (const [k, v] of Object.entries(obj.features as Record<string, unknown>)) {
+                if (typeof v === "string" && v.trim()) {
+                  features[k] = v.trim();
+                }
+              }
+              if (Object.keys(features).length > 0) {
+                image_keywords.features = features;
               }
             }
           }

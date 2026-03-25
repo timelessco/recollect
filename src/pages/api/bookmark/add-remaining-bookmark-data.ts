@@ -8,6 +8,7 @@ import { decode } from "base64-arraybuffer";
 import { isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
+import type { StructuredKeywords } from "../../../async/ai/imageToText";
 import type {
   AddBookmarkRemainingDataPayloadTypes,
   NextApiRequest,
@@ -229,7 +230,7 @@ export default async function handler(
   let imageOcrValue = null;
   let ocrStatus: "limit_reached" | "no_text" | "success" = "no_text";
   let imageCaption: null | string = null;
-  let imageKeywords: Record<string, string> = {};
+  let imageKeywords: StructuredKeywords = {};
 
   //	generate meta data for og image for websites like cosmos, pintrest because they have better ogImage
   const ogImageMetaDataGeneration = uploadedCoverImageUrl ?? currentData?.meta_data?.screenshot;

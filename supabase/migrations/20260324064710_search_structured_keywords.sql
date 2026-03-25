@@ -1,17 +1,74 @@
 -- ============================================================================
--- Migration: Support structured keywords in bookmark search
+-- Migration: Nested structured keywords for bookmark search
 -- ============================================================================
 -- Purpose:
---   Update search_bookmarks_url_tag_scope to handle image_keywords as either:
---   - Old format: JSON array of strings  ["keyword1", "keyword2"]
---   - New format: JSON object with typed keys  {"type": "movie", "person": "Tom Hanks"}
---   Uses jsonb_typeof() to branch between array and object extraction.
--- Affected: public.search_bookmarks_url_tag_scope
--- No table or index changes.
+--   1. Migrate ALL existing image_keywords to the new nested format:
+--      { "type": ["..."], "people": ["..."], "features": { "brand": "..." } }
+--   2. Create extract_keywords_text() helper for search
+--   3. Update search_bookmarks_url_tag_scope to use the helper
+--
+-- Data migrations:
+--   - Legacy array ["a", "b"]  → { "features": { "0": "a", "1": "b" } }
+--   - Legacy flat object { "type": "movie", "brand": "IMDb" }
+--     → { "features": { "type": "movie", "brand": "IMDb" } }
+--   - New nested format: left as-is
 -- ============================================================================
 
 BEGIN;
 
+-- Step 1: Migrate legacy flat objects → wrap in features
+-- { "type": "movie", "brand": "IMDb" } → { "features": { "type": "movie", "brand": "IMDb" } }
+UPDATE public.everything
+SET meta_data = jsonb_set(
+    meta_data,
+    '{image_keywords}',
+    jsonb_build_object('features', meta_data->'image_keywords')
+)
+WHERE meta_data->'image_keywords' IS NOT NULL
+  AND jsonb_typeof(meta_data->'image_keywords') = 'object'
+  AND NOT (meta_data->'image_keywords' ? 'features');
+
+-- Step 2: Migrate legacy arrays → wrap in features with indexed keys
+-- ["red", "car"] → { "features": { "0": "red", "1": "car" } }
+UPDATE public.everything
+SET meta_data = jsonb_set(
+    meta_data,
+    '{image_keywords}',
+    jsonb_build_object('features', (
+        SELECT COALESCE(jsonb_object_agg(idx::text, val), '{}'::jsonb)
+        FROM jsonb_array_elements_text(meta_data->'image_keywords') WITH ORDINALITY AS t(val, idx)
+    ))
+)
+WHERE meta_data->'image_keywords' IS NOT NULL
+  AND jsonb_typeof(meta_data->'image_keywords') = 'array';
+
+-- Step 3: Helper to extract all searchable strings from nested keywords
+-- Only handles the new format: { "type": [...], "people": [...], "features": { ... } }
+CREATE OR REPLACE FUNCTION public.extract_keywords_text(keywords jsonb)
+RETURNS TABLE(keyword text)
+LANGUAGE sql
+IMMUTABLE
+SECURITY INVOKER
+SET search_path = public
+AS $$
+  -- Top-level arrays: { "type": ["movie", "streaming"], "people": ["Tom Hanks"] }
+  SELECT jsonb_array_elements_text(val)
+  FROM jsonb_each(keywords) AS x(key, val)
+  WHERE jsonb_typeof(val) = 'array'
+
+  UNION ALL
+
+  -- Nested objects (features): { "features": { "brand": "IMDb", "model": "XYZ" } }
+  SELECT v
+  FROM jsonb_each(keywords) AS x(key, val),
+       LATERAL jsonb_each_text(val) AS y(k, v)
+  WHERE jsonb_typeof(val) = 'object';
+$$;
+
+COMMENT ON FUNCTION public.extract_keywords_text(jsonb) IS
+'Extracts all searchable text from nested image_keywords: array values are unnested, object values (features) are flattened to their string values.';
+
+-- Step 4: Update search function to use the helper
 CREATE OR REPLACE FUNCTION public.search_bookmarks_url_tag_scope(
     search_text character varying DEFAULT '',
     url_scope character varying DEFAULT '',
@@ -151,18 +208,11 @@ BEGIN
                         WHERE key IN ('img_caption', 'image_caption', 'ocr')
                           AND lower(value) LIKE '%' || replace(replace(token, '%', '\%'), '_', '\_') || '%' ESCAPE '\'
                     )
-                    -- Match token in image_keywords (supports both array and object formats)
+                    -- Match token in image_keywords (nested format only)
                     OR EXISTS (
                         SELECT 1
-                        FROM LATERAL (
-                            SELECT jsonb_array_elements_text(b.meta_data->'image_keywords') AS kw
-                            WHERE jsonb_typeof(b.meta_data->'image_keywords') = 'array'
-                            UNION ALL
-                            SELECT value AS kw
-                            FROM jsonb_each_text(b.meta_data->'image_keywords')
-                            WHERE jsonb_typeof(b.meta_data->'image_keywords') = 'object'
-                        ) AS keywords
-                        WHERE lower(keywords.kw) LIKE '%' || replace(replace(token, '%', '\%'), '_', '\_') || '%' ESCAPE '\'
+                        FROM public.extract_keywords_text(b.meta_data->'image_keywords') AS kw
+                        WHERE lower(kw.keyword) LIKE '%' || replace(replace(token, '%', '\%'), '_', '\_') || '%' ESCAPE '\'
                     )
                   )
             )
@@ -180,13 +230,7 @@ BEGIN
                 similarity(COALESCE(b.meta_data->>'image_caption', ''), btrim(search_text)) * 0.15 +
                 similarity(
                     COALESCE(
-                        CASE jsonb_typeof(COALESCE(b.meta_data->'image_keywords', '[]'::jsonb))
-                            WHEN 'array' THEN
-                                (SELECT string_agg(kw, ' ') FROM jsonb_array_elements_text(b.meta_data->'image_keywords') AS kw)
-                            WHEN 'object' THEN
-                                (SELECT string_agg(val, ' ') FROM jsonb_each_text(b.meta_data->'image_keywords') AS x(k, val))
-                            ELSE ''
-                        END,
+                        (SELECT string_agg(kw.keyword, ' ') FROM public.extract_keywords_text(b.meta_data->'image_keywords') AS kw),
                         ''
                     ),
                     btrim(search_text)
@@ -198,6 +242,6 @@ END;
 $function$;
 
 COMMENT ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint) IS
-'Bookmark search with URL/tag/category filters. Multi-word AND semantics: each token must match in title/description, url, or meta (img_caption, image_caption, ocr, image_keywords). Supports image_keywords as both JSON array (legacy) and JSON object (structured). VOLATILE so pg_trgm.similarity_threshold applies correctly.';
+'Bookmark search with URL/tag/category filters. Multi-word AND semantics: each token must match in title/description, url, or meta (img_caption, image_caption, ocr, image_keywords). Uses extract_keywords_text() for nested keyword format. VOLATILE so pg_trgm.similarity_threshold applies correctly.';
 
 COMMIT;
