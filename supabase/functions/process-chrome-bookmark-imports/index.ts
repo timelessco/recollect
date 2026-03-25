@@ -188,6 +188,7 @@ async function processMessage(
       console.error(`[chrome-bookmark-worker] Archive failed for msg ${msg_id}:`, archiveError);
       Sentry.captureException(new Error("Queue archive failed"), {
         extra: { msg_id, archiveError },
+        tags: { operation: "chrome_bookmark_archive_failed" },
       });
       return { type: "retry", reason: "archive_failed" };
     }
@@ -437,7 +438,9 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error("[chrome-bookmark-worker] Unexpected error:", error);
-    Sentry.captureException(error instanceof Error ? error : new Error(String(error)));
+    Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
+      tags: { operation: "chrome_bookmark_worker_unhandled" },
+    });
     await Sentry.flush(2000);
 
     return Response.json(

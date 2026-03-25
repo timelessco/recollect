@@ -102,12 +102,6 @@ BEGIN
       CONTINUE;
     END IF;
 
-    -- Skip if URL is empty
-    IF v_url IS NULL OR btrim(v_url) = '' THEN
-      v_skipped := v_skipped + 1;
-      CONTINUE;
-    END IF;
-
     PERFORM pg_advisory_xact_lock(
       hashtext(p_user_id::text || '|' || lower(btrim(v_url)))
     );
@@ -375,10 +369,16 @@ SECURITY DEFINER
 SET search_path = public, pgmq, pg_temp
 AS $$
 DECLARE
+  v_caller_id UUID;
   v_pending BIGINT;
   v_archived BIGINT;
   v_archives JSONB;
 BEGIN
+  v_caller_id := auth.uid();
+  IF v_caller_id IS NULL OR v_caller_id != p_user_id THEN
+    RAISE EXCEPTION 'Unauthorized: can only inspect your own Chrome bookmark sync status';
+  END IF;
+
   SELECT COUNT(*)
   INTO v_pending
   FROM pgmq.q_chrome_bookmark_imports
@@ -424,9 +424,15 @@ SECURITY DEFINER
 SET search_path = public, pgmq, pg_temp
 AS $$
 DECLARE
+  v_caller_id UUID;
   v_msg RECORD;
   v_requeued INT := 0;
 BEGIN
+  v_caller_id := auth.uid();
+  IF v_caller_id IS NULL OR v_caller_id != p_user_id THEN
+    RAISE EXCEPTION 'Unauthorized: can only retry your own Chrome bookmark imports';
+  END IF;
+
   FOR v_msg IN
     SELECT msg_id, message
     FROM pgmq.a_chrome_bookmark_imports
