@@ -291,6 +291,13 @@ export function DesktopSidepane({
                           </>
                         )}
                     </p>
+                    {/* Development-only: show raw image_keywords JSON for prompt debugging */}
+                    {process.env.NODE_ENV === "development" &&
+                      hasKeywords(metaData?.image_keywords) && (
+                        <pre className="mt-2 max-h-[150px] overflow-auto rounded bg-gray-100 p-2 text-[11px] leading-tight text-gray-600">
+                          {JSON.stringify(metaData?.image_keywords, null, 2)}
+                        </pre>
+                      )}
                   </div>
                 </motion.div>
               )}

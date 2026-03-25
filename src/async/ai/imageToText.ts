@@ -118,14 +118,6 @@ export const imageToText = async (
       model: GEMINI_MODEL,
     });
 
-    // Site categories used by SENTENCE (screenshot path)
-    const siteCategories = [
-      "- ARTICLE/DOCUMENTATION → main topic, core takeaway.",
-      "- ECOMMERCE → product name, brand, what it is.",
-      "- IMAGE/CONTENT → who/what is in it, context.",
-      "- NORMAL WEBSITE → what the site does, purpose.",
-    ];
-
     // Build prompt sections dynamically based on active toggles
     const contentType = options?.contentType ?? "link";
     const promptParts: string[] = ["Analyze this image and provide the following parts."];
@@ -189,7 +181,6 @@ export const imageToText = async (
             : [
                 "Summarize this webpage from its screenshot. Name the website/platform from the URL.",
                 "Classify and focus accordingly:",
-                ...siteCategories,
                 humanTone,
                 noImageMeta,
                 metadataBlock,
@@ -239,28 +230,37 @@ export const imageToText = async (
     if (activeToggles.imageKeywords) {
       const keywordsInstruction = [
         "Return a JSON object describing what you see. Use ONLY these key categories:",
-        "- type: content type. Use a base type AND a domain qualifier when possible.",
-        '  Base types: "movie", "tvshow", "screenshot", "image", "photo", "poster", "product", "music_album", "portfolio", "repo", "website", "xpost", "instapost", "redditpost".',
-        '  Domain qualifiers: "ecommerce" (Amazon, Flipkart), "social media" (Twitter, Instagram), "streaming" (Netflix, YouTube), "news", "blog", "developer tools" (GitHub, VS Code), "design" (Dribbble, Figma), "productivity" (Notion, Slack), "meme", "infographic", "documentation".',
-        '  Combine them — e.g. "ecommerce product", "streaming screenshot", "developer tools repo", "social media xpost", "news website". Use just the base type if no domain fits.',
-        "- person, person2, person3...: named people (celebrities, characters, politicians) or man/woman/person",
+        "- type, type2, type3...: content types from the CLOSED list below. Use 1–3 types that best describe the content. Pick the MOST SPECIFIC match first.",
+        "  Allowed values (use these EXACTLY — do not invent or combine):",
+        '  Content format: "article", "blog", "documentation", "infographic", "meme", "newsletter", "recipe", "tutorial".',
+        '  Media: "image", "photo", "poster", "screenshot", "video", "music_album", "podcast".',
+        '  Entertainment: "movie", "tvshow", "anime", "game".',
+        '  Social: "xpost", "instapost", "redditpost", "thread".',
+        '  Commerce: "product", "deal", "review".',
+        '  Dev: "repo", "portfolio", "website", "tool", "api".',
+        '  Domain: "ecommerce", "streaming", "news", "design", "developer tools", "productivity", "social media".',
+        "- person, person2, person3...: ONLY named/identifiable people. Use their actual name from text, metadata, or URL. Do NOT output generic labels like man/woman/person — omit the key entirely if you cannot identify who they are.",
+        "- director: director name (for movies, TV shows — infer from page metadata if visible)",
+        "- cast, cast2, cast3...: lead actors/performers (for movies, TV shows, music — infer from page metadata if visible)",
         "- object, object2...: physical objects visible",
         "- place, place2...: locations, settings, landmarks",
         "- color, color2...: dominant colors",
-        "- brand: brand name (only if clearly visible/identifiable)",
+        "- brand: the brand or company that OWNS the content (e.g. Samsung, Nike, WABC). NOT the hosting platform (Instagram, Twitter, YouTube, Amazon) and NOT tools or sponsors mentioned on the page.",
         "- price: price (only if visible, no thousand separators e.g. ₹8295)",
-        "- capacity, model, material, size: product features (only if visible)",
+        "- model: product model number/identifier (e.g. RR20C1824CR/HL, iPhone 16 Pro) — extract from title, description, or visible text",
+        "- capacity, material, size: product features (only if visible)",
         "",
         "Rules:",
         "- Only include a key if you are ≥70% confident about it. Do NOT output confidence scores.",
+        "- person = people visible in the image. director/cast = inferred from page content or metadata (title, description, URL). Both can coexist.",
         "- All values must be strings.",
         "- For numbered keys: use person, person2, person3 (not person_2 or persons).",
         "- Output valid JSON only, no markdown fences.",
-        "- Do NOT include readable text or OCR content as keywords.",
+        "- Do NOT duplicate OCR body text as keywords. Product identifiers (model numbers, SKUs) and names ARE keywords.",
       ].join("\n");
 
       promptParts.push("", "KEYWORDS:", keywordsInstruction);
-      formatLines.push('KEYWORDS: {"type": "...", "person": "...", ...}');
+      formatLines.push('KEYWORDS: {"type": "...", "type2": "...", "person": "...", ...}');
     }
 
     // OCR section (controlled by ocr toggle)
