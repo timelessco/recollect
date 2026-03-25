@@ -53,10 +53,10 @@ async function handlePost(request: NextRequest) {
           tags: { operation: "cron_clear_old_trash_fetch" },
         });
 
-        return NextResponse.json({
-          data: { deletedCount: totalDeleted },
-          error: null,
-        });
+        return NextResponse.json(
+          { data: { deletedCount: totalDeleted }, error: "Failed to fetch old trash items" },
+          { status: 500 },
+        );
       }
 
       if (!oldTrash || oldTrash.length === 0) {
