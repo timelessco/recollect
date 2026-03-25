@@ -58,15 +58,25 @@ AS $$
 
   UNION ALL
 
-  -- Nested objects (features): { "features": { "brand": "IMDb", "model": "XYZ" } }
+  -- Nested objects (features): string values { "features": { "brand": "IMDb" } }
   SELECT v
   FROM jsonb_each(keywords) AS x(key, val),
        LATERAL jsonb_each_text(val) AS y(k, v)
-  WHERE jsonb_typeof(val) = 'object';
+  WHERE jsonb_typeof(val) = 'object'
+    AND jsonb_typeof(val->k) NOT IN ('array', 'object')
+
+  UNION ALL
+
+  -- Nested objects with array values (features.additional_keywords): { "features": { "additional_keywords": ["fintech", "crypto"] } }
+  SELECT jsonb_array_elements_text(inner_val)
+  FROM jsonb_each(keywords) AS x(key, val),
+       LATERAL jsonb_each(val) AS y(k, inner_val)
+  WHERE jsonb_typeof(val) = 'object'
+    AND jsonb_typeof(inner_val) = 'array';
 $$;
 
 COMMENT ON FUNCTION public.extract_keywords_text(jsonb) IS
-'Extracts all searchable text from nested image_keywords: array values are unnested, object values (features) are flattened to their string values.';
+'Extracts all searchable text from nested image_keywords: top-level arrays are unnested, feature string values are flattened, feature array values (additional_keywords) are unnested.';
 
 -- Step 4: Update search function to use the helper
 CREATE OR REPLACE FUNCTION public.search_bookmarks_url_tag_scope(

@@ -27,7 +27,7 @@ export interface ImageToTextContextProps {
 
 export interface StructuredKeywords {
   color?: string[];
-  features?: Record<string, string>;
+  features?: Record<string, string | string[]>;
   object?: string[];
   people?: string[];
   place?: string[];
@@ -239,34 +239,30 @@ export const imageToText = async (
         "Return a nested JSON object with these top-level keys (all arrays of strings):",
         "",
         '- "type": 1–3 content types from the CLOSED list below. Pick the MOST SPECIFIC match first.',
-        "  Allowed values (use EXACTLY — do not invent or combine):",
-        '  Content format: "article", "blog", "documentation", "infographic", "meme", "newsletter", "recipe", "tutorial".',
-        '  Media: "image", "photo", "poster", "screenshot", "video", "music_album", "podcast".',
-        '  Entertainment: "movie", "tvshow", "anime", "game".',
-        '  Social: "xpost", "instapost", "redditpost", "thread".',
-        '  Commerce: "product", "deal", "review".',
-        '  Dev: "repo", "portfolio", "website", "tool", "api".',
-        '  Domain: "ecommerce", "streaming", "news", "design", "developer tools", "productivity", "social media".',
+        '  Allowed values (use EXACTLY — do not invent or combine): "article", "blog", "documentation", "infographic", "meme", "newsletter", "recipe", "tutorial", "image", "photo", "poster",  "video", "music_album", "podcast", "movie", "tvshow", "anime", "game", "xpost", "instapost", "redditpost", "pin", "thread", "product", "deal", "review", "repo", "portfolio", "webapp", "ecommerce", "streaming", "news", "design", "developer tools", "productivity", "social media", "course", "book", "research_paper", "job", "event", "place", "restaurant", "pdf", "profile", "package", "linkedinpost", "tiktok", "hnpost".',
         "",
         '- "people": ONLY named/identifiable people — use their actual name from text, metadata, or URL. Include directors, cast, authors. Do NOT output generic labels like man/woman/person — omit entirely if unknown.',
         '- "object": physical objects visible in the image.',
         '- "place": locations, settings, landmarks.',
         '- "color": dominant colors as hex codes (e.g. "#FF5733", "#1A1A1A").',
         "",
-        '- "features": a flat object (NOT an array) for product/content metadata:',
-        '  "brand": the brand that OWNS the content (e.g. Samsung, Nike). NOT the hosting platform (Instagram, YouTube, Amazon).',
-        '  "model": product model number/identifier (e.g. RR20C1824CR/HL, iPhone 16 Pro).',
-        '  "price": price if visible (no thousand separators, e.g. ₹8295).',
-        '  "director": director name (movies, TV shows).',
-        '  "capacity", "material", "size": product features if visible.',
-        "  Any other specific attribute that helps identify the content.",
+        '- "features": a flat object (NOT an array) for searchable metadata about the content. Include any key-value pair that helps identify or find the bookmark later. Common examples by domain:',
+        "  Universal: brand (the company/studio, NOT the hosting platform and NOT the content title — e.g. brand is 'Madhouse' not 'One Punch Man'), title (show/movie/book/series name), author, source, rating, duration, reading_time.",
+        "  Product: model, price (no thousand separators e.g. ₹8295), capacity, material, size.",
+        "  Entertainment: director, cast, genre, release_year, runtime, platform.",
+        "  Recipe: cuisine, cook_time, servings, difficulty, diet.",
+        "  Dev: programming_language, framework, license.",
+        "  Job: company, salary_range, experience_level, remote.",
+        "  Add any other relevant metadata you discover — these are examples, not limits.",
+        '  "additional_keywords": an array of 3–8 topic tags that describe what this content is about (e.g. ["fintech", "crypto wallet", "stablecoin", "payments"]). Think: what would someone search to find this bookmark later?',
         "",
         "Rules:",
-        "- Only include a key if you are ≥70% confident. Do NOT output confidence scores.",
+        "- Only include type values if you are ≥85% confident. All other keys: ≥70% confident. Do NOT output confidence scores.",
         "- Top-level keys (type, people, object, place, color) are arrays of strings.",
-        '- "features" is a flat object of string key-value pairs.',
+        '- "features" is a flat object of string key-value pairs, except "additional_keywords" which is an array of strings.',
         "- Omit empty arrays and empty objects — do not include keys with [] or {}.",
         "- Output valid JSON only, no markdown fences.",
+        "- No duplicate values across any arrays or features. Each keyword/value should appear only once in the entire JSON.",
         "- Do NOT duplicate OCR body text as keywords. Product identifiers (model numbers, SKUs) and names ARE keywords.",
       ].join("\n");
 
@@ -390,10 +386,17 @@ export const imageToText = async (
             }
 
             if (obj.features && typeof obj.features === "object" && !Array.isArray(obj.features)) {
-              const features: Record<string, string> = {};
+              const features: Record<string, string | string[]> = {};
               for (const [k, v] of Object.entries(obj.features as Record<string, unknown>)) {
                 if (typeof v === "string" && v.trim()) {
                   features[k] = v.trim();
+                } else if (k === "additional_keywords" && Array.isArray(v)) {
+                  const filtered = v.filter(
+                    (item): item is string => typeof item === "string" && item.trim().length > 0,
+                  );
+                  if (filtered.length > 0) {
+                    features[k] = filtered;
+                  }
                 }
               }
               if (Object.keys(features).length > 0) {
