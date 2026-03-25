@@ -43,40 +43,21 @@ WHERE meta_data->'image_keywords' IS NOT NULL
   AND jsonb_typeof(meta_data->'image_keywords') = 'array';
 
 -- Step 3: Helper to extract all searchable strings from nested keywords
--- Only handles the new format: { "type": [...], "people": [...], "features": { ... } }
-CREATE OR REPLACE FUNCTION public.extract_keywords_text(keywords jsonb)
+-- Structure-agnostic: extracts every string leaf from any JSON shape (up to 2 levels deep).
+-- Uses jsonb_path_query to walk all values regardless of nesting. Never needs updating.
+CREATE OR REPLACE FUNCTION public.extract_keywords_text(node jsonb)
 RETURNS TABLE(keyword text)
 LANGUAGE sql
 IMMUTABLE
 SECURITY INVOKER
 SET search_path = public
 AS $$
-  -- Top-level arrays: { "type": ["movie", "streaming"], "people": ["Tom Hanks"] }
-  SELECT jsonb_array_elements_text(val)
-  FROM jsonb_each(keywords) AS x(key, val)
-  WHERE jsonb_typeof(val) = 'array'
-
-  UNION ALL
-
-  -- Nested objects (features): string values { "features": { "brand": "IMDb" } }
-  SELECT v
-  FROM jsonb_each(keywords) AS x(key, val),
-       LATERAL jsonb_each_text(val) AS y(k, v)
-  WHERE jsonb_typeof(val) = 'object'
-    AND jsonb_typeof(val->k) NOT IN ('array', 'object')
-
-  UNION ALL
-
-  -- Nested objects with array values (features.additional_keywords): { "features": { "additional_keywords": ["fintech", "crypto"] } }
-  SELECT jsonb_array_elements_text(inner_val)
-  FROM jsonb_each(keywords) AS x(key, val),
-       LATERAL jsonb_each(val) AS y(k, inner_val)
-  WHERE jsonb_typeof(val) = 'object'
-    AND jsonb_typeof(inner_val) = 'array';
+  SELECT DISTINCT val::text
+  FROM jsonb_path_query(node, '$.** ? (@.type() == "string")') AS val;
 $$;
 
 COMMENT ON FUNCTION public.extract_keywords_text(jsonb) IS
-'Extracts all searchable text from nested image_keywords: top-level arrays are unnested, feature string values are flattened, feature array values (additional_keywords) are unnested.';
+'Extracts every string leaf from any JSON structure using jsonb_path_query. Structure-agnostic — never needs updating when keyword schema changes.';
 
 -- Step 4: Update search function to use the helper
 CREATE OR REPLACE FUNCTION public.search_bookmarks_url_tag_scope(
