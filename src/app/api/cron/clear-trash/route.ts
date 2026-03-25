@@ -1,25 +1,39 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
 import * as Sentry from "@sentry/nextjs";
 
-import { createGetApiHandlerWithSecret } from "@/lib/api-helpers/create-handler";
 import { deleteBookmarksByIds } from "@/lib/bookmark-helpers/delete-bookmarks";
+import { SUPABASE_SERVICE_KEY } from "@/lib/supabase/constants";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
-
-import { ClearTrashInputSchema, ClearTrashOutputSchema } from "./schema";
 
 const ROUTE = "cron/clear-trash";
 const BATCH_SIZE = 1000;
 const TRASH_RETENTION_DAYS = 30;
 
-export const GET = createGetApiHandlerWithSecret({
-  handler: async ({ route }) => {
+async function handlePost(request: NextRequest) {
+  try {
+    if (!SUPABASE_SERVICE_KEY) {
+      console.error(`[${ROUTE}] SUPABASE_SERVICE_KEY is not configured`);
+      return NextResponse.json(
+        { data: null, error: "Server configuration error" },
+        { status: 500 },
+      );
+    }
+
+    const authHeader = request.headers.get("authorization");
+    if (authHeader !== `Bearer ${SUPABASE_SERVICE_KEY}`) {
+      return NextResponse.json({ data: null, error: "Unauthorized" }, { status: 401 });
+    }
+
     const supabase = createServerServiceClient();
 
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - TRASH_RETENTION_DAYS);
     const cutoffISO = cutoffDate.toISOString();
 
-    console.log(`[${route}] Starting cleanup for items trashed before:`, {
+    console.log(`[${ROUTE}] Starting cleanup for items trashed before:`, {
       cutoffDate: cutoffISO,
     });
 
@@ -34,12 +48,15 @@ export const GET = createGetApiHandlerWithSecret({
         .limit(BATCH_SIZE);
 
       if (fetchError) {
-        console.error(`[${route}] Failed to fetch old trash:`, fetchError);
+        console.error(`[${ROUTE}] Failed to fetch old trash:`, fetchError);
         Sentry.captureException(fetchError, {
           tags: { operation: "cron_clear_old_trash_fetch" },
         });
 
-        return { deletedCount: totalDeleted };
+        return NextResponse.json({
+          data: { deletedCount: totalDeleted },
+          error: null,
+        });
       }
 
       if (!oldTrash || oldTrash.length === 0) {
@@ -55,15 +72,15 @@ export const GET = createGetApiHandlerWithSecret({
       }
 
       for (const [userId, bookmarkIds] of byUser) {
-        console.log(`[${route}] Deleting batch:`, {
+        console.log(`[${ROUTE}] Deleting batch:`, {
           count: bookmarkIds.length,
           userId,
         });
 
-        const result = await deleteBookmarksByIds(supabase, bookmarkIds, userId, route);
+        const result = await deleteBookmarksByIds(supabase, bookmarkIds, userId, ROUTE);
 
         if (result.error) {
-          console.error(`[${route}] Batch delete failed:`, {
+          console.error(`[${ROUTE}] Batch delete failed:`, {
             error: result.error,
             userId,
           });
@@ -85,12 +102,20 @@ export const GET = createGetApiHandlerWithSecret({
       }
     }
 
-    console.log(`[${route}] Completed:`, { totalDeleted });
+    console.log(`[${ROUTE}] Completed:`, { totalDeleted });
 
-    return { deletedCount: totalDeleted };
-  },
-  inputSchema: ClearTrashInputSchema,
-  outputSchema: ClearTrashOutputSchema,
-  route: ROUTE,
-  secretEnvVar: "CRON_SECRET",
-});
+    return NextResponse.json({ data: { deletedCount: totalDeleted }, error: null });
+  } catch (error) {
+    console.error(`[${ROUTE}] Unexpected error:`, error);
+    Sentry.captureException(error, {
+      tags: { operation: "cron_clear_trash_unexpected" },
+    });
+
+    return NextResponse.json(
+      { data: null, error: "An unexpected error occurred" },
+      { status: 500 },
+    );
+  }
+}
+
+export const POST = handlePost;
