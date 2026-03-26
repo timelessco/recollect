@@ -13,6 +13,7 @@ import * as apiKeySupplements from "../src/lib/openapi/endpoints/api-key";
 import * as bookmarksSupplements from "../src/lib/openapi/endpoints/bookmarks";
 import * as categoriesSupplements from "../src/lib/openapi/endpoints/categories";
 import * as categorySupplements from "../src/lib/openapi/endpoints/category";
+import * as chromeBookmarksSupplements from "../src/lib/openapi/endpoints/chrome-bookmarks";
 import * as cronSupplements from "../src/lib/openapi/endpoints/cron";
 import * as devSupplements from "../src/lib/openapi/endpoints/dev";
 import * as instagramSupplements from "../src/lib/openapi/endpoints/instagram";
@@ -231,6 +232,7 @@ export function collectSupplements(): EndpointSupplement[] {
     bookmarksSupplements,
     categoriesSupplements,
     categorySupplements,
+    chromeBookmarksSupplements,
     cronSupplements,
     devSupplements,
     instagramSupplements,

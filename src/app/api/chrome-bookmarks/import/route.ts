@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { createServerServiceClient } from "@/lib/supabase/service";
@@ -6,6 +8,11 @@ import { toJson } from "@/utils/type-utils";
 import { ChromeBookmarkImportInputSchema, ChromeBookmarkImportOutputSchema } from "./schema";
 
 const ROUTE = "chrome-bookmark-import";
+
+const RpcResultSchema = z.object({
+  inserted: z.int(),
+  skipped: z.int(),
+});
 
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, user }) => {
@@ -48,20 +55,27 @@ export const POST = createPostApiHandlerWithAuth({
       });
     }
 
-    const parsed =
-      typeof result === "object" && result !== null && !Array.isArray(result) ? result : {};
-    const inserted = typeof parsed.inserted === "number" ? parsed.inserted : 0;
-    const dbSkipped = typeof parsed.skipped === "number" ? parsed.skipped : 0;
+    const parsed = RpcResultSchema.safeParse(result);
+    if (!parsed.success) {
+      console.error(`[${route}] Unexpected RPC response:`, result);
+      return apiError({
+        error: parsed.error,
+        message: "Unexpected response from enqueue operation",
+        operation: "enqueue_chrome_bookmarks_parse",
+        route,
+        userId,
+      });
+    }
 
     console.log(`[${route}] Queued successfully:`, {
-      queued: inserted,
-      skipped: dbSkipped + inMemorySkipped,
+      queued: parsed.data.inserted,
+      skipped: parsed.data.skipped + inMemorySkipped,
       userId,
     });
 
     return {
-      queued: inserted,
-      skipped: dbSkipped + inMemorySkipped,
+      queued: parsed.data.inserted,
+      skipped: parsed.data.skipped + inMemorySkipped,
     };
   },
   inputSchema: ChromeBookmarkImportInputSchema,
