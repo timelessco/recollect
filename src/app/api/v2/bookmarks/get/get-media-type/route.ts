@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+import * as Sentry from "@sentry/nextjs";
+
 import { createGetApiHandler } from "@/lib/api-helpers/create-handler";
 
 import { GetMediaTypeInputSchema, GetMediaTypeOutputSchema } from "./schema";
@@ -26,6 +28,11 @@ const baseGet = createGetApiHandler({
       });
 
       if (!response.ok) {
+        Sentry.captureMessage("get-media-type: upstream returned non-OK", {
+          extra: { status: response.status, url: input.url },
+          level: "warning",
+          tags: { operation: "get_media_type_fetch", route: ROUTE },
+        });
         return NextResponse.json(
           {
             data: {
@@ -48,7 +55,10 @@ const baseGet = createGetApiHandler({
         },
         { headers: CORS_HEADERS },
       );
-    } catch {
+    } catch (error) {
+      Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
+        tags: { operation: "get_media_type_fetch", route: ROUTE },
+      });
       return NextResponse.json(
         {
           data: {
