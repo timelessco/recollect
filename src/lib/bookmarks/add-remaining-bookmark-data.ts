@@ -159,7 +159,7 @@ async function getNormalisedImageUrl(imageUrl: null | string, url: string): Prom
  * This is distinct from `@/lib/storage/media-upload` — it handles scraper image uploads
  * with a specific storage path pattern.
  */
-async function uploadImageToR2(
+export async function uploadImageToR2(
   base64info: string,
   userIdForStorage: string,
   storagePath: null | string,

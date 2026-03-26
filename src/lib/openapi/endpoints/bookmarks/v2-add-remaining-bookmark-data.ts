@@ -15,7 +15,8 @@ export const v2AddRemainingBookmarkDataSupplement = {
   path: "/v2/bookmark/add-remaining-bookmark-data",
   requestExamples: {
     "with-favicon": {
-      description: "Enrich bookmark with a known favicon URL.",
+      description:
+        "Send the shown request body — returns `{ status: 'completed' }` after enrichment.",
       summary: "Enrich bookmark with favicon",
       value: {
         favIcon: "https://example.com/favicon.ico",
@@ -25,7 +26,7 @@ export const v2AddRemainingBookmarkDataSupplement = {
     },
     "without-favicon": {
       description:
-        "Enrich bookmark without favicon — enrichment will still process OG images and AI.",
+        "Send without `favIcon` — enrichment still processes OG images, blurhash, and AI.",
       summary: "Enrich bookmark without favicon",
       value: {
         id: 42,
@@ -34,20 +35,28 @@ export const v2AddRemainingBookmarkDataSupplement = {
     },
   },
   response400Examples: {
+    "invalid-url": {
+      description: "Send `{ id: 42, url: 'not-a-url' }` — returns 400 for invalid URL format.",
+      summary: "Invalid URL format",
+      value: {
+        data: null,
+        error: "Invalid URL",
+      } as const,
+    },
     "missing-id": {
-      description: "Fails when bookmark ID is not provided.",
+      description: "Send `{ url: 'https://example.com' }` without `id` — returns 400.",
       summary: "Missing bookmark ID",
       value: {
         data: null,
-        error: "id: Required",
+        error: "Invalid input: expected number, received undefined",
       } as const,
     },
     "missing-url": {
-      description: "Fails when bookmark URL is not provided.",
+      description: "Send `{ id: 42 }` without `url` — returns 400.",
       summary: "Missing bookmark URL",
       value: {
         data: null,
-        error: "url: Required",
+        error: "Invalid input: expected string, received undefined",
       } as const,
     },
   },
