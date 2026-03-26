@@ -67,8 +67,9 @@ const ImgLogicComponent = ({
   const isLoading = useLoadersStore((s) => s.loadingBookmarkIds.has(id));
   const [errorImg, setErrorImg] = useState<null | string>(null);
 
-  // Mark optimistic entries so we recognise them after React remounts the component
-  if (isNil(id) && url) {
+  // Mark optimistic entries so we recognise them after React remounts the component.
+  // Guard with hasCoverImg so every add has a corresponding delete path downstream.
+  if (isNil(id) && url && hasCoverImg) {
     recentlyAddedUrls.add(url);
   }
 
@@ -166,7 +167,6 @@ function BookmarkImageWithAnimation({
       cardTypeCondition={cardTypeCondition}
       id={id}
       onError={onError}
-      url={url}
     />
   );
 }

@@ -91,7 +91,6 @@ export interface AnimatedBookmarkImageProps {
   isPublicPage: boolean;
   onError: () => void;
   sizes: string;
-  url: string;
   width: number;
 }
 
@@ -105,15 +104,16 @@ export function AnimatedBookmarkImage({
   isPublicPage,
   onError,
   sizes,
-  url,
   width,
 }: AnimatedBookmarkImageProps) {
   // The image URL confirmed loaded by the browser
   const [displaySrc, setDisplaySrc] = useState<null | string>(null);
 
-  // Preload images so we can show them without layout flash
+  // Preload images so we can show them without layout flash.
+  // displaySrc is intentionally omitted from deps — including it causes a
+  // wasted cleanup+setup cycle when the effect itself updates displaySrc.
   useEffect(() => {
-    if (!img || displaySrc === img) {
+    if (!img) {
       return;
     }
     const preload = new window.Image();
@@ -127,14 +127,7 @@ export function AnimatedBookmarkImage({
       preload.removeEventListener("load", onReady);
       preload.removeEventListener("error", onReady);
     };
-  }, [img, displaySrc]);
-
-  // Clean up the module-scoped set once we have a loaded image
-  useEffect(() => {
-    if (displaySrc) {
-      recentlyAddedUrls.delete(url);
-    }
-  }, [displaySrc, url]);
+  }, [img]);
 
   const imageProps = { blurUrl, className, height, isPublicPage, sizes, width } as const;
 
