@@ -1,8 +1,8 @@
 /**
  * ImageCard Component
  *
- * This component handles the display of bookmark images with loading states and error handling.
- * It supports blur-up placeholders using blurhash and shows a loading animation while images load.
+ * Handles bookmark image display with loading states, error handling,
+ * and smooth transitions for newly added bookmarks.
  */
 
 import Image from "next/image";
@@ -11,19 +11,18 @@ import { memo, useEffect, useRef, useState } from "react";
 import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
 import { isEmpty, isNil } from "lodash";
-import { motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 
 import { cn } from "@/utils/tailwind-merge";
 
-// Assets and utilities
 import loaderGif from "../../../../public/loader-gif.gif";
 import { useLoadersStore } from "../../../store/componentStore";
 import { defaultBlur, viewValues } from "../../../utils/constants";
 
 /**
- * Module-scoped set tracking bookmark URLs that were recently in optimistic
- * (placeholder) state. Survives component remounts caused by React list key
- * changes (undefined → real ID). Page-load bookmarks never enter this set.
+ * Tracks bookmark URLs seen in optimistic (no-id) state.
+ * Survives React list key remounts (undefined → real ID).
+ * Page-load bookmarks never enter this set.
  */
 const recentlyAddedUrls = new Set<string>();
 
@@ -52,9 +51,6 @@ interface ImgLogicProps {
   url: string;
 }
 
-/**
- * Main component for rendering bookmark images with loading and error states
- */
 const ImgLogicComponent = ({
   _height,
   _width,
@@ -81,94 +77,156 @@ const ImgLogicComponent = ({
 
   // State and store
   const { loadingBookmarkIds } = useLoadersStore();
-  const shouldReduceMotion = useReducedMotion();
   // Tracks which image URL failed to load
   const [errorImg, setErrorImg] = useState<null | string>(null);
   // Whether the current bookmark is being loaded
   const isLoading = loadingBookmarkIds.has(id);
 
-  // Track optimistic entries — mark URL so the remounted component can animate
+  // --- Animation tracking ---
+  // Mark optimistic entries so we can animate after remount
   if (isNil(id) && url) {
     recentlyAddedUrls.add(url);
   }
 
-  // Track previous img to detect ogImage → screenshot changes (same instance)
-  const prevImgRef = useRef(img);
-  const imgChangedWithinInstance = Boolean(img) && img !== prevImgRef.current;
+  // Sticky flag — once true, stays true for this component's lifetime.
+  // Uses URL match OR isLoading as signals. isLoading catches cases where
+  // the API normalizes the URL (e.g. adds https://) breaking the Set match.
+  const shouldAnimateRef = useRef(recentlyAddedUrls.has(url));
+  if (recentlyAddedUrls.has(url) || (isLoading && !shouldAnimateRef.current)) {
+    shouldAnimateRef.current = true;
+  }
 
-  // Detect first image after placeholder (across remounts via module-scoped set)
-  const isFirstImageAfterAdd = Boolean(img) && recentlyAddedUrls.has(url);
+  // Track if isLoading was ever true — once a bookmark enters loading state,
+  // we know it's being processed. Prevents "Cannot fetch image" flash in the
+  // gap after isLoading goes false but before the new img arrives via refetch.
+  const wasEverLoadingRef = useRef(isLoading);
+  if (isLoading) {
+    wasEverLoadingRef.current = true;
+  }
 
-  const shouldAnimateBlurUp =
-    (imgChangedWithinInstance || isFirstImageAfterAdd) && !shouldReduceMotion;
+  const shouldAnimate = shouldAnimateRef.current;
+  const isProcessing = shouldAnimate || isLoading || wasEverLoadingRef.current;
 
-  // Cleanup tracking after animation decision
+  // The img URL confirmed loaded by the browser (only tracked for animating bookmarks)
+  const [readyImg, setReadyImg] = useState<null | string>(null);
+
+  // Preload images in the background using a native <img> so the Next.js Image
+  // only renders once the data is available — prevents layout flash from
+  // default 200x200 dimensions before actual image dimensions are known.
   useEffect(() => {
-    prevImgRef.current = img;
-    if (img && recentlyAddedUrls.has(url)) {
+    if (!shouldAnimate || !img || readyImg === img) {
+      return;
+    }
+
+    const preload = new window.Image();
+    const handler = () => {
+      setReadyImg(img);
+    };
+    preload.addEventListener("load", handler);
+    preload.addEventListener("error", handler);
+    preload.src = img;
+
+    return () => {
+      preload.removeEventListener("load", handler);
+      preload.removeEventListener("error", handler);
+    };
+  }, [shouldAnimate, img, readyImg]);
+
+  useEffect(() => {
+    if (readyImg && recentlyAddedUrls.has(url)) {
       recentlyAddedUrls.delete(url);
     }
-  }, [img, url]);
+  }, [readyImg, url]);
+
+  // --- Rendering ---
 
   // Only render if the bookmark has a cover image
-  if (hasCoverImg) {
-    // Show loading placeholder if data is being fetched
-    if (isLoading && isNil(id)) {
-      return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />;
-    }
+  if (!hasCoverImg) {
+    return null;
+  }
 
-    // Show error placeholder if image failed to load
-    if (errorImg === img) {
-      return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />;
-    }
+  // Show error placeholder if image failed to load
+  if (errorImg === img) {
+    return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />;
+  }
 
-    // Generate blur placeholder if blurhash is available
-    let blurSource = "";
+  // Generate blur placeholder if blurhash is available
+  let blurSource = "";
+  if (!isNil(img) && !isNil(blurUrl) && !isEmpty(blurUrl) && !isPublicPage) {
+    // Decode blurhash to create a blurry placeholder
+    const pixels = decode(blurUrl, 32, 32);
+    const image = getImgFromArr(pixels, 32, 32);
+    blurSource = image.src;
+  }
 
-    if (!isNil(img) && !isNil(blurUrl) && !isEmpty(blurUrl) && !isPublicPage) {
-      // Decode blurhash to create a blurry placeholder
-      const pixels = decode(blurUrl, 32, 32);
-      const image = getImgFromArr(pixels, 32, 32);
-      blurSource = image.src;
-    }
+  // No image yet — show placeholder with appropriate text
+  if (!img) {
+    return (
+      <LoaderImgPlaceholder
+        cardTypeCondition={cardTypeCondition}
+        id={id}
+        isProcessing={isProcessing}
+      />
+    );
+  }
 
-    if (img) {
-      const imageElement = (
+  const imageElement = (
+    <Image
+      alt="bookmark-img"
+      blurDataURL={blurSource || defaultBlur}
+      className={imgClassName}
+      height={_height}
+      key={img}
+      onError={() => {
+        setErrorImg(img);
+      }}
+      placeholder="blur"
+      sizes={sizesLogic}
+      src={img}
+      width={_width}
+    />
+  );
+
+  // Non-animating bookmark — render directly, zero overhead
+  if (!shouldAnimate) {
+    return imageElement;
+  }
+
+  // --- Animating bookmark ---
+  const imgIsReady = readyImg === img;
+
+  if (!imgIsReady) {
+    if (readyImg) {
+      return (
         <Image
           alt="bookmark-img"
           blurDataURL={blurSource || defaultBlur}
           className={imgClassName}
           height={_height}
-          key={img}
-          onError={() => {
-            setErrorImg(img);
-          }}
           placeholder="blur"
           sizes={sizesLogic}
-          src={img}
+          src={readyImg}
           width={_width}
         />
       );
-
-      if (shouldAnimateBlurUp) {
-        return (
-          <motion.div
-            animate={{ filter: "blur(0px)", opacity: 1 }}
-            initial={{ filter: "blur(20px)", opacity: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-          >
-            {imageElement}
-          </motion.div>
-        );
-      }
-
-      return imageElement;
     }
 
-    return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />;
+    return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} isProcessing />;
   }
 
-  return null;
+  // Image preloaded — render with crossfade animation
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        animate={{ opacity: 1 }}
+        initial={{ opacity: 0 }}
+        key={readyImg}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
+        {imageElement}
+      </motion.div>
+    </AnimatePresence>
+  );
 };
 
 // Memoize the component to prevent unnecessary re-renders
@@ -193,11 +251,14 @@ export const ImgLogic = memo(
 const LoaderImgPlaceholder = ({
   cardTypeCondition,
   id,
+  isProcessing = false,
 }: {
   // Type of the bookmark
   cardTypeCondition: number[] | string | string[] | undefined;
   // Bookmark ID
   id: number;
+  // Whether the bookmark is being processed (recently added)
+  isProcessing?: boolean;
 }) => {
   const { loadingBookmarkIds } = useLoadersStore();
   const isLoading = loadingBookmarkIds.has(id);
@@ -221,11 +282,15 @@ const LoaderImgPlaceholder = ({
       {!(cardTypeCondition === viewValues.list) && (
         <p className="text-sm text-gray-900">
           {(() => {
+            if (isNil(id) || isProcessing) {
+              return "Fetching data...";
+            }
+
             if (isLoading) {
               return "Taking screenshot....";
             }
 
-            return isNil(id) ? "Fetching data..." : "Cannot fetch image for this bookmark";
+            return "Cannot fetch image for this bookmark";
           })()}
         </p>
       )}
