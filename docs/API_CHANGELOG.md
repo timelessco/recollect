@@ -21,3 +21,16 @@
 - :warning: removed the required property 'data/items/favorite_categories' from the response with the '200' status
 -  added the required property 'data/items/last_synced_instagram_id' to the response with the '200' status
 -  added the required property 'data/items/last_synced_twitter_id' to the response with the '200' status
+
+## 2026-03-26 [`3d75013`](https://github.com/timelessco/recollect/commit/3d75013cc975ab9206b5d3509197b6a44f69215f)
+
+
+### GET /cron/clear-trash
+- :warning: api removed without deprecation
+
+
+### POST /cron/clear-trash
+-  endpoint added
+
+
+
