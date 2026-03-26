@@ -22,8 +22,8 @@ export const chromeBookmarkImportSupplement = {
           {
             category_name: "Dev Tools",
             inserted_at: "2026-01-15T10:30:00Z",
-            title: "GitHub - octocat/Hello-World",
-            url: "https://github.com/octocat/Hello-World",
+            title: "GitHub - Hello-World",
+            url: "https://github.com/Hello-World",
           },
         ],
       },
