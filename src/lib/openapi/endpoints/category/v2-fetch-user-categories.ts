@@ -73,7 +73,7 @@ export const v2FetchUserCategoriesSupplement = {
         data: [
           {
             category_name: "Architecture",
-            category_slug: "new-mhamptcb",
+            category_slug: "architecture-refs",
             category_views: {
               bookmarksView: "moodboard",
               cardContentViewArray: ["title", "cover"],
