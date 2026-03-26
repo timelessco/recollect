@@ -5,9 +5,7 @@ export const ChromeBookmarkImportInputSchema = z.object({
     .array(
       z.object({
         category_name: z.string().nullable(),
-        description: z.string().nullable(),
         inserted_at: z.iso.datetime().nullable().or(z.literal("")),
-        ogImage: z.string().nullable(),
         title: z.string().nullable(),
         url: z.url(),
       }),
