@@ -14,3 +14,4 @@ export { v2FetchBookmarksViewSupplement } from "./v2-fetch-bookmarks-view";
 export { v2FetchByIdSupplement } from "./v2-fetch-by-id";
 export { v2GetMediaTypeSupplement } from "./v2-get-media-type";
 export { v2GetPdfBufferSupplement } from "./v2-get-pdf-buffer";
+export { v2UploadFileRemainingDataSupplement } from "./v2-upload-file-remaining-data";
