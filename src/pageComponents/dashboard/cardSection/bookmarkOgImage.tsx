@@ -15,6 +15,7 @@ export interface BookmarkOgImageProps {
   img: SingleListData["ogImage"];
   isPublicPage: boolean;
   post: SingleListData;
+  url: string;
 }
 
 export function BookmarkOgImage({
@@ -23,6 +24,7 @@ export function BookmarkOgImage({
   img,
   isPublicPage,
   post,
+  url,
 }: BookmarkOgImageProps) {
   const sizesLogic = useMemo(() => {
     switch (cardTypeCondition) {
@@ -85,6 +87,7 @@ export function BookmarkOgImage({
         img={img}
         isPublicPage={isPublicPage}
         sizesLogic={sizesLogic}
+        url={url}
       />
     </figure>
   );

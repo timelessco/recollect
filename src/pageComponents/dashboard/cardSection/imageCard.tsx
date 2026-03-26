@@ -21,6 +21,13 @@ import { useLoadersStore } from "../../../store/componentStore";
 import { defaultBlur, viewValues } from "../../../utils/constants";
 
 /**
+ * Module-scoped set tracking bookmark URLs that were recently in optimistic
+ * (placeholder) state. Survives component remounts caused by React list key
+ * changes (undefined → real ID). Page-load bookmarks never enter this set.
+ */
+const recentlyAddedUrls = new Set<string>();
+
+/**
  * Props for the ImgLogicComponent
  */
 interface ImgLogicProps {
@@ -41,6 +48,8 @@ interface ImgLogicProps {
   isPublicPage: boolean;
   // Sizes attribute for responsive images
   sizesLogic: string;
+  // Bookmark URL — used for animation state tracking across remounts
+  url: string;
 }
 
 /**
@@ -56,6 +65,7 @@ const ImgLogicComponent = ({
   img,
   isPublicPage,
   sizesLogic,
+  url,
 }: ImgLogicProps) => {
   // image class name for all views
   const imgClassName = cn({
@@ -77,12 +87,28 @@ const ImgLogicComponent = ({
   // Whether the current bookmark is being loaded
   const isLoading = loadingBookmarkIds.has(id);
 
-  // Track previous img to detect ogImage → screenshot transitions
+  // Track optimistic entries — mark URL so the remounted component can animate
+  if (isNil(id) && url) {
+    recentlyAddedUrls.add(url);
+  }
+
+  // Track previous img to detect ogImage → screenshot changes (same instance)
   const prevImgRef = useRef(img);
-  const imgChanged = Boolean(img) && img !== prevImgRef.current;
+  const imgChangedWithinInstance = Boolean(img) && img !== prevImgRef.current;
+
+  // Detect first image after placeholder (across remounts via module-scoped set)
+  const isFirstImageAfterAdd = Boolean(img) && recentlyAddedUrls.has(url);
+
+  const shouldAnimateBlurUp =
+    (imgChangedWithinInstance || isFirstImageAfterAdd) && !shouldReduceMotion;
+
+  // Cleanup tracking after animation decision
   useEffect(() => {
     prevImgRef.current = img;
-  }, [img]);
+    if (img && recentlyAddedUrls.has(url)) {
+      recentlyAddedUrls.delete(url);
+    }
+  }, [img, url]);
 
   // Only render if the bookmark has a cover image
   if (hasCoverImg) {
@@ -124,8 +150,7 @@ const ImgLogicComponent = ({
         />
       );
 
-      // Blur-up reveal when image changes (ogImage → screenshot)
-      if (imgChanged && !shouldReduceMotion) {
+      if (shouldAnimateBlurUp) {
         return (
           <motion.div
             animate={{ filter: "blur(0px)", opacity: 1 }}
@@ -158,7 +183,8 @@ export const ImgLogic = memo(
     previousProps._height === nextProps._height &&
     previousProps._width === nextProps._width &&
     previousProps.sizesLogic === nextProps.sizesLogic &&
-    previousProps.isPublicPage === nextProps.isPublicPage,
+    previousProps.isPublicPage === nextProps.isPublicPage &&
+    previousProps.url === nextProps.url,
 );
 
 /**
