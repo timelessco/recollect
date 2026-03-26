@@ -8,6 +8,7 @@ export { moveBookmarkToTrashSupplement } from "./move-bookmark-to-trash";
 export { toggleDiscoverableOnBookmarkSupplement } from "./toggle-discoverable-on-bookmark";
 export { v2BookmarksDeleteNonCascadeSupplement } from "./v2-bookmarks-delete-non-cascade";
 export { v2BookmarksInsertSupplement } from "./v2-bookmarks-insert";
+export { v2FetchBookmarksCountSupplement } from "./v2-fetch-bookmarks-count";
 export { v2FetchBookmarksViewSupplement } from "./v2-fetch-bookmarks-view";
 export { v2FetchByIdSupplement } from "./v2-fetch-by-id";
 export { v2GetMediaTypeSupplement } from "./v2-get-media-type";
