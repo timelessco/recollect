@@ -1,39 +1,26 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-
 import * as Sentry from "@sentry/nextjs";
 
+import { createPostApiHandlerWithSecret } from "@/lib/api-helpers/create-handler";
+import { apiError } from "@/lib/api-helpers/response";
 import { deleteBookmarksByIds } from "@/lib/bookmark-helpers/delete-bookmarks";
-import { SUPABASE_SERVICE_KEY } from "@/lib/supabase/constants";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
+
+import { ClearTrashInputSchema, ClearTrashOutputSchema } from "./schema";
 
 const ROUTE = "cron/clear-trash";
 const BATCH_SIZE = 1000;
 const TRASH_RETENTION_DAYS = 30;
 
-async function handlePost(request: NextRequest) {
-  try {
-    if (!SUPABASE_SERVICE_KEY) {
-      console.error(`[${ROUTE}] SUPABASE_SERVICE_KEY is not configured`);
-      return NextResponse.json(
-        { data: null, error: "Server configuration error" },
-        { status: 500 },
-      );
-    }
-
-    const authHeader = request.headers.get("authorization");
-    if (authHeader !== `Bearer ${SUPABASE_SERVICE_KEY}`) {
-      return NextResponse.json({ data: null, error: "Unauthorized" }, { status: 401 });
-    }
-
+export const POST = createPostApiHandlerWithSecret({
+  handler: async ({ route }) => {
     const supabase = createServerServiceClient();
 
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - TRASH_RETENTION_DAYS);
     const cutoffISO = cutoffDate.toISOString();
 
-    console.log(`[${ROUTE}] Starting cleanup for items trashed before:`, {
+    console.log(`[${route}] Starting cleanup for items trashed before:`, {
       cutoffDate: cutoffISO,
     });
 
@@ -48,15 +35,14 @@ async function handlePost(request: NextRequest) {
         .limit(BATCH_SIZE);
 
       if (fetchError) {
-        console.error(`[${ROUTE}] Failed to fetch old trash:`, fetchError);
-        Sentry.captureException(fetchError, {
-          tags: { operation: "cron_clear_old_trash_fetch" },
+        console.error(`[${route}] Failed to fetch old trash:`, fetchError);
+        return apiError({
+          error: fetchError,
+          extra: { deletedCount: totalDeleted },
+          message: "Failed to fetch old trash items",
+          operation: "cron_clear_old_trash_fetch",
+          route,
         });
-
-        return NextResponse.json(
-          { data: { deletedCount: totalDeleted }, error: "Failed to fetch old trash items" },
-          { status: 500 },
-        );
       }
 
       if (!oldTrash || oldTrash.length === 0) {
@@ -72,15 +58,15 @@ async function handlePost(request: NextRequest) {
       }
 
       for (const [userId, bookmarkIds] of byUser) {
-        console.log(`[${ROUTE}] Deleting batch:`, {
+        console.log(`[${route}] Deleting batch:`, {
           count: bookmarkIds.length,
           userId,
         });
 
-        const result = await deleteBookmarksByIds(supabase, bookmarkIds, userId, ROUTE);
+        const result = await deleteBookmarksByIds(supabase, bookmarkIds, userId, route);
 
         if (result.error) {
-          console.error(`[${ROUTE}] Batch delete failed:`, {
+          console.error(`[${route}] Batch delete failed:`, {
             error: result.error,
             userId,
           });
@@ -102,20 +88,14 @@ async function handlePost(request: NextRequest) {
       }
     }
 
-    console.log(`[${ROUTE}] Completed:`, { totalDeleted });
+    console.log(`[${route}] Completed:`, { totalDeleted });
 
-    return NextResponse.json({ data: { deletedCount: totalDeleted }, error: null });
-  } catch (error) {
-    console.error(`[${ROUTE}] Unexpected error:`, error);
-    Sentry.captureException(error, {
-      tags: { operation: "cron_clear_trash_unexpected" },
-    });
-
-    return NextResponse.json(
-      { data: null, error: "An unexpected error occurred" },
-      { status: 500 },
-    );
-  }
-}
-
-export const POST = handlePost;
+    return { deletedCount: totalDeleted };
+  },
+  inputSchema: ClearTrashInputSchema,
+  outputSchema: ClearTrashOutputSchema,
+  route: ROUTE,
+  // process.env used intentionally — constants.ts DEV_ branching not available in factory
+  secretEnvVar:
+    process.env.NODE_ENV === "development" ? "DEV_SUPABASE_SERVICE_KEY" : "SUPABASE_SERVICE_KEY",
+});
