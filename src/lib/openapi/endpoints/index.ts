@@ -1,3 +1,4 @@
+export * from "./ai-enrichment";
 export * from "./api-key";
 export * from "./bookmarks";
 export * from "./categories";
