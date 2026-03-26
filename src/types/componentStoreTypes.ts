@@ -7,15 +7,11 @@ export interface ModalStoreState {
 }
 
 export interface LoadersStoreState {
-  addAnimatingBookmark: (url: string) => void;
   addLoadingBookmarkId: (id: number) => void;
-  animatingBookmarkUrls: Set<string>;
-  clearAnimatingBookmarks: () => void;
   isBookmarkAdding: boolean;
   isSearchLoading: boolean;
   isSortByLoading: boolean;
   loadingBookmarkIds: Set<number>;
-  removeAnimatingBookmark: (url: string) => void;
   removeLoadingBookmarkId: (id: number) => void;
   setIsBookmarkAdding: (value: boolean) => void;
   toggleIsSearchLoading: (value: boolean) => void;

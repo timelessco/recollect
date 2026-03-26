@@ -18,7 +18,6 @@ import { useMoveBookmarkToTrashOptimisticMutation } from "@/async/mutationHooks/
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
-import { clearMountedAnimatingUrls } from "@/components/ui/recollect/animated-bookmark-card";
 import { Checkbox } from "@/components/ui/recollect/checkbox";
 import { mutationApiCall } from "@/utils/apiHelpers";
 import { cn } from "@/utils/tailwind-merge";
@@ -26,11 +25,7 @@ import { errorToast } from "@/utils/toastMessages";
 
 import useGetViewValue from "../../../hooks/useGetViewValue";
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
-import {
-  useLoadersStore,
-  useMiscellaneousStore,
-  useSupabaseSession,
-} from "../../../store/componentStore";
+import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
 import { TRASH_URL, viewValues } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
@@ -155,13 +150,6 @@ const ListBox = (props: ListBoxDropTypes) => {
   useEffect(() => {
     rowVirtualizer.scrollToIndex(0);
   }, [rowVirtualizer, cardTypeCondition, bookmarksInfoValue, categorySlug]);
-
-  // Clear animation state on category/route change (non-shallow)
-  useEffect(() => {
-    useLoadersStore.getState().clearAnimatingBookmarks();
-    clearMountedAnimatingUrls();
-  }, [categorySlug]);
-
   // Setup listbox as normal. See the useListBox docs for more details.
   const previewRef = useRef(null);
   const state = useListState(props);

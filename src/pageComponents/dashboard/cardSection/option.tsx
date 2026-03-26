@@ -138,7 +138,7 @@ const Option = ({
           }
         }}
       />
-      <AnimatedBookmarkCard url={url}>{item.rendered}</AnimatedBookmarkCard>
+      <AnimatedBookmarkCard id={Number(item.key)}>{item.rendered}</AnimatedBookmarkCard>
 
       {!isPublicPage && (
         <Checkbox

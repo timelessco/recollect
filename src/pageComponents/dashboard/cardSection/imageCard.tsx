@@ -41,8 +41,6 @@ interface ImgLogicProps {
   isPublicPage: boolean;
   // Sizes attribute for responsive images
   sizesLogic: string;
-  // Bookmark URL for animation state tracking
-  url: string;
 }
 
 /**
@@ -58,7 +56,6 @@ const ImgLogicComponent = ({
   img,
   isPublicPage,
   sizesLogic,
-  url,
 }: ImgLogicProps) => {
   // image class name for all views
   const imgClassName = cn({
@@ -73,8 +70,7 @@ const ImgLogicComponent = ({
   });
 
   // State and store
-  const { loadingBookmarkIds, removeAnimatingBookmark } = useLoadersStore();
-  const isAnimating = useLoadersStore((s) => s.animatingBookmarkUrls.has(url));
+  const { loadingBookmarkIds } = useLoadersStore();
   const shouldReduceMotion = useReducedMotion();
   // Tracks which image URL failed to load
   const [errorImg, setErrorImg] = useState<null | string>(null);
@@ -121,15 +117,12 @@ const ImgLogicComponent = ({
         />
       );
 
-      // Blur-up reveal for animating bookmarks
-      if (isAnimating && !shouldReduceMotion) {
+      // Blur-up reveal when image first appears after loading state
+      if (isLoading && !shouldReduceMotion) {
         return (
           <motion.div
             animate={{ filter: "blur(0px)", opacity: 1 }}
             initial={{ filter: "blur(20px)", opacity: 0 }}
-            onAnimationComplete={() => {
-              removeAnimatingBookmark(url);
-            }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
             {imageElement}
@@ -158,8 +151,7 @@ export const ImgLogic = memo(
     previousProps._height === nextProps._height &&
     previousProps._width === nextProps._width &&
     previousProps.sizesLogic === nextProps.sizesLogic &&
-    previousProps.isPublicPage === nextProps.isPublicPage &&
-    previousProps.url === nextProps.url,
+    previousProps.isPublicPage === nextProps.isPublicPage,
 );
 
 /**

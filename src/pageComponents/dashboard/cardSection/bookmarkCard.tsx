@@ -10,7 +10,7 @@ import type { BookmarkViewDataTypes, SingleListData } from "@/types/apiTypes";
 import ReadMore from "@/components/readmore";
 import useGetViewValue from "@/hooks/useGetViewValue";
 import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
-import { useLoadersStore, useSupabaseSession } from "@/store/componentStore";
+import { useSupabaseSession } from "@/store/componentStore";
 import { viewValues } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
 import { getBaseUrl, isBookmarkOwner, isCurrentYear } from "@/utils/helpers";
@@ -78,10 +78,9 @@ const BookmarkCardInner = ({
     categoryViewsFromProps,
   ) as string[] | undefined;
 
-  const isAnimating = useLoadersStore((s) => s.animatingBookmarkUrls.has(post.url));
   const shouldReduceMotion = useReducedMotion();
   const isOptimistic = isNil(post.id);
-  const showPlaceholder = isAnimating && isOptimistic && !shouldReduceMotion;
+  const showPlaceholder = isOptimistic && !shouldReduceMotion;
 
   const hasCoverImg = bookmarksInfoValue?.includes("cover");
   const isListView = cardTypeCondition === viewValues.list;
@@ -162,7 +161,6 @@ const BookmarkCardInner = ({
             img={img ?? post?.ogImage ?? ""}
             isPublicPage={isPublicPage}
             post={post}
-            url={post.url}
           />
         ) : (
           <div className="h-[48px]" />
@@ -184,7 +182,7 @@ const BookmarkCardInner = ({
               <motion.div
                 animate={{ opacity: 1 }}
                 className="overflow-hidden max-sm:space-y-1"
-                initial={isAnimating && !shouldReduceMotion ? { opacity: 0 } : false}
+                initial={!shouldReduceMotion ? { opacity: 0 } : false}
                 key="content"
                 transition={{ duration: 0.2 }}
               >
@@ -234,7 +232,6 @@ const BookmarkCardInner = ({
         img={img ?? post?.ogImage ?? ""}
         isPublicPage={isPublicPage}
         post={post}
-        url={post.url}
       />
       {coverOnly ? null : (
         <AnimatePresence mode="wait">
@@ -259,7 +256,7 @@ const BookmarkCardInner = ({
                 "card-moodboard-info-wrapper space-y-[6px] rounded-b-lg px-2 py-3 transition-all duration-150 dark:group-hover:bg-gray-alpha-100",
                 cardTypeCondition === viewValues.card && "grow",
               )}
-              initial={isAnimating && !shouldReduceMotion ? { opacity: 0 } : false}
+              initial={!shouldReduceMotion ? { opacity: 0 } : false}
               key="content"
               transition={{ duration: 0.2 }}
             >
