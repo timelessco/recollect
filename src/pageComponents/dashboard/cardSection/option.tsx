@@ -13,7 +13,6 @@ import omit from "lodash/omit";
 import type { CardSectionProps } from ".";
 import type { SingleListData } from "../../../types/apiTypes";
 
-import { AnimatedBookmarkCard } from "@/components/ui/recollect/animated-bookmark-card";
 import { Checkbox } from "@/components/ui/recollect/checkbox";
 import { cn } from "@/utils/tailwind-merge";
 
@@ -138,7 +137,7 @@ const Option = ({
           }
         }}
       />
-      <AnimatedBookmarkCard id={Number(item.key)}>{item.rendered}</AnimatedBookmarkCard>
+      {item.rendered}
 
       {!isPublicPage && (
         <Checkbox

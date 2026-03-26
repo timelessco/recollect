@@ -156,7 +156,6 @@ const BookmarkCardInner = ({
             img={img ?? post?.ogImage ?? ""}
             isPublicPage={isPublicPage}
             post={post}
-            url={post.url}
           />
         ) : (
           <div className="h-[48px]" />
@@ -207,7 +206,6 @@ const BookmarkCardInner = ({
         img={img ?? post?.ogImage ?? ""}
         isPublicPage={isPublicPage}
         post={post}
-        url={post.url}
       />
       {coverOnly ? null : (
         <div
