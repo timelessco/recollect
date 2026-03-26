@@ -55,10 +55,14 @@ function isUserCollection(categoryId: string): boolean {
  * Ported from helpers.ts extractTagNamesFromSearch.
  */
 function extractTagNames(search: string): string[] | undefined {
-  if (search.length === 0) {return undefined;}
+  if (search.length === 0) {
+    return undefined;
+  }
 
   const matches = search.match(GET_HASHTAG_TAG_PATTERN);
-  if (!matches || matches.length === 0) {return undefined;}
+  if (!matches || matches.length === 0) {
+    return undefined;
+  }
 
   const tagNames = matches
     .map((item) => {
@@ -74,7 +78,9 @@ function extractTagNames(search: string): string[] | undefined {
 async function handleGet(request: NextRequest) {
   try {
     const query = parseQuery({ request, route: ROUTE, schema: SearchBookmarksInputSchema });
-    if (query.errorResponse) {return query.errorResponse;}
+    if (query.errorResponse) {
+      return query.errorResponse;
+    }
 
     const { category_id: categoryId, offset, search } = query.data;
     const isDiscoverPage = categoryId === DISCOVER_URL;
@@ -88,7 +94,9 @@ async function handleGet(request: NextRequest) {
       ({ supabase } = client);
     } else {
       const auth = await requireAuth(ROUTE);
-      if (auth.errorResponse) {return auth.errorResponse;}
+      if (auth.errorResponse) {
+        return auth.errorResponse;
+      }
       ({ supabase } = auth);
       userId = auth.user.id;
       userEmail = auth.user.email ?? "";
