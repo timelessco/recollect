@@ -11,6 +11,8 @@ import { memo, useRef, useState } from "react";
 
 import { isNil } from "lodash";
 
+import type { BookmarkImageProps } from "./animatedBookmarkImage";
+
 import { cn } from "@/utils/tailwind-merge";
 
 import { useLoadersStore } from "../../../store/componentStore";
@@ -23,7 +25,7 @@ import {
 } from "./animatedBookmarkImage";
 
 // ---------------------------------------------------------------------------
-// ImgLogic — entry point. Derives animation state, routes to sub-components.
+// ImgLogic — entry point. Handles hasCoverImg, error, and !img checks.
 // ---------------------------------------------------------------------------
 
 interface ImgLogicProps {
@@ -62,20 +64,12 @@ const ImgLogicComponent = ({
       cardTypeCondition === viewValues.card || cardTypeCondition === viewValues.moodboard,
   });
 
-  // Derived boolean selector — only re-renders when THIS bookmark's loading state changes
   const isLoading = useLoadersStore((s) => s.loadingBookmarkIds.has(id));
   const [errorImg, setErrorImg] = useState<null | string>(null);
 
   // Mark optimistic entries so we recognise them after React remounts the component
   if (isNil(id) && url) {
     recentlyAddedUrls.add(url);
-  }
-
-  // Sticky — once true, stays true for this component instance.
-  // Falls back to isLoading for cases where the API normalised the URL.
-  const shouldAnimateRef = useRef(recentlyAddedUrls.has(url));
-  if (recentlyAddedUrls.has(url) || (isLoading && !shouldAnimateRef.current)) {
-    shouldAnimateRef.current = true;
   }
 
   if (!hasCoverImg) {
@@ -96,33 +90,15 @@ const ImgLogicComponent = ({
     return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />;
   }
 
-  // Non-animating bookmark (page-load) — render directly, zero overhead
-  if (!shouldAnimateRef.current) {
-    return (
-      <BookmarkImage
-        blurUrl={blurUrl}
-        className={imgClassName}
-        height={_height}
-        img={img}
-        isPublicPage={isPublicPage}
-        onError={() => {
-          setErrorImg(img);
-        }}
-        sizes={sizesLogic}
-        width={_width}
-      />
-    );
-  }
-
-  // Animating bookmark — delegate to AnimatedBookmarkImage
   return (
-    <AnimatedBookmarkImage
+    <BookmarkImageWithAnimation
       blurUrl={blurUrl}
       cardTypeCondition={cardTypeCondition}
       className={imgClassName}
       height={_height}
       id={id}
       img={img}
+      isLoading={isLoading}
       isPublicPage={isPublicPage}
       onError={() => {
         setErrorImg(img);
@@ -147,3 +123,50 @@ export const ImgLogic = memo(
     previousProps.isPublicPage === nextProps.isPublicPage &&
     previousProps.url === nextProps.url,
 );
+
+// ---------------------------------------------------------------------------
+// BookmarkImageWithAnimation — isolates the shouldAnimate ref.
+// Renders BookmarkImage directly or delegates to AnimatedBookmarkImage.
+// ---------------------------------------------------------------------------
+
+function BookmarkImageWithAnimation({
+  cardTypeCondition,
+  id,
+  isLoading,
+  onError,
+  url,
+  ...imageProps
+}: Omit<BookmarkImageProps, "onError"> & {
+  cardTypeCondition: number[] | string | string[] | undefined;
+  id: number;
+  isLoading: boolean;
+  onError: () => void;
+  url: string;
+}) {
+  // Sticky — once true, stays true for this component instance.
+  // Reads from recentlyAddedUrls (set by optimistic render) then deletes
+  // immediately — the Set is a one-shot bridge, the ref is per-component truth.
+  // Falls back to isLoading for cases where the API normalised the URL.
+  const shouldAnimateRef = useRef(recentlyAddedUrls.has(url));
+  if (recentlyAddedUrls.has(url)) {
+    shouldAnimateRef.current = true;
+    recentlyAddedUrls.delete(url);
+  }
+  if (isLoading && !shouldAnimateRef.current) {
+    shouldAnimateRef.current = true;
+  }
+
+  if (!shouldAnimateRef.current) {
+    return <BookmarkImage {...imageProps} onError={onError} />;
+  }
+
+  return (
+    <AnimatedBookmarkImage
+      {...imageProps}
+      cardTypeCondition={cardTypeCondition}
+      id={id}
+      onError={onError}
+      url={url}
+    />
+  );
+}
