@@ -6,7 +6,7 @@
  */
 
 import Image from "next/image";
-import { memo, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
@@ -77,6 +77,13 @@ const ImgLogicComponent = ({
   // Whether the current bookmark is being loaded
   const isLoading = loadingBookmarkIds.has(id);
 
+  // Track previous img to detect ogImage → screenshot transitions
+  const prevImgRef = useRef(img);
+  const imgChanged = Boolean(img) && img !== prevImgRef.current;
+  useEffect(() => {
+    prevImgRef.current = img;
+  }, [img]);
+
   // Only render if the bookmark has a cover image
   if (hasCoverImg) {
     // Show loading placeholder if data is being fetched
@@ -117,8 +124,8 @@ const ImgLogicComponent = ({
         />
       );
 
-      // Blur-up reveal when image first appears after loading state
-      if (isLoading && !shouldReduceMotion) {
+      // Blur-up reveal when image changes (ogImage → screenshot)
+      if (imgChanged && !shouldReduceMotion) {
         return (
           <motion.div
             animate={{ filter: "blur(0px)", opacity: 1 }}

@@ -2,8 +2,7 @@ import { useRouter } from "next/router";
 import { memo, useState } from "react";
 
 import { format } from "date-fns";
-import { isEmpty, isNil, isNull } from "lodash";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { isEmpty, isNull } from "lodash";
 
 import type { BookmarkViewDataTypes, SingleListData } from "@/types/apiTypes";
 
@@ -77,10 +76,6 @@ const BookmarkCardInner = ({
     isPublicPage,
     categoryViewsFromProps,
   ) as string[] | undefined;
-
-  const shouldReduceMotion = useReducedMotion();
-  const isOptimistic = isNil(post.id);
-  const showPlaceholder = isOptimistic && !shouldReduceMotion;
 
   const hasCoverImg = bookmarksInfoValue?.includes("cover");
   const isListView = cardTypeCondition === viewValues.list;
@@ -166,43 +161,22 @@ const BookmarkCardInner = ({
           <div className="h-[48px]" />
         )}
         {coverOnly ? null : (
-          <AnimatePresence mode="wait">
-            {showPlaceholder ? (
-              <motion.div
-                className="overflow-hidden max-sm:space-y-1"
-                exit={{ opacity: 0 }}
-                key="placeholder"
-                transition={{ duration: 0.15 }}
-              >
-                <p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-400">
-                  Fetching data...
-                </p>
-              </motion.div>
-            ) : (
-              <motion.div
-                animate={{ opacity: 1 }}
-                className="overflow-hidden max-sm:space-y-1"
-                initial={!shouldReduceMotion ? { opacity: 0 } : false}
-                key="content"
-                transition={{ duration: 0.2 }}
-              >
-                {bookmarksInfoValue?.includes("title") && (
-                  <p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
-                    {post?.title}
-                  </p>
-                )}
-                <div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
-                  {bookmarksInfoValue?.includes("description") && !isEmpty(post.description) && (
-                    <p className="mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden text-13 leading-4 font-450 break-all text-gray-600 max-sm:mt-px">
-                      {post?.description}
-                    </p>
-                  )}
-                  {tags}
-                  {infoSection}
-                </div>
-              </motion.div>
+          <div className="overflow-hidden max-sm:space-y-1">
+            {bookmarksInfoValue?.includes("title") && (
+              <p className="card-title w-full truncate text-sm leading-4 font-medium text-gray-900">
+                {post?.title}
+              </p>
             )}
-          </AnimatePresence>
+            <div className="flex flex-wrap items-center space-x-1 max-sm:space-y-1 max-sm:space-x-0">
+              {bookmarksInfoValue?.includes("description") && !isEmpty(post.description) && (
+                <p className="mt-[6px] max-w-[400px] min-w-[200px] truncate overflow-hidden text-13 leading-4 font-450 break-all text-gray-600 max-sm:mt-px">
+                  {post?.description}
+                </p>
+              )}
+              {tags}
+              {infoSection}
+            </div>
+          </div>
         )}
         <div className="absolute top-[15px] right-[8px] flex items-center space-x-1">
           {showAvatar && (
@@ -234,57 +208,35 @@ const BookmarkCardInner = ({
         post={post}
       />
       {coverOnly ? null : (
-        <AnimatePresence mode="wait">
-          {showPlaceholder ? (
-            <motion.div
-              className={cn(
-                "card-moodboard-info-wrapper space-y-[6px] rounded-b-lg px-2 py-3 transition-all duration-150 dark:group-hover:bg-gray-alpha-100",
-                cardTypeCondition === viewValues.card && "grow",
-              )}
-              exit={{ opacity: 0 }}
-              key="placeholder"
-              transition={{ duration: 0.15 }}
-            >
-              <p className="card-title truncate text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-400">
-                Fetching data...
-              </p>
-            </motion.div>
-          ) : (
-            <motion.div
-              animate={{ opacity: 1 }}
-              className={cn(
-                "card-moodboard-info-wrapper space-y-[6px] rounded-b-lg px-2 py-3 transition-all duration-150 dark:group-hover:bg-gray-alpha-100",
-                cardTypeCondition === viewValues.card && "grow",
-              )}
-              initial={!shouldReduceMotion ? { opacity: 0 } : false}
-              key="content"
-              transition={{ duration: 0.2 }}
-            >
-              {bookmarksInfoValue?.includes("title") && (
-                <p
-                  className={cn(
-                    "card-title truncate text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900",
-                    isDiscoverPage && "text-center",
-                  )}
-                >
-                  {post?.title}
-                </p>
-              )}
-              {bookmarksInfoValue?.includes("description") && !isEmpty(post?.description) && (
-                <ReadMore
-                  className="card-title text-sm leading-[135%] tracking-[0.01em] text-gray-800"
-                  enable={isUserInTweetsPage}
-                >
-                  {post?.description}
-                </ReadMore>
-              )}
-              <div className="space-y-[6px] text-gray-500">
-                {tags}
-                {infoSection}
-              </div>
-            </motion.div>
+        <div
+          className={cn(
+            "card-moodboard-info-wrapper space-y-[6px] rounded-b-lg px-2 py-3 transition-all duration-150 dark:group-hover:bg-gray-alpha-100",
+            cardTypeCondition === viewValues.card && "grow",
           )}
-        </AnimatePresence>
+        >
+          {bookmarksInfoValue?.includes("title") && (
+            <p
+              className={cn(
+                "card-title truncate text-[14px] leading-[115%] font-medium tracking-[0.01em] text-gray-900",
+                isDiscoverPage && "text-center",
+              )}
+            >
+              {post?.title}
+            </p>
+          )}
+          {bookmarksInfoValue?.includes("description") && !isEmpty(post?.description) && (
+            <ReadMore
+              className="card-title text-sm leading-[135%] tracking-[0.01em] text-gray-800"
+              enable={isUserInTweetsPage}
+            >
+              {post?.description}
+            </ReadMore>
+          )}
+          <div className="space-y-[6px] text-gray-500">
+            {tags}
+            {infoSection}
+          </div>
+        </div>
       )}
       <div className="absolute top-[10px] right-[8px] w-full items-center space-x-1">
         {showAvatar && (
