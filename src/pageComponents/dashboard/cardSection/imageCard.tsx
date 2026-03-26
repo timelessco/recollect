@@ -11,6 +11,7 @@ import { memo, useState } from "react";
 import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
 import { isEmpty, isNil } from "lodash";
+import { motion, useReducedMotion } from "motion/react";
 
 import { cn } from "@/utils/tailwind-merge";
 
@@ -40,6 +41,8 @@ interface ImgLogicProps {
   isPublicPage: boolean;
   // Sizes attribute for responsive images
   sizesLogic: string;
+  // Bookmark URL for animation state tracking
+  url: string;
 }
 
 /**
@@ -55,6 +58,7 @@ const ImgLogicComponent = ({
   img,
   isPublicPage,
   sizesLogic,
+  url,
 }: ImgLogicProps) => {
   // image class name for all views
   const imgClassName = cn({
@@ -69,7 +73,9 @@ const ImgLogicComponent = ({
   });
 
   // State and store
-  const { loadingBookmarkIds } = useLoadersStore();
+  const { loadingBookmarkIds, removeAnimatingBookmark } = useLoadersStore();
+  const isAnimating = useLoadersStore((s) => s.animatingBookmarkUrls.has(url));
+  const shouldReduceMotion = useReducedMotion();
   // Tracks which image URL failed to load
   const [errorImg, setErrorImg] = useState<null | string>(null);
   // Whether the current bookmark is being loaded
@@ -97,24 +103,44 @@ const ImgLogicComponent = ({
       blurSource = image.src;
     }
 
-    return img ? (
-      <Image
-        alt="bookmark-img"
-        blurDataURL={blurSource || defaultBlur}
-        className={imgClassName}
-        height={_height}
-        key={img}
-        onError={() => {
-          setErrorImg(img);
-        }}
-        placeholder="blur"
-        sizes={sizesLogic}
-        src={img}
-        width={_width}
-      />
-    ) : (
-      <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />
-    );
+    if (img) {
+      const imageElement = (
+        <Image
+          alt="bookmark-img"
+          blurDataURL={blurSource || defaultBlur}
+          className={imgClassName}
+          height={_height}
+          key={img}
+          onError={() => {
+            setErrorImg(img);
+          }}
+          placeholder="blur"
+          sizes={sizesLogic}
+          src={img}
+          width={_width}
+        />
+      );
+
+      // Blur-up reveal for animating bookmarks
+      if (isAnimating && !shouldReduceMotion) {
+        return (
+          <motion.div
+            animate={{ filter: "blur(0px)", opacity: 1 }}
+            initial={{ filter: "blur(20px)", opacity: 0 }}
+            onAnimationComplete={() => {
+              removeAnimatingBookmark(url);
+            }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
+            {imageElement}
+          </motion.div>
+        );
+      }
+
+      return imageElement;
+    }
+
+    return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />;
   }
 
   return null;
@@ -132,7 +158,8 @@ export const ImgLogic = memo(
     previousProps._height === nextProps._height &&
     previousProps._width === nextProps._width &&
     previousProps.sizesLogic === nextProps.sizesLogic &&
-    previousProps.isPublicPage === nextProps.isPublicPage,
+    previousProps.isPublicPage === nextProps.isPublicPage &&
+    previousProps.url === nextProps.url,
 );
 
 /**

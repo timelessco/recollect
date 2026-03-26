@@ -51,6 +51,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
     // If the mutation fails, use the context returned from onMutate to roll back
     onMutate: async (data) => {
       setIsBookmarkAdding(true);
+      useLoadersStore.getState().addAnimatingBookmark(data.url);
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
         queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
@@ -119,7 +120,8 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       // Return a context object with the snapshotted value
       return { previousData };
     },
-    onError: (_error, _variables, context) => {
+    onError: (_error, variables, context) => {
+      useLoadersStore.getState().removeAnimatingBookmark(variables.url);
       queryClient.setQueryData(
         [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
         context?.previousData,
@@ -143,6 +145,11 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
       const data = response?.data?.data[0];
       const url = data?.url;
+
+      // Safety-net: remove animation state after 10s in case blur-up never fires
+      setTimeout(() => {
+        useLoadersStore.getState().removeAnimatingBookmark(url);
+      }, 10_000);
 
       // this is to check if url is not a website like test.pdf
       // if this is the case then we do not call the screenshot api
