@@ -165,11 +165,9 @@ export function AnimatedBookmarkImage({
 
 export const LoaderImgPlaceholder = ({
   cardTypeCondition,
-  forceLoading = false,
   id,
 }: {
   cardTypeCondition: number[] | string | string[] | undefined;
-  forceLoading?: boolean;
   id: number;
 }) => {
   const isLoading = useLoadersStore((s) => s.loadingBookmarkIds.has(id));
@@ -198,9 +196,7 @@ export const LoaderImgPlaceholder = ({
               return "Taking screenshot....";
             }
 
-            return isNil(id) || forceLoading
-              ? "Fetching data..."
-              : "Cannot fetch image for this bookmark";
+            return isNil(id) ? "Fetching data..." : "Cannot fetch image for this bookmark";
           })()}
         </p>
       )}

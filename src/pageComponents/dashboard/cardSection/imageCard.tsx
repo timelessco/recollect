@@ -73,19 +73,13 @@ const ImgLogicComponent = ({
 
   // Sticky — once true, stays true for this component instance.
   // Falls back to isLoading for cases where the API normalised the URL.
-  const shouldAnimate = useRef(recentlyAddedUrls.has(url));
-  if (recentlyAddedUrls.has(url) || (isLoading && !shouldAnimate.current)) {
-    shouldAnimate.current = true;
+  const shouldAnimateRef = useRef(recentlyAddedUrls.has(url));
+  if (recentlyAddedUrls.has(url) || (isLoading && !shouldAnimateRef.current)) {
+    shouldAnimateRef.current = true;
   }
-
-  // Once an image has appeared, never show "Cannot fetch image" again
-  const hadImage = useRef(false);
 
   if (!hasCoverImg) {
     return null;
-  }
-  if (img) {
-    hadImage.current = true;
   }
 
   // Show loading placeholder if data is being fetched
@@ -99,17 +93,11 @@ const ImgLogicComponent = ({
   }
 
   if (!img) {
-    // If this bookmark previously had an image (ogImage arrived, now
-    // waiting for screenshot refetch), keep showing the placeholder
-    // with "Fetching data..." instead of "Cannot fetch image"
-    if (hadImage.current) {
-      return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} forceLoading id={id} />;
-    }
     return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />;
   }
 
   // Non-animating bookmark (page-load) — render directly, zero overhead
-  if (!shouldAnimate.current) {
+  if (!shouldAnimateRef.current) {
     return (
       <BookmarkImage
         blurUrl={blurUrl}
