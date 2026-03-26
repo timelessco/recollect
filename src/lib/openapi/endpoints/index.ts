@@ -11,6 +11,7 @@ export * from "./profiles";
 export * from "./public-categories";
 export * from "./raindrop";
 export * from "./revalidate";
+export * from "./screenshot";
 export * from "./share";
 export * from "./tags";
 export * from "./twitter";
