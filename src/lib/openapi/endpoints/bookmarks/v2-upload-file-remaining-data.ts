@@ -18,7 +18,7 @@ export const v2UploadFileRemainingDataSupplement = {
   requestExamples: {
     "image-file": {
       description:
-        "Send the shown request body — returns `{ status: 'completed' }` after enrichment.",
+        "Send the shown request body — returns `{ data: { status: 'completed' }, error: null }` after enrichment.",
       summary: "Enrich uploaded image file",
       value: {
         id: 42,
@@ -27,7 +27,8 @@ export const v2UploadFileRemainingDataSupplement = {
       } as const,
     },
     "audio-file": {
-      description: "Audio files use a fallback OG image for AI analysis instead of the file URL.",
+      description:
+        "Send with `audio/*` mediaType — uses fallback OG image for AI analysis instead of the file URL.",
       summary: "Enrich uploaded audio file",
       value: {
         id: 43,
@@ -37,8 +38,17 @@ export const v2UploadFileRemainingDataSupplement = {
     },
   },
   response400Examples: {
+    "empty-body": {
+      description: "Send `{}` as body — returns 400: id is required.",
+      summary: "Empty request body",
+      value: {
+        data: null,
+        error: "Invalid input: expected number, received undefined",
+      } as const,
+    },
     "missing-id": {
-      description: "Send without `id` — returns 400.",
+      description:
+        "Send `{ mediaType: 'image/jpeg', publicUrl: 'https://...' }` without `id` — returns 400.",
       summary: "Missing bookmark ID",
       value: {
         data: null,
@@ -46,7 +56,7 @@ export const v2UploadFileRemainingDataSupplement = {
       } as const,
     },
     "missing-url": {
-      description: "Send without `publicUrl` — returns 400.",
+      description: "Send `{ id: 42, mediaType: 'image/jpeg' }` without `publicUrl` — returns 400.",
       summary: "Missing public URL",
       value: {
         data: null,
@@ -57,7 +67,7 @@ export const v2UploadFileRemainingDataSupplement = {
   responseExamples: {
     "enrichment-completed": {
       description:
-        "File enrichment completed successfully. Blurhash generated, AI processing done, metadata merged.",
+        "Send valid body with auth — enrichment runs (blurhash, AI caption/OCR, metadata merge).",
       summary: "Enrichment completed",
       value: {
         data: { status: "completed" },
