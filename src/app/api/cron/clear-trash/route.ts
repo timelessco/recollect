@@ -95,7 +95,7 @@ export const POST = createPostApiHandlerWithSecret({
   inputSchema: ClearTrashInputSchema,
   outputSchema: ClearTrashOutputSchema,
   route: ROUTE,
-  // process.env used intentionally — constants.ts DEV_ branching not available in factory
+  // process.env used intentionally — DEV_SUPABASE_SERVICE_KEY is not available in the factory
   secretEnvVar:
     process.env.NODE_ENV === "development" ? "DEV_SUPABASE_SERVICE_KEY" : "SUPABASE_SERVICE_KEY",
 });
