@@ -27,6 +27,7 @@ import * as revalidateSupplements from "../src/lib/openapi/endpoints/revalidate"
 import * as screenshotSupplements from "../src/lib/openapi/endpoints/screenshot";
 import * as shareSupplements from "../src/lib/openapi/endpoints/share";
 import * as tagsSupplements from "../src/lib/openapi/endpoints/tags";
+import * as testsSupplements from "../src/lib/openapi/endpoints/tests";
 import * as twitterSupplements from "../src/lib/openapi/endpoints/twitter";
 import * as userSupplements from "../src/lib/openapi/endpoints/user";
 
@@ -247,6 +248,7 @@ export function collectSupplements(): EndpointSupplement[] {
     screenshotSupplements,
     shareSupplements,
     tagsSupplements,
+    testsSupplements,
     twitterSupplements,
     userSupplements,
   ];
