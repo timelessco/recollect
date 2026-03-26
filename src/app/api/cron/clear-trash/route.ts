@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 
-import { createGetApiHandlerWithSecret } from "@/lib/api-helpers/create-handler";
+import { createPostApiHandlerWithSecret } from "@/lib/api-helpers/create-handler";
+import { apiError } from "@/lib/api-helpers/response";
 import { deleteBookmarksByIds } from "@/lib/bookmark-helpers/delete-bookmarks";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
@@ -11,7 +12,7 @@ const ROUTE = "cron/clear-trash";
 const BATCH_SIZE = 1000;
 const TRASH_RETENTION_DAYS = 30;
 
-export const GET = createGetApiHandlerWithSecret({
+export const POST = createPostApiHandlerWithSecret({
   handler: async ({ route }) => {
     const supabase = createServerServiceClient();
 
@@ -35,11 +36,13 @@ export const GET = createGetApiHandlerWithSecret({
 
       if (fetchError) {
         console.error(`[${route}] Failed to fetch old trash:`, fetchError);
-        Sentry.captureException(fetchError, {
-          tags: { operation: "cron_clear_old_trash_fetch" },
+        return apiError({
+          error: fetchError,
+          extra: { deletedCount: totalDeleted },
+          message: "Failed to fetch old trash items",
+          operation: "cron_clear_old_trash_fetch",
+          route,
         });
-
-        return { deletedCount: totalDeleted };
       }
 
       if (!oldTrash || oldTrash.length === 0) {
@@ -92,5 +95,7 @@ export const GET = createGetApiHandlerWithSecret({
   inputSchema: ClearTrashInputSchema,
   outputSchema: ClearTrashOutputSchema,
   route: ROUTE,
-  secretEnvVar: "CRON_SECRET",
+  // process.env used intentionally — DEV_SUPABASE_SERVICE_KEY is not available in the factory
+  secretEnvVar:
+    process.env.NODE_ENV === "development" ? "DEV_SUPABASE_SERVICE_KEY" : "SUPABASE_SERVICE_KEY",
 });

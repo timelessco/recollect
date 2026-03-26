@@ -128,7 +128,16 @@ const ListBox = (props: ListBoxDropTypes) => {
 
       return getColumnCount(!isMobile && !isTablet, bookmarksColumns[0]);
     })(),
-    measureElement: (element) => element.getBoundingClientRect().height,
+    measureElement: (element, _entry, instance) => {
+      const direction = instance.scrollDirection;
+      if (direction === "forward" || direction === null) {
+        return element.getBoundingClientRect().height;
+      }
+      // When scrolling up, use cached measurement to prevent stuttering
+      const indexKey = Number((element as HTMLElement).dataset.index);
+      const cachedMeasurement = instance.measurementsCache[indexKey]?.size;
+      return cachedMeasurement ?? element.getBoundingClientRect().height;
+    },
     overscan: 5,
   });
   const bookmarksInfoValue = useGetViewValue("cardContentViewArray", []);
