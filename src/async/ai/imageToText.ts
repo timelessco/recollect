@@ -1,5 +1,3 @@
-// removing description from testing will add later
-
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
@@ -56,7 +54,17 @@ function formatMetadataContext(context?: ImageToTextContextProps | null): string
     lines.push(`URL: ${context.url}`);
   }
 
-  return lines.length > 0 ? ["", "Bookmark metadata:", ...lines].join("\n") : "";
+  if (context?.description) {
+    lines.push(`Description: ${context.description}`);
+  }
+
+  return lines.length > 0
+    ? [
+        "",
+        "Bookmark metadata (use as context only — do not repeat or paraphrase the description in your summary):",
+        ...lines,
+      ].join("\n")
+    : "";
 }
 
 /**
@@ -306,6 +314,7 @@ export const imageToText = async (
         "Additional bookmark context:",
         ...(context?.title ? [`Title: ${context.title}`] : []),
         ...(context?.url ? [`URL: ${context.url}`] : []),
+        ...(context?.description ? [`Description: ${context.description}`] : []),
       );
       formatLines.push("COLLECTIONS: <name> (<confidence>%) per line, or NONE");
     }
