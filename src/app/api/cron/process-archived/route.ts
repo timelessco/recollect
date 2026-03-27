@@ -92,7 +92,7 @@ export const POST = createPostApiHandlerWithSecret({
     }
 
     return {
-      requested: rpcParsed.data.requested ?? null,
+      requested: input.msg_ids.length,
       requeued: rpcParsed.data.requeued,
     };
   },
