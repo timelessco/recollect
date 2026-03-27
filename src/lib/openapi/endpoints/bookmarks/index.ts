@@ -18,4 +18,5 @@ export { v2FetchByIdSupplement } from "./v2-fetch-by-id";
 export { v2GetMediaTypeSupplement } from "./v2-get-media-type";
 export { v2GetPdfBufferSupplement } from "./v2-get-pdf-buffer";
 export { v2SearchBookmarksSupplement } from "./v2-search-bookmarks";
+export { v2UploadFileSupplement } from "./v2-upload-file";
 export { v2UploadFileRemainingDataSupplement } from "./v2-upload-file-remaining-data";
