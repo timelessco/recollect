@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createGetApiHandler } from "@/lib/api-helpers/create-handler";
+import { apiError } from "@/lib/api-helpers/response";
 import { PDF_MIME_TYPE } from "@/utils/constants";
 
 import { GetPdfBufferInputSchema, GetPdfBufferOutputSchema } from "./schema";
@@ -20,7 +21,12 @@ export const GET = createGetApiHandler({
       });
 
       if (!result.ok) {
-        return NextResponse.json({ data: null, error: "Failed to fetch PDF" }, { status: 500 });
+        return apiError({
+          error: new Error(`Upstream returned ${String(result.status)}`),
+          message: "Failed to fetch PDF",
+          operation: "get_pdf_buffer_fetch",
+          route: ROUTE,
+        });
       }
 
       const buffer = await result.arrayBuffer();
@@ -28,8 +34,13 @@ export const GET = createGetApiHandler({
       return new NextResponse(buffer, {
         headers: { "Content-Type": PDF_MIME_TYPE },
       });
-    } catch {
-      return NextResponse.json({ data: null, error: "Failed to fetch PDF" }, { status: 500 });
+    } catch (error) {
+      return apiError({
+        error: error instanceof Error ? error : new Error(String(error)),
+        message: "Failed to fetch PDF",
+        operation: "get_pdf_buffer_fetch",
+        route: ROUTE,
+      });
     } finally {
       clearTimeout(timeoutId);
     }

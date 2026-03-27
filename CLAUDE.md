@@ -46,5 +46,6 @@ pnpm db:types             # Generate Supabase types from local schema
 
 After changes, run in order:
 
-1. `pnpm lint` — runs ALL quality checks in parallel (ultracite, types, knip, css, spelling, md)
-2. `pnpm build` — confirm build passes (non-trivial changes)
+1. `pnpm fix` — auto-fix all (Ultracite + CSS + MD)
+2. `pnpm lint` — runs ALL quality checks in parallel (ultracite, types, knip, css, spelling, md)
+3. `pnpm build` — confirm build passes (non-trivial changes)
