@@ -33,11 +33,7 @@ export const v2TestsFilePostUploadSupplement = {
     },
   },
   responseExample: {
-    data: {
-      data: [{ id: 12_345 }],
-      error: null,
-      success: true,
-    },
+    data: [{ id: 12_345 }],
     error: null,
   },
   summary: "Upload test file",

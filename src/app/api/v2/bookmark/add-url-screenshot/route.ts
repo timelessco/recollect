@@ -70,6 +70,9 @@ export const POST = createPostApiHandlerWithAuth({
       const r = await fetch(`${SCREENSHOT_API}/try?url=${encodeURIComponent(data.url)}`, {
         signal: AbortSignal.timeout(SCREENSHOT_TIMEOUT_MS),
       });
+      if (!r.ok) {
+        throw new Error(`Screenshot API returned ${String(r.status)}`);
+      }
       const json: unknown = await r.json();
       return parseScreenshotResponse(json);
     });

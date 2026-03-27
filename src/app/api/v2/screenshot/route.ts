@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/nextjs";
 
+import { imageToText } from "@/async/ai/imageToText";
 import { env } from "@/env/server";
 import { createRawPostHandler } from "@/lib/api-helpers/create-handler";
 import { storeQueueError } from "@/lib/api-helpers/queue";
@@ -14,7 +15,6 @@ import { blurhashFromURL } from "@/utils/getBlurHash";
 import { resolveContentType } from "@/utils/resolve-content-type";
 import { toJson } from "@/utils/type-utils";
 
-import { imageToText } from "../../../../async/ai/imageToText";
 import { ScreenshotInputSchema, ScreenshotOutputSchema } from "./schema";
 
 const ROUTE = "v2-screenshot";
@@ -85,6 +85,9 @@ export const POST = createRawPostHandler({
             },
             method: "POST",
           });
+          if (!response.ok) {
+            throw new Error(`PDF screenshot API returned ${String(response.status)}`);
+          }
 
           const pdfResult: unknown = await response.json();
           publicURL =
@@ -98,6 +101,9 @@ export const POST = createRawPostHandler({
         // Regular screenshot via screenshot service
         try {
           const response = await fetch(`${SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`);
+          if (!response.ok) {
+            throw new Error(`Screenshot API returned ${String(response.status)}`);
+          }
 
           const screenshotData: unknown = await response.json();
           const screenshotRecord = isRecord(screenshotData) ? screenshotData : {};

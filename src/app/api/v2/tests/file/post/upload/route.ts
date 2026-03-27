@@ -318,7 +318,7 @@ export const POST = createPostApiHandlerWithAuth({
       });
     }
 
-    return { data: databaseData, error: null, success: true };
+    return databaseData;
   },
   inputSchema: TestFileUploadInputSchema,
   outputSchema: TestFileUploadOutputSchema,

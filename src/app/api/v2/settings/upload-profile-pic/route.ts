@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 import slugify from "slugify";
 
+import { deleteProfilePic } from "@/app/api/v2/profiles/remove-profile-pic/delete-logic";
 import { createRawPostHandler } from "@/lib/api-helpers/create-handler";
 import { apiError, apiSuccess, apiWarn } from "@/lib/api-helpers/response";
 import { requireAuth } from "@/lib/supabase/api";
@@ -12,7 +13,6 @@ import {
 } from "@/utils/constants";
 import { storageHelpers } from "@/utils/storageClient";
 
-import { deleteProfilePic } from "../../profiles/remove-profile-pic/delete-logic";
 import { UploadProfilePicInputSchema, UploadProfilePicOutputSchema } from "./schema";
 
 const ROUTE = "v2-upload-profile-pic";

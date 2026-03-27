@@ -17,16 +17,13 @@ export const TestFileUploadInputSchema = z.object({
 export type TestFileUploadInput = z.infer<typeof TestFileUploadInputSchema>;
 
 // Output schema — bookmark ID returned after insert
-export const TestFileUploadOutputSchema = z.object({
-  data: z
-    .array(
-      z.object({
-        id: z.int().meta({ description: "Bookmark ID" }),
-      }),
-    )
-    .meta({ description: "Array of created bookmark records" }),
-  error: z.null().meta({ description: "Null on success" }),
-  success: z.boolean().meta({ description: "Whether the operation succeeded" }),
-});
+// The factory wraps this in { data: <output>, error: null } automatically
+export const TestFileUploadOutputSchema = z
+  .array(
+    z.object({
+      id: z.int().meta({ description: "Bookmark ID" }),
+    }),
+  )
+  .meta({ description: "Array of created bookmark records" });
 
 export type TestFileUploadOutput = z.infer<typeof TestFileUploadOutputSchema>;
