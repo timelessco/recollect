@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/nextjs";
 import slugify from "slugify";
 
 import { deleteProfilePic } from "@/app/api/v2/profiles/remove-profile-pic/delete-logic";
@@ -57,15 +56,7 @@ export const POST = createRawPostHandler({
     // deleteProfilePic removes ALL files in the user's profile-pic directory,
     // so it must run before the new file is uploaded — otherwise it would nuke
     // the newly uploaded file too.
-    try {
-      await deleteProfilePic({ userId: user.id });
-    } catch (cleanupError) {
-      Sentry.captureException(cleanupError, {
-        extra: { userId: user.id },
-        tags: { operation: "cleanup_old_profile_pic", route },
-      });
-      // Non-fatal: proceed with upload even if old file cleanup fails
-    }
+    await deleteProfilePic({ userId: user.id });
 
     const { error: storageError } = await storageHelpers.uploadObject(
       R2_MAIN_BUCKET_NAME,

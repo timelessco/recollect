@@ -170,13 +170,25 @@ export const POST = createPostApiHandlerWithAuth({
 
         if (categoryOwner?.user_id !== userId) {
           // Check if user is a collaborator with EDIT access
-          const { data: collaboration } = await supabase
+          const { data: collaboration, error: collaborationError } = await supabase
             .from(SHARED_CATEGORIES_TABLE_NAME)
             .select("id")
             .eq("category_id", numericCategoryId)
             .eq("email", userEmail ?? "")
             .eq("edit_access", true)
             .single();
+
+          // PGRST116 = "no rows returned" — expected when user isn't a collaborator
+          if (collaborationError && collaborationError.code !== "PGRST116") {
+            return apiError({
+              error: collaborationError,
+              extra: { categoryId: numericCategoryId },
+              message: "Failed to check collaborator access",
+              operation: "check_collaborator_access",
+              route,
+              userId,
+            });
+          }
 
           if (isNullable(collaboration)) {
             return apiWarn({
