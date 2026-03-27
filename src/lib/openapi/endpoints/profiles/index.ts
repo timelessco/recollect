@@ -1,6 +1,7 @@
 export { toggleFavoriteCategorySupplement } from "./toggle-favorite-category";
 export { togglePreferredOgDomainSupplement } from "./toggle-preferred-og-domain";
 export { v2CheckGeminiApiKeySupplement } from "./v2-check-gemini-api-key";
+export { v2DeleteUserSupplement } from "./v2-delete-user";
 export { v2FetchUserProfileSupplement } from "./v2-fetch-user-profile";
 export { v2FetchUserProfilePicSupplement } from "./v2-fetch-user-profile-pic";
 export { v2RemoveProfilePicSupplement } from "./v2-remove-profile-pic";
