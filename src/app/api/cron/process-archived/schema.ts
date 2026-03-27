@@ -1,17 +1,17 @@
 import { z } from "zod";
 
 export const ProcessArchivedInputSchema = z.union([
-  z.object({
+  z.strictObject({
     retry_all: z.literal(true).meta({ description: "When true, retries all archived queue items" }),
   }),
-  z.object({
+  z.strictObject({
     count: z
       .int()
       .min(1)
       .max(1000)
       .meta({ description: "Number of archived queue items to retry" }),
   }),
-  z.object({
+  z.strictObject({
     msg_ids: z
       .array(z.int().meta({ description: "Queue message ID" }))
       .min(1)
