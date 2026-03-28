@@ -69,10 +69,10 @@ type AxiomWrappableHandler = ((request: NextRequest) => Promise<NextResponse>) &
  * - onSuccess logging (status → log level mapping)
  * - onError logging (structured error) + re-throw for onRequestError → Sentry
  *
- * AXIO-03: onSuccess captures status, timing, searchParams
- * AXIO-04: onError captures structured error context
- * FACT-04: Unknown errors logged here AND re-thrown to reach onRequestError
- * FACT-06: Zero Sentry.captureException in this code
+ * onSuccess captures status, timing, searchParams
+ * onError captures structured error context
+ * Unknown errors logged here AND re-thrown to reach onRequestError
+ * Zero Sentry.captureException in this code
  */
 export function createAxiomRouteHandler(
   innerHandler: AxiomWrappableHandler,

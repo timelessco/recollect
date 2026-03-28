@@ -156,6 +156,8 @@ export function withAuth<TInput, TOutput>(config: AuthHandlerConfig<TInput, TOut
 
       const validated = outputSchema.safeParse(result);
       if (!validated.success) {
+        // Known errors: re-throw because outputSchema validation failures are always a bug in our code
+        // Never user error
         throw new Error(
           `[${route}] Output validation failed: ${JSON.stringify(validated.error.issues)}`,
         );
