@@ -22,6 +22,7 @@ Before any Next.js work, read the relevant doc in `node_modules/next/dist/docs/`
 - **Ultracite** (Oxlint + Oxfmt) enforces code quality — `pnpm fix` auto-fixes most issues, `pnpm dlx ultracite doctor` for setup diagnostics
 - **Zod `.meta()`**: All schema fields require `.meta({ description })` — flows to OpenAPI spec field descriptions and Scalar UI
 - **Env validation**: `@t3-oss/env-nextjs` in `src/env/` — split server/client pattern. Server env includes Vercel preset. Every `process.env` in codebase has an inline comment explaining why it wasn't migrated
+- **v2 API contract**: Routes under `/api/v2/` return `T` on success (no `{data, error}` envelope). Errors return `{error: string}` with HTTP status. v2 route handlers use `create-handler-v2.ts` (self-contained factory with `error()`/`warn()` context helpers). Non-v2 routes use `create-handler.ts` and keep `{data: T, error: null}` envelope. `response.ts` is FROZEN — never modify `apiSuccess`/`apiError`/`apiWarn`
 
 ## Commands
 

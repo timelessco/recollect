@@ -41,6 +41,8 @@ Nine factories in `/src/lib/api-helpers/create-handler.ts`:
 
 **Return**: Raw data -> wrapped in `apiSuccess`. `NextResponse` (via `apiWarn`/`apiError`) -> passed through.
 
+**v2 routes** use factories from `create-handler-v2.ts` (7 variants with V2 suffix). v2 handler context includes `error()` and `warn()` helpers — no `apiError`/`apiWarn` imports needed. v2 factories return `T` directly, not `apiSuccess`-wrapped.
+
 ### Response Helpers
 
 | Helper       | Use For                              | Sentry | Status |

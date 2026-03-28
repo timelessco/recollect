@@ -7,7 +7,7 @@ import { z } from "zod";
 import type { HandlerConfig } from "../src/lib/api-helpers/create-handler";
 
 import { bearerAuth, registry } from "../src/lib/openapi/registry";
-import { apiResponseSchema } from "../src/lib/openapi/schemas/envelope";
+import { apiResponseSchema, v2ErrorResponseSchema } from "../src/lib/openapi/schemas/envelope";
 import * as sharedSchemas from "../src/lib/openapi/schemas/shared";
 import { collectSupplements, mergeSupplements } from "./merge-openapi-supplements";
 
@@ -91,6 +91,37 @@ registry.registerComponent("responses", "InternalError", {
     "application/json": {
       example: { data: null, error: "Failed to process request" },
       schema: errorResponseSchema,
+    },
+  },
+  description: "Server error. The request could not be processed.",
+});
+
+// v2 error response components — bare `{ error: string }` (no `data` field)
+registry.registerComponent("responses", "V2Unauthorized", {
+  content: {
+    "application/json": {
+      example: { error: "Not authenticated" },
+      schema: v2ErrorResponseSchema,
+    },
+  },
+  description: "Not authenticated. Provide a valid bearer token.",
+});
+
+registry.registerComponent("responses", "V2ValidationError", {
+  content: {
+    "application/json": {
+      example: { error: "Invalid request parameters" },
+      schema: v2ErrorResponseSchema,
+    },
+  },
+  description: "Validation error. The request body or parameters are invalid.",
+});
+
+registry.registerComponent("responses", "V2InternalError", {
+  content: {
+    "application/json": {
+      example: { error: "Failed to process request" },
+      schema: v2ErrorResponseSchema,
     },
   },
   description: "Server error. The request could not be processed.",
@@ -196,6 +227,8 @@ async function scanAndRegisterRoutes() {
         isBodyMethod ||
         (inputSchema instanceof z.ZodObject && Object.keys(inputSchema.shape).length > 0);
 
+      const isV2 = config.factoryName.includes("V2");
+
       const pathRegistration: Parameters<typeof registry.registerPath>[0] = {
         method,
         path: apiPath,
@@ -203,14 +236,30 @@ async function scanAndRegisterRoutes() {
           200: {
             content: {
               "application/json": {
-                schema: apiResponseSchema(outputSchema),
+                schema: isV2 ? outputSchema : apiResponseSchema(outputSchema),
               },
             },
             description: "Success",
           },
-          ...(hasInput ? { 400: { $ref: "#/components/responses/ValidationError" } } : {}),
-          401: { $ref: "#/components/responses/Unauthorized" },
-          500: { $ref: "#/components/responses/InternalError" },
+          ...(hasInput
+            ? {
+                400: {
+                  $ref: isV2
+                    ? "#/components/responses/V2ValidationError"
+                    : "#/components/responses/ValidationError",
+                },
+              }
+            : {}),
+          401: {
+            $ref: isV2
+              ? "#/components/responses/V2Unauthorized"
+              : "#/components/responses/Unauthorized",
+          },
+          500: {
+            $ref: isV2
+              ? "#/components/responses/V2InternalError"
+              : "#/components/responses/InternalError",
+          },
         },
       };
 

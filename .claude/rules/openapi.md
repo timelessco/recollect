@@ -28,7 +28,7 @@ oasdiff changelog old.json new.json --format markdown # Local changelog diff
 
 ### Factory `.config`
 
-All 4 handler factories in `create-handler.ts` expose `.config` with `factoryName`, `inputSchema`, `outputSchema` -- this is how the scanner discovers schemas.
+All handler factories in `create-handler.ts` and `create-handler-v2.ts` expose `.config` with `factoryName`, `inputSchema`, `outputSchema`. The scanner detects v2 factories via `factoryName.includes('V2')` and uses bare response schemas.
 
 **Non-factory routes** can be scanner-discoverable via `Object.assign(handleGet, { config: { ... } satisfies HandlerConfig })`.
 

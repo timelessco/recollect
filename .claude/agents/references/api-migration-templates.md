@@ -112,6 +112,22 @@ export const POST = Object.assign(handlePost, {
 });
 ```
 
+**v2 factory route template (`route.ts`):**
+
+```typescript
+import { createGetApiHandlerV2WithAuth } from "@/lib/api-helpers/create-handler-v2";
+export const GET = createGetApiHandlerV2WithAuth({
+  handler: async ({ error, route, supabase, user }) => {
+    // ... business logic ...
+    if (dbError) return error({ cause: dbError, message: "...", operation: "..." });
+    return result;
+  },
+  inputSchema: InputSchema,
+  outputSchema: OutputSchema,
+  route: "v2-route-name",
+});
+```
+
 ---
 
 ## SUMMARY.md Template

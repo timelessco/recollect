@@ -59,6 +59,8 @@ Secret handlers check `Authorization: Bearer <secret>` against `process.env[secr
 - Return raw data → wrapped in `apiSuccess` automatically
 - Return `NextResponse` (via `apiWarn`/`apiError`) → passed through directly
 
+**v2 factories** (`create-handler-v2.ts`) inject `error()`/`warn()` into handler context. Return `T` directly (no `apiSuccess` wrapping). Import from `create-handler-v2`, not `create-handler`.
+
 **Response Helpers:**
 
 | Helper       | Use For                                       | Sentry | Status |

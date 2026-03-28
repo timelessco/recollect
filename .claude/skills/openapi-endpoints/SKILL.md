@@ -41,9 +41,10 @@ Glob src/app/api/**/<endpoint-name>/route.ts
 ```
 
 Read it. Identify:
-- **Factory**: which of the 4 factories from `src/lib/api-helpers/create-handler.ts`?
-  - `createGetApiHandlerWithAuth` / `createPostApiHandlerWithAuth` (auth required)
-  - `createGetApiHandler` / `createPostApiHandler` (no auth)
+- **Factory**: which factory is used?
+  - **v1** (from `src/lib/api-helpers/create-handler.ts`): `createGetApiHandlerWithAuth` / `createPostApiHandlerWithAuth` (auth required), `createGetApiHandler` / `createPostApiHandler` (no auth)
+  - **v2** (from `src/lib/api-helpers/create-handler-v2.ts`): `createGetApiHandlerV2` / `createPostApiHandlerV2` (no auth), `createGetApiHandlerV2WithAuth` / `createPostApiHandlerV2WithAuth` / `createPatchApiHandlerV2WithAuth` / `createPutApiHandlerV2WithAuth` / `createDeleteApiHandlerV2WithAuth` (auth required)
+  - If route imports from `create-handler-v2.ts`, note it as **v2** — this affects response example format (see Phase 3)
 - **Method**: GET or POST (from the factory name and the export: `export const GET` or `export const POST`)
 - **ROUTE constant**: the kebab-case identifier (used for Sentry, not the URL path)
 - **Schemas**: inline `InputSchema`/`OutputSchema`, or imported from `./schema`
@@ -188,7 +189,10 @@ export const <camelCaseName>Supplement = {
 - Export name: `<camelCaseName>Supplement`
 - File header: `/** @module Build-time only */`
 - Use realistic example data (actual IDs, realistic strings — not "test-123")
-- Response examples must include the `{ data: ..., error: null }` wrapper
+- **v1 routes**: Response examples must include the `{ data: ..., error: null }` wrapper
+  - e.g., `responseExample: { data: { hasApiKey: true }, error: null }`
+- **v2 routes**: Response examples use bare values — no `{data, error}` envelope
+  - e.g., `responseExample: { hasApiKey: true }` (or `value: { hasApiKey: true } as const` in named examples)
 - Named example keys: kebab-case, both `summary` and `description` required
 - When supplement exceeds 250 lines, extract examples to `<endpoint-name>-examples.ts` with `as const`
 
