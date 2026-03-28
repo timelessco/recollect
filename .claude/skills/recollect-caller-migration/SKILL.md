@@ -16,7 +16,7 @@ description: >
 
 Migrate frontend query hooks from v1 Pages Router URLs to v2 App Router endpoints using the proven 4-layer pattern. Each layer builds on the previous — execute in order, verify between layers.
 
-v2 routes return `T` directly on success and `{error: string}` on failure — no `{data, error}` envelope. Route handlers use the v2 factory (`create-handler-v2.ts`) which injects `error()` and `warn()` helpers into the handler context. Callers use **ky** (`api` from `api-v2.ts`) — no `getApi`, no URL constants, no envelope unwrapping.
+v2 routes return `T` directly on success and `{error: string}` on failure — no `{data, error}` envelope. Route handlers use the v2 factory (`create-handler-v2.ts`) with `createAxiomRouteHandler(withAuth/withPublic({...}))` composition and `RecollectApiError` throws for error handling. Callers use **ky** (`api` from `api-v2.ts`) — no `getApi`, no URL constants, no envelope unwrapping.
 
 > **Mutation hook refactoring?** Use the `recollect-mutation-hook-refactoring` skill instead. It covers mutation-hook-template.ts restructuring, file renaming, and structural cleanup. This skill handles API caller migration (query hooks with ky, mutation hooks with ky when its pathfinder completes).
 
@@ -155,32 +155,53 @@ pnpm lint:knip    # Confirm no orphaned exports from dead code removal
 
 ## v2 Route Handler Pattern
 
-v2 route handlers import from `create-handler-v2.ts`, not `create-handler.ts`. The v2 factory is self-contained — it does its own auth and validation, returning `T` on success and `{error: string}` on failure. No imports from `response.ts` needed.
+v2 route handlers import from `create-handler-v2.ts`, not `create-handler.ts`. The v2 factory uses a two-layer composition: `createAxiomRouteHandler(withAuth/withPublic({...}))`. It does its own auth and validation, returning `T` on success and `{error: string}` on failure. No imports from `response.ts` needed.
 
-The handler context provides `error()` and `warn()` helpers so route handlers never need to import Sentry, NextResponse, or apiError directly:
+**Follows `/logging-best-practices` (wide events pattern):**
+
+- **One event per request** — the outer `createAxiomRouteHandler` emits a single wide event at completion with all context (timing, status, user, business fields, error details). No scattered log calls.
+- **Error context via fields, not separate logs** — known errors (`RecollectApiError`) add `error.toLogContext()` to `ctx.fields` in the catch block. The outer wide event captures it automatically. No `logger.warn("Known error")` in handler code.
+- **Unknown errors** propagate to outer catch → Axiom error log → re-throw → `onRequestError` → Sentry.
+- **Business context** added via `getServerContext()?.fields` — no direct `logger.info`/`console.log` in handler body.
+- **Environment context** (commit hash, region) included automatically via Logger `args`.
 
 ```typescript
-import { createGetApiHandlerV2WithAuth } from "@/lib/api-helpers/create-handler-v2";
+import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
+import { RecollectApiError } from "@/lib/api-helpers/errors";
+import { getServerContext } from "@/lib/api-helpers/server-context";
 
-export const GET = createGetApiHandlerV2WithAuth({
-  handler: async ({ error, route, supabase, user }) => {
-    const { data, error: dbError } = await supabase.from("table").select("*");
-    if (dbError) {
-      return error({ cause: dbError, message: "Failed to fetch", operation: "fetch_data" });
-    }
-    return data;
-  },
-  inputSchema: InputSchema,
-  outputSchema: OutputSchema,
-  route: "v2-route-name",
-});
+export const GET = createAxiomRouteHandler(
+  withAuth({
+    handler: async ({ supabase, user }) => {
+      const { data, error: dbError } = await supabase.from("table").select("*");
+      if (dbError) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: dbError,
+          message: "Failed to fetch",
+          operation: "fetch_data",
+        });
+      }
+
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = user.id;
+      }
+
+      return data;
+    },
+    inputSchema: InputSchema,
+    outputSchema: OutputSchema,
+    route: "v2-route-name",
+  }),
+);
 ```
 
-- `error()` — logs, captures in Sentry, returns `{error: string}` with status (default 500)
-- `warn()` — logs, returns `{error: string}` with required status (no Sentry)
-- `create-handler.ts` is envelope-only (`{data: T, error: null}`) — used by v1 routes and v2 routes that haven't migrated yet
+- `throw RecollectApiError` — caught by `withAuth`/`withPublic`, error context added to `ctx.fields`, returned as `{error: string}` with HTTP status. Outer wide event captures it (never Sentry)
+- Unknown throws — caught by outer `createAxiomRouteHandler`, logged as Axiom error, re-thrown to `onRequestError` for Sentry
+- `getServerContext()?.fields` — populate with business context for wide events (one log line per request with all context)
+- `create-handler.ts` is envelope-only (`{data: T, error: null}`) — used by v1 routes only
 
-**Reference implementation:** `src/app/api/v2/check-gemini-api-key/route.ts`
+**Reference implementation:** `src/app/api/v2/check-gemini-api-key/route.ts` (Phase 17 canonical reference)
 
 ## v1 Legacy Note
 

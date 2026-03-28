@@ -43,7 +43,7 @@ Glob src/app/api/**/<endpoint-name>/route.ts
 Read it. Identify:
 - **Factory**: which factory is used?
   - **v1** (from `src/lib/api-helpers/create-handler.ts`): `createGetApiHandlerWithAuth` / `createPostApiHandlerWithAuth` (auth required), `createGetApiHandler` / `createPostApiHandler` (no auth)
-  - **v2** (from `src/lib/api-helpers/create-handler-v2.ts`): `createGetApiHandlerV2` / `createPostApiHandlerV2` (no auth), `createGetApiHandlerV2WithAuth` / `createPostApiHandlerV2WithAuth` / `createPatchApiHandlerV2WithAuth` / `createPutApiHandlerV2WithAuth` / `createDeleteApiHandlerV2WithAuth` (auth required)
+  - **v2** (from `src/lib/api-helpers/create-handler-v2.ts`): `withAuth` (auth required), `withPublic` (no auth), always wrapped as `createAxiomRouteHandler(withAuth/withPublic({...}))`. Handler `.config` has `{ auth, contract: "v2", factoryName: "withAuth"|"withPublic", inputSchema, outputSchema, route }`
   - If route imports from `create-handler-v2.ts`, note it as **v2** — this affects response example format (see Phase 3)
 - **Method**: GET or POST (from the factory name and the export: `export const GET` or `export const POST`)
 - **ROUTE constant**: the kebab-case identifier (used for Sentry, not the URL path)

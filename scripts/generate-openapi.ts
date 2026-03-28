@@ -11,6 +11,12 @@ import { apiResponseSchema, v2ErrorResponseSchema } from "../src/lib/openapi/sch
 import * as sharedSchemas from "../src/lib/openapi/schemas/shared";
 import { collectSupplements, mergeSupplements } from "./merge-openapi-supplements";
 
+// Extended config that includes new factory fields (withAuth/withPublic)
+interface ExtendedHandlerConfig extends HandlerConfig {
+  auth?: "none" | "required";
+  contract?: "v2";
+}
+
 const ROOT = resolve(import.meta.dirname, "..");
 const API_DIR = resolve(ROOT, "src/app/api");
 
@@ -161,7 +167,7 @@ function isAuthRequired(factoryName: string): boolean {
 
 type RouteModule = Record<
   string,
-  ((req: Request) => Promise<Response>) & { config?: HandlerConfig }
+  ((req: Request) => Promise<Response>) & { config?: ExtendedHandlerConfig }
 >;
 
 async function scanAndRegisterRoutes() {
@@ -208,15 +214,27 @@ async function scanAndRegisterRoutes() {
         continue;
       }
 
-      const method = getMethodFromFactoryName(config.factoryName);
-      if (!method) {
-        errors.push(`Unknown factory: ${config.factoryName} in ${rel}`);
-        continue;
+      // Method from export key (primary) — already filtered to GET/POST/PATCH/PUT/DELETE
+      const method = exportName.toLowerCase() as "delete" | "get" | "patch" | "post" | "put";
+
+      // Validate: if old factory, check factoryName matches export key
+      // New factory doesn't encode method in factoryName, so skip validation
+      if (!("auth" in config) && config.factoryName) {
+        const factoryMethod = getMethodFromFactoryName(config.factoryName);
+        if (factoryMethod && factoryMethod !== method) {
+          errors.push(
+            `Method mismatch: export ${exportName} but factory ${config.factoryName} in ${rel}`,
+          );
+          continue;
+        }
       }
 
-      const security = isAuthRequired(config.factoryName)
-        ? [{ [bearerAuth.name]: [] }, {}]
-        : undefined;
+      // New factory: explicit config.auth field
+      // Old factory: parse factoryName for "WithAuth"
+      const authRequired =
+        "auth" in config ? config.auth === "required" : isAuthRequired(config.factoryName);
+
+      const security = authRequired ? [{ [bearerAuth.name]: [] }, {}] : undefined;
 
       const { inputSchema } = config;
       const { outputSchema } = config;
@@ -227,7 +245,10 @@ async function scanAndRegisterRoutes() {
         isBodyMethod ||
         (inputSchema instanceof z.ZodObject && Object.keys(inputSchema.shape).length > 0);
 
-      const isV2 = config.factoryName.includes("V2");
+      // New factory: explicit config.contract field
+      // Old factory: parse factoryName for "V2"
+      const isV2 =
+        "contract" in config ? config.contract === "v2" : config.factoryName.includes("V2");
 
       const pathRegistration: Parameters<typeof registry.registerPath>[0] = {
         method,

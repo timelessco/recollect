@@ -115,17 +115,61 @@ export const POST = Object.assign(handlePost, {
 **v2 factory route template (`route.ts`):**
 
 ```typescript
-import { createGetApiHandlerV2WithAuth } from "@/lib/api-helpers/create-handler-v2";
-export const GET = createGetApiHandlerV2WithAuth({
-  handler: async ({ error, route, supabase, user }) => {
-    // ... business logic ...
-    if (dbError) return error({ cause: dbError, message: "...", operation: "..." });
-    return result;
-  },
-  inputSchema: InputSchema,
-  outputSchema: OutputSchema,
-  route: "v2-route-name",
-});
+import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
+import { RecollectApiError } from "@/lib/api-helpers/errors";
+import { getServerContext } from "@/lib/api-helpers/server-context";
+import { MyInputSchema, MyOutputSchema } from "./schema";
+
+const ROUTE = "v2-domain-endpoint-name";
+
+export const GET = createAxiomRouteHandler(
+  withAuth({
+    handler: async ({ supabase, user }) => {
+      const { data, error: dbError } = await supabase.from("table").select("*");
+      if (dbError) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: dbError,
+          message: "Failed to fetch data",
+          operation: "fetch_data",
+        });
+      }
+
+      // Wide events — business context added to the single log line per request
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = user.id;
+        ctx.fields.result_count = data.length;
+      }
+
+      return data;
+    },
+    inputSchema: MyInputSchema,
+    outputSchema: MyOutputSchema,
+    route: ROUTE,
+  }),
+);
+```
+
+**v2 public (no auth) route template:**
+
+```typescript
+import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
+import { RecollectApiError } from "@/lib/api-helpers/errors";
+import { MyInputSchema, MyOutputSchema } from "./schema";
+
+const ROUTE = "v2-domain-endpoint-name";
+
+export const GET = createAxiomRouteHandler(
+  withPublic({
+    handler: async ({ data }) => {
+      // ... business logic ...
+      return result;
+    },
+    inputSchema: MyInputSchema,
+    outputSchema: MyOutputSchema,
+    route: ROUTE,
+  }),
+);
 ```
 
 ---

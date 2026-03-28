@@ -41,7 +41,7 @@ Nine factories in `/src/lib/api-helpers/create-handler.ts`:
 
 **Return**: Raw data -> wrapped in `apiSuccess`. `NextResponse` (via `apiWarn`/`apiError`) -> passed through.
 
-**v2 routes** use factories from `create-handler-v2.ts` (7 variants with V2 suffix). v2 handler context includes `error()` and `warn()` helpers — no `apiError`/`apiWarn` imports needed. v2 factories return `T` directly, not `apiSuccess`-wrapped.
+**v2 routes** use the layered factory from `create-handler-v2.ts` (see v2 Layered Factory section below). v2 handlers throw `RecollectApiError` for known errors and populate wide events via `getServerContext()?.fields`. v2 factories return `T` directly, not `apiSuccess`-wrapped.
 
 ### Response Helpers
 
@@ -63,12 +63,53 @@ Nine factories in `/src/lib/api-helpers/create-handler.ts`:
 
 ### Log Levels
 
+**V1 routes** use console methods:
+
 | Level           | Use For                                           |
 | --------------- | ------------------------------------------------- |
 | `console.log`   | Entry points, success, flow decisions             |
 | `console.warn`  | User-caused issues (auth, validation, duplicates) |
 | `console.error` | System/database errors                            |
 
+**V2 routes** use structured Axiom logging (not `console.log`). No direct logger calls in handler body — business context is added via wide events (`getServerContext()?.fields`). The factory layers handle all logging automatically.
+
 ### `vet` Helper
 
 Use for external APIs that throw (axios, fetch) -- returns `[error, result]` tuple. Don't use for Supabase (already returns `{ data, error }`).
+
+### v2 Layered Factory (v3.0+)
+
+v2 routes use a two-layer composition from `create-handler-v2.ts`:
+
+```
+createAxiomRouteHandler(withAuth/withPublic({ handler, inputSchema, outputSchema, route }))
+```
+
+**Layers:**
+
+| Layer | Function | Responsibility |
+| ----- | -------- | -------------- |
+| Outer | `createAxiomRouteHandler` | Axiom logger setup, `after(() => logger.flush())` deferred flushing, unknown error catch (Axiom error log + re-throw for Sentry), `.config` passthrough for OpenAPI scanner |
+| Inner | `withAuth` / `withPublic` | Auth validation, input/output Zod validation, `RecollectApiError` catch (Axiom warn + HTTP response), success response |
+
+**Error handling:**
+- Known errors: `throw new RecollectApiError("service_unavailable", { cause, message, operation })` -- caught by inner layer, logged as Axiom warn, returned as `{error: string}` with HTTP status. Never reaches Sentry
+- Unknown errors: any non-RecollectApiError throw -- caught by outer layer, logged as Axiom error, re-thrown to `onRequestError` for Sentry capture
+- Auth errors: `throw new RecollectApiError("unauthorized")` -- returns HTTP 401
+
+**Wide events (business context):**
+- Import `getServerContext` from `@/lib/api-helpers/server-context`
+- Populate `ctx.fields` with business-relevant data -- one log line per request contains all context
+- No direct `logger.info`/`console.log` calls in handler body
+
+```typescript
+const ctx = getServerContext();
+if (ctx?.fields) {
+  ctx.fields.user_id = userId;
+  ctx.fields.has_api_key = hasApiKey;
+}
+```
+
+**Environment context:** Logger `args` automatically include `commit` (from `VERCEL_GIT_COMMIT_SHA`) and `region` (from `VERCEL_REGION`) for every log line.
+
+**Flushing:** Uses `after(() => logger.flush())` for deferred flushing -- does not block the response.

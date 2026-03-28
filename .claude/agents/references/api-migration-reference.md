@@ -59,7 +59,7 @@ Secret handlers check `Authorization: Bearer <secret>` against `process.env[secr
 - Return raw data → wrapped in `apiSuccess` automatically
 - Return `NextResponse` (via `apiWarn`/`apiError`) → passed through directly
 
-**v2 factories** (`create-handler-v2.ts`) inject `error()`/`warn()` into handler context. Return `T` directly (no `apiSuccess` wrapping). Import from `create-handler-v2`, not `create-handler`.
+**v2 factories** (`create-handler-v2.ts`) use `createAxiomRouteHandler(withAuth/withPublic({...}))` composition. Errors are thrown as `RecollectApiError` (not returned via helper functions). Business context is added via `getServerContext()?.fields` wide events. Return `T` directly (no `apiSuccess` wrapping). Import from `create-handler-v2`, not `create-handler`.
 
 **Response Helpers:**
 
@@ -156,6 +156,8 @@ When migrating a route, do NOT blindly copy the v1 HTTP method. v1 uses POST for
 
 ## Error Handling Patterns
 
+### V1 Patterns (create-handler.ts)
+
 **Duplicate Detection (Postgres 23505):**
 
 ```typescript
@@ -196,5 +198,58 @@ return apiError({
 	userId,
 	extra: { additionalContext },
 });
+```
+
+### V2 Patterns (create-handler-v2.ts)
+
+v2 routes throw `RecollectApiError` instead of returning `apiWarn`/`apiError`. Known errors are caught by the inner layer and logged as Axiom warnings (never Sentry). Unknown errors propagate to the outer layer for Sentry capture.
+
+**Known error (DB failure, validation, auth):**
+
+```typescript
+import { RecollectApiError } from "@/lib/api-helpers/errors";
+
+if (dbError) {
+	throw new RecollectApiError("service_unavailable", {
+		cause: dbError,
+		message: "Failed to fetch data",
+		operation: "fetch_bookmarks",
+	});
+}
+```
+
+**Duplicate Detection:**
+
+```typescript
+if (error.code === "23505") {
+	throw new RecollectApiError("conflict", {
+		cause: error,
+		message: "Duplicate name",
+		operation: "create_tag",
+	});
+}
+```
+
+**Authorization (Ownership):**
+
+```typescript
+if (resourceData?.user_id !== userId) {
+	throw new RecollectApiError("forbidden", {
+		message: "User is not the owner",
+		operation: "update_bookmark",
+	});
+}
+```
+
+**Wide events (business context):**
+
+```typescript
+import { getServerContext } from "@/lib/api-helpers/server-context";
+
+const ctx = getServerContext();
+if (ctx?.fields) {
+	ctx.fields.user_id = userId;
+	ctx.fields.bookmark_count = data.length;
+}
 ```
 

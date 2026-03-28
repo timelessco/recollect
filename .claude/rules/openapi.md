@@ -28,7 +28,11 @@ oasdiff changelog old.json new.json --format markdown # Local changelog diff
 
 ### Factory `.config`
 
-All handler factories in `create-handler.ts` and `create-handler-v2.ts` expose `.config` with `factoryName`, `inputSchema`, `outputSchema`. The scanner detects v2 factories via `factoryName.includes('V2')` and uses bare response schemas.
+All handler factories expose `.config` for the OpenAPI scanner:
+
+**V1 factories** (`create-handler.ts`): `.config` has `{ factoryName, inputSchema, outputSchema }`. The scanner detects auth via `factoryName.includes('WithAuth')`.
+
+**V2 factories** (`create-handler-v2.ts`): `createAxiomRouteHandler` passes `.config` through from the inner `withAuth`/`withPublic` layer. The `.config` shape is: `{ auth: boolean, contract: "v2", factoryName: "withAuth"|"withPublic", inputSchema, outputSchema, route }`. The scanner detects v2 factories via `config.contract === "v2"` and uses bare response schemas (no `{data, error}` envelope).
 
 **Non-factory routes** can be scanner-discoverable via `Object.assign(handleGet, { config: { ... } satisfies HandlerConfig })`.
 
