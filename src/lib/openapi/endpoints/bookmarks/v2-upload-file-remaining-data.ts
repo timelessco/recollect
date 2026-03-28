@@ -18,7 +18,7 @@ export const v2UploadFileRemainingDataSupplement = {
   requestExamples: {
     "image-file": {
       description:
-        "Send the shown request body — returns `{ data: { status: 'completed' }, error: null }` after enrichment.",
+        "Send the shown request body — returns `{ status: 'completed' }` after enrichment.",
       summary: "Enrich uploaded image file",
       value: {
         id: 42,
@@ -42,7 +42,6 @@ export const v2UploadFileRemainingDataSupplement = {
       description: "Send `{}` as body — returns 400: id is required.",
       summary: "Empty request body",
       value: {
-        data: null,
         error: "Invalid input: expected number, received undefined",
       } as const,
     },
@@ -51,7 +50,6 @@ export const v2UploadFileRemainingDataSupplement = {
         "Send `{ mediaType: 'image/jpeg', publicUrl: 'https://...' }` without `id` — returns 400.",
       summary: "Missing bookmark ID",
       value: {
-        data: null,
         error: "Invalid input: expected number, received undefined",
       } as const,
     },
@@ -59,7 +57,6 @@ export const v2UploadFileRemainingDataSupplement = {
       description: "Send `{ id: 42, mediaType: 'image/jpeg' }` without `publicUrl` — returns 400.",
       summary: "Missing public URL",
       value: {
-        data: null,
         error: "Invalid input: expected string, received undefined",
       } as const,
     },
@@ -69,10 +66,7 @@ export const v2UploadFileRemainingDataSupplement = {
       description:
         "Send valid body with auth — enrichment runs (blurhash, AI caption/OCR, metadata merge).",
       summary: "Enrichment completed",
-      value: {
-        data: { status: "completed" },
-        error: null,
-      } as const,
+      value: { status: "completed" } as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

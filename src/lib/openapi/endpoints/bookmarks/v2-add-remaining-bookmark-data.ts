@@ -39,7 +39,6 @@ export const v2AddRemainingBookmarkDataSupplement = {
       description: "Send `{ id: 42, url: 'not-a-url' }` — returns 400 for invalid URL format.",
       summary: "Invalid URL format",
       value: {
-        data: null,
         error: "Invalid URL",
       } as const,
     },
@@ -47,7 +46,6 @@ export const v2AddRemainingBookmarkDataSupplement = {
       description: "Send `{ url: 'https://example.com' }` without `id` — returns 400.",
       summary: "Missing bookmark ID",
       value: {
-        data: null,
         error: "Invalid input: expected number, received undefined",
       } as const,
     },
@@ -55,7 +53,6 @@ export const v2AddRemainingBookmarkDataSupplement = {
       description: "Send `{ id: 42 }` without `url` — returns 400.",
       summary: "Missing bookmark URL",
       value: {
-        data: null,
         error: "Invalid input: expected string, received undefined",
       } as const,
     },
@@ -65,10 +62,7 @@ export const v2AddRemainingBookmarkDataSupplement = {
       description:
         "Bookmark enrichment completed successfully. Images uploaded, blurhash generated, AI processing done.",
       summary: "Enrichment completed",
-      value: {
-        data: { status: "completed" },
-        error: null,
-      } as const,
+      value: { status: "completed" } as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],
