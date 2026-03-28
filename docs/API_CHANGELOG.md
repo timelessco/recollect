@@ -107,3 +107,16 @@
 
 
 
+
+## 2026-03-28 [`465c70a`](https://github.com/timelessco/recollect/commit/465c70a7048389e1a6e1004369d3bb0f351bd5a1)
+
+
+### GET /v2/check-gemini-api-key
+- :warning: removed the required property 'data' from the response with the '200' status
+- :warning: removed the required property 'data' from the response with the '401' status
+- :warning: removed the required property 'data' from the response with the '500' status
+- :warning: removed the required property 'error' from the response with the '200' status
+-  added the required property 'hasApiKey' to the response with the '200' status
+
+
+
