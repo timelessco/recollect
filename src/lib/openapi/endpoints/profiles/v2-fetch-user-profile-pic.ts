@@ -37,7 +37,6 @@ export const v2FetchUserProfilePicSupplement = {
       description: "Omit the `email` query parameter entirely — returns 400.",
       summary: "Missing email parameter",
       value: {
-        data: null,
         error: "email: Required",
       } as const,
     },
@@ -47,35 +46,26 @@ export const v2FetchUserProfilePicSupplement = {
       description:
         "Send `?email=nobody@example.com` — returns empty array when no profile matches.",
       summary: "No user found for email",
-      value: {
-        data: [],
-        error: null,
-      } as const,
+      value: [] as const,
     },
     "no-profile-pic": {
       description:
         "Send `?email=user@example.com` where the user has no avatar — `profile_pic` is null.",
       summary: "User has no profile picture",
-      value: {
-        data: [
-          {
-            profile_pic: null,
-          },
-        ],
-        error: null,
-      } as const,
+      value: [
+        {
+          profile_pic: null,
+        },
+      ] as const,
     },
     "with-profile-pic": {
       description: "Send `?email=user@example.com` where the user has an uploaded avatar.",
       summary: "User has a profile picture",
-      value: {
-        data: [
-          {
-            profile_pic: "https://example.com/storage/v1/object/public/avatars/user-123.jpg",
-          },
-        ],
-        error: null,
-      } as const,
+      value: [
+        {
+          profile_pic: "https://example.com/storage/v1/object/public/avatars/user-123.jpg",
+        },
+      ] as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],
