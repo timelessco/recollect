@@ -30,7 +30,6 @@ export const v2ApiKeySupplement = {
       description: "The provided API key failed validation against the Google AI API.",
       summary: "Invalid API key",
       value: {
-        data: null,
         error: "Invalid API key",
       } as const,
     },
@@ -39,10 +38,7 @@ export const v2ApiKeySupplement = {
     "api-key-saved": {
       description: "The Gemini API key was validated and encrypted successfully.",
       summary: "API key saved",
-      value: {
-        data: { success: true },
-        error: null,
-      } as const,
+      value: { success: true } as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

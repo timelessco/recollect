@@ -58,7 +58,6 @@ export const v2BookmarksInsertSupplement = {
       description: "Fails when the data array has no elements.",
       summary: "Empty bookmarks array",
       value: {
-        data: null,
         error: "data: Array must contain at least 1 element(s)",
       } as const,
     },
@@ -66,7 +65,6 @@ export const v2BookmarksInsertSupplement = {
       description: "Fails when a bookmark object is missing the url field.",
       summary: "Missing required URL field",
       value: {
-        data: null,
         error: "data[0].url: Required",
       } as const,
     },
@@ -75,18 +73,12 @@ export const v2BookmarksInsertSupplement = {
     "batch-insert": {
       description: "Successfully inserted two bookmarks in a batch.",
       summary: "Multiple bookmarks inserted",
-      value: {
-        data: { insertedCount: 2 },
-        error: null,
-      } as const,
+      value: { insertedCount: 2 } as const,
     },
     "single-insert": {
       description: "Successfully inserted a single bookmark.",
       summary: "One bookmark inserted",
-      value: {
-        data: { insertedCount: 1 },
-        error: null,
-      } as const,
+      value: { insertedCount: 1 } as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],
