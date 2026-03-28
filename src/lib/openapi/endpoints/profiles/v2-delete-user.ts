@@ -25,10 +25,7 @@ export const v2DeleteUserSupplement = {
       description:
         "Returns null for the user field, confirming the account has been permanently deleted.",
       summary: "User successfully deleted",
-      value: {
-        data: { user: null },
-        error: null,
-      } as const,
+      value: { user: null } as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

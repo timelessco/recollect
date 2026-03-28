@@ -19,8 +19,7 @@ export const v2SendCollaborationEmailSupplement = {
       description: "Collaboration invite sent. The invite URL is always returned.",
       summary: "Invite email sent",
       value: {
-        data: { url: "https://recollect.so/api/invite?token=eyJhbGciOiJIUzI1NiJ9.example" },
-        error: null,
+        url: "https://recollect.so/api/invite?token=eyJhbGciOiJIUzI1NiJ9.example",
       } as const,
     },
   },
