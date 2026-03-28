@@ -3,8 +3,9 @@ import { after } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import slugify from "slugify";
 
-import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
-import { apiError, apiWarn } from "@/lib/api-helpers/response";
+import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
+import { RecollectApiError } from "@/lib/api-helpers/errors";
+import { getServerContext } from "@/lib/api-helpers/server-context";
 import { uploadFileRemainingData } from "@/lib/files/upload-file-remaining-data";
 import { isNullable } from "@/utils/assertion-utils";
 import {
@@ -125,214 +126,205 @@ function isUserInACategory(categoryId: string): boolean {
   return !nonCategoryPages.includes(categoryId);
 }
 
-export const POST = createPostApiHandlerWithAuth({
-  handler: async ({ data, route, supabase, user }) => {
-    const {
-      category_id: categoryIdStr,
-      name,
-      thumbnailPath,
-      type: fileType,
-      uploadFileNamePath,
-    } = data;
-    const userId = user.id;
-    const userEmail = user.email;
+export const POST = createAxiomRouteHandler(
+  withAuth({
+    handler: async ({ data, supabase, user }) => {
+      const {
+        category_id: categoryIdStr,
+        name,
+        thumbnailPath,
+        type: fileType,
+        uploadFileNamePath,
+      } = data;
+      const userId = user.id;
+      const userEmail = user.email;
 
-    console.log(`[${route}] API called:`, { categoryIdStr, name, userId });
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+        ctx.fields.file_type = fileType;
+        ctx.fields.operation = "test_upload";
+      }
 
-    // Determine numeric category ID (0 = Uncategorized)
-    let categoryIdLogic = 0;
-    if (categoryIdStr) {
-      categoryIdLogic = isUserInACategory(categoryIdStr) ? Number(categoryIdStr) : 0;
-    }
+      // Determine numeric category ID (0 = Uncategorized)
+      let categoryIdLogic = 0;
+      if (categoryIdStr) {
+        categoryIdLogic = isUserInACategory(categoryIdStr) ? Number(categoryIdStr) : 0;
+      }
 
-    // Inline category ownership/collaboration check (only for real categories)
-    if (Number.parseInt(categoryIdStr, 10) !== 0 && typeof categoryIdStr === "string") {
-      const numericCategoryId = Number(categoryIdStr);
+      // Inline category ownership/collaboration check (only for real categories)
+      if (Number.parseInt(categoryIdStr, 10) !== 0 && typeof categoryIdStr === "string") {
+        const numericCategoryId = Number(categoryIdStr);
 
-      if (!Number.isNaN(numericCategoryId) && numericCategoryId > 0) {
-        // Check if user owns the category
-        const { data: categoryOwner, error: categoryError } = await supabase
-          .from(CATEGORIES_TABLE_NAME)
-          .select("user_id")
-          .eq("id", numericCategoryId)
-          .single();
-
-        if (categoryError) {
-          return apiError({
-            error: categoryError,
-            extra: { categoryId: numericCategoryId },
-            message: "Failed to check category ownership",
-            operation: "check_category_ownership",
-            route,
-            userId,
-          });
-        }
-
-        if (categoryOwner?.user_id !== userId) {
-          // Check if user is a collaborator with EDIT access
-          const { data: collaboration, error: collaborationError } = await supabase
-            .from(SHARED_CATEGORIES_TABLE_NAME)
-            .select("id")
-            .eq("category_id", numericCategoryId)
-            .eq("email", userEmail ?? "")
-            .eq("edit_access", true)
+        if (!Number.isNaN(numericCategoryId) && numericCategoryId > 0) {
+          // Check if user owns the category
+          const { data: categoryOwner, error: categoryError } = await supabase
+            .from(CATEGORIES_TABLE_NAME)
+            .select("user_id")
+            .eq("id", numericCategoryId)
             .single();
 
-          // PGRST116 = "no rows returned" — expected when user isn't a collaborator
-          if (collaborationError && collaborationError.code !== "PGRST116") {
-            return apiError({
-              error: collaborationError,
-              extra: { categoryId: numericCategoryId },
-              message: "Failed to check collaborator access",
-              operation: "check_collaborator_access",
-              route,
-              userId,
+          if (categoryError) {
+            throw new RecollectApiError("service_unavailable", {
+              cause: categoryError,
+              message: "Failed to check category ownership",
+              operation: "check_category_ownership",
             });
           }
 
-          if (isNullable(collaboration)) {
-            return apiWarn({
-              message:
-                "User is neither owner or collaborator for the collection or does not have edit access",
-              route,
-              status: 403,
-            });
+          if (categoryOwner?.user_id !== userId) {
+            // Check if user is a collaborator with EDIT access
+            const { data: collaboration, error: collaborationError } = await supabase
+              .from(SHARED_CATEGORIES_TABLE_NAME)
+              .select("id")
+              .eq("category_id", numericCategoryId)
+              .eq("email", userEmail ?? "")
+              .eq("edit_access", true)
+              .single();
+
+            // PGRST116 = "no rows returned" — expected when user isn't a collaborator
+            if (collaborationError && collaborationError.code !== "PGRST116") {
+              throw new RecollectApiError("service_unavailable", {
+                cause: collaborationError,
+                message: "Failed to check collaborator access",
+                operation: "check_collaborator_access",
+              });
+            }
+
+            if (isNullable(collaboration)) {
+              throw new RecollectApiError("forbidden", {
+                message:
+                  "User is neither owner or collaborator for the collection or does not have edit access",
+                operation: "check_collaborator_access",
+              });
+            }
           }
         }
       }
-    }
 
-    // Get storage path and public URL
-    const uploadPath = parseUploadFileName(uploadFileNamePath);
-    const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
-    const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
+      // Get storage path and public URL
+      const uploadPath = parseUploadFileName(uploadFileNamePath);
+      const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
+      const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
 
-    // Process video vs non-video
-    const isVideo = fileType?.includes("video");
-    const fileName = parseUploadFileName(name);
+      // Process video vs non-video
+      const isVideo = fileType?.includes("video");
+      const fileName = parseUploadFileName(name);
 
-    let meta_data: Record<string, unknown> = {
-      coverImage: null,
-      favIcon: null,
-      height: null,
-      iframeAllowed: false,
-      image_caption: null,
-      img_caption: null,
-      isOgImagePreferred: false,
-      isPageScreenshot: null,
-      mediaType: "",
-      ocr: null,
-      ogImgBlurUrl: null,
-      screenshot: null,
-      twitter_avatar_url: null,
-      video_url: null,
-      width: null,
-    };
+      let meta_data: Record<string, unknown> = {
+        coverImage: null,
+        favIcon: null,
+        height: null,
+        iframeAllowed: false,
+        image_caption: null,
+        img_caption: null,
+        isOgImagePreferred: false,
+        isPageScreenshot: null,
+        mediaType: "",
+        ocr: null,
+        ogImgBlurUrl: null,
+        screenshot: null,
+        twitter_avatar_url: null,
+        video_url: null,
+        width: null,
+      };
 
-    let ogImage: string | undefined;
+      let ogImage: string | undefined;
 
-    if (isVideo) {
-      if (isNullable(thumbnailPath)) {
-        return apiWarn({
-          message: "thumbnailPath is required for video files",
-          route,
-          status: 400,
+      if (isVideo) {
+        if (isNullable(thumbnailPath)) {
+          throw new RecollectApiError("bad_request", {
+            message: "thumbnailPath is required for video files",
+            operation: "validate_thumbnail",
+          });
+        }
+
+        const videoResult = await processVideoThumbnail({
+          fileName: uploadPath,
+          thumbnailPath,
+          userId,
+        });
+
+        ({ ogImage } = videoResult);
+        ({ meta_data } = videoResult);
+      } else {
+        ogImage = storageData.publicUrl;
+      }
+
+      // Insert bookmark into database
+      const { data: databaseData, error: dbError } = await supabase
+        .from(MAIN_TABLE_NAME)
+        .insert({
+          description: "",
+          meta_data: toJson(meta_data),
+          ogImage,
+          title: fileName,
+          type: fileType,
+          url: storageData.publicUrl,
+          user_id: userId,
+        })
+        .select("id");
+
+      if (dbError) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: dbError,
+          message: "Failed to insert bookmark",
+          operation: "insert_bookmark",
         });
       }
 
-      const videoResult = await processVideoThumbnail({
-        fileName: uploadPath,
-        thumbnailPath,
-        userId,
-      });
+      if (isNullable(databaseData) || databaseData.length === 0) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: new Error("Insert returned no data"),
+          message: "Failed to insert bookmark",
+          operation: "insert_bookmark",
+        });
+      }
 
-      ({ ogImage } = videoResult);
-      ({ meta_data } = videoResult);
-    } else {
-      ogImage = storageData.publicUrl;
-    }
+      const bookmarkId = databaseData[0].id;
 
-    // Insert bookmark into database
-    const { data: databaseData, error: dbError } = await supabase
-      .from(MAIN_TABLE_NAME)
-      .insert({
-        description: "",
-        meta_data: toJson(meta_data),
-        ogImage,
-        title: fileName,
-        type: fileType,
-        url: storageData.publicUrl,
+      if (ctx?.fields) {
+        ctx.fields.bookmark_id = bookmarkId;
+      }
+
+      // Add category association via junction table
+      const { error: junctionError } = await supabase.from(BOOKMARK_CATEGORIES_TABLE_NAME).insert({
+        bookmark_id: bookmarkId,
+        category_id: categoryIdLogic,
         user_id: userId,
-      })
-      .select("id");
-
-    if (dbError) {
-      return apiError({
-        error: dbError,
-        message: "Failed to insert bookmark",
-        operation: "insert_bookmark",
-        route,
-        userId,
       });
-    }
 
-    if (isNullable(databaseData) || databaseData.length === 0) {
-      return apiError({
-        error: new Error("Insert returned no data"),
-        message: "Failed to insert bookmark",
-        operation: "insert_bookmark",
-        route,
-        userId,
-      });
-    }
+      if (junctionError && ctx?.fields) {
+        ctx.fields.junction_error = true;
+        ctx.fields.junction_error_code = junctionError.code;
+      }
 
-    const bookmarkId = databaseData[0].id;
+      // Fire remaining-data processing for non-video files
+      if (!isVideo && databaseData.length > 0) {
+        after(async () => {
+          try {
+            await uploadFileRemainingData({
+              id: bookmarkId,
+              mediaType: fileType,
+              publicUrl: storageData.publicUrl,
+              supabase,
+              userId,
+            });
+          } catch (error) {
+            Sentry.captureException(error, {
+              extra: { bookmarkId },
+              tags: { operation: "remaining_upload_after", userId },
+            });
+          }
+        });
+      } else if (!isVideo && ctx?.fields) {
+        ctx.fields.remaining_upload_empty = true;
+      }
 
-    // Add category association via junction table
-    const { error: junctionError } = await supabase.from(BOOKMARK_CATEGORIES_TABLE_NAME).insert({
-      bookmark_id: bookmarkId,
-      category_id: categoryIdLogic,
-      user_id: userId,
-    });
-
-    if (junctionError) {
-      console.error(`[${route}] Error inserting category association:`, junctionError);
-      Sentry.captureException(junctionError, {
-        extra: { bookmarkId, categoryId: categoryIdLogic },
-        tags: { operation: "insert_bookmark_category_junction" },
-      });
-    }
-
-    // Fire remaining-data processing for non-video files
-    if (!isVideo && databaseData.length > 0) {
-      after(async () => {
-        try {
-          await uploadFileRemainingData({
-            id: bookmarkId,
-            mediaType: fileType,
-            publicUrl: storageData.publicUrl,
-            supabase,
-            userId,
-          });
-        } catch (error) {
-          Sentry.captureException(error, {
-            extra: { bookmarkId },
-            tags: { operation: "remaining_upload_after", userId },
-          });
-        }
-      });
-    } else if (isVideo) {
-      console.log(`[${route}] Skipping remaining-data processing for video file:`, { bookmarkId });
-    } else {
-      console.error(`[${route}] Remaining upload error: upload data is empty`);
-      Sentry.captureException(new Error("Remaining upload error: upload data is empty"), {
-        tags: { operation: "remaining_upload_api" },
-      });
-    }
-
-    return databaseData;
-  },
-  inputSchema: TestFileUploadInputSchema,
-  outputSchema: TestFileUploadOutputSchema,
-  route: ROUTE,
-});
+      return databaseData;
+    },
+    inputSchema: TestFileUploadInputSchema,
+    outputSchema: TestFileUploadOutputSchema,
+    route: ROUTE,
+  }),
+);

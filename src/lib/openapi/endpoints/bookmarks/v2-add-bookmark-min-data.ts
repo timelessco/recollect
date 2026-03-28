@@ -45,7 +45,6 @@ export const v2AddBookmarkMinDataSupplement = {
       description: "Send without `url` — returns 400.",
       summary: "Missing URL",
       value: {
-        data: null,
         error: "Invalid input: expected string, received undefined",
       } as const,
     },
@@ -54,28 +53,25 @@ export const v2AddBookmarkMinDataSupplement = {
     "bookmark-created": {
       description: "Bookmark created with OG metadata. Media URLs trigger background enrichment.",
       summary: "Bookmark created successfully",
-      value: {
-        data: [
-          {
-            category_id: 0,
-            description: "An example article description",
-            id: 42,
-            inserted_at: "2026-03-27T00:00:00.000Z",
-            meta_data: {
-              favIcon: "https://example.com/favicon.ico",
-              iframeAllowed: null,
-              isOgImagePreferred: false,
-              mediaType: null,
-            },
-            ogImage: "https://example.com/og-image.jpg",
-            title: "Example Article",
-            type: "bookmark",
-            url: "https://example.com/article",
-            user_id: "user-uuid",
+      value: [
+        {
+          category_id: 0,
+          description: "An example article description",
+          id: 42,
+          inserted_at: "2026-03-27T00:00:00.000Z",
+          meta_data: {
+            favIcon: "https://example.com/favicon.ico",
+            iframeAllowed: null,
+            isOgImagePreferred: false,
+            mediaType: null,
           },
-        ],
-        error: null,
-      } as const,
+          ogImage: "https://example.com/og-image.jpg",
+          title: "Example Article",
+          type: "bookmark",
+          url: "https://example.com/article",
+          user_id: "user-uuid",
+        },
+      ] as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

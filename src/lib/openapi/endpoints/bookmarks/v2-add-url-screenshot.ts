@@ -42,7 +42,6 @@ export const v2AddUrlScreenshotSupplement = {
       description: "Send `{ url: 'https://example.com' }` without `id` — returns 400.",
       summary: "Missing bookmark ID",
       value: {
-        data: null,
         error: "Invalid input: expected number, received undefined",
       } as const,
     },
@@ -50,7 +49,6 @@ export const v2AddUrlScreenshotSupplement = {
       description: "Send `{ id: 42 }` without `url` — returns 400.",
       summary: "Missing URL",
       value: {
-        data: null,
         error: "Invalid input: expected string, received undefined",
       } as const,
     },
@@ -60,24 +58,21 @@ export const v2AddUrlScreenshotSupplement = {
       description:
         "Screenshot captured and uploaded. Bookmark metadata updated with screenshot URL.",
       summary: "Screenshot captured successfully",
-      value: {
-        data: [
-          {
-            description: "Example article description",
-            id: 42,
-            meta_data: {
-              additionalImages: [],
-              additionalVideos: [],
-              isPageScreenshot: true,
-              screenshot:
-                "https://media.recollect.so/bookmarks/public/screenshot_imgs/user123/img-abc.jpg",
-            },
-            ogImage: "https://example.com/og-image.jpg",
-            title: "Example Article Title",
+      value: [
+        {
+          description: "Example article description",
+          id: 42,
+          meta_data: {
+            additionalImages: [],
+            additionalVideos: [],
+            isPageScreenshot: true,
+            screenshot:
+              "https://media.recollect.so/bookmarks/public/screenshot_imgs/user123/img-abc.jpg",
           },
-        ],
-        error: null,
-      } as const,
+          ogImage: "https://example.com/og-image.jpg",
+          title: "Example Article Title",
+        },
+      ] as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

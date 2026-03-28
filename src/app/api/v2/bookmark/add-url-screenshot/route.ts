@@ -2,8 +2,9 @@ import { after } from "next/server";
 
 import * as Sentry from "@sentry/nextjs";
 
-import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
-import { apiError } from "@/lib/api-helpers/response";
+import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
+import { RecollectApiError } from "@/lib/api-helpers/errors";
+import { getServerContext } from "@/lib/api-helpers/server-context";
 import { addRemainingBookmarkData } from "@/lib/bookmarks/add-remaining-bookmark-data";
 import { collectAdditionalImages, collectVideo } from "@/lib/bookmarks/collect-screenshot-media";
 import { upload } from "@/lib/storage/media-upload";
@@ -55,42 +56,182 @@ function parseScreenshotResponse(json: unknown) {
 
 /* oxlint-enable @typescript-eslint/no-unsafe-type-assertion */
 
-export const POST = createPostApiHandlerWithAuth({
-  handler: async ({ data, route, supabase, user }) => {
-    const userId = user.id;
+export const POST = createAxiomRouteHandler(
+  withAuth({
+    handler: async ({ data, supabase, user }) => {
+      const userId = user.id;
 
-    console.log(`[${route}] API called:`, {
-      bookmarkId: data.id,
-      url: data.url,
-      userId,
-    });
-
-    // 1. Capture screenshot from external API
-    const [screenshotError, screenshotResponse] = await vet(async () => {
-      const r = await fetch(`${SCREENSHOT_API}/try?url=${encodeURIComponent(data.url)}`, {
-        signal: AbortSignal.timeout(SCREENSHOT_TIMEOUT_MS),
-      });
-      if (!r.ok) {
-        throw new Error(`Screenshot API returned ${String(r.status)}`);
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+        ctx.fields.bookmark_id = data.id;
+        ctx.fields.url = data.url;
       }
-      const json: unknown = await r.json();
-      return parseScreenshotResponse(json);
-    });
 
-    // Path A — Screenshot FAILED: fire enrichment anyway, then return error
-    if (screenshotError) {
-      console.error(`[${route}] Screenshot API error:`, {
-        bookmarkId: data.id,
-        error: screenshotError,
-      });
-      Sentry.captureException(screenshotError, {
-        extra: { url: data.url },
-        tags: { operation: "screenshot_api", userId },
+      // 1. Capture screenshot from external API
+      const [screenshotError, screenshotResponse] = await vet(async () => {
+        const r = await fetch(`${SCREENSHOT_API}/try?url=${encodeURIComponent(data.url)}`, {
+          signal: AbortSignal.timeout(SCREENSHOT_TIMEOUT_MS),
+        });
+        if (!r.ok) {
+          throw new Error(`Screenshot API returned ${String(r.status)}`);
+        }
+        const json: unknown = await r.json();
+        return parseScreenshotResponse(json);
       });
 
+      // Path A — Screenshot FAILED: fire enrichment anyway, then return error
+      if (screenshotError) {
+        if (ctx?.fields) {
+          ctx.fields.screenshot_failed = true;
+        }
+
+        // Register after() BEFORE throwing — enrichment still runs on screenshot failure
+        after(async () => {
+          try {
+            await addRemainingBookmarkData({
+              id: data.id,
+              supabase,
+              url: data.url,
+              userId,
+            });
+          } catch (error) {
+            Sentry.captureException(error, {
+              extra: { bookmarkId: data.id },
+              tags: { operation: "after_remaining_bookmark_data_screenshot_failed", userId },
+            });
+          }
+        });
+
+        throw new RecollectApiError("service_unavailable", {
+          cause: screenshotError,
+          message: "Error capturing screenshot",
+          operation: "screenshot_capture",
+        });
+      }
+
+      // Path B — Screenshot SUCCEEDED
+      // 2. Upload screenshot to R2
+      const base64data = Buffer.from(screenshotResponse.screenshotData, "binary").toString(
+        "base64",
+      );
+
+      const { description, isPageScreenshot, title } = screenshotResponse.metaData ?? {};
+
+      const publicURL = await upload(base64data, userId);
+
+      // 3. Fetch existing bookmark data
+      const { data: existingBookmark, error: fetchError } = await supabase
+        .from(MAIN_TABLE_NAME)
+        .select("meta_data, ogImage, title, description")
+        .match({ id: data.id, user_id: userId })
+        .single<BookmarkScreenshotFetchRow>();
+
+      if (fetchError) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: fetchError,
+          message: "Error fetching bookmark data",
+          operation: "fetch_existing_bookmark",
+        });
+      }
+
+      if (isNullable(existingBookmark)) {
+        throw new RecollectApiError("not_found", {
+          message: "Bookmark not found",
+          operation: "fetch_existing_bookmark",
+        });
+      }
+
+      const existingMetaData = existingBookmark.meta_data ?? {};
+
+      const updatedTitle = title?.slice(0, MAX_LENGTH) ?? existingBookmark.title;
+      const updatedDescription = description?.slice(0, MAX_LENGTH) ?? existingBookmark.description;
+
+      // 4. Collect additional images + video in parallel
+      const [additionalImagesSettled, additionalVideoSettled] = await Promise.allSettled([
+        collectAdditionalImages({
+          allImages: screenshotResponse.allImages,
+          userId,
+        }),
+        collectVideo({
+          userId,
+          videoUrl: screenshotResponse.allVideos?.at(0) ?? null,
+        }),
+      ]);
+
+      const additionalImages =
+        additionalImagesSettled.status === "fulfilled" ? additionalImagesSettled.value : [];
+
+      if (additionalImagesSettled.status === "rejected" && ctx?.fields) {
+        ctx.fields.additional_images_failed = true;
+      }
+
+      const additionalVideoResult =
+        additionalVideoSettled.status === "fulfilled"
+          ? additionalVideoSettled.value
+          : {
+              error: "unknown" as const,
+              message: "collectVideo promise rejected",
+              success: false as const,
+            };
+
+      if (additionalVideoSettled.status === "rejected" && ctx?.fields) {
+        ctx.fields.additional_video_failed = true;
+      }
+
+      if (!additionalVideoResult.success && ctx?.fields) {
+        ctx.fields.video_collection_error = additionalVideoResult.error;
+      }
+
+      // 5. Build updated meta_data with screenshot
+      const updatedMetaData = {
+        ...existingMetaData,
+        additionalImages,
+        additionalVideos:
+          additionalVideoResult.success && additionalVideoResult.url
+            ? [additionalVideoResult.url]
+            : [],
+        coverImage: existingBookmark.ogImage,
+        isPageScreenshot,
+        screenshot: publicURL,
+      };
+
+      // 6. Update bookmark in DB
+      const { data: updateData, error: updateError } = await supabase
+        .from(MAIN_TABLE_NAME)
+        .update({
+          description: updatedDescription,
+          meta_data: toJson(updatedMetaData),
+          title: updatedTitle,
+        })
+        .match({ id: data.id, user_id: userId })
+        .select("id, ogImage, title, description, meta_data");
+
+      if (updateError) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: updateError,
+          message: "Error updating bookmark with screenshot",
+          operation: "update_bookmark_screenshot",
+        });
+      }
+
+      if (isNullable(updateData) || updateData.length === 0) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: new Error("No data returned from the database"),
+          message: "No data returned from the database",
+          operation: "update_bookmark_screenshot",
+        });
+      }
+
+      if (ctx?.fields) {
+        ctx.fields.has_screenshot = true;
+      }
+
+      // 7. Fire remaining enrichment in background
       after(async () => {
         try {
           await addRemainingBookmarkData({
+            favIcon: data.favIcon ?? undefined,
             id: data.id,
             supabase,
             url: data.url,
@@ -99,189 +240,15 @@ export const POST = createPostApiHandlerWithAuth({
         } catch (error) {
           Sentry.captureException(error, {
             extra: { bookmarkId: data.id },
-            tags: { operation: "after_remaining_bookmark_data_screenshot_failed", userId },
+            tags: { operation: "after_remaining_bookmark_data", userId },
           });
         }
       });
 
-      return apiError({
-        error: screenshotError,
-        message: "Error capturing screenshot",
-        operation: "screenshot_capture",
-        route,
-      });
-    }
-
-    console.log(`[${route}] Screenshot captured:`, { bookmarkId: data.id });
-
-    // Path B — Screenshot SUCCEEDED
-    // 2. Upload screenshot to R2
-    const base64data = Buffer.from(screenshotResponse.screenshotData, "binary").toString("base64");
-
-    const { description, isPageScreenshot, title } = screenshotResponse.metaData ?? {};
-
-    const publicURL = await upload(base64data, userId);
-
-    // 3. Fetch existing bookmark data
-    const { data: existingBookmark, error: fetchError } = await supabase
-      .from(MAIN_TABLE_NAME)
-      .select("meta_data, ogImage, title, description")
-      .match({ id: data.id, user_id: userId })
-      .single<BookmarkScreenshotFetchRow>();
-
-    if (fetchError) {
-      return apiError({
-        error: fetchError,
-        extra: { bookmarkId: data.id },
-        message: "Error fetching bookmark data",
-        operation: "fetch_existing_bookmark",
-        route,
-        userId,
-      });
-    }
-
-    if (isNullable(existingBookmark)) {
-      return apiError({
-        error: new Error("Bookmark not found"),
-        extra: { bookmarkId: data.id },
-        message: "Bookmark not found",
-        operation: "fetch_existing_bookmark",
-        route,
-        userId,
-      });
-    }
-
-    console.log(`[${route}] Existing bookmark fetched:`, {
-      bookmarkId: data.id,
-      hasMetaData: Boolean(existingBookmark.meta_data),
-    });
-
-    const existingMetaData = existingBookmark.meta_data ?? {};
-
-    const updatedTitle = title?.slice(0, MAX_LENGTH) ?? existingBookmark.title;
-    const updatedDescription = description?.slice(0, MAX_LENGTH) ?? existingBookmark.description;
-
-    // 4. Collect additional images + video in parallel
-    const [additionalImagesSettled, additionalVideoSettled] = await Promise.allSettled([
-      collectAdditionalImages({
-        allImages: screenshotResponse.allImages,
-        userId,
-      }),
-      collectVideo({
-        userId,
-        videoUrl: screenshotResponse.allVideos?.at(0) ?? null,
-      }),
-    ]);
-
-    const additionalImages =
-      additionalImagesSettled.status === "fulfilled" ? additionalImagesSettled.value : [];
-
-    if (additionalImagesSettled.status === "rejected") {
-      console.warn(`[${route}] Additional images collection failed:`, {
-        error: String(additionalImagesSettled.reason),
-        userId,
-      });
-    }
-
-    const additionalVideoResult =
-      additionalVideoSettled.status === "fulfilled"
-        ? additionalVideoSettled.value
-        : {
-            error: "unknown" as const,
-            message: "collectVideo promise rejected",
-            success: false as const,
-          };
-
-    if (additionalVideoSettled.status === "rejected") {
-      console.warn(`[${route}] Additional video collection failed:`, {
-        error: String(additionalVideoSettled.reason),
-        userId,
-      });
-    }
-
-    if (!additionalVideoResult.success) {
-      Sentry.captureException(new Error(additionalVideoResult.message), {
-        extra: {
-          bookmarkId: data.id,
-          videoUrl: screenshotResponse.allVideos?.at(0),
-        },
-        tags: {
-          errorType: additionalVideoResult.error,
-          operation: "collect_video",
-          userId,
-        },
-      });
-    }
-
-    // 5. Build updated meta_data with screenshot
-    const updatedMetaData = {
-      ...existingMetaData,
-      additionalImages,
-      additionalVideos:
-        additionalVideoResult.success && additionalVideoResult.url
-          ? [additionalVideoResult.url]
-          : [],
-      coverImage: existingBookmark.ogImage,
-      isPageScreenshot,
-      screenshot: publicURL,
-    };
-
-    // 6. Update bookmark in DB
-    const { data: updateData, error: updateError } = await supabase
-      .from(MAIN_TABLE_NAME)
-      .update({
-        description: updatedDescription,
-        meta_data: toJson(updatedMetaData),
-        title: updatedTitle,
-      })
-      .match({ id: data.id, user_id: userId })
-      .select("id, ogImage, title, description, meta_data");
-
-    if (updateError) {
-      return apiError({
-        error: updateError,
-        extra: { bookmarkId: data.id },
-        message: "Error updating bookmark with screenshot",
-        operation: "update_bookmark_screenshot",
-        route,
-        userId,
-      });
-    }
-
-    if (isNullable(updateData) || updateData.length === 0) {
-      return apiError({
-        error: new Error("No data returned from the database"),
-        extra: { bookmarkId: data.id },
-        message: "No data returned from the database",
-        operation: "update_bookmark_screenshot",
-        route,
-        userId,
-      });
-    }
-
-    console.log(`[${route}] Bookmark updated with screenshot:`, { bookmarkId: data.id });
-
-    // 7. Fire remaining enrichment in background
-    after(async () => {
-      try {
-        await addRemainingBookmarkData({
-          favIcon: data.favIcon ?? undefined,
-          id: data.id,
-          supabase,
-          url: data.url,
-          userId,
-        });
-      } catch (error) {
-        Sentry.captureException(error, {
-          extra: { bookmarkId: data.id },
-          tags: { operation: "after_remaining_bookmark_data", userId },
-        });
-      }
-    });
-
-    return updateData;
-  },
-  inputSchema: AddUrlScreenshotInputSchema,
-  outputSchema: AddUrlScreenshotOutputSchema,
-  route: ROUTE,
-});
+      return updateData;
+    },
+    inputSchema: AddUrlScreenshotInputSchema,
+    outputSchema: AddUrlScreenshotOutputSchema,
+    route: ROUTE,
+  }),
+);

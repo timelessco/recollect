@@ -32,9 +32,12 @@ export const v2TestsFilePostUploadSupplement = {
       },
     },
   },
-  responseExample: {
-    data: [{ id: 12_345 }],
-    error: null,
+  responseExamples: {
+    "file-uploaded": {
+      description: "Returns the inserted bookmark row with its database ID.",
+      summary: "File uploaded successfully",
+      value: [{ id: 12_345 }] as const,
+    },
   },
   summary: "Upload test file",
   tags: ["Tests"],
