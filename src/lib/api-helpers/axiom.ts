@@ -42,12 +42,25 @@ if (env.AXIOM_TOKEN) {
   );
 }
 
+function resolveBaseUrl(): string {
+  if (process.env.VERCEL_ENV === "production") {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_BRANCH_URL) {
+    return `https://${process.env.VERCEL_BRANCH_URL}`;
+  }
+  return "http://localhost:3000";
+}
+
 export const logger = new Logger({
   transports: [baseTransport, ...extraTransports],
   // process.env used intentionally — Vercel system vars, not in @t3-oss/env-nextjs
   // (auto-injected by Vercel, absent in local dev — graceful fallback)
   args: {
+    base_url: resolveBaseUrl(),
+    branch: process.env.VERCEL_GIT_COMMIT_REF ?? "local",
     commit: process.env.VERCEL_GIT_COMMIT_SHA ?? "local",
+    deployment_id: process.env.VERCEL_DEPLOYMENT_ID ?? "local",
     environment: process.env.VERCEL_ENV ?? "development",
     region: process.env.VERCEL_REGION ?? "local",
   },
