@@ -1,3 +1,5 @@
+import { timingSafeEqual } from "node:crypto";
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -46,6 +48,16 @@ interface PublicHandlerConfig<TInput, TOutput> {
   inputSchema: z.ZodType<TInput>;
   outputSchema: z.ZodType<TOutput>;
   route: string;
+}
+
+interface SecretHandlerConfig<TInput, TOutput> {
+  handler: (
+    ctx: PublicHandlerContext<TInput>,
+  ) => NextResponse | Promise<NextResponse | TOutput> | TOutput;
+  inputSchema: z.ZodType<TInput>;
+  outputSchema: z.ZodType<TOutput>;
+  route: string;
+  secretEnvVar: string;
 }
 
 type HandlerFn = ((request: NextRequest) => Promise<NextResponse>) & {
@@ -238,6 +250,88 @@ export function withPublic<TInput, TOutput>(
     auth: "none" as const,
     contract: "v2" as const,
     factoryName: "withPublic",
+    inputSchema,
+    outputSchema,
+    route,
+  };
+
+  return fn;
+}
+
+// ============================================================
+// withSecret — secret-token authenticated handler
+// ============================================================
+
+export function withSecret<TInput, TOutput>(
+  config: SecretHandlerConfig<TInput, TOutput>,
+): HandlerFn {
+  const { handler, inputSchema, outputSchema, route, secretEnvVar } = config;
+
+  const fn = async (request: NextRequest) => {
+    try {
+      // process.env used intentionally — dynamic lookup, not statically analyzable
+      const secret = process.env[secretEnvVar];
+      if (!secret || secret.trim() === "") {
+        throw new RecollectApiError("service_unavailable", {
+          message: `${secretEnvVar} is not configured`,
+          operation: "secret_config_check",
+        });
+      }
+
+      const authHeader = request.headers.get("authorization") ?? "";
+
+      // Timing-safe comparison to prevent token enumeration attacks.
+      // timingSafeEqual throws on different lengths, so pre-check length first.
+      const expected = `Bearer ${secret}`;
+      const isValid =
+        authHeader.length === expected.length &&
+        timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected));
+
+      if (!isValid) {
+        throw new RecollectApiError("unauthorized", {
+          message: "Unauthorized",
+          operation: "secret_token_check",
+        });
+      }
+
+      const data = isBodyMethod(request.method)
+        ? await parseRequestBody(request, inputSchema, route)
+        : parseRequestQuery(request, inputSchema, route);
+
+      const result = await handler({ input: data, route });
+
+      if (result instanceof NextResponse) {
+        return result;
+      }
+
+      const validated = outputSchema.safeParse(result);
+      if (!validated.success) {
+        throw new Error(
+          `[${route}] Output validation failed: ${JSON.stringify(validated.error.issues)}`,
+        );
+      }
+
+      return NextResponse.json(validated.data);
+    } catch (error) {
+      if (error instanceof RecollectApiError) {
+        const ctx = getServerContext();
+        if (ctx?.fields) {
+          Object.assign(ctx.fields, error.toLogContext());
+        }
+        return NextResponse.json(error.toResponse(), { status: error.status });
+      }
+      throw error;
+    }
+  };
+
+  // Scanner auth-tier disambiguation:
+  // auth: "required" + factoryName: "withSecret" together identify the auth tier.
+  // "required" tells the scanner to add bearerAuth security to the OpenAPI spec.
+  // "withSecret" tells developers this is shared-secret auth, not user JWT auth.
+  fn.config = {
+    auth: "required" as const,
+    contract: "v2" as const,
+    factoryName: "withSecret",
     inputSchema,
     outputSchema,
     route,
