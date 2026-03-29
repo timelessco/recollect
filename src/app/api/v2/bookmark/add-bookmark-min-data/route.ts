@@ -44,7 +44,11 @@ async function getMediaType(url: string): Promise<null | string> {
     );
 
     if (!response.ok) {
-      console.error("[add-bookmark-min-data] Error getting media type");
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.media_type_error = "upstream_not_ok";
+        ctx.fields.media_type_status = response.status;
+      }
       return null;
     }
 
@@ -56,7 +60,10 @@ async function getMediaType(url: string): Promise<null | string> {
 
     return null;
   } catch (error) {
-    console.error("[add-bookmark-min-data] Error getting media type:", error);
+    const ctx = getServerContext();
+    if (ctx?.fields) {
+      ctx.fields.media_type_error = error instanceof Error ? error.message : String(error);
+    }
     return null;
   }
 }
@@ -101,7 +108,10 @@ async function getNormalisedImageUrl(imageUrl: null | string, url: string): Prom
 
     return response.url;
   } catch (error) {
-    console.warn("[add-bookmark-min-data] Error fetching favicon:", error);
+    const ctx = getServerContext();
+    if (ctx?.fields) {
+      ctx.fields.favicon_error = error instanceof Error ? error.message : String(error);
+    }
     return null;
   }
 }

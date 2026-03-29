@@ -53,7 +53,11 @@ async function getMediaType(url: string): Promise<null | string> {
     );
 
     if (!response.ok) {
-      logger.warn("[upload-file] Error getting media type", { status: response.status, url });
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.media_type_error = "upstream_not_ok";
+        ctx.fields.media_type_status = response.status;
+      }
       return null;
     }
 
@@ -65,7 +69,10 @@ async function getMediaType(url: string): Promise<null | string> {
 
     return null;
   } catch (error) {
-    logger.warn("[upload-file] Error getting media type", { error: String(error), url });
+    const ctx = getServerContext();
+    if (ctx?.fields) {
+      ctx.fields.media_type_error = error instanceof Error ? error.message : String(error);
+    }
     return null;
   }
 }
