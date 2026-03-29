@@ -1,51 +1,60 @@
 import { NextResponse } from "next/server";
 
-import { createGetApiHandler } from "@/lib/api-helpers/create-handler";
-import { apiError } from "@/lib/api-helpers/response";
+import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
+import { RecollectApiError } from "@/lib/api-helpers/errors";
+import { getServerContext } from "@/lib/api-helpers/server-context";
 import { PDF_MIME_TYPE } from "@/utils/constants";
 
 import { GetPdfBufferInputSchema, GetPdfBufferOutputSchema } from "./schema";
 
 const ROUTE = "v2-bookmarks-get-pdf-buffer";
 
-export const GET = createGetApiHandler({
-  handler: async ({ input }) => {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      controller.abort();
-    }, 30_000);
-
-    try {
-      const result = await fetch(input.url, {
-        signal: controller.signal,
-      });
-
-      if (!result.ok) {
-        return apiError({
-          error: new Error(`Upstream returned ${String(result.status)}`),
-          message: "Failed to fetch PDF",
-          operation: "get_pdf_buffer_fetch",
-          route: ROUTE,
-        });
+export const GET = createAxiomRouteHandler(
+  withPublic({
+    handler: async ({ input }) => {
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.pdf_url = input.url;
       }
 
-      const buffer = await result.arrayBuffer();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, 30_000);
 
-      return new NextResponse(buffer, {
-        headers: { "Content-Type": PDF_MIME_TYPE },
-      });
-    } catch (error) {
-      return apiError({
-        error: error instanceof Error ? error : new Error(String(error)),
-        message: "Failed to fetch PDF",
-        operation: "get_pdf_buffer_fetch",
-        route: ROUTE,
-      });
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  },
-  inputSchema: GetPdfBufferInputSchema,
-  outputSchema: GetPdfBufferOutputSchema,
-  route: ROUTE,
-});
+      try {
+        const result = await fetch(input.url, {
+          signal: controller.signal,
+        });
+
+        if (!result.ok) {
+          throw new RecollectApiError("service_unavailable", {
+            cause: new Error(`Upstream returned ${String(result.status)}`),
+            message: "Failed to fetch PDF",
+            operation: "get_pdf_buffer_fetch",
+          });
+        }
+
+        const buffer = await result.arrayBuffer();
+
+        return new NextResponse(buffer, {
+          headers: { "Content-Type": PDF_MIME_TYPE },
+        });
+      } catch (error) {
+        if (error instanceof RecollectApiError) {
+          throw error;
+        }
+        throw new RecollectApiError("service_unavailable", {
+          cause: error instanceof Error ? error : new Error(String(error)),
+          message: "Failed to fetch PDF",
+          operation: "get_pdf_buffer_fetch",
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    },
+    inputSchema: GetPdfBufferInputSchema,
+    outputSchema: GetPdfBufferOutputSchema,
+    route: ROUTE,
+  }),
+);

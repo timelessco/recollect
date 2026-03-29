@@ -1,4 +1,5 @@
-import { createPostApiHandler } from "@/lib/api-helpers/create-handler";
+import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
+import { getServerContext } from "@/lib/api-helpers/server-context";
 import { sendInviteEmail } from "@/lib/email/send-invite-email";
 
 import { SendEmailInputSchema, SendEmailOutputSchema } from "./schema";
@@ -8,18 +9,25 @@ import { SendEmailInputSchema, SendEmailOutputSchema } from "./schema";
 // send-collaboration-email, which handles auth before delegating here.
 const ROUTE = "v2-send-email";
 
-export const POST = createPostApiHandler({
-  handler: async ({ input }) => {
-    const result = await sendInviteEmail({
-      categoryName: input.category_name,
-      displayName: input.display_name,
-      inviteUrl: input.url,
-      recipientEmail: input.emailList,
-    });
+export const POST = createAxiomRouteHandler(
+  withPublic({
+    handler: async ({ input }) => {
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.recipient_email = input.emailList;
+      }
 
-    return { id: result.id };
-  },
-  inputSchema: SendEmailInputSchema,
-  outputSchema: SendEmailOutputSchema,
-  route: ROUTE,
-});
+      const result = await sendInviteEmail({
+        categoryName: input.category_name,
+        displayName: input.display_name,
+        inviteUrl: input.url,
+        recipientEmail: input.emailList,
+      });
+
+      return { id: result.id };
+    },
+    inputSchema: SendEmailInputSchema,
+    outputSchema: SendEmailOutputSchema,
+    route: ROUTE,
+  }),
+);

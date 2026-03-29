@@ -22,7 +22,6 @@ export const v2SendEmailSupplement = {
       description: "Request body is missing required fields — Zod reports the first missing field",
       summary: "Validation error - missing fields",
       value: {
-        data: null,
         error: "Invalid input: expected string, received undefined",
       } as const,
     },
@@ -30,7 +29,6 @@ export const v2SendEmailSupplement = {
       description: "The emailList field is not a valid email address",
       summary: "Validation error - invalid email",
       value: {
-        data: null,
         error: "Invalid email address",
       } as const,
     },
@@ -40,16 +38,14 @@ export const v2SendEmailSupplement = {
       description: "Email sent successfully via Resend",
       summary: "Email sent",
       value: {
-        data: { id: "re_abc123def456" },
-        error: null,
+        id: "re_abc123def456",
       } as const,
     },
     "resend-key-missing": {
       description: "RESEND_KEY not configured (development environment) - email skipped",
       summary: "Email skipped (no API key)",
       value: {
-        data: { id: "skipped-no-resend-key" },
-        error: null,
+        id: "skipped-no-resend-key",
       } as const,
     },
   },

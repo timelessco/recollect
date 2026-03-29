@@ -25,7 +25,6 @@ export const v2InviteSupplement = {
       description: "Token is malformed, empty, or cannot be decoded as a JWT",
       summary: "Invalid or malformed token",
       value: {
-        data: null,
         error: "Invalid token",
       } as const,
     },
@@ -35,7 +34,6 @@ export const v2InviteSupplement = {
       description: "The invite row was removed from shared_categories before the link was clicked",
       summary: "Invite not found or deleted",
       value: {
-        data: null,
         error: "Invite not found or was deleted",
       } as const,
     },
@@ -43,7 +41,6 @@ export const v2InviteSupplement = {
       description: "The invite was already accepted — is_accept_pending is false",
       summary: "Already a collaborator",
       value: {
-        data: null,
         error: "Already a collaborator",
       } as const,
     },
@@ -51,7 +48,6 @@ export const v2InviteSupplement = {
       description: "FK constraint violation — the invited email has no matching user account",
       summary: "User account not found",
       value: {
-        data: null,
         error: "User account not found. Please create an account and visit this invite link again.",
       } as const,
     },
