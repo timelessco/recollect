@@ -48,6 +48,7 @@ export const logger = new Logger({
   // (auto-injected by Vercel, absent in local dev — graceful fallback)
   args: {
     commit: process.env.VERCEL_GIT_COMMIT_SHA ?? "local",
+    environment: process.env.VERCEL_ENV ?? "development",
     region: process.env.VERCEL_REGION ?? "local",
   },
 });
