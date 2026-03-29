@@ -8,6 +8,7 @@ import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { imageToText } from "@/async/ai/imageToText";
+import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
@@ -52,7 +53,7 @@ async function getMediaType(url: string): Promise<null | string> {
     );
 
     if (!response.ok) {
-      console.error("[upload-file] Error getting media type");
+      logger.warn("[upload-file] Error getting media type", { status: response.status, url });
       return null;
     }
 
@@ -64,7 +65,7 @@ async function getMediaType(url: string): Promise<null | string> {
 
     return null;
   } catch (error) {
-    console.error("[upload-file] Error getting media type:", error);
+    logger.warn("[upload-file] Error getting media type", { error: String(error), url });
     return null;
   }
 }
@@ -104,7 +105,10 @@ async function processVideo(
     try {
       imgData = await blurhashFromURL(thumbnailUrl.publicUrl);
     } catch (error) {
-      console.error("[upload-file] Blurhash generation failed:", error);
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.blurhash_error = error instanceof Error ? error.message : String(error);
+      }
       imgData = {};
     }
 
@@ -123,7 +127,10 @@ async function processVideo(
       ocrData = imageToTextResult?.ocr_text ?? null;
       ocrStatus = imageToTextResult?.ocr_text ? "success" : "no_text";
     } catch (error) {
-      console.error("[upload-file] Image caption generation failed:", error);
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.image_caption_error = error instanceof Error ? error.message : String(error);
+      }
       imageCaption = null;
     }
   }
@@ -318,9 +325,10 @@ export const POST = createAxiomRouteHandler(
         user_id: userId,
       });
 
-      if (junctionError) {
-        console.error("[upload-file] Error inserting category association:", junctionError);
-        // Non-blocking — bookmark was created, junction failure is degraded but not fatal
+      // Non-blocking — bookmark was created, junction failure is degraded but not fatal
+      if (junctionError && ctx?.fields) {
+        ctx.fields.junction_error = junctionError.message;
+        ctx.fields.junction_error_code = junctionError.code;
       }
 
       // PDF: return early, no enrichment
@@ -353,12 +361,13 @@ export const POST = createAxiomRouteHandler(
             userId,
           });
         } catch (error) {
-          // Observability limitation: after() runs outside ALS scope (Pitfall #23).
-          // getServerContext() returns undefined here — cannot add to wide events.
+          // ALS is gone inside after() (Pitfall #23) — use logger directly.
           // The request-level Axiom event already has bookmark_id, file_type, category_id
-          // from ctx.fields set BEFORE this return. console.error is the fallback
-          // for after()-specific failure details (goes to process stdout, not Axiom).
-          console.error("[upload-file] after() enrichment failed:", error);
+          // from ctx.fields set BEFORE the return.
+          logger.warn("[upload-file] after() enrichment failed", {
+            bookmark_id: insertedBookmark.id,
+            error: error instanceof Error ? error.message : String(error),
+          });
         }
       });
 
