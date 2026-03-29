@@ -1,8 +1,8 @@
 import { after } from "next/server";
 
-import * as Sentry from "@sentry/nextjs";
 import slugify from "slugify";
 
+import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
@@ -68,10 +68,10 @@ async function processVideoThumbnail(props: {
     try {
       imgData = await blurhashFromURL(thumbnailUrl.publicUrl);
     } catch (error) {
-      console.error("[v2-tests-file-post-upload] Blurhash error:", error);
-      Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
-        tags: { operation: "blur_hash" },
-      });
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.blurhash_error = error instanceof Error ? error.message : String(error);
+      }
       imgData = {};
     }
   }
@@ -311,9 +311,10 @@ export const POST = createAxiomRouteHandler(
               userId,
             });
           } catch (error) {
-            Sentry.captureException(error, {
-              extra: { bookmarkId },
-              tags: { operation: "remaining_upload_after", userId },
+            // ALS gone inside after() — use logger directly
+            logger.warn("[tests-upload] after() enrichment failed", {
+              bookmark_id: bookmarkId,
+              error: error instanceof Error ? error.message : String(error),
             });
           }
         });

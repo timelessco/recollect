@@ -34,8 +34,7 @@ export const v2ScreenshotSupplement = {
     },
   },
   responseExample: {
-    data: { message: "Screenshot captured and uploaded successfully" },
-    error: null,
+    message: "Screenshot captured and uploaded successfully",
   },
   security: [],
   summary: "Process screenshot queue message",

@@ -19,8 +19,7 @@ export const v2UploadProfilePicSupplement = {
       description: "Profile picture uploaded, DB updated, old files cleaned up.",
       summary: "Successful upload",
       value: {
-        data: { success: true },
-        error: null,
+        success: true,
       } as const,
     },
   },

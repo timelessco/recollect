@@ -60,6 +60,21 @@ interface SecretHandlerConfig<TInput, TOutput> {
   secretEnvVar: string;
 }
 
+interface RawBodyHandlerConfig<TInput, TOutput> {
+  /**
+   * SCANNER-ONLY: `auth` controls OpenAPI spec security metadata.
+   * It does NOT enforce runtime authentication — the handler is responsible
+   * for calling its own auth logic (e.g., requireAuth/createApiClient).
+   * Default: "none" (queue workers). Override to "required" for routes
+   * that perform inline auth (e.g., upload-profile-pic).
+   */
+  auth?: "none" | "required";
+  handler: (ctx: { request: NextRequest; route: string }) => Promise<NextResponse>;
+  inputSchema: z.ZodType<TInput>;
+  outputSchema: z.ZodType<TOutput>;
+  route: string;
+}
+
 type HandlerFn = ((request: NextRequest) => Promise<NextResponse>) & {
   config: {
     auth: "none" | "required";
@@ -332,6 +347,42 @@ export function withSecret<TInput, TOutput>(
     auth: "required" as const,
     contract: "v2" as const,
     factoryName: "withSecret",
+    inputSchema,
+    outputSchema,
+    route,
+  };
+
+  return fn;
+}
+
+// ============================================================
+// withRawBody — raw request passthrough handler
+// ============================================================
+
+export function withRawBody<TInput, TOutput>(
+  config: RawBodyHandlerConfig<TInput, TOutput>,
+): HandlerFn {
+  const { auth = "none", handler, inputSchema, outputSchema, route } = config;
+
+  const fn = async (request: NextRequest) => {
+    try {
+      return await handler({ request, route });
+    } catch (error) {
+      if (error instanceof RecollectApiError) {
+        const ctx = getServerContext();
+        if (ctx?.fields) {
+          Object.assign(ctx.fields, error.toLogContext());
+        }
+        return NextResponse.json(error.toResponse(), { status: error.status });
+      }
+      throw error;
+    }
+  };
+
+  fn.config = {
+    auth: auth,
+    contract: "v2" as const,
+    factoryName: "withRawBody",
     inputSchema,
     outputSchema,
     route,

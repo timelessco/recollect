@@ -52,8 +52,7 @@ export const v2AiEnrichmentSupplement = {
     },
   },
   responseExample: {
-    data: { message: "AI enrichment completed" },
-    error: null,
+    message: "AI enrichment completed",
   },
   security: [],
   summary: "Process AI enrichment queue message",
