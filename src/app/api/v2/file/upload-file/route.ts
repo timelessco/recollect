@@ -1,19 +1,17 @@
-import type { NextRequest } from "next/server";
 import { after } from "next/server";
 
-import * as Sentry from "@sentry/nextjs";
 import slugify from "slugify";
 
 import type { UserCollection } from "@/async/ai/imageToText";
-import type { HandlerConfig } from "@/lib/api-helpers/create-handler";
 import type { Database } from "@/types/database.types";
 import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { imageToText } from "@/async/ai/imageToText";
-import { apiError, apiSuccess, apiWarn, parseBody } from "@/lib/api-helpers/response";
+import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
+import { RecollectApiError } from "@/lib/api-helpers/errors";
+import { getServerContext } from "@/lib/api-helpers/server-context";
 import { uploadFileRemainingData } from "@/lib/files/upload-file-remaining-data";
-import { requireAuth } from "@/lib/supabase/api";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";
 import { isNullable } from "@/utils/assertion-utils";
 import { autoAssignCollections, fetchUserCollections } from "@/utils/auto-assign-collections";
@@ -107,9 +105,6 @@ async function processVideo(
       imgData = await blurhashFromURL(thumbnailUrl.publicUrl);
     } catch (error) {
       console.error("[upload-file] Blurhash generation failed:", error);
-      Sentry.captureException(error, {
-        tags: { operation: "blurhash_generation", thumbnailUrl: thumbnailUrl.publicUrl },
-      });
       imgData = {};
     }
 
@@ -129,9 +124,6 @@ async function processVideo(
       ocrStatus = imageToTextResult?.ocr_text ? "success" : "no_text";
     } catch (error) {
       console.error("[upload-file] Image caption generation failed:", error);
-      Sentry.captureException(error, {
-        tags: { operation: "image_caption_generation", thumbnailUrl: thumbnailUrl.publicUrl },
-      });
       imageCaption = null;
     }
   }
@@ -163,254 +155,217 @@ async function processVideo(
 // Route handler
 // ============================================================
 
-async function handlePost(request: NextRequest) {
-  try {
-    const auth = await requireAuth(ROUTE);
-    if (auth.errorResponse) {
-      return auth.errorResponse;
-    }
+export const POST = createAxiomRouteHandler(
+  withAuth({
+    handler: async ({ data, supabase, user }) => {
+      const { id: userId, email } = user;
 
-    const { supabase, user } = auth;
-    const { id: userId, email } = user;
-
-    const parsed = await parseBody({ request, route: ROUTE, schema: UploadFileInputSchema });
-    if (parsed.errorResponse) {
-      return parsed.errorResponse;
-    }
-
-    const { data } = parsed;
-
-    if (!email) {
-      return apiWarn({
-        context: { userId },
-        message: "User email not available",
-        route: ROUTE,
-        status: 400,
-      });
-    }
-
-    const fileName = parseUploadFileName(data.name);
-    const fileType = normalizeUploadedMimeType(data.type);
-
-    console.log(`[${ROUTE}] API called:`, {
-      categoryId: data.category_id,
-      fileName,
-      fileType,
-      userId,
-    });
-
-    const uploadPath = parseUploadFileName(data.uploadFileNamePath);
-    const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
-
-    // Check category ownership if not uncategorized
-    if (data.category_id !== 0) {
-      const hasAccess = await checkIfUserIsCategoryOwnerOrCollaborator({
-        categoryId: data.category_id,
-        email,
-        supabase,
-        userId,
-      });
-
-      if (!hasAccess) {
-        return apiWarn({
-          context: { categoryId: data.category_id, userId },
-          message:
-            "User is neither owner or collaborator for the collection or does not have edit access",
-          route: ROUTE,
-          status: 403,
-        });
-      }
-    }
-
-    // Get public URL for the uploaded file (uploaded client-side to R2)
-    const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
-    const filePublicUrl = storageData?.publicUrl;
-
-    if (isNullable(filePublicUrl)) {
-      return apiError({
-        error: new Error("Public URL not available"),
-        extra: { storagePath },
-        message: "Error getting file URL",
-        operation: "get_public_url",
-        route: ROUTE,
-        userId,
-      });
-    }
-
-    const detectedMediaType = await getMediaType(filePublicUrl);
-
-    const isVideo = fileType.includes("video");
-    const isAudio = fileType.includes("audio");
-    const isPdf = fileType === PDF_MIME_TYPE;
-
-    // Fetch AI toggles + collections for video processing
-    const aiToggles = await fetchAiToggles({ supabase, userId });
-    const userCollections = await fetchUserCollections({
-      autoAssignEnabled: aiToggles.autoAssignCollections,
-      supabase,
-      userId,
-    });
-
-    let ogImage: null | string;
-    let metaData: Record<string, unknown>;
-    let videoMatchedCollectionIds: number[] = [];
-
-    if (isVideo) {
-      const videoResult = await processVideo(
-        data.thumbnailPath ?? null,
-        supabase,
-        userId,
-        aiToggles,
-        userCollections,
-      );
-      ({
-        matchedCollectionIds: videoMatchedCollectionIds,
-        meta_data: metaData,
-        ogImage,
-      } = videoResult);
-    } else {
-      ogImage = filePublicUrl;
-
-      if (isAudio) {
-        ogImage = AUDIO_OG_IMAGE_FALLBACK_URL;
-      } else if (isPdf && data.thumbnailPath) {
-        const { data: thumbData } = storageHelpers.getPublicUrl(data.thumbnailPath);
-        if (thumbData?.publicUrl) {
-          ogImage = thumbData.publicUrl;
-        }
-      }
-
-      metaData = {
-        coverImage: null,
-        favIcon: null,
-        height: null,
-        iframeAllowed: false,
-        image_caption: null,
-        img_caption: null,
-        isOgImagePreferred: false,
-        isPageScreenshot: null,
-        mediaType: detectedMediaType,
-        ocr: null,
-        ogImgBlurUrl: null,
-        screenshot: null,
-        twitter_avatar_url: null,
-        video_url: null,
-        width: null,
-      };
-    }
-
-    // Insert bookmark
-    const { data: insertedData, error: insertError } = await supabase
-      .from(MAIN_TABLE_NAME)
-      .insert([
-        {
-          description: typeof metaData.img_caption === "string" ? metaData.img_caption : "",
-          meta_data: toJson(metaData),
-          ogImage,
-          title: fileName,
-          type: fileType,
-          url: filePublicUrl,
-          user_id: userId,
-        },
-      ])
-      .select("id");
-
-    if (insertError) {
-      return apiError({
-        error: insertError,
-        extra: { fileName, fileType },
-        message: "Error uploading file",
-        operation: "insert_file_to_database",
-        route: ROUTE,
-        userId,
-      });
-    }
-
-    if (isNullable(insertedData) || insertedData.length === 0) {
-      return apiWarn({
-        context: { fileName, userId },
-        message: "No data returned after insert",
-        route: ROUTE,
-        status: 400,
-      });
-    }
-
-    const [insertedBookmark] = insertedData;
-
-    // Insert junction table entry
-    const { error: junctionError } = await supabase.from(BOOKMARK_CATEGORIES_TABLE_NAME).insert({
-      bookmark_id: insertedBookmark.id,
-      category_id: data.category_id,
-      user_id: userId,
-    });
-
-    if (junctionError) {
-      console.error(`[${ROUTE}] Error inserting category association:`, junctionError);
-      Sentry.captureException(junctionError, {
-        extra: { bookmarkId: insertedBookmark.id, categoryId: data.category_id },
-        tags: { operation: "insert_bookmark_category_junction", userId },
-      });
-      // Non-blocking
-    }
-
-    // PDF: return early, no enrichment
-    if (isPdf) {
-      console.log(`[${ROUTE}] PDF file — skipping enrichment`);
-      return apiSuccess({ data: insertedData, route: ROUTE, schema: UploadFileOutputSchema });
-    }
-
-    // Video: auto-assign collections, return early (video processing already done inline)
-    if (isVideo) {
-      if (insertedBookmark.id) {
-        await autoAssignCollections({
-          bookmarkId: insertedBookmark.id,
-          matchedCollectionIds: videoMatchedCollectionIds,
-          route: "upload-file",
-          userId,
+      if (!email) {
+        throw new RecollectApiError("bad_request", {
+          message: "User email not available",
         });
       }
 
-      console.log(`[${ROUTE}] Video file — enrichment done inline`);
-      return apiSuccess({ data: insertedData, route: ROUTE, schema: UploadFileOutputSchema });
-    }
+      const fileName = parseUploadFileName(data.name);
+      const fileType = normalizeUploadedMimeType(data.type);
 
-    // Non-PDF, non-video: fire-and-forget enrichment via after()
-    after(async () => {
-      try {
-        await uploadFileRemainingData({
-          id: insertedBookmark.id,
-          mediaType: detectedMediaType,
-          publicUrl: filePublicUrl,
+      // Populate ctx.fields BEFORE return — Pitfall #23: ALS is gone inside after().
+      // These fields are the primary observability for this request, including
+      // context needed to debug after() failures (bookmark_id, file_type
+      // appear in the Axiom wide event even if after() throws).
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.file_name = fileName;
+        ctx.fields.file_type = fileType;
+        ctx.fields.category_id = data.category_id;
+      }
+
+      const uploadPath = parseUploadFileName(data.uploadFileNamePath);
+      const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
+
+      // Check category ownership if not uncategorized
+      if (data.category_id !== 0) {
+        const hasAccess = await checkIfUserIsCategoryOwnerOrCollaborator({
+          categoryId: data.category_id,
+          email,
           supabase,
           userId,
         });
-      } catch (error) {
-        Sentry.captureException(error, {
-          extra: { bookmarkId: insertedBookmark.id },
-          tags: { operation: "after_upload_file_remaining_data", userId },
+
+        if (!hasAccess) {
+          throw new RecollectApiError("forbidden", {
+            message:
+              "User is neither owner or collaborator for the collection or does not have edit access",
+          });
+        }
+      }
+
+      // Get public URL for the uploaded file (uploaded client-side to R2)
+      const { data: storageData } = storageHelpers.getPublicUrl(storagePath);
+      const filePublicUrl = storageData?.publicUrl;
+
+      if (isNullable(filePublicUrl)) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: new Error("Public URL not available"),
+          message: "Error getting file URL",
+          operation: "get_public_url",
         });
       }
-    });
 
-    console.log(`[${ROUTE}] File uploaded, enrichment queued:`, {
-      bookmarkId: insertedBookmark.id,
-    });
-    return apiSuccess({ data: insertedData, route: ROUTE, schema: UploadFileOutputSchema });
-  } catch (error) {
-    return apiError({
-      error,
-      message: "An unexpected error occurred",
-      operation: "upload_file_unexpected",
-      route: ROUTE,
-    });
-  }
-}
+      const detectedMediaType = await getMediaType(filePublicUrl);
 
-export const POST = Object.assign(handlePost, {
-  config: {
-    factoryName: "createPostApiHandlerWithAuth",
+      const isVideo = fileType.includes("video");
+      const isAudio = fileType.includes("audio");
+      const isPdf = fileType === PDF_MIME_TYPE;
+
+      // Fetch AI toggles + collections for video processing
+      const aiToggles = await fetchAiToggles({ supabase, userId });
+      const userCollections = await fetchUserCollections({
+        autoAssignEnabled: aiToggles.autoAssignCollections,
+        supabase,
+        userId,
+      });
+
+      let ogImage: null | string;
+      let metaData: Record<string, unknown>;
+      let videoMatchedCollectionIds: number[] = [];
+
+      if (isVideo) {
+        const videoResult = await processVideo(
+          data.thumbnailPath ?? null,
+          supabase,
+          userId,
+          aiToggles,
+          userCollections,
+        );
+        ({
+          matchedCollectionIds: videoMatchedCollectionIds,
+          meta_data: metaData,
+          ogImage,
+        } = videoResult);
+      } else {
+        ogImage = filePublicUrl;
+
+        if (isAudio) {
+          ogImage = AUDIO_OG_IMAGE_FALLBACK_URL;
+        } else if (isPdf && data.thumbnailPath) {
+          const { data: thumbData } = storageHelpers.getPublicUrl(data.thumbnailPath);
+          if (thumbData?.publicUrl) {
+            ogImage = thumbData.publicUrl;
+          }
+        }
+
+        metaData = {
+          coverImage: null,
+          favIcon: null,
+          height: null,
+          iframeAllowed: false,
+          image_caption: null,
+          img_caption: null,
+          isOgImagePreferred: false,
+          isPageScreenshot: null,
+          mediaType: detectedMediaType,
+          ocr: null,
+          ogImgBlurUrl: null,
+          screenshot: null,
+          twitter_avatar_url: null,
+          video_url: null,
+          width: null,
+        };
+      }
+
+      // Insert bookmark
+      const { data: insertedData, error: insertError } = await supabase
+        .from(MAIN_TABLE_NAME)
+        .insert([
+          {
+            description: typeof metaData.img_caption === "string" ? metaData.img_caption : "",
+            meta_data: toJson(metaData),
+            ogImage,
+            title: fileName,
+            type: fileType,
+            url: filePublicUrl,
+            user_id: userId,
+          },
+        ])
+        .select("id");
+
+      if (insertError) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: insertError,
+          message: "Error uploading file",
+          operation: "insert_file_to_database",
+        });
+      }
+
+      if (isNullable(insertedData) || insertedData.length === 0) {
+        throw new RecollectApiError("bad_request", {
+          message: "No data returned after insert",
+        });
+      }
+
+      const [insertedBookmark] = insertedData;
+
+      // Update ctx.fields with business fields now that we have the bookmark ID
+      if (ctx?.fields) {
+        ctx.fields.bookmark_id = insertedBookmark.id;
+      }
+
+      // Insert junction table entry
+      const { error: junctionError } = await supabase.from(BOOKMARK_CATEGORIES_TABLE_NAME).insert({
+        bookmark_id: insertedBookmark.id,
+        category_id: data.category_id,
+        user_id: userId,
+      });
+
+      if (junctionError) {
+        console.error("[upload-file] Error inserting category association:", junctionError);
+        // Non-blocking — bookmark was created, junction failure is degraded but not fatal
+      }
+
+      // PDF: return early, no enrichment
+      if (isPdf) {
+        return insertedData;
+      }
+
+      // Video: auto-assign collections, return early (video processing already done inline)
+      if (isVideo) {
+        if (insertedBookmark.id) {
+          await autoAssignCollections({
+            bookmarkId: insertedBookmark.id,
+            matchedCollectionIds: videoMatchedCollectionIds,
+            route: "upload-file",
+            userId,
+          });
+        }
+
+        return insertedData;
+      }
+
+      // Non-PDF, non-video: fire-and-forget enrichment via after()
+      after(async () => {
+        try {
+          await uploadFileRemainingData({
+            id: insertedBookmark.id,
+            mediaType: detectedMediaType,
+            publicUrl: filePublicUrl,
+            supabase,
+            userId,
+          });
+        } catch (error) {
+          // Observability limitation: after() runs outside ALS scope (Pitfall #23).
+          // getServerContext() returns undefined here — cannot add to wide events.
+          // The request-level Axiom event already has bookmark_id, file_type, category_id
+          // from ctx.fields set BEFORE this return. console.error is the fallback
+          // for after()-specific failure details (goes to process stdout, not Axiom).
+          console.error("[upload-file] after() enrichment failed:", error);
+        }
+      });
+
+      return insertedData;
+    },
     inputSchema: UploadFileInputSchema,
     outputSchema: UploadFileOutputSchema,
     route: ROUTE,
-  } satisfies HandlerConfig,
-});
+  }),
+);

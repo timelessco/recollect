@@ -27,36 +27,27 @@ export const v2GetMediaTypeSupplement = {
       description: "URL resolved to a standard web page.",
       summary: "Successful HTML page",
       value: {
-        data: {
-          error: null,
-          mediaType: "text/html; charset=utf-8",
-          success: true,
-        },
         error: null,
+        mediaType: "text/html; charset=utf-8",
+        success: true,
       },
     },
     "pdf-document": {
       description: "URL resolved to a PDF file.",
       summary: "Successful PDF document",
       value: {
-        data: {
-          error: null,
-          mediaType: "application/pdf",
-          success: true,
-        },
         error: null,
+        mediaType: "application/pdf",
+        success: true,
       },
     },
     "unreachable-url": {
       description: "HEAD request failed or timed out.",
       summary: "Unreachable URL",
       value: {
-        data: {
-          error: "Failed to check media type",
-          mediaType: null,
-          success: false,
-        },
-        error: null,
+        error: "Failed to check media type",
+        mediaType: null,
+        success: false,
       },
     },
   },

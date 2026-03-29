@@ -46,7 +46,6 @@ export const v2UploadFileSupplement = {
       description: "Send without `name` — returns 400.",
       summary: "Missing file name",
       value: {
-        data: null,
         error: "Invalid input: expected string, received undefined",
       } as const,
     },
@@ -55,10 +54,7 @@ export const v2UploadFileSupplement = {
     "file-uploaded": {
       description: "File bookmark created. Returns inserted bookmark ID.",
       summary: "File uploaded successfully",
-      value: {
-        data: [{ id: 42 }],
-        error: null,
-      } as const,
+      value: [{ id: 42 }] as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],
