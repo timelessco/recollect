@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
 import { isEmpty, isNil } from "lodash";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 
 import { cn } from "@/utils/tailwind-merge";
 
@@ -130,13 +130,20 @@ export function AnimatedBookmarkImage({
   }, [img]);
 
   const imageProps = { blurUrl, className, height, isPublicPage, sizes, width } as const;
+  const isPreloading = !img || displaySrc !== img;
 
-  // Still preloading — show previous image or placeholder
-  if (displaySrc !== img) {
-    if (displaySrc) {
-      return <BookmarkImage {...imageProps} img={displaySrc} />;
-    }
-    return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />;
+  // While preloading a new image, keep showing the previous one (no animation needed)
+  if (isPreloading && displaySrc) {
+    return <BookmarkImage {...imageProps} img={displaySrc} />;
+  }
+
+  // No img yet (optimistic phase) or preloading initial image — show placeholder.
+  // This is the SAME React element across the optimistic→real transition, so
+  // React updates it in-place (no DOM recreation, no flicker).
+  if (isPreloading) {
+    return (
+      <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} isPreloading={!!img} />
+    );
   }
 
   // Preloaded — fade in. key={displaySrc} replays animation per new image.
@@ -153,15 +160,17 @@ export function AnimatedBookmarkImage({
 }
 
 // ---------------------------------------------------------------------------
-// LoaderImgPlaceholder — loading/error state placeholder (same as dev)
+// LoaderImgPlaceholder — loading/error state placeholder with status text.
 // ---------------------------------------------------------------------------
 
 export const LoaderImgPlaceholder = ({
   cardTypeCondition,
   id,
+  isPreloading = false,
 }: {
   cardTypeCondition: number[] | string | string[] | undefined;
   id: number;
+  isPreloading?: boolean;
 }) => {
   const isLoading = useLoadersStore((s) => s.loadingBookmarkIds.has(id));
 
@@ -174,6 +183,18 @@ export const LoaderImgPlaceholder = ({
       cardTypeCondition === viewValues.list,
   });
 
+  const statusText = (() => {
+    // Image is being preloaded by AnimatedBookmarkImage — keep showing "Fetching data..."
+    // so the text doesn't flash to "Cannot fetch image" during the preload window
+    if (isPreloading) {
+      return "Fetching data...";
+    }
+    if (isLoading) {
+      return "Taking screenshot....";
+    }
+    return isNil(id) ? "Fetching data..." : "Cannot fetch image for this bookmark";
+  })();
+
   return (
     <div className={loaderClassName}>
       <Image
@@ -183,15 +204,18 @@ export const LoaderImgPlaceholder = ({
         src={loaderGif}
       />
       {!(cardTypeCondition === viewValues.list) && (
-        <p className="text-sm text-gray-900">
-          {(() => {
-            if (isLoading) {
-              return "Taking screenshot....";
-            }
-
-            return isNil(id) ? "Fetching data..." : "Cannot fetch image for this bookmark";
-          })()}
-        </p>
+        <AnimatePresence mode="wait">
+          <motion.p
+            animate={{ opacity: 1 }}
+            className="text-sm text-gray-900"
+            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+            key={statusText}
+            transition={{ duration: 0.15 }}
+          >
+            {statusText}
+          </motion.p>
+        </AnimatePresence>
       )}
     </div>
   );

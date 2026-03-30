@@ -9,6 +9,7 @@ import type {
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import { recentlyAddedUrls } from "../../../pageComponents/dashboard/cardSection/animatedBookmarkImage";
 import { useLoadersStore, useSupabaseSession } from "../../../store/componentStore";
 import {
   BOOKMARKS_COUNT_KEY,
@@ -116,14 +117,21 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
         },
       );
 
+      // Mark URL for animation — BookmarkImageWithAnimation consumes this
+      // via recentlyAddedUrls.delete() on its first render.
+      // Safe in onMutate (not in render body) for React concurrent mode.
+      recentlyAddedUrls.add(data?.url);
+
       // Return a context object with the snapshotted value
       return { previousData };
     },
-    onError: (_error, _variables, context) => {
+    onError: (_error, variables, context) => {
       queryClient.setQueryData(
         [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
         context?.previousData,
       );
+      // Clean up animation tracking on failure
+      recentlyAddedUrls.delete(variables.url);
     },
     // Always refetch after error or success:
     onSettled: async (apiResponse) => {

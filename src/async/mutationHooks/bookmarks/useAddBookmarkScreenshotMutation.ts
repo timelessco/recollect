@@ -20,8 +20,11 @@ export default function useAddBookmarkScreenshotMutation() {
 
   const addBookmarkScreenshotMutation = useMutation({
     mutationFn: addBookmarkScreenshot,
-    onError: (error) => {
+    onError: (error, variables) => {
       errorToast(`Screenshot error: ${error.message}`);
+      if (variables.id) {
+        removeLoadingBookmarkId(variables.id);
+      }
     },
     onSettled: (apiResponse) => {
       const response = apiResponse as { data: { data: SingleListData[] } };

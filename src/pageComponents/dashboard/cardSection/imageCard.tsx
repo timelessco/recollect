@@ -9,8 +9,6 @@
 
 import { memo, useRef, useState } from "react";
 
-import { isNil } from "lodash";
-
 import type { BookmarkImageProps } from "./animatedBookmarkImage";
 
 import { cn } from "@/utils/tailwind-merge";
@@ -67,30 +65,18 @@ const ImgLogicComponent = ({
   const isLoading = useLoadersStore((s) => s.loadingBookmarkIds.has(id));
   const [errorImg, setErrorImg] = useState<null | string>(null);
 
-  // Mark optimistic entries so we recognize them after React remounts the component.
-  // Guard with hasCoverImg so every add has a corresponding delete path downstream.
-  if (isNil(id) && url && hasCoverImg) {
-    recentlyAddedUrls.add(url);
-  }
-
   if (!hasCoverImg) {
     return null;
   }
 
-  // Show loading placeholder if data is being fetched
-  if (isLoading && isNil(id)) {
-    return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />;
-  }
-
   // Show error placeholder if image failed to load
-  if (errorImg === img) {
+  if (img && errorImg === img) {
     return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />;
   }
 
-  if (!img) {
-    return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />;
-  }
-
+  // Always route through BookmarkImageWithAnimation so the same component
+  // instance manages the entire optimistic → real-data → image lifecycle.
+  // AnimatedBookmarkImage handles !img internally (shows loader).
   return (
     <BookmarkImageWithAnimation
       blurUrl={blurUrl}
@@ -133,6 +119,7 @@ export const ImgLogic = memo(
 function BookmarkImageWithAnimation({
   cardTypeCondition,
   id,
+  img,
   isLoading,
   onError,
   url,
@@ -145,28 +132,32 @@ function BookmarkImageWithAnimation({
   url: string;
 }) {
   // Sticky — once true, stays true for this component instance.
-  // Reads from recentlyAddedUrls (set by optimistic render) then deletes
-  // immediately — the Set is a one-shot bridge, the ref is per-component truth.
-  // Falls back to isLoading for cases where the API normalised the URL.
-  const shouldAnimateRef = useRef(recentlyAddedUrls.has(url));
-  if (recentlyAddedUrls.has(url)) {
-    shouldAnimateRef.current = true;
-    recentlyAddedUrls.delete(url);
-  }
+  // null = not yet checked. Checked once on mount via ??= to prevent existing
+  // bookmarks with the same URL from animating on re-render.
+  const shouldAnimateRef = useRef<boolean | null>(null);
+  shouldAnimateRef.current ??= recentlyAddedUrls.delete(url);
+  // Fallback for cases where the API normalised the URL (loading starts after mount)
   if (isLoading && !shouldAnimateRef.current) {
     shouldAnimateRef.current = true;
   }
 
-  if (!shouldAnimateRef.current) {
-    return <BookmarkImage {...imageProps} onError={onError} />;
+  if (shouldAnimateRef.current) {
+    // AnimatedBookmarkImage handles all states: !img (loader), preloading, ready (fade-in).
+    // Mounting it early keeps the same component instance across the optimistic→real transition.
+    return (
+      <AnimatedBookmarkImage
+        {...imageProps}
+        cardTypeCondition={cardTypeCondition}
+        id={id}
+        img={img}
+        onError={onError}
+      />
+    );
   }
 
-  return (
-    <AnimatedBookmarkImage
-      {...imageProps}
-      cardTypeCondition={cardTypeCondition}
-      id={id}
-      onError={onError}
-    />
-  );
+  // Non-animated path (page-load bookmarks)
+  if (!img) {
+    return <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} />;
+  }
+  return <BookmarkImage {...imageProps} img={img} onError={onError} />;
 }
