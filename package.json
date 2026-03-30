@@ -97,6 +97,7 @@
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "crypto-js": "4.2.0",
+    "culori": "4.0.2",
     "date-fns": "2.29.3",
     "image-size": "2.0.2",
     "immer": "11.1.4",
