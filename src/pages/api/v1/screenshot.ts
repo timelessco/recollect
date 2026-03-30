@@ -180,7 +180,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
     );
     if (imageToTextResult) {
       newMeta.image_caption = imageToTextResult.sentence;
-      if (Object.keys(imageToTextResult.image_keywords ?? {}).length > 0) {
+      if (imageToTextResult.image_keywords?.length) {
         newMeta.image_keywords = imageToTextResult.image_keywords;
       }
 

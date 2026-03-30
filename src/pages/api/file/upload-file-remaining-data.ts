@@ -4,7 +4,7 @@ import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 
-import type { StructuredKeywords, UserCollection } from "../../../async/ai/imageToText";
+import type { UserCollection } from "../../../async/ai/imageToText";
 import type {
   ImgMetadataType,
   NextApiRequest,
@@ -35,7 +35,7 @@ const notVideoLogic = async (
 ) => {
   const ogImage = mediaType?.includes("audio") ? AUDIO_OG_IMAGE_FALLBACK_URL : publicUrl;
   let imageCaption: null | string = null;
-  let imageKeywords: StructuredKeywords = {};
+  let imageKeywords: string[] = [];
   let imageOcrValue = null;
   let ocrStatus: "limit_reached" | "no_text" | "success" = "no_text";
   let matchedCollectionIds: number[] = [];
@@ -56,7 +56,7 @@ const notVideoLogic = async (
       );
       if (imageToTextResult) {
         imageCaption = imageToTextResult.sentence;
-        imageKeywords = imageToTextResult.image_keywords ?? {};
+        imageKeywords = imageToTextResult.image_keywords ?? [];
         matchedCollectionIds = imageToTextResult.matched_collection_ids;
         imageOcrValue = imageToTextResult.ocr_text;
         ocrStatus = imageToTextResult.ocr_text ? "success" : "no_text";
@@ -83,7 +83,7 @@ const notVideoLogic = async (
     height: imgData?.height ?? null,
     iframeAllowed: false,
     image_caption: imageCaption,
-    image_keywords: Object.keys(imageKeywords).length > 0 ? imageKeywords : undefined,
+    image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
     img_caption: imageCaption,
     isOgImagePreferred: false,
     isPageScreenshot: null,
