@@ -60,9 +60,6 @@ export const logger = new Logger({
     base_url: resolveBaseUrl(),
     branch: process.env.VERCEL_GIT_COMMIT_REF ?? "local",
     commit: process.env.VERCEL_GIT_COMMIT_SHA ?? "local",
-    deployment_id: process.env.VERCEL_DEPLOYMENT_ID ?? "local",
-    environment: process.env.VERCEL_ENV ?? "development",
-    region: process.env.VERCEL_REGION ?? "local",
   },
 });
 
