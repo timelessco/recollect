@@ -43,9 +43,6 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
   const handleCopy = (hex: string, index: number) => {
     void navigator.clipboard.writeText(hex);
     setCopiedIndex(index);
-    setTimeout(() => {
-      setCopiedIndex(null);
-    }, 1500);
   };
 
   return (
