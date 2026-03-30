@@ -452,6 +452,7 @@ export type Database = {
         Returns: undefined;
       };
       check_bookmarks_view_keyed_shape: { Args: { v: Json }; Returns: boolean };
+      color_distance: { Args: { hex1: string; hex2: string }; Returns: number };
       create_and_assign_tag: {
         Args: { p_bookmark_id: number; p_tag_name: string };
         Returns: {
@@ -478,6 +479,12 @@ export type Database = {
         Args: { p_bookmarks: Json; p_user_id: string };
         Returns: Json;
       };
+      extract_keywords_text: {
+        Args: { node: Json };
+        Returns: {
+          keyword: string;
+        }[];
+      };
       get_instagram_sync_status: { Args: { p_user_id: string }; Returns: Json };
       get_instagram_worker_failures: {
         Args: { p_since_minutes?: number };
@@ -499,6 +506,7 @@ export type Database = {
           status_code: number;
         }[];
       };
+      hex_channel: { Args: { hex: string; pos: number }; Returns: number };
       invoke_instagram_worker: { Args: never; Returns: number };
       invoke_raindrop_worker: { Args: never; Returns: number };
       invoke_twitter_worker: { Args: never; Returns: number };
@@ -661,6 +669,32 @@ export type Database = {
         | {
             Args: {
               category_scope?: number;
+              search_text?: string;
+              tag_scope?: string[];
+              url_scope?: string;
+            };
+            Returns: {
+              added_categories: Json;
+              added_tags: Json;
+              description: string;
+              id: number;
+              inserted_at: string;
+              make_discoverable: string;
+              meta_data: Json;
+              ogimage: string;
+              screenshot: string;
+              sort_index: string;
+              title: string;
+              trash: string;
+              type: string;
+              url: string;
+              user_id: string;
+            }[];
+          }
+        | {
+            Args: {
+              category_scope?: number;
+              color_hex?: string;
               search_text?: string;
               tag_scope?: string[];
               url_scope?: string;
