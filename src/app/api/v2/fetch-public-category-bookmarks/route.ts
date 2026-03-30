@@ -25,7 +25,7 @@ export const GET = createAxiomRouteHandler(
 
       const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.username = userName;
+        ctx.fields.user_slug = userName;
         ctx.fields.category_slug = categorySlug;
       }
 
