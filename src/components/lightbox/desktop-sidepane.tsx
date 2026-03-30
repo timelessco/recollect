@@ -9,6 +9,7 @@ import type { SingleListData } from "../../types/apiTypes";
 import { usePageContext } from "@/hooks/use-page-context";
 import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
 import { GeminiAiIcon } from "@/icons/geminiAiIcon";
+import { vercelEnvironment } from "@/site-config";
 import { useMiscellaneousStore } from "@/store/componentStore";
 
 import { Icon } from "../atoms/icon";
@@ -58,6 +59,7 @@ export function DesktopSidepane({
   const lightboxShowSidepane = useMiscellaneousStore((state) => state.lightboxShowSidepane);
 
   const metaData = currentBookmark?.meta_data;
+  const showKeywords = hasKeywords(metaData?.image_keywords) && vercelEnvironment !== "production";
   const collapsedOffset = (currentBookmark?.addedTags?.length ?? 0) > 0 ? 145 : 110;
 
   useEffect(() => {
@@ -200,7 +202,7 @@ export function DesktopSidepane({
             metaData?.img_caption ||
             metaData?.ocr ||
             metaData?.image_caption ||
-            hasKeywords(metaData?.image_keywords)) && (
+            showKeywords) && (
             <motion.div
               animate={{
                 y: isExpanded ? 0 : `calc(100% - ${collapsedOffset}px)`,
@@ -234,7 +236,7 @@ export function DesktopSidepane({
               {(metaData?.img_caption ||
                 metaData?.ocr ||
                 metaData?.image_caption ||
-                hasKeywords(metaData?.image_keywords)) && (
+                showKeywords) && (
                 <motion.div
                   className={`relative px-5 py-3 text-sm ${
                     hasAIOverflowContent ? "cursor-pointer" : ""
@@ -274,7 +276,7 @@ export function DesktopSidepane({
                           {highlightSearch(metaData.ocr, trimmedSearchText)}
                         </>
                       )}
-                      {hasKeywords(metaData?.image_keywords) &&
+                      {showKeywords &&
                         searchMatchesText(
                           getKeywordsDisplay(metaData?.image_keywords),
                           trimmedSearchText,
@@ -291,7 +293,7 @@ export function DesktopSidepane({
                           </>
                         )}
                     </p>
-                    {hasKeywords(metaData?.image_keywords) && (
+                    {showKeywords && (
                       <pre className="mt-2 max-h-[150px] overflow-auto rounded bg-gray-100 p-2 text-[11px] leading-tight text-gray-600">
                         {JSON.stringify(metaData?.image_keywords, null, 2)}
                       </pre>

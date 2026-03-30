@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import { decode } from "base64-arraybuffer";
 import uniqid from "uniqid";
 
+import type { StructuredKeywords } from "@/async/ai/imageToText";
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -33,7 +34,7 @@ interface BookmarkMetaData {
   [key: string]: unknown;
   coverImage?: null | string;
   height?: null | number;
-  image_keywords?: string[];
+  image_keywords?: StructuredKeywords;
   img_caption?: null | string;
   isOgImagePreferred?: boolean;
   mediaType?: null | string;
@@ -385,7 +386,7 @@ export async function addRemainingBookmarkData(
   let imageOcrValue: null | string = null;
   let ocrStatus: "limit_reached" | "no_text" | "success" = "no_text";
   let imageCaption: null | string = null;
-  let imageKeywords: string[] = [];
+  let imageKeywords: StructuredKeywords = {};
 
   // OG image metadata generation URL
   const ogImageMetaDataGeneration = uploadedCoverImageUrl ?? currentData.meta_data?.screenshot;
@@ -471,14 +472,14 @@ export async function addRemainingBookmarkData(
 
         if (imageToTextResult) {
           imageCaption = imageToTextResult.sentence;
-          imageKeywords = imageToTextResult.image_keywords ?? [];
+          imageKeywords = imageToTextResult.image_keywords ?? {};
           imageOcrValue = imageToTextResult.ocr_text;
           ocrStatus = imageToTextResult.ocr_text ? "success" : "no_text";
 
           console.log("[add-remaining-bookmark-data] AI analysis complete:", {
             bookmarkId: id,
             hasCaption: Boolean(imageCaption),
-            keywordCount: imageKeywords.length,
+            keywordCount: Object.keys(imageKeywords).length,
             matchedCollections: imageToTextResult.matched_collection_ids?.length ?? 0,
             ocrStatus,
           });
@@ -518,7 +519,7 @@ export async function addRemainingBookmarkData(
     ...existingMetaData,
     coverImage: uploadedCoverImageUrl,
     height: imgData.height,
-    image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
+    image_keywords: Object.keys(imageKeywords).length > 0 ? imageKeywords : undefined,
     img_caption: imageCaption,
     ocr: imageOcrValue,
     ocr_status: ocrStatus,
