@@ -2,10 +2,10 @@
 name: recollect-caller-migration
 description: >
   Frontend caller migration from v1 Pages Router URLs to v2 App Router
-  endpoints in Recollect. Encodes the proven 4-layer query-hook migration
+  endpoints in Recollect. Encodes the proven 5-layer query-hook migration
   pattern: orphaned constant cleanup, hook rewrite with ky + Zod types,
-  consumer verification (v2 responses need no unwrap), and dead code
-  cleanup. Use this skill whenever the user mentions caller migration,
+  consumer verification (v2 responses need no unwrap), dead code cleanup,
+  and Pages Router route deprecation. Use this skill whenever the user mentions caller migration,
   wiring up v2, updating a hook to v2, frontend migration, ky migration,
   v2 factory, api-v2, or the check-gemini pattern. For mutation hook
   template refactoring and file renaming, use the
@@ -14,7 +14,7 @@ description: >
 
 # Caller Migration
 
-Migrate frontend query hooks from v1 Pages Router URLs to v2 App Router endpoints using the proven 4-layer pattern. Each layer builds on the previous — execute in order, verify between layers.
+Migrate frontend query hooks from v1 Pages Router URLs to v2 App Router endpoints using the proven 5-layer pattern. Each layer builds on the previous — execute in order, verify between layers.
 
 v2 routes return `T` directly on success and `{error: string}` on failure — no `{data, error}` envelope. Route handlers use the v2 factory (`create-handler-v2.ts`) with `createAxiomRouteHandler(withAuth/withPublic({...}))` composition and `RecollectApiError` throws for error handling. Callers use **ky** (`api` from `api-v2.ts`) — no `getApi`, no URL constants, no envelope unwrapping.
 
@@ -132,9 +132,29 @@ After verifying layers 1-3 work (the hook fires the v2 request and the UI render
 ast-grep --lang ts -p 'functionName' src/
 ```
 
+### Layer 5: Deprecate Pages Router Route
+
+After the frontend caller is migrated and dead code is cleaned up, mark the old Pages Router route handler as deprecated so other consumers (extension, mobile, edge functions, cron) know v2 exists.
+
+Add a JSDoc `@deprecated` comment at the top of the file (before the first import):
+
+```typescript
+/**
+ * @deprecated Use the v2 App Router endpoint instead: /api/v2/{route-name}
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
+import type { NextApiRequest, NextApiResponse } from "next";
+```
+
+**Which file?** The Pages Router handler for the endpoint you just migrated:
+- Routes under `src/pages/api/v1/` → strip `v1/` for the v2 path (e.g., `v1/check-gemini-api-key` → `/api/v2/check-gemini-api-key`)
+- Routes under `src/pages/api/` (non-v1) → same name (e.g., `bookmark/search-bookmarks` → `/api/v2/bookmark/search-bookmarks`)
+
+**Do NOT deprecate routes whose frontend callers have not been migrated yet.** This comment signals "the web frontend no longer calls this" — other consumers use it to plan their own migration.
+
 ## Verification
 
-After completing all 4 layers:
+After completing all 5 layers:
 
 ```bash
 pnpm fix          # Auto-fix formatting
@@ -147,8 +167,8 @@ pnpm lint:knip    # Confirm no orphaned exports from dead code removal
 
 | User says | Action |
 |-----------|--------|
-| "migrate caller" / "wire up v2" / "update hook to v2" | Execute the 4-layer workflow above |
-| "ky" / "api-v2" / "bare response" | Execute the 4-layer workflow above |
+| "migrate caller" / "wire up v2" / "update hook to v2" | Execute the 5-layer workflow above |
+| "ky" / "api-v2" / "bare response" | Execute the 5-layer workflow above |
 | "consumer update" / "data.data" / "double unwrap" | See Layer 3 — consumer verification |
 | "mutation hook template" / "postApi pattern" | Use `recollect-mutation-hook-refactoring` skill |
 | "hard-class" / "session closure" / "QueryFunctionContext" | Not yet encoded — needs its own pathfinder first |
