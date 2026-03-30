@@ -9,10 +9,12 @@ import { usePageContext } from "@/hooks/use-page-context";
 import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
 import { GeminiAiIcon } from "@/icons/geminiAiIcon";
 import { useMiscellaneousStore } from "@/store/componentStore";
+import { getBookmarkColors } from "@/utils/colorUtils";
 
 import { Icon } from "../atoms/icon";
 import { GetBookmarkIcon } from "../get-bookmark-icon";
 import { CategoryMultiSelect } from "./category-multi-select";
+import { ColorPalette } from "./color-palette";
 import {
   getKeywordsDisplay,
   hasKeywords,
@@ -161,6 +163,12 @@ export function SidepaneContent({
                 Show more
               </button>
             )}
+          </div>
+        )}
+        {getBookmarkColors(metaData?.image_keywords).length > 0 && (
+          <div className="pt-3 pb-1">
+            <p className="pb-1.5 text-xs font-medium text-gray-500">Colors</p>
+            <ColorPalette colors={getBookmarkColors(metaData?.image_keywords)} />
           </div>
         )}
         {!isDiscoverPage && !isPublicPage && (

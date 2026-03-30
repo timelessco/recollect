@@ -21,7 +21,9 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
   }
 
   const getMarginClass = (index: number) => {
-    if (index === 0) {return "";}
+    if (index === 0) {
+      return "";
+    }
     return isExpanded ? "ml-1" : "-ml-2";
   };
 
