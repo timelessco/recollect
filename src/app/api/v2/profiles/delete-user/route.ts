@@ -179,6 +179,10 @@ export const POST = createAxiomRouteHandler(
         throw new Error(`Failed to delete auth user: ${deleteAuthError.message}`);
       }
 
+      if (ctx?.fields) {
+        ctx.fields.user_deleted = true;
+      }
+
       return { user: null };
     },
     inputSchema: DeleteUserInputSchema,

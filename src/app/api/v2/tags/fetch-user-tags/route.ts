@@ -12,6 +12,11 @@ export const GET = createAxiomRouteHandler(
     handler: async ({ supabase, user }) => {
       const userId = user.id;
 
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+      }
+
       const { data, error } = await supabase.from(TAG_TABLE_NAME).select("*").eq("user_id", userId);
 
       if (error) {
@@ -22,9 +27,7 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
-      const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.user_id = userId;
         ctx.fields.tag_count = data.length;
       }
 

@@ -17,6 +17,11 @@ export const PATCH = createAxiomRouteHandler(
     handler: async ({ data, supabase, user }) => {
       const userId = user.id;
 
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+      }
+
       const updatePayload = toDbType<ProfileUpdate>(data.updateData);
 
       const { data: profileData, error } = await supabase
@@ -39,9 +44,8 @@ export const PATCH = createAxiomRouteHandler(
         });
       }
 
-      const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.user_id = userId;
+        ctx.fields.profile_updated = true;
       }
 
       return profileData;
