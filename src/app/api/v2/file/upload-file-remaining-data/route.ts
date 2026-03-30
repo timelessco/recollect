@@ -9,6 +9,14 @@ const ROUTE = "v2-file-upload-file-remaining-data";
 export const POST = createAxiomRouteHandler(
   withAuth({
     handler: async ({ data, supabase, user }) => {
+      // BEFORE operation — entity context
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = user.id;
+        ctx.fields.bookmark_id = data.id;
+        ctx.fields.media_type = data.mediaType;
+      }
+
       await uploadFileRemainingData({
         id: data.id,
         mediaType: data.mediaType,
@@ -17,11 +25,9 @@ export const POST = createAxiomRouteHandler(
         userId: user.id,
       });
 
-      const ctx = getServerContext();
+      // AFTER operation — outcome
       if (ctx?.fields) {
-        ctx.fields.user_id = user.id;
-        ctx.fields.bookmark_id = data.id;
-        ctx.fields.media_type = data.mediaType;
+        ctx.fields.enrichment_completed = true;
       }
 
       return { status: "completed" };

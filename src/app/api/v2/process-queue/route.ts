@@ -12,16 +12,22 @@ export const POST = createAxiomRouteHandler(
     handler: async () => {
       const supabase = createServerServiceClient();
 
+      // BEFORE operation — input context
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.queue_name = "ai-embeddings";
+      }
+
       const result = await processImageQueue(supabase, {
         batchSize: 1,
         queue_name: "ai-embeddings",
       });
 
-      const ctx = getServerContext();
+      // AFTER operation — outcome
       if (ctx?.fields) {
-        ctx.fields.queue_name = "ai-embeddings";
         ctx.fields.message_id = result?.messageId ?? null;
         ctx.fields.queue_empty = !result?.messageId;
+        ctx.fields.processed_count = result?.messageId ? 1 : 0;
       }
 
       return { message: "Queue processed successfully" };

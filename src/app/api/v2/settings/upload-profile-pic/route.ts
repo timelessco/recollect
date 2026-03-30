@@ -117,6 +117,11 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
+      // AFTER operation — outcome
+      if (ctx?.fields) {
+        ctx.fields.profile_pic_uploaded = true;
+      }
+
       return NextResponse.json({ success: true });
     },
     inputSchema: UploadProfilePicInputSchema,
