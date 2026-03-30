@@ -204,7 +204,7 @@ export const POST = createAxiomRouteHandler(
 
         if (isNonNullable(imageToTextResult)) {
           newMeta.image_caption = imageToTextResult.sentence;
-          if (Object.keys(imageToTextResult.image_keywords ?? {}).length > 0) {
+          if (imageToTextResult.image_keywords?.length) {
             newMeta.image_keywords = imageToTextResult.image_keywords;
           }
           newMeta.ocr = imageToTextResult.ocr_text;

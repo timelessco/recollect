@@ -16,11 +16,9 @@ const MetadataSchema = z.object({
     .optional()
     .meta({ description: "Whether iframe embedding is allowed" }),
   image_keywords: z
-    .union([z.array(z.string()), z.record(z.string(), z.string())])
+    .array(z.string())
     .optional()
-    .meta({
-      description: "Keywords extracted from image (array for legacy, object for structured)",
-    }),
+    .meta({ description: "Keywords extracted from image" }),
   img_caption: z.string().nullable().optional().meta({ description: "Image caption text" }),
   isOgImagePreferred: z
     .boolean()

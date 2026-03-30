@@ -1,4 +1,3 @@
-import type { StructuredKeywords } from "../../async/ai/imageToText";
 import type { SingleListData } from "../../types/apiTypes";
 import type { Slide as BaseSlide } from "yet-another-react-lightbox";
 
@@ -146,49 +145,6 @@ export type CustomSlide = BaseSlide & {
   };
   placeholder?: string;
 };
-
-export function searchMatchesText(text: string, search: string): boolean {
-  if (!text || !search) {
-    return false;
-  }
-
-  return text.toLowerCase().includes(search.toLowerCase());
-}
-
-type KeywordsInput = Record<string, string> | string[] | StructuredKeywords | undefined;
-
-export function hasKeywords(keywords: KeywordsInput): boolean {
-  if (!keywords) {
-    return false;
-  }
-
-  if (Array.isArray(keywords)) {
-    return keywords.length > 0;
-  }
-
-  return Object.keys(keywords).length > 0;
-}
-
-function flattenKeywordValues(input: unknown): string[] {
-  if (typeof input === "string") {
-    return input.trim() ? [input.trim()] : [];
-  }
-  if (Array.isArray(input)) {
-    return input.flatMap((item) => flattenKeywordValues(item));
-  }
-  if (input && typeof input === "object") {
-    return Object.values(input).flatMap((v) => flattenKeywordValues(v));
-  }
-  return [];
-}
-
-export function getKeywordsDisplay(keywords: KeywordsInput): string {
-  if (!keywords) {
-    return "";
-  }
-
-  return flattenKeywordValues(keywords).join(", ");
-}
 
 export const highlightSearch = (text: string, search: string): (React.ReactNode | string)[] => {
   if (!text || !search) {

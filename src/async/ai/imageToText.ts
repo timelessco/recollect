@@ -1,5 +1,4 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
 
 import type { AiToggles } from "@/utils/ai-feature-toggles";
@@ -23,17 +22,8 @@ export interface ImageToTextContextProps {
   url?: null | string;
 }
 
-export interface StructuredKeywords {
-  color?: string[];
-  features?: Record<string, string | string[]>;
-  object?: string[];
-  people?: string[];
-  place?: string[];
-  type?: string[];
-}
-
 export interface ImageToTextResult {
-  image_keywords: StructuredKeywords;
+  image_keywords: string[];
   matched_collection_ids: number[];
   ocr_text: null | string;
   sentence: null | string;
@@ -50,21 +40,15 @@ function formatMetadataContext(context?: ImageToTextContextProps | null): string
     lines.push(`Title: ${context.title}`);
   }
 
-  if (context?.url) {
-    lines.push(`URL: ${context.url}`);
-  }
-
   if (context?.description) {
     lines.push(`Description: ${context.description}`);
   }
 
-  return lines.length > 0
-    ? [
-        "",
-        "Bookmark metadata (use as context only — do not repeat or paraphrase the description in your summary):",
-        ...lines,
-      ].join("\n")
-    : "";
+  if (context?.url) {
+    lines.push(`URL: ${context.url}`);
+  }
+
+  return lines.length > 0 ? ["", "Bookmark metadata:", ...lines].join("\n") : "";
 }
 
 /**
@@ -102,7 +86,7 @@ export const imageToText = async (
 
     if (!hasAnyPromptToggle && !hasCollectionsToggle) {
       return {
-        image_keywords: {},
+        image_keywords: [],
         matched_collection_ids: [],
         ocr_text: null,
         sentence: null,
@@ -112,7 +96,7 @@ export const imageToText = async (
     // Audio files use a static SVG waveform — skip AI enrichment entirely
     if (options?.contentType === "audio") {
       return {
-        image_keywords: {},
+        image_keywords: [],
         matched_collection_ids: [],
         ocr_text: null,
         sentence: null,
@@ -133,6 +117,14 @@ export const imageToText = async (
       model: GEMINI_MODEL,
     });
 
+    // For Image Caption: sentence + keywords. OCR handles text separately - do not include readable text.
+    const siteCategories = [
+      "- ARTICLE/DOCUMENTATION (blog, news, docs, Notion, wiki) → prefer when you see headings, sections, code blocks, or long-form content. Capture the actual intent: what is the content trying to teach, explain, or communicate? Include: page title, main topic, the core message or takeaway (e.g. 'how to style HTML in Tailwind', 'best practices for image attributes'), key concepts, color palette, style.",
+      "- ECOMMERCE (product page, shop, listing) → explain what the product is (type, purpose, key features), brand, product name/model, colors, actual price (write without thousand separators, e.g. ₹8295 not ₹8,295), delivery options. State specific values when visible.",
+      "- IMAGE/CONTENT (photo, artwork, product shot, person, place) → colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place/setting, objects, style, mood, composition type. Ignore minimal chrome.",
+      "- NORMAL WEBSITE (landing, app, dashboard) → key text/headlines, colors, gist of what the site does, UI elements (nav, sidebar, forms, charts), site type or purpose.",
+    ];
+
     // Build prompt sections dynamically based on active toggles
     const contentType = options?.contentType ?? "link";
     const promptParts: string[] = ["Analyze this image and provide the following parts."];
@@ -147,17 +139,13 @@ export const imageToText = async (
       const noImageMeta =
         'Never reference the image itself — no "thumbnail", "screenshot", "OG image", "preview", "the image shows", or "this is a picture of".';
 
-      const humanTone =
-        "Write as if telling a friend what this bookmark is about. Be direct — no filler, no introductory phrases. Start with the key info. Do NOT describe colors, UI elements, or visual style — keywords handle that.";
-
       let sentenceInstruction: string;
 
       switch (contentType) {
         case "document": {
           sentenceInstruction = [
-            "Summarize this document. Name the platform if recognizable from the URL.",
-            "Cover: subject, document type (report, manual, paper, etc.), key topic.",
-            humanTone,
+            "You are summarizing a document. Identify the platform or source from the URL if recognizable (e.g. 'A Google Docs report on...', 'A Notion page about...', 'A PDF manual for...').",
+            "Combine the metadata and the cover page/preview to write a rich, descriptive summary — the document's subject, type (research paper, report, manual, presentation, etc.), and key topic.",
             noImageMeta,
             metadataBlock,
           ].join("\n");
@@ -165,17 +153,15 @@ export const imageToText = async (
         }
 
         case "image": {
-          sentenceInstruction = [
-            "Describe what you see: who or what is in the image, where it is, and the context.",
-            humanTone,
-          ].join("\n");
+          sentenceInstruction =
+            "Describe what you see. Focus on: colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place, objects.";
           break;
         }
 
         case "instagram": {
           sentenceInstruction = [
-            "Summarize this Instagram post — what it's about and its topic.",
-            humanTone,
+            "You are summarizing an Instagram post. The image is the post's visual content — use it together with the metadata below.",
+            "Describe what the post is about and its topic.",
             noImageMeta,
             metadataBlock,
           ].join("\n");
@@ -187,16 +173,17 @@ export const imageToText = async (
 
           sentenceInstruction = isOgImage
             ? [
-                "Summarize this webpage. Name the website/platform from the URL.",
-                "Cover: what the page is about, main topic, key details.",
-                humanTone,
+                "You are summarizing a webpage. Identify the website or platform from the URL and use it to frame your summary (e.g. 'A Pinterest pin about...', 'A Medium article on...', 'A GitHub repository for...').",
+                "Combine the metadata and the image to write a rich, descriptive summary — the page's purpose, main topic, and key details. The image is the Open Graph preview; use it to add visual detail to your description.",
                 noImageMeta,
                 metadataBlock,
               ].join("\n")
             : [
-                "Summarize this webpage from its screenshot. Name the website/platform from the URL.",
-                "Classify and focus accordingly:",
-                humanTone,
+                "You are summarizing a webpage. Identify the website or platform from the URL and use it to frame your summary (e.g. 'A Pinterest pin about...', 'An Amazon product listing for...', 'A documentation page on...').",
+                "The image is a full-page screenshot — use it together with the metadata to write a rich, descriptive summary of the page's content.",
+                "",
+                "Classify the page and focus accordingly:",
+                ...siteCategories,
                 noImageMeta,
                 metadataBlock,
               ].join("\n");
@@ -205,8 +192,8 @@ export const imageToText = async (
 
         case "tweet": {
           sentenceInstruction = [
-            "Summarize this Twitter/X post — topic and main point.",
-            humanTone,
+            "You are summarizing a post from Twitter/X. The image is a capture of the post — use it together with the metadata below.",
+            "Describe the post's topic and main point concisely.",
             noImageMeta,
             metadataBlock,
           ].join("\n");
@@ -215,9 +202,8 @@ export const imageToText = async (
 
         case "video": {
           sentenceInstruction = [
-            "Summarize this video. Name the platform from the URL.",
-            "Cover: topic, format (tutorial, review, vlog, etc.), key subject.",
-            humanTone,
+            "You are summarizing a video. Identify the platform from the URL (e.g. 'A YouTube tutorial on...', 'A Vimeo short film about...', 'A TikTok video showing...').",
+            "Combine the metadata and the preview frame to write a rich, descriptive summary — the video's topic, format (tutorial, review, vlog, music video, etc.), and key subject.",
             noImageMeta,
             metadataBlock,
           ].join("\n");
@@ -225,10 +211,8 @@ export const imageToText = async (
         }
 
         default: {
-          sentenceInstruction = [
-            "Describe what you see: who or what is in the image, where it is, and the context.",
-            humanTone,
-          ].join("\n");
+          sentenceInstruction =
+            "Describe what you see. Focus on: colors, people (name the person if recognizable: celebrity, actor, fictional character; otherwise man/woman/person), place, objects.";
         }
       }
 
@@ -236,48 +220,34 @@ export const imageToText = async (
         "",
         "SENTENCE:",
         sentenceInstruction,
-        "Name recognizable people (celebrities, actors, characters, politicians). Otherwise use man, woman, person.",
+        "For people: always try to identify and name if recognizable — include celebrities, actors, fictional characters, politicians, historical figures; otherwise use man, woman, person.",
       );
       formatLines.push("SENTENCE: <your sentence here>");
     }
 
     // KEYWORDS section (controlled by imageKeywords toggle)
     if (activeToggles.imageKeywords) {
-      const keywordsInstruction = [
-        "Return a nested JSON object with these top-level keys (all arrays of strings):",
-        "",
-        '- "type": 1–3 content types from the CLOSED list below. Pick the MOST SPECIFIC match first.',
-        '  Allowed values (use EXACTLY — do not invent or combine): "article", "blog", "documentation", "infographic", "meme", "newsletter", "recipe", "tutorial", "image", "photo", "poster",  "video", "music_album", "podcast", "movie", "tvshow", "anime", "game", "xpost", "instapost", "redditpost", "pin", "thread", "product", "deal", "review", "repo", "portfolio", "webapp", "ecommerce", "streaming", "news", "design", "developer tools", "productivity", "social media", "course", "book", "research_paper", "job", "event", "place", "restaurant", "pdf", "profile", "package", "linkedinpost", "tiktok"',
-        "",
-        '- "people": ONLY named/identifiable people — use their actual name from text, metadata, or URL. Include directors, cast, authors. Do NOT output generic labels like man/woman/person — omit entirely if unknown.',
-        '- "object": physical objects visible in the image.',
-        '- "place": locations, settings, landmarks.',
-        '- "color": dominant colors as hex codes (e.g. "#FF5733", "#1A1A1A").',
-        "",
-        '- "features": a flat object (NOT an array) for searchable metadata about the content. Include any key-value pair that helps identify or find the bookmark later. Common examples by domain:',
-        "  Universal: brand (the company/studio, NOT the hosting platform and NOT the content title — e.g. brand is 'Madhouse' not 'One Punch Man'), title (show/movie/book/series name), author, source, rating, duration, reading_time.",
-        "  Product: model, price (no thousand separators e.g. ₹8295), capacity, material, size.",
-        "  Entertainment: director, cast, genre, release_year, runtime, platform.",
-        "  Recipe: cuisine, cook_time, servings, difficulty, diet.",
-        "  Dev: programming_language, framework, license.",
-        "  Job: company, salary_range, experience_level, remote.",
-        "  Add any other relevant metadata you discover — these are examples, not limits.",
-        '  "additional_keywords": an array of 3–8 topic tags that describe what this content is about (e.g. ["fintech", "crypto wallet", "stablecoin", "payments"]). Think: what would someone search to find this bookmark later?',
-        "",
-        "Rules:",
-        "- Only include type values if you are ≥85% confident. All other keys: ≥70% confident. Do NOT output confidence scores.",
-        "- Top-level keys (type, people, object, place, color) are arrays of strings.",
-        '- "features" is a flat object of string key-value pairs, except "additional_keywords" which is an array of strings.',
-        "- Omit empty arrays and empty objects — do not include keys with [] or {}.",
-        "- Output valid JSON only, no markdown fences.",
-        "- No duplicate values across any arrays or features. Each keyword/value should appear only once in the entire JSON.",
-        "- Do NOT duplicate OCR body text as keywords. Product identifiers (model numbers, SKUs) and names ARE keywords.",
-      ].join("\n");
+      const useWebsiteKeywords = contentType === "link";
+
+      const keywordsInstruction = useWebsiteKeywords
+        ? [
+            "List 20 nouns and short descriptive terms. If you can identify the website or service (e.g. Amazon, GitHub, Notion), include it as a keyword. For recognizable characters: include both the person/character name AND the show, movie, or franchise. Only add the source if confident. Match the image type to one below and include the relevant keywords:",
+            ...siteCategories,
+            "",
+            "Describe only what is in the image. Do NOT include readable text or words from the image.",
+          ].join("\n")
+        : [
+            "List 20 nouns and short descriptive terms. MUST include:",
+            "- Objects",
+            "- People (name if recognizable: celebrity, actor, fictional character; otherwise man/woman/person)",
+            "- Place/setting",
+            "- Style, mood, composition type (photo, illustration, diagram, etc.)",
+            "For recognizable characters (actors, fictional characters): include both the person/character name AND the show, movie, or franchise they are from. Only add the source if you are confident.",
+            "Describe only what is in the image. Do NOT include readable text.",
+          ].join("\n");
 
       promptParts.push("", "KEYWORDS:", keywordsInstruction);
-      formatLines.push(
-        'KEYWORDS: {"type": ["..."], "people": ["..."], "object": ["..."], "place": ["..."], "color": ["..."], "features": {"brand": "...", ...}}',
-      );
+      formatLines.push("KEYWORDS: keyword1, keyword2, keyword3, ...");
     }
 
     // OCR section (controlled by ocr toggle)
@@ -313,8 +283,8 @@ export const imageToText = async (
         "",
         "Additional bookmark context:",
         ...(context?.title ? [`Title: ${context.title}`] : []),
-        ...(context?.url ? [`URL: ${context.url}`] : []),
         ...(context?.description ? [`Description: ${context.description}`] : []),
+        ...(context?.url ? [`URL: ${context.url}`] : []),
       );
       formatLines.push("COLLECTIONS: <name> (<confidence>%) per line, or NONE");
     }
@@ -322,7 +292,7 @@ export const imageToText = async (
     // Skip API call if no prompt sections were added (e.g., only autoAssignCollections on with no collections)
     if (formatLines.length === 0) {
       return {
-        image_keywords: {},
+        image_keywords: [],
         matched_collection_ids: [],
         ocr_text: null,
         sentence: null,
@@ -364,70 +334,17 @@ export const imageToText = async (
       sentence = rawSentence?.replace(/^\[(.+)\]$/su, "$1")?.trim() ?? null;
     }
 
-    const image_keywords: StructuredKeywords = {};
+    let image_keywords: string[] = [];
     if (activeToggles.imageKeywords && text.includes("KEYWORDS:")) {
       const [, keywordsPart] = text.split("KEYWORDS:");
       const keywordsBeforeNext = keywordsPart?.split("OCR_TEXT:")[0]?.split("COLLECTIONS:")[0];
       const rawKeywords = keywordsBeforeNext?.trim() ?? "";
-
-      // Strip markdown fences Gemini may wrap around JSON
-      const unfenced = rawKeywords.replaceAll(/```(?:json)?\n?([\s\S]*?)```/gu, "$1").trim();
-
-      // Extract the first JSON object block
-      const jsonMatch = /\{[\s\S]*\}/u.exec(unfenced);
-      if (jsonMatch) {
-        try {
-          const parsed: unknown = JSON.parse(jsonMatch[0]);
-          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-            const obj = parsed as Record<string, unknown>;
-            const ARRAY_KEYS = new Set(["color", "object", "people", "place", "type"]);
-
-            for (const arrayKey of ARRAY_KEYS) {
-              const value = obj[arrayKey];
-              if (Array.isArray(value)) {
-                const filtered = value.filter(
-                  (item): item is string => typeof item === "string" && item.trim().length > 0,
-                );
-                if (filtered.length > 0) {
-                  image_keywords[arrayKey as keyof Omit<StructuredKeywords, "features">] = filtered;
-                }
-              }
-            }
-
-            if (obj.features && typeof obj.features === "object" && !Array.isArray(obj.features)) {
-              const features: Record<string, string | string[]> = {};
-              for (const [k, v] of Object.entries(obj.features as Record<string, unknown>)) {
-                if (typeof v === "string" && v.trim()) {
-                  features[k] = v.trim();
-                } else if (k === "additional_keywords" && Array.isArray(v)) {
-                  const filtered = v.filter(
-                    (item): item is string => typeof item === "string" && item.trim().length > 0,
-                  );
-                  if (filtered.length > 0) {
-                    features[k] = filtered;
-                  }
-                }
-              }
-              if (Object.keys(features).length > 0) {
-                image_keywords.features = features;
-              }
-            }
-          }
-        } catch {
-          Sentry.captureMessage("Failed to parse structured keywords JSON from Gemini", {
-            extra: { imageUrl, rawJson: jsonMatch[0].slice(0, 500) },
-            level: "warning",
-            tags: { operation: "structured_keywords_parse" },
-          });
-        }
-      } else if (unfenced.length > 0) {
-        Sentry.addBreadcrumb({
-          category: "ai.keywords",
-          data: { rawKeywords: unfenced.slice(0, 200) },
-          level: "warning",
-          message: "Gemini returned keywords without valid JSON object",
-        });
-      }
+      // Strip outer brackets Gemini may copy from format template
+      const keywordsStr = rawKeywords.replace(/^\[(.+)\]$/su, "$1").trim();
+      image_keywords = keywordsStr
+        .split(/,\s*/u)
+        .map((keyword) => keyword.trim())
+        .filter(Boolean);
     }
 
     let ocr_text: null | string = null;

@@ -2,7 +2,6 @@ import type { NextApiRequest as NextJsApiRequest } from "next";
 
 import type { BookmarksSortByTypes, BookmarksViewTypes } from "./componentStoreTypes";
 import type { CategoryIdUrlTypes, FileType } from "./componentTypes";
-import type { StructuredKeywords } from "@/async/ai/imageToText";
 import type { PostgrestError, User } from "@supabase/supabase-js";
 
 export interface SupabaseSessionType {
@@ -17,7 +16,7 @@ export interface ImgMetadataType {
   height: null | number;
   iframeAllowed: boolean | null;
   image_caption: null | string;
-  image_keywords?: Record<string, string> | string[] | StructuredKeywords;
+  image_keywords?: string[];
   img_caption: null | string;
   isOgImagePreferred: boolean;
   isPageScreenshot: boolean | null;
