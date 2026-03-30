@@ -201,7 +201,7 @@ BEGIN
             OR EXISTS (
                 SELECT 1
                 FROM jsonb_array_elements_text(b.meta_data->'image_keywords'->'color') AS c(hex)
-                WHERE public.color_distance(color_hex, c.hex) < 80
+                WHERE public.color_distance(color_hex, c.hex) < 200
             )
         )
 
@@ -231,7 +231,7 @@ BEGIN
                 COALESCE(
                     (SELECT (1.0 - MIN(public.color_distance(color_hex, c.hex)) / 441.0) * 0.12
                      FROM jsonb_array_elements_text(b.meta_data->'image_keywords'->'color') AS c(hex)
-                     WHERE public.color_distance(color_hex, c.hex) < 80),
+                     WHERE public.color_distance(color_hex, c.hex) < 200),
                     0
                 )
             ELSE 0
