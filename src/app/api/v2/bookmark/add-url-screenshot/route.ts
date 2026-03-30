@@ -96,6 +96,8 @@ export const POST = createAxiomRouteHandler(
               userId,
             });
           } catch (error) {
+            // Sentry retained: after() callbacks run outside the factory's runWithServerContext
+            // try/catch — onRequestError cannot intercept errors thrown here.
             Sentry.captureException(error, {
               extra: { bookmarkId: data.id },
               tags: { operation: "after_remaining_bookmark_data_screenshot_failed", userId },
@@ -238,6 +240,8 @@ export const POST = createAxiomRouteHandler(
             userId,
           });
         } catch (error) {
+          // Sentry retained: after() callbacks run outside the factory's runWithServerContext
+          // try/catch — onRequestError cannot intercept errors thrown here.
           Sentry.captureException(error, {
             extra: { bookmarkId: data.id },
             tags: { operation: "after_remaining_bookmark_data", userId },
