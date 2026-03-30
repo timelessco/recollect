@@ -15,10 +15,7 @@ export const v2DeleteApiKeySupplement = {
       description:
         "The Gemini API key was removed from the user's profile. Also succeeds when no key was previously stored.",
       summary: "API key deleted",
-      value: {
-        data: { success: true },
-        error: null,
-      } as const,
+      value: { success: true } as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

@@ -143,14 +143,9 @@ export interface BookmarkViewDataTypes {
 }
 
 /**
- * Profile bookmarks_view: keyed by page slug (everything, discover, images, …). Legacy flat shape is treated as "everything".
+ * Profile bookmarks_view: keyed by page slug (everything, discover, images, …).
  */
 export type ProfilesBookmarksView = Record<string, BookmarkViewDataTypes>;
-
-/**
- * Profile bookmarks_view at runtime: keyed shape or legacy flat (single BookmarkViewDataTypes).
- */
-export type ProfilesBookmarksViewOrLegacy = BookmarkViewDataTypes | ProfilesBookmarksView;
 
 // user catagories
 
@@ -213,7 +208,7 @@ export interface AiFeaturesToggle {
 
 export interface ProfilesTableTypes {
   ai_features_toggle: AiFeaturesToggle;
-  bookmarks_view: ProfilesBookmarksViewOrLegacy;
+  bookmarks_view: ProfilesBookmarksView;
   category_order: number[];
   display_name: string;
   email: string;

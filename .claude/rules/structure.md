@@ -35,10 +35,6 @@ src/
 - **Pages Router** (`src/pages/`): Dashboard (`[category_id]`), discover, public share, legacy API routes
 - Root `/` redirects to `/everything`
 
-### Import Strategy
-
-- `@/*` alias for all internal imports
-
 ### Component Patterns
 
 - **Images**: NextImage with blurhash. **Links**: StyledLink. **Icons**: `/src/icons/svg/` + sprite build
