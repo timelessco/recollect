@@ -1,6 +1,6 @@
-import { colorsNamed, differenceEuclidean, formatHex, nearest, parse } from "culori";
+import { colorsNamed, converter, differenceEuclidean, formatHex, nearest, parse } from "culori";
 
-import type { StructuredKeywords } from "@/async/ai/imageToText";
+import type { BookmarkColors, OklabColor } from "@/async/ai/imageToText";
 import type { ImgMetadataType } from "@/types/apiTypes";
 
 /**
@@ -178,7 +178,11 @@ export function getColorName(hex: string): string {
   return DISPLAY_NAMES[cssName] ?? cssName;
 }
 
-export function parseSearchColor(term: string): string | null {
+/**
+ * Parse a search term as a color and return OKLAB values.
+ * Accepts CSS color names ("brown") and hex values ("#8B4513").
+ */
+export function parseSearchColor(term: string): OklabColor | null {
   const trimmed = term.trim().toLowerCase();
   if (!trimmed) {
     return null;
@@ -189,12 +193,27 @@ export function parseSearchColor(term: string): string | null {
     return null;
   }
 
-  return formatHex(parsed);
+  const toOklab = converter("oklab");
+  const oklab = toOklab(parsed);
+  if (!oklab) {
+    return null;
+  }
+
+  return { a: oklab.a ?? 0, b: oklab.b ?? 0, hex: formatHex(parsed), l: oklab.l ?? 0 };
 }
 
+/**
+ * Extract color hex strings from bookmark image_keywords for display.
+ * Returns primary color first, then secondary colors.
+ */
 export function getBookmarkColors(imageKeywords: ImgMetadataType["image_keywords"]): string[] {
   if (!imageKeywords || Array.isArray(imageKeywords)) {
     return [];
   }
-  return (imageKeywords as StructuredKeywords).color ?? [];
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  const color = (imageKeywords as Record<string, unknown>).color as BookmarkColors | undefined;
+  if (!color?.primary_color) {
+    return [];
+  }
+  return [color.primary_color.hex, ...color.secondary_colors.map((c) => c.hex)];
 }

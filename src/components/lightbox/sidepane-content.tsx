@@ -259,7 +259,8 @@ export function SidepaneContent({
                       {highlightSearch(metaData.ocr, trimmedSearchText)}
                     </>
                   )}
-                  {hasKeywords(metaData?.image_keywords) &&
+                  {process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" &&
+                    hasKeywords(metaData?.image_keywords) &&
                     searchMatchesText(
                       getKeywordsDisplay(metaData?.image_keywords),
                       trimmedSearchText,
@@ -276,11 +277,12 @@ export function SidepaneContent({
                       </>
                     )}
                 </p>
-                {hasKeywords(metaData?.image_keywords) && (
-                  <pre className="mt-2 max-h-[150px] overflow-auto rounded bg-gray-100 p-2 text-[11px] leading-tight text-gray-600">
-                    {JSON.stringify(metaData?.image_keywords, null, 2)}
-                  </pre>
-                )}
+                {process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" &&
+                  hasKeywords(metaData?.image_keywords) && (
+                    <pre className="mt-2 max-h-[150px] overflow-auto rounded bg-gray-100 p-2 text-[11px] leading-tight text-gray-600">
+                      {JSON.stringify(metaData?.image_keywords, null, 2)}
+                    </pre>
+                  )}
               </div>
             </motion.div>
           )}

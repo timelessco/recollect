@@ -2,111 +2,33 @@
 -- Migration: Add color distance search to bookmark search
 -- ============================================================================
 -- Purpose:
---   1. Create hex_channel() helper to extract RGB channels from hex strings
---   2. Create oklab_distance() for perceptual color distance (OKLAB space)
---   3. Update search_bookmarks_url_tag_scope with color_hex parameter
---      and color distance filter + ranking signal
+--   1. Drop old function overloads for unambiguous PostgREST resolution
+--   2. Update search_bookmarks_url_tag_scope with OKLAB color search params
+--      (color_l, color_a, color_b) that compare against pre-computed OKLAB
+--      values stored in meta_data.image_keywords.color
 -- ============================================================================
 
 BEGIN;
 
--- Step 0: Drop old overloads so PostgREST resolves the 5-param version unambiguously
+-- Step 0: Drop old overloads so PostgREST resolves the new version unambiguously
 DROP FUNCTION IF EXISTS public.search_bookmarks_url_tag_scope(character varying, character varying, text[]);
 DROP FUNCTION IF EXISTS public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint);
+DROP FUNCTION IF EXISTS public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint, character varying);
 
--- Step 1: Helper to extract a single RGB channel (0-255) from a hex color string
--- pos=1 for red, pos=3 for green, pos=5 for blue
-CREATE OR REPLACE FUNCTION public.hex_channel(hex text, pos int)
-RETURNS int
-LANGUAGE sql
-IMMUTABLE STRICT
-SECURITY INVOKER
-SET search_path = public
-AS $$
-  SELECT ('x' || substring(replace(hex, '#', '') FROM pos FOR 2))::bit(8)::int;
-$$;
-
-COMMENT ON FUNCTION public.hex_channel(text, int) IS
-'Extract a single RGB channel (0-255) from a hex color string. pos=1 red, pos=3 green, pos=5 blue.';
-
--- Step 2: Perceptual color distance using OKLAB color space
--- Converts hex → sRGB → linear RGB → LMS → OKLAB, then Euclidean distance.
--- Range: 0 (identical) to ~0.45 (black vs white). JND ≈ 0.02-0.04.
-CREATE OR REPLACE FUNCTION public.oklab_distance(hex1 text, hex2 text)
-RETURNS float
-LANGUAGE sql
-IMMUTABLE STRICT
-SECURITY INVOKER
-SET search_path = public
-AS $$
-  WITH
-  channels AS (
-    SELECT
-      public.hex_channel(hex1, 1) AS r1, public.hex_channel(hex1, 3) AS g1, public.hex_channel(hex1, 5) AS b1,
-      public.hex_channel(hex2, 1) AS r2, public.hex_channel(hex2, 3) AS g2, public.hex_channel(hex2, 5) AS b2
-  ),
-  -- sRGB to linear RGB (gamma decode)
-  linear AS (
-    SELECT
-      CASE WHEN r1/255.0 <= 0.04045 THEN (r1/255.0)/12.92 ELSE POWER((r1/255.0 + 0.055)/1.055, 2.4) END AS lr1,
-      CASE WHEN g1/255.0 <= 0.04045 THEN (g1/255.0)/12.92 ELSE POWER((g1/255.0 + 0.055)/1.055, 2.4) END AS lg1,
-      CASE WHEN b1/255.0 <= 0.04045 THEN (b1/255.0)/12.92 ELSE POWER((b1/255.0 + 0.055)/1.055, 2.4) END AS lb1,
-      CASE WHEN r2/255.0 <= 0.04045 THEN (r2/255.0)/12.92 ELSE POWER((r2/255.0 + 0.055)/1.055, 2.4) END AS lr2,
-      CASE WHEN g2/255.0 <= 0.04045 THEN (g2/255.0)/12.92 ELSE POWER((g2/255.0 + 0.055)/1.055, 2.4) END AS lg2,
-      CASE WHEN b2/255.0 <= 0.04045 THEN (b2/255.0)/12.92 ELSE POWER((b2/255.0 + 0.055)/1.055, 2.4) END AS lb2
-    FROM channels
-  ),
-  -- Linear RGB to LMS (Ottosson matrix M1)
-  lms AS (
-    SELECT
-      0.4122214708*lr1 + 0.5363325363*lg1 + 0.0514459929*lb1 AS l1,
-      0.2119034982*lr1 + 0.6806995451*lg1 + 0.1073969566*lb1 AS m1,
-      0.0883024619*lr1 + 0.2171187842*lg1 + 0.6945787540*lb1 AS s1,
-      0.4122214708*lr2 + 0.5363325363*lg2 + 0.0514459929*lb2 AS l2,
-      0.2119034982*lr2 + 0.6806995451*lg2 + 0.1073969566*lb2 AS m2,
-      0.0883024619*lr2 + 0.2171187842*lg2 + 0.6945787540*lb2 AS s2
-    FROM linear
-  ),
-  -- Cube root (LMS → LMS')
-  lms_cr AS (
-    SELECT
-      CBRT(l1) AS l1_, CBRT(m1) AS m1_, CBRT(s1) AS s1_,
-      CBRT(l2) AS l2_, CBRT(m2) AS m2_, CBRT(s2) AS s2_
-    FROM lms
-  ),
-  -- LMS' to OKLAB (Ottosson matrix M2)
-  oklab AS (
-    SELECT
-      0.2104542553*l1_ + 0.7936177850*m1_ - 0.0040720468*s1_ AS lab_l1,
-      1.9779984951*l1_ - 2.4285922050*m1_ + 0.4505937099*s1_ AS lab_a1,
-      0.0259040371*l1_ + 0.7827717662*m1_ - 0.8086757660*s1_ AS lab_b1,
-      0.2104542553*l2_ + 0.7936177850*m2_ - 0.0040720468*s2_ AS lab_l2,
-      1.9779984951*l2_ - 2.4285922050*m2_ + 0.4505937099*s2_ AS lab_a2,
-      0.0259040371*l2_ + 0.7827717662*m2_ - 0.8086757660*s2_ AS lab_b2
-    FROM lms_cr
-  )
-  -- Euclidean distance in OKLAB
-  SELECT SQRT(
-    POWER(lab_l1 - lab_l2, 2) +
-    POWER(lab_a1 - lab_a2, 2) +
-    POWER(lab_b1 - lab_b2, 2)
-  )
-  FROM oklab;
-$$;
-
-COMMENT ON FUNCTION public.oklab_distance(text, text) IS
-'Perceptual color distance using OKLAB color space. Range 0 (identical) to ~0.45 (black vs white). JND ≈ 0.02-0.04. Threshold 0.15 captures same color family.';
-
--- Drop old RGB distance function (replaced by oklab_distance)
+-- Step 1: Drop old helper functions (no longer needed — OKLAB is pre-computed)
+DROP FUNCTION IF EXISTS public.oklab_distance(text, text);
 DROP FUNCTION IF EXISTS public.color_distance(text, text);
+DROP FUNCTION IF EXISTS public.hex_channel(text, int);
 
--- Step 3: Update search function with color_hex parameter
+-- Step 2: Update search function with OKLAB color params
 CREATE OR REPLACE FUNCTION public.search_bookmarks_url_tag_scope(
     search_text character varying DEFAULT '',
     url_scope character varying DEFAULT '',
     tag_scope text[] DEFAULT NULL,
     category_scope bigint DEFAULT NULL,
-    color_hex character varying DEFAULT NULL
+    color_l double precision DEFAULT NULL,
+    color_a double precision DEFAULT NULL,
+    color_b double precision DEFAULT NULL
 )
 RETURNS TABLE(
     id bigint,
@@ -252,13 +174,26 @@ BEGIN
         )
         AND
         (
-            -- Color filter: perceptual distance in OKLAB space
-            color_hex IS NULL
-            OR color_hex = ''
-            OR EXISTS (
-                SELECT 1
-                FROM jsonb_array_elements_text(b.meta_data->'image_keywords'->'color') AS c(hex)
-                WHERE public.oklab_distance(color_hex, c.hex) < 0.25
+            -- Color filter: OKLAB perceptual distance on pre-computed values
+            -- Stored format: { primary_color: {l,a,b,hex}, secondary_colors: [{l,a,b,hex},...] }
+            color_l IS NULL
+            OR (
+                -- Check primary color
+                SQRT(
+                    POWER(color_l - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'l')::float), 2) +
+                    POWER(color_a - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'a')::float), 2) +
+                    POWER(color_b - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'b')::float), 2)
+                ) < 0.25
+                -- Check secondary colors
+                OR EXISTS (
+                    SELECT 1
+                    FROM jsonb_array_elements(b.meta_data->'image_keywords'->'color'->'secondary_colors') AS sc
+                    WHERE SQRT(
+                        POWER(color_l - (sc->>'l')::float, 2) +
+                        POWER(color_a - (sc->>'a')::float, 2) +
+                        POWER(color_b - (sc->>'b')::float, 2)
+                    ) < 0.25
+                )
             )
         )
 
@@ -282,14 +217,28 @@ BEGIN
                 ) * 0.1
             )
         END +
-        -- Color distance ranking (independent of text search)
+        -- Color ranking: primary color weighted higher than secondary
         CASE
-            WHEN color_hex IS NOT NULL AND color_hex <> '' THEN
-                COALESCE(
-                    (SELECT (1.0 - MIN(public.oklab_distance(color_hex, c.hex))) * 0.12
-                     FROM jsonb_array_elements_text(b.meta_data->'image_keywords'->'color') AS c(hex)
-                     WHERE public.oklab_distance(color_hex, c.hex) < 0.25),
-                    0
+            WHEN color_l IS NOT NULL THEN
+                GREATEST(
+                    -- Primary color match (weight 0.15)
+                    CASE WHEN b.meta_data->'image_keywords'->'color'->'primary_color'->>'l' IS NOT NULL THEN
+                        GREATEST(0, (1.0 - SQRT(
+                            POWER(color_l - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'l')::float), 2) +
+                            POWER(color_a - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'a')::float), 2) +
+                            POWER(color_b - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'b')::float), 2)
+                        )) * 0.15)
+                    ELSE 0 END,
+                    -- Best secondary color match (weight 0.10)
+                    COALESCE(
+                        (SELECT MAX(GREATEST(0, (1.0 - SQRT(
+                            POWER(color_l - (sc->>'l')::float, 2) +
+                            POWER(color_a - (sc->>'a')::float, 2) +
+                            POWER(color_b - (sc->>'b')::float, 2)
+                        )) * 0.10))
+                        FROM jsonb_array_elements(b.meta_data->'image_keywords'->'color'->'secondary_colors') AS sc),
+                        0
+                    )
                 )
             ELSE 0
         END
@@ -298,7 +247,7 @@ BEGIN
 END;
 $function$;
 
-COMMENT ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint, character varying) IS
-'Bookmark search with URL/tag/category/color filters. Color distance uses OKLAB perceptual space with threshold 0.15. color_hex is optional; when provided, filters to visually similar colors and ranks closer matches higher.';
+COMMENT ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint, double precision, double precision, double precision) IS
+'Bookmark search with URL/tag/category/color filters. Color uses pre-computed OKLAB values with perceptual distance threshold 0.25. Primary color gets higher ranking weight (0.15) than secondary (0.10).';
 
 COMMIT;

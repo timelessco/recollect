@@ -19,6 +19,9 @@ declare module "culori" {
     accessor?: (item: T) => Color | string,
   ): (color: Color | string, n?: number, maxDistance?: number) => T[];
 
+  /** Returns a converter function to the specified color space. */
+  function converter(targetMode: string): (color: Color | string) => Color | undefined;
+
   /** Parses a CSS color string into a Color object, or undefined if unparseable. */
   function parse(color: string): Color | undefined;
 

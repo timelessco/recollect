@@ -100,7 +100,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     // Strip color: prefix first so # in hex values doesn't get parsed as a tag
     const colorMatch = search.match(/color:(\S+)/i);
-    const colorHex = colorMatch ? parseSearchColor(colorMatch[1]) : null;
+    const searchColor = colorMatch ? parseSearchColor(colorMatch[1]) : null;
     const searchWithoutColor = search.replace(/color:\S*/i, "");
 
     const searchText = searchWithoutColor
@@ -120,7 +120,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     console.log("[search-bookmarks] Parsed search parameters:", {
       categoryScope,
-      colorHex,
+      searchColor,
       searchText,
       tagName,
       urlScope,
@@ -130,7 +130,9 @@ export default async function handler(request: NextApiRequest, response: NextApi
     let query = supabase
       .rpc("search_bookmarks_url_tag_scope", {
         category_scope: isDiscoverPage ? null : categoryScope,
-        color_hex: colorHex,
+        color_a: searchColor?.a ?? null,
+        color_b: searchColor?.b ?? null,
+        color_l: searchColor?.l ?? null,
         search_text: searchText,
         tag_scope: tagName,
         url_scope: urlScope,
