@@ -11,6 +11,7 @@ interface ColorPaletteProps {
 
 export function ColorPalette({ colors }: ColorPaletteProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -40,11 +41,6 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
     return hex;
   };
 
-  const handleCopy = (hex: string, index: number) => {
-    void navigator.clipboard.writeText(hex);
-    setCopiedIndex(index);
-  };
-
   return (
     <TooltipPrimitive.Provider>
       <div
@@ -54,6 +50,7 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
         }}
         onMouseLeave={() => {
           setIsExpanded(false);
+          setHoveredIndex(null);
           setCopiedIndex(null);
         }}
       >
@@ -62,17 +59,20 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
             className={`transition-[margin] duration-200 ${getMarginClass(index)}`}
             key={hex}
             onMouseEnter={() => {
-              if (copiedIndex !== null && copiedIndex !== index) {
-                setCopiedIndex(null);
-              }
+              setHoveredIndex(index);
+              setCopiedIndex(null);
+            }}
+            onMouseLeave={() => {
+              setHoveredIndex(null);
             }}
             style={{ zIndex: colors.length - index }}
           >
-            <TooltipPrimitive.Root>
+            <TooltipPrimitive.Root open={hoveredIndex === index || copiedIndex === index}>
               <TooltipPrimitive.Trigger
                 className="h-6 w-6 cursor-pointer rounded-full border border-gray-200 dark:border-gray-700"
                 onClick={() => {
-                  handleCopy(hex, index);
+                  void navigator.clipboard.writeText(hex);
+                  setCopiedIndex(index);
                 }}
                 style={{ backgroundColor: adjustColor(hex) }}
               />
