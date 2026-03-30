@@ -66,7 +66,7 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
             key={hex}
             style={{ zIndex: colors.length - index }}
           >
-            <TooltipPrimitive.Root>
+            <TooltipPrimitive.Root open={copiedIndex === index ? true : undefined}>
               <TooltipPrimitive.Trigger
                 className="h-6 w-6 cursor-pointer rounded-full border border-gray-200 dark:border-gray-700"
                 onClick={() => {
