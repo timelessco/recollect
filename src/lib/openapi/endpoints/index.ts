@@ -2,6 +2,7 @@
 export * from "./ai-enrichment";
 export * from "./api-key";
 export * from "./bookmarks";
+export * from "./bucket";
 export * from "./categories";
 export * from "./category";
 export * from "./cron";
