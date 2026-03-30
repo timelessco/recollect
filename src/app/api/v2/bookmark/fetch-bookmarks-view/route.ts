@@ -13,6 +13,12 @@ export const GET = createAxiomRouteHandler(
       const { category_id } = data;
       const userId = user.id;
 
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+        ctx.fields.category_id = category_id;
+      }
+
       const { data: viewData, error } = await supabase
         .from(CATEGORIES_TABLE_NAME)
         .select("category_views")
@@ -27,10 +33,8 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
-      const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.user_id = userId;
-        ctx.fields.category_id = category_id;
+        ctx.fields.bookmarks_returned = viewData?.length ?? 0;
       }
 
       return viewData;
