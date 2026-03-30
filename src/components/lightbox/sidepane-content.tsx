@@ -246,7 +246,12 @@ export function SidepaneContent({
                   )}
                   {metaData?.ocr && searchMatchesText(metaData.ocr, trimmedSearchText) && (
                     <>
-                      {(metaData?.img_caption ?? metaData?.image_caption) && <br />}
+                      {(metaData?.img_caption ?? metaData?.image_caption) && (
+                        <>
+                          <br />
+                          <br />
+                        </>
+                      )}
                       {highlightSearch(metaData.ocr, trimmedSearchText)}
                     </>
                   )}
