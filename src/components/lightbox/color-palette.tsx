@@ -1,10 +1,9 @@
 import { useState } from "react";
 
+import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 import { useTheme } from "next-themes";
 
 import { getColorName } from "@/utils/colorUtils";
-
-import { Tooltip } from "../ui/recollect/tooltip";
 
 interface ColorPaletteProps {
   colors: string[];
@@ -50,34 +49,42 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
   };
 
   return (
-    <div
-      className="flex items-center"
-      onMouseEnter={() => {
-        setIsExpanded(true);
-      }}
-      onMouseLeave={() => {
-        setIsExpanded(false);
-        setCopiedIndex(null);
-      }}
-    >
-      {colors.map((hex, index) => (
-        <div
-          className={`transition-[margin] duration-200 ${getMarginClass(index)}`}
-          key={hex}
-          style={{ zIndex: colors.length - index }}
-        >
-          <Tooltip content={copiedIndex === index ? "Copied!" : `${getColorName(hex)} (${hex})`}>
-            <button
-              className="h-6 w-6 rounded-full border border-gray-200 dark:border-gray-700"
-              onClick={() => {
-                handleCopy(hex, index);
-              }}
-              style={{ backgroundColor: adjustColor(hex) }}
-              type="button"
-            />
-          </Tooltip>
-        </div>
-      ))}
-    </div>
+    <TooltipPrimitive.Provider>
+      <div
+        className="flex items-center"
+        onMouseEnter={() => {
+          setIsExpanded(true);
+        }}
+        onMouseLeave={() => {
+          setIsExpanded(false);
+          setCopiedIndex(null);
+        }}
+      >
+        {colors.map((hex, index) => (
+          <div
+            className={`transition-[margin] duration-200 ${getMarginClass(index)}`}
+            key={hex}
+            style={{ zIndex: colors.length - index }}
+          >
+            <TooltipPrimitive.Root>
+              <TooltipPrimitive.Trigger
+                className="h-6 w-6 cursor-pointer rounded-full border border-gray-200 dark:border-gray-700"
+                onClick={() => {
+                  handleCopy(hex, index);
+                }}
+                style={{ backgroundColor: adjustColor(hex) }}
+              />
+              <TooltipPrimitive.Portal>
+                <TooltipPrimitive.Positioner className="z-10000" sideOffset={8}>
+                  <TooltipPrimitive.Popup className="rounded-xl bg-gray-900 px-2 py-1 text-13 font-450 text-gray-0 transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0">
+                    {copiedIndex === index ? "Copied!" : `${getColorName(hex)} (${hex})`}
+                  </TooltipPrimitive.Popup>
+                </TooltipPrimitive.Positioner>
+              </TooltipPrimitive.Portal>
+            </TooltipPrimitive.Root>
+          </div>
+        ))}
+      </div>
+    </TooltipPrimitive.Provider>
   );
 }
