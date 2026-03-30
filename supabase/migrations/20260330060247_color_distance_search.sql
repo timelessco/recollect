@@ -195,6 +195,7 @@ BEGIN
         )
 
     ORDER BY
+        -- Text similarity (only when search_text is non-empty)
         CASE
             WHEN search_text IS NULL OR btrim(search_text) = '' THEN 0
             ELSE (
@@ -204,17 +205,6 @@ BEGIN
                 similarity(COALESCE(b.meta_data->>'ocr', ''), btrim(search_text)) * 0.1 +
                 similarity(COALESCE(b.meta_data->>'img_caption', ''), btrim(search_text)) * 0.15 +
                 similarity(COALESCE(b.meta_data->>'image_caption', ''), btrim(search_text)) * 0.15 +
-                -- Color distance ranking: continuous signal, only when color_hex is provided
-                CASE
-                    WHEN color_hex IS NOT NULL AND color_hex <> '' THEN
-                        COALESCE(
-                            (SELECT (1.0 - MIN(public.color_distance(color_hex, c.hex)) / 441.0) * 0.12
-                             FROM jsonb_array_elements_text(b.meta_data->'image_keywords'->'color') AS c(hex)
-                             WHERE public.color_distance(color_hex, c.hex) < 80),
-                            0
-                        )
-                    ELSE 0
-                END +
                 similarity(
                     COALESCE(
                         (SELECT string_agg(kw.keyword, ' ') FROM public.extract_keywords_text(b.meta_data->'image_keywords') AS kw),
@@ -223,7 +213,19 @@ BEGIN
                     btrim(search_text)
                 ) * 0.1
             )
-        END DESC,
+        END +
+        -- Color distance ranking (independent of text search)
+        CASE
+            WHEN color_hex IS NOT NULL AND color_hex <> '' THEN
+                COALESCE(
+                    (SELECT (1.0 - MIN(public.color_distance(color_hex, c.hex)) / 441.0) * 0.12
+                     FROM jsonb_array_elements_text(b.meta_data->'image_keywords'->'color') AS c(hex)
+                     WHERE public.color_distance(color_hex, c.hex) < 80),
+                    0
+                )
+            ELSE 0
+        END
+        DESC,
         b.inserted_at DESC;
 END;
 $function$;
