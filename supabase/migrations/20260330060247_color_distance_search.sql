@@ -10,6 +10,10 @@
 
 BEGIN;
 
+-- Step 0: Drop old overloads so PostgREST resolves the 5-param version unambiguously
+DROP FUNCTION IF EXISTS public.search_bookmarks_url_tag_scope(character varying, character varying, text[]);
+DROP FUNCTION IF EXISTS public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint);
+
 -- Step 1: Helper to extract a single RGB channel (0-255) from a hex color string
 -- pos=1 for red, pos=3 for green, pos=5 for blue
 CREATE OR REPLACE FUNCTION public.hex_channel(hex text, pos int)
