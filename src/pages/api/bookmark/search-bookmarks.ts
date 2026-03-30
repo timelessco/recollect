@@ -101,7 +101,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
     // Strip color: prefix first so # in hex values doesn't get parsed as a tag
     const colorMatch = search.match(/color:(\S+)/i);
     const colorHex = colorMatch ? parseSearchColor(colorMatch[1]) : null;
-    const searchWithoutColor = search.replace(/color:\S+/i, "");
+    const searchWithoutColor = search.replace(/color:\S*/i, "");
 
     const searchText = searchWithoutColor
       ?.replace(GET_SITE_SCOPE_PATTERN, "")
