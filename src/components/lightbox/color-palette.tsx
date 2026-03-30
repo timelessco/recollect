@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
-import { useTheme } from "next-themes";
 
 import { getColorName } from "@/utils/colorUtils";
 
@@ -12,8 +11,6 @@ interface ColorPaletteProps {
 export function ColorPalette({ colors }: ColorPaletteProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const { resolvedTheme } = useTheme();
-  const isDarkMode = resolvedTheme === "dark";
 
   if (colors.length === 0) {
     return null;
@@ -24,20 +21,6 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
       return "";
     }
     return isExpanded ? "ml-1" : "-ml-2";
-  };
-
-  const adjustColor = (hex: string) => {
-    if (!isDarkMode) {
-      return hex;
-    }
-    const lower = hex.toLowerCase();
-    if (lower === "#ffffff") {
-      return "#000000";
-    }
-    if (lower === "#000000") {
-      return "#ffffff";
-    }
-    return hex;
   };
 
   return (
@@ -69,7 +52,7 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
                 onMouseEnter={() => {
                   setCopiedIndex(null);
                 }}
-                style={{ backgroundColor: adjustColor(hex) }}
+                style={{ backgroundColor: hex }}
               />
               <TooltipPrimitive.Portal>
                 <TooltipPrimitive.Positioner className="z-10000" sideOffset={8}>
