@@ -279,6 +279,10 @@ export const POST = createAxiomRouteHandler(
       const isUrlOfMimeType = isAcceptedMimeType(mediaType);
       const isUrlAnImage = mediaType?.startsWith(IMAGE_MIME_PREFIX) ?? false;
 
+      if (ctx?.fields) {
+        ctx.fields.is_media_url = isUrlOfMimeType;
+      }
+
       // Determine ogImage
       let ogImageToBeAdded: null | string = null;
       let iframeAllowedValue: boolean | null = null;
@@ -339,7 +343,7 @@ export const POST = createAxiomRouteHandler(
 
       if (ctx?.fields) {
         ctx.fields.bookmark_id = insertedBookmark.id;
-        ctx.fields.is_media_url = isUrlOfMimeType;
+        ctx.fields.has_og_image = ogImageToBeAdded !== null;
       }
 
       // Insert junction table entry
