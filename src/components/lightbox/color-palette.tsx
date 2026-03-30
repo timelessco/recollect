@@ -61,12 +61,10 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
             <TooltipPrimitive.Root>
               <TooltipPrimitive.Trigger
                 className="h-6 w-6 cursor-pointer rounded-full border border-gray-200 dark:border-gray-700"
+                closeOnClick={false}
                 onClick={() => {
                   void navigator.clipboard.writeText(hex);
                   setCopiedIndex(index);
-                }}
-                onMouseDown={(e) => {
-                  e.preventDefault();
                 }}
                 onMouseEnter={() => {
                   setCopiedIndex(null);
