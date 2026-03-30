@@ -8,12 +8,18 @@ import type { SingleListData } from "../../types/apiTypes";
 import { usePageContext } from "@/hooks/use-page-context";
 import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
 import { GeminiAiIcon } from "@/icons/geminiAiIcon";
+import { vercelEnvironment } from "@/site-config";
 import { useMiscellaneousStore } from "@/store/componentStore";
 
 import { Icon } from "../atoms/icon";
 import { GetBookmarkIcon } from "../get-bookmark-icon";
 import { CategoryMultiSelect } from "./category-multi-select";
-import { highlightSearch } from "./LightboxUtils";
+import {
+  getKeywordsDisplay,
+  hasKeywords,
+  highlightSearch,
+  searchMatchesText,
+} from "./LightboxUtils";
 
 const formatDate = (dateString: string) => {
   try {
@@ -51,6 +57,7 @@ export function SidepaneContent({
   const lightboxShowSidepane = useMiscellaneousStore((state) => state.lightboxShowSidepane);
 
   const metaData = currentBookmark?.meta_data;
+  const showKeywords = hasKeywords(metaData?.image_keywords) && vercelEnvironment !== "production";
   const collapsedOffset = (currentBookmark?.addedTags?.length ?? 0) > 0 ? 145 : 110;
 
   useEffect(() => {
@@ -167,7 +174,7 @@ export function SidepaneContent({
         metaData?.img_caption ||
         metaData?.ocr ||
         metaData?.image_caption ||
-        (metaData?.image_keywords?.length ?? 0) > 0) && (
+        showKeywords) && (
         <motion.div
           animate={{
             y: isExpanded ? 0 : `max(0px, calc(100% - ${collapsedOffset}px))`,
@@ -198,10 +205,7 @@ export function SidepaneContent({
               </div>
             </div>
           )}
-          {(metaData?.img_caption ||
-            metaData?.ocr ||
-            metaData?.image_caption ||
-            (metaData?.image_keywords?.length ?? 0) > 0) && (
+          {(metaData?.img_caption || metaData?.ocr || metaData?.image_caption || showKeywords) && (
             <motion.div
               className={`relative px-5 py-3 text-sm ${
                 hasAIOverflowContent ? "cursor-pointer" : ""
@@ -240,21 +244,39 @@ export function SidepaneContent({
                     metaData?.img_caption ?? metaData?.image_caption ?? "",
                     trimmedSearchText,
                   )}
-                  {(metaData?.img_caption ?? metaData?.image_caption) && metaData?.ocr && <br />}
-                  {highlightSearch(metaData?.ocr ?? "", trimmedSearchText)}
-                  {(metaData?.image_keywords?.length ?? 0) > 0 && (
+                  {metaData?.ocr && searchMatchesText(metaData.ocr, trimmedSearchText) && (
                     <>
-                      {(metaData?.img_caption ?? metaData?.image_caption ?? metaData?.ocr) && (
-                        <br />
+                      {(metaData?.img_caption ?? metaData?.image_caption) && (
+                        <>
+                          <br />
+                          <br />
+                        </>
                       )}
-                      <span className="font-450">Keywords: </span>
-                      {highlightSearch(
-                        metaData?.image_keywords?.join(", ") ?? "",
-                        trimmedSearchText,
-                      )}
+                      {highlightSearch(metaData.ocr, trimmedSearchText)}
                     </>
                   )}
+                  {showKeywords &&
+                    searchMatchesText(
+                      getKeywordsDisplay(metaData?.image_keywords),
+                      trimmedSearchText,
+                    ) && (
+                      <>
+                        {(metaData?.img_caption ?? metaData?.image_caption ?? metaData?.ocr) && (
+                          <br />
+                        )}
+                        <span className="font-450">Keywords: </span>
+                        {highlightSearch(
+                          getKeywordsDisplay(metaData?.image_keywords),
+                          trimmedSearchText,
+                        )}
+                      </>
+                    )}
                 </p>
+                {showKeywords && (
+                  <pre className="mt-2 max-h-[150px] overflow-auto rounded bg-gray-100 p-2 text-[11px] leading-tight text-gray-600">
+                    {JSON.stringify(metaData?.image_keywords, null, 2)}
+                  </pre>
+                )}
               </div>
             </motion.div>
           )}
