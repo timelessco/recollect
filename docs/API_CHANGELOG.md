@@ -163,3 +163,12 @@
 
 
 
+
+## 2026-03-30 [`0fb8d10`](https://github.com/timelessco/recollect/commit/0fb8d109c297a55ae4a7d2b9a8a62deb7691e685)
+
+
+### GET /v2/bucket/get/signed-url
+-  endpoint added
+
+
+
