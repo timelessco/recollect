@@ -93,7 +93,10 @@ export default async function handler(request: NextApiRequest, response: NextApi
       try {
         const { data: screenshotData } = await axios.get(
           `${SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`,
-          { responseType: "json" },
+          {
+            headers: { Authorization: `Bearer ${env.SCREENSHOT_API_SECRET}` },
+            responseType: "json",
+          },
         );
 
         const base64data = Buffer.from(screenshotData?.screenshot?.data, "binary").toString(

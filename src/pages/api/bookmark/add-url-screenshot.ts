@@ -11,6 +11,7 @@ import type {
 import type { PostgrestError } from "@supabase/supabase-js";
 import type { VerifyErrors } from "jsonwebtoken";
 
+import { env } from "@/env/server";
 import { upload } from "@/lib/storage/media-upload";
 import { collectAdditionalImages, collectVideo } from "@/utils/helpers";
 import { vet } from "@/utils/try";
@@ -63,6 +64,7 @@ export default async function handler(
 
     const [screenshotError, screenShotResponse] = await vet(() =>
       axios.get(`${SCREENSHOT_API}/try?url=${encodeURIComponent(request.body.url)}`, {
+        headers: { Authorization: `Bearer ${env.SCREENSHOT_API_SECRET}` },
         responseType: "json",
       }),
     );
