@@ -129,3 +129,20 @@
 
 
 
+
+## 2026-03-30 [`494745a`](https://github.com/timelessco/recollect/commit/494745a64815334e4c01fd202fd5ca368aa88f4a)
+
+
+### GET /bookmark/fetch-bookmarks-discoverable
+- :warning: response property 'data/items/meta_data/image_keywords' list-of-types was widened by adding types 'object' to media type 'application/json' of response '200'
+
+
+### GET /bookmark/fetch-discoverable-by-id
+- :warning: response property 'data/meta_data/image_keywords' list-of-types was widened by adding types 'object' to media type 'application/json' of response '200'
+
+
+### GET /bookmark/fetch-public-bookmark-by-id
+- :warning: response property 'data/meta_data/image_keywords' list-of-types was widened by adding types 'object' to media type 'application/json' of response '200'
+
+
+
