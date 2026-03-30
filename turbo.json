@@ -20,7 +20,8 @@
         "PDF_URL_SCREENSHOT_API",
         "GOOGLE_GEMINI_TOKEN",
         "RESEND_KEY",
-        "REVALIDATE_SECRET_TOKEN"
+        "REVALIDATE_SECRET_TOKEN",
+        "SCREENSHOT_API_SECRET"
       ],
       "inputs": ["$TURBO_DEFAULT$", ".env", ".env.local"],
       "outputs": [".next/**", "!.next/cache/**"]
