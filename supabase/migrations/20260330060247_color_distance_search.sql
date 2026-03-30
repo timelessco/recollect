@@ -205,7 +205,16 @@ BEGIN
             OR EXISTS (
                 SELECT 1
                 FROM jsonb_array_elements_text(b.meta_data->'image_keywords'->'color') AS c(hex)
-                WHERE public.color_distance(color_hex, c.hex) < 200
+                WHERE public.color_distance(color_hex, c.hex) < 170
+                  -- Skip near-black/near-white stored colors for chromatic searches
+                  AND (
+                    -- Stored color has enough saturation (max - min channel > 30)
+                    GREATEST(public.hex_channel(c.hex, 1), public.hex_channel(c.hex, 3), public.hex_channel(c.hex, 5))
+                    - LEAST(public.hex_channel(c.hex, 1), public.hex_channel(c.hex, 3), public.hex_channel(c.hex, 5)) > 50
+                    -- OR search color itself is near-black/gray (allow matching dark with dark)
+                    OR GREATEST(public.hex_channel(color_hex, 1), public.hex_channel(color_hex, 3), public.hex_channel(color_hex, 5))
+                    - LEAST(public.hex_channel(color_hex, 1), public.hex_channel(color_hex, 3), public.hex_channel(color_hex, 5)) <= 50
+                  )
             )
         )
 
@@ -235,7 +244,13 @@ BEGIN
                 COALESCE(
                     (SELECT (1.0 - MIN(public.color_distance(color_hex, c.hex)) / 441.0) * 0.12
                      FROM jsonb_array_elements_text(b.meta_data->'image_keywords'->'color') AS c(hex)
-                     WHERE public.color_distance(color_hex, c.hex) < 200),
+                     WHERE public.color_distance(color_hex, c.hex) < 170
+                       AND (
+                         GREATEST(public.hex_channel(c.hex, 1), public.hex_channel(c.hex, 3), public.hex_channel(c.hex, 5))
+                         - LEAST(public.hex_channel(c.hex, 1), public.hex_channel(c.hex, 3), public.hex_channel(c.hex, 5)) > 50
+                         OR GREATEST(public.hex_channel(color_hex, 1), public.hex_channel(color_hex, 3), public.hex_channel(color_hex, 5))
+                         - LEAST(public.hex_channel(color_hex, 1), public.hex_channel(color_hex, 3), public.hex_channel(color_hex, 5)) <= 50
+                       )),
                     0
                 )
             ELSE 0
