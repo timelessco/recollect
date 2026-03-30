@@ -1,7 +1,6 @@
 import { after } from "next/server";
 
-import * as Sentry from "@sentry/nextjs";
-
+import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
@@ -96,11 +95,10 @@ export const POST = createAxiomRouteHandler(
               userId,
             });
           } catch (error) {
-            // Sentry retained: after() callbacks run outside the factory's runWithServerContext
-            // try/catch — onRequestError cannot intercept errors thrown here.
-            Sentry.captureException(error, {
-              extra: { bookmarkId: data.id },
-              tags: { operation: "after_remaining_bookmark_data_screenshot_failed", userId },
+            logger.warn("[add-url-screenshot] after() enrichment failed (screenshot path A)", {
+              bookmark_id: data.id,
+              user_id: userId,
+              error: error instanceof Error ? error.message : String(error),
             });
           }
         });
@@ -240,11 +238,10 @@ export const POST = createAxiomRouteHandler(
             userId,
           });
         } catch (error) {
-          // Sentry retained: after() callbacks run outside the factory's runWithServerContext
-          // try/catch — onRequestError cannot intercept errors thrown here.
-          Sentry.captureException(error, {
-            extra: { bookmarkId: data.id },
-            tags: { operation: "after_remaining_bookmark_data", userId },
+          logger.warn("[add-url-screenshot] after() enrichment failed (screenshot path B)", {
+            bookmark_id: data.id,
+            user_id: userId,
+            error: error instanceof Error ? error.message : String(error),
           });
         }
       });

@@ -1,8 +1,8 @@
 import { after } from "next/server";
 
-import * as Sentry from "@sentry/nextjs";
 import ogs from "open-graph-scraper";
 
+import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
@@ -375,11 +375,10 @@ export const POST = createAxiomRouteHandler(
               userId,
             });
           } catch (error) {
-            // Sentry retained: after() callbacks run outside the factory's runWithServerContext
-            // try/catch — onRequestError cannot intercept errors thrown here.
-            Sentry.captureException(error, {
-              extra: { bookmarkId: insertedBookmark.id },
-              tags: { operation: "after_remaining_bookmark_data", userId },
+            logger.warn("[add-bookmark-min-data] after() enrichment failed", {
+              bookmark_id: insertedBookmark.id,
+              user_id: userId,
+              error: error instanceof Error ? error.message : String(error),
             });
           }
         });
