@@ -9,6 +9,7 @@ import type { PostgrestError } from "@supabase/supabase-js";
 import type { VerifyErrors } from "jsonwebtoken";
 
 import { getBookmarkMediaCategoryPredicate } from "../../../utils/bookmark-category-filters";
+import { parseSearchColor } from "../../../utils/colorUtils";
 import {
   bookmarkType,
   DISCOVER_URL,
@@ -104,6 +105,17 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     const tagName = extractTagNamesFromSearch(search);
 
+    // Detect color term in search words (first match wins)
+    let colorHex: string | null = null;
+    for (const word of searchText.split(/\s+/)) {
+      if (!word) {continue;}
+      const parsed = parseSearchColor(word);
+      if (parsed) {
+        colorHex = parsed;
+        break;
+      }
+    }
+
     // Determine category_scope for junction table filtering
     // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
     const userInCollections = isUserInACategoryInApi(category_id!, false);
@@ -114,6 +126,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     console.log("[search-bookmarks] Parsed search parameters:", {
       categoryScope,
+      colorHex,
       searchText,
       tagName,
       urlScope,
@@ -123,6 +136,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
     let query = supabase
       .rpc("search_bookmarks_url_tag_scope", {
         category_scope: isDiscoverPage ? null : categoryScope,
+        color_hex: colorHex,
         search_text: searchText,
         tag_scope: tagName,
         url_scope: urlScope,
