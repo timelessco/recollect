@@ -11,7 +11,6 @@ interface ColorPaletteProps {
 
 export function ColorPalette({ colors }: ColorPaletteProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -50,7 +49,6 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
         }}
         onMouseLeave={() => {
           setIsExpanded(false);
-          setHoveredIndex(null);
           setCopiedIndex(null);
         }}
       >
@@ -58,21 +56,20 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
           <div
             className={`transition-[margin] duration-200 ${getMarginClass(index)}`}
             key={hex}
-            onMouseEnter={() => {
-              setHoveredIndex(index);
-              setCopiedIndex(null);
-            }}
-            onMouseLeave={() => {
-              setHoveredIndex(null);
-            }}
             style={{ zIndex: colors.length - index }}
           >
-            <TooltipPrimitive.Root open={hoveredIndex === index || copiedIndex === index}>
+            <TooltipPrimitive.Root>
               <TooltipPrimitive.Trigger
                 className="h-6 w-6 cursor-pointer rounded-full border border-gray-200 dark:border-gray-700"
                 onClick={() => {
                   void navigator.clipboard.writeText(hex);
                   setCopiedIndex(index);
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                }}
+                onMouseEnter={() => {
+                  setCopiedIndex(null);
                 }}
                 style={{ backgroundColor: adjustColor(hex) }}
               />
