@@ -35,6 +35,12 @@ export const PUT = createAxiomRouteHandler(
         });
       }
 
+      // Entity IDs BEFORE the operation
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+      }
+
       const encryptedApiKey = CryptoJS.AES.encrypt(apikey, encryptionKey).toString();
 
       const { error: upsertError } = await supabase
@@ -49,10 +55,9 @@ export const PUT = createAxiomRouteHandler(
         });
       }
 
-      const ctx = getServerContext();
+      // Outcome flag AFTER the operation
       if (ctx?.fields) {
-        ctx.fields.user_id = userId;
-        ctx.fields.operation = "upsert_api_key";
+        ctx.fields.key_upserted = true;
       }
 
       return { success: true };

@@ -134,6 +134,13 @@ export const GET = createAxiomRouteHandler(
         return rest;
       });
 
+      // Result counts AFTER the query
+      if (ctx?.fields) {
+        ctx.fields.category_found = true;
+        ctx.fields.bookmark_count = bookmarks?.length ?? 0;
+        ctx.fields.page = page;
+      }
+
       return {
         bookmarks: bookmarks ?? [],
         categoryName: category?.category_name ?? null,

@@ -16,6 +16,14 @@ export const PATCH = createAxiomRouteHandler(
       const userId = user.id;
       const email = user.email ?? "";
 
+      // Entity IDs + input context BEFORE the operation
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+        ctx.fields.shared_category_id = data.id;
+        ctx.fields.new_edit_access = data.updateData.edit_access;
+      }
+
       const { data: updated, error } = await supabase
         .from(SHARED_CATEGORIES_TABLE_NAME)
         .update(data.updateData)
@@ -31,10 +39,9 @@ export const PATCH = createAxiomRouteHandler(
         });
       }
 
-      const ctx = getServerContext();
+      // Outcome flag AFTER the operation
       if (ctx?.fields) {
-        ctx.fields.user_id = userId;
-        ctx.fields.shared_category_id = data.id;
+        ctx.fields.role_updated = true;
       }
 
       return updated;
