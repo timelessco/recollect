@@ -98,17 +98,17 @@ export default async function handler(request: NextApiRequest, response: NextApi
     const matchedSiteScope = search.match(GET_SITE_SCOPE_PATTERN);
     const urlScope = matchedSiteScope?.[0]?.replace("@", "")?.toLowerCase() ?? "";
 
-    // Extract color: prefix BEFORE tag pattern strips # from hex values
+    // Strip color: prefix first so # in hex values doesn't get parsed as a tag
     const colorMatch = search.match(/color:(\S+)/i);
     const colorHex = colorMatch ? parseSearchColor(colorMatch[1]) : null;
+    const searchWithoutColor = search.replace(/color:\S+/i, "");
 
-    const searchText = search
-      ?.replace(/color:\S+/i, "")
+    const searchText = searchWithoutColor
       ?.replace(GET_SITE_SCOPE_PATTERN, "")
       ?.replace(GET_HASHTAG_TAG_PATTERN, "")
       ?.trim();
 
-    const tagName = extractTagNamesFromSearch(search);
+    const tagName = extractTagNamesFromSearch(searchWithoutColor);
 
     // Determine category_scope for junction table filtering
     // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
