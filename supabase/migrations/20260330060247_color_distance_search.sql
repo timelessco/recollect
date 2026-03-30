@@ -193,6 +193,17 @@ BEGIN
                   )
             )
         )
+        AND
+        (
+            -- Color filter: only keep bookmarks with a matching stored color
+            color_hex IS NULL
+            OR color_hex = ''
+            OR EXISTS (
+                SELECT 1
+                FROM jsonb_array_elements_text(b.meta_data->'image_keywords'->'color') AS c(hex)
+                WHERE public.color_distance(color_hex, c.hex) < 80
+            )
+        )
 
     ORDER BY
         -- Text similarity (only when search_text is non-empty)
