@@ -146,3 +146,20 @@
 
 
 
+
+## 2026-03-30 [`5bb13dc`](https://github.com/timelessco/recollect/commit/5bb13dc257073d94676ee5ca906b92809df6b1ea)
+
+
+### GET /bookmark/fetch-bookmarks-discoverable
+-  response property 'data/items/meta_data/image_keywords' list-of-types was narrowed by removing types 'object' from media type 'application/json' of response '200'
+
+
+### GET /bookmark/fetch-discoverable-by-id
+-  response property 'data/meta_data/image_keywords' list-of-types was narrowed by removing types 'object' from media type 'application/json' of response '200'
+
+
+### GET /bookmark/fetch-public-bookmark-by-id
+-  response property 'data/meta_data/image_keywords' list-of-types was narrowed by removing types 'object' from media type 'application/json' of response '200'
+
+
+
