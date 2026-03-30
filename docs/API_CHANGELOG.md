@@ -120,3 +120,12 @@
 
 
 
+
+## 2026-03-30 [`b881771`](https://github.com/timelessco/recollect/commit/b881771da379f827353c4aa5c7e368c05cbd908f)
+
+
+### POST /cron/process-archived
+-  endpoint added
+
+
+
