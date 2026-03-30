@@ -14,8 +14,7 @@ export const v2RevalidateSupplement = {
     path: "/public/john/my-category",
   },
   responseExample: {
-    data: { revalidated: true },
-    error: null,
+    revalidated: true,
   },
   security: [{ [bearerAuth.name]: [] }],
   summary: "Trigger on-demand ISR revalidation for a page path",

@@ -23,8 +23,14 @@ Sentry.init({
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
   sendDefaultPii: true,
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
+  tracesSampler: (samplingContext) => {
+    if (samplingContext.parentSampled) {
+      return 1;
+    }
+
+    // 20% base sampling for client-side traces
+    return 0.2;
+  },
 });
 
 // This export will instrument router navigations, and is only relevant if you enable tracing.

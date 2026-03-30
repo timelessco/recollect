@@ -5,6 +5,8 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     API_KEY_ENCRYPTION_KEY: z.string(),
+    AXIOM_DATASET: z.string().optional().default("recollect"),
+    AXIOM_TOKEN: z.string().optional(),
     CRON_SECRET: z.string().optional(),
     DEV_SUPABASE_SERVICE_KEY: z.string().optional(),
     GOOGLE_GEMINI_TOKEN: z.string(),

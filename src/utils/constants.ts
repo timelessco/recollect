@@ -147,7 +147,7 @@ export const UPLOAD_FILE_REMAINING_DATA_API = "/file/upload-file-remaining-data"
 // user settings and keys
 export const SAVE_API_KEY_API = "/v1/api-key";
 
-export const CHECK_API_KEY_API = "/v1/check-gemini-api-key";
+export const CHECK_API_KEY_API = "/v2/check-gemini-api-key";
 export const GET_API_KEY_API = "/v1/get-gemini-api-key";
 
 export const DELETE_API_KEY_API = "/v1/delete-api-key";

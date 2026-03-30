@@ -24,10 +24,7 @@ export const v2RemoveProfilePicSupplement = {
     "pic-removed": {
       description: "Returns the updated `profile_pic` column value — always null after removal.",
       summary: "Profile picture removed",
-      value: {
-        data: [{ profile_pic: null }],
-        error: null,
-      } as const,
+      value: [{ profile_pic: null }] as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

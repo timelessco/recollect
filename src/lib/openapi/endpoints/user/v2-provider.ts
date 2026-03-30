@@ -40,7 +40,6 @@ export const v2ProviderSupplement = {
       description: "Omit the `email` parameter or send an invalid value — returns 400.",
       summary: "Invalid or missing email",
       value: {
-        data: null,
         error: "Invalid email",
       } as const,
     },
@@ -50,24 +49,21 @@ export const v2ProviderSupplement = {
       description: "Send `?email=user@example.com` where the user signed up with email/password.",
       summary: "Email/password user",
       value: {
-        data: { provider: "email" },
-        error: null,
+        provider: "email",
       } as const,
     },
     "google-provider": {
       description: "Send `?email=user@example.com` where the user signed up with Google OAuth.",
       summary: "Google OAuth user",
       value: {
-        data: { provider: "google" },
-        error: null,
+        provider: "google",
       } as const,
     },
     "no-provider": {
       description: "Send `?email=nobody@example.com` — email doesn't exist or has no provider.",
       summary: "Unknown or nonexistent email",
       value: {
-        data: { provider: null },
-        error: null,
+        provider: null,
       } as const,
     },
   },
