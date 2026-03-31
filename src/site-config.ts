@@ -21,7 +21,7 @@ const productionUrl =
     process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ??
     process.env.VERCEL_PROJECT_PRODUCTION_URL
   }`;
-const vercelEnvironment = process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV;
+export const vercelEnvironment = process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV;
 const branchUrl = process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL ?? process.env.VERCEL_BRANCH_URL;
 const vercelUrl = vercelEnvironment === "production" ? productionUrl : `https://${branchUrl}`;
 

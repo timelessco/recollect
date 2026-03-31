@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/nextjs";
 
+import type { StructuredKeywords } from "@/async/ai/imageToText";
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -20,7 +21,7 @@ interface FileMetaData {
   height?: null | number;
   iframeAllowed?: boolean;
   image_caption?: null | string;
-  image_keywords?: string[];
+  image_keywords?: StructuredKeywords;
   img_caption?: null | string;
   isOgImagePreferred?: boolean;
   isPageScreenshot?: null | string;
@@ -87,7 +88,7 @@ export async function uploadFileRemainingData(props: UploadFileRemainingDataProp
   // 2. Process file metadata (blurhash + AI analysis)
   const ogImage = mediaType?.includes("audio") ? AUDIO_OG_IMAGE_FALLBACK_URL : publicUrl;
   let imageCaption: null | string = null;
-  let imageKeywords: string[] = [];
+  let imageKeywords: StructuredKeywords = {};
   let imageOcrValue: null | string = null;
   let ocrStatus: "limit_reached" | "no_text" | "success" = "no_text";
   let matchedCollectionIds: number[] = [];
@@ -111,7 +112,7 @@ export async function uploadFileRemainingData(props: UploadFileRemainingDataProp
 
       if (imageToTextResult) {
         imageCaption = imageToTextResult.sentence;
-        imageKeywords = imageToTextResult.image_keywords ?? [];
+        imageKeywords = imageToTextResult.image_keywords ?? {};
         matchedCollectionIds = imageToTextResult.matched_collection_ids;
         imageOcrValue = imageToTextResult.ocr_text;
         ocrStatus = imageToTextResult.ocr_text ? "success" : "no_text";
@@ -119,7 +120,7 @@ export async function uploadFileRemainingData(props: UploadFileRemainingDataProp
         console.log("[upload-file-remaining-data] AI analysis complete:", {
           bookmarkId: id,
           hasCaption: Boolean(imageCaption),
-          keywordCount: imageKeywords.length,
+          keywordCount: Object.keys(imageKeywords).length,
           matchedCollections: matchedCollectionIds.length,
           ocrStatus,
         });
@@ -163,7 +164,7 @@ export async function uploadFileRemainingData(props: UploadFileRemainingDataProp
     height: imgData.height ?? null,
     iframeAllowed: false,
     image_caption: imageCaption,
-    image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
+    image_keywords: Object.keys(imageKeywords).length > 0 ? imageKeywords : undefined,
     img_caption: imageCaption,
     isOgImagePreferred: false,
     isPageScreenshot: null,
