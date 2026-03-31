@@ -24,18 +24,20 @@ UPDATE public.everything
 SET meta_data = jsonb_set(
     meta_data,
     '{image_keywords,features}',
-    jsonb_build_object(
+    (
+        -- Preserve non-numeric keys, excluding additional_keywords (merged below)
+        SELECT COALESCE(jsonb_object_agg(key, value), '{}'::jsonb)
+        FROM jsonb_each(meta_data->'image_keywords'->'features') AS t(key, value)
+        WHERE key !~ '^\d+$' AND key != 'additional_keywords'
+    ) || jsonb_build_object(
         'additional_keywords',
-        (
+        -- Merge any pre-existing additional_keywords with the numeric-keyed values
+        COALESCE(meta_data->'image_keywords'->'features'->'additional_keywords', '[]'::jsonb)
+        || (
             SELECT jsonb_agg(value ORDER BY key::int)
             FROM jsonb_each_text(meta_data->'image_keywords'->'features') AS t(key, value)
             WHERE key ~ '^\d+$'
         )
-    ) || (
-        -- Preserve any non-numeric keys that may exist alongside
-        SELECT COALESCE(jsonb_object_agg(key, value), '{}'::jsonb)
-        FROM jsonb_each(meta_data->'image_keywords'->'features') AS t(key, value)
-        WHERE key !~ '^\d+$'
     )
 )
 WHERE meta_data->'image_keywords'->'features' IS NOT NULL
