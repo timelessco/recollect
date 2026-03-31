@@ -2,7 +2,7 @@ import { isEmpty } from "lodash";
 
 import type {
   AddBookmarkMinDataPayloadTypes,
-  BookmarksPaginatedDataTypes,
+  PaginatedBookmarks,
   UploadFileApiPayload,
 } from "../../types/apiTypes";
 import type { CategoryIdUrlTypes } from "../../types/componentTypes";
@@ -14,14 +14,14 @@ import { fileUpload } from "./file-upload";
 
 type AddMinDataMutationType = UseMutationResult<
   unknown,
-  { previousData: BookmarksPaginatedDataTypes },
+  { previousData: PaginatedBookmarks },
   AddBookmarkMinDataPayloadTypes,
   { previousData: unknown }
 >;
 
 export type FileUploadMutationType = UseMutationResult<
   unknown,
-  { previousData: BookmarksPaginatedDataTypes },
+  { previousData: PaginatedBookmarks },
   UploadFileApiPayload,
   { previousData: unknown }
 >;

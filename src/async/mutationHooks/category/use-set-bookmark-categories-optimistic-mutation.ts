@@ -44,7 +44,11 @@ export function useSetBookmarkCategoriesOptimisticMutation({
     mutationFn: (payload) =>
       postApi<SetBookmarkCategoriesResponse>(`/api${SET_BOOKMARK_CATEGORIES_API}`, payload),
     onSettled: (_data, error) => {
-      if (error || skipInvalidation) {
+      if (error) {
+        return;
+      }
+
+      if (skipInvalidation) {
         return;
       }
 
@@ -61,6 +65,7 @@ export function useSetBookmarkCategoriesOptimisticMutation({
     queryKey,
     secondaryQueryKey: searchQueryKey,
     showSuccessToast: true,
+    skipSecondaryInvalidation: skipInvalidation,
     successMessage: "Collection updated",
     updater: (currentData, variables) => {
       if (!currentData?.pages) {
@@ -107,23 +112,23 @@ export function useSetBookmarkCategoriesOptimisticMutation({
 
       return produce(currentData, (draft) => {
         for (const page of draft.pages) {
-          if (!page?.data) {
+          if (!page) {
             continue;
           }
 
-          const bookmarkIndex = page.data.findIndex((b) => b.id === variables.bookmark_id);
+          const bookmarkIndex = page.findIndex((b) => b.id === variables.bookmark_id);
           if (bookmarkIndex === -1) {
             continue;
           }
 
           // Remove bookmark from list if current collection is removed
           if (shouldRemoveFromList) {
-            page.data.splice(bookmarkIndex, 1);
+            page.splice(bookmarkIndex, 1);
             return;
           }
 
           // Update categories
-          page.data[bookmarkIndex].addedCategories = newCategories;
+          page[bookmarkIndex].addedCategories = newCategories;
           return;
         }
       });

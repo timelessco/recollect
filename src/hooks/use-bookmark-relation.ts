@@ -57,7 +57,7 @@ export const useBookmarkRelation = (
     // Try primary query
     const primaryData = queryClient.getQueryData<PaginatedBookmarks>(queryKey);
     for (const page of primaryData?.pages ?? []) {
-      const bookmark = page.data.find((bm) => bm.id === bookmarkId);
+      const bookmark = page.find((bm) => bm.id === bookmarkId);
       if (bookmark) {
         result = extractFn(bookmark);
         if (filterFn) {
@@ -72,7 +72,7 @@ export const useBookmarkRelation = (
     if (result.length === 0 && searchQueryKey) {
       const searchData = queryClient.getQueryData<PaginatedBookmarks>(searchQueryKey);
       for (const page of searchData?.pages ?? []) {
-        const bookmark = page.data.find((bm) => bm.id === bookmarkId);
+        const bookmark = page.find((bm) => bm.id === bookmarkId);
         if (bookmark) {
           result = extractFn(bookmark);
           if (filterFn) {

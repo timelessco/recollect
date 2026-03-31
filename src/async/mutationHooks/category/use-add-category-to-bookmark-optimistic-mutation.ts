@@ -95,7 +95,11 @@ export function useAddCategoryToBookmarkOptimisticMutation({
     mutationFn: (payload) =>
       postApi<AddCategoryToBookmarkResponse>(`/api${ADD_CATEGORY_TO_BOOKMARK_API}`, payload),
     onSettled: (_data, error) => {
-      if (error || skipInvalidation) {
+      if (error) {
+        return;
+      }
+
+      if (skipInvalidation) {
         return;
       }
 
@@ -110,12 +114,11 @@ export function useAddCategoryToBookmarkOptimisticMutation({
       });
     },
     queryKey,
-
     secondaryQueryKey: searchQueryKey,
+    skipSecondaryInvalidation: skipInvalidation,
 
     showSuccessToast: false,
 
-    skipSecondaryInvalidation: skipInvalidation,
     updater: (currentData, variables) => {
       if (!currentData?.pages) {
         return currentData!;

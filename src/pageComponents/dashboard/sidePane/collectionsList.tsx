@@ -17,8 +17,8 @@ import type { CollectionItemTypes } from "./singleListItemComponent";
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
-import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
-import useSearchBookmarks from "../../../async/queryHooks/bookmarks/useSearchBookmarks";
+import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/use-fetch-paginated-bookmarks";
+import useSearchBookmarks from "../../../async/queryHooks/bookmarks/use-search-bookmarks";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -74,7 +74,7 @@ const CollectionsList = () => {
   const { flattenedSearchData } = useSearchBookmarks();
 
   const flattendPaginationBookmarkData = useMemo(
-    () => everythingData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
+    () => everythingData?.pages?.flat() ?? [],
     [everythingData?.pages],
   );
 

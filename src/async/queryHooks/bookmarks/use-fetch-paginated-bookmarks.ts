@@ -9,7 +9,12 @@ import useGetSortBy from "@/hooks/useGetSortBy";
 import { api } from "@/lib/api-helpers/api-v2";
 import { useLoadersStore, useSupabaseSession } from "@/store/componentStore";
 import { isNonNullable } from "@/utils/assertion-utils";
-import { BOOKMARKS_KEY, DISCOVER_URL, PAGINATION_LIMIT } from "@/utils/constants";
+import {
+  BOOKMARKS_KEY,
+  DISCOVER_URL,
+  PAGINATION_LIMIT,
+  V2_FETCH_BOOKMARKS_DATA_API,
+} from "@/utils/constants";
 
 interface UseFetchPaginatedBookmarksOptions {
   enabled?: boolean;
@@ -36,18 +41,16 @@ export default function useFetchPaginatedBookmarks(
     isLoading: isEverythingDataLoading,
   } = useInfiniteQuery({
     enabled: enabled && CATEGORY_ID !== DISCOVER_URL,
-    queryFn: async ({ pageParam }) => {
-      const data = await api
-        .get("v2/bookmark/fetch-bookmarks-data", {
+    queryFn: ({ pageParam }) =>
+      api
+        .get(V2_FETCH_BOOKMARKS_DATA_API, {
           searchParams: {
             category_id: String(CATEGORY_ID ?? "null"),
             from: pageParam,
             ...(sortBy ? { sort_by: sortBy } : {}),
           },
         })
-        .json<SingleListData[]>();
-      return { data };
-    },
+        .json<SingleListData[]>(),
     initialPageParam: 0,
     getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,
     queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
@@ -61,7 +64,7 @@ export default function useFetchPaginatedBookmarks(
 
   // Flatten paginated data reactively - this updates when cache changes
   const flattendPaginationBookmarkData = useMemo(
-    () => everythingData?.pages?.flatMap((page) => page?.data ?? []).filter(isNonNullable) ?? [],
+    () => everythingData?.pages?.flat().filter(isNonNullable) ?? [],
     [everythingData],
   );
 

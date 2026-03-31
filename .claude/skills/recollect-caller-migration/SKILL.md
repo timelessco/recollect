@@ -22,13 +22,13 @@ v2 routes return `T` directly on success and `{error: string}` on failure — no
 
 ## Scope
 
-**In scope (easy-class):** Query hooks that use simple axios crud helpers or use `getApi`. These have straightforward request/response patterns with no session closures or complex type casts.
+**In scope (easy-class):** Query hooks that use simple axios crud helpers or use `getApi`. Straightforward request/response patterns with no session closures or complex type casts.
 
-**Out of scope (hard-class):** 31 axios callers with session closures, `QueryFunctionContext`, complex type casts. These need their own pathfinder before the pattern can be encoded. Do not attempt to migrate hard-class hooks with this skill.
+**In scope (hard-class):** Hooks that import from `supabaseCrudHelpers` with session closures and `QueryFunctionContext`. Session is removed from the `queryFn` (v2 auth is cookie-based) but KEPT in `queryKey` for cache scoping. See "Hard-Class Hooks" section below.
 
-**How to tell the difference:** If the hook imports from `supabaseCrudHelpers` and the crud helper is a simple async function wrapping `axios.get`/`axios.post` with no session parameters, it's easy-class. If the hook uses `useSupabaseClient()`, `session.access_token`, or `QueryFunctionContext<T>`, it's hard-class.
+**How to tell the difference:** If the hook imports from `supabaseCrudHelpers` and the crud helper is a simple async function wrapping `axios.get`/`axios.post` with no session parameters, it's easy-class. If the hook uses `useSupabaseClient()`, `session.access_token`, or `QueryFunctionContext<T>`, it's hard-class. Both classes use the same 5-layer pattern; hard-class has additional considerations documented below.
 
-## The 4-Layer Pattern
+## The 5-Layer Pattern
 
 ### Layer 1: Orphaned Constant Cleanup
 
@@ -152,6 +152,57 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 **Do NOT deprecate routes whose frontend callers have not been migrated yet.** This comment signals "the web frontend no longer calls this" — other consumers use it to plan their own migration.
 
+## Hard-Class Hooks
+
+Hooks with session closures and `QueryFunctionContext` follow the same 5-layer pattern with these additions:
+
+### Session in queryKey, not queryFn
+
+v2 auth is cookie-based — the `queryFn` no longer needs a session parameter. But `session?.user?.id` MUST stay in `queryKey` for cache scoping. Without it, mutation hooks that use `queryClient.getQueryData/setQueryData` with the old key pattern won't find the cached data.
+
+```typescript
+// session removed from queryFn, kept in queryKey
+const session = useSupabaseSession((state) => state.session);
+
+useInfiniteQuery({
+  queryFn: ({ pageParam }) =>
+    api.get("v2/bookmark/fetch-bookmarks-data", {
+      searchParams: {
+        category_id: String(CATEGORY_ID ?? "null"),
+        from: pageParam,
+        ...(sortBy ? { sort_by: sortBy } : {}),
+      },
+    }).json<SingleListData[]>(),
+  queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+});
+```
+
+The `?.` on `session?.user?.id` is required — session type is `{ user: null | User } | undefined` (starts `undefined` before auth).
+
+### searchParams type conversion
+
+`CategoryIdUrlTypes = null | number | string` — ky's `searchParams` doesn't accept `null`. Wrap with `String(CATEGORY_ID ?? "null")` to convert.
+
+### Cache shape compatibility
+
+The old crud helpers returned `{ count, data: T[], error }` per page. v2 returns bare `T[]`. This breaks `page.data` access in mutation hooks, `query-cache-helpers.ts`, `previewLightBox.tsx`, and `useLightboxPrefetch.ts`.
+
+Always use bare response — return the v2 bare array directly from `queryFn`. Update all cache consumers:
+- Update `PaginatedBookmarks` type from `{ pages: { data: T[] }[] }` to `{ pages: T[][] }`
+- Update mutation hooks: `page.data.filter(...)` → `page.filter(...)`
+- Update `query-cache-helpers.ts`: `page.data.find(...)` → `page.find(...)`
+- Update lightbox files: `page?.data?.length` → `page?.length`
+- Use `PaginatedBookmarks` for paginated cache consumers, keep `BookmarksPaginatedDataTypes` for search (shared with unmigrated search hooks)
+
+**`secondaryQueryKey` warning:** `useReactQueryOptimisticMutation` applies the SAME `updater` to both primary (paginated) and secondary (search) caches. If page shapes diverge (paginated = bare array, search = wrapped), hooks using `secondaryQueryKey` need search handling separated — either via `additionalOptimisticUpdates` with a search-specific updater, or by removing `secondaryQueryKey` and adding search invalidation in `onSettled`.
+
+### Count field
+
+The old crud helper included `count: BookmarksCountTypes` per page — this was redundant. No consumer reads `page.count` from paginated data. Counts are fetched independently via `useFetchBookmarksCount`. Safe to omit.
+
+**Reference implementation:**
+`src/async/queryHooks/bookmarks/use-fetch-paginated-bookmarks.ts` — Phase 23 hard-class pathfinder output
+
 ## Verification
 
 After completing all 5 layers:
@@ -171,7 +222,7 @@ pnpm lint:knip    # Confirm no orphaned exports from dead code removal
 | "ky" / "api-v2" / "bare response" | Execute the 5-layer workflow above |
 | "consumer update" / "data.data" / "double unwrap" | See Layer 3 — consumer verification |
 | "mutation hook template" / "postApi pattern" | Use `recollect-mutation-hook-refactoring` skill |
-| "hard-class" / "session closure" / "QueryFunctionContext" | Not yet encoded — needs its own pathfinder first |
+| "hard-class" / "session closure" / "QueryFunctionContext" | See "Hard-Class Hooks" section |
 
 ## v2 Route Handler Pattern
 
@@ -223,6 +274,16 @@ export const GET = createAxiomRouteHandler(
 
 **Reference implementation:** `src/app/api/v2/check-gemini-api-key/route.ts` (Phase 17 canonical reference)
 
+### v2 Schema Field Naming
+
+v2 output schema field names MUST match the frontend `SingleListData` convention:
+- `addedCategories` (not `categories`)
+- `addedTags` (not `tags`)
+
+The frontend rendering components (`bookmarkCardParts.tsx`, `bookmarkCard.tsx`) access these fields directly. A mismatch causes silent `undefined` access — bookmarks render without categories/tags.
+
+Checked: only `fetch-bookmarks-data` had this mismatch (fixed in Phase 23). `search-bookmarks` and `fetch-by-id` already use the correct names. Routes that don't stitch junction data (add-bookmark-min-data, fetch-bookmarks-count, etc.) are unaffected.
+
 ## v1 Legacy Note
 
 Existing callers using `getApi`/`postApi` from `api.ts` with `handleResponse` continue working against v1 and envelope v2 routes. Do NOT modify `api.ts` or `response.ts` — they serve v1 callers until v1 dies. New v2 migrations always use `api` from `api-v2.ts`.
@@ -234,6 +295,3 @@ This skill evolves incrementally. New migration classes are added only after the
 **Planned additions:**
 
 - **postApi caller migration** — Mutation hooks using `api.post("v2/route").json<T>()` from ky with bare request/response. Will be added to THIS skill after its pathfinder completes (it's still caller migration, not mutation-hook-template refactoring).
-- **Hard-class migration** — 31 axios callers with session closures, `QueryFunctionContext`, and complex type casts. Requires its own pathfinder to establish the pattern before encoding.
-
-Do not attempt to migrate these classes until their patterns are proven and added to this skill.

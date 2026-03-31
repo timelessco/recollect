@@ -33,7 +33,7 @@ const CategorySchema = z.object({
 
 export const FetchBookmarksDataOutputSchema = z.array(
   z.object({
-    categories: z
+    addedCategories: z
       .array(CategorySchema)
       .meta({ description: "Categories stitched from junction table" }),
     category_id: z.int().meta({ description: "Primary category ID" }),
@@ -47,7 +47,7 @@ export const FetchBookmarksDataOutputSchema = z.array(
     ogImage: z.string().nullable().meta({ description: "Open Graph image URL" }),
     screenshot: z.string().nullable().meta({ description: "Screenshot URL" }),
     sort_index: z.string().nullable().meta({ description: "Sort index for tweets" }),
-    tags: z.array(TagSchema).meta({ description: "Tags stitched from junction table" }),
+    addedTags: z.array(TagSchema).meta({ description: "Tags stitched from junction table" }),
     title: z.string().nullable().meta({ description: "Bookmark title" }),
     trash: z.string().nullable().meta({ description: "Trash timestamp if trashed" }),
     type: z

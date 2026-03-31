@@ -77,7 +77,7 @@ export const v2FetchBookmarksDataSupplement = {
       summary: "Bookmarks with tags and categories",
       value: [
         {
-          categories: [
+          addedCategories: [
             {
               category_name: "Design",
               category_slug: "design",
@@ -97,7 +97,7 @@ export const v2FetchBookmarksDataSupplement = {
           ogImage: "https://example.com/og.png",
           screenshot: "https://example.com/screenshot.png",
           sort_index: null,
-          tags: [
+          addedTags: [
             { id: 1, name: "css" },
             { id: 2, name: "frontend" },
           ],

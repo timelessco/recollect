@@ -10,7 +10,7 @@ import type { BookmarksViewTypes } from "../../types/componentStoreTypes";
 
 import { useFetchDiscoverBookmarks } from "@/async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
 
-import useSearchBookmarks from "../../async/queryHooks/bookmarks/useSearchBookmarks";
+import useSearchBookmarks from "../../async/queryHooks/bookmarks/use-search-bookmarks";
 import { useIsMobileView } from "../../hooks/useIsMobileView";
 import { useLoadersStore, useMiscellaneousStore } from "../../store/componentStore";
 import { viewValues } from "../../utils/constants";
