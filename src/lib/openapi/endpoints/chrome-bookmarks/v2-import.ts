@@ -56,6 +56,6 @@ export const v2ChromeBookmarkImportSupplement = {
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],
-  summary: "Import Chrome bookmarks - v2",
+  summary: "Import Chrome bookmarks",
   tags: ["Chrome Bookmarks"],
 } satisfies EndpointSupplement;

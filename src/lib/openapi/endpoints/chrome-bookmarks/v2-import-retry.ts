@@ -52,6 +52,6 @@ export const v2ChromeBookmarkImportRetrySupplement = {
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],
-  summary: "Retry failed Chrome bookmark imports - v2",
+  summary: "Retry failed Chrome bookmark imports",
   tags: ["Chrome Bookmarks"],
 } satisfies EndpointSupplement;
