@@ -110,8 +110,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     // Determine category_scope for junction table filtering
     // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
-    const userInCollections = isUserInACategoryInApi(category_id!, false);
-    let categoryScope: number | null = null;
+    const userInCollections = isUserInACategoryInApi(category_id!);
+    let categoryScope: number | undefined;
     if (userInCollections) {
       categoryScope = category_id === UNCATEGORIZED_URL ? 0 : Number(category_id);
     }
@@ -126,7 +126,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
     const isTrashPage = category_id === TRASH_URL;
     let query = supabase
       .rpc("search_bookmarks_url_tag_scope", {
-        category_scope: isDiscoverPage ? null : categoryScope,
+        category_scope: isDiscoverPage ? undefined : categoryScope,
         search_text: searchText,
         tag_scope: tagName,
         url_scope: urlScope,
@@ -143,7 +143,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
       const userEmail = email!;
 
       if (!userInCollections) {
-        query = query.eq("user_id", userId);
+        query = query.filter("user_id", "eq", userId);
       }
 
       if (userInCollections) {
@@ -215,7 +215,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
         if (is_user_not_collaborator_or_owner) {
           // if user is not a collaborator or the owner of the category, then get only the items that match the user_id and category_id
-          query = query.eq("user_id", userId);
+          query = query.filter("user_id", "eq", userId);
         }
       }
     }
@@ -227,15 +227,15 @@ export default async function handler(request: NextApiRequest, response: NextApi
     }
 
     if (category_id === TWEETS_URL) {
-      query = query.eq("type", tweetType);
+      query = query.filter("type", "eq", tweetType);
     }
 
     if (category_id === INSTAGRAM_URL) {
-      query = query.eq("type", instagramType);
+      query = query.filter("type", "eq", instagramType);
     }
 
     if (category_id === LINKS_URL) {
-      query = query.eq("type", bookmarkType);
+      query = query.filter("type", "eq", bookmarkType);
     }
 
     const { data, error } = (await query) as unknown as {
