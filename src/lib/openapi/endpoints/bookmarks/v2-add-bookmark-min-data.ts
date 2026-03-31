@@ -30,6 +30,17 @@ export const v2AddBookmarkMinDataSupplement = {
         url: "https://example.com/article",
       } as const,
     },
+    "add-to-multiple-categories": {
+      description:
+        "Send with `extensionCategories` — bookmark is added to each category in the array. Used by the Chrome extension for multi-collection assignment. `category_id` should be 0 when using this field.",
+      summary: "Add bookmark to multiple categories (extension)",
+      value: {
+        category_id: 0,
+        extensionCategories: [5, 12, 23],
+        update_access: true,
+        url: "https://example.com/article",
+      } as const,
+    },
     "add-uncategorized": {
       description: "Send with `category_id: 0` — bookmark is added to the uncategorized bucket.",
       summary: "Add bookmark without category",
