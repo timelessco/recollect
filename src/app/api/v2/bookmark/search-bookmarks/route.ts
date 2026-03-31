@@ -167,6 +167,7 @@ export const GET = createAxiomRouteHandler(
           color_a: searchColor?.a ?? undefined,
           color_b: searchColor?.b ?? undefined,
           color_l: searchColor?.l ?? undefined,
+
           search_text: searchText,
           tag_scope: tagName,
           url_scope: urlScope,
@@ -180,7 +181,7 @@ export const GET = createAxiomRouteHandler(
         rpcQuery = rpcQuery.not("make_discoverable", "is", null);
       } else {
         if (!userInCollections) {
-          rpcQuery = rpcQuery.eq("user_id", userId);
+          rpcQuery = rpcQuery.filter("user_id", "eq", userId);
         }
 
         if (userInCollections) {
@@ -194,7 +195,7 @@ export const GET = createAxiomRouteHandler(
           });
 
           if (!hasAccess) {
-            rpcQuery = rpcQuery.eq("user_id", userId);
+            rpcQuery = rpcQuery.filter("user_id", "eq", userId);
           }
         }
       }
@@ -205,15 +206,15 @@ export const GET = createAxiomRouteHandler(
       }
 
       if (categoryId === TWEETS_URL) {
-        rpcQuery = rpcQuery.eq("type", tweetType);
+        rpcQuery = rpcQuery.filter("type", "eq", tweetType);
       }
 
       if (categoryId === INSTAGRAM_URL) {
-        rpcQuery = rpcQuery.eq("type", instagramType);
+        rpcQuery = rpcQuery.filter("type", "eq", instagramType);
       }
 
       if (categoryId === LINKS_URL) {
-        rpcQuery = rpcQuery.eq("type", bookmarkType);
+        rpcQuery = rpcQuery.filter("type", "eq", bookmarkType);
       }
 
       const { data, error } = await rpcQuery;

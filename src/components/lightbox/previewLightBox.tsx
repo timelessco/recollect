@@ -4,19 +4,14 @@ import type { DraggableItemProps } from "react-aria";
 
 import { useQueryClient } from "@tanstack/react-query";
 
-import type {
-  BookmarksPaginatedDataTypes,
-  CategoriesData,
-  SingleListData,
-} from "../../types/apiTypes";
-import type { PostgrestError } from "@supabase/supabase-js";
+import type { PaginatedBookmarks, SingleListData } from "../../types/apiTypes";
 
+import { buildSearchCategorySegment } from "../../hooks/use-bookmark-mutation-context";
 import { usePageContext } from "../../hooks/use-page-context";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import { useMiscellaneousStore, useSupabaseSession } from "../../store/componentStore";
-import { BOOKMARKS_KEY, CATEGORIES_KEY, DISCOVER_URL, EVERYTHING_URL } from "../../utils/constants";
-import { searchSlugKey } from "../../utils/helpers";
+import { BOOKMARKS_KEY, DISCOVER_URL, EVERYTHING_URL } from "../../utils/constants";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../utils/url";
 import { buildAuthenticatedCategoryUrl, buildPublicCategoryUrl } from "../../utils/url-builders";
 import { useLightboxPrefetch } from "./hooks/useLightboxPrefetch";
@@ -39,10 +34,6 @@ export const PreviewLightBox = ({
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state.session);
   const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-  const categoryData = queryClient.getQueryData<{
-    data: CategoriesData[];
-    error: PostgrestError;
-  }>([CATEGORIES_KEY, session?.user?.id]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const { sortBy } = useGetSortBy();
   const searchText = useMiscellaneousStore((state) => state.searchText);
@@ -56,19 +47,16 @@ export const PreviewLightBox = ({
       ? [BOOKMARKS_KEY, session?.user?.id, DISCOVER_URL, searchText]
       : [BOOKMARKS_KEY, DISCOVER_URL];
   } else {
-    queryKey = [
-      BOOKMARKS_KEY,
-      session?.user?.id,
-      searchText && categoryData ? searchSlugKey(categoryData) : CATEGORY_ID,
-      searchText || sortBy,
-    ];
+    queryKey = searchText
+      ? [BOOKMARKS_KEY, session?.user?.id, buildSearchCategorySegment(CATEGORY_ID), searchText]
+      : [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy];
   }
 
   // if there is text in searchbar we get the cache of searched data else we get from everything
   // Skip query cache lookup for public pages since bookmarks are provided via props
   const previousData = isPublicPage
     ? undefined
-    : queryClient.getQueryData<BookmarksPaginatedDataTypes>(queryKey);
+    : queryClient.getQueryData<PaginatedBookmarks>(queryKey);
   // Get and transform bookmarks from query cache or use provided bookmarks prop
   const bookmarks = useMemo(() => {
     // If bookmarks are provided as prop (e.g., for public pages), use them
@@ -77,9 +65,7 @@ export const PreviewLightBox = ({
     }
 
     // Otherwise, get from query cache (for logged-in users)
-    const rawBookmarks = previousData?.pages?.flatMap((page) => page?.data ?? []) ?? [];
-    // Transform SingleListData to match the expected type in CustomLightBox
-    return rawBookmarks;
+    return previousData?.pages?.flat() ?? [];
   }, [bookmarksProp, previousData?.pages]);
 
   // Prefetch next page when approaching the end of current data

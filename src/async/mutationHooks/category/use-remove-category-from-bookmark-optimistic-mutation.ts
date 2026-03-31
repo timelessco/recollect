@@ -104,7 +104,11 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
       ),
     onSettled: (_data, error) => {
       // Single bookmark cache is now updated optimistically via additionalOptimisticUpdates
-      if (error || skipInvalidation) {
+      if (error) {
+        return;
+      }
+
+      if (skipInvalidation) {
         return;
       }
 
@@ -119,12 +123,11 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
       });
     },
     queryKey,
-
     secondaryQueryKey: searchQueryKey,
+    skipSecondaryInvalidation: skipInvalidation,
 
     showSuccessToast: false,
 
-    skipSecondaryInvalidation: skipInvalidation,
     updater: (currentData, variables) => {
       if (!currentData?.pages) {
         return currentData!;
@@ -142,23 +145,23 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
 
       return produce(currentData, (draft) => {
         for (const page of draft.pages) {
-          if (!page?.data) {
+          if (!page) {
             continue;
           }
 
-          const bookmarkIndex = page.data.findIndex((b) => b.id === variables.bookmark_id);
+          const bookmarkIndex = page.findIndex((b) => b.id === variables.bookmark_id);
           if (bookmarkIndex === -1) {
             continue;
           }
 
           // Remove bookmark from list if removing current collection
           if (shouldRemoveFromList) {
-            page.data.splice(bookmarkIndex, 1);
+            page.splice(bookmarkIndex, 1);
             return;
           }
 
           // Update categories
-          const bookmark = page.data[bookmarkIndex];
+          const bookmark = page[bookmarkIndex];
           const filteredCategories = (bookmark.addedCategories ?? []).filter(
             (cat) => cat.id !== variables.category_id,
           );

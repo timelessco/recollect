@@ -57,9 +57,9 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
 
           // Add bookmarks to the beginning of the first page for immediate visibility
           return produce(data, (draft) => {
-            if (draft.pages[0]?.data) {
+            if (draft.pages[0]) {
               // Create a Set of existing bookmark IDs for efficient lookup
-              const existingIds = new Set(draft.pages[0].data.map((bookmark) => bookmark.id));
+              const existingIds = new Set(draft.pages[0].map((bookmark) => bookmark.id));
 
               // Add new bookmarks that don't already exist (avoid duplicates)
               const newBookmarks = variables.data.filter(
@@ -67,7 +67,7 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
               );
 
               // Add all new bookmarks to the beginning
-              draft.pages[0].data.unshift(...newBookmarks);
+              draft.pages[0].unshift(...newBookmarks);
             }
           });
         },
@@ -85,6 +85,10 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
         queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
       });
 
+      void queryClient.invalidateQueries({
+        queryKey: [BOOKMARKS_KEY, session?.user?.id],
+      });
+
       // Invalidate trash page (destination when moving TO trash)
       // Note: Current category is NOT invalidated - we already have optimistic updates
       if (variables.isTrash) {
@@ -95,7 +99,6 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
     },
 
     queryKey,
-
     secondaryQueryKey: searchQueryKey,
 
     showSuccessToast: false,
@@ -111,12 +114,14 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
 
       // Remove the bookmarks from the current page
       return produce(currentData, (draft) => {
-        for (const page of draft.pages) {
-          if (!page?.data) {
+        for (let i = 0; i < draft.pages.length; i += 1) {
+          if (!draft.pages[i]) {
             continue;
           }
 
-          page.data = page.data.filter((bookmark) => !bookmarkIdsToRemove.has(bookmark.id));
+          draft.pages[i] = draft.pages[i].filter(
+            (bookmark) => !bookmarkIdsToRemove.has(bookmark.id),
+          );
         }
       });
     },

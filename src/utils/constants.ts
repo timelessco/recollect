@@ -79,7 +79,6 @@ export const GET_PDF_BUFFER_API = "/v1/bookmarks/get/get-pdf-buffer";
 // auth api
 // no auth api yet
 // bookmark api
-export const FETCH_BOOKMARKS_DATA_API = "/bookmark/fetch-bookmarks-data";
 export const FETCH_BOOKMARK_BY_ID_API = "/v1/bookmarks/get/fetch-by-id?id=";
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
 export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
@@ -92,7 +91,6 @@ export const AI_ENRICHMENT_API = "/v1/ai-enrichment";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
 export const CLEAR_BOOKMARK_TRASH_API = "/bookmark/clear-bookmark-trash";
 export const FETCH_BOOKMARKS_VIEW = "/bookmark/fetch-bookmarks-view";
-export const SEARCH_BOOKMARKS = "/bookmark/search-bookmarks";
 export const FETCH_BOOKMARKS_COUNT = "/bookmark/fetch-bookmarks-count";
 export const ADD_REMAINING_BOOKMARK_API = "/bookmark/add-remaining-bookmark-data";
 
@@ -147,8 +145,12 @@ export const UPLOAD_FILE_REMAINING_DATA_API = "/file/upload-file-remaining-data"
 // user settings and keys
 export const SAVE_API_KEY_API = "/v1/api-key";
 
-export const CHECK_API_KEY_API = "/v2/check-gemini-api-key";
 export const GET_API_KEY_API = "/v1/get-gemini-api-key";
+
+// v2 API path constants for ky `api` instance (no leading slash — prefixUrl handles it)
+export const V2_FETCH_BOOKMARKS_DATA_API = "v2/bookmark/fetch-bookmarks-data";
+export const V2_SEARCH_BOOKMARKS_API = "v2/bookmark/search-bookmarks";
+export const V2_CHECK_GEMINI_API_KEY_API = "v2/check-gemini-api-key";
 
 export const DELETE_API_KEY_API = "/v1/delete-api-key";
 

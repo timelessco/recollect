@@ -95,7 +95,7 @@ export function useCreateAndAssignTagOptimisticMutation() {
         }),
       );
 
-      // Update search cache if active
+      // Update search cache - swap temp tag with real tag
       if (searchQueryKey) {
         queryClient.setQueryData<PaginatedBookmarks>(searchQueryKey, (current) =>
           updateBookmarkInPaginatedData(current, variables.bookmarkId, (bookmark) => {
