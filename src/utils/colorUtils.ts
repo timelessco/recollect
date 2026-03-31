@@ -203,7 +203,7 @@ export function parseSearchColor(term: string): OklabColor | null {
 }
 
 function oklabToHex(color: OklabColor): string {
-  return formatHex(`oklab(${color.l} ${color.a} ${color.b})`);
+  return formatHex(`oklab(${color.l} ${color.a} ${color.b})`) ?? "#000000";
 }
 
 /**

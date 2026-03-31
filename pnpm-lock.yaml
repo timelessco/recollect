@@ -232,6 +232,9 @@ importers:
       '@types/crypto-js':
         specifier: 4.2.2
         version: 4.2.2
+      '@types/culori':
+        specifier: 4.0.1
+        version: 4.0.1
       '@types/fs-extra':
         specifier: 11.0.4
         version: 11.0.4
@@ -3960,6 +3963,9 @@ packages:
 
   '@types/crypto-js@4.2.2':
     resolution: {integrity: sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==}
+
+  '@types/culori@4.0.1':
+    resolution: {integrity: sha512-43M51r/22CjhbOXyGT361GZ9vncSVQ39u62x5eJdBQFviI8zWp2X5jzqg7k4M6PVgDQAClpy2bUe2dtwEgEDVQ==}
 
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
@@ -11742,6 +11748,8 @@ snapshots:
       '@types/node': 25.5.0
 
   '@types/crypto-js@4.2.2': {}
+
+  '@types/culori@4.0.1': {}
 
   '@types/debug@4.1.12':
     dependencies:
