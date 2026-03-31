@@ -258,10 +258,15 @@ export const POST = createAxiomRouteHandler(
       // Compute category — 0 = uncategorized
       const computedCategoryId = data.category_id === 0 ? 0 : data.category_id;
 
+      // Normalize extensionCategories: remove sentinel 0 (virtual Uncategorized) and deduplicate
+      const normalizedCategories = data.extensionCategories
+        ? [...new Set(data.extensionCategories.filter((id) => id !== 0))]
+        : [];
+
       // Verify ownership/collaborator access for all target categories
       let categoriesToCheck: number[] = [];
-      if (data.extensionCategories && data.extensionCategories.length > 0) {
-        categoriesToCheck = data.extensionCategories;
+      if (normalizedCategories.length > 0) {
+        categoriesToCheck = normalizedCategories;
       } else if (computedCategoryId !== 0) {
         categoriesToCheck = [computedCategoryId];
       }
@@ -356,12 +361,10 @@ export const POST = createAxiomRouteHandler(
       }
 
       // Insert junction table entries
-      // When extensionCategories is provided, create associations for each category;
+      // When normalizedCategories is non-empty, create associations for each category;
       // otherwise fall back to the single computedCategoryId (existing behavior)
       const categoryIdsToInsert =
-        data.extensionCategories && data.extensionCategories.length > 0
-          ? data.extensionCategories
-          : [computedCategoryId];
+        normalizedCategories.length > 0 ? normalizedCategories : [computedCategoryId];
 
       const { error: junctionError } = await supabase.from(BOOKMARK_CATEGORIES_TABLE_NAME).insert(
         categoryIdsToInsert.map((catId) => ({

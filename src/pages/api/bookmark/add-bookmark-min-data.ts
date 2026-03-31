@@ -253,10 +253,15 @@ export default async function handler(
         ? categoryId
         : 0;
 
+    // Normalize extensionCategories: remove sentinel 0 (virtual Uncategorized) and deduplicate
+    const normalizedCategories = extensionCategories
+      ? [...new Set(extensionCategories.filter((id) => id !== 0))]
+      : [];
+
     // Verify ownership/collaborator access for all target categories
     let categoriesToCheck: number[] = [];
-    if (extensionCategories && extensionCategories.length > 0) {
-      categoriesToCheck = extensionCategories;
+    if (normalizedCategories.length > 0) {
+      categoriesToCheck = normalizedCategories;
     } else if (computedCategoryId !== 0) {
       categoriesToCheck = [computedCategoryId as number];
     }
@@ -365,12 +370,10 @@ export default async function handler(
     }
 
     // Insert into junction table for many-to-many relationship
-    // When extensionCategories is provided, create associations for each category;
+    // When normalizedCategories is non-empty, create associations for each category;
     // otherwise fall back to the single computedCategoryId (existing behavior)
     const categoryIdsToInsert =
-      extensionCategories && extensionCategories.length > 0
-        ? extensionCategories
-        : [computedCategoryId as number];
+      normalizedCategories.length > 0 ? normalizedCategories : [computedCategoryId as number];
 
     const { error: junctionError } = await supabase.from(BOOKMARK_CATEGORIES_TABLE_NAME).insert(
       categoryIdsToInsert.map((catId) => ({
