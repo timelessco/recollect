@@ -195,3 +195,41 @@
 
 
 
+
+## 2026-03-31 [`a59b623`](https://github.com/timelessco/recollect/commit/a59b6235899341f8434e0cff849915a19e46fa56)
+
+
+
+### API Changes
+
+### GET /bookmark/fetch-bookmarks-discoverable
+-  added the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/color' to the response with the '200' status
+-  added the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/features' to the response with the '200' status
+-  added the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/object' to the response with the '200' status
+-  added the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/people' to the response with the '200' status
+-  added the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/place' to the response with the '200' status
+-  added the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/type' to the response with the '200' status
+
+
+### GET /bookmark/fetch-discoverable-by-id
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/color' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/features' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/object' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/people' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/place' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/type' to the response with the '200' status
+
+
+### GET /bookmark/fetch-public-bookmark-by-id
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/color' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/features' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/object' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/people' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/place' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/type' to the response with the '200' status
+
+
+
+
+
+
