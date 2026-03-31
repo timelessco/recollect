@@ -13,6 +13,12 @@ export const POST = createAxiomRouteHandler(
     handler: async ({ data, supabase, user }) => {
       const userId = user.id;
 
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+        ctx.fields.input_count = data.data.length;
+      }
+
       const insertData = data.data.map((item) => ({
         ...item,
         user_id: userId,
@@ -31,9 +37,7 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.user_id = userId;
         ctx.fields.bookmark_count = inserted.length;
       }
 

@@ -26,6 +26,10 @@ const tagDescriptions: { description: string; name: string }[] = [
     name: "Bookmarks",
   },
   {
+    description: "Storage operations: pre-signed upload URLs for direct client-side file uploads",
+    name: "Bucket",
+  },
+  {
     description: "Collection management: create, update, and delete collections",
     name: "Categories",
   },

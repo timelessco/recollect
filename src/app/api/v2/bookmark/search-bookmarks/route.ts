@@ -120,8 +120,8 @@ export const GET = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.is_discover = isDiscoverPage;
-        ctx.fields.search_query = search;
         ctx.fields.category_id = categoryId;
+        ctx.fields.offset = offset;
       }
 
       // Parse search modifiers: @domain.com site scope and #tag filters
@@ -134,6 +134,12 @@ export const GET = createAxiomRouteHandler(
         .trim();
 
       const tagName = extractTagNames(search);
+
+      if (ctx?.fields) {
+        ctx.fields.search_text = searchText || null;
+        ctx.fields.tag_name = tagName?.at(0) ?? null;
+        ctx.fields.url_scope = urlScope || null;
+      }
 
       // Determine category_scope for junction table filtering
       // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)

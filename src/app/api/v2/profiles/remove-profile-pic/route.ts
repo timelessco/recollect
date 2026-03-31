@@ -13,6 +13,11 @@ export const DELETE = createAxiomRouteHandler(
     handler: async ({ supabase, user }) => {
       const userId = user.id;
 
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+      }
+
       const { data: removeData, error: removeError } = await supabase
         .from(PROFILES)
         .update({ profile_pic: null })
@@ -29,9 +34,8 @@ export const DELETE = createAxiomRouteHandler(
 
       await deleteProfilePic({ userId });
 
-      const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.user_id = userId;
+        ctx.fields.profile_pic_removed = true;
       }
 
       return removeData;

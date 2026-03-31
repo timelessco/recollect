@@ -17,6 +17,12 @@ export const DELETE = createAxiomRouteHandler(
       const userId = user.id;
       const bookmarkId = data.data.id;
 
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+        ctx.fields.bookmark_id = bookmarkId;
+      }
+
       const { error } = await supabase
         .from(MAIN_TABLE_NAME)
         .delete()
@@ -31,10 +37,8 @@ export const DELETE = createAxiomRouteHandler(
         });
       }
 
-      const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.user_id = userId;
-        ctx.fields.bookmark_id = bookmarkId;
+        ctx.fields.deleted = true;
       }
 
       return null;
