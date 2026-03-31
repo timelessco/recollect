@@ -74,9 +74,9 @@
     "test": "echo \"no test specified\" && exit 0"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.1014.0",
-    "@aws-sdk/s3-request-presigner": "3.1014.0",
-    "@axiomhq/js": "1.5.0",
+    "@aws-sdk/client-s3": "3.1020.0",
+    "@aws-sdk/s3-request-presigner": "3.1020.0",
+    "@axiomhq/js": "1.6.0",
     "@axiomhq/logging": "0.2.0",
     "@axiomhq/nextjs": "0.2.0",
     "@axiomhq/react": "0.2.0",
@@ -84,12 +84,12 @@
     "@google/generative-ai": "0.24.1",
     "@heroicons/react": "2.2.0",
     "@react-hookz/web": "25.2.0",
-    "@scalar/nextjs-api-reference": "0.10.4",
-    "@sentry/nextjs": "10.45.0",
-    "@supabase/ssr": "0.9.0",
-    "@supabase/supabase-js": "2.99.3",
+    "@scalar/nextjs-api-reference": "0.10.5",
+    "@sentry/nextjs": "10.47.0",
+    "@supabase/ssr": "0.10.0",
+    "@supabase/supabase-js": "2.101.0",
     "@t3-oss/env-nextjs": "0.13.11",
-    "@tanstack/react-query": "5.91.3",
+    "@tanstack/react-query": "5.96.0",
     "@tanstack/react-virtual": "3.13.23",
     "@total-typescript/ts-reset": "0.6.1",
     "allotment": "1.20.5",
@@ -109,7 +109,7 @@
     "ky": "1.14.3",
     "lodash": "4.17.23",
     "match-sorter": "8.2.0",
-    "media-chrome": "4.18.2",
+    "media-chrome": "4.18.3",
     "motion": "12.38.0",
     "next": "16.2.1",
     "next-themes": "0.4.6",
@@ -122,16 +122,16 @@
     "react-aria": "3.47.0",
     "react-dom": "19.2.4",
     "react-dropzone": "15.0.0",
-    "react-hook-form": "7.71.2",
+    "react-hook-form": "7.72.0",
     "react-infinite-scroll-component": "6.1.1",
     "react-mentions": "4.4.10",
     "react-stately": "3.45.0",
-    "resend": "6.9.4",
+    "resend": "6.10.0",
     "slugify": "1.6.8",
     "tailwind-merge": "3.5.0",
     "uniqid": "5.4.0",
-    "wavesurfer.js": "7.12.4",
-    "yet-another-react-lightbox": "3.29.1",
+    "wavesurfer.js": "7.12.5",
+    "yet-another-react-lightbox": "3.30.1",
     "youtube-video-element": "1.9.0",
     "zod": "4.3.6",
     "zustand": "5.0.12"
@@ -145,8 +145,8 @@
     "@octokit/core": "7.0.6",
     "@release-it/conventional-changelog": "9.0.4",
     "@tailwindcss/postcss": "4.2.2",
-    "@tanstack/eslint-plugin-query": "5.95.2",
-    "@tanstack/react-query-devtools": "5.95.2",
+    "@tanstack/eslint-plugin-query": "5.96.0",
+    "@tanstack/react-query-devtools": "5.96.0",
     "@types/crypto-js": "4.2.2",
     "@types/fs-extra": "11.0.4",
     "@types/jsonwebtoken": "9.0.10",
@@ -162,7 +162,7 @@
     "cspell": "9.7.0",
     "dedent": "1.7.2",
     "del-cli": "7.0.0",
-    "deno": "2.7.9",
+    "deno": "2.7.10",
     "dotenv": "17.3.1",
     "eslint": "10.1.0",
     "eslint-plugin-perfectionist": "5.7.0",
@@ -177,13 +177,13 @@
     "git-url-parse": "16.1.0",
     "husky": "9.1.7",
     "is-ci": "4.1.0",
-    "knip": "6.1.0",
+    "knip": "6.1.1",
     "lint-staged": "16.4.0",
     "markdownlint": "0.40.0",
     "markdownlint-cli2": "0.22.0",
     "next-sitemap": "4.2.3",
-    "oxfmt": "0.42.0",
-    "oxlint": "1.57.0",
+    "oxfmt": "0.43.0",
+    "oxlint": "1.58.0",
     "oxlint-tsgolint": "0.18.1",
     "postcss": "8.5.8",
     "release-it": "19.2.4",
@@ -217,7 +217,7 @@
   "engines": {
     "node": "^22.14.0"
   },
-  "packageManager": "pnpm@10.32.1",
+  "packageManager": "pnpm@10.33.0",
   "pnpm": {
     "onlyBuiltDependencies": [
       "@sentry/cli",
@@ -235,6 +235,9 @@
     "overrides": {
       "@types/react": "19.2.10",
       "@types/react-dom": "19.2.3"
+    },
+    "patchedDependencies": {
+      "ultracite@7.4.0": "patches/ultracite@7.4.0.patch"
     }
   }
 }

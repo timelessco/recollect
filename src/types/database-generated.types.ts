@@ -478,6 +478,12 @@ export type Database = {
         Args: { p_bookmarks: Json; p_user_id: string };
         Returns: Json;
       };
+      extract_keywords_text: {
+        Args: { node: Json };
+        Returns: {
+          keyword: string;
+        }[];
+      };
       get_instagram_sync_status: { Args: { p_user_id: string }; Returns: Json };
       get_instagram_worker_failures: {
         Args: { p_since_minutes?: number };
