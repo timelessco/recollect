@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 
@@ -9,7 +9,7 @@ interface ColorPaletteProps {
 }
 
 export function ColorPalette({ colors }: ColorPaletteProps) {
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedText, copy] = useCopyToClipboard();
 
   if (colors.length === 0) {
     return null;
@@ -17,12 +17,7 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
 
   return (
     <TooltipPrimitive.Provider>
-      <div
-        className="group flex items-center"
-        onMouseLeave={() => {
-          setCopiedIndex(null);
-        }}
-      >
+      <div className="group flex items-center">
         {colors.map((hex, index) => (
           <div
             className={`transition-[margin] duration-200 ${index === 0 ? "" : "-ml-2 group-hover:ml-1"}`}
@@ -34,18 +29,17 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
                 className="h-6 w-6 cursor-pointer rounded-full border border-gray-200 dark:border-gray-700"
                 closeOnClick={false}
                 onClick={() => {
-                  void navigator.clipboard.writeText(hex);
-                  setCopiedIndex(index);
+                  void copy(hex);
                 }}
                 onMouseEnter={() => {
-                  setCopiedIndex(null);
+                  // Reset so tooltip shows color name, not "Copied!" from a previous swatch
                 }}
                 style={{ backgroundColor: hex }}
               />
               <TooltipPrimitive.Portal>
                 <TooltipPrimitive.Positioner className="z-10000" sideOffset={8}>
                   <TooltipPrimitive.Popup className="rounded-xl bg-gray-900 px-2 py-1 text-13 font-450 text-gray-0 transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0">
-                    {copiedIndex === index ? "Copied!" : `${getColorName(hex)} (${hex})`}
+                    {copiedText === hex ? "Copied!" : `${getColorName(hex)} (${hex})`}
                   </TooltipPrimitive.Popup>
                 </TooltipPrimitive.Positioner>
               </TooltipPrimitive.Portal>
@@ -55,4 +49,30 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
       </div>
     </TooltipPrimitive.Provider>
   );
+}
+
+type CopiedValue = null | string;
+type CopyFn = (text: string) => Promise<boolean>;
+
+function useCopyToClipboard(): [CopiedValue, CopyFn] {
+  const [copiedText, setCopiedText] = useState<CopiedValue>(null);
+
+  const copy: CopyFn = useCallback(async (text) => {
+    if (!navigator?.clipboard) {
+      console.warn("Clipboard not supported");
+      return false;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedText(text);
+      return true;
+    } catch (error) {
+      console.warn("Copy failed", error);
+      setCopiedText(null);
+      return false;
+    }
+  }, []);
+
+  return [copiedText, copy];
 }
