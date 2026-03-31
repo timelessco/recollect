@@ -9,7 +9,6 @@ export { toggleDiscoverableOnBookmarkSupplement } from "./toggle-discoverable-on
 export { v2AddBookmarkMinDataSupplement } from "./v2-add-bookmark-min-data";
 export { v2AddRemainingBookmarkDataSupplement } from "./v2-add-remaining-bookmark-data";
 export { v2AddUrlScreenshotSupplement } from "./v2-add-url-screenshot";
-export { v2BookmarksDeleteNonCascadeSupplement } from "./v2-bookmarks-delete-non-cascade";
 export { v2BookmarksInsertSupplement } from "./v2-bookmarks-insert";
 export { v2FetchBookmarksCountSupplement } from "./v2-fetch-bookmarks-count";
 export { v2FetchBookmarksDataSupplement } from "./v2-fetch-bookmarks-data";

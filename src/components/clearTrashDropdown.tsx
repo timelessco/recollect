@@ -1,5 +1,5 @@
 import { Popover } from "@/components/ui/recollect/popover";
-import TrashIconGray from "@/icons/trash-icon-gray";
+import { TrashIconGray } from "@/icons/trash-icon-gray";
 
 import { DestructiveConfirmContent } from "./destructive-confirm-content";
 

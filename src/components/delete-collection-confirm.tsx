@@ -1,6 +1,6 @@
 import { Button } from "@base-ui/react/button";
 
-import TrashIconGray from "@/icons/trash-icon-gray";
+import { TrashIconGray } from "@/icons/trash-icon-gray";
 
 import { Spinner } from "./spinner";
 

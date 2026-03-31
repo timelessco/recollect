@@ -10,6 +10,7 @@ import { fetchUserProfiles } from "../../supabaseCrudHelpers";
 export default function useFetchUserProfile() {
   const session = useSupabaseSession((state) => state.session);
 
+  /* oxlint-disable @tanstack/query/exhaustive-deps -- session?.user?.id is the cache-relevant part, full session would over-refetch */
   const { data: userProfileData, isLoading } = useQuery<{
     data: null | ProfilesTableTypes[];
     error: Error;
@@ -20,9 +21,9 @@ export default function useFetchUserProfile() {
         session: session as SupabaseSessionType,
         userId: session!.user!.id,
       }),
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [USER_PROFILE, session?.user?.id],
   });
+  /* oxlint-enable @tanstack/query/exhaustive-deps */
 
   return {
     isLoading,

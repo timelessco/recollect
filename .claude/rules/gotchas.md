@@ -4,7 +4,7 @@
 - Dev server is usually running in another terminal — check `lsof -iTCP:3000` before starting `pnpm dev`
 - `build:ci` skips env validation, OpenAPI gen, and sitemap — use `pnpm build` for local verification
 - `typescript.ignoreBuildErrors: true` in next.config — TS errors do NOT fail production builds
-- No test suite — `pnpm test` exits 0 with "no test specified". Cypress installed but no specs
+- No test suite — `pnpm test` exits 0 with "no test specified"
 - CI runs lint checks only (no build gate) — build failures surface on Vercel
 - `pnpm lint:ultracite` requires Next.js generated types — CI runs `pnpm next:typegen` first. Locally, types already exist if `next dev` or `pnpm build` has run; only run `pnpm next:typegen` manually if lint fails on missing generated types
 - Sentry tunnel: events proxied through `/skynet` to bypass ad-blockers
@@ -40,7 +40,7 @@
 - CI cspell may flag unknown words — hyphen-split words (e.g. "app-svgs" → "svgs") may need manual additions to `cspell.json` `words` array
 - `lint-staged` uses `*` glob with raw `oxfmt` + `oxlint` (not `ultracite`) — `oxfmt --no-error-on-unmatched-pattern` skips non-matching files, `oxlint` ignores non-JS/TS files
 - `oxlint-disable-next-line` doesn't work for JSX props on different lines — use block-level `/* oxlint-disable rule */` instead
-- Comment directive split: native oxlint rules use `oxlint-disable`, jsPlugin rules (`@tanstack/query/*`, `regexp/*`, `perfectionist/*`, `react-x/*`) keep `eslint-disable`
+- All disable directives use `oxlint-disable` (unified in oxlint 1.57) — `eslint-disable` comments are treated as unused/unknown. For multi-line expression violations (e.g. `@tanstack/query/exhaustive-deps` spanning the full `useQuery` call), use block-level `/* oxlint-disable rule */` / `/* oxlint-enable rule */` since `oxlint-disable-next-line` only suppresses violations starting on the very next line
 - `promise-function-async` is off — only add `async` when `await` is present in the function body
 - oxlint `--deny RULE` CLI flag does NOT override config-level `"off"` — to test a disabled rule, copy `.oxlintrc.json` to a temp file, edit the copy, run `npx oxlint -c <copy>` from project root (relative `extends` paths require it), then `trash` the copy
 - `oxlint-disable-next-line` must be on the line immediately before the violation — for multi-line expressions, place on the line with the violation, not the wrapping expression above
