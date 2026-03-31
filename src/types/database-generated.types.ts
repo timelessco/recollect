@@ -191,6 +191,7 @@ export type Database = {
         Row: {
           category_id: number;
           description: string | null;
+          enriched_at: string | null;
           enrichment_status: string | null;
           id: number;
           inserted_at: string;
@@ -208,6 +209,7 @@ export type Database = {
         Insert: {
           category_id?: number;
           description?: string | null;
+          enriched_at?: string | null;
           enrichment_status?: string | null;
           id?: number;
           inserted_at?: string;
@@ -225,6 +227,7 @@ export type Database = {
         Update: {
           category_id?: number;
           description?: string | null;
+          enriched_at?: string | null;
           enrichment_status?: string | null;
           id?: number;
           inserted_at?: string;
@@ -265,6 +268,7 @@ export type Database = {
           plan: string;
           plan_updated_at: string | null;
           polar_customer_id: string | null;
+          polar_subscription_id: string | null;
           preferred_og_domains: string[] | null;
           profile_pic: string | null;
           provider: string | null;
@@ -287,6 +291,7 @@ export type Database = {
           plan?: string;
           plan_updated_at?: string | null;
           polar_customer_id?: string | null;
+          polar_subscription_id?: string | null;
           preferred_og_domains?: string[] | null;
           profile_pic?: string | null;
           provider?: string | null;
@@ -309,6 +314,7 @@ export type Database = {
           plan?: string;
           plan_updated_at?: string | null;
           polar_customer_id?: string | null;
+          polar_subscription_id?: string | null;
           preferred_og_domains?: string[] | null;
           profile_pic?: string | null;
           provider?: string | null;
