@@ -184,10 +184,11 @@ export default async function handler(
       return;
     }
 
-    const { category_id: categoryId } = request.body;
+    const { category_id: categoryId, extensionCategories } = request.body;
 
     console.log("add-bookmark-min-data API called:", {
       categoryId,
+      extensionCategories,
       url,
       userId,
     });
@@ -252,20 +253,26 @@ export default async function handler(
         ? categoryId
         : 0;
 
-    if (computedCategoryId !== 0) {
-      // user is adding bookmark into a category
-      const checkIfUserIsCategoryOwnerOrCollaboratorValue =
-        await checkIfUserIsCategoryOwnerOrCollaborator(
-          supabase,
-          computedCategoryId as number,
-          userId,
-          email,
-          response,
-        );
+    // Verify ownership/collaborator access for all target categories
+    let categoriesToCheck: number[] = [];
+    if (extensionCategories && extensionCategories.length > 0) {
+      categoriesToCheck = extensionCategories;
+    } else if (computedCategoryId !== 0) {
+      categoriesToCheck = [computedCategoryId as number];
+    }
 
-      if (!checkIfUserIsCategoryOwnerOrCollaboratorValue) {
+    for (const catId of categoriesToCheck) {
+      const hasAccess = await checkIfUserIsCategoryOwnerOrCollaborator(
+        supabase,
+        catId,
+        userId,
+        email,
+        response,
+      );
+
+      if (!hasAccess) {
         console.warn(
-          `User is neither owner or collaborator for the collection ${categoryId} or does not have edit access for url: ${url}`,
+          `User is neither owner or collaborator for the collection ${catId} or does not have edit access for url: ${url}`,
         );
         response.status(403).json({
           data: null,
@@ -358,18 +365,27 @@ export default async function handler(
     }
 
     // Insert into junction table for many-to-many relationship
-    const { error: junctionError } = await supabase.from(BOOKMARK_CATEGORIES_TABLE_NAME).insert({
-      bookmark_id: data[0]?.id,
-      category_id: computedCategoryId as number,
-      user_id: userId,
-    });
+    // When extensionCategories is provided, create associations for each category;
+    // otherwise fall back to the single computedCategoryId (existing behavior)
+    const categoryIdsToInsert =
+      extensionCategories && extensionCategories.length > 0
+        ? extensionCategories
+        : [computedCategoryId as number];
+
+    const { error: junctionError } = await supabase.from(BOOKMARK_CATEGORIES_TABLE_NAME).insert(
+      categoryIdsToInsert.map((catId) => ({
+        bookmark_id: data[0]?.id,
+        category_id: catId,
+        user_id: userId,
+      })),
+    );
 
     if (junctionError) {
       console.error("Error inserting into bookmark_categories:", junctionError);
       Sentry.captureException(junctionError, {
         extra: {
           bookmarkId: data[0]?.id,
-          categoryId: computedCategoryId,
+          categoryIds: categoryIdsToInsert,
           url,
         },
         tags: {
@@ -383,16 +399,18 @@ export default async function handler(
     // Success
     console.log("Min bookmark data inserted successfully:", {
       bookmarkId: data[0]?.id,
-      categoryId: computedCategoryId,
+      categoryIds: categoryIdsToInsert,
       url,
     });
 
-    // Trigger revalidation if bookmark was added to a public category
-    if (computedCategoryId !== 0) {
-      void revalidateCategoryIfPublic(computedCategoryId as number, {
-        operation: "add_bookmark",
-        userId: userId,
-      });
+    // Trigger revalidation if bookmark was added to public categories
+    for (const catId of categoryIdsToInsert) {
+      if (catId !== 0) {
+        void revalidateCategoryIfPublic(catId, {
+          operation: "add_bookmark",
+          userId: userId,
+        });
+      }
     }
 
     response.status(200).json({

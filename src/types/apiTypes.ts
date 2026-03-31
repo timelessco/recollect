@@ -282,6 +282,7 @@ export type NextApiRequest<T> = Omit<NextJsApiRequest, "body"> & {
 
 export interface AddBookmarkMinDataPayloadTypes {
   category_id: null | number | string;
+  extensionCategories?: number[];
   update_access: boolean;
   url: string;
 }

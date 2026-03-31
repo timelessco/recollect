@@ -201,6 +201,7 @@ export const POST = createAxiomRouteHandler(
         ctx.fields.user_id = userId;
         ctx.fields.url = data.url;
         ctx.fields.category_id = data.category_id;
+        ctx.fields.extension_categories = data.extensionCategories;
       }
 
       if (!data.update_access) {
@@ -257,9 +258,17 @@ export const POST = createAxiomRouteHandler(
       // Compute category — 0 = uncategorized
       const computedCategoryId = data.category_id === 0 ? 0 : data.category_id;
 
-      if (computedCategoryId !== 0) {
+      // Verify ownership/collaborator access for all target categories
+      let categoriesToCheck: number[] = [];
+      if (data.extensionCategories && data.extensionCategories.length > 0) {
+        categoriesToCheck = data.extensionCategories;
+      } else if (computedCategoryId !== 0) {
+        categoriesToCheck = [computedCategoryId];
+      }
+
+      for (const catId of categoriesToCheck) {
         const hasAccess = await checkIfUserIsCategoryOwnerOrCollaborator({
-          categoryId: computedCategoryId,
+          categoryId: catId,
           email,
           supabase,
           userId,
@@ -346,12 +355,21 @@ export const POST = createAxiomRouteHandler(
         ctx.fields.has_og_image = ogImageToBeAdded !== null;
       }
 
-      // Insert junction table entry
-      const { error: junctionError } = await supabase.from(BOOKMARK_CATEGORIES_TABLE_NAME).insert({
-        bookmark_id: insertedBookmark.id,
-        category_id: computedCategoryId,
-        user_id: userId,
-      });
+      // Insert junction table entries
+      // When extensionCategories is provided, create associations for each category;
+      // otherwise fall back to the single computedCategoryId (existing behavior)
+      const categoryIdsToInsert =
+        data.extensionCategories && data.extensionCategories.length > 0
+          ? data.extensionCategories
+          : [computedCategoryId];
+
+      const { error: junctionError } = await supabase.from(BOOKMARK_CATEGORIES_TABLE_NAME).insert(
+        categoryIdsToInsert.map((catId) => ({
+          bookmark_id: insertedBookmark.id,
+          category_id: catId,
+          user_id: userId,
+        })),
+      );
 
       if (junctionError && ctx?.fields) {
         // Non-blocking: don't fail the request, log via wide event
@@ -359,12 +377,18 @@ export const POST = createAxiomRouteHandler(
         ctx.fields.junction_error_code = junctionError.code;
       }
 
-      // Revalidate if public category
-      if (computedCategoryId !== 0) {
-        void revalidateCategoryIfPublic(computedCategoryId, {
-          operation: "add_bookmark",
-          userId,
-        });
+      if (ctx?.fields) {
+        ctx.fields.category_ids = categoryIdsToInsert;
+      }
+
+      // Revalidate public categories
+      for (const catId of categoryIdsToInsert) {
+        if (catId !== 0) {
+          void revalidateCategoryIfPublic(catId, {
+            operation: "add_bookmark",
+            userId,
+          });
+        }
       }
 
       // Conditional fire-and-forget enrichment — only for media URLs (v1 line 405)

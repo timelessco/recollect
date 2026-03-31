@@ -2,6 +2,10 @@ import { z } from "zod";
 
 export const AddBookmarkMinDataInputSchema = z.object({
   category_id: z.int().min(0).meta({ description: "Target category ID (0 = uncategorized)" }),
+  extensionCategories: z.array(z.int().min(0)).optional().meta({
+    description:
+      "Optional array of category IDs from the extension. When provided, the bookmark is added to each category. When absent, falls back to category_id.",
+  }),
   update_access: z.boolean().meta({ description: "Whether the user has update access" }),
   url: z.url().meta({ description: "Bookmark URL to add" }),
 });
