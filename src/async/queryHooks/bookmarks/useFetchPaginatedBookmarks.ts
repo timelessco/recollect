@@ -36,15 +36,16 @@ export default function useFetchPaginatedBookmarks(
     fetchNextPage,
     isFetching: isFetchingEverythingData,
     isLoading: isEverythingDataLoading,
+    /* oxlint-disable @tanstack/query/exhaustive-deps -- session?.user?.id is the cache-relevant part, full session would over-refetch */
   } = useInfiniteQuery({
     enabled: enabled && CATEGORY_ID !== DISCOVER_URL,
     queryFn: (data) =>
       fetchBookmarksData(data, session as SupabaseSessionType, sortBy as BookmarksSortByTypes),
     initialPageParam: 0,
     getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
   });
+  /* oxlint-enable @tanstack/query/exhaustive-deps */
 
   useEffect(() => {
     if (everythingData && isSortByLoading) {

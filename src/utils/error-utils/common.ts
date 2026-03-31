@@ -50,7 +50,7 @@ export class BaseError extends Error {
     cause?: unknown,
   ) {
     super(message);
-    this.name = this.constructor.name;
+    this.name = "BaseError";
     this.statusCode = statusCode;
     this.code = code;
     this.cause = cause;
@@ -69,42 +69,49 @@ export class BaseError extends Error {
 export class InternalServerError extends BaseError {
   constructor(message = "Internal Server Error", cause?: unknown) {
     super(message, HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", cause);
+    this.name = "InternalServerError";
   }
 }
 
 export class NotFoundError extends BaseError {
   constructor(message = "Not Found", cause?: unknown) {
     super(message, HttpStatus.NOT_FOUND, "NOT_FOUND", cause);
+    this.name = "NotFoundError";
   }
 }
 
 export class BadRequestError extends BaseError {
   constructor(message = "Bad Request", cause?: unknown) {
     super(message, HttpStatus.BAD_REQUEST, "BAD_REQUEST", cause);
+    this.name = "BadRequestError";
   }
 }
 
 export class UnauthorizedError extends BaseError {
   constructor(message = "Unauthorized", cause?: unknown) {
     super(message, HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", cause);
+    this.name = "UnauthorizedError";
   }
 }
 
 export class ForbiddenError extends BaseError {
   constructor(message = "Forbidden", cause?: unknown) {
     super(message, HttpStatus.FORBIDDEN, "FORBIDDEN", cause);
+    this.name = "ForbiddenError";
   }
 }
 
 export class ConflictError extends BaseError {
   constructor(message = "Conflict", cause?: unknown) {
     super(message, HttpStatus.CONFLICT, "CONFLICT", cause);
+    this.name = "ConflictError";
   }
 }
 
 export class AuthenticationError extends BaseError {
   constructor(message = "Authentication Error", cause?: unknown) {
     super(message, HttpStatus.UNAUTHORIZED, "AUTHENTICATION_ERROR", cause);
+    this.name = "AuthenticationError";
   }
 }
 
@@ -117,7 +124,7 @@ export class BaseApplicationError extends Error {
     cause?: unknown,
   ) {
     super(message);
-    this.name = this.constructor.name;
+    this.name = "BaseApplicationError";
     this.code = code;
     this.cause = cause;
   }
@@ -134,5 +141,6 @@ export class BaseApplicationError extends Error {
 export class ApplicationError extends BaseApplicationError {
   constructor(message = "Application Error", cause?: unknown) {
     super(message, "APPLICATION_ERROR", cause);
+    this.name = "ApplicationError";
   }
 }
