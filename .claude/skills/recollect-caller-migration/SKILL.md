@@ -71,7 +71,9 @@ export const useFetchCheckApiKey = () =>
 - **No async/await needed:** `api.get().json()` returns a Promise directly, which `queryFn` accepts
 - **ky auto-throws on non-2xx:** React Query catches in `onError` — no manual error checking needed
 - **Zod schema import:** Use `import type` for both the schema and `z` — zero runtime Zod at the consumer. The schema only exists for type inference
-- **Response type:** Define as `z.infer<typeof OutputSchema>` using the v2 route's Zod output schema from `src/app/api/v2/{endpoint}/schema.ts`
+- **Response type — choose the right pattern:**
+  - **Non-bookmark responses** (simple shapes like `{hasApiKey: boolean}`): Use `z.infer<typeof OutputSchema>` from the v2 route's schema. The Zod type matches the consumer type perfectly
+  - **Bookmark data responses** (anything typed as `SingleListData` downstream): Use `.json<SingleListData[]>()` directly — do NOT use `z.infer`. The hand-written `SingleListData` interface diverges structurally from v2 Zod output schemas (different nullability, `user_id` shape, missing `addedTags`). `as SingleListData` casts fail with TS2352. All migrated bookmark hooks (`use-fetch-paginated-bookmarks`, `use-search-bookmarks`, `use-fetch-bookmark-by-id`) use this pattern
 - **No URL constants:** Remove `NEXT_API_URL` and endpoint URL constant imports — ky uses inline paths
 - **File naming:** Rename PascalCase files to kebab-case (`useFetchCheckGeminiApiKey.ts` → `use-fetch-check-gemini-api-key.ts`). Use `git mv` with temp-file two-step for case-only renames on macOS
 
@@ -114,6 +116,7 @@ const { hasApiKey } = data;
 - Destructuring: `data.data.field` → `data.field`
 - Optional chaining: `data?.data?.field` → `data?.field`
 - Search for all consumers: `ast-grep --lang tsx -p 'useFetchHookName' src/`
+- **`prefer-destructuring` lint rule:** When assigning an array element to a `let` variable, oxlint enforces destructuring. Use `[currentBookmark] = bookmark` instead of `currentBookmark = bookmark[0]`. For `const`, use `const [bookmarkData] = bookmark` instead of `const bookmarkData = bookmark[0]`
 
 ### Layer 4: Dead Code Removal
 
@@ -123,8 +126,8 @@ After verifying layers 1-3 work (the hook fires the v2 request and the UI render
 
 1. **Remove crud helper function** from `src/async/supabaseCrudHelpers/index.ts`
 2. **Remove response interface** from the same file (only if no other function uses it)
-3. **Remove orphaned imports** — check each remaining import in the file is still used
-4. **Remove orphaned URL constants** from `constants.ts` if `pnpm lint:knip` flags them
+3. **Remove orphaned imports** — check ALL imports used by the deleted function, not just URL constants. Crud helpers may import error constants (e.g., `NO_BOOKMARKS_ID_ERROR`), type imports, or utility constants that become orphaned when the function is deleted. Grep each import to verify it still has consumers
+4. **Remove orphaned constants** from `constants.ts` — both URL constants AND any error/utility constants that were only used by the deleted crud helper. Run `pnpm lint:knip` to catch any missed orphans
 5. **Verify cleanup:** Run `pnpm lint:knip` to confirm no orphaned exports remain
 
 ```bash
@@ -213,6 +216,8 @@ pnpm lint         # All quality checks
 pnpm build        # Confirm build passes
 pnpm lint:knip    # Confirm no orphaned exports from dead code removal
 ```
+
+**Update migration tracker:** Mark the completed row in `docs/CALLER_MIGRATION.md` with `x` in the Status column (per the file's legend: ` ` = not started, `~` = in progress, `x` = done). Do NOT use emoji — characters like ✅ have different widths and break markdown table column alignment.
 
 ## Routing Table
 
