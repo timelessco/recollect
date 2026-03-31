@@ -1,6 +1,6 @@
 import { colorsNamed, converter, differenceEuclidean, formatHex, nearest, parse } from "culori";
 
-import type { BookmarkColors, OklabColor } from "@/async/ai/imageToText";
+import type { OklabColor, StructuredKeywords } from "@/async/ai/imageToText";
 import type { ImgMetadataType } from "@/types/apiTypes";
 
 /**
@@ -206,12 +206,17 @@ export function parseSearchColor(term: string): OklabColor | null {
  * Extract color hex strings from bookmark image_keywords for display.
  * Returns primary color first, then secondary colors.
  */
+function isStructuredKeywords(
+  kw: Record<string, string> | StructuredKeywords,
+): kw is StructuredKeywords {
+  return "color" in kw && typeof kw.color === "object";
+}
+
 export function getBookmarkColors(imageKeywords: ImgMetadataType["image_keywords"]): string[] {
-  if (!imageKeywords || Array.isArray(imageKeywords)) {
+  if (!imageKeywords || Array.isArray(imageKeywords) || !isStructuredKeywords(imageKeywords)) {
     return [];
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  const color = (imageKeywords as Record<string, unknown>).color as BookmarkColors | undefined;
+  const { color } = imageKeywords;
   if (!color?.primary_color) {
     return [];
   }
