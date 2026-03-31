@@ -103,6 +103,11 @@ export default async function handler(request: NextApiRequest, response: NextApi
     const searchColor = colorMatch ? parseSearchColor(colorMatch[1]) : null;
     const searchWithoutColor = search.replace(/color:\S*/i, "");
 
+    // color: prefix present but invalid color → no results
+    if (colorMatch && !searchColor) {
+       response.status(200).json({ data: [], error: null });; return;
+    }
+
     const searchText = searchWithoutColor
       ?.replace(GET_SITE_SCOPE_PATTERN, "")
       ?.replace(GET_HASHTAG_TAG_PATTERN, "")

@@ -27,12 +27,11 @@ export interface ImageToTextContextProps {
 export interface OklabColor {
   a: number;
   b: number;
-  hex: string;
   l: number;
 }
 
 export interface BookmarkColors {
-  primary_color: OklabColor;
+  primary_color: OklabColor | null;
   secondary_colors: OklabColor[];
 }
 
@@ -421,7 +420,7 @@ export const imageToText = async (
                   if (!oklab) {
                     return null;
                   }
-                  return { a: oklab.a ?? 0, b: oklab.b ?? 0, hex, l: oklab.l ?? 0 };
+                  return { a: oklab.a ?? 0, b: oklab.b ?? 0, l: oklab.l ?? 0 };
                 })
                 .filter((c): c is OklabColor => c !== null);
 

@@ -2,13 +2,22 @@
 -- Migration: Add color distance search to bookmark search
 -- ============================================================================
 -- Purpose:
---   1. Drop old function overloads for unambiguous PostgREST resolution
---   2. Update search_bookmarks_url_tag_scope with OKLAB color search params
+--   1. Remove legacy color string arrays (will be re-populated with OKLAB on next enrichment)
+--   2. Drop old function overloads for unambiguous PostgREST resolution
+--   3. Update search_bookmarks_url_tag_scope with OKLAB color search params
 --      (color_l, color_a, color_b) that compare against pre-computed OKLAB
 --      values stored in meta_data.image_keywords.color
 -- ============================================================================
 
 BEGIN;
+
+-- Step 0: Remove legacy color string arrays
+-- These had hex values without OKLAB data. New enrichment will re-populate
+-- with proper OKLAB colors on next AI processing.
+UPDATE public.everything
+SET meta_data = meta_data #- '{image_keywords,color}'
+WHERE meta_data->'image_keywords'->'color' IS NOT NULL
+  AND jsonb_typeof(meta_data->'image_keywords'->'color') = 'array';
 
 -- Step 0: Drop old overloads so PostgREST resolves the new version unambiguously
 DROP FUNCTION IF EXISTS public.search_bookmarks_url_tag_scope(character varying, character varying, text[]);
@@ -175,7 +184,7 @@ BEGIN
         AND
         (
             -- Color filter: OKLAB perceptual distance on pre-computed values
-            -- Stored format: { primary_color: {l,a,b,hex}, secondary_colors: [{l,a,b,hex},...] }
+            -- Stored format: { primary_color: {l,a,b}, secondary_colors: [{l,a,b},...] }
             color_l IS NULL
             OR (
                 -- Check primary color

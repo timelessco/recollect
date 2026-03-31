@@ -1,6 +1,6 @@
 import { colorsNamed, converter, differenceEuclidean, formatHex, nearest, parse } from "culori";
 
-import type { OklabColor, StructuredKeywords } from "@/async/ai/imageToText";
+import type { OklabColor } from "@/async/ai/imageToText";
 import type { ImgMetadataType } from "@/types/apiTypes";
 
 /**
@@ -199,26 +199,31 @@ export function parseSearchColor(term: string): OklabColor | null {
     return null;
   }
 
-  return { a: oklab.a ?? 0, b: oklab.b ?? 0, hex: formatHex(parsed), l: oklab.l ?? 0 };
+  return { a: oklab.a ?? 0, b: oklab.b ?? 0, l: oklab.l ?? 0 };
+}
+
+function oklabToHex(color: OklabColor): string {
+  return formatHex(`oklab(${color.l} ${color.a} ${color.b})`);
 }
 
 /**
  * Extract color hex strings from bookmark image_keywords for display.
- * Returns primary color first, then secondary colors.
+ * Converts stored OKLAB values to hex. Returns primary color first, then secondary colors.
  */
-function isStructuredKeywords(
-  kw: Record<string, string> | StructuredKeywords,
-): kw is StructuredKeywords {
-  return "color" in kw && typeof kw.color === "object";
-}
-
 export function getBookmarkColors(imageKeywords: ImgMetadataType["image_keywords"]): string[] {
-  if (!imageKeywords || Array.isArray(imageKeywords) || !isStructuredKeywords(imageKeywords)) {
+  if (!imageKeywords || Array.isArray(imageKeywords) || !("color" in imageKeywords)) {
     return [];
   }
   const { color } = imageKeywords;
-  if (!color?.primary_color) {
+  if (!color || typeof color === "string") {
     return [];
   }
-  return [color.primary_color.hex, ...color.secondary_colors.map((c) => c.hex)];
+  const hexes: string[] = [];
+  if (color.primary_color) {
+    hexes.push(oklabToHex(color.primary_color));
+  }
+  for (const c of color.secondary_colors) {
+    hexes.push(oklabToHex(c));
+  }
+  return hexes;
 }
