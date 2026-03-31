@@ -31,7 +31,6 @@ export const v2UpdateUsernameSupplement = {
       description: "The request body did not include a username field.",
       summary: "Missing username field",
       value: {
-        data: null,
         error: "Invalid request body",
       } as const,
     },
@@ -40,10 +39,7 @@ export const v2UpdateUsernameSupplement = {
     "username-updated": {
       description: "The new slugified username stored in the profiles table.",
       summary: "Username updated successfully",
-      value: {
-        data: [{ user_name: "johndoe" }],
-        error: null,
-      } as const,
+      value: [{ user_name: "johndoe" }] as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

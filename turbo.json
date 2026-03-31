@@ -13,6 +13,8 @@
         "SENTRY_ORG",
         "SENTRY_AUTH_TOKEN",
         "API_KEY_ENCRYPTION_KEY",
+        "AXIOM_DATASET",
+        "AXIOM_TOKEN",
         "UMAMI_ID",
         "PDF_SECRET_KEY",
         "PDF_URL_SCREENSHOT_API",

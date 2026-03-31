@@ -9,6 +9,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 import type { EndpointSupplement } from "../src/lib/openapi/supplement-types";
 
+import * as aiEnrichmentSupplements from "../src/lib/openapi/endpoints/ai-enrichment";
 import * as apiKeySupplements from "../src/lib/openapi/endpoints/api-key";
 import * as bookmarksSupplements from "../src/lib/openapi/endpoints/bookmarks";
 import * as categoriesSupplements from "../src/lib/openapi/endpoints/categories";
@@ -24,8 +25,10 @@ import * as profilesSupplements from "../src/lib/openapi/endpoints/profiles";
 import * as publicCategoriesSupplements from "../src/lib/openapi/endpoints/public-categories";
 import * as raindropSupplements from "../src/lib/openapi/endpoints/raindrop";
 import * as revalidateSupplements from "../src/lib/openapi/endpoints/revalidate";
+import * as screenshotSupplements from "../src/lib/openapi/endpoints/screenshot";
 import * as shareSupplements from "../src/lib/openapi/endpoints/share";
 import * as tagsSupplements from "../src/lib/openapi/endpoints/tags";
+import * as testsSupplements from "../src/lib/openapi/endpoints/tests";
 import * as twitterSupplements from "../src/lib/openapi/endpoints/twitter";
 import * as userSupplements from "../src/lib/openapi/endpoints/user";
 
@@ -228,6 +231,7 @@ export function mergeSupplements(specPath: string, supplements: EndpointSuppleme
 
 export function collectSupplements(): EndpointSupplement[] {
   const allModules = [
+    aiEnrichmentSupplements,
     apiKeySupplements,
     bookmarksSupplements,
     categoriesSupplements,
@@ -243,8 +247,10 @@ export function collectSupplements(): EndpointSupplement[] {
     publicCategoriesSupplements,
     raindropSupplements,
     revalidateSupplements,
+    screenshotSupplements,
     shareSupplements,
     tagsSupplements,
+    testsSupplements,
     twitterSupplements,
     userSupplements,
   ];

@@ -9,8 +9,7 @@ export const v2ProcessQueueSupplement = {
   method: "post",
   path: "/v2/process-queue",
   responseExample: {
-    data: { message: "Queue processed successfully" },
-    error: null,
+    message: "Queue processed successfully",
   },
   security: [],
   summary: "Process the ai-embeddings queue (screenshots and AI enrichment)",

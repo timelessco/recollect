@@ -17,9 +17,10 @@
 - `AGENTS.md` is a symlink to `CLAUDE.md` — do not replace with a regular file
 - `next.config.ts` has experimental flags (`prefetchInlining`, `appNewScrollHandler`, `sri`) — check Next.js docs before adding/removing
 - Error boundaries (`error.tsx`, `global-error.tsx`) use `unstable_retry()` from `next/error` (not `reset()`) — re-fetches RSC data on retry
-- Sentry tree-shaking (`bundleSizeOptimizations`, `webpack.treeshake`) is webpack-only — no-op for Turbopack builds. SDK v10 has no Turbopack tree-shaking support yet
+- Sentry `webpack.treeshake.*` and `webpack.*` options are irrelevant — project uses Turbopack only. `bundleSizeOptimizations` (top-level) works via the shared Sentry build plugin for both bundlers
 - `next build` defaults to Turbopack in v16 — hard-fails (`process.exit(1)`) if config has `webpack` key without `turbopack` key
-- Sentry `disableLogger` is deprecated — use `webpack.treeshake.removeDebugLogging`; top-level `reactComponentAnnotation` → `webpack.reactComponentAnnotation`
+- Sentry component annotation: use `_experimental.turbopackReactComponentAnnotation` (not the deprecated top-level `reactComponentAnnotation` or `webpack.reactComponentAnnotation`)
+- Sentry `useRunAfterProductionCompileHook` (default `true` for Turbopack) injects Debug IDs into output bundles post-compilation — conflicts with `experimental.sri`. Set to `false` when SRI is enabled
 - `/discover` page is blank without JavaScript — `[category_id].tsx` uses `useMounted()` which gates all rendering behind client-side hydration. `getServerSideProps` fetches data but the component won't render it server-side. Search engines see an empty page
 - `pnpm release:dryrun` is interactive (prompts for version) — can't run via Bash tool. Leaves `package.json` version bump; clean up with `git checkout -- package.json`
 - CHANGELOG.md is excluded from all linters/formatters (oxfmt, markdownlint, cspell) — formatting comes directly from Handlebars templates in `scripts/release-it/templates/`

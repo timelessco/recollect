@@ -34,7 +34,6 @@ export const v2UpdateUserProfileSupplement = {
         "Sending an empty `updateData: {}` fails the refine check — at least one field must be provided.",
       summary: "Empty updateData object",
       value: {
-        data: null,
         error: "Invalid request body",
       } as const,
     },
@@ -42,7 +41,6 @@ export const v2UpdateUserProfileSupplement = {
       description: "The top-level `updateData` key was omitted from the request body.",
       summary: "Missing updateData field",
       value: {
-        data: null,
         error: "Invalid request body",
       } as const,
     },
@@ -51,30 +49,27 @@ export const v2UpdateUserProfileSupplement = {
     "profile-updated": {
       description: "Full profile row returned after update — all columns included.",
       summary: "Profile updated successfully",
-      value: {
-        data: [
-          {
-            ai_features_toggle: {
-              ai_summary: true,
-              auto_assign_collections: true,
-              image_keywords: true,
-              ocr: true,
-            },
-            api_key: null,
-            bookmark_count: 42,
-            bookmarks_view: null,
-            category_order: [577, 724],
-            display_name: "Jane Smith",
-            email: "jane@example.com",
-            id: "550e8400-e29b-41d4-a716-446655440000",
-            preferred_og_domains: ["substack.com"],
-            profile_pic: null,
-            provider: "google",
-            user_name: "janesmith",
+      value: [
+        {
+          ai_features_toggle: {
+            ai_summary: true,
+            auto_assign_collections: true,
+            image_keywords: true,
+            ocr: true,
           },
-        ],
-        error: null,
-      } as const,
+          api_key: null,
+          bookmark_count: 42,
+          bookmarks_view: null,
+          category_order: [577, 724],
+          display_name: "Jane Smith",
+          email: "jane@example.com",
+          id: "550e8400-e29b-41d4-a716-446655440000",
+          preferred_og_domains: ["substack.com"],
+          profile_pic: null,
+          provider: "google",
+          user_name: "janesmith",
+        },
+      ] as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

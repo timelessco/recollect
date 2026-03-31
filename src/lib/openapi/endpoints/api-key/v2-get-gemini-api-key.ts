@@ -17,10 +17,7 @@ export const v2GetGeminiApiKeySupplement = {
     "api-key-found": {
       description: "The stored key was decrypted and returned as plaintext.",
       summary: "API key retrieved",
-      value: {
-        data: { apiKey: "AIzaSyAbc123ExampleKeyXYZ" },
-        error: null,
-      } as const,
+      value: { apiKey: "AIzaSyAbc123ExampleKeyXYZ" } as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

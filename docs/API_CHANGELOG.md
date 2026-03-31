@@ -34,3 +34,89 @@
 
 
 
+
+## 2026-03-27 [`80cac25`](https://github.com/timelessco/recollect/commit/80cac25b089f188684b48a542a05a3c5dd7f8ca8)
+
+
+### POST /v2/ai-enrichment
+-  endpoint added
+
+
+### POST /v2/bookmark/add-bookmark-min-data
+-  endpoint added
+
+
+### POST /v2/bookmark/add-remaining-bookmark-data
+-  endpoint added
+
+
+### POST /v2/bookmark/add-url-screenshot
+-  endpoint added
+
+
+### GET /v2/bookmark/fetch-bookmarks-count
+-  endpoint added
+
+
+### GET /v2/bookmark/fetch-bookmarks-data
+-  endpoint added
+
+
+### GET /v2/bookmark/search-bookmarks
+-  endpoint added
+
+
+### GET /v2/category/fetch-user-categories
+-  endpoint added
+
+
+### POST /v2/file/upload-file
+-  endpoint added
+
+
+### POST /v2/file/upload-file-remaining-data
+-  endpoint added
+
+
+### GET /v2/invite
+-  endpoint added
+
+
+### POST /v2/profiles/delete-user
+-  endpoint added
+
+
+### POST /v2/screenshot
+-  endpoint added
+
+
+### POST /v2/settings/upload-profile-pic
+-  endpoint added
+
+
+### POST /v2/share/send-collaboration-email
+-  endpoint added
+
+
+### POST /v2/share/send-email
+-  endpoint added
+
+
+### POST /v2/tests/file/post/upload
+-  endpoint added
+
+
+
+
+## 2026-03-28 [`465c70a`](https://github.com/timelessco/recollect/commit/465c70a7048389e1a6e1004369d3bb0f351bd5a1)
+
+
+### GET /v2/check-gemini-api-key
+- :warning: removed the required property 'data' from the response with the '200' status
+- :warning: removed the required property 'data' from the response with the '401' status
+- :warning: removed the required property 'data' from the response with the '500' status
+- :warning: removed the required property 'error' from the response with the '200' status
+-  added the required property 'hasApiKey' to the response with the '200' status
+
+
+

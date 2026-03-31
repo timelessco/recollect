@@ -25,35 +25,28 @@ export const v2UpdateSharedCategoryUserRoleSupplement = {
   },
   responseExamples: {
     "no-match": {
-      description:
-        "If no row matches the id + (user_id or email) filter, returns an empty data array with no error.",
+      description: "If no row matches the id + (user_id or email) filter, returns an empty array.",
       summary: "No row matched — empty array returned",
-      value: {
-        data: [],
-        error: null,
-      } as const,
+      value: [] as const,
     },
     "updated-row": {
       description: "Returns the updated shared_categories row in an array.",
       summary: "Role updated successfully",
-      value: {
-        data: [
-          {
-            category_id: 42,
-            category_views: {
-              bookmarksView: "moodboard",
-              sortBy: "date-sort-ascending",
-            },
-            created_at: "2024-03-15T10:30:00+00:00",
-            edit_access: true,
-            email: "collaborator@example.com",
-            id: 1,
-            is_accept_pending: false,
-            user_id: "550e8400-e29b-41d4-a716-446655440000",
+      value: [
+        {
+          category_id: 42,
+          category_views: {
+            bookmarksView: "moodboard",
+            sortBy: "date-sort-ascending",
           },
-        ],
-        error: null,
-      } as const,
+          created_at: "2024-03-15T10:30:00+00:00",
+          edit_access: true,
+          email: "collaborator@example.com",
+          id: 1,
+          is_accept_pending: false,
+          user_id: "550e8400-e29b-41d4-a716-446655440000",
+        },
+      ] as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

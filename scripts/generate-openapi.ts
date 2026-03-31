@@ -7,9 +7,15 @@ import { z } from "zod";
 import type { HandlerConfig } from "../src/lib/api-helpers/create-handler";
 
 import { bearerAuth, registry } from "../src/lib/openapi/registry";
-import { apiResponseSchema } from "../src/lib/openapi/schemas/envelope";
+import { apiResponseSchema, v2ErrorResponseSchema } from "../src/lib/openapi/schemas/envelope";
 import * as sharedSchemas from "../src/lib/openapi/schemas/shared";
 import { collectSupplements, mergeSupplements } from "./merge-openapi-supplements";
+
+// Extended config that includes new factory fields (withAuth/withPublic)
+interface ExtendedHandlerConfig extends HandlerConfig {
+  auth?: "none" | "required";
+  contract?: "v2";
+}
 
 const ROOT = resolve(import.meta.dirname, "..");
 const API_DIR = resolve(ROOT, "src/app/api");
@@ -96,6 +102,37 @@ registry.registerComponent("responses", "InternalError", {
   description: "Server error. The request could not be processed.",
 });
 
+// v2 error response components — bare `{ error: string }` (no `data` field)
+registry.registerComponent("responses", "V2Unauthorized", {
+  content: {
+    "application/json": {
+      example: { error: "Not authenticated" },
+      schema: v2ErrorResponseSchema,
+    },
+  },
+  description: "Not authenticated. Provide a valid bearer token.",
+});
+
+registry.registerComponent("responses", "V2ValidationError", {
+  content: {
+    "application/json": {
+      example: { error: "Invalid request parameters" },
+      schema: v2ErrorResponseSchema,
+    },
+  },
+  description: "Validation error. The request body or parameters are invalid.",
+});
+
+registry.registerComponent("responses", "V2InternalError", {
+  content: {
+    "application/json": {
+      example: { error: "Failed to process request" },
+      schema: v2ErrorResponseSchema,
+    },
+  },
+  description: "Server error. The request could not be processed.",
+});
+
 // Paths to skip — not part of the public API spec
 const SKIP_PATHS = new Set<string>();
 
@@ -130,7 +167,7 @@ function isAuthRequired(factoryName: string): boolean {
 
 type RouteModule = Record<
   string,
-  ((req: Request) => Promise<Response>) & { config?: HandlerConfig }
+  ((req: Request) => Promise<Response>) & { config?: ExtendedHandlerConfig }
 >;
 
 async function scanAndRegisterRoutes() {
@@ -177,15 +214,27 @@ async function scanAndRegisterRoutes() {
         continue;
       }
 
-      const method = getMethodFromFactoryName(config.factoryName);
-      if (!method) {
-        errors.push(`Unknown factory: ${config.factoryName} in ${rel}`);
-        continue;
+      // Method from export key (primary) — already filtered to GET/POST/PATCH/PUT/DELETE
+      const method = exportName.toLowerCase() as "delete" | "get" | "patch" | "post" | "put";
+
+      // Validate: if old factory, check factoryName matches export key
+      // New factory doesn't encode method in factoryName, so skip validation
+      if (!("auth" in config) && config.factoryName) {
+        const factoryMethod = getMethodFromFactoryName(config.factoryName);
+        if (factoryMethod && factoryMethod !== method) {
+          errors.push(
+            `Method mismatch: export ${exportName} but factory ${config.factoryName} in ${rel}`,
+          );
+          continue;
+        }
       }
 
-      const security = isAuthRequired(config.factoryName)
-        ? [{ [bearerAuth.name]: [] }, {}]
-        : undefined;
+      // New factory: explicit config.auth field
+      // Old factory: parse factoryName for "WithAuth"
+      const authRequired =
+        "auth" in config ? config.auth === "required" : isAuthRequired(config.factoryName);
+
+      const security = authRequired ? [{ [bearerAuth.name]: [] }, {}] : undefined;
 
       const { inputSchema } = config;
       const { outputSchema } = config;
@@ -196,6 +245,11 @@ async function scanAndRegisterRoutes() {
         isBodyMethod ||
         (inputSchema instanceof z.ZodObject && Object.keys(inputSchema.shape).length > 0);
 
+      // New factory: explicit config.contract field
+      // Old factory: parse factoryName for "V2"
+      const isV2 =
+        "contract" in config ? config.contract === "v2" : config.factoryName.includes("V2");
+
       const pathRegistration: Parameters<typeof registry.registerPath>[0] = {
         method,
         path: apiPath,
@@ -203,14 +257,30 @@ async function scanAndRegisterRoutes() {
           200: {
             content: {
               "application/json": {
-                schema: apiResponseSchema(outputSchema),
+                schema: isV2 ? outputSchema : apiResponseSchema(outputSchema),
               },
             },
             description: "Success",
           },
-          ...(hasInput ? { 400: { $ref: "#/components/responses/ValidationError" } } : {}),
-          401: { $ref: "#/components/responses/Unauthorized" },
-          500: { $ref: "#/components/responses/InternalError" },
+          ...(hasInput
+            ? {
+                400: {
+                  $ref: isV2
+                    ? "#/components/responses/V2ValidationError"
+                    : "#/components/responses/ValidationError",
+                },
+              }
+            : {}),
+          401: {
+            $ref: isV2
+              ? "#/components/responses/V2Unauthorized"
+              : "#/components/responses/Unauthorized",
+          },
+          500: {
+            $ref: isV2
+              ? "#/components/responses/V2InternalError"
+              : "#/components/responses/InternalError",
+          },
         },
       };
 
