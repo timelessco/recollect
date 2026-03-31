@@ -296,6 +296,6 @@ END;
 $function$;
 
 COMMENT ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint, double precision, double precision, double precision) IS
-'Bookmark search with URL/tag/category/color filters. Color uses pre-computed OKLAB values with perceptual distance threshold 0.25. Primary color gets higher ranking weight (0.15) than secondary (0.10).';
+'Bookmark search with URL/tag/category/color filters. Achromatic searches match low-chroma colors by lightness. Chromatic searches match by hue angle (primary < 30deg, secondary < 20deg). Results ordered by primary color distance DESC then secondary distance DESC, so primary matches always rank above secondary-only matches.';
 
 COMMIT;
