@@ -204,7 +204,7 @@ BEGIN
                         WHERE SQRT(POWER((sc->>'a')::float, 2) + POWER((sc->>'b')::float, 2)) < 0.04
                     )
                 ELSE
-                    -- Chromatic: full OKLAB distance
+                    -- Chromatic: full OKLAB distance (primary: 0.25, secondary: stricter 0.15)
                     SQRT(
                         POWER(color_l - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'l')::float), 2) +
                         POWER(color_a - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'a')::float), 2) +
@@ -217,7 +217,7 @@ BEGIN
                             POWER(color_l - (sc->>'l')::float, 2) +
                             POWER(color_a - (sc->>'a')::float, 2) +
                             POWER(color_b - (sc->>'b')::float, 2)
-                        ) < 0.25
+                        ) < 0.15
                     )
                 END
             )
@@ -243,45 +243,51 @@ BEGIN
                 ) * 0.1
             )
         END +
-        -- Color ranking: achromatic ranks by lightness closeness, chromatic by OKLAB distance
+        -- Color ranking: primary matches first, then secondary as tiebreaker
+        -- Primary color score (all primary matches rank above all secondary-only matches)
         CASE
             WHEN color_l IS NULL THEN 0
             WHEN SQRT(POWER(color_a, 2) + POWER(color_b, 2)) < 0.04 THEN
-                -- Achromatic: rank by lightness distance (closer lightness = higher score)
-                GREATEST(
-                    CASE WHEN b.meta_data->'image_keywords'->'color'->'primary_color'->>'a' IS NOT NULL
-                        AND SQRT(
-                            POWER(((b.meta_data->'image_keywords'->'color'->'primary_color'->>'a')::float), 2) +
-                            POWER(((b.meta_data->'image_keywords'->'color'->'primary_color'->>'b')::float), 2)
-                        ) < 0.04
-                    THEN GREATEST(0, (1.0 - ABS(color_l - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'l')::float))) * 0.15)
-                    ELSE 0 END,
-                    COALESCE(
-                        (SELECT MAX(GREATEST(0, (1.0 - ABS(color_l - (sc->>'l')::float)) * 0.10))
-                        FROM jsonb_array_elements(COALESCE(b.meta_data->'image_keywords'->'color'->'secondary_colors', '[]'::jsonb)) AS sc
-                        WHERE SQRT(POWER((sc->>'a')::float, 2) + POWER((sc->>'b')::float, 2)) < 0.04),
-                        0
-                    )
+                -- Achromatic primary: low chroma + lightness closeness
+                CASE WHEN b.meta_data->'image_keywords'->'color'->'primary_color'->>'a' IS NOT NULL
+                    AND SQRT(
+                        POWER(((b.meta_data->'image_keywords'->'color'->'primary_color'->>'a')::float), 2) +
+                        POWER(((b.meta_data->'image_keywords'->'color'->'primary_color'->>'b')::float), 2)
+                    ) < 0.04
+                THEN 1.0 - ABS(color_l - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'l')::float))
+                ELSE 0 END
+            ELSE
+                -- Chromatic primary: OKLAB distance closeness
+                CASE WHEN b.meta_data->'image_keywords'->'color'->'primary_color'->>'l' IS NOT NULL THEN
+                    GREATEST(0, 1.0 - SQRT(
+                        POWER(color_l - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'l')::float), 2) +
+                        POWER(color_a - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'a')::float), 2) +
+                        POWER(color_b - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'b')::float), 2)
+                    ))
+                ELSE 0 END
+        END
+        DESC,
+        -- Secondary color score (tiebreaker within same primary tier)
+        CASE
+            WHEN color_l IS NULL THEN 0
+            WHEN SQRT(POWER(color_a, 2) + POWER(color_b, 2)) < 0.04 THEN
+                -- Achromatic secondary: best low-chroma match by lightness
+                COALESCE(
+                    (SELECT MAX(1.0 - ABS(color_l - (sc->>'l')::float))
+                    FROM jsonb_array_elements(COALESCE(b.meta_data->'image_keywords'->'color'->'secondary_colors', '[]'::jsonb)) AS sc
+                    WHERE SQRT(POWER((sc->>'a')::float, 2) + POWER((sc->>'b')::float, 2)) < 0.04),
+                    0
                 )
             ELSE
-                -- Chromatic: rank by full OKLAB distance
-                GREATEST(
-                    CASE WHEN b.meta_data->'image_keywords'->'color'->'primary_color'->>'l' IS NOT NULL THEN
-                        GREATEST(0, (1.0 - SQRT(
-                            POWER(color_l - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'l')::float), 2) +
-                            POWER(color_a - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'a')::float), 2) +
-                            POWER(color_b - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'b')::float), 2)
-                        )) * 0.15)
-                    ELSE 0 END,
-                    COALESCE(
-                        (SELECT MAX(GREATEST(0, (1.0 - SQRT(
-                            POWER(color_l - (sc->>'l')::float, 2) +
-                            POWER(color_a - (sc->>'a')::float, 2) +
-                            POWER(color_b - (sc->>'b')::float, 2)
-                        )) * 0.10))
-                        FROM jsonb_array_elements(COALESCE(b.meta_data->'image_keywords'->'color'->'secondary_colors', '[]'::jsonb)) AS sc),
-                        0
-                    )
+                -- Chromatic secondary: best OKLAB distance match
+                COALESCE(
+                    (SELECT MAX(GREATEST(0, 1.0 - SQRT(
+                        POWER(color_l - (sc->>'l')::float, 2) +
+                        POWER(color_a - (sc->>'a')::float, 2) +
+                        POWER(color_b - (sc->>'b')::float, 2)
+                    )))
+                    FROM jsonb_array_elements(COALESCE(b.meta_data->'image_keywords'->'color'->'secondary_colors', '[]'::jsonb)) AS sc),
+                    0
                 )
         END
         DESC,
