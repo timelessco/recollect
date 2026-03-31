@@ -42,7 +42,6 @@ import { handleClientError } from "@/utils/error-utils/client";
 import {
   ADD_BOOKMARK_MIN_DATA,
   ADD_URL_SCREENSHOT_API,
-  CHECK_API_KEY_API,
   CLEAR_BOOKMARK_TRASH_API,
   DELETE_API_KEY_API,
   DELETE_BOOKMARK_DATA_API,
@@ -127,21 +126,6 @@ export const deleteApiKey = async (): Promise<{
     return response?.data;
   } catch {
     throw new Error("Failed to delete API key");
-  }
-};
-
-interface CheckApiKeyResponse {
-  data: { hasApiKey: boolean } | null;
-}
-
-export const checkGeminiApiKey = async (): Promise<CheckApiKeyResponse> => {
-  try {
-    const response = await axios.get<CheckApiKeyResponse>(`${NEXT_API_URL}${CHECK_API_KEY_API}`);
-
-    return { data: response.data.data };
-  } catch (error) {
-    handleClientError(error, "Failed to check API key");
-    return { data: null };
   }
 };
 

@@ -27,19 +27,15 @@ export const v2BookmarksDeleteNonCascadeSupplement = {
       description: "Fails when the data.id field is missing.",
       summary: "Missing bookmark ID",
       value: {
-        data: null,
         error: "data.id: Required",
       } as const,
     },
   },
   responseExamples: {
     success: {
-      description: "Returns null data on successful deletion.",
+      description: "Returns null on successful deletion.",
       summary: "Bookmark deleted successfully",
-      value: {
-        data: null,
-        error: null,
-      } as const,
+      value: null,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

@@ -33,7 +33,6 @@ export const v2FetchBookmarksViewSupplement = {
       description: "Send `?category_id=abc` — returns 400: expected number.",
       summary: "Invalid category_id type",
       value: {
-        data: null,
         error: "Invalid input: expected number, received nan",
       } as const,
     },
@@ -41,45 +40,35 @@ export const v2FetchBookmarksViewSupplement = {
       description: "Omit the `category_id` query parameter — returns 400.",
       summary: "Missing category_id",
       value: {
-        data: null,
         error: "Invalid input: expected number, received nan",
       } as const,
     },
   },
   responseExamples: {
     "nonexistent-category": {
-      description: "Send `?category_id=999999` — returns an empty data array.",
+      description: "Send `?category_id=999999` — returns an empty array.",
       summary: "Nonexistent category ID",
-      value: {
-        data: [],
-        error: null,
-      } as const,
+      value: [] as const,
     },
     "null-views": {
       description: "Category with no view settings — category_views is null.",
       summary: "Category with null view settings",
-      value: {
-        data: [{ category_views: null }],
-        error: null,
-      } as const,
+      value: [{ category_views: null }] as const,
     },
     "with-view-data": {
       description:
         "Send `?category_id=724` (substitute a real category ID) — returns the category_views JSON object.",
       summary: "Category with view settings",
-      value: {
-        data: [
-          {
-            category_views: {
-              bookmarksView: "moodboard",
-              cardContentViewArray: ["cover", "title", "info"],
-              moodboardColumns: [30],
-              sortBy: "date-sort-ascending",
-            },
+      value: [
+        {
+          category_views: {
+            bookmarksView: "moodboard",
+            cardContentViewArray: ["cover", "title", "info"],
+            moodboardColumns: [30],
+            sortBy: "date-sort-ascending",
           },
-        ],
-        error: null,
-      } as const,
+        },
+      ] as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

@@ -8,6 +8,9 @@ const config: KnipConfig = {
     "oxfmt",
   ],
   ignoreDependencies: [
+    // Axiom client-side packages — used in Phase 17 (middleware logging, WebVitals, useLogger)
+    "@axiomhq/nextjs",
+    "@axiomhq/react",
     // eslint@10 kept as transitive dep for jsPlugins using @typescript-eslint/utils
     "eslint",
     "oxfmt",

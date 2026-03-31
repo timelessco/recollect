@@ -1,20 +1,22 @@
 ---
-name: recollect-post-migration-cleanup
+name: recollect-mutation-hook-refactoring
 description: >
-  Frontend migration cleanup for Recollect API v2 transition.
-  This skill should be used when switching frontend callers from
-  legacy Pages Router URLs to v2 App Router URLs, updating mutation
-  hooks, removing legacy helpers from supabaseCrudHelpers, removing
-  legacy types from apiTypes.ts, and deleting old Pages Router files.
-  Also use when the user mentions Phase 13, caller updates, frontend
-  migration, legacy cleanup, or asks to wire up v2 routes to the UI.
+  Mutation hook template refactoring and file renaming for Recollect
+  post-migration cleanup. Covers mutation-hook-template.ts restructuring,
+  file renaming, and structural cleanup after API migration. Use this
+  skill when the user mentions mutation hook template, file renaming,
+  legacy cleanup, post-migration, or structural cleanup. For API caller
+  migration (getApi/postApi patterns with Zod types), use the
+  recollect-caller-migration skill instead.
 ---
 
-# Post-Migration Cleanup
+# Mutation Hook Refactoring
 
-Handles frontend/caller migration from legacy Pages Router to v2 App Router routes. This is Phase 13+ work — all v2 API routes must already exist before running this workflow.
+Handles mutation hook template refactoring and file renaming after API caller migration. For API caller migration itself (getApi and postApi patterns with Zod types), use the `recollect-caller-migration` skill.
 
-**Scope:** Frontend callers, mutation hooks, legacy helpers, and legacy types ONLY. No API route creation (the `recollect-api-migrator` agent handles that).
+> **Migrating API callers?** Use the `recollect-caller-migration` skill instead. It covers the 4-layer pattern: constant URL update, hook rewrite with `getApi`/`postApi` + Zod types, consumer double-unwrap removal, and dead code cleanup. This skill handles what comes AFTER — template refactoring and file renaming.
+
+**Scope:** Mutation hooks, legacy helpers, legacy types, and file cleanup ONLY. No API route creation (the `recollect-api-migrator` agent handles that). No API caller migration (the `recollect-caller-migration` skill handles that).
 
 ## Per-Route Workflow
 
@@ -89,6 +91,7 @@ Fix any issues before marking the route as complete.
 
 | User says                                          | Load this                                                                    |
 | -------------------------------------------------- | ---------------------------------------------------------------------------- |
+| "API caller migration" / "getApi pattern" / "postApi pattern" / "caller migration" | Use `recollect-caller-migration` skill |
 | "update hook for [route]" / "wire up v2 [route]"   | Execute workflow above                                                       |
 | "mutation hook template" / "how to structure hook" | [references/mutation-hook-template.ts](references/mutation-hook-template.ts) |
 | "where is [helper/type/constant]"                  | [references/codebase-patterns.md](references/codebase-patterns.md)           |
