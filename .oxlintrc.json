@@ -28,9 +28,7 @@
     ".ncurc.cjs",
     "supabase/functions/**",
     "package-typings/**",
-    "src/types/database-generated.types.ts",
-    "cypress/e2e/**",
-    "cypress/support/**"
+    "src/types/database-generated.types.ts"
   ],
   "rules": {
     "max-lines": "off",

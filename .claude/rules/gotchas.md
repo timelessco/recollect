@@ -4,7 +4,7 @@
 - Dev server is usually running in another terminal — check `lsof -iTCP:3000` before starting `pnpm dev`
 - `build:ci` skips env validation, OpenAPI gen, and sitemap — use `pnpm build` for local verification
 - `typescript.ignoreBuildErrors: true` in next.config — TS errors do NOT fail production builds
-- No test suite — `pnpm test` exits 0 with "no test specified". Cypress installed but no specs
+- No test suite — `pnpm test` exits 0 with "no test specified"
 - CI runs lint checks only (no build gate) — build failures surface on Vercel
 - `pnpm lint:ultracite` requires Next.js generated types — CI runs `pnpm next:typegen` first. Locally, types already exist if `next dev` or `pnpm build` has run; only run `pnpm next:typegen` manually if lint fails on missing generated types
 - Sentry tunnel: events proxied through `/skynet` to bypass ad-blockers

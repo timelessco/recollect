@@ -82,7 +82,6 @@ pnpm release:dryrun   # Dry-run release
 pnpm release:pr       # Create release/* branch + PR to main
 pnpm release:pr:dryrun # Preview release changelog (no mutations)
 pnpm release:cleanup  # Post-release: merge main→dev, delete release branch
-pnpm cypress:open     # Open Cypress (no specs exist)
 ```
 
 ### Pre-Commit (Automatic)
