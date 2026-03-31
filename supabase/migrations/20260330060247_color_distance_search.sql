@@ -2,9 +2,8 @@
 -- Migration: Add color distance search to bookmark search
 -- ============================================================================
 -- Purpose:
---   1. Remove legacy color string arrays (will be re-populated with OKLAB on next enrichment)
---   2. Drop old function overloads for unambiguous PostgREST resolution
---   3. Update search_bookmarks_url_tag_scope with OKLAB color search params
+--   1. Drop old function overloads for unambiguous PostgREST resolution
+--   2. Update search_bookmarks_url_tag_scope with OKLAB color search params
 --      (color_l, color_a, color_b) that compare against pre-computed OKLAB
 --      values stored in meta_data.image_keywords.color
 -- ============================================================================
@@ -243,8 +242,8 @@ BEGIN
                 ) * 0.1
             )
         END +
-        -- Color ranking: primary matches first, then secondary as tiebreaker
-        -- Primary color score (all primary matches rank above all secondary-only matches)
+        -- Color ranking: primary score added to text similarity, secondary is tiebreaker
+        -- Primary color closeness (combined with text similarity above)
         CASE
             WHEN color_l IS NULL THEN 0
             WHEN SQRT(POWER(color_a, 2) + POWER(color_b, 2)) < 0.04 THEN
@@ -296,6 +295,6 @@ END;
 $function$;
 
 COMMENT ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint, double precision, double precision, double precision) IS
-'Bookmark search with URL/tag/category/color filters. Achromatic searches match low-chroma colors by lightness. Chromatic searches match by hue angle (primary < 30deg, secondary < 20deg). Results ordered by primary color distance DESC then secondary distance DESC, so primary matches always rank above secondary-only matches.';
+'Bookmark search with URL/tag/category/color filters. Achromatic searches match low-chroma colors by lightness. Chromatic searches use OKLAB Euclidean distance (primary < 0.25, secondary < 0.15). Results ordered by primary distance DESC then secondary distance DESC, so primary matches always rank above secondary-only matches.';
 
 COMMIT;
