@@ -1,0 +1,61 @@
+/**
+ * @module Build-time only
+ */
+import type { EndpointSupplement } from "@/lib/openapi/supplement-types";
+
+import { bearerAuth } from "@/lib/openapi/registry";
+
+export const v2ChromeBookmarkImportSupplement = {
+  additionalResponses: {
+    400: { description: "Invalid request body or bookmark data" },
+  },
+  description:
+    "Enqueues a batch of Chrome bookmarks for async import. Deduplicates within the batch and against existing bookmarks. Returns counts of queued and skipped items.",
+  method: "post",
+  path: "/v2/chrome-bookmarks/import",
+  requestExamples: {
+    "single-bookmark": {
+      description: "Import a single Chrome bookmark with its folder as the category.",
+      summary: "Single bookmark",
+      value: {
+        bookmarks: [
+          {
+            category_name: "Dev Tools",
+            inserted_at: "2026-01-15T10:30:00Z",
+            title: "GitHub - Hello-World",
+            url: "https://github.com/Hello-World",
+          },
+        ],
+      },
+    },
+    "uncategorized-bookmark": {
+      description: "Import a bookmark without a Chrome folder. Will be assigned to Uncategorized.",
+      summary: "Uncategorized bookmark",
+      value: {
+        bookmarks: [
+          {
+            category_name: null,
+            inserted_at: "",
+            title: "Example Site",
+            url: "https://example.com",
+          },
+        ],
+      },
+    },
+  },
+  responseExamples: {
+    "all-queued": {
+      description: "All bookmarks were new and queued for processing.",
+      summary: "All bookmarks queued",
+      value: { queued: 5, skipped: 0 },
+    },
+    "some-skipped": {
+      description: "Some bookmarks were duplicates and skipped.",
+      summary: "Partial import with duplicates",
+      value: { queued: 3, skipped: 2 },
+    },
+  },
+  security: [{ [bearerAuth.name]: [] }, {}],
+  summary: "Import Chrome bookmarks - v2",
+  tags: ["Chrome Bookmarks"],
+} satisfies EndpointSupplement;
