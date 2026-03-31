@@ -172,3 +172,26 @@
 
 
 
+
+## 2026-03-31 [`627d5f1`](https://github.com/timelessco/recollect/commit/627d5f126ae525e31b047f1e28f6818e21d484d4)
+
+
+
+### API Changes
+
+### GET /bookmark/fetch-bookmarks-discoverable
+- :warning: response property 'data/items/meta_data/image_keywords' list-of-types was widened by adding types 'object' to media type 'application/json' of response '200'
+
+
+### GET /bookmark/fetch-discoverable-by-id
+- :warning: response property 'data/meta_data/image_keywords' list-of-types was widened by adding types 'object' to media type 'application/json' of response '200'
+
+
+### GET /bookmark/fetch-public-bookmark-by-id
+- :warning: response property 'data/meta_data/image_keywords' list-of-types was widened by adding types 'object' to media type 'application/json' of response '200'
+
+
+
+
+
+
