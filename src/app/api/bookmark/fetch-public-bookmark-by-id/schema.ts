@@ -34,10 +34,20 @@ const MetadataSchema = z.object({
     .optional()
     .meta({ description: "Whether iframe embedding is allowed" }),
   image_keywords: z
-    .union([z.array(z.string()), z.record(z.string(), z.string())])
+    .union([
+      z.array(z.string()),
+      z.object({
+        color: z.array(z.string()).optional(),
+        features: z.record(z.string(), z.union([z.string(), z.array(z.string())])).optional(),
+        object: z.array(z.string()).optional(),
+        people: z.array(z.string()).optional(),
+        place: z.array(z.string()).optional(),
+        type: z.array(z.string()).optional(),
+      }),
+    ])
     .optional()
     .meta({
-      description: "Keywords extracted from image (array for legacy, object for structured)",
+      description: "Keywords extracted from image — legacy string array or structured object",
     }),
   img_caption: z.string().nullable().optional().meta({ description: "Image caption text" }),
   isOgImagePreferred: z
