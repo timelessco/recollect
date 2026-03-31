@@ -60,6 +60,7 @@ export function SidepaneContent({
 
   const metaData = currentBookmark?.meta_data;
   const showKeywords = hasKeywords(metaData?.image_keywords) && vercelEnvironment !== "production";
+  const bookmarkColors = getBookmarkColors(metaData?.image_keywords);
   const collapsedOffset = (currentBookmark?.addedTags?.length ?? 0) > 0 ? 145 : 110;
 
   useEffect(() => {
@@ -167,10 +168,10 @@ export function SidepaneContent({
             )}
           </div>
         )}
-        {getBookmarkColors(metaData?.image_keywords).length > 0 && (
+        {bookmarkColors.length > 0 && (
           <div className="pt-3 pb-1">
             <p className="pb-1.5 text-xs font-medium text-gray-500">Colors</p>
-            <ColorPalette colors={getBookmarkColors(metaData?.image_keywords)} />
+            <ColorPalette colors={bookmarkColors} />
           </div>
         )}
         {!isDiscoverPage && !isPublicPage && (

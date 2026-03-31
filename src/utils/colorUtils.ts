@@ -211,19 +211,23 @@ function oklabToHex(color: OklabColor): string {
  * Converts stored OKLAB values to hex. Returns primary color first, then secondary colors.
  */
 export function getBookmarkColors(imageKeywords: ImgMetadataType["image_keywords"]): string[] {
-  if (!imageKeywords || Array.isArray(imageKeywords) || !("color" in imageKeywords)) {
+  try {
+    if (!imageKeywords || Array.isArray(imageKeywords) || !("color" in imageKeywords)) {
+      return [];
+    }
+    const { color } = imageKeywords;
+    if (!color || typeof color === "string") {
+      return [];
+    }
+    const hexes: string[] = [];
+    if (color.primary_color) {
+      hexes.push(oklabToHex(color.primary_color));
+    }
+    for (const c of color.secondary_colors ?? []) {
+      hexes.push(oklabToHex(c));
+    }
+    return hexes;
+  } catch {
     return [];
   }
-  const { color } = imageKeywords;
-  if (!color || typeof color === "string") {
-    return [];
-  }
-  const hexes: string[] = [];
-  if (color.primary_color) {
-    hexes.push(oklabToHex(color.primary_color));
-  }
-  for (const c of color.secondary_colors) {
-    hexes.push(oklabToHex(c));
-  }
-  return hexes;
 }

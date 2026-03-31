@@ -200,7 +200,7 @@ BEGIN
                     )
                     OR EXISTS (
                         SELECT 1
-                        FROM jsonb_array_elements(b.meta_data->'image_keywords'->'color'->'secondary_colors') AS sc
+                        FROM jsonb_array_elements(COALESCE(b.meta_data->'image_keywords'->'color'->'secondary_colors', '[]'::jsonb)) AS sc
                         WHERE SQRT(POWER((sc->>'a')::float, 2) + POWER((sc->>'b')::float, 2)) < 0.04
                     )
                 ELSE
@@ -212,7 +212,7 @@ BEGIN
                     ) < 0.25
                     OR EXISTS (
                         SELECT 1
-                        FROM jsonb_array_elements(b.meta_data->'image_keywords'->'color'->'secondary_colors') AS sc
+                        FROM jsonb_array_elements(COALESCE(b.meta_data->'image_keywords'->'color'->'secondary_colors', '[]'::jsonb)) AS sc
                         WHERE SQRT(
                             POWER(color_l - (sc->>'l')::float, 2) +
                             POWER(color_a - (sc->>'a')::float, 2) +
@@ -258,7 +258,7 @@ BEGIN
                     ELSE 0 END,
                     COALESCE(
                         (SELECT MAX(GREATEST(0, (1.0 - ABS(color_l - (sc->>'l')::float)) * 0.10))
-                        FROM jsonb_array_elements(b.meta_data->'image_keywords'->'color'->'secondary_colors') AS sc
+                        FROM jsonb_array_elements(COALESCE(b.meta_data->'image_keywords'->'color'->'secondary_colors', '[]'::jsonb)) AS sc
                         WHERE SQRT(POWER((sc->>'a')::float, 2) + POWER((sc->>'b')::float, 2)) < 0.04),
                         0
                     )
@@ -279,7 +279,7 @@ BEGIN
                             POWER(color_a - (sc->>'a')::float, 2) +
                             POWER(color_b - (sc->>'b')::float, 2)
                         )) * 0.10))
-                        FROM jsonb_array_elements(b.meta_data->'image_keywords'->'color'->'secondary_colors') AS sc),
+                        FROM jsonb_array_elements(COALESCE(b.meta_data->'image_keywords'->'color'->'secondary_colors', '[]'::jsonb)) AS sc),
                         0
                     )
                 )

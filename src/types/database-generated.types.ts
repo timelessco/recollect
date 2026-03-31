@@ -452,7 +452,6 @@ export type Database = {
         Returns: undefined;
       };
       check_bookmarks_view_keyed_shape: { Args: { v: Json }; Returns: boolean };
-      color_distance: { Args: { hex1: string; hex2: string }; Returns: number };
       create_and_assign_tag: {
         Args: { p_bookmark_id: number; p_tag_name: string };
         Returns: {
@@ -506,7 +505,6 @@ export type Database = {
           status_code: number;
         }[];
       };
-      hex_channel: { Args: { hex: string; pos: number }; Returns: number };
       invoke_instagram_worker: { Args: never; Returns: number };
       invoke_raindrop_worker: { Args: never; Returns: number };
       invoke_twitter_worker: { Args: never; Returns: number };
@@ -645,7 +643,9 @@ export type Database = {
       search_bookmarks_url_tag_scope: {
         Args: {
           category_scope?: number;
-          color_hex?: string;
+          color_a?: number;
+          color_b?: number;
+          color_l?: number;
           search_text?: string;
           tag_scope?: string[];
           url_scope?: string;

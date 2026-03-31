@@ -6,6 +6,7 @@ import { getServerContext } from "@/lib/api-helpers/server-context";
 import { createApiClient, getApiUser } from "@/lib/supabase/api";
 import { getBookmarkMediaCategoryPredicate } from "@/utils/bookmark-category-filters";
 import { isUserOwnerOrAnyCollaborator } from "@/utils/category-auth";
+import { parseSearchColor } from "@/utils/colorUtils";
 import {
   AUDIO_URL,
   bookmarkType,
@@ -124,16 +125,26 @@ export const GET = createAxiomRouteHandler(
         ctx.fields.offset = offset;
       }
 
-      // Parse search modifiers: @domain.com site scope and #tag filters
+      // Parse search modifiers: @domain.com site scope, #tag filters, color: prefix
       const matchedSiteScope = search.match(GET_SITE_SCOPE_PATTERN);
       const urlScope = matchedSiteScope?.at(0)?.replace("@", "")?.toLowerCase() ?? "";
 
-      const searchText = search
+      // Strip color: prefix first so # in hex values doesn't get parsed as a tag
+      const colorMatch = search.match(/color:(\S+)/i);
+      const searchColor = colorMatch ? parseSearchColor(colorMatch[1]) : null;
+      const searchWithoutColor = search.replace(/color:\S*/i, "");
+
+      // color: prefix present but invalid color → no results
+      if (colorMatch && !searchColor) {
+        return NextResponse.json([]);
+      }
+
+      const searchText = searchWithoutColor
         .replace(GET_SITE_SCOPE_PATTERN, "")
         .replace(GET_HASHTAG_TAG_PATTERN, "")
         .trim();
 
-      const tagName = extractTagNames(search);
+      const tagName = extractTagNames(searchWithoutColor);
 
       if (ctx?.fields) {
         ctx.fields.search_text = searchText || null;
@@ -153,6 +164,9 @@ export const GET = createAxiomRouteHandler(
       let rpcQuery = supabase
         .rpc("search_bookmarks_url_tag_scope", {
           category_scope: isDiscoverPage ? undefined : categoryScope,
+          color_a: searchColor?.a ?? undefined,
+          color_b: searchColor?.b ?? undefined,
+          color_l: searchColor?.l ?? undefined,
           search_text: searchText,
           tag_scope: tagName,
           url_scope: urlScope,

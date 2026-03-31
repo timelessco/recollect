@@ -105,7 +105,9 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     // color: prefix present but invalid color → no results
     if (colorMatch && !searchColor) {
-       response.status(200).json({ data: [], error: null });; return;
+      console.warn("[search-bookmarks] Unrecognized color value:", colorMatch[1]);
+      response.status(200).json({ data: [], error: null });
+      return;
     }
 
     const searchText = searchWithoutColor
