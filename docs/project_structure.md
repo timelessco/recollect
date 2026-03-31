@@ -4,11 +4,6 @@
 
 ```tree
 .
-├── cypress/                # E2E testing with Cypress
-│   ├── e2e/               # Test specs
-│   ├── fixtures/          # Test data
-│   └── support/           # Custom commands and helpers
-│
 ├── src/env/               # Environment validation (@t3-oss/env-nextjs)
 │   ├── server.ts         # Server env schema + Vercel preset
 │   ├── client.ts         # Client (NEXT_PUBLIC_*) env schema
@@ -114,7 +109,6 @@
 
 ### Testing & Quality
 
-- **`cypress/`** - E2E testing setup
 - **`cspell.json`** - Spell checking configuration
 - **`project-words.txt`** - Custom dictionary
 

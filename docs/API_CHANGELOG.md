@@ -240,3 +240,25 @@
 No changes
 
 
+
+## 2026-03-31 [`acfef40`](https://github.com/timelessco/recollect/commit/acfef4015f1f0543fe1cf2490f9fefa79f6685e9)
+
+
+
+### API Changes
+
+### DELETE /v2/bookmarks/delete/non-cascade
+- :warning: api path removed without deprecation
+
+
+
+
+
+
+
+## 2026-03-31 [`8a73332`](https://github.com/timelessco/recollect/commit/8a733321103941f4f61ea37ea81fc068fa0a4924)
+
+
+No changes
+
+

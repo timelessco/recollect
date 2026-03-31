@@ -58,7 +58,6 @@ pnpm lint:knip # Check for unused dependencies/exports
 
 ```bash
 pnpm test         # Run tests (currently exits with 0)
-pnpm cypress:open # Open Cypress test runner
 ```
 
 ## Dependency Management

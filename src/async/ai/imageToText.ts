@@ -518,5 +518,3 @@ export const imageToText = async (
     throw error;
   }
 };
-
-export default imageToText;

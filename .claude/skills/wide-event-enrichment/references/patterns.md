@@ -131,22 +131,6 @@ if (ctx?.fields) {
 }
 ```
 
-### DELETE — non-cascade delete
-
-`src/app/api/v2/bookmarks/delete/non-cascade/route.ts`
-
-Simplest pattern:
-```typescript
-// BEFORE
-ctx.fields.user_id = userId;
-ctx.fields.bookmark_id = bookmarkId;
-
-// ... supabase.delete() ...
-
-// AFTER
-ctx.fields.deleted = true;
-```
-
 ### File upload — upload-file
 
 `src/app/api/v2/file/upload-file/route.ts`

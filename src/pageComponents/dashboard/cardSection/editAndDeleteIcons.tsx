@@ -9,7 +9,7 @@ import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import BackIcon from "@/icons/actionIcons/backIcon";
 import LinkExternalIcon from "@/icons/linkExternalIcon";
-import TrashIconGray from "@/icons/trash-icon-gray";
+import { TrashIconGray } from "@/icons/trash-icon-gray";
 import { EditPopover } from "@/pageComponents/dashboard/cardSection/edit-popover";
 import { useSupabaseSession } from "@/store/componentStore";
 import { TRASH_URL, viewValues } from "@/utils/constants";

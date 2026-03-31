@@ -35,7 +35,6 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 | 9   |        | `/api/v1/bookmarks/get/get-media-type` | `/api/v2/bookmarks/get/get-media-type` | web  | `GET_MEDIA_TYPE_API`       | supabaseCrudHelpers → useAddBookmarkMinDataOptimisticMutation |
 | 10  |        | `/api/v1/bookmarks/get/get-pdf-buffer` | `/api/v2/bookmarks/get/get-pdf-buffer` | web  | `GET_PDF_BUFFER_API`       | file-upload.ts → useFileUploadOptimisticMutation              |
 | 11  |        | `/api/v1/bookmarks/insert`             | `/api/v2/bookmarks/insert`             | ext  | —                          | Chrome extension only                                         |
-| 12  |        | `/api/v1/bookmarks/delete/non-cascade` | `/api/v2/bookmarks/delete/non-cascade` | ext  | —                          | Cypress tests only                                            |
 | 13  |        | `/api/v1/screenshot`                   | `/api/v2/screenshot`                   | web  | `WORKER_SCREENSHOT_API`    | worker.ts (server-to-server, process-queue dispatch)          |
 | 14  |        | `/api/v1/ai-enrichment`                | `/api/v2/ai-enrichment`                | web  | `AI_ENRICHMENT_API`        | worker.ts (server-to-server, process-queue dispatch)          |
 
@@ -169,9 +168,9 @@ Callers need client change only (postApi/axios → ky), NO URL change.
 
 | Category                                | Total  | Web Repo | External | Done  |
 | --------------------------------------- | ------ | -------- | -------- | ----- |
-| Pages Router → v2 (URL + client change) | 42     | 30       | 12       | 1     |
+| Pages Router → v2 (URL + client change) | 41     | 30       | 11       | 1     |
 | App Router non-v2 (client change only)  | 21     | 19       | 2        | 0     |
-| **Total**                               | **63** | **49**   | **14**   | **1** |
+| **Total**                               | **62** | **49**   | **13**   | **1** |
 
 ---
 

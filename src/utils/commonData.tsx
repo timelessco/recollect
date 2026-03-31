@@ -4,13 +4,13 @@ import { AudioIcon } from "@/icons/audio-icon";
 import { DiscoverIcon } from "@/icons/discover-icon";
 import FolderIcon from "@/icons/folderIcon";
 import { GlobeLinkIcon } from "@/icons/globe-link-icon";
-import HomeIconGray from "@/icons/home-icon-gray";
+import { HomeIconGray } from "@/icons/home-icon-gray";
 import ImageIcon from "@/icons/imageIcon";
-import InboxIconGray from "@/icons/inbox-icon-gray";
+import { InboxIconGray } from "@/icons/inbox-icon-gray";
 import SettingsIcon from "@/icons/settingsIcon";
 import { InstagramIcon } from "@/icons/social/instagram-icon";
 import { XIcon } from "@/icons/social/x-icon";
-import TrashIconGray from "@/icons/trash-icon-gray";
+import { TrashIconGray } from "@/icons/trash-icon-gray";
 import VideoIcon from "@/icons/videoIcon";
 
 import {
