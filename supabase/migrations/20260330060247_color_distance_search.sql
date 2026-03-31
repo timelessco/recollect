@@ -184,25 +184,42 @@ BEGIN
         AND
         (
             -- Color filter: OKLAB perceptual distance on pre-computed values
-            -- Stored format: { primary_color: {l,a,b}, secondary_colors: [{l,a,b},...] }
+            -- Stored format: { primary_color: {l,a,b} | null, secondary_colors: [{l,a,b},...] }
+            -- Achromatic search (chroma < 0.04): match by low stored chroma
+            -- Chromatic search: match by full OKLAB Euclidean distance
             color_l IS NULL
             OR (
-                -- Check primary color
-                SQRT(
-                    POWER(color_l - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'l')::float), 2) +
-                    POWER(color_a - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'a')::float), 2) +
-                    POWER(color_b - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'b')::float), 2)
-                ) < 0.25
-                -- Check secondary colors
-                OR EXISTS (
-                    SELECT 1
-                    FROM jsonb_array_elements(b.meta_data->'image_keywords'->'color'->'secondary_colors') AS sc
-                    WHERE SQRT(
-                        POWER(color_l - (sc->>'l')::float, 2) +
-                        POWER(color_a - (sc->>'a')::float, 2) +
-                        POWER(color_b - (sc->>'b')::float, 2)
+                CASE WHEN SQRT(POWER(color_a, 2) + POWER(color_b, 2)) < 0.04 THEN
+                    -- Achromatic: match any stored color with low chroma (grays/blacks/whites)
+                    (
+                        b.meta_data->'image_keywords'->'color'->'primary_color'->>'a' IS NOT NULL
+                        AND SQRT(
+                            POWER(((b.meta_data->'image_keywords'->'color'->'primary_color'->>'a')::float), 2) +
+                            POWER(((b.meta_data->'image_keywords'->'color'->'primary_color'->>'b')::float), 2)
+                        ) < 0.04
+                    )
+                    OR EXISTS (
+                        SELECT 1
+                        FROM jsonb_array_elements(b.meta_data->'image_keywords'->'color'->'secondary_colors') AS sc
+                        WHERE SQRT(POWER((sc->>'a')::float, 2) + POWER((sc->>'b')::float, 2)) < 0.04
+                    )
+                ELSE
+                    -- Chromatic: full OKLAB distance
+                    SQRT(
+                        POWER(color_l - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'l')::float), 2) +
+                        POWER(color_a - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'a')::float), 2) +
+                        POWER(color_b - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'b')::float), 2)
                     ) < 0.25
-                )
+                    OR EXISTS (
+                        SELECT 1
+                        FROM jsonb_array_elements(b.meta_data->'image_keywords'->'color'->'secondary_colors') AS sc
+                        WHERE SQRT(
+                            POWER(color_l - (sc->>'l')::float, 2) +
+                            POWER(color_a - (sc->>'a')::float, 2) +
+                            POWER(color_b - (sc->>'b')::float, 2)
+                        ) < 0.25
+                    )
+                END
             )
         )
 
@@ -226,11 +243,29 @@ BEGIN
                 ) * 0.1
             )
         END +
-        -- Color ranking: primary color weighted higher than secondary
+        -- Color ranking: achromatic ranks by lightness closeness, chromatic by OKLAB distance
         CASE
-            WHEN color_l IS NOT NULL THEN
+            WHEN color_l IS NULL THEN 0
+            WHEN SQRT(POWER(color_a, 2) + POWER(color_b, 2)) < 0.04 THEN
+                -- Achromatic: rank by lightness distance (closer lightness = higher score)
                 GREATEST(
-                    -- Primary color match (weight 0.15)
+                    CASE WHEN b.meta_data->'image_keywords'->'color'->'primary_color'->>'a' IS NOT NULL
+                        AND SQRT(
+                            POWER(((b.meta_data->'image_keywords'->'color'->'primary_color'->>'a')::float), 2) +
+                            POWER(((b.meta_data->'image_keywords'->'color'->'primary_color'->>'b')::float), 2)
+                        ) < 0.04
+                    THEN GREATEST(0, (1.0 - ABS(color_l - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'l')::float))) * 0.15)
+                    ELSE 0 END,
+                    COALESCE(
+                        (SELECT MAX(GREATEST(0, (1.0 - ABS(color_l - (sc->>'l')::float)) * 0.10))
+                        FROM jsonb_array_elements(b.meta_data->'image_keywords'->'color'->'secondary_colors') AS sc
+                        WHERE SQRT(POWER((sc->>'a')::float, 2) + POWER((sc->>'b')::float, 2)) < 0.04),
+                        0
+                    )
+                )
+            ELSE
+                -- Chromatic: rank by full OKLAB distance
+                GREATEST(
                     CASE WHEN b.meta_data->'image_keywords'->'color'->'primary_color'->>'l' IS NOT NULL THEN
                         GREATEST(0, (1.0 - SQRT(
                             POWER(color_l - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'l')::float), 2) +
@@ -238,7 +273,6 @@ BEGIN
                             POWER(color_b - ((b.meta_data->'image_keywords'->'color'->'primary_color'->>'b')::float), 2)
                         )) * 0.15)
                     ELSE 0 END,
-                    -- Best secondary color match (weight 0.10)
                     COALESCE(
                         (SELECT MAX(GREATEST(0, (1.0 - SQRT(
                             POWER(color_l - (sc->>'l')::float, 2) +
@@ -249,7 +283,6 @@ BEGIN
                         0
                     )
                 )
-            ELSE 0
         END
         DESC,
         b.inserted_at DESC;
