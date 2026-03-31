@@ -1,17 +1,15 @@
 import { useEffect, useMemo } from "react";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { flatten } from "lodash";
 
-import type { SupabaseSessionType } from "../../../types/apiTypes";
-import type { BookmarksSortByTypes } from "../../../types/componentStoreTypes";
+import type { SingleListData } from "@/types/apiTypes";
 
-import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
-import useGetSortBy from "../../../hooks/useGetSortBy";
-import { useLoadersStore, useSupabaseSession } from "../../../store/componentStore";
-import { isNonNullable } from "../../../utils/assertion-utils";
-import { BOOKMARKS_KEY, DISCOVER_URL, PAGINATION_LIMIT } from "../../../utils/constants";
-import { fetchBookmarksData } from "../../supabaseCrudHelpers";
+import useGetCurrentCategoryId from "@/hooks/useGetCurrentCategoryId";
+import useGetSortBy from "@/hooks/useGetSortBy";
+import { api } from "@/lib/api-helpers/api-v2";
+import { useLoadersStore, useSupabaseSession } from "@/store/componentStore";
+import { isNonNullable } from "@/utils/assertion-utils";
+import { BOOKMARKS_KEY, DISCOVER_URL, PAGINATION_LIMIT } from "@/utils/constants";
 
 interface UseFetchPaginatedBookmarksOptions {
   enabled?: boolean;
@@ -36,16 +34,24 @@ export default function useFetchPaginatedBookmarks(
     fetchNextPage,
     isFetching: isFetchingEverythingData,
     isLoading: isEverythingDataLoading,
-    /* oxlint-disable @tanstack/query/exhaustive-deps -- session?.user?.id is the cache-relevant part, full session would over-refetch */
   } = useInfiniteQuery({
     enabled: enabled && CATEGORY_ID !== DISCOVER_URL,
-    queryFn: (data) =>
-      fetchBookmarksData(data, session as SupabaseSessionType, sortBy as BookmarksSortByTypes),
+    queryFn: async ({ pageParam }) => {
+      const data = await api
+        .get("v2/bookmark/fetch-bookmarks-data", {
+          searchParams: {
+            category_id: String(CATEGORY_ID ?? "null"),
+            from: pageParam,
+            ...(sortBy ? { sort_by: sortBy } : {}),
+          },
+        })
+        .json<SingleListData[]>();
+      return { data };
+    },
     initialPageParam: 0,
     getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,
     queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
   });
-  /* oxlint-enable @tanstack/query/exhaustive-deps */
 
   useEffect(() => {
     if (everythingData && isSortByLoading) {
@@ -55,7 +61,7 @@ export default function useFetchPaginatedBookmarks(
 
   // Flatten paginated data reactively - this updates when cache changes
   const flattendPaginationBookmarkData = useMemo(
-    () => flatten(everythingData?.pages?.map((page) => page?.data)).filter(isNonNullable),
+    () => everythingData?.pages?.flatMap((page) => page?.data ?? []).filter(isNonNullable) ?? [],
     [everythingData],
   );
 
