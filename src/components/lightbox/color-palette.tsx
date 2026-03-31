@@ -9,35 +9,23 @@ interface ColorPaletteProps {
 }
 
 export function ColorPalette({ colors }: ColorPaletteProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   if (colors.length === 0) {
     return null;
   }
 
-  const getMarginClass = (index: number) => {
-    if (index === 0) {
-      return "";
-    }
-    return isExpanded ? "ml-1" : "-ml-2";
-  };
-
   return (
     <TooltipPrimitive.Provider>
       <div
-        className="flex items-center"
-        onMouseEnter={() => {
-          setIsExpanded(true);
-        }}
+        className="group flex items-center"
         onMouseLeave={() => {
-          setIsExpanded(false);
           setCopiedIndex(null);
         }}
       >
         {colors.map((hex, index) => (
           <div
-            className={`transition-[margin] duration-200 ${getMarginClass(index)}`}
+            className={`transition-[margin] duration-200 ${index === 0 ? "" : "-ml-2 group-hover:ml-1"}`}
             key={hex}
             style={{ zIndex: colors.length - index }}
           >
