@@ -290,3 +290,10 @@ No changes
 No changes
 
 
+
+## 2026-04-01 [`493f9a3`](https://github.com/timelessco/recollect/commit/493f9a3091cdd4f9c450792b94412c5e5ad5dcd9)
+
+
+No changes
+
+
