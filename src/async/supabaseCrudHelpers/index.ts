@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import axios from "axios";
 import { isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
@@ -543,19 +543,17 @@ export const getMediaType = async (url: string): Promise<null | string> => {
 
 export const validateApiKey = async (apikey: string) => {
   try {
-    const genAI = new GoogleGenerativeAI(apikey);
-    const model = genAI.getGenerativeModel({
+    const ai = new GoogleGenAI({ apiKey: apikey });
+    const response = await ai.models.generateContent({
+      contents: ["Hey there!"],
       model: GEMINI_MODEL,
     });
 
-    const prompt = "Hey there!";
-    const result = await model.generateContent([prompt]);
-
-    if (!result.response.text()) {
+    if (!response.text) {
       throw new Error("response not generated");
     }
 
-    return result;
+    return response;
   } catch {
     throw new Error("Invalid API key");
   }
