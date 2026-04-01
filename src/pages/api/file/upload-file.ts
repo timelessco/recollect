@@ -5,7 +5,10 @@ import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
 import { isEmpty } from "lodash";
 
-import type { StructuredKeywords, UserCollection } from "../../../async/ai/image-analysis";
+import type {
+  StructuredKeywords,
+  UserCollection,
+} from "../../../async/ai/schemas/image-analysis-schema";
 import type {
   ImgMetadataType,
   SingleListData,

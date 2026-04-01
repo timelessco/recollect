@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import { decode } from "base64-arraybuffer";
 import uniqid from "uniqid";
 
-import type { StructuredKeywords } from "@/async/ai/image-analysis";
+import type { StructuredKeywords } from "@/async/ai/schemas/image-analysis-schema";
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
