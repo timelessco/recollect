@@ -304,3 +304,32 @@ No changes
 No changes
 
 
+
+## 2026-04-01 [`7e457ba`](https://github.com/timelessco/recollect/commit/7e457ba547e2789c541164ac7ccf6630eca5c63d)
+
+
+
+### API Changes
+
+### GET /bookmark/fetch-bookmarks-discoverable
+- :warning: the 'data/items/meta_data/image_keywords/anyOf[subschema #2]/color' response's property type/format changed from 'array'/'' to 'object'/'' for status '200'
+-  added the required property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/color/primary_color' to the response with the '200' status
+-  added the required property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/color/secondary_colors' to the response with the '200' status
+
+
+### GET /bookmark/fetch-discoverable-by-id
+- :warning: the 'data/meta_data/image_keywords/anyOf[subschema #2]/color' response's property type/format changed from 'array'/'' to 'object'/'' for status '200'
+-  added the required property 'data/meta_data/image_keywords/anyOf[subschema #2]/color/primary_color' to the response with the '200' status
+-  added the required property 'data/meta_data/image_keywords/anyOf[subschema #2]/color/secondary_colors' to the response with the '200' status
+
+
+### GET /bookmark/fetch-public-bookmark-by-id
+- :warning: the 'data/meta_data/image_keywords/anyOf[subschema #2]/color' response's property type/format changed from 'array'/'' to 'object'/'' for status '200'
+-  added the required property 'data/meta_data/image_keywords/anyOf[subschema #2]/color/primary_color' to the response with the '200' status
+-  added the required property 'data/meta_data/image_keywords/anyOf[subschema #2]/color/secondary_colors' to the response with the '200' status
+
+
+
+
+
+
