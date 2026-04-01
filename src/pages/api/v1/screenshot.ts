@@ -10,7 +10,7 @@ import { upload } from "@/lib/storage/media-upload";
 import { autoAssignCollections, fetchUserCollections } from "@/utils/auto-assign-collections";
 import { resolveContentType } from "@/utils/resolve-content-type";
 
-import { imageToText } from "../../../async/ai/imageToText";
+import { imageToText } from "../../../async/ai/image-analysis";
 import { fetchAiToggles } from "../../../utils/ai-feature-toggles";
 import { MAIN_TABLE_NAME, PDF_MIME_TYPE, SCREENSHOT_API } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";

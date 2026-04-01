@@ -466,6 +466,10 @@ export type Database = {
           tag_user_id: string;
         }[];
       };
+      enqueue_chrome_bookmarks: {
+        Args: { p_bookmarks: Json; p_user_id: string };
+        Returns: Json;
+      };
       enqueue_instagram_bookmarks: {
         Args: { p_bookmarks: Json; p_user_id: string };
         Returns: Json;
@@ -476,6 +480,10 @@ export type Database = {
       };
       enqueue_twitter_bookmarks: {
         Args: { p_bookmarks: Json; p_user_id: string };
+        Returns: Json;
+      };
+      get_chrome_bookmark_sync_status: {
+        Args: { p_user_id: string };
         Returns: Json;
       };
       extract_keywords_text: {
@@ -505,6 +513,7 @@ export type Database = {
           status_code: number;
         }[];
       };
+      invoke_chrome_bookmark_worker: { Args: never; Returns: number };
       invoke_instagram_worker: { Args: never; Returns: number };
       invoke_raindrop_worker: { Args: never; Returns: number };
       invoke_twitter_worker: { Args: never; Returns: number };
@@ -513,6 +522,19 @@ export type Database = {
           p_category_name: string;
           p_msg_id?: number;
           p_url: string;
+          p_user_id: string;
+        };
+        Returns: Json;
+      };
+      process_chrome_bookmark: {
+        Args: {
+          p_bookmark_id: number;
+          p_category_name?: string;
+          p_favicon?: string;
+          p_inserted_at?: string;
+          p_media_type?: string;
+          p_msg_id?: number;
+          p_og_image?: string;
           p_user_id: string;
         };
         Returns: Json;
@@ -558,12 +580,20 @@ export type Database = {
         Args: { p_msg_ids: number[] };
         Returns: Json;
       };
+      retry_all_chrome_bookmark_imports: {
+        Args: { p_user_id: string };
+        Returns: Json;
+      };
       retry_all_instagram_imports: {
         Args: { p_user_id: string };
         Returns: Json;
       };
       retry_all_raindrop_imports: { Args: { p_user_id: string }; Returns: Json };
       retry_all_twitter_imports: { Args: { p_user_id: string }; Returns: Json };
+      retry_chrome_bookmark_import: {
+        Args: { p_msg_ids: number[]; p_user_id: string };
+        Returns: Json;
+      };
       retry_instagram_import: {
         Args: { p_msg_ids: number[]; p_user_id: string };
         Returns: Json;

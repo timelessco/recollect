@@ -7,7 +7,7 @@ import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { BookmarkContentType } from "@/utils/resolve-content-type";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { imageToText } from "@/async/ai/imageToText";
+import { imageToText } from "@/async/ai/image-analysis";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";
 import { fetchUserCollections } from "@/utils/auto-assign-collections";
 import { blurhashFromURL } from "@/utils/getBlurHash";

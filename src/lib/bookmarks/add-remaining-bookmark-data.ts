@@ -6,7 +6,7 @@ import type { StructuredKeywords } from "@/async/ai/schemas/image-analysis";
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { imageToText } from "@/async/ai/imageToText";
+import { imageToText } from "@/async/ai/image-analysis";
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";

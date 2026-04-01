@@ -18,7 +18,7 @@ import { fetchAiToggles } from "@/utils/ai-feature-toggles";
 import { autoAssignCollections, fetchUserCollections } from "@/utils/auto-assign-collections";
 import { resolveContentType } from "@/utils/resolve-content-type";
 
-import { imageToText } from "../../../async/ai/imageToText";
+import { imageToText } from "../../../async/ai/image-analysis";
 import { AUDIO_OG_IMAGE_FALLBACK_URL, MAIN_TABLE_NAME } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
