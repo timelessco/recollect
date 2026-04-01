@@ -554,7 +554,7 @@ export const validateApiKey = async (apikey: string) => {
     }
 
     return response;
-  } catch {
-    throw new Error("Invalid API key");
+  } catch (error) {
+    throw new Error("Invalid API key", { cause: error });
   }
 };
