@@ -347,3 +347,26 @@ No changes
 No changes
 
 
+
+## 2026-04-01 [`4221439`](https://github.com/timelessco/recollect/commit/42214394db37a9439e44177bf6526ef251639e73)
+
+
+
+### API Changes
+
+### POST /v2/chrome-bookmarks/import
+-  endpoint added
+
+
+### POST /v2/chrome-bookmarks/import/retry
+-  endpoint added
+
+
+### GET /v2/chrome-bookmarks/import/status
+-  endpoint added
+
+
+
+
+
+
