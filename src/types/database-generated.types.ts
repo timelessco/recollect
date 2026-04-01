@@ -643,6 +643,9 @@ export type Database = {
       search_bookmarks_url_tag_scope: {
         Args: {
           category_scope?: number;
+          color_a?: number;
+          color_b?: number;
+          color_l?: number;
           search_text?: string;
           tag_scope?: string[];
           url_scope?: string;

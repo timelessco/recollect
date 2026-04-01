@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
+import { converter } from "culori";
 
 import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { BookmarkContentType } from "@/utils/resolve-content-type";
@@ -23,8 +24,19 @@ export interface ImageToTextContextProps {
   url?: null | string;
 }
 
+export interface OklabColor {
+  a: number;
+  b: number;
+  l: number;
+}
+
+export interface BookmarkColors {
+  primary_color: OklabColor | null;
+  secondary_colors: OklabColor[];
+}
+
 export interface StructuredKeywords {
-  color?: string[];
+  color?: BookmarkColors;
   features?: Record<string, string | string[]>;
   object?: string[];
   people?: string[];
@@ -252,7 +264,7 @@ export const imageToText = async (
         '- "people": ONLY named/identifiable people — use their actual name from text, metadata, or URL. Include directors, cast, authors. Do NOT output generic labels like man/woman/person — omit entirely if unknown.',
         '- "object": physical objects visible in the image.',
         '- "place": locations, settings, landmarks.',
-        '- "color": dominant colors as hex codes (e.g. "#FF5733", "#1A1A1A").',
+        '- "color": array of hex codes, PRIMARY/dominant color FIRST, then secondary colors (e.g. ["#FF5733", "#1A1A1A"]).',
         "",
         '- "features": a flat object (NOT an array) for searchable metadata about the content. Include any key-value pair that helps identify or find the bookmark later. Common examples by domain:',
         "  Universal: brand (the company/studio, NOT the hosting platform and NOT the content title — e.g. brand is 'Madhouse' not 'One Punch Man'), title (show/movie/book/series name), author, source, rating, duration, reading_time.",
@@ -380,7 +392,7 @@ export const imageToText = async (
           const parsed: unknown = JSON.parse(jsonMatch[0]);
           if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
             const obj = parsed as Record<string, unknown>;
-            const ARRAY_KEYS = new Set(["color", "object", "people", "place", "type"]);
+            const ARRAY_KEYS = new Set(["object", "people", "place", "type"]);
 
             for (const arrayKey of ARRAY_KEYS) {
               const value = obj[arrayKey];
@@ -389,8 +401,32 @@ export const imageToText = async (
                   (item): item is string => typeof item === "string" && item.trim().length > 0,
                 );
                 if (filtered.length > 0) {
-                  image_keywords[arrayKey as keyof Omit<StructuredKeywords, "features">] = filtered;
+                  image_keywords[arrayKey as keyof Omit<StructuredKeywords, "color" | "features">] =
+                    filtered;
                 }
+              }
+            }
+
+            // Convert color hex codes to OKLAB format with primary/secondary structure
+            const colorValue = obj.color;
+            if (Array.isArray(colorValue)) {
+              const toOklab = converter("oklab");
+              const hexColors = colorValue.filter(
+                (item): item is string => typeof item === "string" && item.trim().length > 0,
+              );
+              const oklabColors = hexColors
+                .map((hex) => {
+                  const oklab = toOklab(hex);
+                  if (!oklab) {
+                    return null;
+                  }
+                  return { a: oklab.a ?? 0, b: oklab.b ?? 0, l: oklab.l ?? 0 };
+                })
+                .filter((c): c is OklabColor => c !== null);
+
+              if (oklabColors.length > 0) {
+                const [primary, ...secondary] = oklabColors;
+                image_keywords.color = { primary_color: primary, secondary_colors: secondary };
               }
             }
 
