@@ -31,9 +31,7 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
                   void copy(hex);
                 }}
                 onMouseEnter={() => {
-                  if (copiedText !== hex) {
-                    resetCopied();
-                  }
+                  resetCopied();
                 }}
                 style={{ backgroundColor: hex }}
               />
