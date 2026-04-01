@@ -36,6 +36,10 @@ export const POST = createAxiomRouteHandler(
           });
         }
 
+        if (ctx?.fields) {
+          ctx.fields.retried_count = result;
+        }
+
         return result;
       }
 
@@ -53,6 +57,10 @@ export const POST = createAxiomRouteHandler(
           message: "Failed to retry all imports",
           operation: "retry_all_imports",
         });
+      }
+
+      if (ctx?.fields) {
+        ctx.fields.retried_count = result;
       }
 
       return result;
