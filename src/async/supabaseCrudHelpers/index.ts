@@ -7,7 +7,6 @@ import isNull from "lodash/isNull";
 import type {
   AddBookmarkMinDataPayloadTypes,
   AddBookmarkScreenshotPayloadTypes,
-  BookmarksCountTypes,
   BookmarkViewDataTypes,
   CategoriesData,
   DeleteBookmarkPayload,
@@ -31,7 +30,6 @@ import type {
   UserTagsData,
 } from "../../types/apiTypes";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { QueryFunctionContext, QueryKey } from "@tanstack/react-query";
 
 import { handleClientError } from "@/utils/error-utils/client";
 
@@ -44,7 +42,6 @@ import {
   DELETE_SHARED_CATEGORIES_USER_API,
   DELETE_USER_API,
   DELETE_USER_CATEGORIES_API,
-  FETCH_BOOKMARKS_COUNT,
   FETCH_BOOKMARKS_VIEW,
   FETCH_SHARED_CATEGORIES_DATA_API,
   FETCH_USER_CATEGORIES_API,
@@ -115,41 +112,6 @@ export const getGeminiApiKey = async (): Promise<GetApiKeyResponse> => {
   } catch (error) {
     handleClientError(error, "Failed to get API key try again later ");
     return { data: null };
-  }
-};
-
-export const getBookmarksCount = async (
-  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-  queryData: QueryFunctionContext<QueryKey, any>,
-  session: SupabaseSessionType,
-): Promise<{ data: BookmarksCountTypes | null; error: Error }> => {
-  const userId =
-    !isEmpty(queryData?.queryKey) && queryData?.queryKey?.length < 4
-      ? queryData?.queryKey[1]
-      : undefined;
-
-  if (!session?.user) {
-    return {
-      data: null,
-      error: { message: "No user session", name: "No user session" },
-    };
-  }
-
-  if (userId) {
-    try {
-      const bookmarksData = await axios.get<{
-        data: BookmarksCountTypes;
-        error: Error;
-      }>(`${NEXT_API_URL}${FETCH_BOOKMARKS_COUNT}`);
-
-      return bookmarksData?.data;
-    } catch (error_) {
-      const error = error_ as Error;
-      return { data: null, error };
-    }
-  } else {
-    // return undefined;
-    return { data: null, error: { message: "NO user id", name: "NO user id" } };
   }
 };
 

@@ -5,7 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { CollectionItemTypes } from "./singleListItemComponent";
 
 import { useToggleFavoriteCategoryOptimisticMutation } from "@/async/mutationHooks/user/use-toggle-favorite-category-optimistic-mutation";
-import useFetchBookmarksCount from "@/async/queryHooks/bookmarks/useFetchBookmarksCount";
+import useFetchBookmarksCount from "@/async/queryHooks/bookmarks/use-fetch-bookmarks-count";
 import { DeleteCollectionConfirm } from "@/components/delete-collection-confirm";
 import { AnimatedSize } from "@/components/ui/recollect/animated-size";
 import { Menu } from "@/components/ui/recollect/menu";
@@ -184,7 +184,7 @@ function DeleteCollectionContent({ categoryId, isCurrent }: DeleteCollectionCont
   });
   const { bookmarksCountData } = useFetchBookmarksCount();
   const count =
-    bookmarksCountData?.data?.categoryCount?.find((category) => category.category_id === categoryId)
+    bookmarksCountData?.categoryCount?.find((category) => category.category_id === categoryId)
       ?.count ?? 0;
 
   return (

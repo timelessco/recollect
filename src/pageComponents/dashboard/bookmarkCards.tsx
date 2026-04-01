@@ -9,9 +9,9 @@ import omit from "lodash/omit";
 import { useMoveBookmarkToTrashOptimisticMutation } from "../../async/mutationHooks/bookmarks/use-move-bookmark-to-trash-optimistic-mutation";
 import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
+import useFetchBookmarksCount from "../../async/queryHooks/bookmarks/use-fetch-bookmarks-count";
 import useFetchPaginatedBookmarks from "../../async/queryHooks/bookmarks/use-fetch-paginated-bookmarks";
 import useSearchBookmarks from "../../async/queryHooks/bookmarks/use-search-bookmarks";
-import useFetchBookmarksCount from "../../async/queryHooks/bookmarks/useFetchBookmarksCount";
 import { clipboardUpload } from "../../async/uploads/clipboard-upload";
 import { useFileUploadDrop } from "../../hooks/useFileUploadDrop";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
@@ -132,7 +132,7 @@ export const BookmarkCards = () => {
                 }
                 hasMore={hasMoreBookmarks({
                   categoryId: CATEGORY_ID,
-                  countData: bookmarksCountData?.data,
+                  countData: bookmarksCountData,
                   dataLength: flattendPaginationBookmarkData?.length,
                   hasPaginatedData: (everythingData?.pages?.length ?? 0) > 0,
                   isSearching,
