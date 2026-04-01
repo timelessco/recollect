@@ -25,7 +25,7 @@ export const GET = createAxiomRouteHandler(
 
       const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.username = userName;
+        ctx.fields.user_slug = userName;
         ctx.fields.category_slug = categorySlug;
       }
 
@@ -133,6 +133,13 @@ export const GET = createAxiomRouteHandler(
         const { [BOOKMARK_CATEGORIES_TABLE_NAME]: _junction, ...rest } = item;
         return rest;
       });
+
+      // Result counts AFTER the query
+      if (ctx?.fields) {
+        ctx.fields.category_found = true;
+        ctx.fields.bookmark_count = bookmarks?.length ?? 0;
+        ctx.fields.page = page;
+      }
 
       return {
         bookmarks: bookmarks ?? [],

@@ -12,6 +12,13 @@ const ROUTE = "v2-bookmark-add-remaining-bookmark-data";
 export const POST = createAxiomRouteHandler(
   withAuth({
     handler: async ({ data, supabase, user }) => {
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = user.id;
+        ctx.fields.bookmark_id = data.id;
+        ctx.fields.url = data.url;
+      }
+
       await addRemainingBookmarkData({
         id: data.id,
         url: data.url,
@@ -20,10 +27,8 @@ export const POST = createAxiomRouteHandler(
         userId: user.id,
       });
 
-      const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.user_id = user.id;
-        ctx.fields.bookmark_id = data.id;
+        ctx.fields.enrichment_completed = true;
       }
 
       return { status: "completed" };

@@ -10,6 +10,7 @@ import { getBookmarksCount } from "../../supabaseCrudHelpers";
 export default function useFetchBookmarksCount() {
   const session = useSupabaseSession((state) => state.session);
 
+  /* oxlint-disable @tanstack/query/exhaustive-deps -- session?.user?.id is the cache-relevant part, full session would over-refetch */
   const { data: bookmarksCountData } = useQuery<{
     data: BookmarksCountTypes | null;
     error: Error;
@@ -17,9 +18,9 @@ export default function useFetchBookmarksCount() {
     queryFn: (data) =>
       // @ts-expect-error - Todo fix this
       getBookmarksCount(data, session ?? { user: null }),
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
   });
+  /* oxlint-enable @tanstack/query/exhaustive-deps */
 
   return {
     bookmarksCountData,

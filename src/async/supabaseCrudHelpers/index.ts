@@ -8,12 +8,10 @@ import type {
   AddBookmarkMinDataPayloadTypes,
   AddBookmarkScreenshotPayloadTypes,
   BookmarksCountTypes,
-  BookmarksPaginatedDataTypes,
   BookmarkViewDataTypes,
   CategoriesData,
   DeleteBookmarkPayload,
   DeleteUserCategoryApiPayload,
-  FetchDataResponse,
   FetchSharedCategoriesData,
   GetUserProfilePicPayload,
   MoveBookmarkToTrashApiPayload,
@@ -32,8 +30,6 @@ import type {
   UserProfilePicTypes,
   UserTagsData,
 } from "../../types/apiTypes";
-import type { BookmarksSortByTypes } from "../../types/componentStoreTypes";
-import type { CategoryIdUrlTypes } from "../../types/componentTypes";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { QueryFunctionContext, QueryKey } from "@tanstack/react-query";
 
@@ -48,9 +44,7 @@ import {
   DELETE_SHARED_CATEGORIES_USER_API,
   DELETE_USER_API,
   DELETE_USER_CATEGORIES_API,
-  FETCH_BOOKMARK_BY_ID_API,
   FETCH_BOOKMARKS_COUNT,
-  FETCH_BOOKMARKS_DATA_API,
   FETCH_BOOKMARKS_VIEW,
   FETCH_SHARED_CATEGORIES_DATA_API,
   FETCH_USER_CATEGORIES_API,
@@ -62,11 +56,8 @@ import {
   getBaseUrl,
   MOVE_BOOKMARK_TO_TRASH_API,
   NEXT_API_URL,
-  NO_BOOKMARKS_ID_ERROR,
-  PAGINATION_LIMIT,
   REMOVE_PROFILE_PIC_API,
   SAVE_API_KEY_API,
-  SEARCH_BOOKMARKS,
   SEND_COLLABORATION_EMAIL_API,
   UPDATE_CATEGORY_ORDER_API,
   UPDATE_SHARED_CATEGORY_USER_ROLE_API,
@@ -78,23 +69,6 @@ import {
 } from "../../utils/constants";
 // eslint-disable-next-line import/no-cycle -- circular dep between helpers and supabaseCrudHelpers needs structural refactor
 import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
-
-// bookmark
-// get bookmark by id
-export const fetchBookmarkById = async (id: string) => {
-  try {
-    if (!id) {
-      throw new Error(NO_BOOKMARKS_ID_ERROR);
-    }
-
-    const response = await axios.get<{ data: SingleListData }>(
-      `${NEXT_API_URL}${FETCH_BOOKMARK_BY_ID_API}${id}`,
-    );
-    return response?.data;
-  } catch (error) {
-    return error;
-  }
-};
 
 // user settings and keys
 export const saveApiKey = async ({
@@ -141,53 +115,6 @@ export const getGeminiApiKey = async (): Promise<GetApiKeyResponse> => {
   } catch (error) {
     handleClientError(error, "Failed to get API key try again later ");
     return { data: null };
-  }
-};
-
-// bookmark
-// gets bookmarks data
-export const fetchBookmarksData = async (
-  {
-    pageParam: pageParameter = 0,
-    queryKey,
-  }: // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-  QueryFunctionContext<(null | number | string | undefined)[], any>,
-  session: SupabaseSessionType,
-  sortBy: BookmarksSortByTypes,
-) => {
-  const categoryId = !isEmpty(queryKey) && queryKey?.length <= 4 ? queryKey[2] : null;
-
-  const userId = !isEmpty(queryKey) && queryKey?.length <= 5 ? queryKey[1] : null;
-
-  if (!userId) {
-    return { count: {}, data: [], error: null } as unknown as FetchDataResponse;
-  }
-
-  if (!session?.user) {
-    return;
-  }
-
-  if (!sortBy) {
-    return;
-  }
-
-  try {
-    const bookmarksData = await axios.get<{
-      count: BookmarksCountTypes;
-      data: { data: SingleListData[] };
-    }>(
-      `${NEXT_API_URL}${FETCH_BOOKMARKS_DATA_API}?category_id=${
-        isNull(categoryId) ? "null" : categoryId
-      }&from=${pageParameter as string}&sort_by=${sortBy}`,
-    );
-
-    return {
-      count: bookmarksData?.data?.count,
-      data: bookmarksData?.data?.data,
-      error: null,
-    } as unknown as FetchDataResponse;
-  } catch (error) {
-    return { data: undefined, error } as unknown as FetchDataResponse;
   }
 };
 
@@ -302,46 +229,6 @@ export const clearBookmarksInTrash = async () => {
   } catch (error) {
     return error;
   }
-};
-
-export const searchBookmarks = async (
-  searchText: string,
-  category_id: CategoryIdUrlTypes,
-  isSharedCategory: boolean,
-  offset = 0,
-  limit = PAGINATION_LIMIT,
-): Promise<{
-  data: BookmarksPaginatedDataTypes[] | null;
-  error: Error | null;
-}> => {
-  if (!isEmpty(searchText) && searchText !== "#") {
-    const categoryId = !isNull(category_id) ? category_id : "null";
-
-    // directly using '#' in the params might cause issues
-    const parameters = new URLSearchParams({
-      category_id: String(categoryId ?? ""),
-      is_shared_category: String(isSharedCategory ?? ""),
-      limit: String(limit ?? PAGINATION_LIMIT),
-      offset: String(offset ?? 0),
-      search: searchText ?? "",
-    });
-
-    try {
-      const response = await axios.get<{
-        data: BookmarksPaginatedDataTypes[];
-        error: Error | null;
-      }>(`${NEXT_API_URL}${SEARCH_BOOKMARKS}?${parameters.toString()}`);
-      return response?.data;
-    } catch (error_) {
-      const error = error_ as Error;
-      return { data: null, error };
-    }
-  }
-
-  return {
-    data: null,
-    error: { message: "No search text provided", name: "error" },
-  };
 };
 
 // user tags

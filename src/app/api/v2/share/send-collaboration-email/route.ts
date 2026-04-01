@@ -15,10 +15,11 @@ export const POST = createAxiomRouteHandler(
     handler: async ({ data: input, supabase, user }) => {
       const [emailAddress] = input.emailList;
 
+      // Entity IDs + input context BEFORE operations (PII fix D-10: boolean signal, not raw email)
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = user.id;
-        ctx.fields.collaboration_email = emailAddress;
+        ctx.fields.has_collaboration_email = Boolean(emailAddress);
         ctx.fields.category_id = input.category_id;
       }
 
@@ -99,6 +100,11 @@ export const POST = createAxiomRouteHandler(
           message: "Error sending email",
           operation: "send_collaboration_email",
         });
+      }
+
+      // Outcome flags AFTER operations
+      if (ctx?.fields) {
+        ctx.fields.collaboration_sent = true;
       }
 
       return { url: inviteUrl };

@@ -20,5 +20,3 @@ export const HomeIconGray = (props: IconProps) => (
     />
   </Icon>
 );
-
-export default HomeIconGray;

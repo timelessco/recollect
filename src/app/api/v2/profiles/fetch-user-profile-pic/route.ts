@@ -12,6 +12,11 @@ export const GET = createAxiomRouteHandler(
     handler: async ({ data, supabase, user }) => {
       const userId = user.id;
 
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+      }
+
       const { data: result, error } = await supabase
         .from(PROFILES)
         .select("profile_pic")
@@ -25,10 +30,8 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
-      const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.user_id = userId;
-        ctx.fields.email = data.email;
+        ctx.fields.has_profile_pic = result.length > 0 && result[0].profile_pic !== null;
       }
 
       return result;

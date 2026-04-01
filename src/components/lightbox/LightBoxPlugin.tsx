@@ -6,7 +6,7 @@ import { createModule, useLightboxState } from "yet-another-react-lightbox";
 import type { CustomSlide } from "./LightboxUtils";
 import type { Plugin, Slide } from "yet-another-react-lightbox";
 
-import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/useFetchBookmarkById";
+import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/use-fetch-bookmark-by-id";
 import { Spinner } from "../spinner";
 import { DesktopSidepane } from "./desktop-sidepane";
 import { MobileBottomSheet } from "./mobile-bottom-sheet";
@@ -32,8 +32,8 @@ const MyComponent = () => {
     enabled: shouldFetch,
   });
 
-  if (!currentBookmark && bookmark?.data) {
-    currentBookmark = bookmark.data;
+  if (!currentBookmark && bookmark?.[0]) {
+    [currentBookmark] = bookmark;
   }
 
   if (!currentBookmark) {

@@ -39,12 +39,13 @@ const SPECIAL_CATEGORY_URLS = new Set([
   LINKS_URL,
   TRASH_URL,
   TWEETS_URL,
+  UNCATEGORIZED_URL,
   VIDEOS_URL,
 ]);
 
 /**
  * Checks if a category_id represents a user's collection (not a special URL).
- * Ported from helpers.ts isUserInACategoryInApi (without uncategorized check).
+ * Ported from helpers.ts isUserInACategoryInApi.
  */
 function isUserCollection(categoryId: string): boolean {
   return categoryId !== "null" && categoryId !== "" && !SPECIAL_CATEGORY_URLS.has(categoryId);
@@ -120,8 +121,8 @@ export const GET = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.is_discover = isDiscoverPage;
-        ctx.fields.search_query = search;
         ctx.fields.category_id = categoryId;
+        ctx.fields.offset = offset;
       }
 
       // Parse search modifiers: @domain.com site scope and #tag filters
@@ -135,10 +136,16 @@ export const GET = createAxiomRouteHandler(
 
       const tagName = extractTagNames(search);
 
+      if (ctx?.fields) {
+        ctx.fields.search_text = searchText || null;
+        ctx.fields.tag_name = tagName?.at(0) ?? null;
+        ctx.fields.url_scope = urlScope || null;
+      }
+
       // Determine category_scope for junction table filtering
       // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
       const userInCollections = isUserCollection(categoryId ?? "");
-      let categoryScope: null | number = null;
+      let categoryScope: number | undefined;
       if (userInCollections) {
         categoryScope = categoryId === UNCATEGORIZED_URL ? 0 : Number(categoryId);
       }
@@ -146,7 +153,7 @@ export const GET = createAxiomRouteHandler(
       const isTrashPage = categoryId === TRASH_URL;
       let rpcQuery = supabase
         .rpc("search_bookmarks_url_tag_scope", {
-          category_scope: isDiscoverPage ? null : categoryScope,
+          category_scope: isDiscoverPage ? undefined : categoryScope,
           search_text: searchText,
           tag_scope: tagName,
           url_scope: urlScope,
@@ -160,21 +167,21 @@ export const GET = createAxiomRouteHandler(
         rpcQuery = rpcQuery.not("make_discoverable", "is", null);
       } else {
         if (!userInCollections) {
-          rpcQuery = rpcQuery.eq("user_id", userId);
+          rpcQuery = rpcQuery.filter("user_id", "eq", userId);
         }
 
-        if (userInCollections) {
+        if (userInCollections && categoryScope !== undefined) {
           // Check if user is the owner or ANY-level collaborator (including read-only)
           // If not, scope search results to only their own bookmarks
           const hasAccess = await isUserOwnerOrAnyCollaborator({
-            categoryId: Number(categoryId),
+            categoryId: categoryScope,
             email: userEmail,
             supabase,
             userId,
           });
 
           if (!hasAccess) {
-            rpcQuery = rpcQuery.eq("user_id", userId);
+            rpcQuery = rpcQuery.filter("user_id", "eq", userId);
           }
         }
       }
@@ -185,20 +192,25 @@ export const GET = createAxiomRouteHandler(
       }
 
       if (categoryId === TWEETS_URL) {
-        rpcQuery = rpcQuery.eq("type", tweetType);
+        rpcQuery = rpcQuery.filter("type", "eq", tweetType);
       }
 
       if (categoryId === INSTAGRAM_URL) {
-        rpcQuery = rpcQuery.eq("type", instagramType);
+        rpcQuery = rpcQuery.filter("type", "eq", instagramType);
       }
 
       if (categoryId === LINKS_URL) {
-        rpcQuery = rpcQuery.eq("type", bookmarkType);
+        rpcQuery = rpcQuery.filter("type", "eq", bookmarkType);
       }
 
       const { data, error } = await rpcQuery;
 
       if (error) {
+        if (ctx?.fields) {
+          ctx.fields.rpc_error_message = error.message;
+          ctx.fields.rpc_error_code = error.code;
+        }
+
         throw new RecollectApiError("service_unavailable", {
           cause: error,
           message: "Error executing search query",

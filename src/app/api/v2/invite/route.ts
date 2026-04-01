@@ -104,6 +104,11 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
+      // Outcome flag AFTER the operation
+      if (ctx?.fields) {
+        ctx.fields.invite_accepted = true;
+      }
+
       // Redirect to /everything on success — pin 302 explicitly
       // Query param triggers a welcome toast on the dashboard
       const headersList = await headers();

@@ -80,11 +80,11 @@ export function useAddCategoryToBookmarksOptimisticMutation() {
 
       return produce(currentData, (draft) => {
         for (const page of draft.pages) {
-          if (!page?.data) {
+          if (!page) {
             continue;
           }
 
-          for (const bookmark of page.data) {
+          for (const bookmark of page) {
             // Skip if not in selection
             if (!bookmarkIdSet.has(bookmark.id)) {
               continue;

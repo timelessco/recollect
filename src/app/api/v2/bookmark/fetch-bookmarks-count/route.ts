@@ -200,6 +200,12 @@ export const GET = createAxiomRouteHandler(
         }),
       );
 
+      if (ctx?.fields) {
+        ctx.fields.total_count = allResult.count ?? 0;
+        ctx.fields.trash_count = trashResult.count ?? 0;
+        ctx.fields.category_count_total = allCategoryIds.length;
+      }
+
       return {
         allCount: allResult.count ?? 0,
         audioCount: audioResult.count ?? 0,

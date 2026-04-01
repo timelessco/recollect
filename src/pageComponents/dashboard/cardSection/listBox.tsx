@@ -16,7 +16,7 @@ import type { SingleListData } from "../../../types/apiTypes";
 
 import { useMoveBookmarkToTrashOptimisticMutation } from "@/async/mutationHooks/bookmarks/use-move-bookmark-to-trash-optimistic-mutation";
 import useDeleteBookmarksOptimisticMutation from "@/async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
-import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
+import useSearchBookmarks from "@/async/queryHooks/bookmarks/use-search-bookmarks";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import { Checkbox } from "@/components/ui/recollect/checkbox";
 import { mutationApiCall } from "@/utils/apiHelpers";

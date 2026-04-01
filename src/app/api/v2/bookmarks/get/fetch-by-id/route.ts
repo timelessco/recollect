@@ -33,6 +33,10 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
+      if (ctx?.fields) {
+        ctx.fields.found = bookmarks.length > 0;
+      }
+
       const { data: categoriesData, error: categoriesError } = await supabase
         .from(BOOKMARK_CATEGORIES_TABLE_NAME)
         .select("bookmark_id, category_id(id, category_name, category_slug, icon, icon_color)")
@@ -56,6 +60,10 @@ export const GET = createAxiomRouteHandler(
           icon_color: item.category_id.icon_color,
           id: item.category_id.id,
         }));
+
+      if (ctx?.fields) {
+        ctx.fields.categories_count = addedCategories.length;
+      }
 
       return bookmarks.map((bookmark) => ({
         ...bookmark,

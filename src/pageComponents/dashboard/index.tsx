@@ -50,6 +50,11 @@ const Dashboard = () => {
       const isDiscoverRoute =
         categorySlug === DISCOVER_URL || window.location.pathname.startsWith(`/${DISCOVER_URL}`);
       if ((error || !data?.user) && !isDiscoverRoute) {
+        // Clear stale auth cookie to prevent redirect loop:
+        // middleware getClaims() validates JWT locally (no DB check), so a deleted user's
+        // JWT passes middleware → dashboard detects invalid user → must clear session
+        // before redirecting, otherwise middleware redirects back here endlessly
+        await supabase.auth.signOut({ scope: "local" });
         // Redirect to login with return URL (preserve query params and hash)
         const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
         window.location.href = `/${LOGIN_URL}?next=${encodeURIComponent(currentPath)}`;

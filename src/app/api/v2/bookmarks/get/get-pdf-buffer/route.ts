@@ -37,6 +37,13 @@ export const GET = createAxiomRouteHandler(
 
         const buffer = await result.arrayBuffer();
 
+        // Outcome flags AFTER the fetch
+        if (ctx?.fields) {
+          ctx.fields.pdf_fetched = true;
+          ctx.fields.content_type = result.headers.get("content-type");
+          ctx.fields.pdf_size_bytes = buffer.byteLength;
+        }
+
         return new NextResponse(buffer, {
           headers: { "Content-Type": PDF_MIME_TYPE },
         });
