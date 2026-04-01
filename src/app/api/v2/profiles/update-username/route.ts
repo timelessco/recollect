@@ -15,6 +15,12 @@ export const PATCH = createAxiomRouteHandler(
       const userId = user.id;
       const username = slugify(data.username, { lower: true, strict: true });
 
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+        ctx.fields.username_length = username.length;
+      }
+
       const { data: checkData, error: checkError } = await supabase
         .from(PROFILES)
         .select("user_name")
@@ -48,10 +54,8 @@ export const PATCH = createAxiomRouteHandler(
         });
       }
 
-      const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.user_id = userId;
-        ctx.fields.username = username;
+        ctx.fields.username_updated = true;
       }
 
       return updateData;

@@ -17,5 +17,3 @@ export const TrashIconGray = (props: IconProps) => (
     />
   </Icon>
 );
-
-export default TrashIconGray;

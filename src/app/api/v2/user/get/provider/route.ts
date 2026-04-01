@@ -13,9 +13,10 @@ export const GET = createAxiomRouteHandler(
     handler: async ({ input }) => {
       const { email } = input;
 
+      // Input context BEFORE the operation (PII fix D-09: boolean signal, not raw email)
       const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.email = email;
+        ctx.fields.has_email = Boolean(email);
       }
 
       const supabase = createServerServiceClient();
@@ -31,6 +32,12 @@ export const GET = createAxiomRouteHandler(
       }
 
       const provider = data?.at(0)?.provider ?? null;
+
+      // Outcome AFTER the operation
+      if (ctx?.fields) {
+        ctx.fields.provider = provider;
+        ctx.fields.profile_found = data.length > 0;
+      }
 
       return { provider };
     },

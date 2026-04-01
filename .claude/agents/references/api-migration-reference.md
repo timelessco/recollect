@@ -145,7 +145,6 @@ When migrating a route, do NOT blindly copy the v1 HTTP method. v1 uses POST for
 | `get-media-type`              | 3    | Public factory | `createGetApiHandler` + CORS headers |
 | `get-pdf-buffer`              | 3    | Public factory | Binary PDF via NextResponse passthrough |
 | `bookmarks/insert`            | 3    | Auth factory   | Batch insert, `createPostApiHandlerWithAuth` |
-| `bookmarks/delete/non-cascade`| 3    | Auth factory   | `createDeleteApiHandlerWithAuth`, test-only |
 | `v1/process-queue`            | 3    | Public factory | `createPostApiHandler` + internal service client |
 | `fetch-public-category-bookmarks` | 3 | Public factory | `createGetApiHandler` + service client, complex query |
 | `settings/upload-profile-pic` | 4    | Object.assign | Multipart + user auth     |

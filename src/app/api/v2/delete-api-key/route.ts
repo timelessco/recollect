@@ -12,6 +12,12 @@ export const DELETE = createAxiomRouteHandler(
     handler: async ({ supabase, user }) => {
       const userId = user.id;
 
+      // Entity IDs BEFORE the operation
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+      }
+
       const { error: updateError } = await supabase
         .from(PROFILES)
         .update({ api_key: null })
@@ -25,9 +31,9 @@ export const DELETE = createAxiomRouteHandler(
         });
       }
 
-      const ctx = getServerContext();
+      // Outcome flag AFTER the operation
       if (ctx?.fields) {
-        ctx.fields.user_id = userId;
+        ctx.fields.key_deleted = true;
       }
 
       return { success: true };

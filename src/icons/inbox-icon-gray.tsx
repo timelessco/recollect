@@ -17,5 +17,3 @@ export const InboxIconGray = (props: IconProps) => (
     />
   </Icon>
 );
-
-export default InboxIconGray;

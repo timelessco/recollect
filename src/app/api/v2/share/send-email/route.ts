@@ -14,7 +14,7 @@ export const POST = createAxiomRouteHandler(
     handler: async ({ input }) => {
       const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.recipient_email = input.emailList;
+        ctx.fields.recipient_count = 1;
       }
 
       const result = await sendInviteEmail({
@@ -23,6 +23,10 @@ export const POST = createAxiomRouteHandler(
         inviteUrl: input.url,
         recipientEmail: input.emailList,
       });
+
+      if (ctx?.fields) {
+        ctx.fields.email_sent = true;
+      }
 
       return { id: result.id };
     },

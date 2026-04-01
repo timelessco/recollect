@@ -16,7 +16,7 @@ const SidePaneTypesList = () => {
   const session = useSupabaseSession((state) => state.session);
 
   const queryClient = useQueryClient();
-  const bookmarksCountData = queryClient.getQueryData<{ data: BookmarksCountTypes }>([
+  const bookmarksCountData = queryClient.getQueryData<BookmarksCountTypes>([
     BOOKMARKS_COUNT_KEY,
     session?.user?.id,
   ]);

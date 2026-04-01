@@ -8,7 +8,7 @@ import { AnimatedSize } from "@/components/ui/recollect/animated-size";
 import { Menu } from "@/components/ui/recollect/menu";
 
 import useClearBookmarksInTrashMutation from "../../../async/mutationHooks/bookmarks/useClearBookmarksInTrashMutation";
-import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/useFetchBookmarksCount";
+import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/use-fetch-bookmarks-count";
 import { BookmarksSortDropdown } from "../../../components/customDropdowns.tsx/bookmarksSortDropdown";
 import { BookmarksViewDropdown } from "../../../components/customDropdowns.tsx/bookmarksViewDropdown";
 import { useDeleteCollectionActions } from "../../../hooks/useDeleteCollectionActions";
@@ -244,7 +244,7 @@ function ClearTrashTabContent({ onClose }: { onClose: () => void }) {
   const { clearBookmarksInTrashMutation, isPending: isClearingTrash } =
     useClearBookmarksInTrashMutation();
   const { bookmarksCountData } = useFetchBookmarksCount();
-  const trashCount = bookmarksCountData?.data?.trash ?? 0;
+  const trashCount = bookmarksCountData?.trash ?? 0;
 
   return (
     <DestructiveConfirmContent
@@ -271,7 +271,7 @@ function DeleteCollectionTabContent() {
     isCurrent: true,
   });
   const count =
-    bookmarksCountData?.data?.categoryCount?.find((category) => category.category_id === categoryId)
+    bookmarksCountData?.categoryCount?.find((category) => category.category_id === categoryId)
       ?.count ?? 0;
 
   return (

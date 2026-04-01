@@ -25,12 +25,12 @@ export function updateBookmarkInPaginatedData(
 
   const result = produce(data, (draft) => {
     for (const page of draft.pages) {
-      // Skip undefined pages or pages without data array
-      if (!page?.data) {
+      // Skip undefined pages
+      if (!page) {
         continue;
       }
 
-      const bookmark = page.data.find((bm) => bm.id === bookmarkId);
+      const bookmark = page.find((bm) => bm.id === bookmarkId);
       if (bookmark) {
         updater(bookmark);
         bookmarkFound = true;

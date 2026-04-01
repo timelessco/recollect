@@ -5,7 +5,7 @@ import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
 import { isEmpty } from "lodash";
 
-import type { UserCollection } from "../../../async/ai/imageToText";
+import type { StructuredKeywords, UserCollection } from "../../../async/ai/imageToText";
 import type {
   ImgMetadataType,
   SingleListData,
@@ -82,7 +82,7 @@ const videoLogic = async (
   let ocrData: null | string = null;
   let ocrStatus: "limit_reached" | "no_text" | "success" = "no_text";
   let imageCaption: null | string = null;
-  let imageKeywords: string[] = [];
+  let imageKeywords: StructuredKeywords = {};
   let matchedCollectionIds: number[] = [];
   if (thumbnailUrl?.publicUrl) {
     // Handle blurhash generation
@@ -109,7 +109,7 @@ const videoLogic = async (
         aiToggles,
       );
       imageCaption = imageToTextResult?.sentence ?? null;
-      imageKeywords = imageToTextResult?.image_keywords ?? [];
+      imageKeywords = imageToTextResult?.image_keywords ?? {};
       matchedCollectionIds = imageToTextResult?.matched_collection_ids ?? [];
       ocrData = imageToTextResult?.ocr_text ?? null;
       ocrStatus = imageToTextResult?.ocr_text ? "success" : "no_text";
@@ -131,7 +131,7 @@ const videoLogic = async (
     height: imgData?.height ?? null,
     iframeAllowed: false,
     image_caption: imageCaption ?? null,
-    image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
+    image_keywords: Object.keys(imageKeywords).length > 0 ? imageKeywords : undefined,
     img_caption: imageCaption ?? null,
     isOgImagePreferred: false,
     isPageScreenshot: null,

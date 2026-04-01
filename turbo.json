@@ -1,5 +1,5 @@
 {
-  "$schema": "https://turbo.build/schema.json",
+  "$schema": "https://v2-9-1.turborepo.dev/schema.json",
   "tasks": {
     "build:next": {
       "env": [
@@ -35,6 +35,7 @@
     "lint:md": {
       "inputs": ["**/*.md", ".github/**/*.md", ".markdownlint-cli2.jsonc"]
     },
+    "lint:knip": {},
     "lint:spelling": {},
     "fix:md": {
       "inputs": ["**/*.md", ".github/**/*.md", ".markdownlint-cli2.jsonc"]

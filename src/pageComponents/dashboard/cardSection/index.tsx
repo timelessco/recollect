@@ -7,18 +7,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import { find, flatten, isEmpty } from "lodash";
 
 import type {
-  BookmarksPaginatedDataTypes,
   BookmarkViewDataTypes,
-  CategoriesData,
+  PaginatedBookmarks,
   SingleListData,
 } from "../../../types/apiTypes";
 import type { BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import type { Many } from "lodash";
 
+import { buildSearchCategorySegment } from "@/hooks/use-bookmark-mutation-context";
 import { cn } from "@/utils/tailwind-merge";
 
 import loaderGif from "../../../../public/loader-gif.gif";
-import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/useFetchBookmarksCount";
+import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/use-fetch-bookmarks-count";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
@@ -29,18 +29,8 @@ import {
   useMiscellaneousStore,
   useSupabaseSession,
 } from "../../../store/componentStore";
-import {
-  BOOKMARKS_KEY,
-  CATEGORIES_KEY,
-  PREVIEW_ALT_TEXT,
-  TWEETS_URL,
-  viewValues,
-} from "../../../utils/constants";
-import {
-  getBookmarkCountForCurrentPage,
-  getPreviewPathInfo,
-  searchSlugKey,
-} from "../../../utils/helpers";
+import { BOOKMARKS_KEY, PREVIEW_ALT_TEXT, TWEETS_URL, viewValues } from "../../../utils/constants";
+import { getBookmarkCountForCurrentPage, getPreviewPathInfo } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 import { BookmarkCard, getImgForPost } from "./bookmarkCard";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
@@ -118,24 +108,17 @@ const CardSection = ({
   const searchText = useMiscellaneousStore((state) => state.searchText);
   const setCurrentBookmarkView = useMiscellaneousStore((state) => state.setCurrentBookmarkView);
 
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
-    CATEGORIES_KEY,
-    userId,
-  ]);
-
   const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
   // gets from the trigram search api
-  const searchBookmarksData = queryClient.getQueryData<BookmarksPaginatedDataTypes>([
+  const searchBookmarksData = queryClient.getQueryData<PaginatedBookmarks>([
     BOOKMARKS_KEY,
     userId,
-    categoryData ? searchSlugKey(categoryData) : undefined,
+    buildSearchCategorySegment(categoryId),
     searchText,
   ]);
 
   const bookmarksList =
-    isPublicPage || isEmpty(searchText)
-      ? listData
-      : (searchBookmarksData?.pages?.flatMap((page) => page?.data ?? []) ?? []);
+    isPublicPage || isEmpty(searchText) ? listData : (searchBookmarksData?.pages?.flat() ?? []);
 
   const bookmarksColumns = flatten([
     useGetViewValue("moodboardColumns", [10], isPublicPage, categoryViewsFromProps) as Many<
@@ -206,7 +189,7 @@ const CardSection = ({
       return (
         <BookmarksSkeletonLoader
           colCount={bookmarksColumns?.[0]}
-          count={getBookmarkCountForCurrentPage(bookmarksCountData?.data ?? undefined, categoryId)}
+          count={getBookmarkCountForCurrentPage(bookmarksCountData ?? undefined, categoryId)}
           type={cardTypeCondition}
         />
       );

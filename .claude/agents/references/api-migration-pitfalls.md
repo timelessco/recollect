@@ -42,7 +42,7 @@ Known pitfalls discovered during production API migrations. Read by the `recolle
 
 19. **Service-role client in public factory handlers:** `createGetApiHandler` / `createPostApiHandler` don't provide a Supabase client — the handler must create its own via `createServiceClient()` from `@/utils/supabaseClient` or `createServerServiceClient()` from `@/lib/supabase/service`. This is correct for endpoints needing service-role access without user auth (e.g., process-queue, fetch-public-category-bookmarks).
 
-20. **Caller URL exceptions:** `revalidation-helpers.ts` is updated to v2 URL in Phase 9 (not Phase 13) because it's a server-to-self internal call. Document this exception in the SUMMARY so Phase 13 doesn't double-update. All other callers (Chrome extension, Cypress tests, frontend hooks) wait for Phase 13.
+20. **Caller URL exceptions:** `revalidation-helpers.ts` is updated to v2 URL in Phase 9 (not Phase 13) because it's a server-to-self internal call. Document this exception in the SUMMARY so Phase 13 doesn't double-update. All other callers (Chrome extension, frontend hooks) wait for Phase 13.
 
 21. **Drop lodash in v2 migrations:** Replace `isNull`/`isNil` with `isNullable()` from `@/utils/`, replace `isEmpty` with `array.length === 0`, replace `omit` with destructuring rest `const { removed, ...rest } = obj`.
 

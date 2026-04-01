@@ -21,6 +21,12 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
+      // Entity IDs BEFORE the operation
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+      }
+
       const { data, error } = await supabase
         .from(SHARED_CATEGORIES_TABLE_NAME)
         .select()
@@ -34,9 +40,8 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
-      const ctx = getServerContext();
+      // Result count AFTER the operation
       if (ctx?.fields) {
-        ctx.fields.user_id = userId;
         ctx.fields.share_count = data.length;
       }
 

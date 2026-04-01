@@ -17,6 +17,10 @@ export const POST = createAxiomRouteHandler(
 
       revalidatePath(input.path);
 
+      if (ctx?.fields) {
+        ctx.fields.revalidated = true;
+      }
+
       return { revalidated: true };
     },
     inputSchema: RevalidateInputSchema,

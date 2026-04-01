@@ -1,8 +1,8 @@
 import { after } from "next/server";
 
-import * as Sentry from "@sentry/nextjs";
 import ogs from "open-graph-scraper";
 
+import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
@@ -279,6 +279,10 @@ export const POST = createAxiomRouteHandler(
       const isUrlOfMimeType = isAcceptedMimeType(mediaType);
       const isUrlAnImage = mediaType?.startsWith(IMAGE_MIME_PREFIX) ?? false;
 
+      if (ctx?.fields) {
+        ctx.fields.is_media_url = isUrlOfMimeType;
+      }
+
       // Determine ogImage
       let ogImageToBeAdded: null | string = null;
       let iframeAllowedValue: boolean | null = null;
@@ -339,7 +343,7 @@ export const POST = createAxiomRouteHandler(
 
       if (ctx?.fields) {
         ctx.fields.bookmark_id = insertedBookmark.id;
-        ctx.fields.is_media_url = isUrlOfMimeType;
+        ctx.fields.has_og_image = ogImageToBeAdded !== null;
       }
 
       // Insert junction table entry
@@ -375,9 +379,10 @@ export const POST = createAxiomRouteHandler(
               userId,
             });
           } catch (error) {
-            Sentry.captureException(error, {
-              extra: { bookmarkId: insertedBookmark.id },
-              tags: { operation: "after_remaining_bookmark_data", userId },
+            logger.warn("[add-bookmark-min-data] after() enrichment failed", {
+              bookmark_id: insertedBookmark.id,
+              user_id: userId,
+              error: error instanceof Error ? error.message : String(error),
             });
           }
         });

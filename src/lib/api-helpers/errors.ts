@@ -6,6 +6,36 @@
  * and produces the bare `{ error: string }` shape for HTTP responses.
  */
 
+/**
+ * Extract loggable fields from the cause of a RecollectApiError.
+ * Handles Supabase PostgrestError (code, message, details, hint) and plain Error objects.
+ */
+function extractCauseFields(cause: unknown): Record<string, unknown> {
+  if (!cause || typeof cause !== "object") {
+    return {};
+  }
+
+  const result: Record<string, unknown> = {};
+
+  if ("message" in cause && typeof cause.message === "string") {
+    result.cause_message = cause.message;
+  }
+
+  if ("code" in cause && typeof cause.code === "string") {
+    result.cause_code = cause.code;
+  }
+
+  if ("details" in cause && typeof cause.details === "string") {
+    result.cause_details = cause.details;
+  }
+
+  if ("hint" in cause && typeof cause.hint === "string") {
+    result.cause_hint = cause.hint;
+  }
+
+  return result;
+}
+
 export const ERROR_CODES = {
   bad_request: 400,
   bookmark_not_found: 404,
@@ -43,14 +73,17 @@ export class RecollectApiError extends Error {
     this.context = options.context;
   }
 
-  /** Serialize for Axiom structured logging — excludes cause (logged separately) */
+  /** Serialize for Axiom structured logging — includes cause details for debugging */
   toLogContext(): Record<string, unknown> {
+    const causeFields = extractCauseFields(this.cause);
+
     return {
       error_code: this.code,
       error_message: this.message,
       http_status: this.status,
       ...(this.operation ? { operation: this.operation } : {}),
       ...(this.context ? { error_context: this.context } : {}),
+      ...causeFields,
     };
   }
 

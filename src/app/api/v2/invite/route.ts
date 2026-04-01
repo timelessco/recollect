@@ -104,6 +104,11 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
+      // Outcome flag AFTER the operation
+      if (ctx?.fields) {
+        ctx.fields.invite_accepted = true;
+      }
+
       // Redirect to /everything on success — pin 302 explicitly
       const headersList = await headers();
       const host = headersList.get("host") ?? "localhost:3000";

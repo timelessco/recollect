@@ -13,6 +13,12 @@ export const PATCH = createAxiomRouteHandler(
       const userId = user.id;
       const categoryOrder = data.category_order ?? [];
 
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+        ctx.fields.category_count = categoryOrder.length;
+      }
+
       const { data: updateData, error: updateError } = await supabase
         .from(PROFILES)
         .update({ category_order: categoryOrder })
@@ -27,10 +33,8 @@ export const PATCH = createAxiomRouteHandler(
         });
       }
 
-      const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.user_id = userId;
-        ctx.fields.category_count = categoryOrder.length;
+        ctx.fields.reorder_success = true;
       }
 
       return updateData;

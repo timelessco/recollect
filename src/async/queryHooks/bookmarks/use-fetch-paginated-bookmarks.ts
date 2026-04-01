@@ -1,17 +1,20 @@
 import { useEffect, useMemo } from "react";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { flatten } from "lodash";
 
-import type { SupabaseSessionType } from "../../../types/apiTypes";
-import type { BookmarksSortByTypes } from "../../../types/componentStoreTypes";
+import type { SingleListData } from "@/types/apiTypes";
 
-import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
-import useGetSortBy from "../../../hooks/useGetSortBy";
-import { useLoadersStore, useSupabaseSession } from "../../../store/componentStore";
-import { isNonNullable } from "../../../utils/assertion-utils";
-import { BOOKMARKS_KEY, DISCOVER_URL, PAGINATION_LIMIT } from "../../../utils/constants";
-import { fetchBookmarksData } from "../../supabaseCrudHelpers";
+import useGetCurrentCategoryId from "@/hooks/useGetCurrentCategoryId";
+import useGetSortBy from "@/hooks/useGetSortBy";
+import { api } from "@/lib/api-helpers/api-v2";
+import { useLoadersStore, useSupabaseSession } from "@/store/componentStore";
+import { isNonNullable } from "@/utils/assertion-utils";
+import {
+  BOOKMARKS_KEY,
+  DISCOVER_URL,
+  PAGINATION_LIMIT,
+  V2_FETCH_BOOKMARKS_DATA_API,
+} from "@/utils/constants";
 
 interface UseFetchPaginatedBookmarksOptions {
   enabled?: boolean;
@@ -38,11 +41,18 @@ export default function useFetchPaginatedBookmarks(
     isLoading: isEverythingDataLoading,
   } = useInfiniteQuery({
     enabled: enabled && CATEGORY_ID !== DISCOVER_URL,
-    queryFn: (data) =>
-      fetchBookmarksData(data, session as SupabaseSessionType, sortBy as BookmarksSortByTypes),
+    queryFn: ({ pageParam }) =>
+      api
+        .get(V2_FETCH_BOOKMARKS_DATA_API, {
+          searchParams: {
+            category_id: String(CATEGORY_ID ?? "null"),
+            from: pageParam,
+            ...(sortBy ? { sort_by: sortBy } : {}),
+          },
+        })
+        .json<SingleListData[]>(),
     initialPageParam: 0,
     getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
   });
 
@@ -54,7 +64,7 @@ export default function useFetchPaginatedBookmarks(
 
   // Flatten paginated data reactively - this updates when cache changes
   const flattendPaginationBookmarkData = useMemo(
-    () => flatten(everythingData?.pages?.map((page) => page?.data)).filter(isNonNullable),
+    () => everythingData?.pages?.flat().filter(isNonNullable) ?? [],
     [everythingData],
   );
 

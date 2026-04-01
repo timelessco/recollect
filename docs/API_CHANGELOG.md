@@ -120,3 +120,187 @@
 
 
 
+
+## 2026-03-30 [`b881771`](https://github.com/timelessco/recollect/commit/b881771da379f827353c4aa5c7e368c05cbd908f)
+
+
+### POST /cron/process-archived
+-  endpoint added
+
+
+
+
+## 2026-03-30 [`494745a`](https://github.com/timelessco/recollect/commit/494745a64815334e4c01fd202fd5ca368aa88f4a)
+
+
+### GET /bookmark/fetch-bookmarks-discoverable
+- :warning: response property 'data/items/meta_data/image_keywords' list-of-types was widened by adding types 'object' to media type 'application/json' of response '200'
+
+
+### GET /bookmark/fetch-discoverable-by-id
+- :warning: response property 'data/meta_data/image_keywords' list-of-types was widened by adding types 'object' to media type 'application/json' of response '200'
+
+
+### GET /bookmark/fetch-public-bookmark-by-id
+- :warning: response property 'data/meta_data/image_keywords' list-of-types was widened by adding types 'object' to media type 'application/json' of response '200'
+
+
+
+
+## 2026-03-30 [`5bb13dc`](https://github.com/timelessco/recollect/commit/5bb13dc257073d94676ee5ca906b92809df6b1ea)
+
+
+### GET /bookmark/fetch-bookmarks-discoverable
+-  response property 'data/items/meta_data/image_keywords' list-of-types was narrowed by removing types 'object' from media type 'application/json' of response '200'
+
+
+### GET /bookmark/fetch-discoverable-by-id
+-  response property 'data/meta_data/image_keywords' list-of-types was narrowed by removing types 'object' from media type 'application/json' of response '200'
+
+
+### GET /bookmark/fetch-public-bookmark-by-id
+-  response property 'data/meta_data/image_keywords' list-of-types was narrowed by removing types 'object' from media type 'application/json' of response '200'
+
+
+
+
+## 2026-03-30 [`0fb8d10`](https://github.com/timelessco/recollect/commit/0fb8d109c297a55ae4a7d2b9a8a62deb7691e685)
+
+
+### GET /v2/bucket/get/signed-url
+-  endpoint added
+
+
+
+
+## 2026-03-31 [`627d5f1`](https://github.com/timelessco/recollect/commit/627d5f126ae525e31b047f1e28f6818e21d484d4)
+
+
+
+### API Changes
+
+### GET /bookmark/fetch-bookmarks-discoverable
+- :warning: response property 'data/items/meta_data/image_keywords' list-of-types was widened by adding types 'object' to media type 'application/json' of response '200'
+
+
+### GET /bookmark/fetch-discoverable-by-id
+- :warning: response property 'data/meta_data/image_keywords' list-of-types was widened by adding types 'object' to media type 'application/json' of response '200'
+
+
+### GET /bookmark/fetch-public-bookmark-by-id
+- :warning: response property 'data/meta_data/image_keywords' list-of-types was widened by adding types 'object' to media type 'application/json' of response '200'
+
+
+
+
+
+
+
+## 2026-03-31 [`a59b623`](https://github.com/timelessco/recollect/commit/a59b6235899341f8434e0cff849915a19e46fa56)
+
+
+
+### API Changes
+
+### GET /bookmark/fetch-bookmarks-discoverable
+-  added the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/color' to the response with the '200' status
+-  added the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/features' to the response with the '200' status
+-  added the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/object' to the response with the '200' status
+-  added the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/people' to the response with the '200' status
+-  added the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/place' to the response with the '200' status
+-  added the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/type' to the response with the '200' status
+
+
+### GET /bookmark/fetch-discoverable-by-id
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/color' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/features' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/object' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/people' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/place' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/type' to the response with the '200' status
+
+
+### GET /bookmark/fetch-public-bookmark-by-id
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/color' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/features' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/object' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/people' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/place' to the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/type' to the response with the '200' status
+
+
+
+
+
+
+
+## 2026-03-31 [`6a9c74d`](https://github.com/timelessco/recollect/commit/6a9c74db141c55a519f126b28c750377c446b110)
+
+
+No changes
+
+
+
+## 2026-03-31 [`acfef40`](https://github.com/timelessco/recollect/commit/acfef4015f1f0543fe1cf2490f9fefa79f6685e9)
+
+
+
+### API Changes
+
+### DELETE /v2/bookmarks/delete/non-cascade
+- :warning: api path removed without deprecation
+
+
+
+
+
+
+
+## 2026-03-31 [`8a73332`](https://github.com/timelessco/recollect/commit/8a733321103941f4f61ea37ea81fc068fa0a4924)
+
+
+No changes
+
+
+
+## 2026-03-31 [`2d4ec3c`](https://github.com/timelessco/recollect/commit/2d4ec3c8bb86ba09db1807e7acf6f6d4c9e2b980)
+
+
+No changes
+
+
+
+## 2026-03-31 [`08fd5f6`](https://github.com/timelessco/recollect/commit/08fd5f611b86711b3d2de1da60f399f0e32edaa1)
+
+
+No changes
+
+
+
+## 2026-03-31 [`51e673c`](https://github.com/timelessco/recollect/commit/51e673ce261f18c8a2b956d5a881cae0ea998719)
+
+
+No changes
+
+
+
+## 2026-03-31 [`1dd94a9`](https://github.com/timelessco/recollect/commit/1dd94a9096700ebbd7f0d137994d4fa46a57640e)
+
+
+No changes
+
+
+
+## 2026-04-01 [`493f9a3`](https://github.com/timelessco/recollect/commit/493f9a3091cdd4f9c450792b94412c5e5ad5dcd9)
+
+
+No changes
+
+
+
+## 2026-04-01 [`c398981`](https://github.com/timelessco/recollect/commit/c39898107f13956c22848ede32f7a9a0c9b1d3aa)
+
+
+No changes
+
+

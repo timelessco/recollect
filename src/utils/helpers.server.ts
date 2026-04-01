@@ -1,13 +1,13 @@
 import * as Sentry from "@sentry/nextjs";
 import uniqid from "uniqid";
 
-import type { UserCollection } from "@/async/ai/imageToText";
+import type { StructuredKeywords, UserCollection } from "@/async/ai/imageToText";
 import type { Database } from "@/types/database.types";
 import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { BookmarkContentType } from "@/utils/resolve-content-type";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import imageToText from "@/async/ai/imageToText";
+import { imageToText } from "@/async/ai/imageToText";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";
 import { fetchUserCollections } from "@/utils/auto-assign-collections";
 import { blurhashFromURL } from "@/utils/getBlurHash";
@@ -157,7 +157,7 @@ export const enrichMetadata = async ({
     ? captionResult.value
     : {
         image_caption: null,
-        image_keywords: [] as string[],
+        image_keywords: {} as StructuredKeywords,
         isImageCaptionFailed: true,
         matchedCollectionIds: [] as number[],
         ocr: null,
@@ -174,7 +174,7 @@ export const enrichMetadata = async ({
     ...existingMetadata,
     height: blurhash?.height,
     image_caption,
-    image_keywords: image_keywords?.length ? image_keywords : undefined,
+    image_keywords: Object.keys(image_keywords ?? {}).length > 0 ? image_keywords : undefined,
     ocr: ocrData,
     ocr_status: ocrStatus,
     ogImgBlurUrl: blurhash?.encoded,
@@ -259,7 +259,7 @@ const processImageCaption = async (
 
       return {
         image_caption: null,
-        image_keywords: result?.image_keywords ?? [],
+        image_keywords: result?.image_keywords ?? {},
         isImageCaptionFailed: aiToggles.aiSummary,
         matchedCollectionIds: result?.matched_collection_ids ?? [],
         ocr: result?.ocr_text ?? null,
@@ -269,7 +269,7 @@ const processImageCaption = async (
     console.log("[processImageCaption] Image caption generated successfully:", { url });
     return {
       image_caption: result.sentence,
-      image_keywords: result.image_keywords ?? [],
+      image_keywords: result.image_keywords ?? {},
       isImageCaptionFailed: false,
       matchedCollectionIds: result.matched_collection_ids ?? [],
       ocr: result.ocr_text,
@@ -293,7 +293,7 @@ const processImageCaption = async (
     });
     return {
       image_caption: null,
-      image_keywords: [],
+      image_keywords: {},
       isImageCaptionFailed: true,
       matchedCollectionIds: [],
       ocr: null,

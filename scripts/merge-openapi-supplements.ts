@@ -12,6 +12,7 @@ import type { EndpointSupplement } from "../src/lib/openapi/supplement-types";
 import * as aiEnrichmentSupplements from "../src/lib/openapi/endpoints/ai-enrichment";
 import * as apiKeySupplements from "../src/lib/openapi/endpoints/api-key";
 import * as bookmarksSupplements from "../src/lib/openapi/endpoints/bookmarks";
+import * as bucketSupplements from "../src/lib/openapi/endpoints/bucket";
 import * as categoriesSupplements from "../src/lib/openapi/endpoints/categories";
 import * as categorySupplements from "../src/lib/openapi/endpoints/category";
 import * as cronSupplements from "../src/lib/openapi/endpoints/cron";
@@ -233,6 +234,7 @@ export function collectSupplements(): EndpointSupplement[] {
     aiEnrichmentSupplements,
     apiKeySupplements,
     bookmarksSupplements,
+    bucketSupplements,
     categoriesSupplements,
     categorySupplements,
     cronSupplements,

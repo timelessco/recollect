@@ -4,7 +4,7 @@
 - Dev server is usually running in another terminal — check `lsof -iTCP:3000` before starting `pnpm dev`
 - `build:ci` skips env validation, OpenAPI gen, and sitemap — use `pnpm build` for local verification
 - `typescript.ignoreBuildErrors: true` in next.config — TS errors do NOT fail production builds
-- No test suite — `pnpm test` exits 0 with "no test specified". Cypress installed but no specs
+- No test suite — `pnpm test` exits 0 with "no test specified"
 - CI runs lint checks only (no build gate) — build failures surface on Vercel
 - `pnpm lint:ultracite` requires Next.js generated types — CI runs `pnpm next:typegen` first. Locally, types already exist if `next dev` or `pnpm build` has run; only run `pnpm next:typegen` manually if lint fails on missing generated types
 - Sentry tunnel: events proxied through `/skynet` to bypass ad-blockers
@@ -40,7 +40,7 @@
 - CI cspell may flag unknown words — hyphen-split words (e.g. "app-svgs" → "svgs") may need manual additions to `cspell.json` `words` array
 - `lint-staged` uses `*` glob with raw `oxfmt` + `oxlint` (not `ultracite`) — `oxfmt --no-error-on-unmatched-pattern` skips non-matching files, `oxlint` ignores non-JS/TS files
 - `oxlint-disable-next-line` doesn't work for JSX props on different lines — use block-level `/* oxlint-disable rule */` instead
-- Comment directive split: native oxlint rules use `oxlint-disable`, jsPlugin rules (`@tanstack/query/*`, `regexp/*`, `perfectionist/*`, `react-x/*`) keep `eslint-disable`
+- All disable directives use `oxlint-disable` (unified in oxlint 1.57) — `eslint-disable` comments are treated as unused/unknown. For multi-line expression violations (e.g. `@tanstack/query/exhaustive-deps` spanning the full `useQuery` call), use block-level `/* oxlint-disable rule */` / `/* oxlint-enable rule */` since `oxlint-disable-next-line` only suppresses violations starting on the very next line
 - `promise-function-async` is off — only add `async` when `await` is present in the function body
 - oxlint `--deny RULE` CLI flag does NOT override config-level `"off"` — to test a disabled rule, copy `.oxlintrc.json` to a temp file, edit the copy, run `npx oxlint -c <copy>` from project root (relative `extends` paths require it), then `trash` the copy
 - `oxlint-disable-next-line` must be on the line immediately before the violation — for multi-line expressions, place on the line with the violation, not the wrapping expression above
@@ -56,3 +56,7 @@
 - `src/lib/supabase/constants.ts`, `src/utils/supabaseClient.ts`, and `src/site-config.ts` mix `NEXT_PUBLIC_*` + server vars and are imported from both contexts — can't fully migrate to `@/env/*` imports. `NEXT_PUBLIC_*` vars use `@/env/client`, server vars stay as `process.env` with comment
 - `environment.d.ts` global augmentation was removed — `process.env.X` is now `string | undefined` by default. Use `env.X` from `@/env/server` or `@/env/client` for typed access. `src/env/process-env.d.ts` augments remaining raw `process.env` server secrets (shared client/server files can't import `@/env/server`). Removing this file causes `string | undefined` → Supabase client `any` → mass `no-unsafe-*` failures across untouched files
 - `pnpm db:types` against a stale local DB drops RPC functions that exist in production — always `pnpm db:reset` before `pnpm db:types`
+- Both paginated and search caches use `PaginatedBookmarks` (bare `SingleListData[][]` pages). Search query key 3rd segment: always use `buildSearchCategorySegment(CATEGORY_ID)` from `use-bookmark-mutation-context.ts` — never `searchSlugKey(categoryData)` (fails on cold loads). `secondaryQueryKey` supported by `useReactQueryOptimisticMutation` only; raw `useMutation` hooks rely on broad `[BOOKMARKS_KEY, userId]` invalidation
+- `@supabase/postgrest-js` 2.101.0+ constrains `.eq()` column to `keyof Row` — for RPC functions with union overloads (multiple arg signatures in generated types), `Row` degrades and rejects valid columns. Use `.filter("col", "eq", val)` instead (same PostgREST query, untyped column). Also pass `undefined` (not `null`) for optional RPC args — `null` doesn't match `T | undefined`, breaking overload resolution
+- `SingleListData` (hand-written TS interface) diverges from v2 Zod output schemas — different nullability, `user_id` shape (`string` vs `Pick<>`), missing `addedTags`. Direct `as SingleListData` casts fail (TS2352). Migrated caller hooks use `.json<SingleListData[]>()` to bypass schema types on client side. Post-migration: retire `SingleListData` in favor of Zod-inferred types
+- Pages Router API routes marked `@deprecated` still serve mobile app and Chrome extension — when migrating callers to v2, always backport route handler fixes (validation, auth, error handling) to the v1 Pages Router route as well

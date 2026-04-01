@@ -2,7 +2,7 @@ import { after } from "next/server";
 
 import slugify from "slugify";
 
-import type { UserCollection } from "@/async/ai/imageToText";
+import type { StructuredKeywords, UserCollection } from "@/async/ai/imageToText";
 import type { Database } from "@/types/database.types";
 import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -105,7 +105,7 @@ async function processVideo(
   let ocrData: null | string = null;
   let ocrStatus: "limit_reached" | "no_text" | "success" = "no_text";
   let imageCaption: null | string = null;
-  let imageKeywords: string[] = [];
+  let imageKeywords: StructuredKeywords = {};
   let matchedCollectionIds: number[] = [];
 
   if (thumbnailUrl?.publicUrl) {
@@ -129,7 +129,7 @@ async function processVideo(
         aiToggles,
       );
       imageCaption = imageToTextResult?.sentence ?? null;
-      imageKeywords = imageToTextResult?.image_keywords ?? [];
+      imageKeywords = imageToTextResult?.image_keywords ?? {};
       matchedCollectionIds = imageToTextResult?.matched_collection_ids ?? [];
       ocrData = imageToTextResult?.ocr_text ?? null;
       ocrStatus = imageToTextResult?.ocr_text ? "success" : "no_text";
@@ -148,7 +148,7 @@ async function processVideo(
     height: imgData.height ?? null,
     iframeAllowed: false,
     image_caption: imageCaption,
-    image_keywords: imageKeywords.length > 0 ? imageKeywords : undefined,
+    image_keywords: Object.keys(imageKeywords).length > 0 ? imageKeywords : undefined,
     img_caption: imageCaption,
     isOgImagePreferred: false,
     isPageScreenshot: null,

@@ -131,6 +131,7 @@ export const GET = createAxiomRouteHandler(
 
       if (ctx?.fields) {
         ctx.fields.category_count = mergedCategories.length;
+        ctx.fields.shared_categories_count = flattenedCollabCategories.length;
       }
 
       // For each category, build collabData array and compute is_favorite
@@ -200,6 +201,10 @@ export const GET = createAxiomRouteHandler(
 
         return true;
       });
+
+      if (ctx?.fields) {
+        ctx.fields.returned_count = filteredCategories.length;
+      }
 
       return filteredCategories;
     },
