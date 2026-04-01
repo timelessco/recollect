@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
 import { converter } from "culori";
@@ -139,11 +139,7 @@ export const imageToText = async (
 
     // Initialize the model
     const key = userApiKey ?? env.GOOGLE_GEMINI_TOKEN;
-
-    const genAI = new GoogleGenerativeAI(key);
-    const model = genAI.getGenerativeModel({
-      model: GEMINI_MODEL,
-    });
+    const ai = new GoogleGenAI({ apiKey: key });
 
     // Build prompt sections dynamically based on active toggles
     const contentType = options?.contentType ?? "link";
@@ -345,17 +341,20 @@ export const imageToText = async (
     promptParts.push("", "Respond in exactly this format:", ...formatLines);
 
     const captionPrompt = promptParts.join("\n");
-    const captionResult = await model.generateContent([
-      captionPrompt,
-      {
-        inlineData: {
-          data: imageBytes,
-          mimeType: "image/jpeg",
+    const captionResult = await ai.models.generateContent({
+      contents: [
+        captionPrompt,
+        {
+          inlineData: {
+            data: imageBytes,
+            mimeType: "image/jpeg",
+          },
         },
-      },
-    ]);
+      ],
+      model: GEMINI_MODEL,
+    });
 
-    const rawText = captionResult.response.text();
+    const rawText = captionResult.text;
     if (!rawText?.trim()) {
       return null;
     }
