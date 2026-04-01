@@ -22,7 +22,7 @@
 #### Build
 
 ```bash
-pnpm build            # Turbo: OpenAPI gen → next build → next-sitemap
+pnpm build            # Turbo: OpenAPI gen → next build → serwist build
 pnpm build:ci         # CI-only: skips env validation, OpenAPI gen, sitemap
 pnpm build:analyze    # Bundle size analysis (opens browser)
 pnpm build:debug      # Build with source maps + debug prerender

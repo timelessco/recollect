@@ -10,6 +10,7 @@ import { ThemeProvider } from "next-themes";
 
 import type { DehydratedState } from "@tanstack/react-query";
 
+import { SerwistProvider } from "@/components/providers/serwist-provider";
 import { IosAutozoomFix } from "@/components/scripts/ios-autozoom-fix";
 import { MutationIndicator } from "@/components/ui/recollect/mutation-indicator";
 import { TailwindIndicator } from "@/components/ui/recollect/tailwind-indicator";
@@ -68,7 +69,9 @@ const MyApp = ({
             )}
           </Head>
 
-          <Component {...pageProps} />
+          <SerwistProvider>
+            <Component {...pageProps} />
+          </SerwistProvider>
         </HydrationBoundary>
         <IosAutozoomFix />
         <ToastSetup />
