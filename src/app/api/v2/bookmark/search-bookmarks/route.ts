@@ -206,11 +206,6 @@ export const GET = createAxiomRouteHandler(
       const { data, error } = await rpcQuery;
 
       if (error) {
-        if (ctx?.fields) {
-          ctx.fields.rpc_error_message = error.message;
-          ctx.fields.rpc_error_code = error.code;
-        }
-
         throw new RecollectApiError("service_unavailable", {
           cause: error,
           message: "Error executing search query",
