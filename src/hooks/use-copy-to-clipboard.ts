@@ -24,9 +24,9 @@ export function useCopyToClipboard(): [CopiedValue, CopyFn, ResetFn] {
     }
   }, []);
 
-  const reset: ResetFn = useCallback(() => {
+  const resetCopied = useCallback(() => {
     setCopiedText(null);
   }, []);
 
-  return [copiedText, copy, reset];
+  return [copiedText, copy, resetCopied];
 }
