@@ -41,28 +41,22 @@ export const v2UpdateCategoryOrderSupplement = {
       description:
         "Null input coalesces to empty array — category_order is stored as an empty array.",
       summary: "Category order cleared",
-      value: {
-        data: [
-          {
-            category_order: [],
-            id: "550e8400-e29b-41d4-a716-446655440000",
-          },
-        ],
-        error: null,
-      } as const,
+      value: [
+        {
+          category_order: [],
+          id: "550e8400-e29b-41d4-a716-446655440000",
+        },
+      ] as const,
     },
     "order-updated": {
       description: "Returns the updated profile row with the new category_order array.",
       summary: "Category order updated",
-      value: {
-        data: [
-          {
-            category_order: [724, 577, 812],
-            id: "550e8400-e29b-41d4-a716-446655440000",
-          },
-        ],
-        error: null,
-      } as const,
+      value: [
+        {
+          category_order: [724, 577, 812],
+          id: "550e8400-e29b-41d4-a716-446655440000",
+        },
+      ] as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

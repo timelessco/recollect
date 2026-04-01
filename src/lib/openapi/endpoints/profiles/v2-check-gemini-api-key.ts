@@ -15,19 +15,13 @@ export const v2CheckGeminiApiKeySupplement = {
       description:
         "No parameters needed — authenticate as a user with a Gemini API key configured. Returns `true`.",
       summary: "User has a Gemini API key",
-      value: {
-        data: { hasApiKey: true },
-        error: null,
-      } as const,
+      value: { hasApiKey: true } as const,
     },
     "no-api-key": {
       description:
         "No parameters needed — authenticate as a user without a Gemini API key. Returns `false`.",
       summary: "User has no Gemini API key",
-      value: {
-        data: { hasApiKey: false },
-        error: null,
-      } as const,
+      value: { hasApiKey: false } as const,
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],

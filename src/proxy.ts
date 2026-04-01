@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import type { NextFetchEvent, NextRequest } from "next/server";
 
+import { transformMiddlewareRequest } from "@axiomhq/nextjs";
 import * as Sentry from "@sentry/nextjs";
 
+import { logger } from "@/lib/api-helpers/axiom";
 import { updateSession } from "@/lib/supabase/middleware";
 
 import { isGuestPath, isPublicPath } from "./utils/constants";
 
-export async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest, event: NextFetchEvent) {
   try {
+    logger.info(...transformMiddlewareRequest(request));
+    event.waitUntil(logger.flush());
+
     const { pathname } = request.nextUrl;
 
     // If it's a public path, allow access

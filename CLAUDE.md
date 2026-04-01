@@ -22,6 +22,9 @@ Before any Next.js work, read the relevant doc in `node_modules/next/dist/docs/`
 - **Ultracite** (Oxlint + Oxfmt) enforces code quality — `pnpm fix` auto-fixes most issues, `pnpm dlx ultracite doctor` for setup diagnostics
 - **Zod `.meta()`**: All schema fields require `.meta({ description })` — flows to OpenAPI spec field descriptions and Scalar UI
 - **Env validation**: `@t3-oss/env-nextjs` in `src/env/` — split server/client pattern. Server env includes Vercel preset. Every `process.env` in codebase has an inline comment explaining why it wasn't migrated
+- **v2 API contract**: Routes under `/api/v2/` return `T` on success (no `{data, error}` envelope). Errors return `{error: string}` with HTTP status. v2 route handlers use `create-handler-v2.ts` (self-contained factory with `error()`/`warn()` context helpers). Non-v2 routes use `create-handler.ts` and keep `{data: T, error: null}` envelope. `response.ts` is FROZEN — never modify `apiSuccess`/`apiError`/`apiWarn`
+  - OpenAPI supplements for v2 routes use bare response examples — `{ field: value }`, not `{ data: { field: value }, error: null }`
+  - v2 URL constants for ky `api` instance (`api-v2.ts`): no leading slash — `"v2/bookmark/fetch-bookmarks-data"`, not `"/v2/..."`. v1 constants keep leading slashes. Both conventions coexist in `constants.ts`
 
 ## Commands
 
@@ -32,6 +35,7 @@ pnpm lint:knip            # Detect unused code/exports/deps
 pnpm lint:types:deno      # Deno type checks for Supabase Edge Functions
 pnpm build                # Verify build passes
 pnpm db:types             # Generate Supabase types from local schema
+pnpm prebuild:next        # Regenerate OpenAPI spec (SKIP_ENV_VALIDATION=1)
 ```
 
 ## References
@@ -46,5 +50,6 @@ pnpm db:types             # Generate Supabase types from local schema
 
 After changes, run in order:
 
-1. `pnpm lint` — runs ALL quality checks in parallel (ultracite, types, knip, css, spelling, md)
-2. `pnpm build` — confirm build passes (non-trivial changes)
+1. `pnpm fix` — auto-fix all (Ultracite + CSS + MD)
+2. `pnpm lint` — runs ALL quality checks in parallel (ultracite, types, knip, css, spelling, md)
+3. `pnpm build` — confirm build passes (non-trivial changes)

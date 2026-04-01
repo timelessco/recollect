@@ -2,6 +2,7 @@ import type { NextApiRequest as NextJsApiRequest } from "next";
 
 import type { BookmarksSortByTypes, BookmarksViewTypes } from "./componentStoreTypes";
 import type { CategoryIdUrlTypes, FileType } from "./componentTypes";
+import type { StructuredKeywords } from "@/async/ai/imageToText";
 import type { PostgrestError, User } from "@supabase/supabase-js";
 
 export interface SupabaseSessionType {
@@ -16,7 +17,7 @@ export interface ImgMetadataType {
   height: null | number;
   iframeAllowed: boolean | null;
   image_caption: null | string;
-  image_keywords?: string[];
+  image_keywords?: Record<string, string> | string[] | StructuredKeywords;
   img_caption: null | string;
   isOgImagePreferred: boolean;
   isPageScreenshot: boolean | null;
@@ -63,15 +64,6 @@ export interface BookmarksCountTypes {
   tweets: number;
   uncategorized: number;
   videos: number;
-}
-
-export interface SingleBookmarksPaginatedDataTypes {
-  count: BookmarksCountTypes;
-  data: SingleListData[];
-  error: PostgrestError;
-}
-export interface BookmarksPaginatedDataTypes {
-  pages: SingleBookmarksPaginatedDataTypes[];
 }
 
 export interface FetchDataResponse<T = SingleListData[]> {
@@ -409,5 +401,5 @@ export interface ParsedFormDataType {
 
 // Shared type for paginated bookmarks data structure in React Query cache
 export interface PaginatedBookmarks {
-  pages: { data: SingleListData[] }[];
+  pages: SingleListData[][];
 }

@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { BookmarksPaginatedDataTypes } from "../../../types/apiTypes";
+import type { PaginatedBookmarks } from "../../../types/apiTypes";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
-import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { BOOKMARKS_COUNT_KEY, BOOKMARKS_KEY } from "../../../utils/constants";
 import { deleteData } from "../../supabaseCrudHelpers";
 
@@ -13,8 +13,6 @@ export default function useDeleteBookmarksOptimisticMutation() {
   const session = useSupabaseSession((state) => state.session);
   const queryClient = useQueryClient();
   const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-
-  const searchText = useMiscellaneousStore((state) => state.searchText);
 
   const { sortBy } = useGetSortBy();
 
@@ -27,7 +25,7 @@ export default function useDeleteBookmarksOptimisticMutation() {
       });
 
       // Snapshot the previous value
-      const previousData = queryClient.getQueryData<BookmarksPaginatedDataTypes>([
+      const previousData = queryClient.getQueryData<PaginatedBookmarks>([
         BOOKMARKS_KEY,
         session?.user?.id,
         CATEGORY_ID,
@@ -35,67 +33,31 @@ export default function useDeleteBookmarksOptimisticMutation() {
       ]);
 
       // Optimistically update to the new value
-      queryClient.setQueryData<BookmarksPaginatedDataTypes>(
+      queryClient.setQueryData<PaginatedBookmarks>(
         [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
         (old) => {
           if (typeof old === "object") {
             return {
               ...old,
-              pages: old?.pages?.map((item) => ({
-                ...item,
-                data: item.data?.filter(
-                  (dataItem) => !data.deleteData?.some((findItem) => findItem?.id === dataItem?.id),
+              pages: old?.pages?.map((page) =>
+                page?.filter(
+                  (item) => !data.deleteData?.some((findItem) => findItem?.id === item?.id),
                 ),
-              })),
+              ),
             };
           }
         },
       );
 
-      // Optimistic update for search results
-      let previousSearchData;
-      if (searchText) {
-        await queryClient.cancelQueries({
-          queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, searchText],
-        });
-
-        previousSearchData = queryClient.getQueryData<BookmarksPaginatedDataTypes>([
-          BOOKMARKS_KEY,
-          session?.user?.id,
-          CATEGORY_ID,
-          searchText,
-        ]);
-
-        queryClient.setQueryData<BookmarksPaginatedDataTypes>(
-          [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, searchText],
-          (old) => {
-            if (typeof old === "object") {
-              return {
-                ...old,
-                pages: old?.pages?.map((item) => ({
-                  ...item,
-                  data: item.data?.filter(
-                    (dataItem) =>
-                      !data.deleteData?.some((findItem) => findItem?.id === dataItem?.id),
-                  ),
-                })),
-              };
-            }
-          },
-        );
-      }
-
       // Return a context object with the snapshotted value
-      return { previousData, previousSearchData, searchText };
+      return { previousData };
     },
     // If the mutation fails, use the context returned from onMutate to roll back
     onError: (
       _err,
       _variables,
       context?: {
-        previousData: BookmarksPaginatedDataTypes | undefined;
-        previousSearchData: BookmarksPaginatedDataTypes | undefined;
-        searchText: string;
+        previousData: PaginatedBookmarks | undefined;
       },
     ) => {
       if (context?.previousData) {
@@ -104,18 +66,11 @@ export default function useDeleteBookmarksOptimisticMutation() {
           context.previousData,
         );
       }
-
-      if (context?.searchText && context?.previousSearchData) {
-        queryClient.setQueryData(
-          [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, context.searchText],
-          context.previousSearchData,
-        );
-      }
     },
     // Always refetch after error or success:
     onSettled: () => {
       void queryClient.invalidateQueries({
-        queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID],
+        queryKey: [BOOKMARKS_KEY, session?.user?.id],
       });
 
       void queryClient.invalidateQueries({

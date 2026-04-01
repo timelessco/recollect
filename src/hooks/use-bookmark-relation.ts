@@ -57,7 +57,7 @@ export const useBookmarkRelation = (
     // Try primary query
     const primaryData = queryClient.getQueryData<PaginatedBookmarks>(queryKey);
     for (const page of primaryData?.pages ?? []) {
-      const bookmark = page.data.find((bm) => bm.id === bookmarkId);
+      const bookmark = page.find((bm) => bm.id === bookmarkId);
       if (bookmark) {
         result = extractFn(bookmark);
         if (filterFn) {
@@ -72,7 +72,7 @@ export const useBookmarkRelation = (
     if (result.length === 0 && searchQueryKey) {
       const searchData = queryClient.getQueryData<PaginatedBookmarks>(searchQueryKey);
       for (const page of searchData?.pages ?? []) {
-        const bookmark = page.data.find((bm) => bm.id === bookmarkId);
+        const bookmark = page.find((bm) => bm.id === bookmarkId);
         if (bookmark) {
           result = extractFn(bookmark);
           if (filterFn) {
@@ -87,10 +87,8 @@ export const useBookmarkRelation = (
     // Fallback: check single bookmark cache (from useFetchBookmarkById)
     // This handles the case when lightbox is opened via direct link/preview route
     if (result.length === 0) {
-      const singleBookmarkData = queryClient.getQueryData<{
-        data: SingleListData[];
-      }>(singleBookmarkKey);
-      const bookmark = singleBookmarkData?.data?.[0];
+      const singleBookmarkData = queryClient.getQueryData<SingleListData[]>(singleBookmarkKey);
+      const bookmark = singleBookmarkData?.[0];
       if (bookmark?.id === bookmarkId) {
         result = extractFn(bookmark);
         if (filterFn) {

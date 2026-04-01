@@ -27,7 +27,7 @@
     "typeRoots": ["./node_modules/@types", "@types"],
     "useUnknownInCatchVariables": true
   },
-  "exclude": [".next", "cypress", "public/sw.js"],
+  "exclude": [".next", "public/sw.js"],
   "include": [
     "src/**/*",
     "scripts/**/*",

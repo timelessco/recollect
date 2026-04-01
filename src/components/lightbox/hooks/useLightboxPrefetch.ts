@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { isEmpty } from "lodash";
 
 import { useFetchDiscoverBookmarks } from "@/async/queryHooks/bookmarks/use-fetch-discover-bookmarks";
-import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/useFetchPaginatedBookmarks";
-import useSearchBookmarks from "@/async/queryHooks/bookmarks/useSearchBookmarks";
+import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/use-fetch-paginated-bookmarks";
+import useSearchBookmarks from "@/async/queryHooks/bookmarks/use-search-bookmarks";
 import { useMiscellaneousStore } from "@/store/componentStore";
 import { DISCOVER_URL, isPublicPath, PAGINATION_LIMIT } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
@@ -15,7 +15,7 @@ interface UseLightboxPrefetchParams {
   activeIndex: number;
   bookmarksLength: number;
   open: boolean;
-  pages: { data: unknown[] }[] | undefined;
+  pages: unknown[][] | undefined;
 }
 
 /**
@@ -51,7 +51,7 @@ export function useLightboxPrefetch({
   const shouldFetchMore = activeIndex >= bookmarksLength - threshold;
 
   const currentPageCount = pages?.length ?? 0;
-  const lastPageItemCount = pages?.[currentPageCount - 1]?.data?.length ?? 0;
+  const lastPageItemCount = pages?.[currentPageCount - 1]?.length ?? 0;
   const hasMoreData = lastPageItemCount >= PAGINATION_LIMIT;
 
   useEffect(() => {

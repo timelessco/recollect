@@ -2,8 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type {
   AddBookmarkMinDataPayloadTypes,
-  BookmarksPaginatedDataTypes,
   CategoriesData,
+  PaginatedBookmarks,
   SingleListData,
 } from "../../../types/apiTypes";
 
@@ -44,7 +44,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
   const addBookmarkMinDataOptimisticMutation = useMutation<
     unknown,
-    { previousData: BookmarksPaginatedDataTypes },
+    { previousData: PaginatedBookmarks },
     AddBookmarkMinDataPayloadTypes,
     { previousData: unknown }
   >({
@@ -54,7 +54,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       setIsBookmarkAdding(true);
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
-        queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+        queryKey: [BOOKMARKS_KEY, session?.user?.id],
       });
 
       // Snapshot the previous value
@@ -86,33 +86,29 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
         : [];
 
       // Optimistically update to the new value
-      queryClient.setQueryData<BookmarksPaginatedDataTypes>(
+      queryClient.setQueryData<PaginatedBookmarks>(
         [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
         (old) => {
           if (typeof old === "object") {
-            const latestData = {
+            return {
               ...old,
-              pages: old?.pages?.map((item, index) => {
+              pages: old?.pages?.map((page, index) => {
                 if (index === 0) {
-                  return {
-                    ...item,
-                    data: [
-                      {
-                        url: data?.url,
-                        addedCategories,
-                        inserted_at: new Date(),
-                        addedTags: [],
-                        trash: null,
-                      },
-                      ...item.data,
-                    ],
-                  };
+                  return [
+                    {
+                      url: data?.url,
+                      addedCategories,
+                      inserted_at: new Date(),
+                      addedTags: [],
+                      trash: null,
+                    },
+                    ...page,
+                  ];
                 }
 
-                return item;
+                return page;
               }),
-            };
-            return latestData as BookmarksPaginatedDataTypes;
+            } as PaginatedBookmarks;
           }
         },
       );
@@ -138,7 +134,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       setIsBookmarkAdding(false);
       const response = apiResponse as { data: { data: SingleListData[] } };
       void queryClient.invalidateQueries({
-        queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+        queryKey: [BOOKMARKS_KEY, session?.user?.id],
       });
       void queryClient.invalidateQueries({
         queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
@@ -196,7 +192,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
           } finally {
             // invalidating and removing id from loading state for the case of pdf
             void queryClient.invalidateQueries({
-              queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+              queryKey: [BOOKMARKS_KEY, session?.user?.id],
             });
             removeLoadingBookmarkId(data?.id);
           }

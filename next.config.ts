@@ -86,9 +86,6 @@ const withSentry = hasSentry
         org: process.env.SENTRY_ORG,
         project: process.env.SENTRY_PROJECT,
 
-        // Capture React Component Names
-        reactComponentAnnotation: { enabled: true },
-
         // Only print logs for uploading source maps in CI
         silent: !process.env.CI,
 
@@ -98,8 +95,24 @@ const withSentry = hasSentry
         // Upload a larger set of source maps for prettier stack traces (increases build time)
         widenClientFileUpload: true,
 
-        // For all available options, see:
-        // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/
+        // Tree-shake unused Sentry features from client bundle
+        // Works via Sentry build plugin (shared by webpack and Turbopack codepaths)
+        bundleSizeOptimizations: {
+          excludeDebugStatements: true,
+          excludeReplayIframe: true,
+          excludeReplayShadowDom: true,
+          excludeReplayWorker: true,
+        },
+
+        // Disable post-build Debug ID injection — conflicts with experimental.sri
+        // Debug IDs mutate output bundles after compilation, breaking SRI hashes
+        useRunAfterProductionCompileHook: false,
+
+        // Turbopack-native options (Next.js 16+)
+        _experimental: {
+          // Adds data-sentry-component/element/source-file attributes to JSX
+          turbopackReactComponentAnnotation: { enabled: true },
+        },
       })
   : noWrapper;
 

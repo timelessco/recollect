@@ -4,8 +4,8 @@ import type { DeepRequired, FieldErrorsImpl } from "react-hook-form";
 
 import * as Sentry from "@sentry/nextjs";
 import { getYear } from "date-fns";
-import { isEmpty } from "lodash";
 import find from "lodash/find";
+import isEmpty from "lodash/isEmpty";
 import slugify from "slugify";
 
 import type { CardSectionProps } from "../pageComponents/dashboard/cardSection";

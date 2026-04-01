@@ -2,13 +2,13 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 
+import { useFetchCheckApiKey } from "@/async/queryHooks/ai/api-key/use-fetch-check-gemini-api-key";
 import { ShowEyeIcon } from "@/icons/show-eye-icon";
 import { SlashedEyeIcon } from "@/icons/slashed-eye-icon";
 import { handleClientError } from "@/utils/error-utils/client";
 
 import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserMutation";
 import { useDeleteApiKeyMutation } from "../../async/mutationHooks/user/useDeleteApiKeyMutation";
-import { useFetchCheckApiKey } from "../../async/queryHooks/ai/api-key/useFetchCheckGeminiApiKey";
 import useFetchGetApiKey from "../../async/queryHooks/ai/api-key/useFetchGetGeminiApiKey";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
@@ -103,7 +103,7 @@ export const AiFeatures = () => {
 
   const { data, isLoading: isChecking } = useFetchCheckApiKey();
 
-  if (isChecking || !data?.data) {
+  if (isChecking || !data) {
     return <AiFeaturesSkeleton />;
   }
 
@@ -119,7 +119,7 @@ export const AiFeatures = () => {
     saveApiKey({ apikey: formData.apiKey });
   };
 
-  const { hasApiKey } = data.data;
+  const { hasApiKey } = data;
 
   return (
     <>

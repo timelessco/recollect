@@ -2,7 +2,7 @@ import type {
   ToggleBookmarkDiscoverablePayload,
   ToggleBookmarkDiscoverableResponse,
 } from "@/app/api/bookmark/toggle-discoverable-on-bookmark/schema";
-import type { BookmarksPaginatedDataTypes } from "@/types/apiTypes";
+import type { PaginatedBookmarks } from "@/types/apiTypes";
 
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
@@ -23,7 +23,7 @@ export function useToggleDiscoverableOptimisticMutation() {
     Error,
     ToggleBookmarkDiscoverablePayload,
     typeof queryKey,
-    BookmarksPaginatedDataTypes
+    PaginatedBookmarks
   >({
     invalidates: [BOOKMARKS_KEY, DISCOVER_URL],
     mutationFn: (variables) =>
@@ -36,7 +36,7 @@ export function useToggleDiscoverableOptimisticMutation() {
     updater: (currentData, variables) =>
       updateBookmarkInPaginatedData(currentData, variables.bookmark_id, (bookmark) => {
         bookmark.make_discoverable = variables.make_discoverable ? "pending" : null;
-      }) as BookmarksPaginatedDataTypes,
+      })!,
   });
 
   return { toggleDiscoverableOptimisticMutation };
