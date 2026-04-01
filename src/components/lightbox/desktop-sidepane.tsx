@@ -243,6 +243,7 @@ export function DesktopSidepane({
                 </div>
               )}
               {(metaData?.img_caption ||
+                metaData?.image_caption ||
                 (metaData?.ocr && searchMatchesText(metaData.ocr, trimmedSearchText)) ||
                 (showKeywords &&
                   searchMatchesText(
