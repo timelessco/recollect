@@ -18,7 +18,7 @@ import { buildSearchCategorySegment } from "@/hooks/use-bookmark-mutation-contex
 import { cn } from "@/utils/tailwind-merge";
 
 import loaderGif from "../../../../public/loader-gif.gif";
-import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/useFetchBookmarksCount";
+import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/use-fetch-bookmarks-count";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
@@ -189,7 +189,7 @@ const CardSection = ({
       return (
         <BookmarksSkeletonLoader
           colCount={bookmarksColumns?.[0]}
-          count={getBookmarkCountForCurrentPage(bookmarksCountData?.data ?? undefined, categoryId)}
+          count={getBookmarkCountForCurrentPage(bookmarksCountData ?? undefined, categoryId)}
           type={cardTypeCondition}
         />
       );

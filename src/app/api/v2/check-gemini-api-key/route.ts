@@ -12,6 +12,11 @@ export const GET = createAxiomRouteHandler(
     handler: async ({ supabase, user }) => {
       const userId = user.id;
 
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+      }
+
       const { data: profileData, error: profileError } = await supabase
         .from(PROFILES)
         .select("api_key")
@@ -28,12 +33,8 @@ export const GET = createAxiomRouteHandler(
 
       const hasApiKey = Boolean(profileData?.api_key);
 
-      // Wide events: add business context to ALS fields
-      // These fields are spread into the single completion event by createAxiomRouteHandler
-      const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.has_api_key = hasApiKey;
-        ctx.fields.user_id = userId;
       }
 
       return { hasApiKey };

@@ -95,7 +95,9 @@ async function processVideo(
   userCollections: UserCollection[],
 ): Promise<VideoResult> {
   if (!thumbnailPath) {
-    throw new Error("ERROR: thumbnailPath is missing for video file");
+    throw new RecollectApiError("bad_request", {
+      message: "thumbnailPath is missing for video file",
+    });
   }
 
   const { data: thumbnailUrl } = storageHelpers.getPublicUrl(thumbnailPath);

@@ -79,7 +79,6 @@ export const GET_PDF_BUFFER_API = "/v1/bookmarks/get/get-pdf-buffer";
 // auth api
 // no auth api yet
 // bookmark api
-export const FETCH_BOOKMARK_BY_ID_API = "/v1/bookmarks/get/fetch-by-id?id=";
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
 export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
 export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
@@ -91,7 +90,6 @@ export const AI_ENRICHMENT_API = "/v1/ai-enrichment";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
 export const CLEAR_BOOKMARK_TRASH_API = "/bookmark/clear-bookmark-trash";
 export const FETCH_BOOKMARKS_VIEW = "/bookmark/fetch-bookmarks-view";
-export const FETCH_BOOKMARKS_COUNT = "/bookmark/fetch-bookmarks-count";
 export const ADD_REMAINING_BOOKMARK_API = "/bookmark/add-remaining-bookmark-data";
 
 export const TOGGLE_BOOKMARK_DISCOVERABLE_API = "/bookmark/toggle-discoverable-on-bookmark";
@@ -151,6 +149,8 @@ export const GET_API_KEY_API = "/v1/get-gemini-api-key";
 export const V2_FETCH_BOOKMARKS_DATA_API = "v2/bookmark/fetch-bookmarks-data";
 export const V2_SEARCH_BOOKMARKS_API = "v2/bookmark/search-bookmarks";
 export const V2_CHECK_GEMINI_API_KEY_API = "v2/check-gemini-api-key";
+export const V2_FETCH_BOOKMARK_BY_ID_API = "v2/bookmarks/get/fetch-by-id";
+export const V2_FETCH_BOOKMARKS_COUNT_API = "v2/bookmark/fetch-bookmarks-count";
 
 export const DELETE_API_KEY_API = "/v1/delete-api-key";
 
@@ -222,7 +222,6 @@ export const ADD_UPDATE_BOOKMARK_ACCESS_ERROR =
   "You dont have access to add to this category, this bookmark will be added without a category";
 export const DUPLICATE_CATEGORY_NAME_ERROR =
   "You already have a category with this name. Please use a different name.";
-export const NO_BOOKMARKS_ID_ERROR = "Bookmark ID is required";
 
 export const bookmarkType = "bookmark";
 export const tweetType = "tweet";

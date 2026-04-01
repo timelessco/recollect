@@ -7,7 +7,6 @@ import isNull from "lodash/isNull";
 import type {
   AddBookmarkMinDataPayloadTypes,
   AddBookmarkScreenshotPayloadTypes,
-  BookmarksCountTypes,
   BookmarkViewDataTypes,
   CategoriesData,
   DeleteBookmarkPayload,
@@ -31,7 +30,6 @@ import type {
   UserTagsData,
 } from "../../types/apiTypes";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { QueryFunctionContext, QueryKey } from "@tanstack/react-query";
 
 import { handleClientError } from "@/utils/error-utils/client";
 
@@ -44,8 +42,6 @@ import {
   DELETE_SHARED_CATEGORIES_USER_API,
   DELETE_USER_API,
   DELETE_USER_CATEGORIES_API,
-  FETCH_BOOKMARK_BY_ID_API,
-  FETCH_BOOKMARKS_COUNT,
   FETCH_BOOKMARKS_VIEW,
   FETCH_SHARED_CATEGORIES_DATA_API,
   FETCH_USER_CATEGORIES_API,
@@ -57,7 +53,6 @@ import {
   getBaseUrl,
   MOVE_BOOKMARK_TO_TRASH_API,
   NEXT_API_URL,
-  NO_BOOKMARKS_ID_ERROR,
   REMOVE_PROFILE_PIC_API,
   SAVE_API_KEY_API,
   SEND_COLLABORATION_EMAIL_API,
@@ -71,23 +66,6 @@ import {
 } from "../../utils/constants";
 // eslint-disable-next-line import/no-cycle -- circular dep between helpers and supabaseCrudHelpers needs structural refactor
 import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
-
-// bookmark
-// get bookmark by id
-export const fetchBookmarkById = async (id: string) => {
-  try {
-    if (!id) {
-      throw new Error(NO_BOOKMARKS_ID_ERROR);
-    }
-
-    const response = await axios.get<{ data: SingleListData }>(
-      `${NEXT_API_URL}${FETCH_BOOKMARK_BY_ID_API}${id}`,
-    );
-    return response?.data;
-  } catch (error) {
-    return error;
-  }
-};
 
 // user settings and keys
 export const saveApiKey = async ({
@@ -134,41 +112,6 @@ export const getGeminiApiKey = async (): Promise<GetApiKeyResponse> => {
   } catch (error) {
     handleClientError(error, "Failed to get API key try again later ");
     return { data: null };
-  }
-};
-
-export const getBookmarksCount = async (
-  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-  queryData: QueryFunctionContext<QueryKey, any>,
-  session: SupabaseSessionType,
-): Promise<{ data: BookmarksCountTypes | null; error: Error }> => {
-  const userId =
-    !isEmpty(queryData?.queryKey) && queryData?.queryKey?.length < 4
-      ? queryData?.queryKey[1]
-      : undefined;
-
-  if (!session?.user) {
-    return {
-      data: null,
-      error: { message: "No user session", name: "No user session" },
-    };
-  }
-
-  if (userId) {
-    try {
-      const bookmarksData = await axios.get<{
-        data: BookmarksCountTypes;
-        error: Error;
-      }>(`${NEXT_API_URL}${FETCH_BOOKMARKS_COUNT}`);
-
-      return bookmarksData?.data;
-    } catch (error_) {
-      const error = error_ as Error;
-      return { data: null, error };
-    }
-  } else {
-    // return undefined;
-    return { data: null, error: { message: "NO user id", name: "NO user id" } };
   }
 };
 

@@ -29,8 +29,9 @@ export const PUT = createAxiomRouteHandler(
 
       try {
         await validateApiKey({ apikey });
-      } catch {
+      } catch (error) {
         throw new RecollectApiError("bad_request", {
+          cause: error,
           message: "Invalid API key",
         });
       }

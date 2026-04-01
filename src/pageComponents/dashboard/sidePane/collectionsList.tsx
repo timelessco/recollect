@@ -94,7 +94,7 @@ const CollectionsList = () => {
     SHARED_CATEGORIES_TABLE_NAME,
   ]);
 
-  const bookmarksCountData = queryClient.getQueryData<{ data: BookmarksCountTypes }>([
+  const bookmarksCountData = queryClient.getQueryData<BookmarksCountTypes>([
     BOOKMARKS_COUNT_KEY,
     session?.user?.id,
   ]);
@@ -159,7 +159,7 @@ const CollectionsList = () => {
   const collectionsList = session
     ? categoryData?.data?.map((item) => ({
         count: find(
-          bookmarksCountData?.data?.categoryCount,
+          bookmarksCountData?.categoryCount,
           (catItem) => catItem?.category_id === item?.id,
         )?.count,
         current: currentPath === item?.category_slug,

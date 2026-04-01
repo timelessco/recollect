@@ -1,7 +1,6 @@
-import { useCallback, useState } from "react";
-
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { getColorName } from "@/utils/colorUtils";
 
 interface ColorPaletteProps {
@@ -49,30 +48,4 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
       </div>
     </TooltipPrimitive.Provider>
   );
-}
-
-type CopiedValue = null | string;
-type CopyFn = (text: string) => Promise<boolean>;
-
-function useCopyToClipboard(): [CopiedValue, CopyFn] {
-  const [copiedText, setCopiedText] = useState<CopiedValue>(null);
-
-  const copy: CopyFn = useCallback(async (text) => {
-    if (!navigator?.clipboard) {
-      console.warn("Clipboard not supported");
-      return false;
-    }
-
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedText(text);
-      return true;
-    } catch (error) {
-      console.warn("Copy failed", error);
-      setCopiedText(null);
-      return false;
-    }
-  }, []);
-
-  return [copiedText, copy];
 }

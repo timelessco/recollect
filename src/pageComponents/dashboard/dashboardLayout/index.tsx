@@ -62,7 +62,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     userId,
   ]);
 
-  const bookmarksCountData = queryClient.getQueryData<{ data: BookmarksCountTypes }>([
+  const bookmarksCountData = queryClient.getQueryData<BookmarksCountTypes>([
     BOOKMARKS_COUNT_KEY,
     userId,
   ]);

@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use the v2 App Router endpoint instead: /api/v2/bookmark/fetch-bookmarks-count
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import isEmpty from "lodash/isEmpty";

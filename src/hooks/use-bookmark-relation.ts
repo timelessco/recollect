@@ -87,10 +87,8 @@ export const useBookmarkRelation = (
     // Fallback: check single bookmark cache (from useFetchBookmarkById)
     // This handles the case when lightbox is opened via direct link/preview route
     if (result.length === 0) {
-      const singleBookmarkData = queryClient.getQueryData<{
-        data: SingleListData[];
-      }>(singleBookmarkKey);
-      const bookmark = singleBookmarkData?.data?.[0];
+      const singleBookmarkData = queryClient.getQueryData<SingleListData[]>(singleBookmarkKey);
+      const bookmark = singleBookmarkData?.[0];
       if (bookmark?.id === bookmarkId) {
         result = extractFn(bookmark);
         if (filterFn) {
