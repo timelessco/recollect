@@ -109,7 +109,9 @@ export const POST = createAxiomRouteHandler(
         } else {
           // Regular screenshot via screenshot service
           try {
-            const response = await fetch(`${SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`);
+            const response = await fetch(`${SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`, {
+              headers: { Authorization: `Bearer ${env.SCREENSHOT_API_SECRET}` },
+            });
             if (!response.ok) {
               throw new Error(`Screenshot API returned ${String(response.status)}`);
             }
