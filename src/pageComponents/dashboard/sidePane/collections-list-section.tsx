@@ -57,7 +57,7 @@ export function CollectionsListSection({ children, isLoading }: CollectionsListS
           show={showAddCategoryInput}
         />
         <button
-          className="mt-1 flex cursor-pointer items-center rounded-lg px-2 py-[6px] outline-hidden hover:bg-gray-100 focus-visible:ring-1 focus-visible:ring-gray-200 focus-visible:ring-inset"
+          className="mt-1 flex w-full cursor-pointer items-center rounded-lg px-2 py-[6px] text-start outline-hidden hover:bg-gray-100 focus-visible:ring-1 focus-visible:ring-gray-200 focus-visible:ring-inset"
           id="add-category-button"
           onClick={() => {
             setShowAddCategoryInput(true);
@@ -150,7 +150,7 @@ function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
   }
 
   return (
-    <div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-gray-100 px-2 py-[6px]">
+    <div className="mt-1 flex cursor-pointer items-center justify-between rounded-lg bg-gray-100 px-2 py-[6px] focus-within:ring-1 focus-within:ring-gray-200 focus-within:ring-inset">
       <div className="flex items-center">
         <figure className="mr-2 h-[18px] w-[18px]">
           <svg fill="var(--color-plain-reverse)" height="16" viewBox="0 0 18 18" width="16">
@@ -160,7 +160,7 @@ function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
         <input
           aria-label="New collection name"
           autoFocus
-          className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! outline-hidden! placeholder:text-plain-reverse focus-visible:ring-1! focus-visible:ring-gray-200!"
+          className="bg-black/[0.004]! text-sm! leading-4! font-450! text-plain-reverse! opacity-40! outline-hidden! placeholder:text-plain-reverse"
           id="add-category-input"
           onBlur={(event) => {
             const inputValue = (event.target as HTMLInputElement)?.value;
