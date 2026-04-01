@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" fill="none" viewBox="0 0 512 512">
+  <style>
+    @media (color-gamut: p3) {
+      .foreground {
+        fill: oklch(15.3% 0 0);
+      }
+    }
+    @media (prefers-color-scheme: dark) {
+      .foreground {
+        fill: #f1f1f1;
+      }
+      .foreground {
+        fill: oklch(95.6% 0 0);
+      }
+    }
+  </style>
+  <path
+    fill="#0e0e0e"
+    class="foreground"
+    d="M61 18v452.302c0 20.679 23.572 32.519 40.161 20.173l139.677-103.959a25.15 25.15 0 0 1 30.066.028l138.897 103.785c16.584 12.391 40.199.557 40.199-20.145V139.678C450 72.478 395.523 18 328.322 18z"
+  />
+</svg>
