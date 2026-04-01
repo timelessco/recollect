@@ -5,8 +5,8 @@ import type { z } from "zod";
 
 /**
  * Pre-configured ky instance for v2 API routes.
- * Callers use: api.get("v2/route").json<T>()
- * Note: prefixUrl "/api" — ky prepends this to relative URLs.
+ * Callers use: api.get(V2_ROUTE_CONSTANT).json<T>()
+ * URL constants are defined in src/utils/constants.ts (no leading slash — prefixUrl handles it).
  * IMPORTANT: Do NOT use a leading slash on the path — "v2/foo", not "/v2/foo".
  */
 export const api: KyInstance = ky.create({ prefixUrl: "/api" });

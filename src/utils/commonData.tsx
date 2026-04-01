@@ -3584,14 +3584,10 @@ export const options = () => iconOptions;
 
 export const optionsMenuListArray = (
   currentPath: null | string,
-  bookmarksCountData:
-    | {
-        data: BookmarksCountTypes;
-      }
-    | undefined,
+  bookmarksCountData: BookmarksCountTypes | undefined,
 ) => [
   {
-    count: bookmarksCountData?.data?.everything,
+    count: bookmarksCountData?.everything,
     current: currentPath === EVERYTHING_URL,
     href: `/${EVERYTHING_URL}`,
     icon: <HomeIconGray />,
@@ -3609,7 +3605,7 @@ export const optionsMenuListArray = (
     name: menuListItemName.discover,
   },
   {
-    count: bookmarksCountData?.data?.uncategorized,
+    count: bookmarksCountData?.uncategorized,
     current: currentPath === UNCATEGORIZED_URL,
     href: `/${UNCATEGORIZED_URL}`,
     icon: <InboxIconGray />,
@@ -3618,7 +3614,7 @@ export const optionsMenuListArray = (
     name: menuListItemName.inbox,
   },
   {
-    count: bookmarksCountData?.data?.trash,
+    count: bookmarksCountData?.trash,
     current: currentPath === TRASH_URL,
     href: `/${TRASH_URL}`,
     icon: <TrashIconGray />,
@@ -3636,7 +3632,7 @@ export const optionsMenuListArray = (
     name: menuListItemName.settings,
   },
   {
-    count: bookmarksCountData?.data?.images,
+    count: bookmarksCountData?.images,
     current: currentPath === IMAGES_URL,
     href: `/${IMAGES_URL}`,
     icon: (
@@ -3649,7 +3645,7 @@ export const optionsMenuListArray = (
     name: menuListItemName.image,
   },
   {
-    count: bookmarksCountData?.data?.videos,
+    count: bookmarksCountData?.videos,
     current: currentPath === VIDEOS_URL,
     href: `/${VIDEOS_URL}`,
     icon: (
@@ -3662,7 +3658,7 @@ export const optionsMenuListArray = (
     name: menuListItemName.videos,
   },
   {
-    count: bookmarksCountData?.data?.links,
+    count: bookmarksCountData?.links,
     current: currentPath === LINKS_URL,
     href: `/${LINKS_URL}`,
     icon: (
@@ -3675,7 +3671,7 @@ export const optionsMenuListArray = (
     name: menuListItemName.links,
   },
   {
-    count: bookmarksCountData?.data?.documents,
+    count: bookmarksCountData?.documents,
     current: currentPath === DOCUMENTS_URL,
     href: `/${DOCUMENTS_URL}`,
     icon: (
@@ -3688,7 +3684,7 @@ export const optionsMenuListArray = (
     name: menuListItemName.documents,
   },
   {
-    count: bookmarksCountData?.data?.tweets,
+    count: bookmarksCountData?.tweets,
     current: currentPath === TWEETS_URL,
     href: `/${TWEETS_URL}`,
     icon: (
@@ -3701,7 +3697,7 @@ export const optionsMenuListArray = (
     name: menuListItemName.tweets,
   },
   {
-    count: bookmarksCountData?.data?.instagram,
+    count: bookmarksCountData?.instagram,
     current: currentPath === INSTAGRAM_URL,
     href: `/${INSTAGRAM_URL}`,
     icon: (
@@ -3714,7 +3710,7 @@ export const optionsMenuListArray = (
     name: menuListItemName.instagram,
   },
   {
-    count: bookmarksCountData?.data?.audio,
+    count: bookmarksCountData?.audio,
     current: currentPath === AUDIO_URL,
     href: `/${AUDIO_URL}`,
     icon: <AudioIcon className="h-4.5 w-4.5 text-gray-900" />,

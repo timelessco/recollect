@@ -35,6 +35,13 @@ src/
 - **Pages Router** (`src/pages/`): Dashboard (`[category_id]`), discover, public share, legacy API routes
 - Root `/` redirects to `/everything`
 
+### Dashboard Route Types
+
+Three sidebar sections, each with different `CATEGORY_ID` resolution:
+- **Navigation:** `/everything` (null), `/discover`, `/uncategorized` ("Inbox"), `/trash` — string slugs returned as-is
+- **Collections:** Slug-based (e.g., `/funky-mhd2z350`) — resolved to numeric category ID via `getCategoryIdFromSlug` cache lookup
+- **Type Views:** `/images`, `/videos`, `/links`, `/documents`, `/tweets`, `/instagram`, `/audios` — media type filters, NOT database categories. Slug string returned as-is (e.g., `"images"`)
+
 ### Component Patterns
 
 - **Images**: NextImage with blurhash. **Links**: StyledLink. **Icons**: `/src/icons/svg/` + sprite build

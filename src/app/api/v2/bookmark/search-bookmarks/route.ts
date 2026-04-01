@@ -6,6 +6,7 @@ import { getServerContext } from "@/lib/api-helpers/server-context";
 import { createApiClient, getApiUser } from "@/lib/supabase/api";
 import { getBookmarkMediaCategoryPredicate } from "@/utils/bookmark-category-filters";
 import { isUserOwnerOrAnyCollaborator } from "@/utils/category-auth";
+import { parseSearchColor } from "@/utils/colorUtils";
 import {
   AUDIO_URL,
   bookmarkType,
@@ -39,12 +40,13 @@ const SPECIAL_CATEGORY_URLS = new Set([
   LINKS_URL,
   TRASH_URL,
   TWEETS_URL,
+  UNCATEGORIZED_URL,
   VIDEOS_URL,
 ]);
 
 /**
  * Checks if a category_id represents a user's collection (not a special URL).
- * Ported from helpers.ts isUserInACategoryInApi (without uncategorized check).
+ * Ported from helpers.ts isUserInACategoryInApi.
  */
 function isUserCollection(categoryId: string): boolean {
   return categoryId !== "null" && categoryId !== "" && !SPECIAL_CATEGORY_URLS.has(categoryId);
@@ -124,16 +126,26 @@ export const GET = createAxiomRouteHandler(
         ctx.fields.offset = offset;
       }
 
-      // Parse search modifiers: @domain.com site scope and #tag filters
+      // Parse search modifiers: @domain.com site scope, #tag filters, color: prefix
       const matchedSiteScope = search.match(GET_SITE_SCOPE_PATTERN);
       const urlScope = matchedSiteScope?.at(0)?.replace("@", "")?.toLowerCase() ?? "";
 
-      const searchText = search
+      // Strip color: prefix first so # in hex values doesn't get parsed as a tag
+      const colorMatch = /color:(\S+)/i.exec(search);
+      const searchColor = colorMatch ? parseSearchColor(colorMatch[1]) : null;
+      const searchWithoutColor = search.replace(/color:\S*/i, "");
+
+      // color: prefix present but invalid color → no results
+      if (colorMatch && !searchColor) {
+        return NextResponse.json([]);
+      }
+
+      const searchText = searchWithoutColor
         .replace(GET_SITE_SCOPE_PATTERN, "")
         .replace(GET_HASHTAG_TAG_PATTERN, "")
         .trim();
 
-      const tagName = extractTagNames(search);
+      const tagName = extractTagNames(searchWithoutColor);
 
       if (ctx?.fields) {
         ctx.fields.search_text = searchText || null;
@@ -144,7 +156,7 @@ export const GET = createAxiomRouteHandler(
       // Determine category_scope for junction table filtering
       // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
       const userInCollections = isUserCollection(categoryId ?? "");
-      let categoryScope: null | number = null;
+      let categoryScope: number | undefined;
       if (userInCollections) {
         categoryScope = categoryId === UNCATEGORIZED_URL ? 0 : Number(categoryId);
       }
@@ -152,7 +164,11 @@ export const GET = createAxiomRouteHandler(
       const isTrashPage = categoryId === TRASH_URL;
       let rpcQuery = supabase
         .rpc("search_bookmarks_url_tag_scope", {
-          category_scope: isDiscoverPage ? null : categoryScope,
+          category_scope: isDiscoverPage ? undefined : categoryScope,
+          color_a: searchColor?.a ?? undefined,
+          color_b: searchColor?.b ?? undefined,
+          color_l: searchColor?.l ?? undefined,
+
           search_text: searchText,
           tag_scope: tagName,
           url_scope: urlScope,
@@ -166,21 +182,21 @@ export const GET = createAxiomRouteHandler(
         rpcQuery = rpcQuery.not("make_discoverable", "is", null);
       } else {
         if (!userInCollections) {
-          rpcQuery = rpcQuery.eq("user_id", userId);
+          rpcQuery = rpcQuery.filter("user_id", "eq", userId);
         }
 
-        if (userInCollections) {
+        if (userInCollections && categoryScope !== undefined) {
           // Check if user is the owner or ANY-level collaborator (including read-only)
           // If not, scope search results to only their own bookmarks
           const hasAccess = await isUserOwnerOrAnyCollaborator({
-            categoryId: Number(categoryId),
+            categoryId: categoryScope,
             email: userEmail,
             supabase,
             userId,
           });
 
           if (!hasAccess) {
-            rpcQuery = rpcQuery.eq("user_id", userId);
+            rpcQuery = rpcQuery.filter("user_id", "eq", userId);
           }
         }
       }
@@ -191,15 +207,15 @@ export const GET = createAxiomRouteHandler(
       }
 
       if (categoryId === TWEETS_URL) {
-        rpcQuery = rpcQuery.eq("type", tweetType);
+        rpcQuery = rpcQuery.filter("type", "eq", tweetType);
       }
 
       if (categoryId === INSTAGRAM_URL) {
-        rpcQuery = rpcQuery.eq("type", instagramType);
+        rpcQuery = rpcQuery.filter("type", "eq", instagramType);
       }
 
       if (categoryId === LINKS_URL) {
-        rpcQuery = rpcQuery.eq("type", bookmarkType);
+        rpcQuery = rpcQuery.filter("type", "eq", bookmarkType);
       }
 
       const { data, error } = await rpcQuery;

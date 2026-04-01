@@ -3,31 +3,15 @@ import "yet-another-react-lightbox/styles.css";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import type { SingleListData } from "../../../types/apiTypes";
-
-import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/useFetchBookmarkById";
+import { useFetchBookmarkById } from "../../../async/queryHooks/bookmarks/use-fetch-bookmark-by-id";
 import { CustomLightBox } from "../../../components/lightbox/LightBox";
 import { Spinner } from "../../../components/spinner";
 import { EVERYTHING_URL } from "../../../utils/constants";
 
-export interface BookmarkResponse {
-  data: SingleListData[];
-  error: null | string;
-}
-
 const Preview = () => {
   const router = useRouter();
   const id = String(router.query.id ?? "");
-  const {
-    data: bookmark,
-    error,
-    isLoading,
-    // oxlint-disable-next-line no-unsafe-type-assertion -- hook's BookmarkResponse shape differs from local (singular vs array)
-  } = useFetchBookmarkById(id) as {
-    data: BookmarkResponse | undefined;
-    error: Error | null;
-    isLoading: boolean;
-  };
+  const { data: bookmark, error, isLoading } = useFetchBookmarkById(id);
 
   const [isOpen, setIsOpen] = useState(true);
 
@@ -38,7 +22,7 @@ const Preview = () => {
 
   // Handle redirects in useEffect to prevent SSR issues
   useEffect(() => {
-    if (router.isReady && ((!isLoading && !bookmark?.data?.[0]) || error)) {
+    if (router.isReady && ((!isLoading && !bookmark?.[0]) || error)) {
       void router.push(`/${EVERYTHING_URL}`);
     }
   }, [router, isLoading, bookmark, error]);
@@ -52,11 +36,11 @@ const Preview = () => {
     );
   }
 
-  if (!bookmark?.data?.[0] || error) {
+  if (!bookmark?.[0] || error) {
     return null;
   }
 
-  const bookmarkData = bookmark?.data?.[0];
+  const [bookmarkData] = bookmark;
 
   return (
     <CustomLightBox

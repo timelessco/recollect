@@ -10,6 +10,19 @@ export const FetchDiscoverBookmarksQuerySchema = z.object({
 
 export type FetchDiscoverBookmarksQuery = z.infer<typeof FetchDiscoverBookmarksQuerySchema>;
 
+const OklabColorSchema = z.object({
+  a: z.number().meta({ description: "OKLAB a-axis value" }),
+  b: z.number().meta({ description: "OKLAB b-axis value" }),
+  l: z.number().meta({ description: "OKLAB lightness value" }),
+});
+
+const BookmarkColorsSchema = z
+  .object({
+    primary_color: OklabColorSchema.nullable().meta({ description: "Primary OKLAB color" }),
+    secondary_colors: z.array(OklabColorSchema).meta({ description: "Secondary OKLAB colors" }),
+  })
+  .meta({ description: "OKLAB color data extracted from image" });
+
 const MetadataSchema = z.object({
   additionalVideos: z
     .array(z.string())
@@ -28,7 +41,7 @@ const MetadataSchema = z.object({
     .union([
       z.array(z.string()),
       z.object({
-        color: z.array(z.string()).optional(),
+        color: BookmarkColorsSchema.optional(),
         features: z.record(z.string(), z.union([z.string(), z.array(z.string())])).optional(),
         object: z.array(z.string()).optional(),
         people: z.array(z.string()).optional(),

@@ -255,3 +255,95 @@ No changes
 
 
 
+
+## 2026-03-31 [`8a73332`](https://github.com/timelessco/recollect/commit/8a733321103941f4f61ea37ea81fc068fa0a4924)
+
+
+No changes
+
+
+
+## 2026-03-31 [`2d4ec3c`](https://github.com/timelessco/recollect/commit/2d4ec3c8bb86ba09db1807e7acf6f6d4c9e2b980)
+
+
+No changes
+
+
+
+## 2026-03-31 [`08fd5f6`](https://github.com/timelessco/recollect/commit/08fd5f611b86711b3d2de1da60f399f0e32edaa1)
+
+
+No changes
+
+
+
+## 2026-03-31 [`51e673c`](https://github.com/timelessco/recollect/commit/51e673ce261f18c8a2b956d5a881cae0ea998719)
+
+
+No changes
+
+
+
+## 2026-03-31 [`1dd94a9`](https://github.com/timelessco/recollect/commit/1dd94a9096700ebbd7f0d137994d4fa46a57640e)
+
+
+No changes
+
+
+
+## 2026-04-01 [`493f9a3`](https://github.com/timelessco/recollect/commit/493f9a3091cdd4f9c450792b94412c5e5ad5dcd9)
+
+
+No changes
+
+
+
+## 2026-04-01 [`c398981`](https://github.com/timelessco/recollect/commit/c39898107f13956c22848ede32f7a9a0c9b1d3aa)
+
+
+No changes
+
+
+
+## 2026-04-01 [`7e457ba`](https://github.com/timelessco/recollect/commit/7e457ba547e2789c541164ac7ccf6630eca5c63d)
+
+
+
+### API Changes
+
+### GET /bookmark/fetch-bookmarks-discoverable
+- :warning: the 'data/items/meta_data/image_keywords/anyOf[subschema #2]/color' response's property type/format changed from 'array'/'' to 'object'/'' for status '200'
+-  added the required property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/color/primary_color' to the response with the '200' status
+-  added the required property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/color/secondary_colors' to the response with the '200' status
+
+
+### GET /bookmark/fetch-discoverable-by-id
+- :warning: the 'data/meta_data/image_keywords/anyOf[subschema #2]/color' response's property type/format changed from 'array'/'' to 'object'/'' for status '200'
+-  added the required property 'data/meta_data/image_keywords/anyOf[subschema #2]/color/primary_color' to the response with the '200' status
+-  added the required property 'data/meta_data/image_keywords/anyOf[subschema #2]/color/secondary_colors' to the response with the '200' status
+
+
+### GET /bookmark/fetch-public-bookmark-by-id
+- :warning: the 'data/meta_data/image_keywords/anyOf[subschema #2]/color' response's property type/format changed from 'array'/'' to 'object'/'' for status '200'
+-  added the required property 'data/meta_data/image_keywords/anyOf[subschema #2]/color/primary_color' to the response with the '200' status
+-  added the required property 'data/meta_data/image_keywords/anyOf[subschema #2]/color/secondary_colors' to the response with the '200' status
+
+
+
+
+
+
+
+## 2026-04-01 [`82768e3`](https://github.com/timelessco/recollect/commit/82768e3a2cbb895494d565407fdec915891263e1)
+
+
+No changes
+
+
+
+## 2026-04-01 [`00c107d`](https://github.com/timelessco/recollect/commit/00c107d5f1d2a75d6d9a82a2eb15c34c8f5625b4)
+
+
+No changes
+
+

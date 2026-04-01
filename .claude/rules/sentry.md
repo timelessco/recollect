@@ -69,7 +69,7 @@ if (!foundItem) {
 
 ### API Handler Integration
 
-**V1 routes only** — response helpers in `/src/lib/api-helpers/response.ts` auto-capture exceptions. v2 routes use `RecollectApiError` throws instead (see v2 Route Error Flow below).
+**V1 routes only** — response helpers in `/src/lib/api-helpers/response.ts` auto-capture exceptions. v2 routes: see `api-v2.md` for error routing.
 
 | Helper       | Sentry                  | Use For                       |
 | ------------ | ----------------------- | ----------------------------- |
@@ -100,26 +100,6 @@ Sentry.captureException(error, {
 });
 ```
 
-### v2 Route Error Flow (v3.0+)
-
-v2 routes (`create-handler-v2.ts`) use a layered error model where Sentry only captures truly unexpected errors:
-
-**Known errors (RecollectApiError):**
-1. Handler throws `new RecollectApiError("service_unavailable", { cause, message, operation })`
-2. Inner layer (`withAuth`/`withPublic`) catches it
-3. Logged as Axiom `warn` (not error) with route, status, and operation context
-4. Returned as `{error: string}` HTTP response
-5. **Never sent to Sentry** — these are expected operational failures (DB errors, validation, auth)
-
-**Unknown errors (unexpected throws):**
-1. Handler throws something that is NOT a `RecollectApiError`
-2. Inner layer re-throws to outer `createAxiomRouteHandler` catch
-3. Logged as Axiom `error` with full error details
-4. Re-thrown from the outer catch
-5. Next.js `instrumentation.ts` `onRequestError` hook catches it and sends to **Sentry**
-
-**Key difference from v1:** v1 uses `apiError()` which directly calls `Sentry.captureException`. v2 separates known vs unknown errors — only unknown errors reach Sentry, reducing noise.
-
 ### Best Practices
 
 1. **Always tag operations** - Makes errors filterable in Sentry dashboard
@@ -127,4 +107,3 @@ v2 routes (`create-handler-v2.ts`) use a layered error model where Sentry only c
 3. **Use breadcrumbs before risky operations** - Provides context for debugging
 4. **Let response helpers handle API errors** - Consistent capture pattern (v1 only)
 5. **Don't capture strings** - Always pass actual Error objects
-6. **v2 routes: throw RecollectApiError for known failures** - Never import Sentry directly in v2 handlers

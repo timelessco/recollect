@@ -24,6 +24,7 @@ Before any Next.js work, read the relevant doc in `node_modules/next/dist/docs/`
 - **Env validation**: `@t3-oss/env-nextjs` in `src/env/` — split server/client pattern. Server env includes Vercel preset. Every `process.env` in codebase has an inline comment explaining why it wasn't migrated
 - **v2 API contract**: Routes under `/api/v2/` return `T` on success (no `{data, error}` envelope). Errors return `{error: string}` with HTTP status. v2 route handlers use `create-handler-v2.ts` (self-contained factory with `error()`/`warn()` context helpers). Non-v2 routes use `create-handler.ts` and keep `{data: T, error: null}` envelope. `response.ts` is FROZEN — never modify `apiSuccess`/`apiError`/`apiWarn`
   - OpenAPI supplements for v2 routes use bare response examples — `{ field: value }`, not `{ data: { field: value }, error: null }`
+  - v2 URL constants for ky `api` instance (`api-v2.ts`): no leading slash — `"v2/bookmark/fetch-bookmarks-data"`, not `"/v2/..."`. v1 constants keep leading slashes. Both conventions coexist in `constants.ts`
 
 ## Commands
 

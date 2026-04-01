@@ -486,6 +486,12 @@ export type Database = {
         Args: { p_user_id: string };
         Returns: Json;
       };
+      extract_keywords_text: {
+        Args: { node: Json };
+        Returns: {
+          keyword: string;
+        }[];
+      };
       get_instagram_sync_status: { Args: { p_user_id: string }; Returns: Json };
       get_instagram_worker_failures: {
         Args: { p_since_minutes?: number };
@@ -664,55 +670,34 @@ export type Database = {
               user_id: string;
             }[];
           };
-      search_bookmarks_url_tag_scope:
-        | {
-            Args: {
-              search_text?: string;
-              tag_scope?: string[];
-              url_scope?: string;
-            };
-            Returns: {
-              added_tags: Json;
-              category_id: number;
-              description: string;
-              id: number;
-              inserted_at: string;
-              meta_data: Json;
-              ogimage: string;
-              screenshot: string;
-              sort_index: string;
-              title: string;
-              trash: boolean;
-              type: string;
-              url: string;
-              user_id: string;
-            }[];
-          }
-        | {
-            Args: {
-              category_scope?: number;
-              search_text?: string;
-              tag_scope?: string[];
-              url_scope?: string;
-            };
-            Returns: {
-              added_categories: Json;
-              added_tags: Json;
-              description: string;
-              id: number;
-              inserted_at: string;
-              make_discoverable: string;
-              meta_data: Json;
-              ogimage: string;
-              screenshot: string;
-              sort_index: string;
-              title: string;
-              trash: string;
-              type: string;
-              url: string;
-              user_id: string;
-            }[];
-          };
+      search_bookmarks_url_tag_scope: {
+        Args: {
+          category_scope?: number;
+          color_a?: number;
+          color_b?: number;
+          color_l?: number;
+          search_text?: string;
+          tag_scope?: string[];
+          url_scope?: string;
+        };
+        Returns: {
+          added_categories: Json;
+          added_tags: Json;
+          description: string;
+          id: number;
+          inserted_at: string;
+          make_discoverable: string;
+          meta_data: Json;
+          ogimage: string;
+          screenshot: string;
+          sort_index: string;
+          title: string;
+          trash: string;
+          type: string;
+          url: string;
+          user_id: string;
+        }[];
+      };
       set_bookmark_categories: {
         Args: { p_bookmark_id: number; p_category_ids: number[] };
         Returns: {

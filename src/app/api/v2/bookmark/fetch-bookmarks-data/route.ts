@@ -280,7 +280,7 @@ export const GET = createAxiomRouteHandler(
 
         return {
           ...item,
-          categories:
+          addedCategories:
             matchedCategories && matchedCategories.length > 0
               ? matchedCategories.map((matchedItem) => ({
                   category_name: matchedItem.category_id.category_name,
@@ -290,7 +290,7 @@ export const GET = createAxiomRouteHandler(
                   id: matchedItem.category_id.id,
                 }))
               : [],
-          tags:
+          addedTags:
             matchedTags && matchedTags.length > 0
               ? matchedTags.map((matchedItem) => ({
                   id: matchedItem.tag_id.id,

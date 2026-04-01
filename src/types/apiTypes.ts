@@ -66,15 +66,6 @@ export interface BookmarksCountTypes {
   videos: number;
 }
 
-export interface SingleBookmarksPaginatedDataTypes {
-  count: BookmarksCountTypes;
-  data: SingleListData[];
-  error: PostgrestError;
-}
-export interface BookmarksPaginatedDataTypes {
-  pages: SingleBookmarksPaginatedDataTypes[];
-}
-
 export interface FetchDataResponse<T = SingleListData[]> {
   data: T;
   error: null | PostgrestError;
@@ -410,5 +401,5 @@ export interface ParsedFormDataType {
 
 // Shared type for paginated bookmarks data structure in React Query cache
 export interface PaginatedBookmarks {
-  pages: { data: SingleListData[] }[];
+  pages: SingleListData[][];
 }

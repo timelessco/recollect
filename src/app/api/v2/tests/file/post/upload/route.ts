@@ -45,9 +45,11 @@ async function processVideoThumbnail(props: {
   const { error: getError } = await storageHelpers.listObjects(R2_MAIN_BUCKET_NAME, thumbnailPath);
 
   if (getError) {
-    throw new Error(
-      `ERROR: getError ${getError instanceof Error ? getError.message : JSON.stringify(getError)}`,
-    );
+    throw new RecollectApiError("service_unavailable", {
+      cause: getError instanceof Error ? getError : undefined,
+      message: "Failed to verify thumbnail in storage",
+      operation: "test_upload_thumbnail",
+    });
   }
 
   // Delete the temp thumbnail

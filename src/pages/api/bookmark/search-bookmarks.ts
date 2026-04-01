@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use the v2 App Router endpoint instead: /api/v2/bookmark/search-bookmarks
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
@@ -9,6 +13,7 @@ import type { PostgrestError } from "@supabase/supabase-js";
 import type { VerifyErrors } from "jsonwebtoken";
 
 import { getBookmarkMediaCategoryPredicate } from "../../../utils/bookmark-category-filters";
+import { parseSearchColor } from "../../../utils/colorUtils";
 import {
   bookmarkType,
   DISCOVER_URL,
@@ -97,23 +102,36 @@ export default async function handler(request: NextApiRequest, response: NextApi
     const matchedSiteScope = search.match(GET_SITE_SCOPE_PATTERN);
     const urlScope = matchedSiteScope?.[0]?.replace("@", "")?.toLowerCase() ?? "";
 
-    const searchText = search
+    // Strip color: prefix first so # in hex values doesn't get parsed as a tag
+    const colorMatch = /color:(\S+)/i.exec(search);
+    const searchColor = colorMatch ? parseSearchColor(colorMatch[1]) : null;
+    const searchWithoutColor = search.replace(/color:\S*/i, "");
+
+    // color: prefix present but invalid color → no results
+    if (colorMatch && !searchColor) {
+      console.warn("[search-bookmarks] Unrecognized color value:", colorMatch[1]);
+      response.status(200).json({ data: [], error: null });
+      return;
+    }
+
+    const searchText = searchWithoutColor
       ?.replace(GET_SITE_SCOPE_PATTERN, "")
       ?.replace(GET_HASHTAG_TAG_PATTERN, "")
       ?.trim();
 
-    const tagName = extractTagNamesFromSearch(search);
+    const tagName = extractTagNamesFromSearch(searchWithoutColor);
 
     // Determine category_scope for junction table filtering
     // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
-    const userInCollections = isUserInACategoryInApi(category_id!, false);
-    let categoryScope: number | null = null;
+    const userInCollections = isUserInACategoryInApi(category_id!);
+    let categoryScope: number | undefined;
     if (userInCollections) {
       categoryScope = category_id === UNCATEGORIZED_URL ? 0 : Number(category_id);
     }
 
     console.log("[search-bookmarks] Parsed search parameters:", {
       categoryScope,
+      searchColor,
       searchText,
       tagName,
       urlScope,
@@ -123,6 +141,9 @@ export default async function handler(request: NextApiRequest, response: NextApi
     let query = supabase
       .rpc("search_bookmarks_url_tag_scope", {
         category_scope: isDiscoverPage ? null : categoryScope,
+        color_a: searchColor?.a ?? null,
+        color_b: searchColor?.b ?? null,
+        color_l: searchColor?.l ?? null,
         search_text: searchText,
         tag_scope: tagName,
         url_scope: urlScope,
@@ -139,7 +160,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
       const userEmail = email!;
 
       if (!userInCollections) {
-        query = query.eq("user_id", userId);
+        query = query.filter("user_id", "eq", userId);
       }
 
       if (userInCollections) {
@@ -211,7 +232,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
         if (is_user_not_collaborator_or_owner) {
           // if user is not a collaborator or the owner of the category, then get only the items that match the user_id and category_id
-          query = query.eq("user_id", userId);
+          query = query.filter("user_id", "eq", userId);
         }
       }
     }
@@ -223,15 +244,15 @@ export default async function handler(request: NextApiRequest, response: NextApi
     }
 
     if (category_id === TWEETS_URL) {
-      query = query.eq("type", tweetType);
+      query = query.filter("type", "eq", tweetType);
     }
 
     if (category_id === INSTAGRAM_URL) {
-      query = query.eq("type", instagramType);
+      query = query.filter("type", "eq", instagramType);
     }
 
     if (category_id === LINKS_URL) {
-      query = query.eq("type", bookmarkType);
+      query = query.filter("type", "eq", bookmarkType);
     }
 
     const { data, error } = (await query) as unknown as {

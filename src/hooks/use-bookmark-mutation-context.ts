@@ -1,9 +1,23 @@
 import { useQueryClient } from "@tanstack/react-query";
 
+import type { CategoryIdUrlTypes } from "@/types/componentTypes";
+
 import useGetCurrentCategoryId from "@/hooks/useGetCurrentCategoryId";
 import useGetSortBy from "@/hooks/useGetSortBy";
 import { useMiscellaneousStore, useSupabaseSession } from "@/store/componentStore";
 import { BOOKMARKS_KEY } from "@/utils/constants";
+
+/**
+ * Build the 3rd segment of a search query key.
+ * Uses CATEGORY_ID (always available from URL) rather than searchSlugKey(categoryData)
+ * which requires categories to be fetched first.
+ * Normalizes null → undefined to match useSearchBookmarks key shape on /everything.
+ */
+export function buildSearchCategorySegment(
+  categoryId: CategoryIdUrlTypes,
+): CategoryIdUrlTypes | undefined {
+  return categoryId ?? undefined;
+}
 
 /**
  * Shared hook that provides common context for bookmark mutation hooks.
@@ -24,7 +38,12 @@ export function useBookmarkMutationContext() {
 
   // Only create search key if actively searching (searchText is debounced at source)
   const searchQueryKey = searchText
-    ? ([BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, searchText] as const)
+    ? ([
+        BOOKMARKS_KEY,
+        session?.user?.id,
+        buildSearchCategorySegment(CATEGORY_ID),
+        searchText,
+      ] as const)
     : null;
 
   return {

@@ -10,10 +10,12 @@ import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
 import { GeminiAiIcon } from "@/icons/geminiAiIcon";
 import { vercelEnvironment } from "@/site-config";
 import { useMiscellaneousStore } from "@/store/componentStore";
+import { getBookmarkColors } from "@/utils/colorUtils";
 
 import { Icon } from "../atoms/icon";
 import { GetBookmarkIcon } from "../get-bookmark-icon";
 import { CategoryMultiSelect } from "./category-multi-select";
+import { ColorPalette } from "./color-palette";
 import {
   getKeywordsDisplay,
   hasKeywords,
@@ -58,6 +60,7 @@ export function SidepaneContent({
 
   const metaData = currentBookmark?.meta_data;
   const showKeywords = hasKeywords(metaData?.image_keywords) && vercelEnvironment !== "production";
+  const bookmarkColors = getBookmarkColors(metaData?.image_keywords);
   const collapsedOffset = (currentBookmark?.addedTags?.length ?? 0) > 0 ? 145 : 110;
 
   useEffect(() => {
@@ -163,6 +166,12 @@ export function SidepaneContent({
                 Show more
               </button>
             )}
+          </div>
+        )}
+        {bookmarkColors.length > 0 && (
+          <div className="pt-3 pb-1">
+            <p className="pb-1.5 text-xs font-medium text-gray-500">Colors</p>
+            <ColorPalette colors={bookmarkColors} />
           </div>
         )}
         {!isDiscoverPage && !isPublicPage && (

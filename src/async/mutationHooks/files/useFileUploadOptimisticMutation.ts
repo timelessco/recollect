@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import isNull from "lodash/isNull";
 
-import type { BookmarksPaginatedDataTypes, UploadFileApiPayload } from "../../../types/apiTypes";
+import type { PaginatedBookmarks, UploadFileApiPayload } from "../../../types/apiTypes";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
@@ -118,32 +118,28 @@ export default function useFileUploadOptimisticMutation() {
 
       // Optimistically update to the new value immediately
       // This shows the bookmark right away, even for videos
-      queryClient.setQueryData<BookmarksPaginatedDataTypes>(
+      queryClient.setQueryData<PaginatedBookmarks>(
         [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
         (old) => {
           if (typeof old === "object") {
-            const latestData = {
+            return {
               ...old,
-              pages: old?.pages?.map((item, index) => {
+              pages: old?.pages?.map((page, index) => {
                 if (index === 0) {
-                  return {
-                    ...item,
-                    data: [
-                      {
-                        title: fileName,
-                        url: "",
-                        type: data?.file?.type,
-                        inserted_at: new Date(),
-                      },
-                      ...item.data,
-                    ],
-                  };
+                  return [
+                    {
+                      title: fileName,
+                      url: "",
+                      type: data?.file?.type,
+                      inserted_at: new Date(),
+                    },
+                    ...page,
+                  ];
                 }
 
-                return item;
+                return page;
               }),
-            };
-            return latestData as BookmarksPaginatedDataTypes;
+            } as PaginatedBookmarks;
           }
         },
       );
@@ -188,7 +184,7 @@ export default function useFileUploadOptimisticMutation() {
       return { previousData };
     },
     // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (context: { previousData: BookmarksPaginatedDataTypes }) => {
+    onError: (context: { previousData: PaginatedBookmarks }) => {
       queryClient.setQueryData(
         [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
         context?.previousData,
@@ -197,7 +193,7 @@ export default function useFileUploadOptimisticMutation() {
     // Always refetch after error or success:
     onSettled: () => {
       void queryClient.invalidateQueries({
-        queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+        queryKey: [BOOKMARKS_KEY, session?.user?.id],
       });
       void queryClient.invalidateQueries({
         queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
