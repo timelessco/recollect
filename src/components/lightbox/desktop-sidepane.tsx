@@ -243,9 +243,12 @@ export function DesktopSidepane({
                 </div>
               )}
               {(metaData?.img_caption ||
-                metaData?.ocr ||
-                metaData?.image_caption ||
-                showKeywords) && (
+                (metaData?.ocr && searchMatchesText(metaData.ocr, trimmedSearchText)) ||
+                (showKeywords &&
+                  searchMatchesText(
+                    getKeywordsDisplay(metaData?.image_keywords),
+                    trimmedSearchText,
+                  ))) && (
                 <motion.div
                   className={`relative px-5 py-3 text-sm ${
                     hasAIOverflowContent ? "cursor-pointer" : ""
