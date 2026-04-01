@@ -92,6 +92,7 @@ export const imageToText = async (
 
     // Fetch the image
     const imageResponse = await fetch(imageUrl);
+    const contentType = imageResponse.headers.get("content-type") ?? "image/jpeg";
     const imageBuffer = await imageResponse.arrayBuffer();
     const imageBytes = Buffer.from(imageBuffer).toString("base64");
 
@@ -109,7 +110,7 @@ export const imageToText = async (
         {
           inlineData: {
             data: imageBytes,
-            mimeType: "image/jpeg",
+            mimeType: contentType,
           },
         },
       ],
