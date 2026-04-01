@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { imageToText } from "@/async/ai/imageToText";
+import { imageToText } from "@/async/ai/image-analysis";
 import { env } from "@/env/server";
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
