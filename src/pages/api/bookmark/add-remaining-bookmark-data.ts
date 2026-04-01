@@ -8,7 +8,7 @@ import { decode } from "base64-arraybuffer";
 import { isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
-import type { StructuredKeywords } from "../../../async/ai/imageToText";
+import type { StructuredKeywords } from "../../../async/ai/image-analysis";
 import type {
   AddBookmarkRemainingDataPayloadTypes,
   NextApiRequest,
@@ -24,7 +24,7 @@ import { fetchAiToggles } from "@/utils/ai-feature-toggles";
 import { autoAssignCollections, fetchUserCollections } from "@/utils/auto-assign-collections";
 import { resolveContentType } from "@/utils/resolve-content-type";
 
-import { imageToText } from "../../../async/ai/imageToText";
+import { imageToText } from "../../../async/ai/image-analysis";
 import {
   BOOKMARK_CATEGORIES_TABLE_NAME,
   IMAGE_JPEG_MIME_TYPE,
