@@ -4,7 +4,7 @@ import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 
-import type { StructuredKeywords, UserCollection } from "../../../async/ai/imageToText";
+import type { StructuredKeywords, UserCollection } from "../../../async/ai/schemas/image-analysis";
 import type {
   ImgMetadataType,
   NextApiRequest,

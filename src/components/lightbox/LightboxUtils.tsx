@@ -1,4 +1,4 @@
-import type { StructuredKeywords } from "../../async/ai/imageToText";
+import type { StructuredKeywords } from "../../async/ai/schemas/image-analysis";
 import type { SingleListData } from "../../types/apiTypes";
 import type { Slide as BaseSlide } from "yet-another-react-lightbox";
 

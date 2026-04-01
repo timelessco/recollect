@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 import { GEMINI_MODEL } from "@/utils/constants";
 
@@ -10,14 +10,13 @@ export async function validateApiKey(props: ValidateApiKeyProps): Promise<void> 
   const { apikey } = props;
 
   try {
-    const genAI = new GoogleGenerativeAI(apikey);
-    const model = genAI.getGenerativeModel({
+    const ai = new GoogleGenAI({ apiKey: apikey });
+    const response = await ai.models.generateContent({
+      contents: ["Hey there!"],
       model: GEMINI_MODEL,
     });
 
-    const result = await model.generateContent(["Hey there!"]);
-
-    if (!result.response.text()) {
+    if (!response.text) {
       throw new Error("response not generated");
     }
   } catch {

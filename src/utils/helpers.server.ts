@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 import uniqid from "uniqid";
 
-import type { StructuredKeywords, UserCollection } from "@/async/ai/imageToText";
+import type { StructuredKeywords, UserCollection } from "@/async/ai/schemas/image-analysis";
 import type { Database } from "@/types/database.types";
 import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { BookmarkContentType } from "@/utils/resolve-content-type";
