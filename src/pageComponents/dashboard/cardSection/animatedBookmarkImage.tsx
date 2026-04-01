@@ -137,25 +137,27 @@ export function AnimatedBookmarkImage({
     return <BookmarkImage {...imageProps} img={displaySrc} />;
   }
 
-  // No img yet (optimistic phase) or preloading initial image — show placeholder.
-  // This is the SAME React element across the optimistic→real transition, so
-  // React updates it in-place (no DOM recreation, no flicker).
-  if (isPreloading) {
-    return (
-      <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} isPreloading={!!img} />
-    );
-  }
-
-  // Preloaded — fade in. key={displaySrc} replays animation per new image.
   return (
-    <motion.div
-      animate={{ opacity: 1 }}
-      initial={{ opacity: 0 }}
-      key={displaySrc}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-    >
-      <BookmarkImage {...imageProps} img={img} onError={onError} />
-    </motion.div>
+    <AnimatePresence mode="wait">
+      {isPreloading ? (
+        <motion.div exit={{ opacity: 0 }} key="placeholder" transition={{ duration: 0.15 }}>
+          <LoaderImgPlaceholder
+            cardTypeCondition={cardTypeCondition}
+            id={id}
+            isPreloading={!!img}
+          />
+        </motion.div>
+      ) : (
+        <motion.div
+          animate={{ opacity: 1 }}
+          initial={{ opacity: 0 }}
+          key={displaySrc}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        >
+          <BookmarkImage {...imageProps} img={img} onError={onError} />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -192,7 +194,10 @@ export const LoaderImgPlaceholder = ({
     if (isLoading) {
       return "Taking screenshot....";
     }
-    return isNil(id) ? "Fetching data..." : "Cannot fetch image for this bookmark";
+    if (isNil(id)) {
+      return "Fetching data...";
+    }
+    return "Cannot fetch image for this bookmark";
   })();
 
   return (
