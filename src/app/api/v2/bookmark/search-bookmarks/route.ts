@@ -130,7 +130,7 @@ export const GET = createAxiomRouteHandler(
       const urlScope = matchedSiteScope?.at(0)?.replace("@", "")?.toLowerCase() ?? "";
 
       // Strip color: prefix first so # in hex values doesn't get parsed as a tag
-      const colorMatch = search.match(/color:(\S+)/i);
+      const colorMatch = /color:(\S+)/i.exec(search);
       const searchColor = colorMatch ? parseSearchColor(colorMatch[1]) : null;
       const searchWithoutColor = search.replace(/color:\S*/i, "");
 
