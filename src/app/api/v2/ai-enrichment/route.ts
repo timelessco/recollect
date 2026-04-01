@@ -32,7 +32,7 @@ export const POST = createAxiomRouteHandler(
       let body: unknown;
       try {
         body = await request.json();
-      } catch {
+      } catch (error) {
         await storeQueueError({
           errorReason: "ai_enrichment: malformed_json",
           msgId: undefined,
@@ -40,6 +40,7 @@ export const POST = createAxiomRouteHandler(
           route,
         });
         throw new RecollectApiError("bad_request", {
+          cause: error,
           message: "Invalid JSON in request body",
         });
       }

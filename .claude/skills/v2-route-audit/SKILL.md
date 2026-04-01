@@ -1,22 +1,20 @@
 ---
-name: wide-event-enrichment
+name: v2-route-audit
 description: >
-  Audit and fix wide event ctx.fields patterns in Recollect v2 API routes. Reads a route file,
-  checks for getServerContext import, entity ID placement before DB operations, outcome flags
-  after operations, PII compliance, console.* absence, and Sentry absence in after() blocks.
-  Reports a pass/fail checklist and offers to fix gaps. Use when the user mentions wide events,
-  ctx.fields, audit a route, check logging, event enrichment, Axiom fields, or after finishing
-  a v2 route handler. Also use when reviewing any v2 API route for observability completeness.
-  This is a POST-IMPLEMENTATION audit — load after writing the route, not before.
+  Audit v2 API routes for observability, error handling, and logging compliance. Runs 10 checks:
+  getServerContext import, entity ID placement, outcome flags, field count, PII, console usage,
+  Sentry absence, logger.warn format, error cause propagation, RecollectApiError usage.
+  Reports pass/fail checklist and offers to fix gaps. Use when: "audit this route", "check wide
+  events", "audit all routes", after finishing a v2 route handler, or reviewing any v2 API route.
+  POST-IMPLEMENTATION audit — load after writing the route, not before.
 ---
 
-# Wide Event Enrichment Audit
+# v2 Route Audit
 
-Post-implementation audit for v2 API route `ctx.fields` patterns. Checks 8 requirements,
-reports a checklist, and offers to fix gaps.
+Post-implementation audit for v2 API route observability. Runs 10 checks, reports a checklist, and offers to fix gaps.
 
+For v2 route authoring rules (handler composition, error handling, schemas, response patterns), see `.claude/rules/api-v2.md`.
 Read `references/patterns.md` for canonical examples and field naming conventions.
-Cross-references: `.claude/rules/api-logging.md` (factory architecture), `.claude/rules/sentry.md` (error flow).
 
 ## Routing
 
@@ -26,20 +24,21 @@ Cross-references: `.claude/rules/api-logging.md` (factory architecture), `.claud
 | "fix wide events" / "enrich this route" / "add missing fields" | Phases 1-4 (audit + fix) |
 | "what fields should I add" | Show Route Type Guidance table |
 | "PII check" / "is this logging PII" | Run Check 5 only |
+| "audit all routes" / "batch audit" | Run all checks on every `src/app/api/v2/**/route.ts` |
 
 ## Phase 1: Discover
 
 1. Accept file path argument, or if none: `Glob src/app/api/v2/**/route.ts` and ask which route
 2. Read the route file
 3. Classify:
-   - **Factory**: `withAuth` | `withPublic` | `withSecret` (grep the import)
+   - **Factory**: `withAuth` | `withPublic` | `withRawBody` | `withSecret` (grep the import)
    - **Method**: `GET` | `POST` | `PATCH` | `PUT` | `DELETE` (grep the export)
    - **Has after()**: boolean (grep `after(async`)
    - **Route type**: read (GET) | mutation (POST/PATCH/PUT/DELETE) | file (imports storage/upload helpers) | queue (references `queue_name` or `processImageQueue`)
 
 ## Phase 2: Audit
 
-Run all 8 checks against the route file. For each, determine PASS/FAIL/WARN/N/A.
+Run all 10 checks against the route file. For each, determine PASS/FAIL/WARN/N/A.
 
 ### Check 1: `getServerContext` import
 
@@ -47,7 +46,7 @@ Run all 8 checks against the route file. For each, determine PASS/FAIL/WARN/N/A.
 grep 'import.*getServerContext.*from.*server-context' <file>
 ```
 - PASS: import exists
-- FAIL: import missing — route has zero observability
+- FAIL: import missing -- route has zero observability
 
 ### Check 2: Entity IDs BEFORE operations
 
@@ -61,9 +60,6 @@ Entity ID fields: `user_id`, `bookmark_id`, `category_id`, `tag_id`, `shared_cat
 - FAIL: all entity IDs set after operations, or no entity IDs at all
 - WARN: entity IDs exist but some are set after operations (partial compliance)
 
-Why this matters: if the handler throws mid-way, the Axiom wide event needs enough context
-to identify WHAT was being attempted. Entity IDs set after the throw point are lost.
-
 ### Check 3: Outcome flags AFTER operations
 
 Look for `ctx.fields.*` assignments that reflect results: booleans (`*_completed`, `*_deleted`,
@@ -73,14 +69,14 @@ Look for `ctx.fields.*` assignments that reflect results: booleans (`*_completed
 - PASS: at least one outcome field set after a DB/API operation
 - FAIL: no outcome fields at all
 - WARN: mutation route with only entity IDs (no outcome flag). GET routes may legitimately
-  have minimal outcomes (just a count) — don't FAIL for this
+  have minimal outcomes (just a count) -- don't FAIL for this
 
 ### Check 4: Minimum 2 `ctx.fields` assignments
 
 Count distinct `ctx.fields.FIELDNAME` assignments (not counting duplicates in different branches).
 
 - PASS: 2 or more
-- FAIL: fewer than 2 — minimum viable observability requires entity context + one outcome
+- FAIL: fewer than 2 -- minimum viable observability requires entity context + one outcome
 
 ### Check 5: No PII in `ctx.fields`
 
@@ -113,7 +109,7 @@ PII replacements:
 grep 'console\.\(log\|warn\|error\)(' <file>
 ```
 - PASS: none found
-- FAIL: found — v2 routes use structured Axiom logging only
+- FAIL: found -- v2 routes use structured Axiom logging only
 
 ### Check 7: No Sentry in `after()` blocks
 
@@ -121,7 +117,7 @@ grep 'console\.\(log\|warn\|error\)(' <file>
 grep 'Sentry' <file>
 ```
 - PASS: no Sentry usage in the file (v2 factory handles Sentry via onRequestError)
-- FAIL: Sentry found — replace with `logger.warn` pattern in after() catches
+- FAIL: Sentry found -- replace with `logger.warn` pattern in after() catches
 - N/A: route has no after() blocks AND no Sentry import
 
 ### Check 8: Error format in `logger.warn` calls
@@ -133,6 +129,44 @@ If the route has `logger.warn(` calls (typically in after() catch blocks):
 - PASS: all logger.warn calls follow the pattern
 - FAIL: logger.warn with raw error object or missing error formatting
 - N/A: no logger.warn calls in the file
+
+### Check 9: Error cause propagation
+
+Scan all `catch` blocks that **rethrow** (contain `throw` in the catch body):
+- Every rethrowing `catch` block must capture the error: `catch (error)` not bare `catch {}`
+- Every `RecollectApiError` thrown inside a `catch` block must include `cause: error`
+- `cause` can be omitted when there is no caught error (business logic: not found, forbidden, validation)
+
+```
+grep 'catch {' <file>     # bare catch — check if it rethrows
+grep 'catch (' <file>     # good — captures error variable
+```
+
+Then for each `catch (error)` block that contains `throw`, check the `RecollectApiError` includes `cause:`:
+
+- PASS: all rethrowing catches capture error + pass cause to RecollectApiError
+- FAIL: any bare `catch {}` that rethrows as RecollectApiError, or any rethrowing `RecollectApiError` inside a catch that omits `cause`
+- N/A: route has no catch blocks (handler-level error handling only)
+
+Exceptions (PASS):
+- Bare `catch {}` that returns a default value without rethrowing (e.g., `return null`, `return false`) — intentional swallow, no cause to propagate. Oxfmt strips unused `_error` variables, so bare `catch {}` is the correct pattern here
+- Catch blocks with `ctx.fields` observability (e.g., image re-upload fallbacks) — error details logged to wide event fields instead of cause
+
+### Check 10: No raw `throw new Error()` in route or helpers
+
+```
+grep 'throw new Error(' <file>
+```
+
+In v2 routes and their helpers, all throws should use `RecollectApiError` so they're caught by the inner factory layer (Axiom warn) rather than the outer layer (Axiom error + Sentry).
+
+Exceptions (PASS despite `throw new Error`):
+- Inside `vet()` callbacks -- `vet` catches and the route wraps in `RecollectApiError`
+- Inside inner try-catch that re-throws with `{ cause: error }` -- error chaining through to an outer `RecollectApiError`
+- Inside `after()` catch blocks -- these use `logger.warn` directly
+
+- PASS: no raw `throw new Error()` or all instances are in exception patterns
+- FAIL: raw `throw new Error()` that would reach the outer factory catch as an unknown error
 
 ## Phase 3: Report
 
@@ -153,8 +187,10 @@ Route type: {type} ({METHOD}) | Factory: {factory} | after(): {yes/no}
 | 6 | No console.* calls | PASS | |
 | 7 | No Sentry in after() | N/A | No after() blocks |
 | 8 | Error format in logger.warn | N/A | No logger.warn calls |
+| 9 | Error cause propagation | PASS | 2 catch blocks, all pass cause |
+| 10 | No raw throw new Error() | PASS | |
 
-Score: 6/6 passed, 2 N/A
+Score: 8/8 passed, 2 N/A
 ```
 
 If all checks pass: done. If any FAIL: proceed to Phase 4.
@@ -200,9 +236,24 @@ logger.warn("[route-name] after() enrichment failed", {
 ```
 Add `import { logger } from "@/lib/api-helpers/axiom";` if not present.
 
+**Bare catch (Check 9):** Change `catch {` to `catch (error)` and add `cause: error` to the RecollectApiError.
+
+**Raw throw new Error (Check 10):** Convert to RecollectApiError:
+```typescript
+// Before
+throw new Error(`Failed to X: ${error.message}`);
+
+// After
+throw new RecollectApiError("service_unavailable", {
+  cause: error,
+  message: "Failed to X",
+  operation: "operation_name",
+});
+```
+
 ## Route Type Guidance
 
-Expected fields by route type — use as a checklist when adding fields:
+Expected fields by route type -- use as a checklist when adding fields:
 
 | Route Type | Entity IDs (before) | Outcome Flags (after) |
 |------------|--------------------|-----------------------|

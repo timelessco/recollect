@@ -44,8 +44,9 @@ export const POST = createAxiomRouteHandler(
       let formData: FormData;
       try {
         formData = await request.formData();
-      } catch {
+      } catch (error) {
         throw new RecollectApiError("bad_request", {
+          cause: error,
           message: "Invalid multipart form data",
         });
       }

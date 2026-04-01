@@ -20,7 +20,7 @@ export async function validateApiKey(props: ValidateApiKeyProps): Promise<void> 
     if (!result.response.text()) {
       throw new Error("response not generated");
     }
-  } catch {
-    throw new Error("Invalid API key");
+  } catch (error) {
+    throw new Error("Invalid API key", { cause: error });
   }
 }
