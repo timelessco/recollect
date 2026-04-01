@@ -22,6 +22,13 @@ import { buildPrompt } from "./schemas/prompt-builder";
 
 const CONFIDENCE_THRESHOLD = 90;
 
+const EMPTY_RESULT: ImageToTextResult = {
+  image_keywords: {},
+  matched_collection_ids: [],
+  ocr_text: null,
+  sentence: null,
+};
+
 /**
  * Generates the image description using Gemini AI with structured output.
  * The response schema is built dynamically based on active AI toggles.
@@ -52,12 +59,7 @@ export const imageToText = async (
 
     // Audio files use a static SVG waveform — skip AI enrichment entirely
     if (options?.contentType === "audio") {
-      return {
-        image_keywords: {},
-        matched_collection_ids: [],
-        ocr_text: null,
-        sentence: null,
-      };
+      return EMPTY_RESULT;
     }
 
     // Build schema and prompt based on active toggles
@@ -65,12 +67,7 @@ export const imageToText = async (
     const responseSchema = buildResponseSchema(activeToggles, collections.length > 0);
 
     if (!responseSchema) {
-      return {
-        image_keywords: {},
-        matched_collection_ids: [],
-        ocr_text: null,
-        sentence: null,
-      };
+      return EMPTY_RESULT;
     }
 
     const prompt = buildPrompt({
@@ -82,16 +79,16 @@ export const imageToText = async (
     });
 
     if (!prompt) {
-      return {
-        image_keywords: {},
-        matched_collection_ids: [],
-        ocr_text: null,
-        sentence: null,
-      };
+      return EMPTY_RESULT;
     }
 
     // Fetch the image
     const imageResponse = await fetch(imageUrl);
+
+    if (!imageResponse.ok) {
+      throw new Error(`Image fetch failed: ${imageResponse.status} ${imageResponse.statusText}`);
+    }
+
     const contentType = imageResponse.headers.get("content-type") ?? "image/jpeg";
     const imageBuffer = await imageResponse.arrayBuffer();
     const imageBytes = Buffer.from(imageBuffer).toString("base64");
@@ -119,25 +116,36 @@ export const imageToText = async (
 
     // Guard against empty/safety-blocked responses
     if (!response.text) {
-      Sentry.addBreadcrumb({
-        category: "ai.structured-output",
+      Sentry.captureMessage("Gemini returned empty response with structured output", {
         level: "warning",
-        message: "Gemini returned empty response with structured output",
+        tags: { operation: "structured_output_empty" },
       });
       return null;
     }
 
-    const parseResult = fullResponseSchema.safeParse(JSON.parse(response.text));
+    let rawParsed: unknown;
+
+    try {
+      rawParsed = JSON.parse(response.text);
+    } catch {
+      Sentry.captureMessage("Gemini returned invalid JSON despite structured output mode", {
+        extra: { rawText: response.text.slice(0, 500) },
+        level: "warning",
+        tags: { operation: "structured_output_json_parse" },
+      });
+      return null;
+    }
+
+    const parseResult = fullResponseSchema.safeParse(rawParsed);
 
     if (!parseResult.success) {
-      Sentry.addBreadcrumb({
-        category: "ai.structured-output",
-        data: {
+      Sentry.captureMessage("Gemini structured output failed Zod validation", {
+        extra: {
           errors: parseResult.error.message.slice(0, 500),
           rawText: response.text.slice(0, 500),
         },
         level: "warning",
-        message: "Gemini structured output failed Zod validation",
+        tags: { operation: "structured_output_parse" },
       });
       return null;
     }
