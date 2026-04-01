@@ -22,7 +22,7 @@ export type SearchBookmarksInput = z.infer<typeof SearchBookmarksInputSchema>;
 
 /**
  * Single search result item — camelCase mapped from RPC snake_case output.
- * Fields match the `search_bookmarks_url_tag_scope` RPC return type (with category_scope overload).
+ * Fields match the `search_bookmarks_url_tag_scope` RPC return type.
  */
 const SearchBookmarkItemSchema = z.object({
   addedCategories: z.unknown().nullable().meta({

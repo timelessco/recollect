@@ -40,12 +40,13 @@ const SPECIAL_CATEGORY_URLS = new Set([
   LINKS_URL,
   TRASH_URL,
   TWEETS_URL,
+  UNCATEGORIZED_URL,
   VIDEOS_URL,
 ]);
 
 /**
  * Checks if a category_id represents a user's collection (not a special URL).
- * Ported from helpers.ts isUserInACategoryInApi (without uncategorized check).
+ * Ported from helpers.ts isUserInACategoryInApi.
  */
 function isUserCollection(categoryId: string): boolean {
   return categoryId !== "null" && categoryId !== "" && !SPECIAL_CATEGORY_URLS.has(categoryId);
@@ -184,11 +185,11 @@ export const GET = createAxiomRouteHandler(
           rpcQuery = rpcQuery.filter("user_id", "eq", userId);
         }
 
-        if (userInCollections) {
+        if (userInCollections && categoryScope !== undefined) {
           // Check if user is the owner or ANY-level collaborator (including read-only)
           // If not, scope search results to only their own bookmarks
           const hasAccess = await isUserOwnerOrAnyCollaborator({
-            categoryId: Number(categoryId),
+            categoryId: categoryScope,
             email: userEmail,
             supabase,
             userId,
@@ -220,6 +221,11 @@ export const GET = createAxiomRouteHandler(
       const { data, error } = await rpcQuery;
 
       if (error) {
+        if (ctx?.fields) {
+          ctx.fields.rpc_error_message = error.message;
+          ctx.fields.rpc_error_code = error.code;
+        }
+
         throw new RecollectApiError("service_unavailable", {
           cause: error,
           message: "Error executing search query",

@@ -44,7 +44,6 @@ import {
   DELETE_SHARED_CATEGORIES_USER_API,
   DELETE_USER_API,
   DELETE_USER_CATEGORIES_API,
-  FETCH_BOOKMARK_BY_ID_API,
   FETCH_BOOKMARKS_COUNT,
   FETCH_BOOKMARKS_VIEW,
   FETCH_SHARED_CATEGORIES_DATA_API,
@@ -57,7 +56,6 @@ import {
   getBaseUrl,
   MOVE_BOOKMARK_TO_TRASH_API,
   NEXT_API_URL,
-  NO_BOOKMARKS_ID_ERROR,
   REMOVE_PROFILE_PIC_API,
   SAVE_API_KEY_API,
   SEND_COLLABORATION_EMAIL_API,
@@ -71,23 +69,6 @@ import {
 } from "../../utils/constants";
 // eslint-disable-next-line import/no-cycle -- circular dep between helpers and supabaseCrudHelpers needs structural refactor
 import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
-
-// bookmark
-// get bookmark by id
-export const fetchBookmarkById = async (id: string) => {
-  try {
-    if (!id) {
-      throw new Error(NO_BOOKMARKS_ID_ERROR);
-    }
-
-    const response = await axios.get<{ data: SingleListData }>(
-      `${NEXT_API_URL}${FETCH_BOOKMARK_BY_ID_API}${id}`,
-    );
-    return response?.data;
-  } catch (error) {
-    return error;
-  }
-};
 
 // user settings and keys
 export const saveApiKey = async ({

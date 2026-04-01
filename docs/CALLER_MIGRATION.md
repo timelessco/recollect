@@ -31,7 +31,7 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 
 | #   | Status | Old Path                               | v2 Path                                | Repo | Constant                   | Caller                                                        |
 | --- | ------ | -------------------------------------- | -------------------------------------- | ---- | -------------------------- | ------------------------------------------------------------- |
-| 8   |        | `/api/v1/bookmarks/get/fetch-by-id`    | `/api/v2/bookmarks/get/fetch-by-id`    | web  | `FETCH_BOOKMARK_BY_ID_API` | supabaseCrudHelpers → useFetchBookmarkById                    |
+| 8   | x      | `/api/v1/bookmarks/get/fetch-by-id`    | `/api/v2/bookmarks/get/fetch-by-id`    | web  | `FETCH_BOOKMARK_BY_ID_API` | supabaseCrudHelpers → useFetchBookmarkById                    |
 | 9   |        | `/api/v1/bookmarks/get/get-media-type` | `/api/v2/bookmarks/get/get-media-type` | web  | `GET_MEDIA_TYPE_API`       | supabaseCrudHelpers → useAddBookmarkMinDataOptimisticMutation |
 | 10  |        | `/api/v1/bookmarks/get/get-pdf-buffer` | `/api/v2/bookmarks/get/get-pdf-buffer` | web  | `GET_PDF_BUFFER_API`       | file-upload.ts → useFileUploadOptimisticMutation              |
 | 11  |        | `/api/v1/bookmarks/insert`             | `/api/v2/bookmarks/insert`             | ext  | —                          | Chrome extension only                                         |
