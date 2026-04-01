@@ -9,8 +9,8 @@ export default function robots(): MetadataRoute.Robots {
     rules:
       env.NODE_ENV === "production"
         ? {
-            allow: "/",
-            disallow: ["/404", "/api/**", "/api-docs", "/~offline"],
+            allow: ["/discover", "/login", "/public"],
+            disallow: "/",
             userAgent: "*",
           }
         : {

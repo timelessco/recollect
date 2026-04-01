@@ -2,21 +2,22 @@ import type { MetadataRoute } from "next";
 
 import { BASE_URL } from "@/site-config";
 
+// To do later - /public/[user_name]/[id] routes need a DB query to enumerate — add dynamic sitemap generation
 export default function sitemap(): MetadataRoute.Sitemap {
-  // Define routes with their specific priorities and change frequencies
-  const routeConfig = [
-    // Homepage
-    { changeFrequency: "daily" as const, priority: 0.7, route: "" },
-    // Discover page
-    { changeFrequency: "daily" as const, priority: 0.7, route: "/discover" },
+  const [lastModified] = new Date().toISOString().split("T");
+
+  return [
+    {
+      changeFrequency: "daily",
+      lastModified,
+      priority: 0.7,
+      url: `${BASE_URL}/discover`,
+    },
+    {
+      changeFrequency: "monthly",
+      lastModified,
+      priority: 0.3,
+      url: `${BASE_URL}/login`,
+    },
   ];
-
-  const routesInSitemapFormat = routeConfig.map((config) => ({
-    changeFrequency: config.changeFrequency,
-    lastModified: new Date().toISOString().split("T")[0],
-    priority: config.priority,
-    url: `${BASE_URL}/${config.route}`,
-  }));
-
-  return routesInSitemapFormat;
 }
