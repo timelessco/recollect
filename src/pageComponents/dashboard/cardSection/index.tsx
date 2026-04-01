@@ -236,7 +236,7 @@ const CardSection = ({
         selectionMode="multiple"
       >
         {bookmarksList?.map((item) => (
-          <Item key={item?.url ?? item?.id} textValue={item?.id?.toString()}>
+          <Item key={item?.id} textValue={item?.id?.toString()}>
             {renderCard(item)}
           </Item>
         ))}
