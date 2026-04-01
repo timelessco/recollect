@@ -8,7 +8,7 @@ import { decode } from "base64-arraybuffer";
 import { isNil, isNull } from "lodash";
 import uniqid from "uniqid";
 
-import type { StructuredKeywords } from "../../../async/ai/schemas/image-analysis";
+import type { StructuredKeywords } from "../../../async/ai/schemas/image-analysis-schema";
 import type {
   AddBookmarkRemainingDataPayloadTypes,
   NextApiRequest,

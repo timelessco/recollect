@@ -9,7 +9,7 @@ import type {
   ImageToTextResult,
   OklabColor,
   StructuredKeywords,
-} from "./schemas/image-analysis";
+} from "./schemas/image-analysis-schema";
 import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -17,7 +17,7 @@ import { env } from "@/env/server";
 import { GEMINI_MODEL } from "@/utils/constants";
 
 import { getApikeyAndBookmarkCount, incrementBookmarkCount } from "./api-key";
-import { buildResponseSchema, fullResponseSchema } from "./schemas/image-analysis";
+import { buildResponseSchema, fullResponseSchema } from "./schemas/image-analysis-schema";
 import { buildPrompt } from "./schemas/prompt-builder";
 
 const CONFIDENCE_THRESHOLD = 90;

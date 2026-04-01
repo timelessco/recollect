@@ -1,4 +1,4 @@
-import type { ImageToTextContextProps, UserCollection } from "./image-analysis";
+import type { ImageToTextContextProps, UserCollection } from "./image-analysis-schema";
 import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { BookmarkContentType } from "@/utils/resolve-content-type";
 

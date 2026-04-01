@@ -1,6 +1,6 @@
 import { colorsNamed, converter, differenceEuclidean, formatHex, nearest, parse } from "culori";
 
-import type { OklabColor } from "@/async/ai/schemas/image-analysis";
+import type { OklabColor } from "@/async/ai/schemas/image-analysis-schema";
 import type { ImgMetadataType } from "@/types/apiTypes";
 
 /**

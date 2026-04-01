@@ -2,7 +2,7 @@ import type { NextApiRequest as NextJsApiRequest } from "next";
 
 import type { BookmarksSortByTypes, BookmarksViewTypes } from "./componentStoreTypes";
 import type { CategoryIdUrlTypes, FileType } from "./componentTypes";
-import type { StructuredKeywords } from "@/async/ai/schemas/image-analysis";
+import type { StructuredKeywords } from "@/async/ai/schemas/image-analysis-schema";
 import type { PostgrestError, User } from "@supabase/supabase-js";
 
 export interface SupabaseSessionType {
