@@ -2,8 +2,9 @@ import { useCallback, useState } from "react";
 
 type CopiedValue = null | string;
 type CopyFn = (text: string) => Promise<boolean>;
+type ResetFn = () => void;
 
-export function useCopyToClipboard(): [CopiedValue, CopyFn] {
+export function useCopyToClipboard(): [CopiedValue, CopyFn, ResetFn] {
   const [copiedText, setCopiedText] = useState<CopiedValue>(null);
 
   const copy: CopyFn = useCallback(async (text) => {
@@ -23,5 +24,9 @@ export function useCopyToClipboard(): [CopiedValue, CopyFn] {
     }
   }, []);
 
-  return [copiedText, copy];
+  const resetCopied = useCallback(() => {
+    setCopiedText(null);
+  }, []);
+
+  return [copiedText, copy, resetCopied];
 }

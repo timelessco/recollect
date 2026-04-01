@@ -8,7 +8,7 @@ interface ColorPaletteProps {
 }
 
 export function ColorPalette({ colors }: ColorPaletteProps) {
-  const [copiedText, copy] = useCopyToClipboard();
+  const [copiedText, copy, resetCopied] = useCopyToClipboard();
 
   if (colors.length === 0) {
     return null;
@@ -31,7 +31,7 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
                   void copy(hex);
                 }}
                 onMouseEnter={() => {
-                  // Reset so tooltip shows color name, not "Copied!" from a previous swatch
+                  resetCopied();
                 }}
                 style={{ backgroundColor: hex }}
               />
