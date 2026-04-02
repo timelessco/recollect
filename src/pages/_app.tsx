@@ -30,8 +30,11 @@ const MyApp = ({
       new QueryClient({
         defaultOptions: {
           queries: {
-            refetchOnWindowFocus: true,
+            // 5 minutes stale time for normal navigation
             staleTime: 5 * 60 * 1000,
+            // Refetch on tab focus if data is older than 30s (bypass staleTime)
+            refetchOnWindowFocus: (query) =>
+              Date.now() - query.state.dataUpdatedAt > 30 * 1000 ? "always" : false,
           },
         },
       }),
