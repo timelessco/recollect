@@ -2,12 +2,12 @@ import { after } from "next/server";
 
 import slugify from "slugify";
 
-import type { StructuredKeywords, UserCollection } from "@/async/ai/imageToText";
+import type { StructuredKeywords, UserCollection } from "@/async/ai/schemas/image-analysis-schema";
 import type { Database } from "@/types/database.types";
 import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { imageToText } from "@/async/ai/imageToText";
+import { imageToText } from "@/async/ai/image-analysis";
 import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
@@ -95,7 +95,9 @@ async function processVideo(
   userCollections: UserCollection[],
 ): Promise<VideoResult> {
   if (!thumbnailPath) {
-    throw new Error("ERROR: thumbnailPath is missing for video file");
+    throw new RecollectApiError("bad_request", {
+      message: "thumbnailPath is missing for video file",
+    });
   }
 
   const { data: thumbnailUrl } = storageHelpers.getPublicUrl(thumbnailPath);

@@ -1,10 +1,10 @@
 import * as Sentry from "@sentry/nextjs";
 
-import type { StructuredKeywords } from "@/async/ai/imageToText";
+import type { StructuredKeywords } from "@/async/ai/schemas/image-analysis-schema";
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { imageToText } from "@/async/ai/imageToText";
+import { imageToText } from "@/async/ai/image-analysis";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";
 import { isNullable } from "@/utils/assertion-utils";
 import { autoAssignCollections, fetchUserCollections } from "@/utils/auto-assign-collections";

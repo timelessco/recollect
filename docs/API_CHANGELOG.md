@@ -290,3 +290,146 @@ No changes
 No changes
 
 
+
+## 2026-04-01 [`493f9a3`](https://github.com/timelessco/recollect/commit/493f9a3091cdd4f9c450792b94412c5e5ad5dcd9)
+
+
+No changes
+
+
+
+## 2026-04-01 [`c398981`](https://github.com/timelessco/recollect/commit/c39898107f13956c22848ede32f7a9a0c9b1d3aa)
+
+
+No changes
+
+
+
+## 2026-04-01 [`7e457ba`](https://github.com/timelessco/recollect/commit/7e457ba547e2789c541164ac7ccf6630eca5c63d)
+
+
+
+### API Changes
+
+### GET /bookmark/fetch-bookmarks-discoverable
+- :warning: the 'data/items/meta_data/image_keywords/anyOf[subschema #2]/color' response's property type/format changed from 'array'/'' to 'object'/'' for status '200'
+-  added the required property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/color/primary_color' to the response with the '200' status
+-  added the required property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/color/secondary_colors' to the response with the '200' status
+
+
+### GET /bookmark/fetch-discoverable-by-id
+- :warning: the 'data/meta_data/image_keywords/anyOf[subschema #2]/color' response's property type/format changed from 'array'/'' to 'object'/'' for status '200'
+-  added the required property 'data/meta_data/image_keywords/anyOf[subschema #2]/color/primary_color' to the response with the '200' status
+-  added the required property 'data/meta_data/image_keywords/anyOf[subschema #2]/color/secondary_colors' to the response with the '200' status
+
+
+### GET /bookmark/fetch-public-bookmark-by-id
+- :warning: the 'data/meta_data/image_keywords/anyOf[subschema #2]/color' response's property type/format changed from 'array'/'' to 'object'/'' for status '200'
+-  added the required property 'data/meta_data/image_keywords/anyOf[subschema #2]/color/primary_color' to the response with the '200' status
+-  added the required property 'data/meta_data/image_keywords/anyOf[subschema #2]/color/secondary_colors' to the response with the '200' status
+
+
+
+
+
+
+
+## 2026-04-01 [`82768e3`](https://github.com/timelessco/recollect/commit/82768e3a2cbb895494d565407fdec915891263e1)
+
+
+No changes
+
+
+
+## 2026-04-01 [`00c107d`](https://github.com/timelessco/recollect/commit/00c107d5f1d2a75d6d9a82a2eb15c34c8f5625b4)
+
+
+No changes
+
+
+
+## 2026-04-01 [`4221439`](https://github.com/timelessco/recollect/commit/42214394db37a9439e44177bf6526ef251639e73)
+
+
+
+### API Changes
+
+### POST /v2/chrome-bookmarks/import
+-  endpoint added
+
+
+### POST /v2/chrome-bookmarks/import/retry
+-  endpoint added
+
+
+### GET /v2/chrome-bookmarks/import/status
+-  endpoint added
+
+
+
+
+
+
+
+## 2026-04-01 [`053d219`](https://github.com/timelessco/recollect/commit/053d219ca55da7644941ade2fd1309d22d2b979f)
+
+
+No changes
+
+
+
+## 2026-04-01 [`2859a3e`](https://github.com/timelessco/recollect/commit/2859a3e939e7c41d9777707901bb2545a8204bba)
+
+
+No changes
+
+
+
+## 2026-04-01 [`5d0d77a`](https://github.com/timelessco/recollect/commit/5d0d77af19d61afcbf85922aa17105b4134b9016)
+
+
+No changes
+
+
+
+## 2026-04-01 [`5bb733a`](https://github.com/timelessco/recollect/commit/5bb733acd7be7ddcd81545c11cc9c00a61ba57eb)
+
+
+No changes
+
+
+
+## 2026-04-01 [`dd13972`](https://github.com/timelessco/recollect/commit/dd13972571440bd9c1a247793c908b36c2f474db)
+
+
+No changes
+
+
+
+## 2026-04-01 [`af43922`](https://github.com/timelessco/recollect/commit/af439220cb443758cedee7248829e24d1d35a991)
+
+
+No changes
+
+
+
+## 2026-04-01 [`8783dea`](https://github.com/timelessco/recollect/commit/8783dea0891bd3380e14be0b5a71f8ce99abbda6)
+
+
+No changes
+
+
+
+## 2026-04-01 [`060e20c`](https://github.com/timelessco/recollect/commit/060e20c88ae4dad9e441d8a0bed5d931339810cc)
+
+
+No changes
+
+
+
+## 2026-04-01 [`4e27f81`](https://github.com/timelessco/recollect/commit/4e27f8188b7a537f74fdde7172cdf3640007ac16)
+
+
+No changes
+
+

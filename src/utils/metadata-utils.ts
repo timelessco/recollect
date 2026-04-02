@@ -15,7 +15,7 @@ import {
   SITE_SOCIAL_MEDIA_IDS,
 } from "@/site-config";
 
-// import { splashScreens } from "./splash-screens";
+import { splashScreens } from "./splash-screens";
 
 export const rootViewport = {
   colorScheme: "dark light",
@@ -28,7 +28,7 @@ export const rootViewport = {
 export const sharedMetadata = {
   appleWebApp: {
     capable: true,
-    // startupImage: splashScreens,
+    startupImage: splashScreens,
     statusBarStyle: "default",
     title: SITE_NAME,
   },

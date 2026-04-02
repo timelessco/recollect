@@ -5,6 +5,7 @@ export * from "./bookmarks";
 export * from "./bucket";
 export * from "./categories";
 export * from "./category";
+export * from "./chrome-bookmarks";
 export * from "./cron";
 export * from "./dev";
 export * from "./instagram";

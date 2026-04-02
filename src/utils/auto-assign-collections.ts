@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/nextjs";
 
-import type { UserCollection } from "@/async/ai/imageToText";
+import type { UserCollection } from "@/async/ai/schemas/image-analysis-schema";
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 

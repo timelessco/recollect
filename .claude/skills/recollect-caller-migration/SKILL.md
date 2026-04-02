@@ -74,11 +74,28 @@ export const useFetchCheckApiKey = () =>
 - **Response type — choose the right pattern:**
   - **Non-bookmark responses** (simple shapes like `{hasApiKey: boolean}`): Use `z.infer<typeof OutputSchema>` from the v2 route's schema. The Zod type matches the consumer type perfectly
   - **Bookmark data responses** (anything typed as `SingleListData` downstream): Use `.json<SingleListData[]>()` directly — do NOT use `z.infer`. The hand-written `SingleListData` interface diverges structurally from v2 Zod output schemas (different nullability, `user_id` shape, missing `addedTags`). `as SingleListData` casts fail with TS2352. All migrated bookmark hooks (`use-fetch-paginated-bookmarks`, `use-search-bookmarks`, `use-fetch-bookmark-by-id`) use this pattern
-- **No URL constants:** Remove `NEXT_API_URL` and endpoint URL constant imports — ky uses inline paths
+- **V2 URL constants:** Add a `V2_*` constant to `src/utils/constants.ts` (e.g., `V2_FETCH_BOOKMARK_BY_ID_API = "v2/bookmarks/get/fetch-by-id"`) and use it in the hook. Remove the old v1 URL constant (`FETCH_BOOKMARK_BY_ID_API`) and `NEXT_API_URL` import if orphaned. V2 constants have no leading slash — ky's `prefixUrl` handles the base
 - **File naming:** Rename PascalCase files to kebab-case (`useFetchCheckGeminiApiKey.ts` → `use-fetch-check-gemini-api-key.ts`). Use `git mv` with temp-file two-step for case-only renames on macOS
 
-**Reference implementation:**
-`src/async/queryHooks/ai/api-key/use-fetch-check-gemini-api-key.ts` — Phase 15 pathfinder output (canonical reference)
+**Lint comment cleanup:** Migration often makes lint suppressions unnecessary. Remove these when they no longer apply:
+- `@ts-expect-error` comments on crud helper casts — ky's `.json<T>()` is properly typed
+- `oxlint-disable @tanstack/query/exhaustive-deps` — often added because session was used in both queryFn and queryKey. After migration, session is only in queryKey (not queryFn), so the rule no longer flags
+- `no-unsafe-type-assertion` (`as BookmarkResponse`) — bare response removes the need for type assertion
+
+**`prefer-await-to-then` lint rule:** oxlint enforces `async/await` over `.then()` chains. If you need to map a response (e.g., field name translation), use `async` queryFn:
+```typescript
+queryFn: async () => {
+  const data = await api.get(V2_URL).json<V2Response>();
+  return mapToLegacyType(data);
+},
+```
+Do NOT use `.json<T>().then(mapper)` — it triggers the lint rule.
+
+**Reference implementations (Phase 23):**
+- `src/async/queryHooks/bookmarks/use-fetch-paginated-bookmarks.ts` — hard-class with session, searchParams, `useInfiniteQuery`
+- `src/async/queryHooks/bookmarks/use-fetch-bookmark-by-id.ts` — easy-class, simple `useQuery`
+- `src/async/queryHooks/bookmarks/use-fetch-bookmarks-count.ts` — hard-class with field name mapping
+- `src/async/queryHooks/ai/api-key/use-fetch-check-gemini-api-key.ts` — Phase 15 pathfinder (canonical for `z.infer` pattern)
 
 ### Layer 3: Consumer Verification
 
@@ -116,6 +133,8 @@ const { hasApiKey } = data;
 - Destructuring: `data.data.field` → `data.field`
 - Optional chaining: `data?.data?.field` → `data?.field`
 - Search for all consumers: `ast-grep --lang tsx -p 'useFetchHookName' src/`
+- **Indirect cache readers:** Also grep for the query key constant (e.g., `BOOKMARKS_COUNT_KEY`) — some components read the cache directly via `queryClient.getQueryData<T>(key)` without importing the hook. These need their cache type generic updated (e.g., `<{ data: T }>` → `<T>`) and their `.data` access removed
+- **Utility function param cascades:** Functions like `optionsMenuListArray` that accept cache data as a parameter need their param type updated when the cache shape changes (e.g., `{ data: BookmarksCountTypes } | undefined` → `BookmarksCountTypes | undefined`)
 - **`prefer-destructuring` lint rule:** When assigning an array element to a `let` variable, oxlint enforces destructuring. Use `[currentBookmark] = bookmark` instead of `currentBookmark = bookmark[0]`. For `const`, use `const [bookmarkData] = bookmark` instead of `const bookmarkData = bookmark[0]`
 
 ### Layer 4: Dead Code Removal
@@ -202,6 +221,44 @@ Always use bare response — return the v2 bare array directly from `queryFn`. U
 ### Count field
 
 The old crud helper included `count: BookmarksCountTypes` per page — this was redundant. No consumer reads `page.count` from paginated data. Counts are fetched independently via `useFetchBookmarksCount`. Safe to omit.
+
+### Field Name Mismatch Mapping
+
+When v2 schema field names differ from the hand-written TypeScript interface (e.g., `BookmarksCountTypes` uses `trash` but v2 returns `trashCount`), add a mapping function in the hook's `queryFn` to translate v2 names to the legacy interface. This stores the legacy-shaped data in React Query cache, so all consumers (direct hook callers AND indirect `queryClient.getQueryData` readers) see the expected type without field rename cascades.
+
+```typescript
+type V2CountResponse = z.infer<typeof FetchBookmarksCountOutputSchema>;
+
+function mapToBookmarksCountTypes(data: V2CountResponse): BookmarksCountTypes {
+  return {
+    audio: data.audioCount,
+    categoryCount: data.categoryCount,
+    everything: data.allCount,
+    // ... map each field
+  };
+}
+
+export default function useFetchBookmarksCount() {
+  const session = useSupabaseSession((state) => state.session);
+
+  const { data: bookmarksCountData } = useQuery({
+    queryFn: async () => {
+      const data = await api.get(V2_URL).json<V2CountResponse>();
+      return mapToBookmarksCountTypes(data);
+    },
+    queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+  });
+
+  return { bookmarksCountData };
+}
+```
+
+**When to use:** Only when the v2 Zod output schema has structurally different field names from the hand-written TS interface used by consumers. If the field names match (like `SingleListData` vs bookmark schemas — same names, just different nullability), use `.json<LegacyType>()` directly instead.
+
+**This is temporary** — mapping functions are removed when hand-written types are retired in favor of Zod-inferred types post-migration.
+
+**Reference implementation:**
+`src/async/queryHooks/bookmarks/use-fetch-bookmarks-count.ts` — Phase 23 field mapping pathfinder
 
 **Reference implementation:**
 `src/async/queryHooks/bookmarks/use-fetch-paginated-bookmarks.ts` — Phase 23 hard-class pathfinder output

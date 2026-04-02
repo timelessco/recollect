@@ -2,11 +2,11 @@ import * as Sentry from "@sentry/nextjs";
 import { decode } from "base64-arraybuffer";
 import uniqid from "uniqid";
 
-import type { StructuredKeywords } from "@/async/ai/imageToText";
+import type { StructuredKeywords } from "@/async/ai/schemas/image-analysis-schema";
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { imageToText } from "@/async/ai/imageToText";
+import { imageToText } from "@/async/ai/image-analysis";
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";

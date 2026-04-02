@@ -426,6 +426,10 @@ verify_jwt = false
 [functions.process-raindrop-imports]
 verify_jwt = false
 
+# Chrome bookmark import queue consumer - same auth pattern as Raindrop worker
+[functions.process-chrome-bookmark-imports]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

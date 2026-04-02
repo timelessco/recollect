@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { imageToText } from "@/async/ai/imageToText";
+import { imageToText } from "@/async/ai/image-analysis";
 import { env } from "@/env/server";
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
@@ -32,7 +32,7 @@ export const POST = createAxiomRouteHandler(
       let body: unknown;
       try {
         body = await request.json();
-      } catch {
+      } catch (error) {
         await storeQueueError({
           errorReason: "screenshot: malformed_json",
           msgId: undefined,
@@ -40,6 +40,7 @@ export const POST = createAxiomRouteHandler(
           route,
         });
         throw new RecollectApiError("bad_request", {
+          cause: error,
           message: "Invalid JSON in request body",
         });
       }
@@ -103,8 +104,8 @@ export const POST = createAxiomRouteHandler(
               isRecord(pdfResult) && typeof pdfResult.publicUrl === "string"
                 ? pdfResult.publicUrl
                 : null;
-          } catch {
-            throw new Error("Failed to generate PDF thumbnail in worker");
+          } catch (error) {
+            throw new Error("Failed to generate PDF thumbnail in worker", { cause: error });
           }
         } else {
           // Regular screenshot via screenshot service
@@ -131,8 +132,8 @@ export const POST = createAxiomRouteHandler(
             isPageScreenshot = metaDataRecord.isPageScreenshot ?? {};
 
             publicURL = await upload(base64data, user_id);
-          } catch {
-            throw new Error("Failed to take screenshot in worker");
+          } catch (error) {
+            throw new Error("Failed to take screenshot in worker", { cause: error });
           }
         }
 

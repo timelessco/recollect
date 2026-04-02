@@ -1,16 +1,9 @@
+import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { R2_MAIN_BUCKET_NAME, STORAGE_USER_PROFILE_PATH } from "@/utils/constants";
 import { storageHelpers } from "@/utils/storageClient";
 
 export interface DeleteProfilePicProps {
   userId: string;
-}
-
-function toErrorMessage(err: unknown): string {
-  if (err instanceof Error) {
-    return err.message;
-  }
-
-  return JSON.stringify(err);
 }
 
 export async function deleteProfilePic(props: DeleteProfilePicProps): Promise<void> {
@@ -22,7 +15,11 @@ export async function deleteProfilePic(props: DeleteProfilePicProps): Promise<vo
   );
 
   if (listError !== null) {
-    throw new Error(`Failed to list profile pictures: ${toErrorMessage(listError)}`);
+    throw new RecollectApiError("service_unavailable", {
+      cause: listError,
+      message: "Failed to list profile pictures",
+      operation: "delete_profile_pic",
+    });
   }
 
   const filesToRemove = list && list.length > 0 ? list.map((x) => `${x.Key}`) : [];
@@ -34,7 +31,11 @@ export async function deleteProfilePic(props: DeleteProfilePicProps): Promise<vo
     );
 
     if (deleteError !== null) {
-      throw new Error(`Failed to delete profile pictures: ${toErrorMessage(deleteError)}`);
+      throw new RecollectApiError("service_unavailable", {
+        cause: deleteError,
+        message: "Failed to delete profile pictures",
+        operation: "delete_profile_pic",
+      });
     }
   }
 
@@ -43,6 +44,10 @@ export async function deleteProfilePic(props: DeleteProfilePicProps): Promise<vo
   ]);
 
   if (folderDeleteError !== null) {
-    throw new Error(`Failed to delete profile folder: ${toErrorMessage(folderDeleteError)}`);
+    throw new RecollectApiError("service_unavailable", {
+      cause: folderDeleteError,
+      message: "Failed to delete profile folder",
+      operation: "delete_profile_pic",
+    });
   }
 }

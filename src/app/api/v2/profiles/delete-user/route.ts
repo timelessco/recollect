@@ -1,4 +1,5 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
+import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { isNonNullable } from "@/utils/assertion-utils";
@@ -33,9 +34,11 @@ async function deleteStoragePath(path: string): Promise<void> {
   );
 
   if (listError !== null) {
-    throw new Error(
-      `Failed to list storage at ${path}: ${listError instanceof Error ? listError.message : JSON.stringify(listError)}`,
-    );
+    throw new RecollectApiError("service_unavailable", {
+      cause: listError,
+      message: `Failed to list storage objects at ${path}`,
+      operation: "delete_user_storage",
+    });
   }
 
   const filesToRemove =
@@ -48,9 +51,11 @@ async function deleteStoragePath(path: string): Promise<void> {
     );
 
     if (deleteError !== null) {
-      throw new Error(
-        `Failed to delete storage at ${path}: ${deleteError instanceof Error ? deleteError.message : JSON.stringify(deleteError)}`,
-      );
+      throw new RecollectApiError("service_unavailable", {
+        cause: deleteError,
+        message: `Failed to delete storage objects at ${path}`,
+        operation: "delete_user_storage",
+      });
     }
   }
 }
@@ -78,7 +83,11 @@ export const POST = createAxiomRouteHandler(
         .eq("user_id", userId);
 
       if (bookmarkTagsError) {
-        throw new Error(`Failed to delete bookmark_tags: ${bookmarkTagsError.message}`);
+        throw new RecollectApiError("service_unavailable", {
+          cause: bookmarkTagsError,
+          message: "Failed to delete bookmark_tags",
+          operation: "delete_user",
+        });
       }
 
       // Step 2: Delete bookmarks
@@ -88,7 +97,11 @@ export const POST = createAxiomRouteHandler(
         .eq("user_id", userId);
 
       if (bookmarksError) {
-        throw new Error(`Failed to delete bookmarks: ${bookmarksError.message}`);
+        throw new RecollectApiError("service_unavailable", {
+          cause: bookmarksError,
+          message: "Failed to delete bookmarks",
+          operation: "delete_user",
+        });
       }
 
       // Step 3: Delete tags
@@ -98,7 +111,11 @@ export const POST = createAxiomRouteHandler(
         .eq("user_id", userId);
 
       if (tagsError) {
-        throw new Error(`Failed to delete tags: ${tagsError.message}`);
+        throw new RecollectApiError("service_unavailable", {
+          cause: tagsError,
+          message: "Failed to delete tags",
+          operation: "delete_user",
+        });
       }
 
       // Step 4: Delete shared_categories by user_id (categories user created)
@@ -108,9 +125,11 @@ export const POST = createAxiomRouteHandler(
         .eq("user_id", userId);
 
       if (sharedByUserError) {
-        throw new Error(
-          `Failed to delete shared_categories by user_id: ${sharedByUserError.message}`,
-        );
+        throw new RecollectApiError("service_unavailable", {
+          cause: sharedByUserError,
+          message: "Failed to delete shared_categories by user_id",
+          operation: "delete_user",
+        });
       }
 
       // Step 5: Delete shared_categories by email (categories user was invited to)
@@ -120,9 +139,11 @@ export const POST = createAxiomRouteHandler(
         .eq("email", email);
 
       if (sharedByEmailError) {
-        throw new Error(
-          `Failed to delete shared_categories by email: ${sharedByEmailError.message}`,
-        );
+        throw new RecollectApiError("service_unavailable", {
+          cause: sharedByEmailError,
+          message: "Failed to delete shared_categories by email",
+          operation: "delete_user",
+        });
       }
 
       // Step 6: Delete bookmark_categories junction (must delete before categories)
@@ -133,7 +154,11 @@ export const POST = createAxiomRouteHandler(
         .eq("user_id", userId);
 
       if (categoriesDataError) {
-        throw new Error(`Failed to fetch category IDs: ${categoriesDataError.message}`);
+        throw new RecollectApiError("service_unavailable", {
+          cause: categoriesDataError,
+          message: "Failed to fetch category IDs",
+          operation: "delete_user",
+        });
       }
 
       if (isNonNullable(categoriesData) && categoriesData.length > 0) {
@@ -144,7 +169,11 @@ export const POST = createAxiomRouteHandler(
           .in("category_id", categoryIds);
 
         if (junctionDeleteError) {
-          throw new Error(`Failed to delete bookmark_categories: ${junctionDeleteError.message}`);
+          throw new RecollectApiError("service_unavailable", {
+            cause: junctionDeleteError,
+            message: "Failed to delete bookmark_categories",
+            operation: "delete_user",
+          });
         }
       }
 
@@ -155,14 +184,22 @@ export const POST = createAxiomRouteHandler(
         .eq("user_id", userId);
 
       if (categoriesError) {
-        throw new Error(`Failed to delete categories: ${categoriesError.message}`);
+        throw new RecollectApiError("service_unavailable", {
+          cause: categoriesError,
+          message: "Failed to delete categories",
+          operation: "delete_user",
+        });
       }
 
       // Step 8: Delete profile
       const { error: profileError } = await supabase.from(PROFILES).delete().eq("id", userId);
 
       if (profileError) {
-        throw new Error(`Failed to delete profile: ${profileError.message}`);
+        throw new RecollectApiError("service_unavailable", {
+          cause: profileError,
+          message: "Failed to delete profile",
+          operation: "delete_user",
+        });
       }
 
       // Step 9: Delete R2 storage (4 paths)
@@ -176,7 +213,11 @@ export const POST = createAxiomRouteHandler(
       const { error: deleteAuthError } = await serviceClient.auth.admin.deleteUser(userId);
 
       if (deleteAuthError) {
-        throw new Error(`Failed to delete auth user: ${deleteAuthError.message}`);
+        throw new RecollectApiError("service_unavailable", {
+          cause: deleteAuthError,
+          message: "Failed to delete auth user",
+          operation: "delete_user",
+        });
       }
 
       if (ctx?.fields) {

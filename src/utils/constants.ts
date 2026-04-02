@@ -90,7 +90,6 @@ export const AI_ENRICHMENT_API = "/v1/ai-enrichment";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
 export const CLEAR_BOOKMARK_TRASH_API = "/bookmark/clear-bookmark-trash";
 export const FETCH_BOOKMARKS_VIEW = "/bookmark/fetch-bookmarks-view";
-export const FETCH_BOOKMARKS_COUNT = "/bookmark/fetch-bookmarks-count";
 export const ADD_REMAINING_BOOKMARK_API = "/bookmark/add-remaining-bookmark-data";
 
 export const TOGGLE_BOOKMARK_DISCOVERABLE_API = "/bookmark/toggle-discoverable-on-bookmark";
@@ -151,6 +150,7 @@ export const V2_FETCH_BOOKMARKS_DATA_API = "v2/bookmark/fetch-bookmarks-data";
 export const V2_SEARCH_BOOKMARKS_API = "v2/bookmark/search-bookmarks";
 export const V2_CHECK_GEMINI_API_KEY_API = "v2/check-gemini-api-key";
 export const V2_FETCH_BOOKMARK_BY_ID_API = "v2/bookmarks/get/fetch-by-id";
+export const V2_FETCH_BOOKMARKS_COUNT_API = "v2/bookmark/fetch-bookmarks-count";
 
 export const DELETE_API_KEY_API = "/v1/delete-api-key";
 
@@ -412,3 +412,4 @@ export const [WHITE_COLOR, BLACK_COLOR] = colorPickerColors;
 export const INSTAGRAM_IMPORTS_QUEUE = "instagram_imports";
 export const TWITTER_IMPORTS_QUEUE = "twitter_imports";
 export const RAINDROP_IMPORTS_QUEUE = "raindrop_imports";
+export const CHROME_BOOKMARK_IMPORTS_QUEUE = "chrome_bookmark_imports";

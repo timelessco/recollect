@@ -5,7 +5,10 @@ import * as Sentry from "@sentry/nextjs";
 import axios from "axios";
 import { isEmpty } from "lodash";
 
-import type { StructuredKeywords, UserCollection } from "../../../async/ai/imageToText";
+import type {
+  StructuredKeywords,
+  UserCollection,
+} from "../../../async/ai/schemas/image-analysis-schema";
 import type {
   ImgMetadataType,
   SingleListData,
@@ -15,7 +18,7 @@ import type { AiToggles } from "../../../utils/ai-feature-toggles";
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import type { VerifyErrors } from "jsonwebtoken";
 
-import { imageToText } from "../../../async/ai/imageToText";
+import { imageToText } from "../../../async/ai/image-analysis";
 import { getMediaType } from "../../../async/supabaseCrudHelpers";
 import { fetchAiToggles } from "../../../utils/ai-feature-toggles";
 import {
