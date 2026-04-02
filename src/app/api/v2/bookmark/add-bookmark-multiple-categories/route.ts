@@ -53,8 +53,10 @@ export const POST = createAxiomRouteHandler(
       }
 
       // Create bookmark with first category (handles junction, revalidation, enrichment)
+      const [primaryCategoryId, ...remainingCategoryIds] = data.category_ids;
+
       const insertedData = await addBookmarkMinData({
-        categoryId: 0,
+        categoryId: primaryCategoryId,
         email,
         supabase,
         updateAccess: data.update_access,
@@ -63,10 +65,9 @@ export const POST = createAxiomRouteHandler(
       });
 
       // Add junction entries for remaining categories
-      const categoryIds = data.category_ids;
-      if (categoryIds.length > 0) {
+      if (remainingCategoryIds.length > 0) {
         const bookmarkId = insertedData[0].id;
-        const junctionRows = categoryIds.map((categoryId) => ({
+        const junctionRows = remainingCategoryIds.map((categoryId) => ({
           bookmark_id: bookmarkId,
           category_id: categoryId,
           user_id: userId,
@@ -82,7 +83,7 @@ export const POST = createAxiomRouteHandler(
         }
 
         // Revalidate remaining non-zero categories
-        const remainingNonZero = categoryIds.filter((id) => id !== 0);
+        const remainingNonZero = remainingCategoryIds.filter((id) => id !== 0);
         for (const categoryId of remainingNonZero) {
           void revalidateCategoryIfPublic(categoryId, {
             operation: "add_bookmark",

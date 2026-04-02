@@ -4,6 +4,12 @@ export const AddBookmarkMultipleCategoriesInputSchema = z.object({
   category_ids: z
     .array(z.int().min(0))
     .min(1)
+    .refine((ids) => new Set(ids).size === ids.length, {
+      message: "category_ids must not contain duplicates",
+    })
+    .refine((ids) => ids.length === 1 || !ids.includes(0), {
+      message: "category_ids cannot mix 0 (uncategorized) with other category IDs",
+    })
     .meta({ description: "Target category IDs (0 = uncategorized)" }),
   update_access: z.boolean().meta({ description: "Whether the user has update access" }),
   url: z.url().meta({ description: "Bookmark URL to add" }),
