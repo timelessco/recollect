@@ -8,7 +8,7 @@
  */
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { getImgFromArr } from "array-to-image";
 import { decode } from "blurhash";
@@ -108,6 +108,9 @@ export function AnimatedBookmarkImage({
 }: AnimatedBookmarkImageProps) {
   // The image URL confirmed loaded by the browser
   const [displaySrc, setDisplaySrc] = useState<null | string>(null);
+  // Ref keeps the effect's error handler current without adding onError to deps
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
 
   // Preload images so we can show them without layout flash.
   // displaySrc is intentionally omitted from deps — including it causes a
@@ -117,15 +120,18 @@ export function AnimatedBookmarkImage({
       return;
     }
     const preload = new window.Image();
-    const onReady = () => {
+    const handleLoad = () => {
       setDisplaySrc(img);
     };
-    preload.addEventListener("load", onReady);
-    preload.addEventListener("error", onReady);
+    const handleError = () => {
+      onErrorRef.current();
+    };
+    preload.addEventListener("load", handleLoad);
+    preload.addEventListener("error", handleError);
     preload.src = img;
     return () => {
-      preload.removeEventListener("load", onReady);
-      preload.removeEventListener("error", onReady);
+      preload.removeEventListener("load", handleLoad);
+      preload.removeEventListener("error", handleError);
     };
   }, [img]);
 
