@@ -224,35 +224,15 @@ export default function useFileUploadOptimisticMutation() {
       };
 
       if (apiResponseTyped?.success) {
-        const realId = apiResponseTyped?.data?.[0]?.id as number | undefined;
-
-        if (realId && context?.tempId && context?.preGeneratedUrl) {
-          // Re-add URL for animation continuity across key change (temp → real id).
-          // The remounted component consumes this via recentlyAddedUrls.delete().
+        // Re-add URL for animation continuity — when invalidateQueries refetch
+        // replaces the temp entry with real server data, the remounted component
+        // consumes this via recentlyAddedUrls.delete() to keep animating.
+        // No cache swap here: temp ID stays negative (→ "Fetching data...") until
+        // the refetch brings full data with ogImage, avoiding status text flashes.
+        if (context?.preGeneratedUrl) {
           recentlyAddedUrls.add(context.preGeneratedUrl);
-
-          // Replace temp ID with real server ID in a single synchronous
-          // cache update — avoids the async refetch gap that causes flicker.
-          queryClient.setQueryData<PaginatedBookmarks>(
-            [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-            (old) => {
-              if (!old) {
-                return old;
-              }
-              return {
-                ...old,
-                pages: old.pages.map((page) =>
-                  page.map((bookmark) => {
-                    if (bookmark.id === context.tempId) {
-                      return { ...bookmark, id: realId };
-                    }
-                    return bookmark;
-                  }),
-                ),
-              } as PaginatedBookmarks;
-            },
-          );
         }
+
         const fileTypeName = fileTypeIdentifier(uploadedDataType);
 
         /* If the user uploads to a type page (links, videos) and the uploaded type is not of the page eg: user
