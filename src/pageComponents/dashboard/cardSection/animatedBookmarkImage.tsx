@@ -141,11 +141,7 @@ export function AnimatedBookmarkImage({
     <AnimatePresence mode="wait">
       {isPreloading ? (
         <motion.div exit={{ opacity: 0 }} key="placeholder" transition={{ duration: 0.15 }}>
-          <LoaderImgPlaceholder
-            cardTypeCondition={cardTypeCondition}
-            id={id}
-            isPreloading={!!img}
-          />
+          <LoaderImgPlaceholder cardTypeCondition={cardTypeCondition} id={id} isPreloading />
         </motion.div>
       ) : (
         <motion.div
@@ -186,13 +182,13 @@ export const LoaderImgPlaceholder = ({
   });
 
   const statusText = (() => {
-    // Image is being preloaded by AnimatedBookmarkImage — keep showing "Fetching data..."
-    // so the text doesn't flash to "Cannot fetch image" during the preload window
-    if (isPreloading) {
-      return "Fetching data...";
-    }
     if (isLoading) {
       return "Taking screenshot....";
+    }
+    // AnimatedBookmarkImage passes isPreloading — keep showing "Fetching data..."
+    // so the text doesn't flash to "Cannot fetch image" before the image arrives
+    if (isPreloading) {
+      return "Fetching data...";
     }
     if (id < 0) {
       return "Fetching data...";

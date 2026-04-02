@@ -21,9 +21,9 @@ type AddMinDataMutationType = UseMutationResult<
 
 export type FileUploadMutationType = UseMutationResult<
   unknown,
-  { previousData: PaginatedBookmarks },
+  Error,
   UploadFileApiPayload,
-  { previousData: unknown }
+  { preGeneratedUrl: string; previousData: unknown; tempId: number }
 >;
 
 /**
