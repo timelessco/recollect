@@ -440,3 +440,18 @@ No changes
 No changes
 
 
+
+## 2026-04-02 [`37a64b7`](https://github.com/timelessco/recollect/commit/37a64b773cdee280a38abc3467df32747b7a8d45)
+
+
+
+### API Changes
+
+### POST /v2/bookmark/add-bookmark-multiple-categories
+-  endpoint added
+
+
+
+
+
+
