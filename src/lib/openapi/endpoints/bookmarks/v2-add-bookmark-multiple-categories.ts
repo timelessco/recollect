@@ -56,7 +56,7 @@ export const v2AddBookmarkMultipleCategoriesSupplement = {
       summary: "Bookmark created successfully",
       value: [
         {
-          category_id: 0,
+          category_ids: [5, 12, 23],
           description: "An example article description",
           id: 42,
           inserted_at: "2026-03-27T00:00:00.000Z",
