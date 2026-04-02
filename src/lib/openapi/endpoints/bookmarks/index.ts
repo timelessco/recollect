@@ -7,6 +7,7 @@ export { fetchPublicBookmarkByIdSupplement } from "./fetch-public-bookmark-by-id
 export { moveBookmarkToTrashSupplement } from "./move-bookmark-to-trash";
 export { toggleDiscoverableOnBookmarkSupplement } from "./toggle-discoverable-on-bookmark";
 export { v2AddBookmarkMinDataSupplement } from "./v2-add-bookmark-min-data";
+export { v2AddBookmarkMultipleCategoriesSupplement } from "./v2-add-bookmark-multiple-categories";
 export { v2AddRemainingBookmarkDataSupplement } from "./v2-add-remaining-bookmark-data";
 export { v2AddUrlScreenshotSupplement } from "./v2-add-url-screenshot";
 export { v2BookmarksInsertSupplement } from "./v2-bookmarks-insert";
