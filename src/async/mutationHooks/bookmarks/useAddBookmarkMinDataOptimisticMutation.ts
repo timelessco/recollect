@@ -46,15 +46,16 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
     unknown,
     { previousData: PaginatedBookmarks },
     AddBookmarkMinDataPayloadTypes,
-    { previousData: unknown }
+    { previousData: unknown; tempId: number }
   >({
+    mutationKey: ["add-bookmark-min-data"],
     mutationFn: addBookmarkMinData,
     // If the mutation fails, use the context returned from onMutate to roll back
     onMutate: async (data) => {
       setIsBookmarkAdding(true);
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      // Cancel only the current view's query (not all bookmark queries)
       await queryClient.cancelQueries({
-        queryKey: [BOOKMARKS_KEY, session?.user?.id],
+        queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
       });
 
       // Snapshot the previous value
@@ -85,6 +86,10 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
           ]
         : [];
 
+      // Negative temp ID prevents key={undefined} collisions in React lists
+      // and gives each concurrent optimistic entry a unique key
+      const tempId = -Date.now();
+
       // Optimistically update to the new value
       queryClient.setQueryData<PaginatedBookmarks>(
         [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
@@ -96,11 +101,23 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
                 if (index === 0) {
                   return [
                     {
+                      id: tempId,
                       url: data?.url,
                       addedCategories,
-                      inserted_at: new Date(),
                       addedTags: [],
+                      description: "",
+                      inserted_at: new Date().toISOString(),
+                      make_discoverable: null,
+                      meta_data: {},
+                      ogImage: "",
+                      screenshot: "",
+                      title: "",
                       trash: null,
+                      type: "",
+                      user_id: {
+                        id: session?.user?.id ?? "",
+                        profile_pic: "",
+                      },
                     },
                     ...page,
                   ];
@@ -119,7 +136,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       recentlyAddedUrls.add(data?.url);
 
       // Return a context object with the snapshotted value
-      return { previousData };
+      return { previousData, tempId };
     },
     onError: (_error, variables, context) => {
       queryClient.setQueryData(
@@ -129,60 +146,65 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       // Clean up animation tracking on failure
       recentlyAddedUrls.delete(variables.url);
     },
-    // Always refetch after error or success:
-    onSettled: async (apiResponse) => {
+    onSettled: (apiResponse, error) => {
       setIsBookmarkAdding(false);
-      const response = apiResponse as { data: { data: SingleListData[] } };
-      void queryClient.invalidateQueries({
-        queryKey: [BOOKMARKS_KEY, session?.user?.id],
-      });
+
+      // Always invalidate count
       void queryClient.invalidateQueries({
         queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
       });
 
-      if (!response?.data?.data) {
-        // something went wrong when adding min data so we return
+      // Guard bookmarks invalidation — only when this is the last pending mutation.
+      // Prevents concurrent rapid adds from stomping each other's optimistic entries.
+      // Pattern: use-react-query-optimistic-mutation.ts:214-220
+      if (queryClient.isMutating({ mutationKey: ["add-bookmark-min-data"] }) === 1) {
+        void queryClient.invalidateQueries({
+          queryKey: [BOOKMARKS_KEY, session?.user?.id],
+        });
+      }
+
+      // On error or missing data, skip post-processing
+      if (error) {
         return;
       }
 
-      const data = response?.data?.data[0];
+      const response = apiResponse as { data: { data: SingleListData[] } };
+      if (!response?.data?.data) {
+        return;
+      }
+
+      const [data] = response.data.data;
       const url = data?.url;
 
-      // this is to check if url is not a website like test.pdf
-      // if this is the case then we do not call the screenshot api
-      const isUrlOfMimeType = await checkIfUrlAnImage(url);
-      // **************
-      // here we are checking if the url is an image, we don't check for mime type,
-      // if we check if is an mime type then screenshot api cannot be called
-      // ex: if it is an .mp4(url) the mime type will be video/mp4 so screenshot api cannot be called, we will not have preview image
-      //  **************
+      // Heavy processing (media check, PDF thumbnail, screenshot) runs as
+      // fire-and-forget so it doesn't block the render cycle
+      void (async () => {
+        const isUrlOfMimeType = await checkIfUrlAnImage(url);
+        if (isUrlOfMimeType) {
+          return;
+        }
 
-      // only take screenshot if url is not an image like https://test.com/test.jpg
-      // then in the screenshot api we call the add remaining bookmark data api so that the meta_data is got for the screenshot image
-      if (!isUrlOfMimeType) {
         const mediaType = await getMediaType(url);
-        // Audio URLs already have ogImage fallback set in add-bookmark-min-data; skip screenshot
+        // Audio URLs already have ogImage fallback set in add-bookmark-min-data
         if (mediaType?.includes("audio")) {
           return;
         }
 
         if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
           try {
-            // adding id into loading state for the case of pdf
-            addLoadingBookmarkId(data?.id);
+            addLoadingBookmarkId(data.id);
             successToast("Generating thumbnail");
             await handlePdfThumbnailAndUpload({
-              fileId: data?.id,
-              fileUrl: data?.url,
+              fileId: data.id,
+              fileUrl: data.url,
               sessionUserId: session?.user?.id,
             });
-          } catch (error) {
-            console.warn("First attempt failed, retrying...", error);
+          } catch {
             try {
               errorToast("retry thumbnail generation");
               await handlePdfThumbnailAndUpload({
-                fileId: data?.id,
-                fileUrl: data?.url,
+                fileId: data.id,
+                fileUrl: data.url,
                 sessionUserId: session?.user?.id,
               });
             } catch (retryError) {
@@ -190,37 +212,65 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
               errorToast("thumbnail generation failed");
             }
           } finally {
-            // invalidating and removing id from loading state for the case of pdf
             void queryClient.invalidateQueries({
               queryKey: [BOOKMARKS_KEY, session?.user?.id],
             });
-            removeLoadingBookmarkId(data?.id);
+            removeLoadingBookmarkId(data.id);
           }
-
           return;
         }
 
         if (data?.id) {
-          addLoadingBookmarkId(data?.id);
+          addLoadingBookmarkId(data.id);
         }
-
-        // update to zustand here
-        addBookmarkScreenshotMutation.mutate({
-          id: data?.id,
-          url: data?.url,
-        });
-      }
+        addBookmarkScreenshotMutation.mutate({ id: data.id, url: data.url });
+      })();
     },
-    onSuccess: (apiResponse) => {
-      const apiResponseTyped = apiResponse as { status: number };
+    onSuccess: (apiResponse, _variables, context) => {
+      const response = apiResponse as { data: { data: SingleListData[] }; status: number };
+
+      if (response?.data?.data?.[0]) {
+        const [serverBookmark] = response.data.data;
+
+        // Re-add URL for animation continuity across key change (temp → real id).
+        // The remounted component consumes this via recentlyAddedUrls.delete().
+        recentlyAddedUrls.add(serverBookmark.url);
+
+        // Replace optimistic entry with real server data in a single synchronous
+        // cache update — avoids the async refetch gap that causes flicker.
+        queryClient.setQueryData<PaginatedBookmarks>(
+          [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+          (old) => {
+            if (!old) {
+              return old;
+            }
+            return {
+              ...old,
+              pages: old.pages.map((page) =>
+                page.map((bookmark) => {
+                  if (bookmark.id === context?.tempId) {
+                    return {
+                      ...serverBookmark,
+                      // Preserve optimistic addedCategories — server response
+                      // doesn't include junction table data
+                      addedCategories: bookmark.addedCategories,
+                    } as SingleListData;
+                  }
+                  return bookmark;
+                }),
+              ),
+            } as PaginatedBookmarks;
+          },
+        );
+      }
+
       if (
         (CATEGORY_ID === VIDEOS_URL ||
           CATEGORY_ID === DOCUMENTS_URL ||
           CATEGORY_ID === TWEETS_URL ||
           CATEGORY_ID === IMAGES_URL) &&
-        apiResponseTyped?.status === 200
+        response?.status === 200
       ) {
-        // if user is adding a link in any of the Types pages (Videos, Images etc ...) then we get this toast message
         successToast(`This bookmark will be added to ${menuListItemName?.links}`);
       }
     },

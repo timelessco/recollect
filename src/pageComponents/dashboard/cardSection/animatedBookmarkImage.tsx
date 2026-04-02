@@ -194,7 +194,7 @@ export const LoaderImgPlaceholder = ({
     if (isLoading) {
       return "Taking screenshot....";
     }
-    if (isNil(id)) {
+    if (id < 0) {
       return "Fetching data...";
     }
     return "Cannot fetch image for this bookmark";
