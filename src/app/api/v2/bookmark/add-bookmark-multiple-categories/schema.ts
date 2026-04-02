@@ -34,4 +34,4 @@ const BookmarkRow = z.object({
   user_id: z.string().meta({ description: "Owner user ID" }),
 });
 
-export const AddBookmarkMultipleCategoriesOutputSchema = z.array(BookmarkRow);
+export const AddBookmarkMultipleCategoriesOutputSchema = BookmarkRow;
