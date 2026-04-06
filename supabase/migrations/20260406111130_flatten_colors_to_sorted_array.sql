@@ -235,15 +235,15 @@ BEGIN
                         SQRT(POWER((c.val->>'a')::float, 2) + POWER((c.val->>'b')::float, 2)) < 0.04
                     ELSE
                         -- Chromatic: OKLAB distance with positional threshold
-                        -- Index 1 (most dominant) = 0.25, index 2 = 0.20, index 3+ = 0.15
+                        -- Index 1 (most dominant) = 0.30, index 2 = 0.25, index 3+ = 0.18
                         SQRT(
                             POWER(color_l - (c.val->>'l')::float, 2) +
                             POWER(color_a - (c.val->>'a')::float, 2) +
                             POWER(color_b - (c.val->>'b')::float, 2)
                         ) < CASE
-                            WHEN c.pos = 1 THEN 0.25
-                            WHEN c.pos = 2 THEN 0.20
-                            ELSE 0.15
+                            WHEN c.pos = 1 THEN 0.30
+                            WHEN c.pos = 2 THEN 0.25
+                            ELSE 0.18
                         END
                     END
             )
@@ -301,7 +301,7 @@ END;
 $function$;
 
 COMMENT ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint, double precision, double precision, double precision) IS
-'Bookmark search with URL/tag/category/color filters. Colors stored as OKLAB array (image_keywords.colors) sorted by dominance. Achromatic searches (chroma < 0.04) match low-chroma colors by lightness. Chromatic searches use OKLAB Euclidean distance with positional thresholds (index 1: 0.25, index 2: 0.20, index 3+: 0.15). Results ranked by positional weight (1/index) so dominant colors score higher.';
+'Bookmark search with URL/tag/category/color filters. Colors stored as OKLAB array (image_keywords.colors) sorted by dominance. Achromatic searches (chroma < 0.04) match low-chroma colors by lightness. Chromatic searches use OKLAB Euclidean distance with positional thresholds (index 1: 0.30, index 2: 0.25, index 3+: 0.18). Results ranked by positional weight (1/index) so dominant colors score higher.';
 
 -- ============================================================================
 -- PART 5: Verification
