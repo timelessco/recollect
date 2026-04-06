@@ -35,32 +35,40 @@ function buildContextBlock(context?: ImageToTextContextProps | null): string {
   return ["<context>", ...lines, "</context>"].join("\n");
 }
 
-// Few-shot example — universal (link/OG image type)
+// Few-shot example — conditionally includes collections line
 
-const EXAMPLE_BLOCK = [
-  "<example>",
-  "Input: A tech blog bookmark with OG image preview.",
-  'Context — Title: "Understanding RSC", URL: "https://example.com/blog/rsc"',
-  "",
-  "Output:",
-  "{",
-  '  "sentence": "A blog post on example.com explaining React Server Components — covers how they work and when to use them.",',
-  '  "type": ["blog", "article"],',
-  '  "color": ["#1a1a2e", "#e94560"],',
-  '  "features": {',
-  '    "title": "Understanding RSC",',
-  '    "source": "example.com",',
-  '    "programming_language": "JavaScript",',
-  '    "framework": "React",',
-  '    "additional_keywords": ["react", "server components", "RSC", "web development"]',
-  "  },",
-  '  "ocr_text": "Understanding React Server Components\\nA deep dive into the future of React rendering...",',
-  '  "collections": [{ "name": "Development", "confidence": 95 }]',
-  "}",
-  "",
-  "The example shows all possible fields. Only produce fields present in the response schema.",
-  "</example>",
-].join("\n");
+function buildExampleBlock(includeCollections: boolean): string {
+  const outputLines = [
+    "{",
+    '  "sentence": "A blog post on example.com explaining React Server Components — covers how they work and when to use them.",',
+    '  "type": ["blog", "article"],',
+    '  "color": ["#1a1a2e", "#e94560"],',
+    '  "features": {',
+    '    "title": "Understanding RSC",',
+    '    "source": "example.com",',
+    '    "programming_language": "JavaScript",',
+    '    "framework": "React",',
+    '    "additional_keywords": ["react", "server components", "RSC", "web development"]',
+    "  },",
+    '  "ocr_text": "Understanding React Server Components\\nA deep dive into the future of React rendering...",',
+    ...(includeCollections
+      ? ['  "collections": [{ "name": "Development", "confidence": 95 }]']
+      : []),
+    "}",
+  ];
+
+  return [
+    "<example>",
+    "Input: A tech blog bookmark with OG image preview.",
+    'Context — Title: "Understanding RSC", URL: "https://example.com/blog/rsc"',
+    "",
+    "Output:",
+    ...outputLines,
+    "",
+    "The example shows all possible fields. Only produce fields present in the response schema.",
+    "</example>",
+  ].join("\n");
+}
 
 // Sentence section builder
 
@@ -262,7 +270,8 @@ export function buildPrompt(options: BuildPromptOptions): null | string {
     parts.push("", contextBlock);
   }
 
-  parts.push("", EXAMPLE_BLOCK);
+  const includeCollections = toggles.autoAssignCollections && collections.length > 0;
+  parts.push("", buildExampleBlock(includeCollections));
 
   for (const section of sections) {
     parts.push("", section);
