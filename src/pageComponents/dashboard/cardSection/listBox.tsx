@@ -195,6 +195,7 @@ const ListBox = (props: ListBoxDropTypes) => {
     onDragStart() {
       setIsCardDragging(true);
     },
+    preview: previewRef,
     selectionManager: state.selectionManager,
   });
 
