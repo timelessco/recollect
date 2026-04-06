@@ -50,7 +50,7 @@ function buildExampleBlock(includeCollections: boolean): string {
     '    "framework": "React",',
     '    "additional_keywords": ["react", "server components", "RSC", "web development"]',
     "  },",
-    '  "ocr_text": "Understanding React Server Components\\nA deep dive into the future of React rendering...",',
+    `  "ocr_text": "Understanding React Server Components\\nA deep dive into the future of React rendering..."${includeCollections ? "," : ""}`,
     ...(includeCollections
       ? ['  "collections": [{ "name": "Development", "confidence": 95 }]']
       : []),
