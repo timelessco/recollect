@@ -54,7 +54,7 @@ const sentenceResponseSchema = z.object({
  * `features` uses z.record for arbitrary key-value metadata.
  */
 const keywordsResponseSchema = z.object({
-  colors: z.array(z.string()).optional().describe("Hex color codes, dominant color first"),
+  colors: z.array(z.string()).optional().describe("Hex color codes from most appearing to least"),
   features: z
     .record(z.string(), z.union([z.string(), z.array(z.string())]))
     .optional()

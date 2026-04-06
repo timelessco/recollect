@@ -141,7 +141,7 @@ const KEYWORDS_PROMPT = [
   '"people": ONLY named/identifiable people — use their actual name. Include directors, cast, authors. Do NOT output generic labels like man/woman/person — omit if unknown.',
   '"object": physical objects visible in the image.',
   '"place": locations, settings, landmarks.',
-  '"colors": hex codes, dominant color FIRST, then in descending order of presence.',
+  '"colors": hex codes ordered from the color which appears the most to the least in the image.',
   "",
   '"features": searchable metadata key-value pairs. String values for most fields.',
   "  Common examples: brand (company/studio, NOT hosting platform), title, author, source, rating, duration, reading_time, model, price (no thousand separators), capacity, director, cast, genre, release_year, runtime, platform, cuisine, cook_time, programming_language, framework, company, salary_range.",
