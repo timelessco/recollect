@@ -56,8 +56,10 @@ const sentenceResponseSchema = z.object({
 const keywordsResponseSchema = z.object({
   colors: z
     .array(z.string())
-    .optional()
-    .describe("Hex color codes, ordered from most to least dominant in the image."),
+    .min(1)
+    .describe(
+      "Hex color codes, ordered from most to least dominant in the image. Always extract at least one color.",
+    ),
   features: z
     .record(z.string(), z.union([z.string(), z.array(z.string())]))
     .optional()
@@ -93,11 +95,16 @@ const collectionsResponseSchema = z.object({
  * Full response schema (all toggles on). Used for Zod parsing of the
  * Gemini response in the orchestrator — all fields are optional so
  * partial responses (from dynamic schema) still parse successfully.
+ *
+ * `colors` overrides the stricter `keywordsResponseSchema` constraint
+ * (`.min(1)`) so that a defiant Gemini response with `colors: []` does
+ * not discard the entire enrichment payload at parse time.
  */
 export const fullResponseSchema = z
   .object({
     ...sentenceResponseSchema.shape,
     ...keywordsResponseSchema.shape,
+    colors: z.array(z.string()),
     ...ocrResponseSchema.shape,
     ...collectionsResponseSchema.shape,
   })
