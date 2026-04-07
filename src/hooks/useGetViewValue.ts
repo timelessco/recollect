@@ -1,19 +1,15 @@
 import { useRouter } from "next/router";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty } from "lodash";
 
-import type {
-  BookmarkViewDataTypes,
-  CategoriesData,
-  FetchSharedCategoriesData,
-  ProfilesTableTypes,
-} from "../types/apiTypes";
+import type { BookmarkViewDataTypes } from "../types/apiTypes";
 
+import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
+import useFetchSharedCategories from "@/async/queryHooks/share/useFetchSharedCategories";
+import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 import { getPageViewData, getPageViewKey } from "@/utils/bookmarksViewKeyed";
 
 import { useSupabaseSession } from "../store/componentStore";
-import { CATEGORIES_KEY, SHARED_CATEGORIES_TABLE_NAME, USER_PROFILE } from "../utils/constants";
 import { isUserInACategory } from "../utils/helpers";
 import { getCategorySlugFromRouter } from "../utils/url";
 
@@ -24,7 +20,6 @@ const useGetViewValue = (
   isPublicPage = false,
   categoryViewsFromProps?: BookmarkViewDataTypes,
 ) => {
-  const queryClient = useQueryClient();
   const router = useRouter();
   // cat_id refers to cat slug here as it's got from url
   const categorySlug = getCategorySlugFromRouter(router);
@@ -34,19 +29,9 @@ const useGetViewValue = (
   const userId = userData?.user?.id;
   const userEmail = userData?.user?.email;
 
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
-    CATEGORIES_KEY,
-    userId,
-  ]);
-
-  const sharedCategoriesData = queryClient.getQueryData<{ data: FetchSharedCategoriesData[] }>([
-    SHARED_CATEGORIES_TABLE_NAME,
-  ]);
-
-  const userProfilesData = queryClient.getQueryData<{ data: ProfilesTableTypes[] }>([
-    USER_PROFILE,
-    userId,
-  ]);
+  const { allCategories: categoryData } = useFetchCategories();
+  const { sharedCategoriesData } = useFetchSharedCategories();
+  const { userProfileData: userProfilesData } = useFetchUserProfile();
 
   const currentCategoryData = find(
     categoryData?.data,
@@ -82,7 +67,7 @@ const useGetViewValue = (
     }
 
     if (!isEmpty(userProfilesData?.data)) {
-      const bookmarksView = userProfilesData?.data[0]?.bookmarks_view;
+      const bookmarksView = userProfilesData?.data?.[0]?.bookmarks_view;
       const pageKey = getPageViewKey(categorySlug);
       const pageView = getPageViewData(bookmarksView, pageKey);
       const value = pageView?.[viewType];

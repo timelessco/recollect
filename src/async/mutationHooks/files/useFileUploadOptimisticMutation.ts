@@ -5,6 +5,7 @@ import type { PaginatedBookmarks, UploadFileApiPayload } from "../../../types/ap
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import { recentlyAddedUrls } from "../../../pageComponents/dashboard/cardSection/animatedBookmarkImage";
 import { useSupabaseSession } from "../../../store/componentStore";
 import {
   BOOKMARKS_COUNT_KEY,
@@ -115,6 +116,11 @@ export default function useFileUploadOptimisticMutation() {
       ]);
 
       const fileName = parseUploadFileName(data?.file?.name);
+      const tempId = -(Date.now() + Math.random());
+      const uploadFileNamePath = data?.uploadFileNamePath;
+
+      // Pre-generate storage URL — matches what the server will return
+      const preGeneratedUrl = `${getStoragePublicBaseUrl()}/${STORAGE_FILES_PATH}/${session?.user?.id}/${uploadFileNamePath}`;
 
       // Optimistically update to the new value immediately
       // This shows the bookmark right away, even for videos
@@ -128,8 +134,9 @@ export default function useFileUploadOptimisticMutation() {
                 if (index === 0) {
                   return [
                     {
+                      id: tempId,
                       title: fileName,
-                      url: "",
+                      url: preGeneratedUrl,
                       type: data?.file?.type,
                       inserted_at: new Date(),
                     },
@@ -144,7 +151,9 @@ export default function useFileUploadOptimisticMutation() {
         },
       );
 
-      const uploadFileNamePath = data?.uploadFileNamePath;
+      // Mark URL for animation — BookmarkImageWithAnimation consumes this
+      // via recentlyAddedUrls.delete() on its first render.
+      recentlyAddedUrls.add(preGeneratedUrl);
 
       // Generate presigned URL for secure client-side upload
       const storagePath = `${STORAGE_FILES_PATH}/${session?.user?.id}/${uploadFileNamePath}`;
@@ -181,14 +190,20 @@ export default function useFileUploadOptimisticMutation() {
       }
 
       // Return a context object with the snapshotted value
-      return { previousData };
+      return { previousData, preGeneratedUrl, tempId };
     },
     // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (context: { previousData: PaginatedBookmarks }) => {
-      queryClient.setQueryData(
-        [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
-        context?.previousData,
-      );
+    onError: (_error, _variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+          context.previousData,
+        );
+      }
+      // Clean up animation tracking on failure
+      if (context?.preGeneratedUrl) {
+        recentlyAddedUrls.delete(context.preGeneratedUrl);
+      }
     },
     // Always refetch after error or success:
     onSettled: () => {
@@ -199,7 +214,7 @@ export default function useFileUploadOptimisticMutation() {
         queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
       });
     },
-    onSuccess: async (apiResponse, data) => {
+    onSuccess: async (apiResponse, data, context) => {
       const uploadedDataType = data?.file?.type;
 
       const apiResponseTyped = apiResponse as {
@@ -209,6 +224,15 @@ export default function useFileUploadOptimisticMutation() {
       };
 
       if (apiResponseTyped?.success) {
+        // Re-add URL for animation continuity — when invalidateQueries refetch
+        // replaces the temp entry with real server data, the remounted component
+        // consumes this via recentlyAddedUrls.delete() to keep animating.
+        // No cache swap here: temp ID stays negative (→ "Fetching data...") until
+        // the refetch brings full data with ogImage, avoiding status text flashes.
+        if (context?.preGeneratedUrl) {
+          recentlyAddedUrls.add(context.preGeneratedUrl);
+        }
+
         const fileTypeName = fileTypeIdentifier(uploadedDataType);
 
         /* If the user uploads to a type page (links, videos) and the uploaded type is not of the page eg: user

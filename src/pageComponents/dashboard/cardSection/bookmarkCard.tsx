@@ -258,4 +258,36 @@ const BookmarkCardInner = ({
   );
 };
 
-export const BookmarkCard = memo(BookmarkCardInner);
+export const BookmarkCard = memo(BookmarkCardInner, (prev, next) => {
+  // Fast path: same reference means no change
+  if (prev.post === next.post) {
+    return (
+      prev.img === next.img &&
+      prev.isPublicPage === next.isPublicPage &&
+      prev.showAvatar === next.showAvatar &&
+      prev.categoryViewsFromProps === next.categoryViewsFromProps
+    );
+  }
+
+  // Compare post fields by value — prevents re-renders when query refetch
+  // creates new object references for unchanged bookmarks
+  return (
+    prev.post.id === next.post.id &&
+    prev.post.ogImage === next.post.ogImage &&
+    prev.post.url === next.post.url &&
+    prev.post.title === next.post.title &&
+    prev.post.description === next.post.description &&
+    prev.post.type === next.post.type &&
+    prev.post.trash === next.post.trash &&
+    prev.post.inserted_at === next.post.inserted_at &&
+    prev.post.meta_data?.ogImgBlurUrl === next.post.meta_data?.ogImgBlurUrl &&
+    prev.post.meta_data?.height === next.post.meta_data?.height &&
+    prev.post.meta_data?.width === next.post.meta_data?.width &&
+    prev.post.addedTags?.length === next.post.addedTags?.length &&
+    prev.post.addedCategories?.length === next.post.addedCategories?.length &&
+    prev.img === next.img &&
+    prev.isPublicPage === next.isPublicPage &&
+    prev.showAvatar === next.showAvatar &&
+    prev.categoryViewsFromProps === next.categoryViewsFromProps
+  );
+});
