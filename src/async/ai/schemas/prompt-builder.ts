@@ -2,10 +2,20 @@ import type { ImageToTextContextProps, UserCollection } from "./image-analysis-s
 import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { BookmarkContentType } from "@/utils/resolve-content-type";
 
-// Metadata helper
+// System instruction — passed as config.systemInstruction in the Gemini API call
 
-function formatMetadataContext(context?: ImageToTextContextProps | null): string {
+export const SYSTEM_INSTRUCTION = [
+  "You are a bookmark metadata extraction system.",
+  "Analyze bookmark images and extract structured metadata for search and organization.",
+  "Base your analysis on the image and any provided metadata.",
+  "Do not hallucinate — never invent URLs, names, dates, or facts not supported by the image or metadata.",
+].join(" ");
+
+// Context block — metadata appears once at the top of the prompt
+
+function buildContextBlock(context?: ImageToTextContextProps | null): string {
   const lines: string[] = [];
+
   if (context?.title) {
     lines.push(`Title: ${context.title}`);
   }
@@ -18,32 +28,51 @@ function formatMetadataContext(context?: ImageToTextContextProps | null): string
     lines.push(`Description: ${context.description}`);
   }
 
-  return lines.length > 0
-    ? [
-        "",
-        "Bookmark metadata (use as context only — do not repeat or paraphrase the description in your summary):",
-        ...lines,
-      ].join("\n")
-    : "";
+  if (lines.length === 0) {
+    return "";
+  }
+
+  return ["<context>", ...lines, "</context>"].join("\n");
 }
 
-// Shared prompt constants
+// Few-shot example — conditionally includes collections line
 
-const NO_IMAGE_META =
-  'Never reference the image itself — no "thumbnail", "screenshot", "OG image", "preview", "the image shows", or "this is a picture of".';
+function buildExampleBlock(includeCollections: boolean): string {
+  const outputLines = [
+    "{",
+    '  "sentence": "A blog post on example.com explaining React Server Components — covers how they work and when to use them.",',
+    '  "type": ["blog", "article"],',
+    '  "color": ["#1a1a2e", "#e94560"],',
+    '  "features": {',
+    '    "title": "Understanding RSC",',
+    '    "source": "example.com",',
+    '    "programming_language": "JavaScript",',
+    '    "framework": "React",',
+    '    "additional_keywords": ["react", "server components", "RSC", "web development"]',
+    "  },",
+    `  "ocr_text": "Understanding React Server Components\\nA deep dive into the future of React rendering..."${includeCollections ? "," : ""}`,
+    ...(includeCollections
+      ? ['  "collections": [{ "name": "Development", "confidence": 95 }]']
+      : []),
+    "}",
+  ];
 
-const HUMAN_TONE =
-  "Write as if telling a friend what this bookmark is about. Be direct — no filler, no introductory phrases. Start with the key info. Do NOT describe colors, UI elements, or visual style — keywords handle that.";
+  return [
+    "<example>",
+    "Input: A tech blog bookmark with OG image preview.",
+    'Context — Title: "Understanding RSC", URL: "https://example.com/blog/rsc"',
+    "",
+    "Output:",
+    ...outputLines,
+    "",
+    "The example shows all possible fields. Only produce fields present in the response schema.",
+    "</example>",
+  ].join("\n");
+}
 
-// Section builders
+// Sentence section builder
 
-function buildSentencePrompt(
-  contentType: BookmarkContentType,
-  context?: ImageToTextContextProps | null,
-  isOgImage?: boolean,
-): string {
-  const metadataBlock = formatMetadataContext(context);
-
+function buildSentenceSection(contentType: BookmarkContentType, isOgImage?: boolean): string {
   let instruction: string;
 
   /* oxlint-disable switch-exhaustiveness-check -- audio is handled by orchestrator early return */
@@ -52,28 +81,18 @@ function buildSentencePrompt(
       instruction = [
         "Summarize this document. Name the platform if recognizable from the URL.",
         "Cover: subject, document type (report, manual, paper, etc.), key topic.",
-        HUMAN_TONE,
-        NO_IMAGE_META,
-        metadataBlock,
       ].join("\n");
       break;
     }
 
     case "image": {
-      instruction = [
-        "Describe what you see: who or what is in the image, where it is, and the context.",
-        HUMAN_TONE,
-      ].join("\n");
+      instruction =
+        "Describe what you see: who or what is in the image, where it is, and the context.";
       break;
     }
 
     case "instagram": {
-      instruction = [
-        "Summarize this Instagram post — what it's about and its topic.",
-        HUMAN_TONE,
-        NO_IMAGE_META,
-        metadataBlock,
-      ].join("\n");
+      instruction = "Summarize this Instagram post — what it's about and its topic.";
       break;
     }
 
@@ -83,27 +102,16 @@ function buildSentencePrompt(
           ? [
               "Summarize this webpage. Name the website/platform from the URL.",
               "Cover: what the page is about, main topic, key details.",
-              HUMAN_TONE,
-              NO_IMAGE_META,
-              metadataBlock,
             ].join("\n")
           : [
               "Summarize this webpage from its screenshot. Name the website/platform from the URL.",
-              "Classify and focus accordingly:",
-              HUMAN_TONE,
-              NO_IMAGE_META,
-              metadataBlock,
+              "Classify and focus accordingly.",
             ].join("\n");
       break;
     }
 
     case "tweet": {
-      instruction = [
-        "Summarize this Twitter/X post — topic and main point.",
-        HUMAN_TONE,
-        NO_IMAGE_META,
-        metadataBlock,
-      ].join("\n");
+      instruction = "Summarize this Twitter/X post — topic and main point.";
       break;
     }
 
@@ -111,41 +119,56 @@ function buildSentencePrompt(
       instruction = [
         "Summarize this video. Name the platform from the URL.",
         "Cover: topic, format (tutorial, review, vlog, etc.), key subject.",
-        HUMAN_TONE,
-        NO_IMAGE_META,
-        metadataBlock,
       ].join("\n");
       break;
     }
 
     default: {
-      instruction = [
-        "Describe what you see: who or what is in the image, where it is, and the context.",
-        HUMAN_TONE,
-      ].join("\n");
+      instruction =
+        "Describe what you see: who or what is in the image, where it is, and the context.";
     }
   }
 
+  const suppressImageMeta = contentType !== "image";
+
   return [
-    "SENTENCE instructions:",
+    "<sentence>",
     instruction,
-    "Name recognizable people (celebrities, actors, characters, politicians). Otherwise use man, woman, person.",
+    "",
+    "Do:",
+    "- Start with the key info. Be direct — no filler or introductory phrases.",
+    "- Name recognizable people (celebrities, actors, characters, politicians).",
+    "- Use context metadata (title, URL, description) to inform your summary.",
+    "",
+    "Don't:",
+    "- Describe colors, UI elements, or visual style — keywords handle that.",
+    ...(suppressImageMeta
+      ? [
+          '- Reference the image itself — no "thumbnail", "screenshot", "OG image", "preview", "the image shows".',
+        ]
+      : []),
+    "- Repeat or paraphrase the metadata description verbatim.",
+    "</sentence>",
   ].join("\n");
 }
 
-const KEYWORDS_PROMPT = [
-  "KEYWORDS instructions:",
-  'For the "type" field, pick 1–3 from this CLOSED list (most specific first):',
+// Keywords section
+
+const KEYWORDS_SECTION = [
+  "<keywords>",
+  "Extract ALL applicable keyword fields for this image. Each field you can fill should be filled.",
+  "",
+  '"type": Pick 1–3 from this CLOSED list (most specific first):',
   '"article", "blog", "documentation", "infographic", "meme", "newsletter", "recipe", "tutorial", "image", "photo", "poster", "video", "music_album", "podcast", "movie", "tvshow", "anime", "game", "xpost", "instapost", "redditpost", "pin", "thread", "product", "deal", "review", "repo", "portfolio", "webapp", "ecommerce", "streaming", "news", "design", "developer tools", "productivity", "social media", "course", "book", "research_paper", "job", "event", "place", "restaurant", "pdf", "profile", "package", "linkedinpost", "tiktok"',
   "",
-  '"people": ONLY named/identifiable people — use their actual name. Include directors, cast, authors. Do NOT output generic labels like man/woman/person — omit if unknown.',
-  '"object": physical objects visible in the image.',
-  '"place": locations, settings, landmarks.',
-  '"color": hex codes, PRIMARY/dominant color FIRST, then secondary colors.',
+  '"people": ONLY named/identifiable people — use actual names. Include directors, cast, authors. Omit if no one is identifiable.',
+  '"object": Physical objects visible in the image.',
+  '"place": Locations, settings, landmarks.',
+  '"color": ALWAYS extract hex color codes when colors are visible. Primary/dominant color FIRST, then secondary.',
   "",
-  '"features": searchable metadata key-value pairs. String values for most fields.',
-  "  Common examples: brand (company/studio, NOT hosting platform), title, author, source, rating, duration, reading_time, model, price (no thousand separators), capacity, director, cast, genre, release_year, runtime, platform, cuisine, cook_time, programming_language, framework, company, salary_range.",
-  '  "additional_keywords": an array of 3–8 topic tags (e.g. ["fintech", "crypto wallet", "stablecoin", "payments"]). Think: what would someone search to find this bookmark?',
+  '"features": Searchable metadata key-value pairs (string values).',
+  "  Examples: brand (company/studio, NOT hosting platform), title, author, source, rating, duration, reading_time, model, price (no thousand separators), capacity, director, cast, genre, release_year, runtime, platform, cuisine, cook_time, programming_language, framework, company, salary_range.",
+  '  "additional_keywords": ALWAYS include 3–8 topic tags. Think: what would someone search to find this bookmark?',
   "  Add any other relevant metadata — these are examples, not limits.",
   "",
   "Rules:",
@@ -153,37 +176,49 @@ const KEYWORDS_PROMPT = [
   "- Omit empty arrays and empty objects.",
   "- No duplicate values. Each keyword/value appears only once.",
   "- Do NOT duplicate OCR body text as keywords. Product identifiers and names ARE keywords.",
+  "</keywords>",
 ].join("\n");
 
-const OCR_PROMPT = [
-  "OCR instructions:",
+// OCR section
+
+const OCR_SECTION = [
+  "<ocr>",
   "Extract all visible, readable text from this image exactly as it appears.",
   "Return null if no text is visible.",
-  "Do NOT paraphrase or summarize — copy the text verbatim.",
+  "",
+  "Do:",
+  "- Copy text verbatim — preserve original line breaks and structure.",
+  "",
+  "Don't:",
+  "- Paraphrase, summarize, or reformat the text.",
+  "- Add formatting or structure not present in the original.",
+  "</ocr>",
 ].join("\n");
 
-function buildCollectionsPrompt(
-  collections: UserCollection[],
-  context?: ImageToTextContextProps | null,
-): string {
+// Collections section builder
+
+function buildCollectionsSection(collections: UserCollection[]): string {
   return [
-    "COLLECTIONS instructions:",
+    "<collections>",
     "Determine which of the user's existing collections this bookmark belongs to.",
     "Return up to 3 best matches. If nothing fits, return an empty array.",
-    "Rules:",
-    "- ONLY use collection names from the exact list below — never invent names",
-    "- Be strict — a vague or tangential connection should get a LOW confidence (below 50)",
-    "- Only give 90+ when the bookmark's primary topic is a direct, obvious match",
     "",
     "User's collections:",
     collections.map((c) => `- ${c.name}`).join("\n"),
     "",
-    "Additional bookmark context:",
-    ...(context?.title ? [`Title: ${context.title}`] : []),
-    ...(context?.url ? [`URL: ${context.url}`] : []),
-    ...(context?.description ? [`Description: ${context.description}`] : []),
+    "Do:",
+    "- Only use collection names from the exact list above.",
+    "- Give 90+ confidence only when the primary topic is a direct, obvious match.",
+    "- Use context metadata (title, URL, description) to inform your matching.",
+    "",
+    "Don't:",
+    "- Invent collection names not in the list.",
+    "- Give high confidence (50+) for vague or tangential connections.",
+    "</collections>",
   ].join("\n");
 }
+
+// Public types and builder
 
 export interface BuildPromptOptions {
   collections: UserCollection[];
@@ -196,40 +231,50 @@ export interface BuildPromptOptions {
 /**
  * Builds the prompt string for Gemini structured output.
  *
- * Only includes instruction sections for active toggles. The actual response
- * format is enforced by `responseJsonSchema`, so no format template lines are
- * needed.
+ * Structure: task directive → context → few-shot example → conditional sections.
+ * Role/grounding handled via SYSTEM_INSTRUCTION (config.systemInstruction).
  *
  * Returns `null` when no prompt sections are active.
  */
 export function buildPrompt(options: BuildPromptOptions): null | string {
   const { collections, contentType, context, isOgImage, toggles } = options;
 
-  const parts: string[] = ["Analyze this image. Respond as JSON matching the provided schema."];
-  let hasSections = false;
+  const sections: string[] = [];
 
   if (toggles.aiSummary) {
-    parts.push("", buildSentencePrompt(contentType, context, isOgImage));
-    hasSections = true;
+    sections.push(buildSentenceSection(contentType, isOgImage));
   }
 
   if (toggles.imageKeywords) {
-    parts.push("", KEYWORDS_PROMPT);
-    hasSections = true;
+    sections.push(KEYWORDS_SECTION);
   }
 
   if (toggles.ocr) {
-    parts.push("", OCR_PROMPT);
-    hasSections = true;
+    sections.push(OCR_SECTION);
   }
 
   if (toggles.autoAssignCollections && collections.length > 0) {
-    parts.push("", buildCollectionsPrompt(collections, context));
-    hasSections = true;
+    sections.push(buildCollectionsSection(collections));
   }
 
-  if (!hasSections) {
+  if (sections.length === 0) {
     return null;
+  }
+
+  // Assemble: directive → context → example → task sections
+  const parts: string[] = ["Analyze this image and respond as JSON matching the provided schema."];
+
+  const contextBlock = buildContextBlock(context);
+
+  if (contextBlock) {
+    parts.push("", contextBlock);
+  }
+
+  const includeCollections = toggles.autoAssignCollections && collections.length > 0;
+  parts.push("", buildExampleBlock(includeCollections));
+
+  for (const section of sections) {
+    parts.push("", section);
   }
 
   return parts.join("\n");
