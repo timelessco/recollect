@@ -231,8 +231,10 @@ BEGIN
                 ) WITH ORDINALITY AS c(val, pos)
                 WHERE
                     CASE WHEN SQRT(POWER(color_a, 2) + POWER(color_b, 2)) < 0.04 THEN
-                        -- Achromatic: match stored colors with low chroma
+                        -- Achromatic: match stored colors with low chroma AND close lightness
+                        -- (without the L check, "white" would match "black" since both are achromatic)
                         SQRT(POWER((c.val->>'a')::float, 2) + POWER((c.val->>'b')::float, 2)) < 0.04
+                        AND ABS(color_l - (c.val->>'l')::float) < 0.15
                     ELSE
                         -- Chromatic: OKLAB distance with positional threshold
                         -- Index 1 (most dominant) = 0.30, index 2 = 0.25, index 3+ = 0.18
@@ -276,8 +278,10 @@ BEGIN
             ELSE COALESCE(
                 (SELECT MAX(
                     CASE WHEN SQRT(POWER(color_a, 2) + POWER(color_b, 2)) < 0.04 THEN
-                        -- Achromatic: low chroma + lightness closeness, weighted by position
+                        -- Achromatic: low chroma + close lightness, weighted by position
+                        -- (L gate keeps this consistent with the WHERE-clause achromatic filter)
                         CASE WHEN SQRT(POWER((c.val->>'a')::float, 2) + POWER((c.val->>'b')::float, 2)) < 0.04
+                          AND ABS(color_l - (c.val->>'l')::float) < 0.15
                         THEN (1.0 - ABS(color_l - (c.val->>'l')::float)) * (1.0 / c.pos)
                         ELSE 0 END
                     ELSE
@@ -311,6 +315,7 @@ DO $$
 DECLARE
   v_migrated_count int;
   v_remaining_old int;
+  v_non_array_count int;
 BEGIN
   -- Count rows with new "colors" array key (migrated successfully)
   SELECT count(*) INTO v_migrated_count
@@ -323,11 +328,19 @@ BEGIN
   FROM public.everything
   WHERE meta_data->'image_keywords'->'color' IS NOT NULL;
 
-  RAISE NOTICE 'Color migration: % rows migrated to "colors" array, % rows still have old "color" key',
-    v_migrated_count, v_remaining_old;
+  -- Count rows where new "colors" key exists but is malformed (not an array)
+  SELECT count(*) INTO v_non_array_count
+  FROM public.everything
+  WHERE meta_data->'image_keywords'->'colors' IS NOT NULL
+    AND jsonb_typeof(meta_data->'image_keywords'->'colors') <> 'array';
 
-  IF v_remaining_old > 0 THEN
-    RAISE WARNING 'Some rows still have old "color" key — investigate manually';
+  RAISE NOTICE 'Color migration: % rows migrated to "colors" array, % rows still have old "color" key, % rows have malformed (non-array) colors',
+    v_migrated_count, v_remaining_old, v_non_array_count;
+
+  -- Fail the migration (rolls back the transaction) if any leftover or malformed rows remain
+  IF v_remaining_old > 0 OR v_non_array_count > 0 THEN
+    RAISE EXCEPTION 'Color migration verification failed: % rows migrated, % rows still have old "color" key, % rows have malformed (non-array) colors — rolling back',
+      v_migrated_count, v_remaining_old, v_non_array_count;
   END IF;
 END $$;
 
