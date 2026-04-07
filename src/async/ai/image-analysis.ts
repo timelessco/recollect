@@ -196,10 +196,10 @@ function mapKeywords(parsed: GeminiResponse, toggles: AiToggles): StructuredKeyw
     keywords.place = parsed.place;
   }
 
-  // Convert hex color codes to OKLAB
-  if (parsed.color?.length) {
+  // Convert hex color codes to OKLAB (Gemini returns them sorted by dominance)
+  if (parsed.colors?.length) {
     const toOklab = converter("oklab");
-    const oklabColors = parsed.color
+    const oklabColors = parsed.colors
       .map((hex) => {
         const oklab = toOklab(hex);
         if (!oklab) {
@@ -210,8 +210,7 @@ function mapKeywords(parsed: GeminiResponse, toggles: AiToggles): StructuredKeyw
       .filter((c): c is OklabColor => c !== null);
 
     if (oklabColors.length > 0) {
-      const [primary, ...secondary] = oklabColors;
-      keywords.color = { primary_color: primary, secondary_colors: secondary };
+      keywords.colors = oklabColors;
     }
   }
 

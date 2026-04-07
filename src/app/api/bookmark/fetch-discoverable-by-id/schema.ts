@@ -13,11 +13,8 @@ const OklabColorSchema = z.object({
 });
 
 const BookmarkColorsSchema = z
-  .object({
-    primary_color: OklabColorSchema.nullable().meta({ description: "Primary OKLAB color" }),
-    secondary_colors: z.array(OklabColorSchema).meta({ description: "Secondary OKLAB colors" }),
-  })
-  .meta({ description: "OKLAB color data extracted from image" });
+  .array(OklabColorSchema)
+  .meta({ description: "OKLAB colors sorted by visual dominance (most present first)" });
 
 const MetadataSchema = z.object({
   coverImage: z.string().nullable().optional().meta({ description: "Cover image URL" }),
@@ -32,7 +29,9 @@ const MetadataSchema = z.object({
     .union([
       z.array(z.string()),
       z.object({
-        color: BookmarkColorsSchema.optional(),
+        colors: BookmarkColorsSchema.optional().meta({
+          description: "OKLAB colors detected in the image, sorted by visual dominance",
+        }),
         features: z.record(z.string(), z.union([z.string(), z.array(z.string())])).optional(),
         object: z.array(z.string()).optional(),
         people: z.array(z.string()).optional(),

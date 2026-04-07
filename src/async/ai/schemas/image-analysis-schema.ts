@@ -14,13 +14,8 @@ export interface OklabColor {
   l: number;
 }
 
-export interface BookmarkColors {
-  primary_color: OklabColor | null;
-  secondary_colors: OklabColor[];
-}
-
 export interface StructuredKeywords {
-  color?: BookmarkColors;
+  colors?: OklabColor[];
   features?: Record<string, string | string[]>;
   object?: string[];
   people?: string[];
@@ -59,7 +54,10 @@ const sentenceResponseSchema = z.object({
  * `features` uses z.record for arbitrary key-value metadata.
  */
 const keywordsResponseSchema = z.object({
-  color: z.array(z.string()).optional().describe("Hex color codes, primary/dominant color first"),
+  colors: z
+    .array(z.string())
+    .optional()
+    .describe("Hex color codes, ordered from most to least dominant in the image."),
   features: z
     .record(z.string(), z.union([z.string(), z.array(z.string())]))
     .optional()
