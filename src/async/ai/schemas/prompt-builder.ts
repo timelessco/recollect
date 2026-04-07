@@ -3,7 +3,6 @@ import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { BookmarkContentType } from "@/utils/resolve-content-type";
 
 // System instruction — passed as config.systemInstruction in the Gemini API call
-
 export const SYSTEM_INSTRUCTION = [
   "You are a bookmark metadata extraction system.",
   "Analyze bookmark images and extract structured metadata for search and organization.",
@@ -12,7 +11,6 @@ export const SYSTEM_INSTRUCTION = [
 ].join(" ");
 
 // Context block — metadata appears once at the top of the prompt
-
 function buildContextBlock(context?: ImageToTextContextProps | null): string {
   const lines: string[] = [];
 
@@ -36,7 +34,6 @@ function buildContextBlock(context?: ImageToTextContextProps | null): string {
 }
 
 // Few-shot example — conditionally includes collections line
-
 function buildExampleBlock(includeCollections: boolean): string {
   const outputLines = [
     "{",
@@ -71,7 +68,6 @@ function buildExampleBlock(includeCollections: boolean): string {
 }
 
 // Sentence section builder
-
 function buildSentenceSection(contentType: BookmarkContentType, isOgImage?: boolean): string {
   let instruction: string;
 
@@ -153,7 +149,6 @@ function buildSentenceSection(contentType: BookmarkContentType, isOgImage?: bool
 }
 
 // Keywords section
-
 const KEYWORDS_SECTION = [
   "<keywords>",
   "Extract ALL applicable keyword fields for this image. Each field you can fill should be filled.",
@@ -180,7 +175,6 @@ const KEYWORDS_SECTION = [
 ].join("\n");
 
 // OCR section
-
 const OCR_SECTION = [
   "<ocr>",
   "Extract all visible, readable text from this image exactly as it appears.",
@@ -196,7 +190,6 @@ const OCR_SECTION = [
 ].join("\n");
 
 // Collections section builder
-
 function buildCollectionsSection(collections: UserCollection[]): string {
   return [
     "<collections>",
@@ -219,7 +212,6 @@ function buildCollectionsSection(collections: UserCollection[]): string {
 }
 
 // Public types and builder
-
 export interface BuildPromptOptions {
   collections: UserCollection[];
   contentType: BookmarkContentType;
