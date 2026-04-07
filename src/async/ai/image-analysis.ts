@@ -18,7 +18,7 @@ import { GEMINI_MODEL } from "@/utils/constants";
 
 import { getApikeyAndBookmarkCount, incrementBookmarkCount } from "./api-key";
 import { buildResponseSchema, fullResponseSchema } from "./schemas/image-analysis-schema";
-import { buildPrompt } from "./schemas/prompt-builder";
+import { SYSTEM_INSTRUCTION, buildPrompt } from "./schemas/prompt-builder";
 
 const CONFIDENCE_THRESHOLD = 90;
 
@@ -101,6 +101,7 @@ export const imageToText = async (
       config: {
         responseMimeType: "application/json",
         responseJsonSchema: responseSchema,
+        systemInstruction: SYSTEM_INSTRUCTION,
       },
       contents: [
         prompt,

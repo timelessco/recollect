@@ -190,11 +190,18 @@ export default async function handler(request: NextApiRequest, response: NextApi
     let ogImage = ogImageUrl;
 
     // If from Raindrop bookmark — upload ogImage into R2
-    if (isRaindropBookmark || isInstagramBookmark) {
-      console.log(
-        `[${ROUTE}] Uploading ${isRaindropBookmark ? "Raindrop" : "Instagram"} image to R2:`,
-        { url },
-      );
+    if (isRaindropBookmark || isInstagramBookmark || isTwitterBookmark) {
+      let sourceLabel: "Raindrop" | "Instagram" | "Twitter";
+      if (isRaindropBookmark) {
+        sourceLabel = "Raindrop";
+      } else if (isInstagramBookmark) {
+        sourceLabel = "Instagram";
+      } else {
+        sourceLabel = "Twitter";
+      }
+      const sourceOperation = `${sourceLabel.toLowerCase()}_image_upload` as const;
+
+      console.log(`[${ROUTE}] Uploading ${sourceLabel} image to R2:`, { url });
       try {
         const imageResponse = await fetch(ogImage, {
           headers: {
@@ -212,14 +219,9 @@ export default async function handler(request: NextApiRequest, response: NextApi
         const returnedB64 = Buffer.from(arrayBuffer).toString("base64");
         ogImage = (await upload(returnedB64, user_id, null)) ?? ogImageUrl;
 
-        console.log(
-          `[${ROUTE}] ${isRaindropBookmark ? "Raindrop" : "Instagram"} image uploaded successfully`,
-        );
+        console.log(`[${ROUTE}] ${sourceLabel} image uploaded successfully`);
       } catch (error) {
-        console.error(
-          `[${ROUTE}] Error downloading ${isRaindropBookmark ? "Raindrop" : "Instagram"} image:`,
-          error,
-        );
+        console.error(`[${ROUTE}] Error downloading ${sourceLabel} image:`, error);
         Sentry.captureException(error, {
           extra: {
             bookmarkId: id,
@@ -227,7 +229,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
             url,
           },
           tags: {
-            operation: isRaindropBookmark ? "raindrop_image_upload" : "instagram_image_upload",
+            operation: sourceOperation,
             userId: user_id,
           },
         });
