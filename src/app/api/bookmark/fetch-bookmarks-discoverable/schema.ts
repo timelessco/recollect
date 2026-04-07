@@ -38,7 +38,9 @@ const MetadataSchema = z.object({
     .union([
       z.array(z.string()),
       z.object({
-        colors: BookmarkColorsSchema.optional(),
+        colors: BookmarkColorsSchema.optional().meta({
+          description: "OKLAB colors detected in the image, sorted by visual dominance",
+        }),
         features: z.record(z.string(), z.union([z.string(), z.array(z.string())])).optional(),
         object: z.array(z.string()).optional(),
         people: z.array(z.string()).optional(),
