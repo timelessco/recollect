@@ -490,3 +490,29 @@ No changes
 No changes
 
 
+
+## 2026-04-07 [`c4d1271`](https://github.com/timelessco/recollect/commit/c4d12717d1cad14b329034ddca40486dd56095ce)
+
+
+
+### API Changes
+
+### GET /bookmark/fetch-bookmarks-discoverable
+- :warning: removed the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/color' from the response with the '200' status
+-  added the optional property 'data/items/meta_data/image_keywords/anyOf[subschema #2]/colors' to the response with the '200' status
+
+
+### GET /bookmark/fetch-discoverable-by-id
+- :warning: removed the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/color' from the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/colors' to the response with the '200' status
+
+
+### GET /bookmark/fetch-public-bookmark-by-id
+- :warning: removed the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/color' from the response with the '200' status
+-  added the optional property 'data/meta_data/image_keywords/anyOf[subschema #2]/colors' to the response with the '200' status
+
+
+
+
+
+
