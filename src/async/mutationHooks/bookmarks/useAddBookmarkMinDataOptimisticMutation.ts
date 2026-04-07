@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type {
   AddBookmarkMinDataPayloadTypes,
-  CategoriesData,
   PaginatedBookmarks,
   SingleListData,
 } from "../../../types/apiTypes";
@@ -14,7 +13,6 @@ import { useLoadersStore, useSupabaseSession } from "../../../store/componentSto
 import {
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
-  CATEGORIES_KEY,
   DOCUMENTS_URL,
   IMAGES_URL,
   menuListItemName,
@@ -66,26 +64,6 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
         sortBy,
       ]);
 
-      // Fetch category from cache to build addedCategories
-      const allCategories =
-        queryClient.getQueryData<{ data: CategoriesData[] }>([CATEGORIES_KEY, session?.user?.id])
-          ?.data ?? [];
-
-      const categoryEntry = allCategories.find((cat) => cat.id === data?.category_id);
-
-      // Build addedCategories array (empty if category not in cache)
-      const addedCategories = categoryEntry
-        ? [
-            {
-              id: categoryEntry.id,
-              category_name: categoryEntry.category_name,
-              category_slug: categoryEntry.category_slug,
-              icon: categoryEntry.icon,
-              icon_color: categoryEntry.icon_color,
-            },
-          ]
-        : [];
-
       // Negative temp ID prevents key={undefined} collisions in React lists
       // and gives each concurrent optimistic entry a unique key
       const tempId = -Date.now();
@@ -102,22 +80,10 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
                   return [
                     {
                       id: tempId,
-                      url: data?.url,
-                      addedCategories,
-                      addedTags: [],
-                      description: "",
-                      inserted_at: new Date().toISOString(),
-                      make_discoverable: null,
-                      meta_data: {},
-                      ogImage: "",
-                      screenshot: "",
                       title: "",
-                      trash: null,
+                      url: data?.url,
                       type: "",
-                      user_id: {
-                        id: session?.user?.id ?? "",
-                        profile_pic: "",
-                      },
+                      inserted_at: new Date().toISOString(),
                     },
                     ...page,
                   ];
@@ -249,12 +215,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
               pages: old.pages.map((page) =>
                 page.map((bookmark) => {
                   if (bookmark.id === context?.tempId) {
-                    return {
-                      ...serverBookmark,
-                      // Preserve optimistic addedCategories — server response
-                      // doesn't include junction table data
-                      addedCategories: bookmark.addedCategories,
-                    } as SingleListData;
+                    return serverBookmark;
                   }
                   return bookmark;
                 }),
