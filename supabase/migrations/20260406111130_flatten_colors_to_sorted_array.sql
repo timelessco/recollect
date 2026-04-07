@@ -285,12 +285,26 @@ BEGIN
                         THEN (1.0 - ABS(color_l - (c.val->>'l')::float)) * (1.0 / c.pos)
                         ELSE 0 END
                     ELSE
-                        -- Chromatic: OKLAB distance closeness, weighted by position
-                        GREATEST(0, 1.0 - SQRT(
+                        -- Chromatic: OKLAB distance closeness, weighted by position.
+                        -- Gated by the same positional threshold as the WHERE clause —
+                        -- a color that failed its cutoff (e.g. position 1 at distance 0.40)
+                        -- must not inflate the score for a bookmark that only qualified via
+                        -- a later position.
+                        CASE WHEN SQRT(
+                            POWER(color_l - (c.val->>'l')::float, 2) +
+                            POWER(color_a - (c.val->>'a')::float, 2) +
+                            POWER(color_b - (c.val->>'b')::float, 2)
+                        ) < CASE
+                            WHEN c.pos = 1 THEN 0.30
+                            WHEN c.pos = 2 THEN 0.25
+                            ELSE 0.18
+                        END
+                        THEN GREATEST(0, 1.0 - SQRT(
                             POWER(color_l - (c.val->>'l')::float, 2) +
                             POWER(color_a - (c.val->>'a')::float, 2) +
                             POWER(color_b - (c.val->>'b')::float, 2)
                         )) * (1.0 / c.pos)
+                        ELSE 0 END
                     END
                 )
                 FROM jsonb_array_elements(
