@@ -624,6 +624,34 @@ export type Database = {
           user_id: string;
         }[];
       };
+      search_bookmarks_color_array_scope: {
+        Args: {
+          category_scope?: number;
+          color_a?: number[];
+          color_b?: number[];
+          color_l?: number[];
+          exclude_tag_scope?: string[];
+          search_text?: string;
+          url_scope?: string;
+        };
+        Returns: {
+          added_categories: Json;
+          added_tags: Json;
+          description: string;
+          id: number;
+          inserted_at: string;
+          make_discoverable: string;
+          meta_data: Json;
+          ogimage: string;
+          screenshot: string;
+          sort_index: string;
+          title: string;
+          trash: string;
+          type: string;
+          url: string;
+          user_id: string;
+        }[];
+      };
       search_bookmarks_debug: {
         Args: { search_text: string };
         Returns: {
