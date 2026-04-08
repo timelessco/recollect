@@ -12,7 +12,7 @@ import { errorToast } from "@/utils/toastMessages";
 
 /**
  * Returns a handler that moves bookmarks into a sidebar category via
- * react-aria drag-and-drop. Used by both the Collections and Favourites
+ * react-aria drag-and-drop. Used by both the Collections and Favorites
  * list boxes so they share the same access checks, cache lookups, and
  * optimistic mutation flow.
  */
