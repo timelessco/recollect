@@ -17,9 +17,15 @@ interface CategoryPageProps {
   discoverData?: SingleListData[];
   isAuthenticated?: boolean;
   isDiscover?: boolean;
+  showOnboarding?: boolean;
 }
 
-const Home: NextPage<CategoryPageProps> = ({ discoverData, isAuthenticated, isDiscover }) => {
+const Home: NextPage<CategoryPageProps> = ({
+  discoverData,
+  isAuthenticated,
+  isDiscover,
+  showOnboarding,
+}) => {
   const isMounted = useMounted();
 
   if (isDiscover && !isAuthenticated && discoverData) {
@@ -34,7 +40,7 @@ const Home: NextPage<CategoryPageProps> = ({ discoverData, isAuthenticated, isDi
     );
   }
 
-  return <Dashboard />;
+  return <Dashboard showOnboarding={isDiscover ? showOnboarding : false} />;
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -43,7 +49,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   if (!isDiscover) {
     return {
-      props: { discoverData: [], isAuthenticated: true, isDiscover: false },
+      props: {
+        discoverData: [],
+        isAuthenticated: true,
+        isDiscover: false,
+        showOnboarding: false,
+      },
     };
   }
 
@@ -79,7 +90,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const isAuthenticated = Boolean(user);
 
-  if (!isAuthenticated) {
+  if (!user) {
     try {
       // Query Supabase directly instead of HTTP fetch to own API
       const page = 0;
@@ -121,6 +132,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             discoverData: [],
             isAuthenticated: false,
             isDiscover: true,
+            showOnboarding: false,
           },
         };
       }
@@ -137,6 +149,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           discoverData,
           isAuthenticated: false,
           isDiscover: true,
+          showOnboarding: false,
         },
       };
     } catch (error) {
@@ -150,9 +163,35 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           discoverData: [],
           isAuthenticated: false,
           isDiscover: true,
+          showOnboarding: false,
         },
       };
     }
+  }
+
+  // Authenticated /discover — check the onboarding flag to decide whether
+  // to mount the welcome modal in first paint. This is the SSR gate that
+  // serves as the backstop for the auth callback redirect (src/lib/auth/
+  // post-login-redirect.ts). If the callback misroutes a first-timer, the
+  // moment they land on /discover we still detect it and show the modal.
+  let showOnboarding = false;
+  const { data: profileRow, error: profileError } = await supabase
+    .from("profiles")
+    .select("onboarding_complete")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    Sentry.captureException(profileError, {
+      extra: { categoryId, userId: user.id },
+      tags: {
+        operation: "fetch_onboarding_flag",
+        route: "discover-ssr",
+      },
+    });
+    // Fail closed — don't show the modal if we can't read the flag.
+  } else {
+    showOnboarding = profileRow?.onboarding_complete === false;
   }
 
   return {
@@ -160,6 +199,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       discoverData: [],
       isAuthenticated: true,
       isDiscover: true,
+      showOnboarding,
     },
   };
 };
