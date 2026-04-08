@@ -36,7 +36,7 @@ All five locked in as option A during the brainstorming session:
 
 ## Architecture
 
-```
+```text
 Browser                        Next.js                         Supabase
 ───────                        ───────                         ────────
  │  OAuth/Email callback        │                                │
