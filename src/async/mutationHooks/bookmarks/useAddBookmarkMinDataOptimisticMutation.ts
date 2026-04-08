@@ -116,6 +116,8 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
               }),
             } as PaginatedBookmarks;
           }
+
+          return old;
         },
       );
 

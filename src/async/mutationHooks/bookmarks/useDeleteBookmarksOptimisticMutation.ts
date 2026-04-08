@@ -46,6 +46,8 @@ export default function useDeleteBookmarksOptimisticMutation() {
               ),
             };
           }
+
+          return old;
         },
       );
 

@@ -29,7 +29,7 @@ export function createSafeContext<T>(
     strict = true,
   } = options;
 
-  const Context = createReactContext<T | undefined>(defaultValue);
+  const Context = createReactContext(defaultValue);
 
   Context.displayName = name;
 

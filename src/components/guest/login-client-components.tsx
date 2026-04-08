@@ -17,14 +17,12 @@ import { handleClientError } from "@/utils/error-utils/client";
 import { cn } from "@/utils/tailwind-merge";
 
 export function SignInWithGoogleForm() {
-  const [callbackURL] = React.useState<string | undefined>(() => {
-    if ("window" in globalThis) {
-      const urlParams = new URLSearchParams(globalThis.location.search);
-      const next = urlParams.get("next");
-
-      return next ?? undefined;
-    }
-  });
+  // oxlint-disable-next-line react/hook-use-state -- read-once value, setter intentionally unused
+  const [callbackURL] = React.useState<string | undefined>(() =>
+    "window" in globalThis
+      ? (new URLSearchParams(globalThis.location.search).get("next") ?? undefined)
+      : undefined,
+  );
 
   const [isPending, startTransition] = React.useTransition();
   const extendedIsPending = usePendingWithMinDuration(isPending, 500);
@@ -73,14 +71,12 @@ export function SignInWithGoogleForm() {
 }
 
 export function SignInWithAppleForm() {
-  const [callbackURL] = React.useState<string | undefined>(() => {
-    if ("window" in globalThis) {
-      const urlParams = new URLSearchParams(globalThis.location.search);
-      const next = urlParams.get("next");
-
-      return next ?? undefined;
-    }
-  });
+  // oxlint-disable-next-line react/hook-use-state -- read-once value, setter intentionally unused
+  const [callbackURL] = React.useState<string | undefined>(() =>
+    "window" in globalThis
+      ? (new URLSearchParams(globalThis.location.search).get("next") ?? undefined)
+      : undefined,
+  );
 
   const [isPending, startTransition] = React.useTransition();
   const extendedIsPending = usePendingWithMinDuration(isPending, 500);

@@ -38,12 +38,7 @@ export const useFetchDiscoverBookmarks = (options: UseFetchDiscoverBookmarksProp
     initialPageParam: 0,
     getNextPageParam: (lastPage, pages) => {
       const lastPageLength = lastPage?.data?.length ?? 0;
-
-      if (lastPageLength < PAGINATION_LIMIT) {
-        return;
-      }
-
-      return pages.length;
+      return lastPageLength < PAGINATION_LIMIT ? undefined : pages.length;
     },
     queryKey: [BOOKMARKS_KEY, DISCOVER_URL],
     ...(initialData !== undefined && {

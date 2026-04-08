@@ -37,7 +37,7 @@ const Home: NextPage<CategoryPageProps> = ({ discoverData, isAuthenticated, isDi
   return <Dashboard />;
 };
 
-export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (context) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
   const categoryId = String(context.params?.category_id ?? "");
   const isDiscover = categoryId === DISCOVER_URL;
 

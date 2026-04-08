@@ -38,13 +38,8 @@ export default function useSearchBookmarks(options: UseSearchBookmarksOptions = 
         })
         .json<SingleListData[]>(),
     initialPageParam: 0,
-    getNextPageParam: (lastPage, pages) => {
-      if (!lastPage || lastPage.length < PAGINATION_LIMIT) {
-        return;
-      }
-
-      return pages.length * PAGINATION_LIMIT;
-    },
+    getNextPageParam: (lastPage, pages) =>
+      !lastPage || lastPage.length < PAGINATION_LIMIT ? undefined : pages.length * PAGINATION_LIMIT,
     queryKey: [
       BOOKMARKS_KEY,
       session?.user?.id,

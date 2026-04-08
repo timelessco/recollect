@@ -48,48 +48,11 @@ export type TryResult<T> = TryResultError | TryResultOk<T>;
  */
 export class Res<T> extends Array {
   /**
-   * Helper to convert a caught exception to an Error instance.
-   * @param {unknown} exception - The exception to convert
-   * @returns {Error} An Error instance
-   */
-  static toError = (exception: unknown): Error =>
-    exception instanceof Error ? exception : new Error(String(exception));
-
-  /**
    * Helper methods for instantiating via a tuple.
    */
   declare 0: Error | undefined;
 
   declare 1: T | undefined;
-
-  constructor([error, value]: ErrorTuple | OkTuple<T>) {
-    super(2);
-    this[0] = error;
-    this[1] = value;
-  }
-
-  static err(exception: unknown): TryResultError {
-    return Res.from([Res.toError(exception), undefined]);
-  }
-
-  static from(tuple: ErrorTuple): TryResultError;
-  static from<G>(tuple: OkTuple<G>): TryResultOk<G>;
-  static from<G>(tuple: ErrorTuple | OkTuple<G>): TryResult<G> {
-    // oxlint-disable-next-line no-unsafe-type-assertion -- class hierarchy pattern
-    return new Res(tuple) as TryResult<G>;
-  }
-
-  static ok<G>(value: G): TryResultOk<G> {
-    return Res.from([undefined, value]);
-  }
-
-  /**
-   * Getter which returns the value in the result tuple.
-   * @returns {T | undefined} The value if present, undefined otherwise
-   */
-  get value(): T | undefined {
-    return this[1];
-  }
 
   /**
    * Getter which returns the error in the result tuple.
@@ -108,6 +71,64 @@ export class Res<T> extends Array {
   }
 
   /**
+   * Allows chaining multiple try/catch statements together:
+   * ```ts
+   * const url = Try.catch(() => new URL(`${userInput}`))
+   *    .or(() => new URL(`https://${userInput}`))
+   *    .or(() => new URL(`https://${userInput}`.trim()))
+   *    .unwrapOr(new URL(`https://default.com`))
+   * ```
+   * @returns {typeof Try.catch} The Try.catch method for chaining
+   */
+  // oxlint-disable-next-line eslint/class-methods-use-this -- intentional: chaining API returns static method
+  public get or() {
+    return Try.catch.bind(Try);
+  }
+
+  /**
+   * Getter which returns the value in the result tuple.
+   * @returns {T | undefined} The value if present, undefined otherwise
+   */
+  get value(): T | undefined {
+    return this[1];
+  }
+  constructor([error, value]: ErrorTuple | OkTuple<T>) {
+    super(2);
+    this[0] = error;
+    this[1] = value;
+  }
+  static err(exception: unknown): TryResultError {
+    return Res.from([Res.toError(exception), undefined]);
+  }
+
+  static from(tuple: ErrorTuple): TryResultError;
+  static from<G>(tuple: OkTuple<G>): TryResultOk<G>;
+  static from<G>(tuple: ErrorTuple | OkTuple<G>): TryResult<G> {
+    // oxlint-disable-next-line no-unsafe-type-assertion -- class hierarchy pattern
+    return new Res(tuple) as TryResult<G>;
+  }
+
+  static ok<G>(value: G): TryResultOk<G> {
+    return Res.from([undefined, value]);
+  }
+
+  /**
+   * Helper to convert a caught exception to an Error instance.
+   * @param {unknown} exception - The exception to convert
+   * @returns {Error} An Error instance
+   */
+  static toError = (exception: unknown): Error =>
+    exception instanceof Error ? exception : new Error(String(exception));
+
+  /**
+   * Returns true if this is the `TryResultError` variant.
+   * @returns {boolean} True if this is an error result
+   */
+  public isErr(): this is TryResultError {
+    return this.error !== undefined;
+  }
+
+  /**
    * Returns true if this is the `TryResultOk<T>` variant.
    * @returns {boolean} True if this is a success result
    */
@@ -116,11 +137,19 @@ export class Res<T> extends Array {
   }
 
   /**
-   * Returns true if this is the `TryResultError` variant.
-   * @returns {boolean} True if this is an error result
+   * Custom inspect method for Node.js environments.
+   * @returns {string} A string representation for Node.js inspect
    */
-  public isErr(): this is TryResultError {
-    return this.error !== undefined;
+  [Symbol.for("nodejs.util.inspect.custom")](): string {
+    return this.toString();
+  }
+
+  /**
+   * Converts this to a human readable string.
+   * @returns {string} A string representation of the result
+   */
+  public toString(): string {
+    return this.ok ? `Result.Ok(${String(this.value)})` : `Result.Error(${this.error?.message})`;
   }
 
   /**
@@ -145,37 +174,6 @@ export class Res<T> extends Array {
    */
   public unwrapOr<G>(fallback: G): G | T {
     return this.value ?? fallback;
-  }
-
-  /**
-   * Allows chaining multiple try/catch statements together:
-   * ```ts
-   * const url = Try.catch(() => new URL(`${userInput}`))
-   *    .or(() => new URL(`https://${userInput}`))
-   *    .or(() => new URL(`https://${userInput}`.trim()))
-   *    .unwrapOr(new URL(`https://default.com`))
-   * ```
-   * @returns {typeof Try.catch} The Try.catch method for chaining
-   */
-  // oxlint-disable-next-line eslint/class-methods-use-this -- intentional: chaining API returns static method
-  public get or() {
-    return Try.catch.bind(Try);
-  }
-
-  /**
-   * Converts this to a human readable string.
-   * @returns {string} A string representation of the result
-   */
-  public toString(): string {
-    return this.ok ? `Result.Ok(${String(this.value)})` : `Result.Error(${this.error?.message})`;
-  }
-
-  /**
-   * Custom inspect method for Node.js environments.
-   * @returns {string} A string representation for Node.js inspect
-   */
-  [Symbol.for("nodejs.util.inspect.custom")](): string {
-    return this.toString();
   }
 }
 

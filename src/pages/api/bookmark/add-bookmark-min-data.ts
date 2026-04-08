@@ -391,7 +391,7 @@ export default async function handler(
     if (computedCategoryId !== 0) {
       void revalidateCategoryIfPublic(computedCategoryId as number, {
         operation: "add_bookmark",
-        userId: userId,
+        userId,
       });
     }
 

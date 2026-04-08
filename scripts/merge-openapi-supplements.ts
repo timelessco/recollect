@@ -197,7 +197,7 @@ function applySupplementToOperation(
 }
 
 export function mergeSupplements(specPath: string, supplements: EndpointSupplement[]): void {
-  const raw = readFileSync(specPath, "utf8");
+  const raw = readFileSync(specPath, "utf-8");
   const spec = JSON.parse(raw) as OpenApiSpec;
 
   let applied = 0;
@@ -226,7 +226,7 @@ export function mergeSupplements(specPath: string, supplements: EndpointSuppleme
     }
   }
 
-  writeFileSync(specPath, JSON.stringify(spec, null, 2), "utf8");
+  writeFileSync(specPath, JSON.stringify(spec, null, 2), "utf-8");
   console.log(`Supplements applied: ${applied}/${supplements.length}`);
 }
 

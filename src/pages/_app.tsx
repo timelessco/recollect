@@ -25,6 +25,7 @@ const MyApp = ({
   dehydratedState: DehydratedState;
 }>) => {
   // Create a client
+  // oxlint-disable-next-line react/hook-use-state -- stable singleton, setter intentionally unused
   const [queryClient] = useState(
     () =>
       new QueryClient({

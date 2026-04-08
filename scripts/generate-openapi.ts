@@ -360,7 +360,7 @@ const document = generator.generateDocument({
 });
 
 const outputPath = resolve(ROOT, "public/openapi.json");
-writeFileSync(outputPath, JSON.stringify(document, null, 2), "utf8");
+writeFileSync(outputPath, JSON.stringify(document, null, 2), "utf-8");
 
 const sharedSchemaExports = Object.keys(sharedSchemas).length;
 console.log(

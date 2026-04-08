@@ -148,6 +148,8 @@ export default function useFileUploadOptimisticMutation() {
               }),
             } as PaginatedBookmarks;
           }
+
+          return old;
         },
       );
 

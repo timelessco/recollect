@@ -2,7 +2,6 @@ import { useRouter } from "next/router";
 
 import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
-import isEmpty from "lodash/isEmpty";
 
 import type {
   CategoriesData,
@@ -65,12 +64,10 @@ export default function useGetSortBy() {
       return sharedCategoryUserData?.category_views?.sortBy;
     }
 
-    if (!isEmpty(userProfilesData?.data)) {
-      const bookmarksView = userProfilesData?.data[0]?.bookmarks_view;
-      const pageKey = getPageViewKey(categorySlug);
-      const pageView = getPageViewData(bookmarksView, pageKey);
-      return pageView?.sortBy as string | undefined;
-    }
+    const bookmarksView = userProfilesData?.data[0]?.bookmarks_view;
+    const pageKey = getPageViewKey(categorySlug);
+    const pageView = getPageViewData(bookmarksView, pageKey);
+    return pageView?.sortBy as string | undefined;
   };
 
   const sortBy = getSortValue();
