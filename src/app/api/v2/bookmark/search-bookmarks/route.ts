@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 
+import type { SearchCursor } from "@/utils/search-cursor";
+
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
 import { createApiClient, getApiUser } from "@/lib/supabase/api";
 import { getBookmarkMediaCategoryPredicate } from "@/utils/bookmark-category-filters";
 import { isUserOwnerOrAnyCollaborator } from "@/utils/category-auth";
-import { parseSearchColor } from "@/utils/colorUtils";
 import {
   AUDIO_URL,
   bookmarkType,
@@ -19,19 +20,19 @@ import {
   INSTAGRAM_URL,
   LINKS_URL,
   PAGINATION_LIMIT,
-  TAG_MARKUP_REGEX,
   TRASH_URL,
   tweetType,
   TWEETS_URL,
   UNCATEGORIZED_URL,
   VIDEOS_URL,
 } from "@/utils/constants";
+import { decodeSearchCursor, encodeSearchCursor } from "@/utils/search-cursor";
+import { classifySearchTokens } from "@/utils/search-tokens";
 
 import { SearchBookmarksInputSchema, SearchBookmarksOutputSchema } from "./schema";
 
 const ROUTE = "v2-bookmark-search-bookmarks";
 
-// Special category URLs that are NOT user collections
 const SPECIAL_CATEGORY_URLS = new Set([
   AUDIO_URL,
   DOCUMENTS_URL,
@@ -44,212 +45,253 @@ const SPECIAL_CATEGORY_URLS = new Set([
   VIDEOS_URL,
 ]);
 
-/**
- * Checks if a category_id represents a user's collection (not a special URL).
- * Ported from helpers.ts isUserInACategoryInApi.
- */
 function isUserCollection(categoryId: string): boolean {
   return categoryId !== "null" && categoryId !== "" && !SPECIAL_CATEGORY_URLS.has(categoryId);
 }
 
-/**
- * Extracts tag names from search query (e.g., "#typescript" -> ["typescript"]).
- * Ported from helpers.ts extractTagNamesFromSearch.
- */
-function extractTagNames(search: string): string[] | undefined {
-  if (search.length === 0) {
-    return undefined;
+function mapRow(row: unknown): Record<string, unknown> {
+  if (!row || typeof row !== "object") {
+    return {};
   }
-
-  const matches = search.match(GET_HASHTAG_TAG_PATTERN);
-  if (!matches || matches.length === 0) {
-    return undefined;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(row)) {
+    if (k === "added_categories") {
+      out.addedCategories = v ?? null;
+    } else if (k === "added_tags") {
+      out.addedTags = v ?? null;
+    } else if (k === "ogimage") {
+      out.ogImage = v ?? null;
+    } else {
+      out[k] = v;
+    }
   }
-
-  const tagNames = matches
-    .map((item) => {
-      const markupMatch = TAG_MARKUP_REGEX.exec(item);
-      const display = markupMatch?.groups?.display;
-      return display ?? item.replace("#", "");
-    })
-    .filter((tag): tag is string => typeof tag === "string" && tag.length > 0);
-
-  return tagNames.length === 0 ? undefined : tagNames;
+  return out;
 }
 
 export const GET = createAxiomRouteHandler(
   withPublic({
     handler: async ({ input }) => {
-      const { category_id: categoryId, offset, search } = input;
-
-      // Auth derivation: isDiscoverPage = (categoryId === DISCOVER_URL).
-      // categoryId is a client-provided query param, but the comparison is against
-      // the well-known constant "discover". An attacker setting category_id=discover
-      // only triggers the public-bookmarks code path (no private data exposed).
-      // Non-discover paths require valid user auth — failure throws RecollectApiError("unauthorized").
+      const { category_id: categoryId, cursor: rawCursor, search } = input;
       const isDiscoverPage = categoryId === DISCOVER_URL;
 
-      let supabase;
+      const client = await createApiClient();
+      const { supabase } = client;
       let userId = "";
       let userEmail = "";
 
-      if (isDiscoverPage) {
-        const client = await createApiClient();
-        ({ supabase } = client);
-      } else {
-        const { supabase: sc, token } = await createApiClient();
+      if (!isDiscoverPage) {
         const {
           data: { user },
           error: userError,
-        } = await getApiUser(sc, token);
+        } = await getApiUser(supabase, client.token);
         if (userError) {
           throw new RecollectApiError("unauthorized", { message: userError.message });
         }
         if (!user) {
           throw new RecollectApiError("unauthorized", { message: "Not authenticated" });
         }
-        supabase = sc;
         userId = user.id;
         userEmail = user.email ?? "";
 
-        // Manually set user_id in ALS context (withPublic doesn't do this)
         const alsCtx = getServerContext();
         if (alsCtx) {
           alsCtx.user_id = userId;
         }
       }
 
-      const ctx = getServerContext();
-      if (ctx?.fields) {
-        ctx.fields.is_discover = isDiscoverPage;
-        ctx.fields.category_id = categoryId;
-        ctx.fields.offset = offset;
+      let cursor: SearchCursor;
+      try {
+        cursor = decodeSearchCursor(rawCursor);
+      } catch (error) {
+        throw new RecollectApiError("bad_request", {
+          cause: error instanceof Error ? error : undefined,
+          message: error instanceof Error ? error.message : "invalid cursor",
+          operation: "search_bookmarks_decode_cursor",
+        });
       }
 
-      // Parse search modifiers: @domain.com site scope, #tag filters, color: prefix
       const matchedSiteScope = search.match(GET_SITE_SCOPE_PATTERN);
       const urlScope = matchedSiteScope?.at(0)?.replace("@", "")?.toLowerCase() ?? "";
 
-      // Strip color: prefix first so # in hex values doesn't get parsed as a tag
-      const colorMatch = /color:(\S+)/i.exec(search);
-      const searchColor = colorMatch ? parseSearchColor(colorMatch[1]) : null;
-      const searchWithoutColor = search.replace(/color:\S*/i, "");
+      const { colorTokens, tagTokens } = classifySearchTokens(search);
 
-      // color: prefix present but invalid color → no results
-      if (colorMatch && !searchColor) {
-        return NextResponse.json([]);
-      }
-
-      const searchText = searchWithoutColor
+      const searchText = search
         .replace(GET_SITE_SCOPE_PATTERN, "")
         .replace(GET_HASHTAG_TAG_PATTERN, "")
         .trim();
 
-      const tagName = extractTagNames(searchWithoutColor);
-
-      if (ctx?.fields) {
-        ctx.fields.search_text = searchText || null;
-        ctx.fields.tag_name = tagName?.at(0) ?? null;
-        ctx.fields.url_scope = urlScope || null;
+      // Stale cursor recovery: if client says color phase but tokenization
+      // has no color tokens (search query changed under them), reset to tag.
+      if (cursor.phase === "color" && colorTokens.length === 0) {
+        cursor = { offset: 0, phase: "tag" };
       }
 
-      // Determine category_scope for junction table filtering
-      // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
       const userInCollections = isUserCollection(categoryId ?? "");
       let categoryScope: number | undefined;
       if (userInCollections) {
         categoryScope = categoryId === UNCATEGORIZED_URL ? 0 : Number(categoryId);
       }
 
-      const isTrashPage = categoryId === TRASH_URL;
-      let rpcQuery = supabase
-        .rpc("search_bookmarks_url_tag_scope", {
-          category_scope: isDiscoverPage ? undefined : categoryScope,
-          color_a: searchColor?.a ?? undefined,
-          color_b: searchColor?.b ?? undefined,
-          color_l: searchColor?.l ?? undefined,
-
-          search_text: searchText,
-          tag_scope: tagName,
-          url_scope: urlScope,
-        })
-        .range(offset, offset + PAGINATION_LIMIT - 1);
-
-      // Filter by trash status: trash IS NULL for non-trash, trash IS NOT NULL for trash page
-      rpcQuery = isTrashPage ? rpcQuery.not("trash", "is", null) : rpcQuery.is("trash", null);
-
-      if (isDiscoverPage) {
-        rpcQuery = rpcQuery.not("make_discoverable", "is", null);
-      } else {
-        if (!userInCollections) {
-          rpcQuery = rpcQuery.filter("user_id", "eq", userId);
-        }
-
-        if (userInCollections && categoryScope !== undefined) {
-          // Check if user is the owner or ANY-level collaborator (including read-only)
-          // If not, scope search results to only their own bookmarks
-          const hasAccess = await isUserOwnerOrAnyCollaborator({
-            categoryId: categoryScope,
-            email: userEmail,
-            supabase,
-            userId,
-          });
-
-          if (!hasAccess) {
-            rpcQuery = rpcQuery.filter("user_id", "eq", userId);
-          }
-        }
-      }
-
-      const mediaCategoryPredicate = getBookmarkMediaCategoryPredicate(categoryId);
-      if (mediaCategoryPredicate) {
-        rpcQuery = rpcQuery.or(mediaCategoryPredicate);
-      }
-
-      if (categoryId === TWEETS_URL) {
-        rpcQuery = rpcQuery.filter("type", "eq", tweetType);
-      }
-
-      if (categoryId === INSTAGRAM_URL) {
-        rpcQuery = rpcQuery.filter("type", "eq", instagramType);
-      }
-
-      if (categoryId === LINKS_URL) {
-        rpcQuery = rpcQuery.filter("type", "eq", bookmarkType);
-      }
-
-      const { data, error } = await rpcQuery;
-
-      if (error) {
-        throw new RecollectApiError("service_unavailable", {
-          cause: error,
-          message: "Error executing search query",
-          operation: "search_bookmarks",
+      if (!isDiscoverPage && userInCollections && categoryScope !== undefined) {
+        // Owner/collaborator gating mirrors current behavior; result of the
+        // check is intentionally unused — non-collaborators see only their
+        // own bookmarks via the userId scope filter applied below.
+        await isUserOwnerOrAnyCollaborator({
+          categoryId: categoryScope,
+          email: userEmail,
+          supabase,
+          userId,
         });
       }
 
+      const isTrashPage = categoryId === TRASH_URL;
+
+      const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.results_count = data?.length ?? 0;
-        ctx.fields.has_tag_filter = tagName !== undefined && tagName.length > 0;
+        ctx.fields.is_discover = isDiscoverPage;
+        ctx.fields.category_id = categoryId;
+        ctx.fields.cursor_phase = cursor.phase;
+        ctx.fields.cursor_offset = cursor.offset;
+        ctx.fields.tag_token_count = tagTokens.length;
+        ctx.fields.color_token_count = colorTokens.length;
+        ctx.fields.search_text = searchText || null;
+        ctx.fields.url_scope = urlScope || null;
       }
 
-      // Map RPC snake_case fields to camelCase (Pitfall 7)
-      // Widen to Record to handle overloaded RPC return union — output schema validates at runtime
-      const mappedResults = (data ?? []).map((item) => {
-        const row = item as Record<string, unknown>;
-        const { added_categories, added_tags, ogimage, ...rest } = row;
+      const items: unknown[] = [];
+      let nextCursor: null | string = null;
 
-        return {
-          ...rest,
-          addedCategories: added_categories ?? null,
-          addedTags: added_tags ?? null,
-          ogImage: ogimage ?? null,
-        };
-      });
+      // ----- Phase 1: tag phase ------------------------------------------
+      // Always runs in tag phase even if tagTokens is empty — it serves the
+      // plain text + URL/category scope path.
+      if (cursor.phase === "tag") {
+        let tagQuery = supabase
+          .rpc("search_bookmarks_url_tag_scope", {
+            category_scope: isDiscoverPage ? undefined : categoryScope,
+            color_a: undefined,
+            color_b: undefined,
+            color_l: undefined,
+            search_text: searchText,
+            tag_scope: tagTokens.length > 0 ? tagTokens : undefined,
+            url_scope: urlScope,
+          })
+          .range(cursor.offset, cursor.offset + PAGINATION_LIMIT - 1);
 
-      // NextResponse escape hatch: RPC returns dynamic columns that can't be statically typed
-      // to match the output schema. The camelCase mapping produces a valid shape at runtime.
-      return NextResponse.json(mappedResults);
+        tagQuery = isTrashPage ? tagQuery.not("trash", "is", null) : tagQuery.is("trash", null);
+
+        if (isDiscoverPage) {
+          tagQuery = tagQuery.not("make_discoverable", "is", null);
+        } else if (!userInCollections) {
+          tagQuery = tagQuery.filter("user_id", "eq", userId);
+        }
+
+        const tagMediaPredicate = getBookmarkMediaCategoryPredicate(categoryId);
+        if (tagMediaPredicate) {
+          tagQuery = tagQuery.or(tagMediaPredicate);
+        }
+        if (categoryId === TWEETS_URL) {
+          tagQuery = tagQuery.filter("type", "eq", tweetType);
+        }
+        if (categoryId === INSTAGRAM_URL) {
+          tagQuery = tagQuery.filter("type", "eq", instagramType);
+        }
+        if (categoryId === LINKS_URL) {
+          tagQuery = tagQuery.filter("type", "eq", bookmarkType);
+        }
+
+        const { data: tagData, error: tagError } = await tagQuery;
+        if (tagError) {
+          throw new RecollectApiError("service_unavailable", {
+            cause: tagError,
+            message: "Error executing tag-phase search",
+            operation: "search_bookmarks_tag_phase",
+          });
+        }
+
+        const tagResults = tagData ?? [];
+        items.push(...tagResults);
+
+        if (tagResults.length === PAGINATION_LIMIT) {
+          nextCursor = encodeSearchCursor({
+            offset: cursor.offset + tagResults.length,
+            phase: "tag",
+          });
+        } else if (colorTokens.length > 0) {
+          // Coalesce: tag phase under-filled, drop into color phase in same request
+          cursor = { offset: 0, phase: "color" };
+        }
+      }
+
+      // ----- Phase 2: color phase ----------------------------------------
+      // Initial entry OR continuation from tag phase.
+      if (nextCursor === null && cursor.phase === "color" && colorTokens.length > 0) {
+        const remaining = PAGINATION_LIMIT - items.length;
+        let colorQuery = supabase
+          .rpc("search_bookmarks_color_array_scope", {
+            category_scope: isDiscoverPage ? undefined : categoryScope,
+            color_a: colorTokens.map((c) => c.a),
+            color_b: colorTokens.map((c) => c.b),
+            color_l: colorTokens.map((c) => c.l),
+            exclude_tag_scope: tagTokens.length > 0 ? tagTokens : undefined,
+            search_text: searchText,
+            url_scope: urlScope,
+          })
+          .range(cursor.offset, cursor.offset + remaining - 1);
+
+        colorQuery = isTrashPage
+          ? colorQuery.not("trash", "is", null)
+          : colorQuery.is("trash", null);
+
+        if (isDiscoverPage) {
+          colorQuery = colorQuery.not("make_discoverable", "is", null);
+        } else if (!userInCollections) {
+          colorQuery = colorQuery.filter("user_id", "eq", userId);
+        }
+
+        const colorMediaPredicate = getBookmarkMediaCategoryPredicate(categoryId);
+        if (colorMediaPredicate) {
+          colorQuery = colorQuery.or(colorMediaPredicate);
+        }
+        if (categoryId === TWEETS_URL) {
+          colorQuery = colorQuery.filter("type", "eq", tweetType);
+        }
+        if (categoryId === INSTAGRAM_URL) {
+          colorQuery = colorQuery.filter("type", "eq", instagramType);
+        }
+        if (categoryId === LINKS_URL) {
+          colorQuery = colorQuery.filter("type", "eq", bookmarkType);
+        }
+
+        const { data: colorData, error: colorError } = await colorQuery;
+        if (colorError) {
+          throw new RecollectApiError("service_unavailable", {
+            cause: colorError,
+            message: "Error executing color-phase search",
+            operation: "search_bookmarks_color_phase",
+          });
+        }
+
+        const colorResults = colorData ?? [];
+        items.push(...colorResults);
+
+        nextCursor =
+          colorResults.length === remaining
+            ? encodeSearchCursor({
+                offset: cursor.offset + colorResults.length,
+                phase: "color",
+              })
+            : null;
+      }
+
+      if (ctx?.fields) {
+        ctx.fields.results_count = items.length;
+        ctx.fields.next_cursor_present = nextCursor !== null;
+      }
+
+      const mappedItems = items.map(mapRow);
+
+      // NextResponse escape hatch: items contain dynamic RPC columns
+      return NextResponse.json({ items: mappedItems, next_cursor: nextCursor });
     },
     inputSchema: SearchBookmarksInputSchema,
     outputSchema: SearchBookmarksOutputSchema,
