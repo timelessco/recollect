@@ -1,6 +1,10 @@
 import { produce } from "immer";
 
-import type { MoveBookmarkToTrashApiPayload, PaginatedBookmarks } from "@/types/apiTypes";
+import type {
+  MoveBookmarkToTrashApiPayload,
+  PaginatedBookmarks,
+  PaginatedSearch,
+} from "@/types/apiTypes";
 
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
@@ -18,6 +22,7 @@ import { moveBookmarkToTrash } from "../../supabaseCrudHelpers";
  * Handles:
  * - Removing bookmark from source page (current category or trash)
  * - Adding bookmark to destination page (trash or category)
+ * - Updating the search results cache (SearchPage envelope shape) when actively searching
  * - Proper invalidation of all affected caches including trash page with sortBy
  */
 export const useMoveBookmarkToTrashOptimisticMutation = () => {
@@ -30,17 +35,13 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
     typeof queryKey,
     PaginatedBookmarks
   >({
-    // Add to trash page when moving TO trash, or add to category when restoring FROM trash
     additionalOptimisticUpdates: [
+      // Destination cache: trash page when moving TO trash, or category page when restoring
       {
-        // Get the destination query key based on operation
         getQueryKey: (variables) => {
           if (variables.isTrash) {
-            // Moving TO trash - update trash page
             return [BOOKMARKS_KEY, session?.user?.id, TRASH_URL, sortBy];
           }
-          // Moving FROM trash (restore) - update the target category page
-          // Use the first category from the first bookmark's addedCategories, or uncategorized if none
           const [firstBookmark] = variables.data;
           const categoryIds = firstBookmark?.addedCategories?.map((cat) => cat.id) ?? [];
           const targetCategoryId = categoryIds.length > 0 ? categoryIds[0] : UNCATEGORIZED_URL;
@@ -48,26 +49,34 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
         },
         updater: (destinationData, variables) => {
           const data = destinationData as PaginatedBookmarks | undefined;
-
           if (!data?.pages || data.pages.length === 0) {
-            // If destination cache doesn't exist or is empty, skip optimistic update
-            // Let invalidation handle the refresh
             return destinationData;
           }
-
-          // Add bookmarks to the beginning of the first page for immediate visibility
           return produce(data, (draft) => {
             if (draft.pages[0]) {
-              // Create a Set of existing bookmark IDs for efficient lookup
               const existingIds = new Set(draft.pages[0].map((bookmark) => bookmark.id));
-
-              // Add new bookmarks that don't already exist (avoid duplicates)
               const newBookmarks = variables.data.filter(
                 (bookmark) => !existingIds.has(bookmark.id),
               );
-
-              // Add all new bookmarks to the beginning
               draft.pages[0].unshift(...newBookmarks);
+            }
+          });
+        },
+      },
+      // Search cache (SearchPage envelope shape) — only present when actively searching.
+      // Removes the moved bookmarks from every page's items array. Leaves next_cursor
+      // unchanged; broad invalidation in onSettled refetches with fresh data.
+      {
+        getQueryKey: () => searchQueryKey,
+        updater: (searchData, variables) => {
+          const data = searchData as PaginatedSearch | undefined;
+          if (!data?.pages || data.pages.length === 0) {
+            return searchData;
+          }
+          const idsToRemove = new Set(variables.data.map((bookmark) => bookmark.id));
+          return produce(data, (draft) => {
+            for (const page of draft.pages) {
+              page.items = page.items.filter((bookmark) => !idsToRemove.has(bookmark.id));
             }
           });
         },
@@ -85,12 +94,12 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
         queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
       });
 
+      // Broad invalidation prefix-matches both paginated and search caches
       void queryClient.invalidateQueries({
         queryKey: [BOOKMARKS_KEY, session?.user?.id],
       });
 
       // Invalidate trash page (destination when moving TO trash)
-      // Note: Current category is NOT invalidated - we already have optimistic updates
       if (variables.isTrash) {
         void queryClient.invalidateQueries({
           queryKey: [BOOKMARKS_KEY, session?.user?.id, TRASH_URL],
@@ -99,7 +108,6 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
     },
 
     queryKey,
-    secondaryQueryKey: searchQueryKey,
 
     showSuccessToast: false,
 
@@ -109,10 +117,8 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
         return currentData!;
       }
 
-      // Create a Set of bookmark IDs to remove for efficient lookup
       const bookmarkIdsToRemove = new Set(variables.data.map((bookmark) => bookmark.id));
 
-      // Remove the bookmarks from the current page
       return produce(currentData, (draft) => {
         for (let i = 0; i < draft.pages.length; i += 1) {
           if (!draft.pages[i]) {
