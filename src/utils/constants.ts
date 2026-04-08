@@ -151,7 +151,7 @@ export const V2_SEARCH_BOOKMARKS_API = "v2/bookmark/search-bookmarks";
 export const V2_CHECK_GEMINI_API_KEY_API = "v2/check-gemini-api-key";
 export const V2_FETCH_BOOKMARK_BY_ID_API = "v2/bookmarks/get/fetch-by-id";
 export const V2_FETCH_BOOKMARKS_COUNT_API = "v2/bookmark/fetch-bookmarks-count";
-export const COMPLETE_ONBOARDING_API = "v2/profiles/complete-onboarding";
+export const V2_COMPLETE_ONBOARDING_API = "v2/profiles/complete-onboarding";
 
 export const DELETE_API_KEY_API = "/v1/delete-api-key";
 

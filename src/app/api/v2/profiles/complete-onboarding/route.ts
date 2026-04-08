@@ -20,7 +20,7 @@ export const POST = createAxiomRouteHandler(
       const { error } = await supabase
         .from(PROFILES)
         .update({ onboarding_complete: true })
-        .eq("id", userId);
+        .match({ id: userId });
 
       if (error) {
         throw new RecollectApiError("service_unavailable", {

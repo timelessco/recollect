@@ -25,7 +25,7 @@ export const v2CompleteOnboardingSupplement = {
     "onboarding-marked-complete": {
       description: "Confirmation that the flag was written.",
       summary: "Success",
-      value: { onboarding_complete: true as const },
+      value: { onboarding_complete: true },
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],
