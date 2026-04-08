@@ -7,11 +7,13 @@ import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHook
 import { useUpdateFavoriteOrderMutation } from "@/async/mutationHooks/user/use-update-favorite-order-mutation";
 import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 import { Collapsible } from "@/components/ui/recollect/collapsible";
+import { useMiscellaneousStore } from "@/store/componentStore";
 import { mutationApiCall } from "@/utils/apiHelpers";
 
 import DownArrowGray from "../../../icons/downArrowGray";
 import { ReorderableListBox } from "./reorderable-list";
 import SingleListItemComponent from "./singleListItemComponent";
+import { useHandleBookmarksDrop } from "./use-handle-bookmarks-drop";
 
 interface FavoriteCollectionsListProps {
   favoriteCollections: CollectionItemTypes[];
@@ -20,6 +22,8 @@ interface FavoriteCollectionsListProps {
 export function FavoriteCollectionsList({ favoriteCollections }: FavoriteCollectionsListProps) {
   const { updateFavoriteOrderMutation } = useUpdateFavoriteOrderMutation();
   const { userProfileData } = useFetchUserProfile();
+  const isCardDragging = useMiscellaneousStore((storeState) => storeState.isCardDragging);
+  const { handleBookmarksDrop } = useHandleBookmarksDrop();
 
   if (favoriteCollections.length === 0) {
     return null;
@@ -81,6 +85,10 @@ export function FavoriteCollectionsList({ favoriteCollections }: FavoriteCollect
         <Collapsible.Panel>
           <ReorderableListBox
             aria-label="Favorite collections"
+            highlightDropTarget={isCardDragging}
+            onItemDrop={(event) => {
+              void handleBookmarksDrop(event);
+            }}
             onReorder={onReorder}
             renderDragPreview={(items) => (
               <div className="text-gray-1000">{items[0]["text/plain"]}</div>
