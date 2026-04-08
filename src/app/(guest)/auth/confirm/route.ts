@@ -5,6 +5,7 @@ import * as Sentry from "@sentry/nextjs";
 
 import type { EmailOtpType } from "@supabase/supabase-js";
 
+import { resolvePostLoginRedirect } from "@/lib/auth/post-login-redirect";
 import { createServerClient } from "@/lib/supabase/server";
 import { getErrorMessage } from "@/utils/error-utils/error-message";
 
@@ -38,12 +39,18 @@ export async function GET(request: NextRequest) {
         type,
       });
 
-      if (!error) {
-        redirect(next);
-      } else {
+      if (error) {
         // redirect the user to an error page with some instructions
         redirect(`/auth/error?error=${getErrorMessage(error)}`);
       }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const destination = user ? await resolvePostLoginRedirect(supabase, user.id, next) : next;
+
+      redirect(destination);
     }
 
     // redirect the user to an error page with some instructions
