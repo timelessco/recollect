@@ -6,7 +6,9 @@ date: 2026-04-07
 brainstorm: docs/brainstorms/2026-04-07-hash-color-search-syntax-brainstorm.md
 ---
 
-# Replace `color:` Search Prefix With Unified `#` Syntax — Implementation Plan
+<!-- cspell:ignore agentic ILIKE ORDINALITY -->
+
+## Replace `color:` Search Prefix With Unified `#` Syntax — Implementation Plan
 
 > **For agentic workers:** Use `superpowers:executing-plans` to implement task-by-task. Recollect has no test suite (`pnpm test` is a no-op); verification is `pnpm fix && pnpm lint && pnpm build` plus manual checks via Scalar UI at `/api-docs`.
 
