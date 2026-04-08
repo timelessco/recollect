@@ -41,6 +41,7 @@
     "/scripts/release-it/**/*.hbs",
     "/.agents",
     "/.claude",
-    "/docs/API_CHANGELOG.md"
+    "/docs/API_CHANGELOG.md",
+    "/src/remotion"
   ]
 }

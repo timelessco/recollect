@@ -28,7 +28,8 @@
     ".ncurc.cjs",
     "supabase/functions/**",
     "package-typings/**",
-    "src/types/database-generated.types.ts"
+    "src/types/database-generated.types.ts",
+    "src/remotion/**"
   ],
   "rules": {
     "max-lines": "off",
