@@ -8,7 +8,7 @@ import { find, flatten, isEmpty } from "lodash";
 
 import type {
   BookmarkViewDataTypes,
-  PaginatedBookmarks,
+  PaginatedSearch,
   SingleListData,
 } from "../../../types/apiTypes";
 import type { BookmarksViewTypes } from "../../../types/componentStoreTypes";
@@ -110,7 +110,8 @@ const CardSection = ({
 
   const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
   // gets from the trigram search api
-  const searchBookmarksData = queryClient.getQueryData<PaginatedBookmarks>([
+  // search cache uses the SearchPage envelope shape ({items, next_cursor})
+  const searchBookmarksData = queryClient.getQueryData<PaginatedSearch>([
     BOOKMARKS_KEY,
     userId,
     buildSearchCategorySegment(categoryId),
@@ -118,7 +119,9 @@ const CardSection = ({
   ]);
 
   const bookmarksList =
-    isPublicPage || isEmpty(searchText) ? listData : (searchBookmarksData?.pages?.flat() ?? []);
+    isPublicPage || isEmpty(searchText)
+      ? listData
+      : (searchBookmarksData?.pages?.flatMap((p) => p.items) ?? []);
 
   const bookmarksColumns = flatten([
     useGetViewValue("moodboardColumns", [10], isPublicPage, categoryViewsFromProps) as Many<
