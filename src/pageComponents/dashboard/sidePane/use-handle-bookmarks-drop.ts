@@ -6,7 +6,6 @@ import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHook
 import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/use-fetch-paginated-bookmarks";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/use-search-bookmarks";
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
-import useGetCurrentCategoryId from "@/hooks/useGetCurrentCategoryId";
 import { useSupabaseSession } from "@/store/componentStore";
 import { errorToast } from "@/utils/toastMessages";
 
@@ -20,7 +19,6 @@ export function useHandleBookmarksDrop() {
   const session = useSupabaseSession((state) => state.session);
   const { addCategoryToBookmarkOptimisticMutation } = useAddCategoryToBookmarkOptimisticMutation();
   const { allCategories } = useFetchCategories();
-  const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
   const { everythingData, isEverythingDataLoading } = useFetchPaginatedBookmarks();
   const { flattenedSearchData } = useSearchBookmarks();
 
@@ -39,9 +37,18 @@ export function useHandleBookmarksDrop() {
     if (event?.isInternal === false) {
       const categoryId = Number.parseInt(event?.target?.key as string, 10);
 
-      const currentCategory =
-        find(allCategories?.data, (item) => item?.id === categoryId) ??
-        find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
+      // Guard against invalid category ID
+      if (Number.isNaN(categoryId)) {
+        return;
+      }
+
+      const currentCategory = find(allCategories?.data, (item) => item?.id === categoryId);
+
+      // If target category not found, abort the drop
+      if (!currentCategory) {
+        return;
+      }
+
       // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorised
 
       const updateAccessCondition =
