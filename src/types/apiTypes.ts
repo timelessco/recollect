@@ -403,3 +403,19 @@ export interface ParsedFormDataType {
 export interface PaginatedBookmarks {
   pages: SingleListData[][];
 }
+
+/**
+ * Single page of search results returned by the v2 search-bookmarks route.
+ * Wraps the items array with an opaque next-cursor string for two-phase
+ * cursor pagination (tag → color). `next_cursor` is null when both phases
+ * are exhausted. Distinct from `PaginatedBookmarks` (bare arrays + offset).
+ */
+export interface SearchPage {
+  items: SingleListData[];
+  next_cursor: null | string;
+}
+
+export interface PaginatedSearch {
+  pageParams: (string | undefined)[];
+  pages: SearchPage[];
+}

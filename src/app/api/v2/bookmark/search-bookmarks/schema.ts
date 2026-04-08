@@ -5,24 +5,22 @@ export const SearchBookmarksInputSchema = z.object({
     description:
       "Category context — DISCOVER_URL for public search, numeric string for user category, or special URL like TRASH_URL",
   }),
-  offset: z.coerce
-    .number()
-    .int()
-    .min(0)
-    .optional()
-    .default(0)
-    .meta({ description: "Pagination offset" }),
-  search: z
-    .string()
-    .min(1, "Search parameter is required")
-    .meta({ description: "Search query text — supports @domain.com site scope and #tag filters" }),
+  cursor: z.string().optional().default("").meta({
+    description:
+      "Opaque pagination cursor from a previous response's next_cursor. Empty (or omitted) returns the first page. Treat as opaque — internal shape is base64url JSON {phase, offset}.",
+  }),
+  search: z.string().min(1, "Search parameter is required").meta({
+    description:
+      "Search query — supports @domain.com site scope and #tag/#color filters. Each #token is a tag candidate; tokens that parse as a CSS color name or hex are also color candidates (multi-color is AND).",
+  }),
 });
 
 export type SearchBookmarksInput = z.infer<typeof SearchBookmarksInputSchema>;
 
 /**
  * Single search result item — camelCase mapped from RPC snake_case output.
- * Fields match the `search_bookmarks_url_tag_scope` RPC return type.
+ * Field shape matches both `search_bookmarks_url_tag_scope` and
+ * `search_bookmarks_color_array_scope` (identical RETURNS TABLE).
  */
 const SearchBookmarkItemSchema = z.object({
   addedCategories: z.unknown().nullable().meta({
@@ -34,10 +32,7 @@ const SearchBookmarkItemSchema = z.object({
     .meta({ description: "Tags associated with the bookmark (camelCase mapped from added_tags)" }),
   description: z.string().nullable().meta({ description: "Bookmark description" }),
   id: z.int().meta({ description: "Bookmark ID" }),
-  inserted_at: z
-    .string()
-    .nullable()
-    .meta({ description: "Timestamp when the bookmark was created" }),
+  inserted_at: z.string().nullable().meta({ description: "Created timestamp" }),
   make_discoverable: z.string().nullable().meta({ description: "Discover page visibility flag" }),
   meta_data: z.unknown().nullable().meta({ description: "Bookmark metadata JSON" }),
   ogImage: z
@@ -56,8 +51,18 @@ const SearchBookmarkItemSchema = z.object({
   user_id: z.string().nullable().meta({ description: "Owner user ID" }),
 });
 
-export const SearchBookmarksOutputSchema = z.array(SearchBookmarkItemSchema).meta({
-  description: "Array of search results with camelCase field mapping applied",
-});
+export const SearchBookmarksOutputSchema = z
+  .object({
+    items: z.array(SearchBookmarkItemSchema).meta({
+      description:
+        "Result items for this page. May contain a mix of tag-phase and color-phase rows when the tag phase exhausts mid-page.",
+    }),
+    next_cursor: z.string().nullable().meta({
+      description: "Cursor for the next page, or null when both phases are exhausted.",
+    }),
+  })
+  .meta({
+    description: "Paginated search results with opaque cursor for the two-phase tag→color stream",
+  });
 
 export type SearchBookmarksOutput = z.infer<typeof SearchBookmarksOutputSchema>;
