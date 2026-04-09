@@ -1,22 +1,24 @@
-import * as Sentry from "@sentry/nextjs";
-
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { clientLogger } from "@/lib/api-helpers/axiom-client";
+
 /**
- * Determine where a just-authenticated user should land.
+ * Frontend-side post-login redirect resolver. Determines where a
+ * just-authenticated user should land — `/discover` for first-timers
+ * (onboarding_complete === false), `nextPath` for everyone else.
  *
- * First-time users (onboarding_complete === false) go to /discover so the
- * welcome modal mounts via [category_id].tsx's SSR gate. Everyone else
- * goes to the requested nextPath.
+ * **Client-side only.** Used by the in-app OTP verify form
+ * (`src/components/guest/otp-client-components.tsx`) which verifies
+ * the token client-side and already has the user.id from the
+ * verifyOtp response. Errors are forwarded to Axiom via
+ * `clientLogger` → `/api/axiom` proxy route so the events land in the
+ * same dataset as server-side telemetry.
  *
- * Called from every entry point that establishes a session: the OAuth and
- * email-link App Router callbacks, plus the in-app OTP verify form (which
- * bypasses /auth/confirm because Supabase verifies the token client-side).
- *
- * This is the PRIMARY detection layer. The /discover SSR gate is the
- * BACKSTOP — even if a caller misroutes a first-timer, the gate still
- * catches them on their next visit to /discover.
+ * The API-side counterpart lives in `./resolve-callback-redirect` and
+ * is used by the App Router auth callback handlers. It fetches the
+ * user itself, logs errors directly to Axiom via `ctx.fields`, and
+ * cannot be imported here because it pulls in `node:async_hooks`.
  */
 export async function resolvePostLoginRedirect(
   supabase: SupabaseClient<Database>,
@@ -30,8 +32,10 @@ export async function resolvePostLoginRedirect(
     .maybeSingle();
 
   if (error) {
-    Sentry.captureException(error, {
-      tags: { operation: "resolve_post_login_redirect", userId },
+    clientLogger.warn("[resolve-post-login-redirect] profile fetch failed", {
+      error: error.message,
+      operation: "resolve_post_login_redirect",
+      user_id: userId,
     });
     return nextPath;
   }
