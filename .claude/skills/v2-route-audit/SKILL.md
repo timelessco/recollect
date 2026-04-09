@@ -7,6 +7,7 @@ description: >
   Reports pass/fail checklist and offers to fix gaps. Use when: "audit this route", "check wide
   events", "audit all routes", after finishing a v2 route handler, or reviewing any v2 API route.
   POST-IMPLEMENTATION audit — load after writing the route, not before.
+disable-model-invocation: true
 ---
 
 # v2 Route Audit

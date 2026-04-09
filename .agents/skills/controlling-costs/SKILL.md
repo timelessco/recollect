@@ -1,6 +1,7 @@
 ---
 name: controlling-costs
 description: Analyzes Axiom query patterns to find unused data, then builds dashboards and monitors for cost optimization. Use when asked to reduce Axiom costs, find unused columns or field values, identify data waste, or track ingest spend.
+disable-model-invocation: true
 ---
 
 # Axiom Cost Control

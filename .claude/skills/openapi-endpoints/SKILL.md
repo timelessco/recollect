@@ -10,6 +10,7 @@ description: >
   examples, or registering edge function endpoints. Also use when someone says "document this
   endpoint", "add OpenAPI", "create supplement", "add to api-docs", or mentions any endpoint
   that needs OpenAPI documentation — even if they don't say "OpenAPI" explicitly.
+disable-model-invocation: true
 ---
 
 # OpenAPI Endpoint Documentation Lab

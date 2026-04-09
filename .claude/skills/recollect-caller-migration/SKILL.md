@@ -10,6 +10,7 @@ description: >
   v2 factory, api-v2, or the check-gemini pattern. For mutation hook
   template refactoring and file renaming, use the
   recollect-mutation-hook-refactoring skill instead.
+disable-model-invocation: true
 ---
 
 # Caller Migration

@@ -8,6 +8,7 @@ description: >
   legacy cleanup, post-migration, or structural cleanup. For API caller
   migration (getApi/postApi patterns with Zod types), use the
   recollect-caller-migration skill instead.
+disable-model-invocation: true
 ---
 
 # Mutation Hook Refactoring

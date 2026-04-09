@@ -6,6 +6,7 @@ description: >
   the user says "release", "cut a release", "ship a release", "/release", or wants
   to trigger the release pipeline. This is an EXECUTION skill — it runs the full
   workflow without needing context from the caller.
+disable-model-invocation: true
 ---
 
 # Release Pipeline
