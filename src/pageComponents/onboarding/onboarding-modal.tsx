@@ -136,10 +136,12 @@ function ExtensionStep({ onCtaClick }: { onCtaClick: () => void }) {
         Sync Twitter, Instagram, Chrome bookmarks using our extension
       </p>
 
-      <button
-        className="absolute top-[369px] left-1/2 flex h-[32px] -translate-x-1/2 items-center gap-[6px] rounded-[12px] bg-gray-0 px-[12px] py-[5.5px] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.07),0px_5px_5px_0px_rgba(0,0,0,0.06),0px_11px_7px_0px_rgba(0,0,0,0.04)] outline-hidden transition-transform hover:scale-[1.02] focus-visible:ring-2 focus-visible:ring-gray-300 active:scale-[0.98]"
+      <a
+        className="absolute top-[369px] left-1/2 flex h-[32px] -translate-x-1/2 items-center gap-[6px] rounded-[12px] bg-gray-0 px-[12px] py-[5.5px] no-underline shadow-[0px_1px_3px_0px_rgba(0,0,0,0.07),0px_5px_5px_0px_rgba(0,0,0,0.06),0px_11px_7px_0px_rgba(0,0,0,0.04)] outline-hidden transition-transform hover:scale-[1.02] focus-visible:ring-2 focus-visible:ring-gray-300 active:scale-[0.98]"
+        href="https://chromewebstore.google.com/detail/recollect-%E2%80%94-save-anything/hghngcbiflcoekclkkealmlbginmloef"
         onClick={onCtaClick}
-        type="button"
+        rel="noopener noreferrer"
+        target="_blank"
       >
         <Image
           alt=""
@@ -155,7 +157,7 @@ function ExtensionStep({ onCtaClick }: { onCtaClick: () => void }) {
         >
           Download Extension
         </span>
-      </button>
+      </a>
     </>
   );
 }
