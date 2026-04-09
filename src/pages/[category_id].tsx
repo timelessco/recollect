@@ -172,8 +172,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   // Authenticated /discover — check the onboarding flag to decide whether
   // to mount the welcome modal in first paint. This is the SSR gate that
   // serves as the backstop for the auth callback redirect (src/lib/auth/
-  // post-login-redirect.ts). If the callback misroutes a first-timer, the
-  // moment they land on /discover we still detect it and show the modal.
+  // resolve-callback-redirect.ts). If the callback misroutes a first-timer,
+  // the moment they land on /discover we still detect it and show the modal.
   let showOnboarding = false;
   const { data: profileRow, error: profileError } = await supabase
     .from("profiles")

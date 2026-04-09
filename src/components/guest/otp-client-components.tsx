@@ -10,7 +10,7 @@ import type { SlotProps } from "input-otp";
 
 import { Button } from "@/components/ui/recollect/button";
 import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
-import { resolvePostLoginRedirect } from "@/lib/auth/post-login-redirect";
+import { useResolvePostLoginRedirect } from "@/lib/auth/use-resolve-post-login-redirect";
 import { createClient } from "@/lib/supabase/client";
 import { EVERYTHING_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
@@ -26,6 +26,7 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
   const extendedIsPending = usePendingWithMinDuration(isPending);
+  const resolvePostLoginRedirect = useResolvePostLoginRedirect();
 
   const verifyOtp = (otpValue: string) => {
     if (isPending) {

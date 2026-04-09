@@ -20,16 +20,17 @@ import { getServerContext } from "@/lib/api-helpers/server-context";
  * Used by both App Router auth callback handlers: /auth/confirm
  * (magic link / email OTP) and /auth/oauth (Google / Apple sign-in).
  *
- * **API-side only.** The frontend counterpart lives in
- * `./post-login-redirect` and is used by the client-side OTP verify
- * form (`src/components/guest/otp-client-components.tsx`) which
- * already has the user.id from the verifyOtp response and cannot
- * reach into the v2 handler's AsyncLocalStorage context anyway.
+ * **API-side only.** The frontend counterpart is the
+ * `useResolvePostLoginRedirect` hook in `./use-resolve-post-login-redirect`,
+ * used by the client-side OTP verify form
+ * (`src/components/guest/otp-client-components.tsx`) which already has
+ * the user.id from the verifyOtp response and cannot reach into the v2
+ * handler's AsyncLocalStorage context anyway.
  *
- * This file intentionally does NOT import from `./post-login-redirect`.
- * That module uses `Sentry.captureException` for errors because it runs
- * in the client bundle; here we log to Axiom via `ctx.fields` because
- * we're wrapped by `createAxiomRouteHandler`.
+ * This file intentionally does NOT import from that hook. The hook runs
+ * in the client bundle and forwards logs through `useLogger` →
+ * `clientLogger` ProxyTransport → `/api/axiom`; here we log directly to
+ * Axiom via `ctx.fields` because we're wrapped by `createAxiomRouteHandler`.
  */
 export async function resolveCallbackRedirect(
   supabase: SupabaseClient<Database>,
