@@ -7,10 +7,7 @@ export const MarkOnboardingCompleteInputSchema = z
   .object({})
   .meta({ description: "No body required" });
 
+// No response body — callers fire-and-forget. Success is the HTTP 200.
 export const MarkOnboardingCompleteOutputSchema = z
-  .object({
-    onboarding_complete: z
-      .literal(true)
-      .meta({ description: "Always true after a successful write" }),
-  })
-  .meta({ description: "Onboarding completion confirmation" });
+  .object({})
+  .meta({ description: "Empty response — success is conveyed by HTTP 200" });

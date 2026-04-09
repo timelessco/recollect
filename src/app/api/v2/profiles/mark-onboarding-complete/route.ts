@@ -43,7 +43,7 @@ export const POST = createAxiomRouteHandler(
         ctx.fields.onboarding_marked_complete = true;
       }
 
-      return { onboarding_complete: true as const };
+      return {};
     },
     inputSchema: MarkOnboardingCompleteInputSchema,
     outputSchema: MarkOnboardingCompleteOutputSchema,

@@ -24,9 +24,9 @@ export const v2MarkOnboardingCompleteSupplement = {
   },
   responseExamples: {
     "onboarding-marked-complete": {
-      description: "Confirmation that the flag was written.",
+      description: "Empty response — success is conveyed by the HTTP 200 status.",
       summary: "Success",
-      value: { onboarding_complete: true },
+      value: {},
     },
   },
   security: [{ [bearerAuth.name]: [] }, {}],
