@@ -44,11 +44,20 @@ export function OnboardingModal() {
     hasMarkedRef.current = true;
     completeOnboarding.mutate(undefined, {
       onError: (err) => {
+        // Breadcrumb stays for trail context if a downstream error captures.
         Sentry.addBreadcrumb({
           category: "onboarding",
           message: "Failed to mark onboarding complete from client",
           level: "warning",
           data: { error: String(err) },
+        });
+        // Independently track the failure as a warning-level event so we
+        // notice silent regressions (like the empty-body 400 we shipped
+        // earlier in this branch). Recoverable — the SSR gate will mount
+        // the modal again on next /discover visit.
+        Sentry.captureException(err, {
+          level: "warning",
+          tags: { operation: "mark_onboarding_complete_client" },
         });
       },
     });
