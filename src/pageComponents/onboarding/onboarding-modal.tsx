@@ -77,7 +77,7 @@ export function OnboardingModal() {
   };
 
   return (
-    <Dialog.Root onOpenChange={handleOpenChange} open={open}>
+    <Dialog.Root disablePointerDismissal onOpenChange={handleOpenChange} open={open}>
       <Dialog.Portal>
         <Dialog.Backdrop />
         <Dialog.Popup
