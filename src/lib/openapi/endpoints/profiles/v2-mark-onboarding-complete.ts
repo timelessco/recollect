@@ -8,6 +8,7 @@ import { bearerAuth } from "@/lib/openapi/registry";
 export const v2MarkOnboardingCompleteSupplement = {
   additionalResponses: {
     401: { description: "Not authenticated" },
+    404: { description: "Profile row not found for the authenticated user" },
     503: { description: "Database error while updating profile" },
   },
   description:
