@@ -12,7 +12,7 @@ export const v2MarkOnboardingCompleteSupplement = {
     503: { description: "Database error while updating profile" },
   },
   description:
-    "Marks the authenticated user's onboarding as complete. Idempotent — calling this on a profile where the flag is already true is a harmless re-UPDATE. Called fire-and-forget from the welcome modal on dismiss.",
+    "Marks the authenticated user's onboarding as complete. Idempotent — calling this on a profile where the flag is already true is a harmless re-UPDATE.",
   method: "patch",
   path: "/v2/profiles/mark-onboarding-complete",
   requestExamples: {

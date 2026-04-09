@@ -1,10 +1,7 @@
--- Add onboarding_complete flag to profiles.
--- New signups start with false so they see the welcome modal on first login.
--- Existing rows are backfilled to true so current users don't get nagged
--- with a setup wizard on their next login after this ships.
---
--- Both statements run in the same transaction — no window where existing
--- users briefly have false.
+-- Adds onboarding_complete to profiles.
+-- New signups default to false (onboarding pending).
+-- Existing rows are backfilled to true so pre-existing users
+-- are treated as already onboarded.
 
 ALTER TABLE public.profiles
   ADD COLUMN onboarding_complete boolean NOT NULL DEFAULT false;
