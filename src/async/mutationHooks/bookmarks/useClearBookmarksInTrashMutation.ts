@@ -6,24 +6,24 @@ import { clearBookmarksInTrash } from "../../supabaseCrudHelpers";
 
 // clears trash
 export default function useClearBookmarksInTrashMutation() {
-	const session = useSupabaseSession((state) => state.session);
-	const queryClient = useQueryClient();
+  const session = useSupabaseSession((state) => state.session);
+  const queryClient = useQueryClient();
 
-	const clearBookmarksInTrashMutation = useMutation({
-		mutationFn: clearBookmarksInTrash,
-		onSuccess: () => {
-			// Invalidate and refetch
-			void queryClient.invalidateQueries({
-				queryKey: [BOOKMARKS_KEY],
-			});
-			void queryClient.invalidateQueries({
-				queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
-			});
-		},
-	});
+  const clearBookmarksInTrashMutation = useMutation({
+    mutationFn: clearBookmarksInTrash,
+    onSuccess: () => {
+      // Invalidate and refetch
+      void queryClient.invalidateQueries({
+        queryKey: [BOOKMARKS_KEY],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: [BOOKMARKS_COUNT_KEY, session?.user?.id],
+      });
+    },
+  });
 
-	return {
-		clearBookmarksInTrashMutation,
-		isPending: clearBookmarksInTrashMutation.isPending,
-	};
+  return {
+    clearBookmarksInTrashMutation,
+    isPending: clearBookmarksInTrashMutation.isPending,
+  };
 }

@@ -1,41 +1,53 @@
-import {
-	UpdateSharedCategoryUserRoleInputSchema,
-	UpdateSharedCategoryUserRoleOutputSchema,
-} from "./schema";
-import { createPatchApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
-import { apiError } from "@/lib/api-helpers/response";
+import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
+import { RecollectApiError } from "@/lib/api-helpers/errors";
+import { getServerContext } from "@/lib/api-helpers/server-context";
 import { SHARED_CATEGORIES_TABLE_NAME } from "@/utils/constants";
+
+import {
+  UpdateSharedCategoryUserRoleInputSchema,
+  UpdateSharedCategoryUserRoleOutputSchema,
+} from "./schema";
 
 const ROUTE = "v2-share-update-shared-category-user-role";
 
-export const PATCH = createPatchApiHandlerWithAuth({
-	route: ROUTE,
-	inputSchema: UpdateSharedCategoryUserRoleInputSchema,
-	outputSchema: UpdateSharedCategoryUserRoleOutputSchema,
-	handler: async ({ data, supabase, user, route }) => {
-		const userId = user.id;
-		const email = user.email ?? "";
+export const PATCH = createAxiomRouteHandler(
+  withAuth({
+    handler: async ({ data, supabase, user }) => {
+      const userId = user.id;
+      const email = user.email ?? "";
 
-		console.log(`[${route}] API called:`, { userId, id: data.id });
+      // Entity IDs + input context BEFORE the operation
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+        ctx.fields.shared_category_id = data.id;
+        ctx.fields.new_edit_access = data.updateData.edit_access;
+      }
 
-		const { data: updated, error } = await supabase
-			.from(SHARED_CATEGORIES_TABLE_NAME)
-			.update(data.updateData)
-			.eq("id", data.id)
-			.or(`user_id.eq.${userId},email.eq.${email}`)
-			.select();
+      const { data: updated, error } = await supabase
+        .from(SHARED_CATEGORIES_TABLE_NAME)
+        .update(data.updateData)
+        .eq("id", data.id)
+        .or(`user_id.eq.${userId},email.eq.${email}`)
+        .select();
 
-		if (error) {
-			return apiError({
-				route,
-				message: "Failed to update shared category user role",
-				error,
-				operation: "update_shared_category_user_role",
-				userId,
-				extra: { id: data.id },
-			});
-		}
+      if (error) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: error,
+          message: "Failed to update shared category user role",
+          operation: "update_shared_category_user_role",
+        });
+      }
 
-		return updated;
-	},
-});
+      // Outcome flag AFTER the operation
+      if (ctx?.fields) {
+        ctx.fields.role_updated = true;
+      }
+
+      return updated;
+    },
+    inputSchema: UpdateSharedCategoryUserRoleInputSchema,
+    outputSchema: UpdateSharedCategoryUserRoleOutputSchema,
+    route: ROUTE,
+  }),
+);

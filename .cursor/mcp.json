@@ -1,15 +1,15 @@
 {
-	"mcpServers": {
-		"supabase": {
-			"type": "http",
-			"url": "https://mcp.supabase.com/mcp?project_ref=fgveraehgourpwwzlzhy&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cbranching%2Cfunctions%2Cstorage"
-		},
-		"next-devtools": {
-			"command": "npx",
-			"args": ["-y", "next-devtools-mcp@latest"]
-		},
-		"Sentry": {
-			"url": "https://mcp.sentry.dev/mcp/timeless-dev/recollect-web"
-		}
-	}
+  "mcpServers": {
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=fgveraehgourpwwzlzhy&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cbranching%2Cfunctions%2Cstorage"
+    },
+    "next-devtools": {
+      "command": "npx",
+      "args": ["-y", "next-devtools-mcp@latest"]
+    },
+    "Sentry": {
+      "url": "https://mcp.sentry.dev/mcp/timeless-dev/recollect-web"
+    }
+  }
 }

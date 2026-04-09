@@ -7,30 +7,21 @@
  */
 
 export interface EndpointSupplement {
-	path: string;
-	method: string;
-	tags?: string[];
-	summary?: string;
-	description?: string;
-	security?: Array<Record<string, string[]>>;
-	requestExample?: Record<string, unknown>;
-	requestExamples?: Record<
-		string,
-		{ summary?: string; description?: string; value: unknown }
-	>;
-	responseExample?: Record<string, unknown>;
-	responseExamples?: Record<
-		string,
-		{ summary?: string; description?: string; value: unknown }
-	>;
-	response400Example?: Record<string, unknown>;
-	response400Examples?: Record<
-		string,
-		{ summary?: string; description?: string; value: unknown }
-	>;
-	additionalResponses?: Record<number, { description: string }>;
-	parameterExamples?: Record<
-		string,
-		Record<string, { summary?: string; description?: string; value: unknown }>
-	>;
+  additionalResponses?: Record<number, { description: string }>;
+  description?: string;
+  method: string;
+  parameterExamples?: Record<
+    string,
+    Record<string, { description?: string; summary?: string; value: unknown }>
+  >;
+  path: string;
+  requestExample?: Record<string, unknown>;
+  requestExamples?: Record<string, { description?: string; summary?: string; value: unknown }>;
+  response400Example?: Record<string, unknown>;
+  response400Examples?: Record<string, { description?: string; summary?: string; value: unknown }>;
+  responseExample?: Record<string, unknown>;
+  responseExamples?: Record<string, { description?: string; summary?: string; value: unknown }>;
+  security?: Record<string, string[]>[];
+  summary?: string;
+  tags?: string[];
 }

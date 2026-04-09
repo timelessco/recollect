@@ -3,19 +3,19 @@ import { CATEGORY_ID_PATHNAME, PREVIEW_PATH } from "./constants";
 /**
  * Public page info structure
  */
-export type PublicPageInfo = {
-	category_slug: string;
-	user_name: string;
-};
+export interface PublicPageInfo {
+  category_slug: string;
+  user_name: string;
+}
 
 /**
  * Route push parameters for Next.js router
  */
-export type RoutePushParams = {
-	as: string;
-	pathname: string;
-	query: Record<string, string | number>;
-};
+export interface RoutePushParams {
+  as: string;
+  pathname: string;
+  query: Record<string, number | string>;
+}
 
 /**
  * Builds preview URL for public pages
@@ -25,21 +25,21 @@ export type RoutePushParams = {
  * @returns Next.js router push parameters
  */
 export const buildPublicPreviewUrl = (params: {
-	bookmarkId: number | string;
-	publicInfo: PublicPageInfo;
+  bookmarkId: number | string;
+  publicInfo: PublicPageInfo;
 }): RoutePushParams => {
-	const { bookmarkId, publicInfo } = params;
-	const { user_name, category_slug } = publicInfo;
+  const { bookmarkId, publicInfo } = params;
+  const { category_slug, user_name } = publicInfo;
 
-	return {
-		pathname: `/public/[user_name]/[id]`,
-		query: {
-			user_name,
-			id: category_slug,
-			bookmark_id: bookmarkId,
-		},
-		as: `/public/${user_name}/${category_slug}${PREVIEW_PATH}/${bookmarkId}`,
-	};
+  return {
+    as: `/public/${user_name}/${category_slug}${PREVIEW_PATH}/${bookmarkId}`,
+    pathname: `/public/[user_name]/[id]`,
+    query: {
+      bookmark_id: bookmarkId,
+      id: category_slug,
+      user_name,
+    },
+  };
 };
 
 /**
@@ -47,19 +47,17 @@ export const buildPublicPreviewUrl = (params: {
  * @param publicInfo - Public page info
  * @returns Next.js router push parameters
  */
-export const buildPublicCategoryUrl = (
-	publicInfo: PublicPageInfo,
-): RoutePushParams => {
-	const { user_name, category_slug } = publicInfo;
+export const buildPublicCategoryUrl = (publicInfo: PublicPageInfo): RoutePushParams => {
+  const { category_slug, user_name } = publicInfo;
 
-	return {
-		pathname: `/public/[user_name]/[id]`,
-		query: {
-			user_name,
-			id: category_slug,
-		},
-		as: `/public/${user_name}/${category_slug}`,
-	};
+  return {
+    as: `/public/${user_name}/${category_slug}`,
+    pathname: `/public/[user_name]/[id]`,
+    query: {
+      id: category_slug,
+      user_name,
+    },
+  };
 };
 
 /**
@@ -70,19 +68,19 @@ export const buildPublicCategoryUrl = (
  * @returns Next.js router push parameters
  */
 export const buildAuthenticatedPreviewUrl = (params: {
-	bookmarkId: number | string;
-	categorySlug: string;
+  bookmarkId: number | string;
+  categorySlug: string;
 }): RoutePushParams => {
-	const { bookmarkId, categorySlug } = params;
+  const { bookmarkId, categorySlug } = params;
 
-	return {
-		pathname: `${CATEGORY_ID_PATHNAME}`,
-		query: {
-			category_id: categorySlug,
-			id: bookmarkId,
-		},
-		as: `/${categorySlug}${PREVIEW_PATH}/${bookmarkId}`,
-	};
+  return {
+    as: `/${categorySlug}${PREVIEW_PATH}/${bookmarkId}`,
+    pathname: CATEGORY_ID_PATHNAME,
+    query: {
+      category_id: categorySlug,
+      id: bookmarkId,
+    },
+  };
 };
 
 /**
@@ -90,12 +88,10 @@ export const buildAuthenticatedPreviewUrl = (params: {
  * @param categorySlug - Category slug
  * @returns Next.js router push parameters
  */
-export const buildAuthenticatedCategoryUrl = (
-	categorySlug: string,
-): RoutePushParams => ({
-	pathname: `${CATEGORY_ID_PATHNAME}`,
-	query: {
-		category_id: categorySlug,
-	},
-	as: `/${categorySlug}`,
+export const buildAuthenticatedCategoryUrl = (categorySlug: string): RoutePushParams => ({
+  as: `/${categorySlug}`,
+  pathname: CATEGORY_ID_PATHNAME,
+  query: {
+    category_id: categorySlug,
+  },
 });

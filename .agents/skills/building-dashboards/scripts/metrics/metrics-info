@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+# metrics-info: Discover metrics, tags, and tag values in a dataset
+#
+# Usage:
+#   metrics-info <deployment> <dataset> metrics [--start T --end T]
+#   metrics-info <deployment> <dataset> tags    [--start T --end T]
+#   metrics-info <deployment> <dataset> tags <tag> values [--start T --end T]
+#   metrics-info <deployment> <dataset> metrics <metric> tags [--start T --end T]
+#   metrics-info <deployment> <dataset> metrics <metric> tags <tag> values [--start T --end T]
+#   metrics-info <deployment> <dataset> find-metrics <search-value> [--start T --end T]
+#
+# find-metrics searches TAG VALUES, not metric names. It returns metrics that have
+# a tag containing the given value. Use it when you know a specific entity name
+# (service, host, device) to find which metrics are associated with it.
+# To list metric names, use the "metrics" subcommand instead.
+#
+# --start and --end default to the last 24 hours if omitted.
+# For sparse metrics (sensors, batch jobs), try --start with a wider range (e.g. 7 days).
+#
+# Examples:
+#   metrics-info prod my-dataset metrics                    # List all metric names
+#   metrics-info prod my-dataset tags service.name values   # List values for a tag
+#   metrics-info prod my-dataset find-metrics "frontend"    # Find metrics with tag value "frontend"
+#   metrics-info prod my-dataset metrics http.server.duration tags --start 2025-06-01T00:00:00Z --end 2025-06-02T00:00:00Z
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+show_usage() {
+    echo "Usage:" >&2
+    echo "  metrics-info <deploy> <dataset> metrics" >&2
+    echo "  metrics-info <deploy> <dataset> tags" >&2
+    echo "  metrics-info <deploy> <dataset> tags <tag> values" >&2
+    echo "  metrics-info <deploy> <dataset> metrics <metric> tags" >&2
+    echo "  metrics-info <deploy> <dataset> metrics <metric> tags <tag> values" >&2
+    echo "  metrics-info <deploy> <dataset> find-metrics <search-value>  (searches tag values, not metric names)" >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "  --start T   Start time (RFC3339). Default: 24h ago" >&2
+    echo "  --end T     End time (RFC3339). Default: now" >&2
+    exit 1
+}
+
+DEPLOYMENT="${1:-}"
+DATASET="${2:-}"
+
+if [[ -z "$DEPLOYMENT" || -z "$DATASET" ]]; then
+    show_usage
+fi
+
+shift 2
+
+# Collect positional args and parse --start/--end
+POSITIONAL=()
+START=""
+END=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --start) START="$2"; shift 2 ;;
+        --end)   END="$2"; shift 2 ;;
+        *)       POSITIONAL+=("$1"); shift ;;
+    esac
+done
+
+# Default time range: last 24 hours
+if [[ -z "$START" ]]; then
+    if date --version &>/dev/null 2>&1; then
+        START=$(date -u -d '24 hours ago' '+%Y-%m-%dT%H:%M:%SZ')
+    else
+        START=$(date -u -v-24H '+%Y-%m-%dT%H:%M:%SZ')
+    fi
+fi
+if [[ -z "$END" ]]; then
+    END=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+fi
+
+TIME_PARAMS="start=${START}&end=${END}"
+BASE="/v1/query/metrics/info/datasets/${DATASET}"
+
+# Resolve the regional edge URL for this dataset
+RESOLVED_URL=$("$SCRIPT_DIR/resolve-url" "$DEPLOYMENT" "$DATASET" 2>/dev/null || true)
+if [[ -n "$RESOLVED_URL" ]]; then
+    export AXIOM_URL_OVERRIDE="$RESOLVED_URL"
+fi
+
+if [[ ${#POSITIONAL[@]} -eq 0 ]]; then
+    show_usage
+fi
+
+case "${POSITIONAL[0]}" in
+    metrics)
+        if [[ ${#POSITIONAL[@]} -eq 1 ]]; then
+            # List metrics
+            AXIOM_ACCEPT="application/vnd.metrics-info.v2+json" "$SCRIPT_DIR/axiom-api" "$DEPLOYMENT" GET "${BASE}/metrics?${TIME_PARAMS}"
+        elif [[ ${#POSITIONAL[@]} -eq 3 && "${POSITIONAL[2]}" == "tags" ]]; then
+            # List tags for a metric
+            METRIC="${POSITIONAL[1]}"
+            "$SCRIPT_DIR/axiom-api" "$DEPLOYMENT" GET "${BASE}/metrics/${METRIC}/tags?${TIME_PARAMS}"
+        elif [[ ${#POSITIONAL[@]} -eq 5 && "${POSITIONAL[2]}" == "tags" && "${POSITIONAL[4]}" == "values" ]]; then
+            # List tag values for a metric+tag
+            METRIC="${POSITIONAL[1]}"
+            TAG="${POSITIONAL[3]}"
+            "$SCRIPT_DIR/axiom-api" "$DEPLOYMENT" GET "${BASE}/metrics/${METRIC}/tags/${TAG}/values?${TIME_PARAMS}"
+        else
+            show_usage
+        fi
+        ;;
+    tags)
+        if [[ ${#POSITIONAL[@]} -eq 1 ]]; then
+            # List tags
+            "$SCRIPT_DIR/axiom-api" "$DEPLOYMENT" GET "${BASE}/tags?${TIME_PARAMS}"
+        elif [[ ${#POSITIONAL[@]} -eq 3 && "${POSITIONAL[2]}" == "values" ]]; then
+            # List values for a tag
+            TAG="${POSITIONAL[1]}"
+            "$SCRIPT_DIR/axiom-api" "$DEPLOYMENT" GET "${BASE}/tags/${TAG}/values?${TIME_PARAMS}"
+        else
+            show_usage
+        fi
+        ;;
+    find-metrics)
+        if [[ ${#POSITIONAL[@]} -ne 2 ]]; then
+            show_usage
+        fi
+        VALUE="${POSITIONAL[1]}"
+        BODY=$(jq -n --arg v "$VALUE" '{value: $v}')
+        "$SCRIPT_DIR/axiom-api" "$DEPLOYMENT" POST "${BASE}/metrics?${TIME_PARAMS}" "$BODY"
+        ;;
+    *)
+        show_usage
+        ;;
+esac

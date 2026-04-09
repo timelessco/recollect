@@ -1,11 +1,8 @@
 "use client";
 
-import {
-	useMutation,
-	type MutationKey,
-	type QueryKey,
-	type UseMutationOptions,
-} from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
+
+import type { MutationKey, QueryKey, UseMutationOptions } from "@tanstack/react-query";
 
 import { handleClientError, handleSuccess } from "@/utils/error-utils/client";
 
@@ -31,7 +28,8 @@ let optimisticIdCounter = 0;
  * ]
  */
 export function generateOptimisticId(): string {
-	return `optimistic-${++optimisticIdCounter}`;
+  optimisticIdCounter += 1;
+  return `optimistic-${optimisticIdCounter}`;
 }
 
 /**
@@ -46,14 +44,14 @@ export function generateOptimisticId(): string {
  * </div>
  */
 export interface OptimisticItem {
-	/**
-	 * True if this item is an optimistic update (not yet confirmed by server)
-	 */
-	_optimistic?: boolean;
-	/**
-	 * Unique ID for tracking this specific optimistic update
-	 */
-	_optimisticId?: string;
+  /**
+   * True if this item is an optimistic update (not yet confirmed by server)
+   */
+  _optimistic?: boolean;
+  /**
+   * Unique ID for tracking this specific optimistic update
+   */
+  _optimisticId?: string;
 }
 
 // ============================================================================
@@ -64,82 +62,78 @@ export interface OptimisticItem {
  * Configuration for mutation retry behavior.
  */
 export interface RetryConfig {
-	/**
-	 * Maximum retry attempts (default: 0 for mutations)
-	 */
-	retryCount?: number;
-	/**
-	 * Base delay in ms for exponential backoff (default: 1000)
-	 */
-	retryDelay?: number;
-	/**
-	 * Only retry on specific errors (default: retry all errors)
-	 */
-	retryOn?: (error: Error) => boolean;
+  /**
+   * Maximum retry attempts (default: 0 for mutations)
+   */
+  retryCount?: number;
+  /**
+   * Base delay in ms for exponential backoff (default: 1000)
+   */
+  retryDelay?: number;
+  /**
+   * Only retry on specific errors (default: retry all errors)
+   */
+  retryOn?: (error: Error) => boolean;
 }
 
 /**
  * Compute retry delay with exponential backoff, capped at 30 seconds.
  */
 function computeRetryDelay(attemptIndex: number, baseDelay: number): number {
-	return Math.min(baseDelay * 2 ** attemptIndex, 30_000);
+  return Math.min(baseDelay * 2 ** attemptIndex, 30_000);
 }
 
 /**
  * Extended mutation options with UI handling flags.
  */
 export interface ReactQueryMutationOptions<
-	TData = unknown,
-	TError = Error,
-	TVariables = void,
-	TContext = unknown,
+  TData = unknown,
+  TError = Error,
+  TVariables = void,
+  TContext = unknown,
 > extends Omit<
-	UseMutationOptions<TData, TError, TVariables, TContext>,
-	"onError" | "onSettled" | "retry" | "retryDelay"
+  UseMutationOptions<TData, TError, TVariables, TContext>,
+  "onError" | "onSettled" | "retry" | "retryDelay"
 > {
-	/**
-	 * Show success toast when mutation succeeds (default: false)
-	 */
-	showSuccessToast?: boolean;
-	/**
-	 * Success message to display
-	 */
-	successMessage?: string;
-	/**
-	 * Skip built-in error handling (default: false)
-	 */
-	skipErrorHandling?: boolean;
-	/**
-	 * Mutation key for DevTools debugging and useIsMutating
-	 */
-	mutationKey?: MutationKey;
-	/**
-	 * Skip invalidation if other mutations with same key are pending (default: false)
-	 * Useful for rapid mutations like drag-drop reordering
-	 */
-	guardConcurrentInvalidation?: boolean;
-	/**
-	 * Retry configuration for failed mutations.
-	 * Note: This replaces the built-in retry/retryDelay options with a simpler config.
-	 */
-	retryConfig?: RetryConfig;
-	/**
-	 * Callback when mutation errors
-	 */
-	onError?: (
-		error: TError,
-		variables: TVariables,
-		context: TContext | undefined,
-	) => void;
-	/**
-	 * Callback when mutation settles (success or error)
-	 */
-	onSettled?: (
-		data: TData | undefined,
-		error: TError | null,
-		variables: TVariables,
-		context: TContext | undefined,
-	) => void;
+  /**
+   * Skip invalidation if other mutations with same key are pending (default: false)
+   * Useful for rapid mutations like drag-drop reordering
+   */
+  guardConcurrentInvalidation?: boolean;
+  /**
+   * Mutation key for DevTools debugging and useIsMutating
+   */
+  mutationKey?: MutationKey;
+  /**
+   * Callback when mutation errors
+   */
+  onError?: (error: TError, variables: TVariables, context: TContext | undefined) => void;
+  /**
+   * Callback when mutation settles (success or error)
+   */
+  onSettled?: (
+    data: TData | undefined,
+    error: null | TError,
+    variables: TVariables,
+    context: TContext | undefined,
+  ) => void;
+  /**
+   * Retry configuration for failed mutations.
+   * Note: This replaces the built-in retry/retryDelay options with a simpler config.
+   */
+  retryConfig?: RetryConfig;
+  /**
+   * Show success toast when mutation succeeds (default: false)
+   */
+  showSuccessToast?: boolean;
+  /**
+   * Skip built-in error handling (default: false)
+   */
+  skipErrorHandling?: boolean;
+  /**
+   * Success message to display
+   */
+  successMessage?: string;
 }
 
 /**
@@ -148,17 +142,17 @@ export interface ReactQueryMutationOptions<
  * a captured secondary query key for search cache invalidation.
  */
 export interface RollbackFn {
-	(): void;
-	/**
-	 * Captured secondary query key (e.g., search results).
-	 * Used by onSettled to invalidate both primary and secondary caches.
-	 */
-	capturedSecondaryKey?: QueryKey | null;
-	/**
-	 * When true, skip invalidating the secondary query key on success.
-	 * Used by mutations that defer invalidation (e.g., lightbox category changes).
-	 */
-	skipSecondaryInvalidation?: boolean;
+  (): void;
+  /**
+   * Captured secondary query key (e.g., search results).
+   * Used by onSettled to invalidate both primary and secondary caches.
+   */
+  capturedSecondaryKey?: null | QueryKey;
+  /**
+   * When true, skip invalidating the secondary query key on success.
+   * Used by mutations that defer invalidation (e.g., lightbox category changes).
+   */
+  skipSecondaryInvalidation?: boolean;
 }
 
 /**
@@ -171,65 +165,65 @@ export interface RollbackFn {
  * });
  */
 export function useReactQueryMutation<
-	TData = unknown,
-	TError = Error,
-	TVariables = void,
-	TContext = unknown,
+  TData = unknown,
+  TError = Error,
+  TVariables = void,
+  TContext = unknown,
 >(options: ReactQueryMutationOptions<TData, TError, TVariables, TContext>) {
-	// guardConcurrentInvalidation is handled by useReactQueryOptimisticMutation
-	const {
-		showSuccessToast = false,
-		skipErrorHandling = false,
-		successMessage,
-		mutationKey,
-		guardConcurrentInvalidation: _guardConcurrentInvalidation,
-		retryConfig,
-		onSettled: userOnSettled,
-		onError: userOnError,
-		...restOptions
-	} = options;
-	void _guardConcurrentInvalidation;
+  // guardConcurrentInvalidation is handled by useReactQueryOptimisticMutation
+  const {
+    guardConcurrentInvalidation: _guardConcurrentInvalidation,
+    mutationKey,
+    onError: userOnError,
+    onSettled: userOnSettled,
+    retryConfig,
+    showSuccessToast = false,
+    skipErrorHandling = false,
+    successMessage,
+    ...restOptions
+  } = options;
+  void _guardConcurrentInvalidation;
 
-	// Build retry options from config
-	const retryOptions = retryConfig
-		? {
-				retry: (failureCount: number, error: TError) => {
-					if (failureCount >= (retryConfig.retryCount ?? 0)) {
-						return false;
-					}
+  // Build retry options from config
+  const retryOptions = retryConfig
+    ? {
+        retry: (failureCount: number, error: TError) => {
+          if (failureCount >= (retryConfig.retryCount ?? 0)) {
+            return false;
+          }
 
-					if (retryConfig.retryOn) {
-						return retryConfig.retryOn(error as Error);
-					}
+          if (retryConfig.retryOn) {
+            return retryConfig.retryOn(error instanceof Error ? error : new Error(String(error)));
+          }
 
-					return true;
-				},
-				retryDelay: (attemptIndex: number) =>
-					computeRetryDelay(attemptIndex, retryConfig.retryDelay ?? 1000),
-			}
-		: {};
+          return true;
+        },
+        retryDelay: (attemptIndex: number) =>
+          computeRetryDelay(attemptIndex, retryConfig.retryDelay ?? 1000),
+      }
+    : {};
 
-	return useMutation({
-		mutationKey,
-		...retryOptions,
-		...restOptions,
-		onSettled: (data, error, variables, context) => {
-			// Show success toast if enabled and no error
-			if (!error && showSuccessToast && successMessage) {
-				handleSuccess(successMessage);
-			}
+  return useMutation({
+    mutationKey,
+    ...retryOptions,
+    ...restOptions,
+    onError: (error, variables, context) => {
+      // Handle error with toast unless skipped
+      if (!skipErrorHandling) {
+        handleClientError(error);
+      }
 
-			// Call user's onSettled callback
-			userOnSettled?.(data, error, variables, context);
-		},
-		onError: (error, variables, context) => {
-			// Handle error with toast unless skipped
-			if (!skipErrorHandling) {
-				handleClientError(error);
-			}
+      // Call user's onError callback
+      userOnError?.(error, variables, context);
+    },
+    onSettled: (data, error, variables, context) => {
+      // Show success toast if enabled and no error
+      if (!error && showSuccessToast && successMessage) {
+        handleSuccess(successMessage);
+      }
 
-			// Call user's onError callback
-			userOnError?.(error, variables, context);
-		},
-	});
+      // Call user's onSettled callback
+      userOnSettled?.(data, error, variables, context);
+    },
+  });
 }

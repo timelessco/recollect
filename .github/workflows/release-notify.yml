@@ -1,24 +1,11 @@
-name: Release Notify
-
-on:
-  release:
-    types:
-      - published
-
-permissions:
-  contents: read
-
 jobs:
   notify-slack:
     name: 📣 Notify Slack
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
       - name: Send release notification
         uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 # v3.0.1
         with:
-          webhook: ${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
           payload: |
             {
               "blocks": [
@@ -31,3 +18,15 @@ jobs:
                 }
               ]
             }
+          webhook: ${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+    timeout-minutes: 5
+name: Release Notify
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read

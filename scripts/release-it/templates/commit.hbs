@@ -6,7 +6,9 @@
 {{header}}
 {{~/if}}
 
-{{~#if @root.linkReferences}}
+{{~#if prNumber}}
+ — [#{{prNumber}}]({{~@root.host}}/{{~@root.owner}}/{{~@root.repository}}/pull/{{prNumber}})
+{{~else if @root.linkReferences}}
  — [`{{shortHash}}`]({{commitUrlFormat}})
 {{~else}}
  — `{{shortHash}}`

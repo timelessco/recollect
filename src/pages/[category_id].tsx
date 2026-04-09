@@ -1,106 +1,95 @@
-import { type GetServerSideProps, type NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
+
 import * as Sentry from "@sentry/nextjs";
 import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
+
+import type { SingleListData } from "../types/apiTypes";
+
+import { Spinner } from "@/components/spinner";
 
 import { useMounted } from "../hooks/useMounted";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../lib/supabase/constants";
 import Dashboard from "../pageComponents/dashboard";
 import { DiscoverGuestView } from "../pageComponents/discover/DiscoverGuestView";
-import { type SingleListData } from "../types/apiTypes";
-import {
-	DISCOVER_URL,
-	MAIN_TABLE_NAME,
-	PAGINATION_LIMIT,
-} from "../utils/constants";
+import { DISCOVER_URL, MAIN_TABLE_NAME, PAGINATION_LIMIT } from "../utils/constants";
 
-import { Spinner } from "@/components/spinner";
+interface CategoryPageProps {
+  discoverData?: SingleListData[];
+  isAuthenticated?: boolean;
+  isDiscover?: boolean;
+}
 
-type CategoryPageProps = {
-	isDiscover?: boolean;
-	isAuthenticated?: boolean;
-	discoverData?: SingleListData[];
+const Home: NextPage<CategoryPageProps> = ({ discoverData, isAuthenticated, isDiscover }) => {
+  const isMounted = useMounted();
+
+  if (isDiscover && !isAuthenticated && discoverData) {
+    return <DiscoverGuestView discoverData={discoverData} />;
+  }
+
+  if (!isMounted) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Spinner className="h-3 w-3 animate-spin" />
+      </div>
+    );
+  }
+
+  return <Dashboard />;
 };
 
-const Home: NextPage<CategoryPageProps> = ({
-	isDiscover,
-	isAuthenticated,
-	discoverData,
-}) => {
-	const isMounted = useMounted();
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const categoryId = String(context.params?.category_id ?? "");
+  const isDiscover = categoryId === DISCOVER_URL;
 
-	if (isDiscover && !isAuthenticated && discoverData) {
-		return <DiscoverGuestView discoverData={discoverData} />;
-	}
+  if (!isDiscover) {
+    return {
+      props: { discoverData: [], isAuthenticated: true, isDiscover: false },
+    };
+  }
 
-	if (!isMounted) {
-		return (
-			<div className="flex h-screen items-center justify-center">
-				<Spinner className="h-3 w-3 animate-spin" />
-			</div>
-		);
-	}
+  // Create Supabase client for SSR
+  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    cookies: {
+      getAll() {
+        return context.req.cookies
+          ? Object.entries(context.req.cookies).map(([name, value]) => ({
+              name,
+              value: value ?? "",
+            }))
+          : [];
+      },
+      setAll(cookiesToSet) {
+        if (context.res) {
+          try {
+            for (const { name, options, value } of cookiesToSet) {
+              context.res.setHeader("Set-Cookie", serializeCookieHeader(name, value, options));
+            }
+          } catch {
+            // Cookie setting may fail in certain Server Component contexts
+            // Silently fail to prevent SSR errors
+          }
+        }
+      },
+    },
+  });
 
-	return <Dashboard />;
-};
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
-	context,
-) => {
-	const categoryId = context.params?.category_id as string;
-	const isDiscover = categoryId === DISCOVER_URL;
+  const isAuthenticated = Boolean(user);
 
-	if (!isDiscover) {
-		return {
-			props: { isDiscover: false, isAuthenticated: true, discoverData: [] },
-		};
-	}
+  if (!isAuthenticated) {
+    try {
+      // Query Supabase directly instead of HTTP fetch to own API
+      const page = 0;
+      const rangeStart = page * PAGINATION_LIMIT;
+      const rangeEnd = (page + 1) * PAGINATION_LIMIT - 1;
 
-	// Create Supabase client for SSR
-	const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-		cookies: {
-			getAll() {
-				return context.req.cookies
-					? Object.entries(context.req.cookies).map(([name, value]) => ({
-							name,
-							value: value || "",
-						}))
-					: [];
-			},
-			setAll(cookiesToSet) {
-				if (context.res) {
-					try {
-						for (const { name, value, options } of cookiesToSet) {
-							context.res.setHeader(
-								"Set-Cookie",
-								serializeCookieHeader(name, value, options),
-							);
-						}
-					} catch {
-						// Cookie setting may fail in certain Server Component contexts
-						// Silently fail to prevent SSR errors
-					}
-				}
-			},
-		},
-	});
-
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
-
-	const isAuthenticated = Boolean(user);
-
-	if (!isAuthenticated) {
-		try {
-			// Query Supabase directly instead of HTTP fetch to own API
-			const page = 0;
-			const rangeStart = page * PAGINATION_LIMIT;
-			const rangeEnd = (page + 1) * PAGINATION_LIMIT - 1;
-
-			const { data, error } = await supabase
-				.from(MAIN_TABLE_NAME)
-				.select(
-					`
+      const { data, error } = await supabase
+        .from(MAIN_TABLE_NAME)
+        .select(
+          `
 					id,
 					inserted_at,
 					title,
@@ -115,71 +104,64 @@ export const getServerSideProps: GetServerSideProps<CategoryPageProps> = async (
 					sort_index,
 					make_discoverable
 				`,
-				)
-				.is("trash", null)
-				.not("make_discoverable", "is", null)
-				.order("make_discoverable", { ascending: true })
-				.range(rangeStart, rangeEnd);
+        )
+        .is("trash", null)
+        .not("make_discoverable", "is", null)
+        .order("make_discoverable", { ascending: true })
+        .range(rangeStart, rangeEnd);
 
-			if (error) {
-				console.error(
-					"[discover-ssr] Failed to fetch discoverable bookmarks:",
-					error,
-				);
-				Sentry.captureException(error, {
-					tags: { route: "discover-ssr" },
-					extra: { categoryId, isAuthenticated },
-				});
-				return {
-					props: {
-						isDiscover: true,
-						isAuthenticated: false,
-						discoverData: [],
-					},
-				};
-			}
+      if (error) {
+        console.error("[discover-ssr] Failed to fetch discoverable bookmarks:", error);
+        Sentry.captureException(error, {
+          extra: { categoryId, isAuthenticated },
+          tags: { route: "discover-ssr" },
+        });
+        return {
+          props: {
+            discoverData: [],
+            isAuthenticated: false,
+            isDiscover: true,
+          },
+        };
+      }
 
-			// Map data to SingleListData format with required fields
-			// Type assertion needed as Supabase returns Json types and nested objects differently than our types
-			const discoverData = (data?.map((item) => ({
-				...item,
-				addedTags: [],
-				addedCategories: [],
-			})) ?? []) as unknown as SingleListData[];
+      // oxlint-disable-next-line no-unsafe-type-assertion -- Supabase partial select doesn't match full SingleListData shape
+      const discoverData = (data?.map((item) => ({
+        ...item,
+        addedCategories: [],
+        addedTags: [],
+      })) ?? []) as unknown as SingleListData[];
 
-			return {
-				props: {
-					isDiscover: true,
-					isAuthenticated: false,
-					discoverData,
-				},
-			};
-		} catch (error) {
-			console.error(
-				"[discover-ssr] Error fetching discoverable bookmarks:",
-				error,
-			);
-			Sentry.captureException(error, {
-				tags: { route: "discover-ssr" },
-				extra: { categoryId, isAuthenticated },
-			});
-			return {
-				props: {
-					isDiscover: true,
-					isAuthenticated: false,
-					discoverData: [],
-				},
-			};
-		}
-	}
+      return {
+        props: {
+          discoverData,
+          isAuthenticated: false,
+          isDiscover: true,
+        },
+      };
+    } catch (error) {
+      console.error("[discover-ssr] Error fetching discoverable bookmarks:", error);
+      Sentry.captureException(error, {
+        extra: { categoryId, isAuthenticated },
+        tags: { route: "discover-ssr" },
+      });
+      return {
+        props: {
+          discoverData: [],
+          isAuthenticated: false,
+          isDiscover: true,
+        },
+      };
+    }
+  }
 
-	return {
-		props: {
-			isDiscover: true,
-			isAuthenticated: true,
-			discoverData: [],
-		},
-	};
+  return {
+    props: {
+      discoverData: [],
+      isAuthenticated: true,
+      isDiscover: true,
+    },
+  };
 };
 
 export default Home;

@@ -10,7 +10,7 @@ alwaysApply: false
 
 - [ ] All TypeScript strict mode checks pass (`pnpm lint:types`)
 - [ ] ESLint shows no errors or warnings (`pnpm fix:eslint`)
-- [ ] Code is properly formatted (`pnpm fix:prettier`)
+- [ ] Code is properly formatted (`pnpm fix:oxfmt`)
 - [ ] CSS follows style guidelines (`pnpm fix:css`)
 - [ ] No spelling mistakes in code/comments (`pnpm fix:spelling`)
 - [ ] No unused code or dependencies (`pnpm fix:knip`)
@@ -20,8 +20,8 @@ alwaysApply: false
 ### 1. Code Formatting & Auto-fixing
 
 ```bash
-# Format all code with Prettier
-pnpm fix:prettier
+# Format all code with oxfmt
+pnpm fix:oxfmt
 
 # Auto-fix ESLint issues
 pnpm fix:eslint
@@ -34,7 +34,7 @@ pnpm fix
 
 - [ ] All TypeScript strict mode checks pass (`pnpm lint:types`)
 - [ ] ESLint shows no errors or warnings (`pnpm fix:eslint`)
-- [ ] Code is properly formatted (`pnpm fix:prettier`)
+- [ ] Code is properly formatted (`pnpm fix:oxfmt`)
 - [ ] CSS follows style guidelines (`pnpm fix:css`)
 - [ ] No spelling mistakes in code/comments (`pnpm fix:spelling`)
 - [ ] No unused code or dependencies (`pnpm fix:knip`)
@@ -43,7 +43,7 @@ This single command validates:
 
 - TypeScript: Type checking and compilation
 - ESLint: Code quality and React patterns
-- Prettier: Code formatting consistency
+- Oxfmt: Code formatting consistency
 - Knip: Unused dependencies, exports, and types
 - CSS: Stylelint validation
 - Markdown: Documentation formatting
@@ -60,7 +60,7 @@ pnpm build
 
 ### After Adding/Modifying Components
 
-1. **Format**: `pnpm fix:prettier`
+1. **Format**: `pnpm fix:oxfmt`
 2. **Lint**: `pnpm lint:eslint`
 3. **Type Check**: `pnpm lint:types`
 4. **Accessibility**: Verify ARIA compliance in components
@@ -69,7 +69,7 @@ pnpm build
 ### After Styling Changes
 
 1. **CSS Lint**: `pnpm lint:css`
-2. **Format**: `pnpm fix:prettier`
+2. **Format**: `pnpm fix:oxfmt`
 3. **TailwindCSS**: Verify class sorting is correct
 4. **Build**: `pnpm build` (to ensure CSS compilation)
 
@@ -77,14 +77,14 @@ pnpm build
 
 1. **Type Check**: `pnpm lint:types`
 2. **Unused Code**: `pnpm lint:knip`
-3. **Format**: `pnpm fix:prettier`
+3. **Format**: `pnpm fix:oxfmt`
 4. **Test**: Verify function behavior (when tests exist)
 
 ### After Documentation Changes
 
 1. **Markdown**: `pnpm fix:md`
 2. **Spelling**: `pnpm fix:spelling`
-3. **Format**: `pnpm fix:prettier`
+3. **Format**: `pnpm fix:oxfmt`
 
 ### After Dependency Changes
 
@@ -99,7 +99,7 @@ pnpm build
 
 The following runs automatically on `git commit`:
 
-- **Prettier formatting** on all staged files
+- **Oxfmt formatting** on all staged files
 - **Spell checking** dictionary updates
 - **Conventional commit** message validation
 
@@ -141,7 +141,7 @@ pnpm fix && pnpm lint:types && pnpm lint:knip
 
 - [ ] No TypeScript errors (`pnpm lint:types`)
 - [ ] No ESLint violations (`pnpm lint:eslint`)
-- [ ] Code properly formatted (`pnpm lint:prettier`)
+- [ ] Code properly formatted (`pnpm lint:oxfmt`)
 - [ ] No unused code (`pnpm lint:knip`)
 - [ ] Accessibility compliant (ARIA, semantic HTML)
 
@@ -191,7 +191,7 @@ pnpm fix && pnpm lint:types && pnpm lint:knip
 pnpm fix && pnpm build
 
 # Fast feedback loop during development
-pnpm fix:prettier && pnpm lint:eslint && pnpm lint:types
+pnpm fix:oxfmt && pnpm lint:eslint && pnpm lint:types
 
 # Full quality assurance
 pnpm lint && pnpm build:analyze

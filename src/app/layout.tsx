@@ -1,6 +1,6 @@
 import "@/styles/globals.css";
 
-import { type Metadata, type Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 
 import { Providers } from "@/components/providers";
 import { AnalyticsScript } from "@/components/scripts/analytics-script";
@@ -8,34 +8,36 @@ import { IosAutozoomFix } from "@/components/scripts/ios-autozoom-fix";
 import { ReactGrabScript } from "@/components/scripts/react-grab-script";
 import { TailwindIndicator } from "@/components/ui/recollect/tailwind-indicator";
 import { ToastSetup } from "@/components/ui/recollect/toast";
+import { WebVitals } from "@/lib/api-helpers/axiom-client";
 import { rootMetaData, rootViewport } from "@/utils/metadata-utils";
 
-type RootLayoutProps = {
-	readonly children: React.ReactNode;
-};
+interface RootLayoutProps {
+  readonly children: React.ReactNode;
+}
 
-export default async function RootLayout(props: RootLayoutProps) {
-	const { children } = props;
+export default function RootLayout(props: RootLayoutProps) {
+  const { children } = props;
 
-	return (
-		<html
-			lang="en"
-			dir="ltr"
-			className="antialiased inter-display optimize-legibility"
-			suppressHydrationWarning
-		>
-			<body className="overflow-x-hidden bg-gray-0 outline-hidden">
-				<Providers>{children}</Providers>
+  return (
+    <html
+      className="antialiased inter-display optimize-legibility"
+      dir="ltr"
+      lang="en"
+      suppressHydrationWarning
+    >
+      <body className="overflow-x-hidden bg-gray-0 outline-hidden">
+        <WebVitals />
+        <Providers>{children}</Providers>
 
-				<AnalyticsScript />
-				<IosAutozoomFix />
-				<ReactGrabScript />
+        <AnalyticsScript />
+        <IosAutozoomFix />
+        <ReactGrabScript />
 
-				<ToastSetup />
-				<TailwindIndicator />
-			</body>
-		</html>
-	);
+        <ToastSetup />
+        <TailwindIndicator />
+      </body>
+    </html>
+  );
 }
 
 export const metadata: Metadata = rootMetaData;

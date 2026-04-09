@@ -27,7 +27,7 @@ pnpm start           # Start production server
 
 ```bash
 pnpm lint # Run ALL linting checks via Turbo
-pnpm fix  # Auto-fix all (spelling → css → md → prettier → eslint via turbo deps)
+pnpm fix  # Auto-fix all (spelling → css → md → oxfmt → eslint via turbo deps)
 ```
 
 ### Individual Linting Commands
@@ -42,8 +42,8 @@ pnpm lint:types # TypeScript type checking
 pnpm lint:css # Check CSS with Stylelint
 pnpm fix:css  # Auto-fix CSS issues
 
-pnpm lint:prettier # Check Prettier formatting
-pnpm fix:prettier  # Auto-fix formatting
+pnpm lint:oxfmt # Check oxfmt formatting
+pnpm fix:oxfmt  # Auto-fix formatting
 
 pnpm lint:md # Check Markdown files
 pnpm fix:md  # Auto-fix Markdown issues
@@ -58,7 +58,6 @@ pnpm lint:knip # Check for unused dependencies/exports
 
 ```bash
 pnpm test         # Run tests (currently exits with 0)
-pnpm cypress:open # Open Cypress test runner
 ```
 
 ## Dependency Management

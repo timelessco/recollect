@@ -13,11 +13,10 @@
   - [Building the project](#building-the-project)
   - [Deploying the project](#deploying-the-project)
   - [More DX scripts](#more-dx-scripts)
-    - [Prettier](#prettier)
-    - [Eslint](#eslint)
+    - [Ultracite](#ultracite)
     - [Stylelint](#stylelint)
     - [Markdown](#markdown)
-    - [Check Types](#check-types)
+    - [Check Types (Deno)](#check-types-deno)
     - [Check unused dependencies, exports \& types](#check-unused-dependencies-exports--types)
     - [Check Spelling](#check-spelling)
     - [Test](#test)
@@ -117,35 +116,17 @@ Guide on how to deploy Next.js to various [hosting providers][7].
 
 `pnpm fix`
 
-### Prettier
+### Ultracite
 
-[Prettier][9] is used to format code. It should be applied automatically when
-you save files in VS Code or make a Git commit.
+**[Ultracite](https://github.com/haydenbleasel/ultracite)**: Zero-config linting and formatting via Oxlint + Oxfmt
 
-> Check the formatting errors
+> Check for linting and formatting errors
 
-`pnpm lint:prettier`
+`pnpm lint:ultracite`
 
-> AutoFix the formatting errors
+> AutoFix linting and formatting errors
 
-`pnpm fix:prettier`
-
-> This package includes several forms of linting to enforce consistent code
-> quality and styling. Each should be shown in VS Code, and can be run manually
-> on the command-line:
-
-### Eslint
-
-Extends all the necessary rulesets from [eslint-config-canonical][10] for the
-Next.js project that lints JavaScript and TypeScript source files
-
-> Check for the linting errors
-
-`pnpm lint:eslint`
-
-> AutoFix the linting errors
-
-`pnpm fix:eslint`
+`pnpm fix:ultracite`
 
 ### Stylelint
 
@@ -171,13 +152,13 @@ Next.js project that lints JavaScript and TypeScript source files
 
 `pnpm fix:md`
 
-### Check Types
+### Check Types (Deno)
 
-([TypeScript][13]): Checks all TypeScript files
+([Deno][13]): Type checks Supabase Edge Functions
 
-> Check TypeScript types
+> Check Deno types
 
-`pnpm lint:types`
+`pnpm lint:types:deno`
 
 ### Check unused dependencies, exports & types
 
@@ -277,8 +258,6 @@ After running migrations, manually enable **Database Webhooks** in Supabase Stud
 [6]: https://code.visualstudio.com
 [7]: https://nextjs.org/docs/deployment
 [8]: https://turbo.build/repo
-[9]: https://prettier.io
-[10]: https://github.com/gajus/eslint-config-canonical
 [11]: https://stylelint.io/
 [12]: https://github.com/DavidAnson/markdownlint
 [13]: https://www.typescriptlang.org/

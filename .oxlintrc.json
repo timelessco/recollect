@@ -1,0 +1,120 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": [
+    "./node_modules/ultracite/config/oxlint/core/.oxlintrc.json",
+    "./node_modules/ultracite/config/oxlint/next/.oxlintrc.json",
+    "./node_modules/ultracite/config/oxlint/react/.oxlintrc.json",
+    "./node_modules/ultracite/config/oxlint/vitest/.oxlintrc.json",
+    "./.configs/oxlint/perfectionist.json",
+    "./.configs/oxlint/regexp.json",
+    "./.configs/oxlint/tanstack-query.json",
+    "./.configs/oxlint/eslint-react.json"
+  ],
+  "options": {
+    "reportUnusedDisableDirectives": "error",
+    "typeAware": true,
+    "typeCheck": true
+  },
+  "ignorePatterns": [
+    "pnpm-lock.yaml",
+    "public/**",
+    ".next/**",
+    "next-env.d.ts",
+    "CHANGELOG.md",
+    "scripts/release-it/**",
+    ".agents/**",
+    ".claude/**",
+    "scripts/utils/try.ts",
+    ".ncurc.cjs",
+    "supabase/functions/**",
+    "package-typings/**",
+    "src/types/database-generated.types.ts"
+  ],
+  "rules": {
+    "max-lines": "off",
+    "max-statements": "off",
+    "complexity": "off",
+    "func-style": ["error", "declaration", { "allowArrowFunctions": true }],
+
+    // void operator is used idiomatically to discard Promise return values (void someAsync())
+    // without triggering no-floating-promises
+    "no-void": "off",
+    // perfectionist/sort-objects handles this with natural (case-insensitive) ordering
+    "sort-keys": "off",
+    // promise-function-async conflicts with require-await: it auto-adds async
+    // to functions returning Promises, but require-await then complains about
+    // no await. We prefer: only add async when await is present.
+    "@typescript-eslint/promise-function-async": "off",
+    // strict-boolean-expressions: off permanently — style rule, not safety.
+    // Truthiness checks on nullable types are idiomatic JS/TS.
+    "@typescript-eslint/strict-boolean-expressions": "off",
+    // no-use-before-define: off — codebase uses intentional "registry-at-top,
+    // implementation-below" pattern for component dispatch maps. Functions hoist in JS.
+    "no-use-before-define": "off",
+    // sort-objects/sort-union-types: off — jsPlugin auto-fix oscillates on multi-line
+    // objects (mutation hooks, infinite queries). Manual fix is 24 violations across 12 files
+    // but auto-fix creates an infinite loop between perfectionist sorting and oxfmt formatting.
+    "perfectionist/sort-objects": "off",
+    "perfectionist/sort-union-types": "off",
+
+    // Project Rules
+    // jsx-no-new-function-as-prop: off — premature optimization without React.memo.
+    // Inline handlers are idiomatic React; useCallback wrapping adds complexity for no measurable gain.
+    "react-perf/jsx-no-new-function-as-prop": "off",
+    // no-negated-condition: off permanently — if (!x) is idiomatic JS.
+    // Enforcing positive conditions makes code less readable.
+    "no-negated-condition": "off",
+    // filename-case: off permanently — retroactive rename of 165 files
+    // breaks git blame and risks import breakage on case-insensitive macOS.
+    "unicorn/filename-case": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.{js,cjs,jsx,ts,tsx}"],
+      "rules": {
+        // TODO: Should fix these issues in multiple files
+        "react-x/set-state-in-effect": "off",
+        "react-x/no-array-index-key": "off"
+      }
+    },
+    {
+      // TODO: Legacy code: no-unsafe-* + no-non-null-assertion disabled until migration/refactor
+      "files": [
+        "src/pages/api/**/*.{ts,tsx}",
+        "src/utils/worker.ts",
+        "src/utils/file-upload.ts",
+        "src/utils/helpers.ts",
+        "src/utils/apiHelpers.ts",
+        "src/async/**/*.{ts,tsx}",
+        "src/pageComponents/**/*.{ts,tsx}",
+        "scripts/**/*.{js,ts}"
+      ],
+      "rules": {
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/no-unsafe-argument": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/no-unsafe-type-assertion": "off"
+      }
+    },
+    {
+      "files": ["**/*.{test,spec}.{ts,tsx,js,jsx}", "**/__tests__/**/*.{ts,tsx,js,jsx}"],
+      "plugins": ["vitest"],
+      "rules": {
+        // describe("blockName", ...) uses the function name as title — intentional for block tests
+        "vitest/prefer-describe-function-title": "off",
+        // Disabled: project uses vitest globals: true — globals without explicit imports is the intended pattern
+        "vitest/prefer-importing-vitest-globals": "off",
+        // Disabled: conflicts with prefer-strict-boolean-matchers (ultracite 7.4.0)
+        // prefer-strict-boolean-matchers is stricter — enforces toBe(true/false) over toBeTruthy/toBeFalsy
+        "vitest/prefer-to-be-truthy": "off",
+        "vitest/prefer-to-be-falsy": "off",
+        // Disabled: requiring explicit timeouts on every unit test is excessive
+        // for sync/fast tests — vitest.config.ts testTimeout handles defaults
+        "vitest/require-test-timeout": "off"
+      }
+    }
+  ]
+}

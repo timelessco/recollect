@@ -33,7 +33,6 @@ Recollect is an open-source bookmark, images, and documents manager designed to 
   - pnpm (package manager)
   - Turbo for monorepo task running
   - PostCSS & Autoprefixer
-- **Testing**: Cypress for E2E testing
 - **Monitoring**: Sentry for error tracking
 - **Email Services**: SendGrid and Resend
 - **Media Handling**:

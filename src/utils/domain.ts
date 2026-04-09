@@ -8,16 +8,14 @@
  * @param input - Domain string or URL
  * @returns Normalized domain (lowercase, without www.) or null if invalid
  */
-export const normalizeDomain = (input: string): string | null => {
-	try {
-		const url = input.includes("://")
-			? new URL(input)
-			: new URL(`https://${input}`);
-		const hostname = url.hostname.toLowerCase();
-		return hostname.startsWith("www.") ? hostname.slice(4) : hostname;
-	} catch {
-		return null;
-	}
+export const normalizeDomain = (input: string): null | string => {
+  try {
+    const url = input.includes("://") ? new URL(input) : new URL(`https://${input}`);
+    const hostname = url.hostname.toLowerCase();
+    return hostname.startsWith("www.") ? hostname.slice(4) : hostname;
+  } catch {
+    return null;
+  }
 };
 
 /**
@@ -26,14 +24,14 @@ export const normalizeDomain = (input: string): string | null => {
  * @param url - Valid URL string
  * @returns Domain (lowercase, without www.) or null if invalid
  */
-export const getDomain = (url: string): string | null => {
-	try {
-		const parsed = new URL(url);
-		const host = parsed.hostname.toLowerCase();
-		return host.startsWith("www.") ? host.slice(4) : host;
-	} catch {
-		return null;
-	}
+export const getDomain = (url: string): null | string => {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    return host.startsWith("www.") ? host.slice(4) : host;
+  } catch {
+    return null;
+  }
 };
 
 /**
@@ -43,9 +41,7 @@ export const getDomain = (url: string): string | null => {
  * @returns True if domain exists in array
  */
 export const hasDomain = (domains: string[], domain: string): boolean =>
-	domains.some(
-		(existingDomain) => existingDomain.toLowerCase() === domain.toLowerCase(),
-	);
+  domains.some((existingDomain) => existingDomain.toLowerCase() === domain.toLowerCase());
 
 /**
  * Toggles a domain in an array: adds if absent, removes if present
@@ -53,18 +49,12 @@ export const hasDomain = (domains: string[], domain: string): boolean =>
  * @param domain - Domain to toggle
  * @returns New array with domain toggled
  */
-export const toggleDomainInArray = (
-	domains: string[],
-	domain: string,
-): string[] => {
-	const hasDomain = domains.some(
-		(existingDomain) => existingDomain.toLowerCase() === domain.toLowerCase(),
-	);
+export const toggleDomainInArray = (domains: string[], domain: string): string[] => {
+  const domainExists = domains.some(
+    (existingDomain) => existingDomain.toLowerCase() === domain.toLowerCase(),
+  );
 
-	return hasDomain
-		? domains.filter(
-				(existingDomain) =>
-					existingDomain.toLowerCase() !== domain.toLowerCase(),
-			)
-		: [...domains, domain];
+  return domainExists
+    ? domains.filter((existingDomain) => existingDomain.toLowerCase() !== domain.toLowerCase())
+    : [...domains, domain];
 };

@@ -7,7 +7,4 @@ import { useBookmarkRelation } from "./use-bookmark-relation";
  * @returns Array of tag IDs
  */
 export const useBookmarkTags = (bookmarkId: number): number[] =>
-	useBookmarkRelation(
-		bookmarkId,
-		(bookmark) => bookmark.addedTags?.map((tag) => tag.id) ?? [],
-	);
+  useBookmarkRelation(bookmarkId, (bookmark) => bookmark.addedTags?.map((tag) => tag.id) ?? []);

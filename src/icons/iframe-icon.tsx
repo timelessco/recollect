@@ -1,16 +1,18 @@
-import { Icon, type IconProps } from "@/components/atoms/icon";
+import type { IconProps } from "@/components/atoms/icon";
+
+import { Icon } from "@/components/atoms/icon";
 
 export const IframeIcon = (props: IconProps) => (
-	<Icon
-		{...props}
-		fill="none"
-		stroke="currentColor"
-		strokeLinecap="round"
-		strokeLinejoin="round"
-		strokeWidth="1"
-	>
-		<rect width="18" height="7" x="3" y="3" rx="1" />
-		<rect width="9" height="7" x="3" y="14" rx="1" />
-		<rect width="5" height="7" x="16" y="14" rx="1" />
-	</Icon>
+  <Icon
+    {...props}
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="1"
+  >
+    <rect height="7" rx="1" width="18" x="3" y="3" />
+    <rect height="7" rx="1" width="9" x="3" y="14" />
+    <rect height="7" rx="1" width="5" x="16" y="14" />
+  </Icon>
 );

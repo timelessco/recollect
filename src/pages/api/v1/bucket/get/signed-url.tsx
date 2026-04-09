@@ -1,4 +1,5 @@
-import { type NextApiRequest, type NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
+
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
@@ -13,10 +14,10 @@ import { apiSupabaseClient } from "../../../../../utils/supabaseServerClient";
  * - filePath: The full path where the file will be stored in R2 (e.g., 'users/123/avatar.jpg')
  */
 const getQuerySchema = () =>
-	z.object({
-		contentType: z.string(),
-		filePath: z.string(),
-	});
+  z.object({
+    contentType: z.string(),
+    filePath: z.string(),
+  });
 
 /**
  * API endpoint to generate a signed URL for uploading files to R2
@@ -40,98 +41,92 @@ const getQuerySchema = () =>
  * }
  */
 export default async function handler(
-	request: NextApiRequest,
-	response: NextApiResponse<{
-		data: { signedUrl: string } | null;
-		error: string | null;
-	}>,
+  request: NextApiRequest,
+  response: NextApiResponse<{
+    data: { signedUrl: string } | null;
+    error: null | string;
+  }>,
 ) {
-	// Only allow GET requests
-	if (request.method !== "GET") {
-		response
-			.status(405)
-			.json({ error: "Only GET requests allowed", data: null });
-		return;
-	}
+  // Only allow GET requests
+  if (request.method !== "GET") {
+    response.status(405).json({ data: null, error: "Only GET requests allowed" });
+    return;
+  }
 
-	try {
-		// Authenticate user using Supabase session
-		const supabase = apiSupabaseClient(request, response);
+  try {
+    // Authenticate user using Supabase session
+    const supabase = apiSupabaseClient(request, response);
 
-		const {
-			data: { user },
-			error: userError,
-		} = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-		if (userError || !user) {
-			console.warn("User authentication failed:", { error: userError });
-			response.status(401).json({ error: "Unauthorized", data: null });
-			return;
-		}
+    if (userError || !user) {
+      console.warn("User authentication failed:", { error: userError });
+      response.status(401).json({ data: null, error: "Unauthorized" });
+      return;
+    }
 
-		// Validate the query parameters against our schema
-		const validatedQuery = getQuerySchema().safeParse(request.query);
+    // Validate the query parameters against our schema
+    const validatedQuery = getQuerySchema().safeParse(request.query);
 
-		if (!validatedQuery.success) {
-			console.warn("Invalid request parameters:", {
-				errors: validatedQuery.error.message,
-			});
-			response.status(400).json({
-				error: "Invalid request parameters",
-				data: null,
-			});
-			return;
-		}
+    if (!validatedQuery.success) {
+      console.warn("Invalid request parameters:", {
+        errors: validatedQuery.error.message,
+      });
+      response.status(400).json({
+        data: null,
+        error: "Invalid request parameters",
+      });
+      return;
+    }
 
-		const { filePath } = validatedQuery.data;
+    const { filePath } = validatedQuery.data;
 
-		// Entry point log
-		console.log("get-signed-url API called:", { userId: user.id, filePath });
+    // Entry point log
+    console.log("get-signed-url API called:", { filePath, userId: user.id });
 
-		// Generate a signed URL for file upload
-		// The URL will expire in 1 hour (3600 seconds)
-		const result = await storageHelpers.createSignedUploadUrl(
-			R2_MAIN_BUCKET_NAME,
-			filePath,
-			3_600,
-		);
+    // Generate a signed URL for file upload
+    // The URL will expire in 1 hour (3600 seconds)
+    const result = await storageHelpers.createSignedUploadUrl(R2_MAIN_BUCKET_NAME, filePath, 3600);
 
-		// Handle errors from R2 URL generation
-		if (result.error) {
-			console.error("Failed to generate signed URL:", result.error);
-			Sentry.captureException(result.error, {
-				tags: {
-					operation: "generate_signed_url",
-					userId: user.id,
-				},
-				extra: { filePath },
-			});
-			response.status(500).json({
-				error: "Failed to generate signed URL",
-				data: null,
-			});
-			return;
-		}
+    // Handle errors from R2 URL generation
+    if (result.error) {
+      console.error("Failed to generate signed URL:", result.error);
+      Sentry.captureException(result.error, {
+        extra: { filePath },
+        tags: {
+          operation: "generate_signed_url",
+          userId: user.id,
+        },
+      });
+      response.status(500).json({
+        data: null,
+        error: "Failed to generate signed URL",
+      });
+      return;
+    }
 
-		// Success
-		console.log("Signed URL generated successfully:", {
-			userId: user.id,
-			filePath,
-		});
-		response.status(200).json({
-			data: result.data,
-			error: null,
-		});
-	} catch (error) {
-		console.error("Unexpected error in get-signed-url:", error);
-		Sentry.captureException(error, {
-			tags: {
-				operation: "get_signed_url_unexpected",
-			},
-		});
-		response.status(500).json({
-			error: "An unexpected error occurred",
-			data: null,
-		});
-	}
+    // Success
+    console.log("Signed URL generated successfully:", {
+      filePath,
+      userId: user.id,
+    });
+    response.status(200).json({
+      data: result.data,
+      error: null,
+    });
+  } catch (error) {
+    console.error("Unexpected error in get-signed-url:", error);
+    Sentry.captureException(error, {
+      tags: {
+        operation: "get_signed_url_unexpected",
+      },
+    });
+    response.status(500).json({
+      data: null,
+      error: "An unexpected error occurred",
+    });
+  }
 }

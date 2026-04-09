@@ -1,761 +1,560 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { type SupabaseClient } from "@supabase/supabase-js";
-import {
-	type QueryFunctionContext,
-	type QueryKey,
-} from "@tanstack/react-query";
+import { GoogleGenAI } from "@google/genai";
 import axios from "axios";
 import { isNil } from "lodash";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
-import {
-	type AddBookmarkMinDataPayloadTypes,
-	type AddBookmarkScreenshotPayloadTypes,
-	type BookmarksCountTypes,
-	type BookmarksPaginatedDataTypes,
-	type BookmarkViewDataTypes,
-	type CategoriesData,
-	type DeleteBookmarkPayload,
-	type DeleteUserCategoryApiPayload,
-	type FetchDataResponse,
-	type FetchSharedCategoriesData,
-	type GetUserProfilePicPayload,
-	type MoveBookmarkToTrashApiPayload,
-	type ProfilesTableTypes,
-	type RemoveUserProfilePicPayload,
-	type SingleListData,
-	type SupabaseSessionType,
-	type UpdateCategoryOrderApiPayload,
-	type UpdateSharedCategoriesUserAccessApiPayload,
-	type UpdateUsernameApiPayload,
-	type UpdateUserProfileApiPayload,
-	type UploadFileApiPayload,
-	type UploadFileApiResponse,
-	type UploadProfilePicApiResponse,
-	type UploadProfilePicPayload,
-	type UserProfilePicTypes,
-	type UserTagsData,
+import type {
+  AddBookmarkMinDataPayloadTypes,
+  AddBookmarkScreenshotPayloadTypes,
+  BookmarkViewDataTypes,
+  CategoriesData,
+  DeleteBookmarkPayload,
+  DeleteUserCategoryApiPayload,
+  FetchSharedCategoriesData,
+  GetUserProfilePicPayload,
+  MoveBookmarkToTrashApiPayload,
+  ProfilesTableTypes,
+  RemoveUserProfilePicPayload,
+  SingleListData,
+  SupabaseSessionType,
+  UpdateCategoryOrderApiPayload,
+  UpdateSharedCategoriesUserAccessApiPayload,
+  UpdateUsernameApiPayload,
+  UpdateUserProfileApiPayload,
+  UploadFileApiPayload,
+  UploadFileApiResponse,
+  UploadProfilePicApiResponse,
+  UploadProfilePicPayload,
+  UserProfilePicTypes,
+  UserTagsData,
 } from "../../types/apiTypes";
-import { type BookmarksSortByTypes } from "../../types/componentStoreTypes";
-import { type CategoryIdUrlTypes } from "../../types/componentTypes";
-import {
-	ADD_BOOKMARK_MIN_DATA,
-	ADD_URL_SCREENSHOT_API,
-	CHECK_API_KEY_API,
-	CLEAR_BOOKMARK_TRASH_API,
-	DELETE_API_KEY_API,
-	DELETE_BOOKMARK_DATA_API,
-	DELETE_SHARED_CATEGORIES_USER_API,
-	DELETE_USER_API,
-	DELETE_USER_CATEGORIES_API,
-	FETCH_BOOKMARK_BY_ID_API,
-	FETCH_BOOKMARKS_COUNT,
-	FETCH_BOOKMARKS_DATA_API,
-	FETCH_BOOKMARKS_VIEW,
-	FETCH_SHARED_CATEGORIES_DATA_API,
-	FETCH_USER_CATEGORIES_API,
-	FETCH_USER_PROFILE_API,
-	FETCH_USER_PROFILE_PIC_API,
-	FETCH_USER_TAGS_API,
-	GET_API_KEY_API,
-	GET_MEDIA_TYPE_API,
-	getBaseUrl,
-	MOVE_BOOKMARK_TO_TRASH_API,
-	NEXT_API_URL,
-	NO_BOOKMARKS_ID_ERROR,
-	PAGINATION_LIMIT,
-	REMOVE_PROFILE_PIC_API,
-	SAVE_API_KEY_API,
-	SEARCH_BOOKMARKS,
-	SEND_COLLABORATION_EMAIL_API,
-	UPDATE_CATEGORY_ORDER_API,
-	UPDATE_SHARED_CATEGORY_USER_ROLE_API,
-	UPDATE_USER_PROFILE_API,
-	UPDATE_USERNAME_API,
-	UPLOAD_FILE_API,
-	UPLOAD_PROFILE_PIC_API,
-	GEMINI_MODEL,
-} from "../../utils/constants";
-import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { handleClientError } from "@/utils/error-utils/client";
 
-// bookmark
-// get bookmark by id
-export const fetchBookmarkById = async (id: string) => {
-	try {
-		if (!id) {
-			throw new Error(NO_BOOKMARKS_ID_ERROR);
-		}
-
-		const response = await axios.get<{ data: SingleListData }>(
-			`${NEXT_API_URL}${FETCH_BOOKMARK_BY_ID_API}${id}`,
-		);
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
-};
+import {
+  ADD_BOOKMARK_MIN_DATA,
+  ADD_URL_SCREENSHOT_API,
+  CLEAR_BOOKMARK_TRASH_API,
+  DELETE_API_KEY_API,
+  DELETE_BOOKMARK_DATA_API,
+  DELETE_SHARED_CATEGORIES_USER_API,
+  DELETE_USER_API,
+  DELETE_USER_CATEGORIES_API,
+  FETCH_BOOKMARKS_VIEW,
+  FETCH_SHARED_CATEGORIES_DATA_API,
+  FETCH_USER_CATEGORIES_API,
+  FETCH_USER_PROFILE_API,
+  FETCH_USER_PROFILE_PIC_API,
+  FETCH_USER_TAGS_API,
+  GET_API_KEY_API,
+  GET_MEDIA_TYPE_API,
+  getBaseUrl,
+  MOVE_BOOKMARK_TO_TRASH_API,
+  NEXT_API_URL,
+  REMOVE_PROFILE_PIC_API,
+  SAVE_API_KEY_API,
+  SEND_COLLABORATION_EMAIL_API,
+  UPDATE_CATEGORY_ORDER_API,
+  UPDATE_SHARED_CATEGORY_USER_ROLE_API,
+  UPDATE_USER_PROFILE_API,
+  UPDATE_USERNAME_API,
+  UPLOAD_FILE_API,
+  UPLOAD_PROFILE_PIC_API,
+  GEMINI_MODEL,
+} from "../../utils/constants";
+// eslint-disable-next-line import/no-cycle -- circular dep between helpers and supabaseCrudHelpers needs structural refactor
+import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
 
 // user settings and keys
 export const saveApiKey = async ({
-	apikey,
+  apikey,
 }: {
-	apikey: string;
+  apikey: string;
 }): Promise<{ data: unknown; message: string }> => {
-	try {
-		const response = await axios.post<{ data: unknown; message: string }>(
-			`${NEXT_API_URL}${SAVE_API_KEY_API}`,
-			{ apikey },
-		);
+  try {
+    const response = await axios.post<{ data: unknown; message: string }>(
+      `${NEXT_API_URL}${SAVE_API_KEY_API}`,
+      { apikey },
+    );
 
-		return response?.data;
-	} catch {
-		throw new Error("Invalid API key");
-	}
+    return response?.data;
+  } catch {
+    throw new Error("Invalid API key");
+  }
 };
 
 export const deleteApiKey = async (): Promise<{
-	data: unknown;
-	message: string;
+  data: unknown;
+  message: string;
 }> => {
-	try {
-		const response = await axios.delete<{ data: unknown; message: string }>(
-			`${NEXT_API_URL}${DELETE_API_KEY_API}`,
-		);
+  try {
+    const response = await axios.delete<{ data: unknown; message: string }>(
+      `${NEXT_API_URL}${DELETE_API_KEY_API}`,
+    );
 
-		return response?.data;
-	} catch {
-		throw new Error("Failed to delete API key");
-	}
+    return response?.data;
+  } catch {
+    throw new Error("Failed to delete API key");
+  }
 };
 
-type CheckApiKeyResponse = {
-	data: { hasApiKey: boolean } | null;
-};
-
-export const checkGeminiApiKey = async (): Promise<CheckApiKeyResponse> => {
-	try {
-		const response = await axios.get<CheckApiKeyResponse>(
-			`${NEXT_API_URL}${CHECK_API_KEY_API}`,
-		);
-
-		return { data: response.data.data };
-	} catch (error) {
-		handleClientError(error, "Failed to check API key");
-		return { data: null };
-	}
-};
-
-type GetApiKeyResponse = {
-	data: { apiKey: string } | null;
-};
+interface GetApiKeyResponse {
+  data: { apiKey: string } | null;
+}
 
 export const getGeminiApiKey = async (): Promise<GetApiKeyResponse> => {
-	try {
-		const response = await axios.get<GetApiKeyResponse>(
-			`${NEXT_API_URL}${GET_API_KEY_API}`,
-		);
+  try {
+    const response = await axios.get<GetApiKeyResponse>(`${NEXT_API_URL}${GET_API_KEY_API}`);
 
-		return { data: response.data.data };
-	} catch (error) {
-		handleClientError(error, "Failed to get API key try again later ");
-		return { data: null };
-	}
-};
-
-// bookmark
-// gets bookmarks data
-export const fetchBookmarksData = async (
-	{
-		pageParam: pageParameter = 0,
-		queryKey,
-	}: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-	QueryFunctionContext<Array<number | string | null | undefined>, any>,
-	session: SupabaseSessionType,
-	sortBy: BookmarksSortByTypes,
-) => {
-	const categoryId =
-		!isEmpty(queryKey) && queryKey?.length <= 4 ? queryKey[2] : null;
-
-	const userId =
-		!isEmpty(queryKey) && queryKey?.length <= 5 ? queryKey[1] : null;
-
-	if (!userId) {
-		return { data: [], error: null, count: {} } as unknown as FetchDataResponse;
-	}
-
-	if (!session?.user) {
-		return undefined;
-	}
-
-	if (!sortBy) {
-		return undefined;
-	}
-
-	try {
-		const bookmarksData = await axios.get<{
-			count: BookmarksCountTypes;
-			data: { data: SingleListData[] };
-		}>(
-			`${NEXT_API_URL}${FETCH_BOOKMARKS_DATA_API}?category_id=${
-				isNull(categoryId) ? "null" : categoryId
-			}&from=${pageParameter as string}&sort_by=${sortBy}`,
-		);
-
-		return {
-			data: bookmarksData?.data?.data,
-			error: null,
-			count: bookmarksData?.data?.count,
-		} as unknown as FetchDataResponse;
-	} catch (error) {
-		return { data: undefined, error } as unknown as FetchDataResponse;
-	}
-};
-
-export const getBookmarksCount = async (
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	queryData: QueryFunctionContext<QueryKey, any>,
-	session: SupabaseSessionType,
-): Promise<{ data: BookmarksCountTypes | null; error: Error }> => {
-	const userId =
-		!isEmpty(queryData?.queryKey) && queryData?.queryKey?.length < 4
-			? queryData?.queryKey[1]
-			: undefined;
-
-	if (!session?.user) {
-		return {
-			data: null,
-			error: { name: "No user session", message: "No user session" },
-		};
-	}
-
-	if (userId) {
-		try {
-			const bookmarksData = await axios.get<{
-				data: BookmarksCountTypes;
-				error: Error;
-			}>(`${NEXT_API_URL}${FETCH_BOOKMARKS_COUNT}`);
-
-			return bookmarksData?.data;
-		} catch (error_) {
-			const error = error_ as Error;
-			return { data: null, error };
-		}
-	} else {
-		// return undefined;
-		return { data: null, error: { name: "NO user id", message: "NO user id" } };
-	}
+    return { data: response.data.data };
+  } catch (error) {
+    handleClientError(error, "Failed to get API key try again later ");
+    return { data: null };
+  }
 };
 
 export const addBookmarkMinData = async ({
-	url,
-	category_id,
-	update_access,
+  category_id,
+  update_access,
+  url,
 }: AddBookmarkMinDataPayloadTypes) => {
-	try {
-		// append https here
-		let finalUrl = url;
+  try {
+    // append https here
+    let finalUrl = url;
 
-		if (!url.startsWith("http://") && !url.startsWith("https://")) {
-			finalUrl = `https://${url}`;
-		}
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      finalUrl = `https://${url}`;
+    }
 
-		const apiResponse = await axios.post(
-			`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`,
-			{
-				url: finalUrl,
-				category_id: isNull(category_id) ? 0 : category_id,
-				update_access,
-			},
-		);
+    const apiResponse = await axios.post(`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`, {
+      category_id: isNull(category_id) ? 0 : category_id,
+      update_access,
+      url: finalUrl,
+    });
 
-		return apiResponse as { data: { data: SingleListData[] } };
-	} catch (error) {
-		return error;
-	}
+    return apiResponse as { data: { data: SingleListData[] } };
+  } catch (error) {
+    return error;
+  }
 };
 
-export const addBookmarkScreenshot = async ({
-	url,
-	id,
-}: AddBookmarkScreenshotPayloadTypes) => {
-	try {
-		const apiResponse = await axios.post(
-			`${NEXT_API_URL}${ADD_URL_SCREENSHOT_API}`,
-			{ url, id },
-		);
+export const addBookmarkScreenshot = async ({ id, url }: AddBookmarkScreenshotPayloadTypes) => {
+  try {
+    const apiResponse = await axios.post(`${NEXT_API_URL}${ADD_URL_SCREENSHOT_API}`, { id, url });
 
-		return apiResponse;
-	} catch (error) {
-		if (error instanceof Error) {
-			console.error(error.message);
-			throw new Error(error.message);
-		}
+    return apiResponse;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error.message);
+      throw new Error(error.message, { cause: error });
+    }
 
-		return error;
-	}
+    return error;
+  }
 };
 
 export const deleteData = async (item: DeleteBookmarkPayload) => {
-	try {
-		const response = await axios.post(
-			`${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`,
-			{ deleteData: item?.deleteData },
-		);
+  try {
+    const response = await axios.post(`${NEXT_API_URL}${DELETE_BOOKMARK_DATA_API}`, {
+      deleteData: item?.deleteData,
+    });
 
-		return response;
-	} catch (error) {
-		return error;
-	}
+    return response;
+  } catch (error) {
+    return error;
+  }
 };
 
-export const moveBookmarkToTrash = async ({
-	data,
-	isTrash,
-}: MoveBookmarkToTrashApiPayload) => {
-	try {
-		// Only send bookmark IDs to the API - full data is only needed client-side for optimistic updates
-		const minimalData = data.map((bookmark) => ({ id: bookmark.id }));
+export const moveBookmarkToTrash = async ({ data, isTrash }: MoveBookmarkToTrashApiPayload) => {
+  try {
+    // Only send bookmark IDs to the API - full data is only needed client-side for optimistic updates
+    const minimalData = data.map((bookmark) => ({ id: bookmark.id }));
 
-		const response = await axios.post(
-			`${NEXT_API_URL}${MOVE_BOOKMARK_TO_TRASH_API}`,
-			{ data: minimalData, isTrash },
-		);
+    const response = await axios.post(`${NEXT_API_URL}${MOVE_BOOKMARK_TO_TRASH_API}`, {
+      data: minimalData,
+      isTrash,
+    });
 
-		return response;
-	} catch (error) {
-		return error;
-	}
+    return response;
+  } catch (error) {
+    return error;
+  }
 };
 
 export const clearBookmarksInTrash = async () => {
-	try {
-		const response = await axios.post(
-			`${NEXT_API_URL}${CLEAR_BOOKMARK_TRASH_API}`,
-			{},
-		);
+  try {
+    const response = await axios.post(`${NEXT_API_URL}${CLEAR_BOOKMARK_TRASH_API}`, {});
 
-		return response;
-	} catch (error) {
-		return error;
-	}
-};
-
-export const searchBookmarks = async (
-	searchText: string,
-	category_id: CategoryIdUrlTypes,
-	isSharedCategory: boolean,
-	offset = 0,
-	limit = PAGINATION_LIMIT,
-): Promise<{
-	data: BookmarksPaginatedDataTypes[] | null;
-	error: Error | null;
-}> => {
-	if (!isEmpty(searchText) && searchText !== "#") {
-		const categoryId = !isNull(category_id) ? category_id : "null";
-
-		// directly using '#' in the params might cause issues
-		const parameters = new URLSearchParams({
-			search: searchText ?? "",
-			category_id: String(categoryId ?? ""),
-			is_shared_category: String(isSharedCategory ?? ""),
-			offset: String(offset ?? 0),
-			limit: String(limit ?? PAGINATION_LIMIT),
-		});
-
-		try {
-			const response = await axios.get<{
-				data: BookmarksPaginatedDataTypes[];
-				error: Error | null;
-			}>(`${NEXT_API_URL}${SEARCH_BOOKMARKS}?${parameters.toString()}`);
-			return response?.data;
-		} catch (error_) {
-			const error = error_ as Error;
-			return { data: null, error };
-		}
-	}
-
-	return {
-		data: null,
-		error: { name: "error", message: "No search text provided" },
-	};
+    return response;
+  } catch (error) {
+    return error;
+  }
 };
 
 // user tags
 export const fetchUserTags = async (): Promise<{
-	data: UserTagsData[] | null;
-	error: Error;
+  data: null | UserTagsData[];
+  error: Error;
 }> => {
-	try {
-		const response = await axios.get<{ data: UserTagsData[]; error: Error }>(
-			`${NEXT_API_URL}${FETCH_USER_TAGS_API}`,
-		);
-		return response?.data;
-	} catch (error_) {
-		const error = error_ as Error;
-		return { data: null, error };
-	}
+  try {
+    const response = await axios.get<{ data: UserTagsData[]; error: Error }>(
+      `${NEXT_API_URL}${FETCH_USER_TAGS_API}`,
+    );
+    return response?.data;
+  } catch (error_) {
+    const error = error_ as Error;
+    return { data: null, error };
+  }
 };
 
 export const fetchBookmarksViews = async ({
-	category_id,
+  category_id,
 }: {
-	category_id: number | string | null;
+  category_id: null | number | string;
 }): Promise<{ data: BookmarkViewDataTypes | null; error: Error }> => {
-	if (!isUserInACategory(category_id as string)) {
-		return {
-			data: null,
-			error: { message: "user not in category", name: "user not in category" },
-		};
-	}
+  if (!isUserInACategory(category_id as string)) {
+    return {
+      data: null,
+      error: { message: "user not in category", name: "user not in category" },
+    };
+  }
 
-	if (isNull(category_id)) {
-		return {
-			data: null,
-			error: {
-				message: "no access token and category id is null",
-				name: "no access token and category id is nul",
-			},
-		};
-	}
+  if (isNull(category_id)) {
+    return {
+      data: null,
+      error: {
+        message: "no access token and category id is null",
+        name: "no access token and category id is nul",
+      },
+    };
+  }
 
-	try {
-		const response = await axios.post<{
-			data: BookmarkViewDataTypes | null;
-			error: Error;
-		}>(`${NEXT_API_URL}${FETCH_BOOKMARKS_VIEW}`, {
-			category_id: isNull(category_id) ? 0 : category_id,
-		});
-		return response?.data;
-	} catch (error_) {
-		const error = error_ as Error;
-		return { data: null, error };
-	}
+  try {
+    const response = await axios.post<{
+      data: BookmarkViewDataTypes | null;
+      error: Error;
+    }>(`${NEXT_API_URL}${FETCH_BOOKMARKS_VIEW}`, {
+      category_id: isNull(category_id) ? 0 : category_id,
+    });
+    return response?.data;
+  } catch (error_) {
+    const error = error_ as Error;
+    return { data: null, error };
+  }
 };
 
 // user categories
 
 export const fetchCategoriesData = async (): Promise<{
-	data: CategoriesData[] | null;
-	error: Error;
+  data: CategoriesData[] | null;
+  error: Error;
 }> => {
-	try {
-		const response = await axios.get<{
-			data: CategoriesData[] | null;
-			error: Error;
-		}>(`${NEXT_API_URL}${FETCH_USER_CATEGORIES_API}`);
+  try {
+    const response = await axios.get<{
+      data: CategoriesData[] | null;
+      error: Error;
+    }>(`${NEXT_API_URL}${FETCH_USER_CATEGORIES_API}`);
 
-		return response.data;
-	} catch (error_) {
-		const error = error_ as Error;
-		return { data: null, error };
-	}
+    return response.data;
+  } catch (error_) {
+    const error = error_ as Error;
+    return { data: null, error };
+  }
 };
 
 export const deleteUserCategory = async ({
-	category_id,
-	keep_bookmarks,
+  category_id,
+  keep_bookmarks,
 }: DeleteUserCategoryApiPayload) => {
-	try {
-		const response = await axios.post<{
-			data: CategoriesData[] | null;
-			error: Error;
-		}>(`${NEXT_API_URL}${DELETE_USER_CATEGORIES_API}`, {
-			category_id,
-			keep_bookmarks,
-		});
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
+  try {
+    const response = await axios.post<{
+      data: CategoriesData[] | null;
+      error: Error;
+    }>(`${NEXT_API_URL}${DELETE_USER_CATEGORIES_API}`, {
+      category_id,
+      keep_bookmarks,
+    });
+    return response?.data;
+  } catch (error) {
+    return error;
+  }
 };
 
-export const updateCategoryOrder = async ({
-	order,
-}: UpdateCategoryOrderApiPayload) => {
-	try {
-		const response = await axios.post(
-			`${NEXT_API_URL}${UPDATE_CATEGORY_ORDER_API}`,
-			{ category_order: order },
-		);
+export const updateCategoryOrder = async ({ order }: UpdateCategoryOrderApiPayload) => {
+  try {
+    const response = await axios.post(`${NEXT_API_URL}${UPDATE_CATEGORY_ORDER_API}`, {
+      category_order: order,
+    });
 
-		return response;
-	} catch (error) {
-		return error;
-	}
+    return response;
+  } catch (error) {
+    return error;
+  }
 };
 
 // share
 export const sendCollaborationEmailInvite = async ({
-	emailList,
-	category_id,
-	edit_access,
-	hostUrl,
+  category_id,
+  edit_access,
+  emailList,
+  hostUrl,
 }: {
-	category_id: number;
-	edit_access: boolean;
-	emailList: string[];
-	hostUrl: string;
+  category_id: number;
+  edit_access: boolean;
+  emailList: string[];
+  hostUrl: string;
 }) => {
-	const response = await axios.post(
-		`${NEXT_API_URL}${SEND_COLLABORATION_EMAIL_API}`,
-		{ emailList, category_id, edit_access, hostUrl },
-	);
+  const response = await axios.post(`${NEXT_API_URL}${SEND_COLLABORATION_EMAIL_API}`, {
+    category_id,
+    edit_access,
+    emailList,
+    hostUrl,
+  });
 
-	return response;
+  return response;
 };
 
 export const fetchSharedCategoriesData = async (): Promise<{
-	data: FetchSharedCategoriesData[] | null;
-	error: Error;
+  data: FetchSharedCategoriesData[] | null;
+  error: Error;
 }> => {
-	try {
-		const response = await axios.get<{
-			data: FetchSharedCategoriesData[] | null;
-			error: Error;
-		}>(`${NEXT_API_URL}${FETCH_SHARED_CATEGORIES_DATA_API}`);
+  try {
+    const response = await axios.get<{
+      data: FetchSharedCategoriesData[] | null;
+      error: Error;
+    }>(`${NEXT_API_URL}${FETCH_SHARED_CATEGORIES_DATA_API}`);
 
-		return response?.data;
-	} catch (error) {
-		const catchError = error as Error;
-		return { data: null, error: catchError };
-	}
+    return response?.data;
+  } catch (error) {
+    const catchError = error as Error;
+    return { data: null, error: catchError };
+  }
 };
 
 export const deleteSharedCategoriesUser = async ({ id }: { id: number }) => {
-	try {
-		const response = await axios.post<{
-			data: FetchSharedCategoriesData[] | null;
-			error: Error;
-		}>(`${NEXT_API_URL}${DELETE_SHARED_CATEGORIES_USER_API}`, { id });
+  try {
+    const response = await axios.post<{
+      data: FetchSharedCategoriesData[] | null;
+      error: Error;
+    }>(`${NEXT_API_URL}${DELETE_SHARED_CATEGORIES_USER_API}`, { id });
 
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
+    return response?.data;
+  } catch (error) {
+    return error;
+  }
 };
 
 export const updateSharedCategoriesUserAccess = async ({
-	id,
-	updateData,
+  id,
+  updateData,
 }: UpdateSharedCategoriesUserAccessApiPayload) => {
-	try {
-		const response = await axios.post<{
-			data: FetchSharedCategoriesData[] | null;
-			error: Error;
-		}>(`${NEXT_API_URL}${UPDATE_SHARED_CATEGORY_USER_ROLE_API}`, {
-			id,
-			updateData,
-		});
+  try {
+    const response = await axios.post<{
+      data: FetchSharedCategoriesData[] | null;
+      error: Error;
+    }>(`${NEXT_API_URL}${UPDATE_SHARED_CATEGORY_USER_ROLE_API}`, {
+      id,
+      updateData,
+    });
 
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
+    return response?.data;
+  } catch (error) {
+    return error;
+  }
 };
 
 // profiles
 export const fetchUserProfiles = async ({
-	userId,
-	session,
+  session,
+  userId,
 }: {
-	session: SupabaseSessionType;
-	userId: string;
-}): Promise<{ data: ProfilesTableTypes[] | null; error: Error }> => {
-	const existingOauthAvatarUrl = session?.user?.user_metadata?.avatar_url;
+  session: SupabaseSessionType;
+  userId: string;
+}): Promise<{ data: null | ProfilesTableTypes[]; error: Error }> => {
+  const existingOauthAvatarUrl = session?.user?.user_metadata?.avatar_url;
 
-	try {
-		if (userId) {
-			const response = await axios.get<{
-				data: ProfilesTableTypes[] | null;
-				error: Error;
-			}>(
-				`${NEXT_API_URL}${FETCH_USER_PROFILE_API}?${
-					!isNil(existingOauthAvatarUrl)
-						? `&avatar=${existingOauthAvatarUrl}`
-						: ``
-				}`,
-			);
-			return response?.data;
-		}
+  try {
+    if (userId) {
+      const response = await axios.get<{
+        data: null | ProfilesTableTypes[];
+        error: Error;
+      }>(
+        `${NEXT_API_URL}${FETCH_USER_PROFILE_API}?${
+          !isNil(existingOauthAvatarUrl) ? `&avatar=${existingOauthAvatarUrl}` : ``
+        }`,
+      );
+      return response?.data;
+    }
 
-		return { data: null, error: { name: "No user id", message: "No user id" } };
-	} catch (error_) {
-		const error = error_ as Error;
-		return { data: null, error };
-	}
+    return { data: null, error: { message: "No user id", name: "No user id" } };
+  } catch (error_) {
+    const error = error_ as Error;
+    return { data: null, error };
+  }
 };
 
-export const updateUserProfile = async ({
-	updateData,
-}: UpdateUserProfileApiPayload) => {
-	try {
-		const response = await axios.post<{
-			data: ProfilesTableTypes[] | null;
-			error: Error;
-		}>(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, { updateData });
+export const updateUserProfile = async ({ updateData }: UpdateUserProfileApiPayload) => {
+  try {
+    const response = await axios.post<{
+      data: null | ProfilesTableTypes[];
+      error: Error;
+    }>(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, { updateData });
 
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
+    return response?.data;
+  } catch (error) {
+    return error;
+  }
 };
 
-export const updateUsername = async ({
-	id,
-	username,
-}: UpdateUsernameApiPayload) => {
-	try {
-		const response = await axios.post<{
-			data: ProfilesTableTypes[] | null;
-			error: Error;
-		}>(`${NEXT_API_URL}${UPDATE_USERNAME_API}`, { id, username });
+export const updateUsername = async ({ id, username }: UpdateUsernameApiPayload) => {
+  try {
+    const response = await axios.post<{
+      data: null | ProfilesTableTypes[];
+      error: Error;
+    }>(`${NEXT_API_URL}${UPDATE_USERNAME_API}`, { id, username });
 
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
+    return response?.data;
+  } catch (error) {
+    return error;
+  }
 };
 
 export const deleteUser = async () => {
-	try {
-		const response = await axios.post<{
-			data: ProfilesTableTypes[] | null;
-			error: Error;
-		}>(`${NEXT_API_URL}${DELETE_USER_API}`, {});
+  try {
+    const response = await axios.post<{
+      data: null | ProfilesTableTypes[];
+      error: Error;
+    }>(`${NEXT_API_URL}${DELETE_USER_API}`, {});
 
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
+    return response?.data;
+  } catch (error) {
+    return error;
+  }
 };
 
 export const getUserProfilePic = async ({
-	email,
+  email,
 }: GetUserProfilePicPayload): Promise<{
-	data: UserProfilePicTypes[] | null;
-	error: Error;
+  data: null | UserProfilePicTypes[];
+  error: Error;
 }> => {
-	if (!isNil(email) && !isEmpty(email)) {
-		try {
-			const response = await axios.get<{
-				data: UserProfilePicTypes[] | null;
-				error: Error;
-			}>(`${NEXT_API_URL}${FETCH_USER_PROFILE_PIC_API}?email=${email}`);
+  if (!isNil(email) && !isEmpty(email)) {
+    try {
+      const response = await axios.get<{
+        data: null | UserProfilePicTypes[];
+        error: Error;
+      }>(`${NEXT_API_URL}${FETCH_USER_PROFILE_PIC_API}?email=${email}`);
 
-			return response?.data;
-		} catch (error) {
-			return { data: null, error: error as Error };
-		}
-	}
+      return response?.data;
+    } catch (error) {
+      return { data: null, error: error as Error };
+    }
+  }
 
-	return { data: null, error: "Email not present" as unknown as Error };
+  return { data: null, error: "Email not present" as unknown as Error };
 };
 
-export const removeUserProfilePic = async ({
-	id,
-}: RemoveUserProfilePicPayload) => {
-	try {
-		const response = await axios.post<{
-			data: ProfilesTableTypes[] | null;
-			error: Error;
-		}>(`${NEXT_API_URL}${REMOVE_PROFILE_PIC_API}`, { id });
+export const removeUserProfilePic = async ({ id }: RemoveUserProfilePicPayload) => {
+  try {
+    const response = await axios.post<{
+      data: null | ProfilesTableTypes[];
+      error: Error;
+    }>(`${NEXT_API_URL}${REMOVE_PROFILE_PIC_API}`, { id });
 
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
+    return response?.data;
+  } catch (error) {
+    return error;
+  }
 };
 
 // file upload
 
 export const uploadFile = async ({
-	file,
-	category_id,
-	thumbnailPath,
-	uploadFileNamePath,
+  category_id,
+  file,
+  thumbnailPath,
+  uploadFileNamePath,
 }: UploadFileApiPayload) => {
-	try {
-		const fileName = parseUploadFileName(file?.name);
-		const response = await axios.post<UploadFileApiResponse>(
-			`${NEXT_API_URL}${UPLOAD_FILE_API}`,
-			{
-				category_id,
-				thumbnailPath,
-				name: fileName,
-				type: file?.type,
-				uploadFileNamePath,
-			},
-			{ headers: { "Content-Type": "application/json" } },
-		);
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
+  try {
+    const fileName = parseUploadFileName(file?.name);
+    const response = await axios.post<UploadFileApiResponse>(
+      `${NEXT_API_URL}${UPLOAD_FILE_API}`,
+      {
+        category_id,
+        name: fileName,
+        thumbnailPath,
+        type: file?.type,
+        uploadFileNamePath,
+      },
+      { headers: { "Content-Type": "application/json" } },
+    );
+    return response?.data;
+  } catch (error) {
+    return error;
+  }
 };
 
 // user settings
 export const uploadProfilePic = async ({ file }: UploadProfilePicPayload) => {
-	try {
-		const response = await axios.post<UploadProfilePicApiResponse>(
-			`${NEXT_API_URL}${UPLOAD_PROFILE_PIC_API}`,
-			{ file },
-			{ headers: { "Content-Type": "multipart/form-data" } },
-		);
+  try {
+    const response = await axios.post<UploadProfilePicApiResponse>(
+      `${NEXT_API_URL}${UPLOAD_PROFILE_PIC_API}`,
+      { file },
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
 
-		return response?.data;
-	} catch (error) {
-		return error;
-	}
+    return response?.data;
+  } catch (error) {
+    return error;
+  }
 };
 
 // auth
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 export const signOut = async (supabase: SupabaseClient<any, "public", any>) => {
-	await supabase.auth.signOut({ scope: "local" });
+  await supabase.auth.signOut({ scope: "local" });
 };
 
-export const getMediaType = async (url: string): Promise<string | null> => {
-	try {
-		const encodedUrl = encodeURIComponent(url);
+export const getMediaType = async (url: string): Promise<null | string> => {
+  try {
+    const encodedUrl = encodeURIComponent(url);
 
-		const response = await fetch(
-			`${getBaseUrl()}${NEXT_API_URL}${GET_MEDIA_TYPE_API}?url=${encodedUrl}`,
-			{ method: "GET" },
-		);
+    const response = await fetch(
+      `${getBaseUrl()}${NEXT_API_URL}${GET_MEDIA_TYPE_API}?url=${encodedUrl}`,
+      { method: "GET" },
+    );
 
-		if (!response.ok) {
-			console.error("Error in getting media type");
-			return null;
-		}
+    if (!response.ok) {
+      console.error("Error in getting media type");
+      return null;
+    }
 
-		const data = (await response.json()) as { mediaType?: string };
+    const data = (await response.json()) as { mediaType?: string };
 
-		return data.mediaType || null;
-	} catch (error) {
-		console.error("Error getting media type:", error);
-		return null;
-	}
+    return data.mediaType ?? null;
+  } catch (error) {
+    console.error("Error getting media type:", error);
+    return null;
+  }
 };
 
 export const validateApiKey = async (apikey: string) => {
-	try {
-		const genAI = new GoogleGenerativeAI(apikey);
-		const model = genAI.getGenerativeModel({
-			model: GEMINI_MODEL,
-		});
+  try {
+    const ai = new GoogleGenAI({ apiKey: apikey });
+    const response = await ai.models.generateContent({
+      contents: ["Hey there!"],
+      model: GEMINI_MODEL,
+    });
 
-		const prompt = "Hey there!";
-		const result = await model.generateContent([prompt]);
+    if (!response.text) {
+      throw new Error("response not generated");
+    }
 
-		if (!result.response.text()) {
-			throw new Error("response not generated");
-		}
-
-		return result;
-	} catch {
-		throw new Error("Invalid API key");
-	}
+    return response;
+  } catch (error) {
+    throw new Error("Invalid API key", { cause: error });
+  }
 };

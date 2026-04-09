@@ -1,17 +1,14 @@
-import {
-	type AddTagToBookmarkPayload,
-	type AddTagToBookmarkResponse,
+import type {
+  AddTagToBookmarkPayload,
+  AddTagToBookmarkResponse,
 } from "@/app/api/tags/add-tag-to-bookmark/schema";
+import type { PaginatedBookmarks, UserTagsData } from "@/types/apiTypes";
+
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
 import { postApi } from "@/lib/api-helpers/api";
-import { type PaginatedBookmarks, type UserTagsData } from "@/types/apiTypes";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
-import {
-	ADD_TAG_TO_BOOKMARK_API,
-	BOOKMARKS_KEY,
-	USER_TAGS_KEY,
-} from "@/utils/constants";
+import { ADD_TAG_TO_BOOKMARK_API, BOOKMARKS_KEY, USER_TAGS_KEY } from "@/utils/constants";
 import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
 
 /**
@@ -19,80 +16,68 @@ import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
  * This is additive - it adds to existing tags without removing them.
  */
 export function useAddTagToBookmarkOptimisticMutation() {
-	const { queryClient, session, queryKey, searchQueryKey } =
-		useBookmarkMutationContext();
+  const { queryClient, queryKey, searchQueryKey, session } = useBookmarkMutationContext();
 
-	const addTagToBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
-		AddTagToBookmarkResponse,
-		Error,
-		AddTagToBookmarkPayload,
-		typeof queryKey,
-		PaginatedBookmarks
-	>({
-		mutationFn: (payload) =>
-			postApi<AddTagToBookmarkResponse>(
-				`/api${ADD_TAG_TO_BOOKMARK_API}`,
-				payload,
-			),
-		queryKey,
-		secondaryQueryKey: searchQueryKey,
+  const addTagToBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
+    AddTagToBookmarkResponse,
+    Error,
+    AddTagToBookmarkPayload,
+    typeof queryKey,
+    PaginatedBookmarks
+  >({
+    mutationFn: (payload) =>
+      postApi<AddTagToBookmarkResponse>(`/api${ADD_TAG_TO_BOOKMARK_API}`, payload),
+    onSettled: (_data, error) => {
+      if (error) {
+        return;
+      }
 
-		updater: (currentData, variables) => {
-			if (!currentData?.pages) {
-				return currentData as PaginatedBookmarks;
-			}
+      // Invalidate ALL bookmark queries for user (covers all collections)
+      void queryClient.invalidateQueries({
+        queryKey: [BOOKMARKS_KEY, session?.user?.id],
+      });
+    },
+    queryKey,
 
-			// Resolve tag from cache - skip optimistic update if not found
-			const userTagsData = queryClient.getQueryData([
-				USER_TAGS_KEY,
-				session?.user?.id,
-			]) as { data: UserTagsData[] } | undefined;
+    secondaryQueryKey: searchQueryKey,
 
-			const tagInfo = userTagsData?.data?.find(
-				(tag) => tag.id === variables.tagId,
-			);
+    updater: (currentData, variables) => {
+      if (!currentData?.pages) {
+        return currentData!;
+      }
 
-			if (!tagInfo) {
-				logCacheMiss("Optimistic Update", "Tag not found in cache", {
-					bookmarkId: variables.bookmarkId,
-					tagId: variables.tagId,
-				});
-				return currentData;
-			}
+      // Resolve tag from cache - skip optimistic update if not found
+      const userTagsData = queryClient.getQueryData<{ data: UserTagsData[] }>([
+        USER_TAGS_KEY,
+        session?.user?.id,
+      ]);
 
-			return (
-				updateBookmarkInPaginatedData(
-					currentData,
-					variables.bookmarkId,
-					(bookmark) => {
-						// Check for duplicates
-						const alreadyHasTag = bookmark.addedTags?.some(
-							(tag) => tag.id === variables.tagId,
-						);
-						if (alreadyHasTag) {
-							return;
-						}
+      const tagInfo = userTagsData?.data?.find((tag) => tag.id === variables.tagId);
 
-						bookmark.addedTags = [
-							...(bookmark.addedTags ?? []),
-							{ id: variables.tagId, name: tagInfo.name } as UserTagsData,
-						];
-					},
-				) ?? currentData
-			);
-		},
+      if (!tagInfo) {
+        logCacheMiss("Optimistic Update", "Tag not found in cache", {
+          bookmarkId: variables.bookmarkId,
+          tagId: variables.tagId,
+        });
+        return currentData;
+      }
 
-		onSettled: (_data, error) => {
-			if (error) {
-				return;
-			}
+      return (
+        updateBookmarkInPaginatedData(currentData, variables.bookmarkId, (bookmark) => {
+          // Check for duplicates
+          const alreadyHasTag = bookmark.addedTags?.some((tag) => tag.id === variables.tagId);
+          if (alreadyHasTag) {
+            return;
+          }
 
-			// Invalidate ALL bookmark queries for user (covers all collections)
-			void queryClient.invalidateQueries({
-				queryKey: [BOOKMARKS_KEY, session?.user?.id],
-			});
-		},
-	});
+          bookmark.addedTags = [
+            ...(bookmark.addedTags ?? []),
+            { id: variables.tagId, name: tagInfo.name } as UserTagsData,
+          ];
+        }) ?? currentData
+      );
+    },
+  });
 
-	return { addTagToBookmarkOptimisticMutation };
+  return { addTagToBookmarkOptimisticMutation };
 }

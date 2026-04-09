@@ -3,16 +3,16 @@ import { imageSize } from "image-size";
 import fetch from "node-fetch";
 import sharp from "sharp";
 
-export type IOptions = {
-	offline?: boolean;
-	size?: number;
-};
+export interface IOptions {
+  offline?: boolean;
+  size?: number;
+}
 
-export type IOutput = {
-	encoded: string;
-	height: number | undefined;
-	width: number | undefined;
-};
+export interface IOutput {
+  encoded: string;
+  height: number | undefined;
+  width: number | undefined;
+}
 
 /**
  * Generate a Blurhash string from a given image URL or local path.
@@ -34,57 +34,47 @@ export type IOutput = {
  * console.log(output);
  * ```
  */
-export const blurhashFromURL = async (
-	source: string,
-	options: IOptions = {},
-): Promise<IOutput> => {
-	const { size = 32, offline = false } = options;
+export const blurhashFromURL = async (source: string, options: IOptions = {}): Promise<IOutput> => {
+  const { offline = false, size = 32 } = options;
 
-	let height;
-	let returnedBuffer;
-	let width;
+  let height;
+  let returnedBuffer;
+  let width;
 
-	if (offline) {
-		const fs = await import("node:fs");
-		const fileBuffer = fs.readFileSync(source);
-		const { width: localWidth, height: localHeight } = imageSize(fileBuffer);
-		width = localWidth;
-		height = localHeight;
-		returnedBuffer = await sharp(fileBuffer).toBuffer();
-	} else {
-		const response = await fetch(source);
-		const arrayBuffer = await response.arrayBuffer();
-		returnedBuffer = Buffer.from(arrayBuffer);
+  if (offline) {
+    const fs = await import("node:fs");
+    const fileBuffer = fs.readFileSync(source);
+    const { height: localHeight, width: localWidth } = imageSize(fileBuffer);
+    width = localWidth;
+    height = localHeight;
+    returnedBuffer = await sharp(fileBuffer).toBuffer();
+  } else {
+    const response = await fetch(source);
+    const arrayBuffer = await response.arrayBuffer();
+    returnedBuffer = Buffer.from(arrayBuffer);
 
-		const { width: remoteWidth, height: remoteHeight } =
-			imageSize(returnedBuffer);
-		width = remoteWidth;
-		height = remoteHeight;
-	}
+    const { height: remoteHeight, width: remoteWidth } = imageSize(returnedBuffer);
+    width = remoteWidth;
+    height = remoteHeight;
+  }
 
-	const { info, data } = await sharp(returnedBuffer)
-		.resize(size, size, {
-			fit: "inside",
-		})
-		.ensureAlpha()
-		.raw()
-		.toBuffer({
-			resolveWithObject: true,
-		});
+  const { data, info } = await sharp(returnedBuffer)
+    .resize(size, size, {
+      fit: "inside",
+    })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({
+      resolveWithObject: true,
+    });
 
-	const encoded = encode(
-		new Uint8ClampedArray(data),
-		info.width,
-		info.height,
-		4,
-		4,
-	);
+  const encoded = encode(new Uint8ClampedArray(data), info.width, info.height, 4, 4);
 
-	const output: IOutput = {
-		encoded,
-		width,
-		height,
-	};
+  const output: IOutput = {
+    encoded,
+    height,
+    width,
+  };
 
-	return output;
+  return output;
 };

@@ -323,35 +323,30 @@ import { HttpStatus } from "@/utils/error-utils/common";
 const ROUTE = "set-bookmark-categories";
 
 const SetBookmarkCategoriesPayloadSchema = z.object({
-	bookmarkId: z.number().int().positive(),
-	categoryIds: z.array(z.number().int().nonnegative()),
+  bookmarkId: z.number().int().positive(),
+  categoryIds: z.array(z.number().int().nonnegative()),
 });
 
 const SetBookmarkCategoriesResponseSchema = z.object({
-	bookmarkId: z.number(),
-	categoryIds: z.array(z.number()),
+  bookmarkId: z.number(),
+  categoryIds: z.array(z.number()),
 });
 
 // Authenticated endpoint
 export const POST = createPostApiHandlerWithAuth({
-	route: ROUTE,
-	inputSchema: SetBookmarkCategoriesPayloadSchema,
-	outputSchema: SetBookmarkCategoriesResponseSchema,
-	handler: async ({ data, supabase, user, route }) => {
-		const { bookmarkId, categoryIds } = data;
-		const userId = user.id;
+  route: ROUTE,
+  inputSchema: SetBookmarkCategoriesPayloadSchema,
+  outputSchema: SetBookmarkCategoriesResponseSchema,
+  handler: async ({ data, supabase, user, route }) => {
+    const { bookmarkId, categoryIds } = data;
+    const userId = user.id;
 
-		// Implementation here
-		const result = await setBookmarkCategories(
-			supabase,
-			userId,
-			bookmarkId,
-			categoryIds,
-		);
+    // Implementation here
+    const result = await setBookmarkCategories(supabase, userId, bookmarkId, categoryIds);
 
-		// Return data directly - handler wraps in apiSuccess automatically
-		return result;
-	},
+    // Return data directly - handler wraps in apiSuccess automatically
+    return result;
+  },
 });
 ```
 
@@ -367,50 +362,50 @@ import { HttpStatus } from "@/utils/error-utils/common";
 const ROUTE = "fetch-discoverable-by-id";
 
 const FetchDiscoverableByIdQuerySchema = z.object({
-	id: z.coerce.number().int().positive(),
+  id: z.coerce.number().int().positive(),
 });
 
 const ResponseSchema = z.object({
-	id: z.number(),
-	title: z.string().nullable(),
-	// ... other fields
+  id: z.number(),
+  title: z.string().nullable(),
+  // ... other fields
 });
 
 // Public endpoint - no auth required
 export const GET = createGetApiHandler({
-	route: ROUTE,
-	inputSchema: FetchDiscoverableByIdQuerySchema,
-	outputSchema: ResponseSchema,
-	handler: async ({ input, route }) => {
-		const { id } = input;
-		const { supabase } = await createApiClient(); // No auth needed
+  route: ROUTE,
+  inputSchema: FetchDiscoverableByIdQuerySchema,
+  outputSchema: ResponseSchema,
+  handler: async ({ input, route }) => {
+    const { id } = input;
+    const { supabase } = await createApiClient(); // No auth needed
 
-		const { data, error } = await supabase
-			.from("everything")
-			.select("*")
-			.eq("id", id)
-			.maybeSingle();
+    const { data, error } = await supabase
+      .from("everything")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
 
-		if (error) {
-			return apiError({
-				route,
-				message: "Failed to fetch bookmark",
-				error,
-				operation: "fetch_discoverable_bookmark",
-			});
-		}
+    if (error) {
+      return apiError({
+        route,
+        message: "Failed to fetch bookmark",
+        error,
+        operation: "fetch_discoverable_bookmark",
+      });
+    }
 
-		if (!data) {
-			return apiWarn({
-				route,
-				message: "Bookmark not found",
-				status: HttpStatus.NOT_FOUND,
-				context: { id },
-			});
-		}
+    if (!data) {
+      return apiWarn({
+        route,
+        message: "Bookmark not found",
+        status: HttpStatus.NOT_FOUND,
+        context: { id },
+      });
+    }
 
-		return data; // Handler wraps in apiSuccess automatically
-	},
+    return data; // Handler wraps in apiSuccess automatically
+  },
 });
 ```
 
@@ -425,56 +420,51 @@ import { requireAuth } from "@/lib/supabase/api";
 const ROUTE = "set-bookmark-categories";
 
 const SetBookmarkCategoriesPayloadSchema = z.object({
-	bookmarkId: z.number().int().positive(),
-	categoryIds: z.array(z.number().int().nonnegative()),
+  bookmarkId: z.number().int().positive(),
+  categoryIds: z.array(z.number().int().nonnegative()),
 });
 
 const SetBookmarkCategoriesResponseSchema = z.object({
-	bookmarkId: z.number(),
-	categoryIds: z.array(z.number()),
+  bookmarkId: z.number(),
+  categoryIds: z.array(z.number()),
 });
 
 export async function POST(request: NextRequest) {
-	try {
-		const auth = await requireAuth(ROUTE);
-		if (auth.errorResponse) {
-			return auth.errorResponse;
-		}
+  try {
+    const auth = await requireAuth(ROUTE);
+    if (auth.errorResponse) {
+      return auth.errorResponse;
+    }
 
-		const body = await parseBody({
-			request,
-			schema: SetBookmarkCategoriesPayloadSchema,
-			route: ROUTE,
-		});
-		if (body.errorResponse) {
-			return body.errorResponse;
-		}
+    const body = await parseBody({
+      request,
+      schema: SetBookmarkCategoriesPayloadSchema,
+      route: ROUTE,
+    });
+    if (body.errorResponse) {
+      return body.errorResponse;
+    }
 
-		const { supabase, user } = auth;
-		const { bookmarkId, categoryIds } = body.data;
+    const { supabase, user } = auth;
+    const { bookmarkId, categoryIds } = body.data;
 
-		// Implementation here
-		const result = await setBookmarkCategories(
-			supabase,
-			user.id,
-			bookmarkId,
-			categoryIds,
-		);
+    // Implementation here
+    const result = await setBookmarkCategories(supabase, user.id, bookmarkId, categoryIds);
 
-		return apiSuccess({
-			route: ROUTE,
-			data: result,
-			schema: SetBookmarkCategoriesResponseSchema,
-		});
-	} catch (error) {
-		return apiError({
-			route: ROUTE,
-			message: "Failed to set bookmark categories",
-			error,
-			operation: "set_bookmark_categories",
-			userId: auth?.user?.id,
-		});
-	}
+    return apiSuccess({
+      route: ROUTE,
+      data: result,
+      schema: SetBookmarkCategoriesResponseSchema,
+    });
+  } catch (error) {
+    return apiError({
+      route: ROUTE,
+      message: "Failed to set bookmark categories",
+      error,
+      operation: "set_bookmark_categories",
+      userId: auth?.user?.id,
+    });
+  }
 }
 ```
 
@@ -492,35 +482,32 @@ export async function POST(request: NextRequest) {
 ```typescript
 // For authenticated endpoints - use WithAuth helpers
 import {
-	createGetApiHandlerWithAuth,
-	createPostApiHandlerWithAuth,
+  createGetApiHandlerWithAuth,
+  createPostApiHandlerWithAuth,
 } from "@/lib/api-helpers/create-handler";
 
 export const GET = createGetApiHandlerWithAuth({
-	route: ROUTE,
-	inputSchema: QuerySchema,
-	outputSchema: ResponseSchema,
-	handler: async ({ data, supabase, user, route }) => {
-		// user and supabase are automatically available
-		// No need to call requireAuth manually
-	},
+  route: ROUTE,
+  inputSchema: QuerySchema,
+  outputSchema: ResponseSchema,
+  handler: async ({ data, supabase, user, route }) => {
+    // user and supabase are automatically available
+    // No need to call requireAuth manually
+  },
 });
 
 // For public endpoints - use public handlers
-import {
-	createGetApiHandler,
-	createPostApiHandler,
-} from "@/lib/api-helpers/create-handler";
+import { createGetApiHandler, createPostApiHandler } from "@/lib/api-helpers/create-handler";
 
 export const GET = createGetApiHandler({
-	route: ROUTE,
-	inputSchema: QuerySchema,
-	outputSchema: ResponseSchema,
-	handler: async ({ input, route }) => {
-		// No auth required - public endpoint
-		const { supabase } = await createApiClient();
-		// ...
-	},
+  route: ROUTE,
+  inputSchema: QuerySchema,
+  outputSchema: ResponseSchema,
+  handler: async ({ input, route }) => {
+    // No auth required - public endpoint
+    const { supabase } = await createApiClient();
+    // ...
+  },
 });
 ```
 
@@ -530,7 +517,7 @@ export const GET = createGetApiHandler({
 // For authenticated endpoints
 const auth = await requireAuth(ROUTE);
 if (auth.errorResponse) {
-	return auth.errorResponse;
+  return auth.errorResponse;
 }
 const { supabase, user } = auth;
 ```
@@ -540,10 +527,10 @@ const { supabase, user } = auth;
 ```typescript
 // WRONG: Using requireAuth in public handler
 export const GET = createGetApiHandler({
-	handler: async ({ input, route }) => {
-		const auth = await requireAuth(ROUTE); // ❌ Don't do this!
-		// ...
-	},
+  handler: async ({ input, route }) => {
+    const auth = await requireAuth(ROUTE); // ❌ Don't do this!
+    // ...
+  },
 });
 ```
 
@@ -552,8 +539,8 @@ export const GET = createGetApiHandler({
 ```typescript
 // WRONG: No auth check
 export async function POST(request: NextRequest) {
-	const body = await request.json();
-	// Direct database access without auth
+  const body = await request.json();
+  // Direct database access without auth
 }
 ```
 
@@ -571,12 +558,12 @@ export async function POST(request: NextRequest) {
 ```typescript
 // Handler helpers automatically validate input/output
 export const GET = createGetApiHandler({
-	inputSchema: QuerySchema, // Automatically validates query params
-	outputSchema: ResponseSchema, // Automatically validates response
-	handler: async ({ input, route }) => {
-		// input is already validated
-		const { id } = input;
-	},
+  inputSchema: QuerySchema, // Automatically validates query params
+  outputSchema: ResponseSchema, // Automatically validates response
+  handler: async ({ input, route }) => {
+    // input is already validated
+    const { id } = input;
+  },
 });
 ```
 
@@ -586,12 +573,12 @@ export const GET = createGetApiHandler({
 
 ```typescript
 const body = await parseBody({
-	request,
-	schema: SetBookmarkCategoriesPayloadSchema,
-	route: ROUTE,
+  request,
+  schema: SetBookmarkCategoriesPayloadSchema,
+  route: ROUTE,
 });
 if (body.errorResponse) {
-	return body.errorResponse;
+  return body.errorResponse;
 }
 const { bookmarkId, categoryIds } = body.data;
 ```
@@ -611,25 +598,25 @@ const bookmarkId = body.bookmarkId; // Could be anything!
 ```typescript
 // For user errors (4xx) - use apiWarn
 if (!bookmark) {
-	return apiWarn({
-		route: ROUTE,
-		message: "Bookmark not found",
-		status: HttpStatus.NOT_FOUND,
-		context: { bookmarkId },
-	});
+  return apiWarn({
+    route: ROUTE,
+    message: "Bookmark not found",
+    status: HttpStatus.NOT_FOUND,
+    context: { bookmarkId },
+  });
 }
 
 // For system errors (5xx) - use apiError
 try {
-	// Database operation
+  // Database operation
 } catch (error) {
-	return apiError({
-		route: ROUTE,
-		message: "Failed to update bookmark",
-		error,
-		operation: "update_bookmark",
-		userId: user.id,
-	});
+  return apiError({
+    route: ROUTE,
+    message: "Failed to update bookmark",
+    error,
+    operation: "update_bookmark",
+    userId: user.id,
+  });
 }
 ```
 
@@ -644,9 +631,9 @@ try {
 
 ```typescript
 return apiSuccess({
-	route: ROUTE,
-	data: result,
-	schema: SetBookmarkCategoriesResponseSchema,
+  route: ROUTE,
+  data: result,
+  schema: SetBookmarkCategoriesResponseSchema,
 });
 ```
 
@@ -703,14 +690,10 @@ return apiSuccess({
 **✅ CORRECT - Named exports only:**
 
 ```typescript
-export type SetBookmarkCategoriesPayload = z.infer<
-	typeof SetBookmarkCategoriesPayloadSchema
->;
-export type SetBookmarkCategoriesResponse = z.infer<
-	typeof SetBookmarkCategoriesResponseSchema
->;
+export type SetBookmarkCategoriesPayload = z.infer<typeof SetBookmarkCategoriesPayloadSchema>;
+export type SetBookmarkCategoriesResponse = z.infer<typeof SetBookmarkCategoriesResponseSchema>;
 export async function POST(request: NextRequest) {
-	/* ... */
+  /* ... */
 }
 ```
 
@@ -759,7 +742,7 @@ const result: SetBookmarkCategoriesResponse = {
 ```typescript
 // WRONG
 const result: any = {
-	/* ... */
+  /* ... */
 };
 // @ts-ignore
 const unsafe = someFunction();
@@ -773,7 +756,7 @@ const unsafe = someFunction();
 // Check with grep first before exporting
 export type SetBookmarkCategoriesPayload = z.infer<typeof Schema>; // Used in other files
 type InternalHelperType = {
-	/* ... */
+  /* ... */
 }; // Not exported - only used locally
 ```
 
@@ -792,7 +775,7 @@ use-set-bookmark-categories.ts
 
 ```typescript
 export function useSetBookmarkCategories() {
-	/* ... */
+  /* ... */
 }
 ```
 
@@ -809,62 +792,56 @@ export default function useSetBookmarkCategories() { /* ... */ }  // Wrong expor
 
 ```typescript
 export function useSetBookmarkCategoriesOptimisticMutation() {
-	const queryClient = useQueryClient();
-	const session = useSupabaseSession((state) => state.session);
+  const queryClient = useQueryClient();
+  const session = useSupabaseSession((state) => state.session);
 
-	const mutation = useMutation({
-		mutationFn: setBookmarkCategories,
-		onMutate: async (data) => {
-			// Cancel any outgoing refetches
-			await queryClient.cancelQueries({
-				queryKey: [BOOKMARKS_KEY, session?.user?.id],
-			});
+  const mutation = useMutation({
+    mutationFn: setBookmarkCategories,
+    onMutate: async (data) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({
+        queryKey: [BOOKMARKS_KEY, session?.user?.id],
+      });
 
-			// Snapshot the previous value
-			const previousData = queryClient.getQueryData([
-				BOOKMARKS_KEY,
-				session?.user?.id,
-			]);
+      // Snapshot the previous value
+      const previousData = queryClient.getQueryData([BOOKMARKS_KEY, session?.user?.id]);
 
-			// Optimistically update to the new value
-			queryClient.setQueryData(
-				[BOOKMARKS_KEY, session?.user?.id],
-				(old: BookmarksData | undefined) => {
-					if (!old?.data) {
-						return old;
-					}
-					return {
-						...old,
-						data: old.data.map((bookmark) =>
-							bookmark.id === data.bookmarkId
-								? { ...bookmark, categoryIds: data.categoryIds }
-								: bookmark,
-						),
-					};
-				},
-			);
+      // Optimistically update to the new value
+      queryClient.setQueryData(
+        [BOOKMARKS_KEY, session?.user?.id],
+        (old: BookmarksData | undefined) => {
+          if (!old?.data) {
+            return old;
+          }
+          return {
+            ...old,
+            data: old.data.map((bookmark) =>
+              bookmark.id === data.bookmarkId
+                ? { ...bookmark, categoryIds: data.categoryIds }
+                : bookmark,
+            ),
+          };
+        },
+      );
 
-			// Return context for rollback
-			return { previousData };
-		},
-		// Rollback on error
-		onError: (error, variables, context) => {
-			if (context?.previousData) {
-				queryClient.setQueryData(
-					[BOOKMARKS_KEY, session?.user?.id],
-					context.previousData,
-				);
-			}
-		},
-		// Always refetch after error or success
-		onSettled: () => {
-			void queryClient.invalidateQueries({
-				queryKey: [BOOKMARKS_KEY, session?.user?.id],
-			});
-		},
-	});
+      // Return context for rollback
+      return { previousData };
+    },
+    // Rollback on error
+    onError: (error, variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData([BOOKMARKS_KEY, session?.user?.id], context.previousData);
+      }
+    },
+    // Always refetch after error or success
+    onSettled: () => {
+      void queryClient.invalidateQueries({
+        queryKey: [BOOKMARKS_KEY, session?.user?.id],
+      });
+    },
+  });
 
-	return { mutation };
+  return { mutation };
 }
 ```
 
@@ -909,7 +886,7 @@ onSuccess: () => {
 
 ```typescript
 export function processBookmarks(bookmarks: Bookmark[]): ProcessedBookmark[] {
-	return bookmarks.map(transformBookmark);
+  return bookmarks.map(transformBookmark);
 }
 ```
 
@@ -918,9 +895,9 @@ export function processBookmarks(bookmarks: Bookmark[]): ProcessedBookmark[] {
 ```typescript
 // WRONG
 class BookmarkProcessor {
-	process(bookmarks: Bookmark[]) {
-		/* ... */
-	}
+  process(bookmarks: Bookmark[]) {
+    /* ... */
+  }
 }
 ```
 
@@ -931,14 +908,14 @@ class BookmarkProcessor {
 ```bash
 pnpm fix:eslint <changed-files>
 pnpm lint:types
-pnpm fix:prettier
+pnpm fix:oxfmt
 ```
 
 **Required checks**:
 
 - ESLint passes
 - TypeScript strict mode passes
-- Prettier formatting applied
+- Oxfmt formatting applied
 - No unused code (knip)
 
 ### Code Style
@@ -977,17 +954,17 @@ pnpm fix:prettier
 ```typescript
 // WRONG: Creating duplicate functionality
 export function useGetCategories() {
-	// Same functionality as existing useFetchCategories()
+  // Same functionality as existing useFetchCategories()
 }
 
 // WRONG: Creating duplicate component
 export function CategoryList() {
-	// Same functionality as existing CategoriesList component
+  // Same functionality as existing CategoriesList component
 }
 
 // WRONG: Creating duplicate utility
 export function formatDate(date: Date) {
-	// Same functionality as existing formatDate() in utils/
+  // Same functionality as existing formatDate() in utils/
 }
 ```
 
@@ -1014,18 +991,18 @@ export function formatDate(date: Date) {
 ```typescript
 // WRONG: Creating duplicate hook when useFetchCategories already exists
 export function useGetCategories() {
-	const [categories, setCategories] = useState([]);
-	// ... same logic as existing useFetchCategories
+  const [categories, setCategories] = useState([]);
+  // ... same logic as existing useFetchCategories
 }
 
 // WRONG: Creating duplicate component
 export function CategoryDropdown() {
-	// ... same functionality as existing component
+  // ... same functionality as existing component
 }
 
 // WRONG: Creating duplicate utility
 export function formatDate(date: Date) {
-	// ... same logic as existing formatDate in utils/
+  // ... same logic as existing formatDate in utils/
 }
 ```
 
@@ -1230,16 +1207,16 @@ COMMENT ON COLUMN public.bookmark_categories.category_id IS 'Foreign key to cate
 ```typescript
 // WRONG: No auth check in manual handler
 export async function POST(request: NextRequest) {
-	const body = await request.json();
-	// Direct database access without auth
+  const body = await request.json();
+  // Direct database access without auth
 }
 
 // WRONG: Using requireAuth in public handler
 export const GET = createGetApiHandler({
-	handler: async ({ input, route }) => {
-		const auth = await requireAuth(ROUTE); // ❌ Public handler shouldn't require auth
-		// ...
-	},
+  handler: async ({ input, route }) => {
+    const auth = await requireAuth(ROUTE); // ❌ Public handler shouldn't require auth
+    // ...
+  },
 });
 ```
 
@@ -1248,35 +1225,35 @@ export const GET = createGetApiHandler({
 ```typescript
 // CORRECT: Use authenticated handler helper
 export const POST = createPostApiHandlerWithAuth({
-	route: ROUTE,
-	inputSchema: PayloadSchema,
-	outputSchema: ResponseSchema,
-	handler: async ({ data, supabase, user, route }) => {
-		// Auth handled automatically
-		// Now safe to proceed
-	},
+  route: ROUTE,
+  inputSchema: PayloadSchema,
+  outputSchema: ResponseSchema,
+  handler: async ({ data, supabase, user, route }) => {
+    // Auth handled automatically
+    // Now safe to proceed
+  },
 });
 
 // OR: Manual handler with requireAuth
 export async function POST(request: NextRequest) {
-	const auth = await requireAuth(ROUTE);
-	if (auth.errorResponse) {
-		return auth.errorResponse;
-	}
-	const { supabase, user } = auth;
-	// Now safe to proceed
+  const auth = await requireAuth(ROUTE);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
+  }
+  const { supabase, user } = auth;
+  // Now safe to proceed
 }
 
 // CORRECT: Public handler (no auth)
 export const GET = createGetApiHandler({
-	route: ROUTE,
-	inputSchema: QuerySchema,
-	outputSchema: ResponseSchema,
-	handler: async ({ input, route }) => {
-		// Public endpoint - no auth required
-		const { supabase } = await createApiClient();
-		// ...
-	},
+  route: ROUTE,
+  inputSchema: QuerySchema,
+  outputSchema: ResponseSchema,
+  handler: async ({ input, route }) => {
+    // Public endpoint - no auth required
+    const { supabase } = await createApiClient();
+    // ...
+  },
 });
 ```
 
@@ -1294,14 +1271,14 @@ const bookmarkId = body.bookmarkId; // Could be string, null, undefined, etc.
 
 ```typescript
 const body = await parseBody({
-	request,
-	schema: z.object({
-		bookmarkId: z.number().int().positive(),
-	}),
-	route: ROUTE,
+  request,
+  schema: z.object({
+    bookmarkId: z.number().int().positive(),
+  }),
+  route: ROUTE,
 });
 if (body.errorResponse) {
-	return body.errorResponse;
+  return body.errorResponse;
 }
 const { bookmarkId } = body.data; // Type-safe!
 ```
@@ -1313,12 +1290,12 @@ const { bookmarkId } = body.data; // Type-safe!
 ```typescript
 // WRONG: Using apiError for user validation error
 if (!bookmark) {
-	return apiError({
-		route: ROUTE,
-		message: "Bookmark not found",
-		error: new Error("Not found"),
-		operation: "get_bookmark",
-	}); // This sends to Sentry unnecessarily
+  return apiError({
+    route: ROUTE,
+    message: "Bookmark not found",
+    error: new Error("Not found"),
+    operation: "get_bookmark",
+  }); // This sends to Sentry unnecessarily
 }
 ```
 
@@ -1327,12 +1304,12 @@ if (!bookmark) {
 ```typescript
 // CORRECT: Use apiWarn for user errors
 if (!bookmark) {
-	return apiWarn({
-		route: ROUTE,
-		message: "Bookmark not found",
-		status: HttpStatus.NOT_FOUND,
-		context: { bookmarkId },
-	}); // No Sentry, just logs warning
+  return apiWarn({
+    route: ROUTE,
+    message: "Bookmark not found",
+    status: HttpStatus.NOT_FOUND,
+    context: { bookmarkId },
+  }); // No Sentry, just logs warning
 }
 ```
 
@@ -1345,7 +1322,7 @@ if (!bookmark) {
 ```typescript
 // WRONG
 function processData(data: any) {
-	return data.someProperty;
+  return data.someProperty;
 }
 ```
 
@@ -1354,10 +1331,10 @@ function processData(data: any) {
 ```typescript
 // CORRECT
 type DataType = {
-	someProperty: string;
+  someProperty: string;
 };
 function processData(data: DataType) {
-	return data.someProperty;
+  return data.someProperty;
 }
 ```
 
@@ -1368,7 +1345,7 @@ function processData(data: DataType) {
 ```typescript
 // WRONG
 export default function useBookmarkCategories() {
-	/* ... */
+  /* ... */
 }
 ```
 
@@ -1377,7 +1354,7 @@ export default function useBookmarkCategories() {
 ```typescript
 // CORRECT
 export function useBookmarkCategories() {
-	/* ... */
+  /* ... */
 }
 ```
 
@@ -1480,7 +1457,7 @@ Use this checklist before submitting any PR. Check each item to ensure your code
 - [ ] File size ≤ 250 lines (split if larger)
 - [ ] Functional programming only (no classes)
 - [ ] ESLint passes (`pnpm fix:eslint <changed-files>`)
-- [ ] Prettier formatting applied (`pnpm fix:prettier`)
+- [ ] Oxfmt formatting applied (`pnpm fix:oxfmt`)
 - [ ] TypeScript strict mode passes (`pnpm lint:types`)
 - [ ] No unused code (check with `pnpm lint:knip`)
 - [ ] Naming conventions followed:

@@ -1,37 +1,37 @@
 /**
  * @module Build-time only
  */
-import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
+import type { EndpointSupplement } from "@/lib/openapi/supplement-types";
 
 export const fetchBookmarksDiscoverableSupplement = {
-	path: "/bookmark/fetch-bookmarks-discoverable",
-	method: "get",
-	security: [],
-	tags: ["Bookmarks"],
-	summary: "List discoverable bookmarks",
-	description:
-		"Returns a paginated list of all bookmarks marked as discoverable across all users. No authentication required. Results are ordered by make_discoverable timestamp ascending. Page size is fixed at the server's PAGINATION_LIMIT (typically 20 items).",
-	responseExample: {
-		data: [
-			{
-				id: 101,
-				inserted_at: "2024-03-15T10:30:00Z",
-				title: "OpenAI Research Blog",
-				url: "https://openai.com/research",
-				description: "The latest AI research from OpenAI",
-				ogImage: "https://openai.com/og.png",
-				screenshot: null,
-				category_id: 7,
-				trash: null,
-				type: "article",
-				meta_data: null,
-				sort_index: "a0",
-				make_discoverable: "2024-03-15T12:00:00Z",
-			},
-		],
-		error: null,
-	},
-	additionalResponses: {
-		500: { description: "Server error" },
-	},
+  additionalResponses: {
+    500: { description: "Server error" },
+  },
+  description:
+    "Returns a paginated list of all bookmarks marked as discoverable across all users. No authentication required. Results are ordered by make_discoverable timestamp ascending. Page size is fixed at the server's PAGINATION_LIMIT (typically 20 items).",
+  method: "get",
+  path: "/bookmark/fetch-bookmarks-discoverable",
+  responseExample: {
+    data: [
+      {
+        category_id: 7,
+        description: "The latest AI research from OpenAI",
+        id: 101,
+        inserted_at: "2024-03-15T10:30:00Z",
+        make_discoverable: "2024-03-15T12:00:00Z",
+        meta_data: null,
+        ogImage: "https://openai.com/og.png",
+        screenshot: null,
+        sort_index: "a0",
+        title: "OpenAI Research Blog",
+        trash: null,
+        type: "article",
+        url: "https://openai.com/research",
+      },
+    ],
+    error: null,
+  },
+  security: [],
+  summary: "List discoverable bookmarks",
+  tags: ["Bookmarks"],
 } satisfies EndpointSupplement;

@@ -1,30 +1,30 @@
-import { useCallback, useMemo, type RefObject } from "react";
 import Image from "next/image";
-import { type ZoomRef } from "yet-another-react-lightbox";
+import { useCallback, useMemo } from "react";
+import type { RefObject } from "react";
+
+import type { SingleListData } from "../../types/apiTypes";
+import type { ZoomRef } from "yet-another-react-lightbox";
 
 import loaderGif from "../../../public/loader-gif.gif";
 import { useIframeStore } from "../../store/iframeStore";
-import { type SingleListData } from "../../types/apiTypes";
 import {
-	instagramType,
-	PDF_MIME_TYPE,
-	PDF_VIEWER_PARAMS,
-	PREVIEW_ALT_TEXT,
-	tweetType,
+  instagramType,
+  PDF_MIME_TYPE,
+  PDF_VIEWER_PARAMS,
+  PREVIEW_ALT_TEXT,
+  tweetType,
 } from "../../utils/constants";
 import { useBookmarkImageSources } from "../../utils/getBookmarkImageSource";
 import { MediaPlayer } from "../media-player";
 
 interface SlideProps {
-	bookmark: SingleListData | undefined;
-	// eslint-disable-next-line react/no-unused-prop-types
-	isActive?: boolean;
-	// eslint-disable-next-line react/no-unused-prop-types
-	zoomRef?: RefObject<ZoomRef | null>;
+  bookmark: SingleListData | undefined;
+  isActive?: boolean;
+  zoomRef?: RefObject<null | ZoomRef>;
 }
 
 interface VideoSlideProps extends SlideProps {
-	onVideoError?: (bookmarkId: number) => void;
+  onVideoError?: (bookmarkId: number) => void;
 }
 
 /**
@@ -32,122 +32,110 @@ interface VideoSlideProps extends SlideProps {
  * Handles double-click to zoom in/out
  */
 export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => {
-	const bookmarkArray = useMemo(() => (bookmark ? [bookmark] : []), [bookmark]);
-	const imageSources = useBookmarkImageSources(bookmarkArray);
-	const imageSource =
-		bookmark && typeof bookmark.id === "number"
-			? (imageSources[bookmark.id] ?? bookmark.ogImage)
-			: (bookmark?.ogImage ?? "");
+  const bookmarkArray = useMemo(() => (bookmark ? [bookmark] : []), [bookmark]);
+  const imageSources = useBookmarkImageSources(bookmarkArray);
+  const imageSource =
+    bookmark && typeof bookmark.id === "number"
+      ? (imageSources[bookmark.id] ?? bookmark.ogImage)
+      : (bookmark?.ogImage ?? "");
 
-	return (
-		<div
-			className="flex items-center justify-center"
-			onDoubleClick={(event) => {
-				event.stopPropagation();
-				if (!zoomRef?.current) {
-					return;
-				}
+  return (
+    <div
+      className="flex items-center justify-center"
+      onDoubleClick={(event) => {
+        event.stopPropagation();
+        if (!zoomRef?.current) {
+          return;
+        }
 
-				if (zoomRef?.current?.zoom > 1) {
-					zoomRef?.current?.zoomOut();
-				} else {
-					zoomRef?.current?.zoomIn();
-				}
-			}}
-		>
-			<div className="w-full max-w-[min(1200px,90vw)]">
-				<Image
-					alt={PREVIEW_ALT_TEXT}
-					className="max-h-[80vh] w-auto"
-					draggable={false}
-					height={bookmark?.meta_data?.height ?? 800}
-					priority
-					src={imageSource}
-					width={bookmark?.meta_data?.width ?? 1_200}
-				/>
-			</div>
-		</div>
-	);
+        if (zoomRef?.current?.zoom > 1) {
+          zoomRef?.current?.zoomOut();
+        } else {
+          zoomRef?.current?.zoomIn();
+        }
+      }}
+    >
+      <div className="w-full max-w-[min(1200px,90vw)]">
+        <Image
+          alt={PREVIEW_ALT_TEXT}
+          className="max-h-[80vh] w-auto"
+          draggable={false}
+          height={bookmark?.meta_data?.height ?? 800}
+          priority
+          src={imageSource}
+          width={bookmark?.meta_data?.width ?? 1200}
+        />
+      </div>
+    </div>
+  );
 };
 
 /**
  * Renders a video slide using the MediaPlayer component
  * Notifies parent via onVideoError when video fails to load
  */
-export const VideoSlide = ({
-	bookmark,
-	isActive,
-	onVideoError,
-}: VideoSlideProps) => {
-	const handleVideoError = useCallback(() => {
-		if (bookmark?.id && typeof bookmark.id === "number") {
-			onVideoError?.(bookmark.id);
-		}
-	}, [bookmark?.id, onVideoError]);
+export const VideoSlide = ({ bookmark, isActive, onVideoError }: VideoSlideProps) => {
+  const handleVideoError = useCallback(() => {
+    if (bookmark?.id && typeof bookmark.id === "number") {
+      onVideoError?.(bookmark.id);
+    }
+  }, [bookmark?.id, onVideoError]);
 
-	const videoSrc =
-		bookmark?.meta_data?.additionalVideos?.[0] ??
-		((bookmark?.type === tweetType || bookmark?.type === instagramType) &&
-		bookmark?.meta_data?.video_url
-			? bookmark?.meta_data?.video_url
-			: (bookmark?.url ?? ""));
+  const videoSrc =
+    bookmark?.meta_data?.additionalVideos?.[0] ??
+    ((bookmark?.type === tweetType || bookmark?.type === instagramType) &&
+    bookmark?.meta_data?.video_url
+      ? bookmark?.meta_data?.video_url
+      : (bookmark?.url ?? ""));
 
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<div className="w-full max-w-[min(1200px,90vw)]">
-				<MediaPlayer
-					isActive={isActive}
-					mediaType="video"
-					onError={handleVideoError}
-					src={videoSrc}
-				/>
-			</div>
-		</div>
-	);
+  return (
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="w-full max-w-[min(1200px,90vw)]">
+        <MediaPlayer
+          isActive={isActive}
+          mediaType="video"
+          onError={handleVideoError}
+          src={videoSrc}
+        />
+      </div>
+    </div>
+  );
 };
 
 interface AudioSlideProps extends SlideProps {
-	onAudioError?: (bookmarkId: number) => void;
+  onAudioError?: (bookmarkId: number) => void;
 }
 
 /**
  * Renders an audio slide using the MediaPlayer component with waveform
  */
-export const AudioSlide = ({
-	bookmark,
-	isActive,
-	onAudioError,
-}: AudioSlideProps) => {
-	const handleError = useCallback(() => {
-		if (typeof bookmark?.id === "number") {
-			onAudioError?.(bookmark.id);
-		}
-	}, [bookmark?.id, onAudioError]);
+export const AudioSlide = ({ bookmark, isActive, onAudioError }: AudioSlideProps) => {
+  const handleError = useCallback(() => {
+    if (typeof bookmark?.id === "number") {
+      onAudioError?.(bookmark.id);
+    }
+  }, [bookmark?.id, onAudioError]);
 
-	return (
-		<div className="flex h-full w-full items-center justify-center">
-			<MediaPlayer
-				isActive={isActive}
-				mediaType="audio"
-				onError={handleError}
-				src={bookmark?.url ?? ""}
-				title={bookmark?.title}
-			/>
-		</div>
-	);
+  return (
+    <div className="flex h-full w-full items-center justify-center">
+      <MediaPlayer
+        isActive={isActive}
+        mediaType="audio"
+        onError={handleError}
+        src={bookmark?.url ?? ""}
+        title={bookmark?.title}
+      />
+    </div>
+  );
 };
 
 /**
  * Renders a Spotify audio slide using the MediaPlayer component
  */
 export const SpotifySlide = ({ bookmark, isActive }: SlideProps) => (
-	<div className="flex h-full w-full items-center justify-center">
-		<MediaPlayer
-			isActive={isActive}
-			mediaType="spotify"
-			src={bookmark?.url ?? ""}
-		/>
-	</div>
+  <div className="flex h-full w-full items-center justify-center">
+    <MediaPlayer isActive={isActive} mediaType="spotify" src={bookmark?.url ?? ""} />
+  </div>
 );
 
 /**
@@ -155,44 +143,38 @@ export const SpotifySlide = ({ bookmark, isActive }: SlideProps) => (
  * Fallback to download link if display fails
  */
 export const PDFSlide = ({ bookmark }: SlideProps) => (
-	<div className="flex h-full w-full max-w-[min(1200px,90vw)] items-end">
-		{/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
-		{typeof window !== "undefined" ? (
-			<object
-				aria-label="PDF Viewer"
-				className="h-full max-h-[90vh] w-full"
-				data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
-				type={PDF_MIME_TYPE}
-			>
-				<div className="p-4 text-center">
-					<p className="text-gray-700">
-						This PDF cannot be displayed in your browser.
-					</p>
-					<a
-						className="text-blue-600 underline"
-						href={bookmark?.url}
-						rel="noopener noreferrer"
-						target="_blank"
-					>
-						Click here to download it instead
-					</a>
-				</div>
-			</object>
-		) : null}
-	</div>
+  <div className="flex h-full w-full max-w-[min(1200px,90vw)] items-end">
+    {/* not using external package to keep our approach native, does not embed pdf in chrome app  */}
+    {typeof window !== "undefined" ? (
+      <object
+        aria-label="PDF Viewer"
+        className="h-full max-h-[90vh] w-full"
+        data={`${bookmark?.url}${PDF_VIEWER_PARAMS}`}
+        type={PDF_MIME_TYPE}
+      >
+        <div className="p-4 text-center">
+          <p className="text-gray-700">This PDF cannot be displayed in your browser.</p>
+          <a
+            className="text-blue-600 underline"
+            href={bookmark?.url}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Click here to download it instead
+          </a>
+        </div>
+      </object>
+    ) : null}
+  </div>
 );
 
 /**
  * Renders a YouTube video slide
  */
 export const YouTubeSlide = ({ bookmark, isActive }: SlideProps) => (
-	<div className="relative flex h-full max-h-[80vh] w-full max-w-[min(1200px,90vw)] items-center justify-center">
-		<MediaPlayer
-			isActive={isActive}
-			mediaType="youtube"
-			src={bookmark?.url ?? ""}
-		/>
-	</div>
+  <div className="relative flex h-full max-h-[80vh] w-full max-w-[min(1200px,90vw)] items-center justify-center">
+    <MediaPlayer isActive={isActive} mediaType="youtube" src={bookmark?.url ?? ""} />
+  </div>
 );
 
 /**
@@ -200,162 +182,155 @@ export const YouTubeSlide = ({ bookmark, isActive }: SlideProps) => (
  * Handles iframe permissions and fallback image rendering
  */
 export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
-	const iframeEnabled = useIframeStore((state) => state.iframeEnabled);
-	const bookmarkArray = useMemo(() => (bookmark ? [bookmark] : []), [bookmark]);
-	const imageSources = useBookmarkImageSources(bookmarkArray);
-	// Only render iframe if this is the active slide and iframe is allowed
-	if (bookmark?.meta_data?.iframeAllowed && isActive && iframeEnabled) {
-		return (
-			<div className="flex h-full min-h-[200px] w-full max-w-[min(1200px,90vw)] items-end">
-				<object
-					className="flex h-full max-h-[80vh] w-full items-center justify-center bg-gray-0 md:max-h-[90vh]"
-					data={bookmark?.url}
-					title="Website Preview"
-					type="text/html"
-				>
-					<div className="p-4 text-center">
-						<p className="text-gray-700">
-							This website cannot be displayed in the lightbox.
-						</p>
-						<a
-							className="text-blue-600 underline"
-							href={bookmark?.url}
-							rel="noopener noreferrer"
-							target="_blank"
-						>
-							Click here to view it in a new tab
-						</a>
-					</div>
-				</object>
-			</div>
-		);
-	}
+  const iframeEnabled = useIframeStore((state) => state.iframeEnabled);
+  const bookmarkArray = useMemo(() => (bookmark ? [bookmark] : []), [bookmark]);
+  const imageSources = useBookmarkImageSources(bookmarkArray);
+  // Only render iframe if this is the active slide and iframe is allowed
+  if (bookmark?.meta_data?.iframeAllowed && isActive && iframeEnabled) {
+    return (
+      <div className="flex h-full min-h-[200px] w-full max-w-[min(1200px,90vw)] items-end">
+        <object
+          className="flex h-full max-h-[80vh] w-full items-center justify-center bg-gray-0 md:max-h-[90vh]"
+          data={bookmark?.url}
+          title="Website Preview"
+          type="text/html"
+        >
+          <div className="p-4 text-center">
+            <p className="text-gray-700">This website cannot be displayed in the lightbox.</p>
+            <a
+              className="text-blue-600 underline"
+              href={bookmark?.url}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Click here to view it in a new tab
+            </a>
+          </div>
+        </object>
+      </div>
+    );
+  }
 
-	// Check if we have a placeholder to show
-	const placeholder =
-		bookmark && typeof bookmark.id === "number"
-			? (imageSources[bookmark.id] ?? bookmark.ogImage)
-			: bookmark?.ogImage;
-	if (placeholder) {
-		const placeholderHeight = bookmark?.meta_data?.height ?? 800;
-		const placeholderWidth = bookmark?.meta_data?.width ?? 1_200;
+  // Check if we have a placeholder to show
+  const placeholder =
+    bookmark && typeof bookmark.id === "number"
+      ? (imageSources[bookmark.id] ?? bookmark.ogImage)
+      : bookmark?.ogImage;
+  if (placeholder) {
+    const placeholderHeight = bookmark?.meta_data?.height ?? 800;
+    const placeholderWidth = bookmark?.meta_data?.width ?? 1200;
 
-		// Check if this is a screenshot URL (may need special scaling)
-		const is2xScreenshot = bookmark?.meta_data?.isPageScreenshot;
+    // Check if this is a screenshot URL (may need special scaling)
+    const is2xScreenshot = bookmark?.meta_data?.isPageScreenshot;
 
-		// Apply 50% scaling to screenshots to make them more manageable
-		const scaledWidth = is2xScreenshot
-			? placeholderWidth * 0.5
-			: placeholderWidth;
-		const scaledHeight = is2xScreenshot
-			? placeholderHeight * 0.5
-			: placeholderHeight;
+    // Apply 50% scaling to screenshots to make them more manageable
+    const scaledWidth = is2xScreenshot ? placeholderWidth * 0.5 : placeholderWidth;
+    const scaledHeight = is2xScreenshot ? placeholderHeight * 0.5 : placeholderHeight;
 
-		// Check if image dimensions exceed reasonable display limits
-		const exceedsWidth = scaledWidth >= 1_200;
-		const underHeight =
-			scaledHeight >=
-			(typeof window !== "undefined" ? window?.innerHeight * 0.8 : 0);
+    // Check if image dimensions exceed reasonable display limits
+    const exceedsWidth = scaledWidth >= 1200;
+    const underHeight =
+      scaledHeight >= (typeof window !== "undefined" ? window?.innerHeight * 0.8 : 0);
 
-		// Render constrained image when dimensions are too large
-		if (exceedsWidth || underHeight) {
-			return (
-				<div className="flex max-w-[min(1200px,90vw)] items-center justify-center">
-					<Image
-						alt="Preview"
-						className="h-auto max-h-[80vh] w-auto object-contain"
-						draggable={false}
-						height={placeholderHeight}
-						onDoubleClick={(event) => {
-							const img = event?.currentTarget;
-							const containerWidth = img?.clientWidth;
-							const containerHeight = img?.clientHeight;
-							const imageAspectRatio = img?.naturalWidth / img?.naturalHeight;
-							const containerAspectRatio = containerWidth / containerHeight;
+    // Render constrained image when dimensions are too large
+    if (exceedsWidth || underHeight) {
+      return (
+        <div className="flex max-w-[min(1200px,90vw)] items-center justify-center">
+          <Image
+            alt="Preview"
+            className="h-auto max-h-[80vh] w-auto object-contain"
+            draggable={false}
+            height={placeholderHeight}
+            onDoubleClick={(event) => {
+              const img = event?.currentTarget;
+              const containerWidth = img?.clientWidth;
+              const containerHeight = img?.clientHeight;
+              const imageAspectRatio = img?.naturalWidth / img?.naturalHeight;
+              const containerAspectRatio = containerWidth / containerHeight;
 
-							let renderedHeight;
-							let renderedWidth;
-							if (imageAspectRatio > containerAspectRatio) {
-								renderedWidth = containerWidth;
-								renderedHeight = containerWidth / imageAspectRatio;
-							} else {
-								renderedHeight = containerHeight;
-								renderedWidth = containerHeight * imageAspectRatio;
-							}
+              let renderedHeight;
+              let renderedWidth;
+              if (imageAspectRatio > containerAspectRatio) {
+                renderedWidth = containerWidth;
+                renderedHeight = containerWidth / imageAspectRatio;
+              } else {
+                renderedHeight = containerHeight;
+                renderedWidth = containerHeight * imageAspectRatio;
+              }
 
-							const offsetX = (containerWidth - renderedWidth) / 2;
-							const offsetY = (containerHeight - renderedHeight) / 2;
-							const clickX = event?.nativeEvent?.offsetX;
-							const clickY = event?.nativeEvent?.offsetY;
+              const offsetX = (containerWidth - renderedWidth) / 2;
+              const offsetY = (containerHeight - renderedHeight) / 2;
+              const clickX = event?.nativeEvent?.offsetX;
+              const clickY = event?.nativeEvent?.offsetY;
 
-							const insideVisibleImage =
-								clickX >= offsetX &&
-								clickX <= offsetX + renderedWidth &&
-								clickY >= offsetY &&
-								clickY <= offsetY + renderedHeight;
+              const insideVisibleImage =
+                clickX >= offsetX &&
+                clickX <= offsetX + renderedWidth &&
+                clickY >= offsetY &&
+                clickY <= offsetY + renderedHeight;
 
-							if (!insideVisibleImage) {
-								return;
-							}
+              if (!insideVisibleImage) {
+                return;
+              }
 
-							event?.stopPropagation();
-							const zoom = zoomRef?.current;
-							if (!zoom) {
-								return;
-							}
+              event?.stopPropagation();
+              const zoom = zoomRef?.current;
+              if (!zoom) {
+                return;
+              }
 
-							if (zoom?.zoom > 1) {
-								zoom?.zoomOut();
-							} else {
-								zoom?.zoomIn();
-							}
-						}}
-						priority
-						src={placeholder}
-						width={placeholderWidth}
-					/>
-				</div>
-			);
-		}
+              if (zoom?.zoom > 1) {
+                zoom?.zoomOut();
+              } else {
+                zoom?.zoomIn();
+              }
+            }}
+            priority
+            src={placeholder}
+            width={placeholderWidth}
+          />
+        </div>
+      );
+    }
 
-		return (
-			<div
-				className={`flex min-h-screen origin-center items-center justify-center ${
-					is2xScreenshot ? "scale-50" : ""
-				}`}
-			>
-				<Image
-					alt="Preview"
-					className="h-auto max-h-[80vh] w-auto"
-					draggable={false}
-					height={scaledHeight}
-					onDoubleClick={(event) => {
-						event?.stopPropagation();
-						const zoom = zoomRef?.current;
-						if (!zoom) {
-							return;
-						}
+    return (
+      <div
+        className={`flex min-h-screen origin-center items-center justify-center ${
+          is2xScreenshot ? "scale-50" : ""
+        }`}
+      >
+        <Image
+          alt="Preview"
+          className="h-auto max-h-[80vh] w-auto"
+          draggable={false}
+          height={scaledHeight}
+          onDoubleClick={(event) => {
+            event?.stopPropagation();
+            const zoom = zoomRef?.current;
+            if (!zoom) {
+              return;
+            }
 
-						if (zoom?.zoom > 1) {
-							zoom?.zoomOut();
-						} else {
-							zoom?.zoomIn();
-						}
-					}}
-					priority
-					src={placeholder}
-					width={scaledWidth}
-				/>
-			</div>
-		);
-	}
+            if (zoom?.zoom > 1) {
+              zoom?.zoomOut();
+            } else {
+              zoom?.zoomIn();
+            }
+          }}
+          priority
+          src={placeholder}
+          width={scaledWidth}
+        />
+      </div>
+    );
+  }
 
-	return (
-		<Image
-			alt="Loading placeholder"
-			className="h-[50px] w-[50px] rounded-lg object-cover dark:invert"
-			loader={(source) => source.src}
-			src={loaderGif}
-		/>
-	);
+  return (
+    <Image
+      alt="Loading placeholder"
+      className="h-[50px] w-[50px] rounded-lg object-cover dark:invert"
+      loader={(source) => source.src}
+      src={loaderGif}
+    />
+  );
 };

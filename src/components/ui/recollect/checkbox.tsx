@@ -8,35 +8,35 @@ import { cn } from "@/utils/tailwind-merge";
 export type CheckboxProps = BaseCheckbox.Root.Props;
 
 export function Checkbox(props: CheckboxProps) {
-	const { className, children, ...rest } = props;
+  const { children, className, ...rest } = props;
 
-	return (
-		<BaseCheckbox.Root
-			className={cn(
-				"shrink-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-				className,
-			)}
-			data-slot="checkbox-root"
-			{...rest}
-		>
-			{children ?? <CheckboxDefaultIndicator />}
-		</BaseCheckbox.Root>
-	);
+  return (
+    <BaseCheckbox.Root
+      className={cn(
+        "shrink-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+        className,
+      )}
+      data-slot="checkbox-root"
+      {...rest}
+    >
+      {children ?? <CheckboxDefaultIndicator />}
+    </BaseCheckbox.Root>
+  );
 }
 
 type CheckboxDefaultIndicatorProps = BaseCheckbox.Indicator.Props;
 
 export function CheckboxDefaultIndicator(props: CheckboxDefaultIndicatorProps) {
-	const { children, className, ...rest } = props;
+  const { children, className, ...rest } = props;
 
-	return (
-		<BaseCheckbox.Indicator
-			keepMounted
-			className={cn("contents", className)}
-			data-slot="checkbox-default-indicator"
-			{...rest}
-		>
-			{children ?? <CheckIcon />}
-		</BaseCheckbox.Indicator>
-	);
+  return (
+    <BaseCheckbox.Indicator
+      className={cn("contents", className)}
+      data-slot="checkbox-default-indicator"
+      keepMounted
+      {...rest}
+    >
+      {children ?? <CheckIcon />}
+    </BaseCheckbox.Indicator>
+  );
 }

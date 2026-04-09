@@ -2,7 +2,7 @@
 
 Bookmark management app with AI enrichment — organize, search, and collaborate on web bookmarks.
 
-**Stack**: Next.js 16.2 (App + Pages Router), Supabase, React Query, Zustand, Tailwind v4, Base UI
+**Stack**: Next.js 16.2.1 (App + Pages Router), Supabase, React Query, Zustand, Tailwind v4, Base UI
 
 **Architecture**: Hybrid routing (App Router for new APIs, Pages Router for dashboard), optimistic mutations, pgmq queues for async processing.
 
@@ -18,15 +18,24 @@ Before any Next.js work, read the relevant doc in `node_modules/next/dist/docs/`
 - `ogImage` (camelCase) — not `og_image`
 - OpenAPI tags are capitalized: `"Bookmarks"`, `"Categories"`, `"iPhone"`
 - `knip` for detecting unused code when making large changes
+- `src/utils/type-utils.ts`: centralized `toJson()` / `toDbType()` for Supabase type boundaries — use instead of inline `as unknown as Json` casts
+- **Ultracite** (Oxlint + Oxfmt) enforces code quality — `pnpm fix` auto-fixes most issues, `pnpm dlx ultracite doctor` for setup diagnostics
+- **Zod `.meta()`**: All schema fields require `.meta({ description })` — flows to OpenAPI spec field descriptions and Scalar UI
+- **Env validation**: `@t3-oss/env-nextjs` in `src/env/` — split server/client pattern. Server env includes Vercel preset. Every `process.env` in codebase has an inline comment explaining why it wasn't migrated
+- **v2 API contract**: Routes under `/api/v2/` return `T` on success (no `{data, error}` envelope). Errors return `{error: string}` with HTTP status. v2 route handlers use `create-handler-v2.ts` (self-contained factory with `error()`/`warn()` context helpers). Non-v2 routes use `create-handler.ts` and keep `{data: T, error: null}` envelope. `response.ts` is FROZEN — never modify `apiSuccess`/`apiError`/`apiWarn`
+  - OpenAPI supplements for v2 routes use bare response examples — `{ field: value }`, not `{ data: { field: value }, error: null }`
+  - v2 URL constants for ky `api` instance (`api-v2.ts`): no leading slash — `"v2/bookmark/fetch-bookmarks-data"`, not `"/v2/..."`. v1 constants keep leading slashes. Both conventions coexist in `constants.ts`
 
 ## Commands
 
 ```bash
-pnpm fix        # Auto-fix all (spelling → css → md → prettier → eslint)
-pnpm lint:types # TypeScript strict checks
-pnpm lint:knip  # Detect unused code/exports/deps
-pnpm build      # Verify build passes
-pnpm db:types   # Generate Supabase types from local schema
+pnpm fix                  # Fix ALL auto-fixable issues (Ultracite + CSS + MD)
+pnpm lint                 # Run ALL quality checks
+pnpm lint:knip            # Detect unused code/exports/deps
+pnpm lint:types:deno      # Deno type checks for Supabase Edge Functions
+pnpm build                # Verify build passes
+pnpm db:types             # Generate Supabase types from local schema
+pnpm prebuild:next        # Regenerate OpenAPI spec (SKIP_ENV_VALIDATION=1)
 ```
 
 ## References
@@ -35,12 +44,12 @@ pnpm db:types   # Generate Supabase types from local schema
 - [`docs/OPENAPI_GUIDE.md`](./docs/OPENAPI_GUIDE.md) — OpenAPI endpoint docs (`/openapi-endpoints` skill)
 - [`docs/project_overview.md`](./docs/project_overview.md) — Tech stack, features
 - [`docs/project_structure.md`](./docs/project_structure.md) — Directory layout
+- `.claude/agents/references/` — Migration agent reference data (patterns, templates, pitfalls)
 
 ## Verification
 
 After changes, run in order:
 
-1. `pnpm fix` — auto-fix all quality issues
-2. `pnpm lint:types` — TypeScript strict checks
-3. `pnpm lint:knip` — detect unused code (especially after large changes)
-4. `pnpm build` — confirm build passes (non-trivial changes)
+1. `pnpm fix` — auto-fix all (Ultracite + CSS + MD)
+2. `pnpm lint` — runs ALL quality checks in parallel (ultracite, types, knip, css, spelling, md)
+3. `pnpm build` — confirm build passes (non-trivial changes)

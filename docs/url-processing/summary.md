@@ -15,7 +15,7 @@ This document provides a comprehensive mapping of all URL validation, link proce
 ```typescript
 // Supports any valid TLD (2+ characters)
 export const URL_PATTERN =
-	/^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
+  /^(https?:\/\/)?(www\.)?[\da-z-]+(\.[\da-z-]+)*\.[a-z]{2,}(?::\d{1,5})?(\/\S*)?$/iu;
 ```
 
 **Pattern Breakdown:**
@@ -36,7 +36,7 @@ export const URL_PATTERN =
 ```typescript
 // Image/Media URL detection
 export const URL_IMAGE_CHECK_PATTERN =
-	/^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp|pdf|mp3|mp4)(\?(.*))?$/gimu;
+  /^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp|pdf|mp3|mp4)(\?(.*))?$/gimu;
 
 // PDF URL detection
 export const URL_PDF_CHECK_PATTERN = /https?:\/\/\S+?\.pdf(\?\S*)?(#\S*)?/iu;
@@ -54,32 +54,29 @@ Function: `addBookmarkMinData()`
 
 ```typescript
 export const addBookmarkMinData = async ({
-	url,
-	category_id,
-	update_access,
+  url,
+  category_id,
+  update_access,
 }: AddBookmarkMinDataPayloadTypes) => {
-	try {
-		// append https here
-		let finalUrl = url;
+  try {
+    // append https here
+    let finalUrl = url;
 
-		// BUG: Logical error - should use &&, not ||
-		if (!url.startsWith("http") || !url.startsWith("https")) {
-			finalUrl = `https://${url}`;
-		}
+    // BUG: Logical error - should use &&, not ||
+    if (!url.startsWith("http") || !url.startsWith("https")) {
+      finalUrl = `https://${url}`;
+    }
 
-		const apiResponse = await axios.post(
-			`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`,
-			{
-				url: finalUrl,
-				category_id: isNull(category_id) ? 0 : category_id,
-				update_access,
-			},
-		);
+    const apiResponse = await axios.post(`${NEXT_API_URL}${ADD_BOOKMARK_MIN_DATA}`, {
+      url: finalUrl,
+      category_id: isNull(category_id) ? 0 : category_id,
+      update_access,
+    });
 
-		return apiResponse as { data: { data: SingleListData[] } };
-	} catch (error) {
-		return error;
-	}
+    return apiResponse as { data: { data: SingleListData[] } };
+  } catch (error) {
+    return error;
+  }
 };
 ```
 
@@ -99,24 +96,22 @@ Function: `getBaseUrl()`
 
 ```typescript
 export const getBaseUrl = (href: string): string => {
-	if (typeof href !== "string" || href.trim() === "") {
-		return "";
-	}
+  if (typeof href !== "string" || href.trim() === "") {
+    return "";
+  }
 
-	try {
-		const normalizedHref =
-			href.startsWith("http://") || href.startsWith("https://")
-				? href
-				: `https://${href}`;
+  try {
+    const normalizedHref =
+      href.startsWith("http://") || href.startsWith("https://") ? href : `https://${href}`;
 
-		const url = new URL(normalizedHref);
-		const baseUrl = `${url.host}`;
+    const url = new URL(normalizedHref);
+    const baseUrl = `${url.host}`;
 
-		return baseUrl;
-	} catch (error) {
-		console.error("Error parsing URL:", error);
-		return "";
-	}
+    return baseUrl;
+  } catch (error) {
+    console.error("Error parsing URL:", error);
+    return "";
+  }
 };
 ```
 
@@ -186,31 +181,31 @@ const AddBookmarkDropdown = ({
 
 ```typescript
 export const clipboardUpload = async (
-	text: string | undefined,
-	files: FileList | undefined,
-	category_id: CategoryIdUrlTypes,
-	addBookmarkMinDataOptimisticMutation: AddMinDataMutationType,
-	fileUploadOptimisticMutation: FileUploadMutationType,
+  text: string | undefined,
+  files: FileList | undefined,
+  category_id: CategoryIdUrlTypes,
+  addBookmarkMinDataOptimisticMutation: AddMinDataMutationType,
+  fileUploadOptimisticMutation: FileUploadMutationType,
 ) => {
-	if (files) {
-		await fileUpload(files, fileUploadOptimisticMutation, category_id);
-	}
+  if (files) {
+    await fileUpload(files, fileUploadOptimisticMutation, category_id);
+  }
 
-	if (text) {
-		// check if the text is a bookmark url
-		const isUrl = text?.match(URL_PATTERN);
+  if (text) {
+    // check if the text is a bookmark url
+    const isUrl = text?.match(URL_PATTERN);
 
-		if (isUrl && !isEmpty(isUrl)) {
-			// upload the url as bookmark
-			await mutationApiCall(
-				addBookmarkMinDataOptimisticMutation.mutateAsync({
-					url: isUrl?.[0],
-					category_id,
-					update_access: true,
-				}),
-			);
-		}
-	}
+    if (isUrl && !isEmpty(isUrl)) {
+      // upload the url as bookmark
+      await mutationApiCall(
+        addBookmarkMinDataOptimisticMutation.mutateAsync({
+          url: isUrl?.[0],
+          category_id,
+          update_access: true,
+        }),
+      );
+    }
+  }
 };
 ```
 
@@ -230,9 +225,9 @@ export const clipboardUpload = async (
 
 ```typescript
 type AddBookmarkMinDataPayloadTypes = {
-	url: string;
-	category_id: CategoryIdUrlTypes;
-	update_access: boolean;
+  url: string;
+  category_id: CategoryIdUrlTypes;
+  update_access: boolean;
 };
 ```
 
@@ -248,33 +243,28 @@ type AddBookmarkMinDataPayloadTypes = {
 
    ```typescript
    const isOgImagePreferred = OG_IMAGE_PREFERRED_SITES?.some((keyword) =>
-   	urlHost?.includes(keyword),
+     urlHost?.includes(keyword),
    );
-   const shouldSkipOgImage = SKIP_OG_IMAGE_DOMAINS?.some((keyword) =>
-   	urlHost?.includes(keyword),
-   );
+   const shouldSkipOgImage = SKIP_OG_IMAGE_DOMAINS?.some((keyword) => urlHost?.includes(keyword));
    ```
 
 3. **Open Graph Scraping** (Lines 190-221)
 
    ```typescript
-   const userAgent =
-   	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...";
+   const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...";
 
    const { result: ogScrapperResponse } = await ogs({
-   	url,
-   	fetchOptions: { headers: { "user-agent": userAgent } },
+     url,
+     fetchOptions: { headers: { "user-agent": userAgent } },
    });
 
    scrapperResponse = {
-   	data: {
-   		title: ogScrapperResponse?.ogTitle ?? null,
-   		description: ogScrapperResponse?.ogDescription ?? null,
-   		OgImage: shouldSkipOgImage
-   			? null
-   			: (ogScrapperResponse?.ogImage?.[0]?.url ?? null),
-   		favIcon: ogScrapperResponse?.favicon ?? null,
-   	},
+     data: {
+       title: ogScrapperResponse?.ogTitle ?? null,
+       description: ogScrapperResponse?.ogDescription ?? null,
+       OgImage: shouldSkipOgImage ? null : (ogScrapperResponse?.ogImage?.[0]?.url ?? null),
+       favIcon: ogScrapperResponse?.favicon ?? null,
+     },
    };
    ```
 
@@ -283,12 +273,12 @@ type AddBookmarkMinDataPayloadTypes = {
    ```typescript
    // if scrapper error is there then we just add the url host name as the title
    scrapperResponse = {
-   	data: {
-   		title: new URL(url)?.hostname,
-   		description: null,
-   		OgImage: null,
-   		favIcon: null,
-   	},
+     data: {
+       title: new URL(url)?.hostname,
+       description: null,
+       OgImage: null,
+       favIcon: null,
+     },
    };
    ```
 
@@ -301,17 +291,17 @@ type AddBookmarkMinDataPayloadTypes = {
 
    ```typescript
    const { data: checkBookmarkData, error: checkBookmarkError } = await supabase
-   	.from(MAIN_TABLE_NAME)
-   	.select(`id`)
-   	.eq("url", url)
-   	.eq("category_id", categoryId)
-   	.eq("trash", false);
+     .from(MAIN_TABLE_NAME)
+     .select(`id`)
+     .eq("url", url)
+     .eq("category_id", categoryId)
+     .eq("trash", false);
 
    if (!isEmpty(checkBookmarkData)) {
-   	response.status(500).json({
-   		error: "Bookmark already present in category",
-   	});
-   	return;
+     response.status(500).json({
+       error: "Bookmark already present in category",
+     });
+     return;
    }
    ```
 
@@ -325,7 +315,7 @@ type AddBookmarkMinDataPayloadTypes = {
 
 ```typescript
 const schema = z.object({
-	url: z.string().url({ message: "Invalid URL format" }),
+  url: z.string().url({ message: "Invalid URL format" }),
 });
 
 const parseResult = schema.safeParse(request.query);
@@ -335,10 +325,10 @@ const parseResult = schema.safeParse(request.query);
 
 ```typescript
 const result = await axios.head(url, {
-	timeout: 5_000,
-	headers: {
-		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
-	},
+  timeout: 5_000,
+  headers: {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
+  },
 });
 
 const mediaType = result.headers["content-type"];
@@ -363,7 +353,7 @@ const mediaType = result.headers["content-type"];
 ```typescript
 // Only allow HTTP and HTTPS protocols
 if (!["http:", "https:"].includes(parsedUrl.protocol)) {
-	return false;
+  return false;
 }
 ```
 
@@ -407,11 +397,9 @@ Uses native JavaScript `URL` constructor for validation:
 **File:** `/Users/navin/Developer/recollect/src/utils/url.ts`
 
 ```typescript
-export const getCategorySlugFromRouter = (
-	router: NextRouter,
-): string | null => {
-	// Extracts category slug from URL path
-	// Example: "/technology?sort=latest" → "technology"
+export const getCategorySlugFromRouter = (router: NextRouter): string | null => {
+  // Extracts category slug from URL path
+  // Example: "/technology?sort=latest" → "technology"
 };
 ```
 
@@ -428,14 +416,14 @@ Already documented above - extracts hostname with protocol normalization
 ```typescript
 // this function returns true if the media type is of image type else false
 export const checkIfUrlAnImage = async (url: string): Promise<boolean> => {
-	const mediaType = await getMediaType(url);
-	return mediaType?.includes("image/") ?? false;
+  const mediaType = await getMediaType(url);
+  return mediaType?.includes("image/") ?? false;
 };
 
 // this function returns true if the media type is in the acceptedFileTypes array
 export const checkIfUrlAnMedia = async (url: string): Promise<boolean> => {
-	const mediaType = await getMediaType(url);
-	return acceptedFileTypes?.includes(mediaType ?? "") ?? false;
+  const mediaType = await getMediaType(url);
+  return acceptedFileTypes?.includes(mediaType ?? "") ?? false;
 };
 ```
 
@@ -449,25 +437,25 @@ export const checkIfUrlAnMedia = async (url: string): Promise<boolean> => {
 
 ```typescript
 export const getMediaType = async (url: string): Promise<string | null> => {
-	try {
-		const encodedUrl = encodeURIComponent(url);
+  try {
+    const encodedUrl = encodeURIComponent(url);
 
-		const response = await fetch(
-			`${getBaseUrl()}${NEXT_API_URL}${GET_MEDIA_TYPE_API}?url=${encodedUrl}`,
-			{ method: "GET" },
-		);
+    const response = await fetch(
+      `${getBaseUrl()}${NEXT_API_URL}${GET_MEDIA_TYPE_API}?url=${encodedUrl}`,
+      { method: "GET" },
+    );
 
-		if (!response.ok) {
-			console.error("Error in getting media type");
-			return null;
-		}
+    if (!response.ok) {
+      console.error("Error in getting media type");
+      return null;
+    }
 
-		const data = await response.json();
-		return data.mediaType || null;
-	} catch (error) {
-		console.error("Error getting media type:", error);
-		return null;
-	}
+    const data = await response.json();
+    return data.mediaType || null;
+  } catch (error) {
+    console.error("Error getting media type:", error);
+    return null;
+  }
 };
 ```
 
@@ -483,14 +471,14 @@ export const getMediaType = async (url: string): Promise<string | null> => {
 
 ```typescript
 export const OG_IMAGE_PREFERRED_SITES = [
-	"cosmos",
-	"pinterest",
-	"savee.it",
-	"are.na",
-	"medium",
-	"spotify",
-	"imdb",
-	"pin.it",
+  "cosmos",
+  "pinterest",
+  "savee.it",
+  "are.na",
+  "medium",
+  "spotify",
+  "imdb",
+  "pin.it",
 ];
 ```
 
@@ -499,12 +487,7 @@ export const OG_IMAGE_PREFERRED_SITES = [
 **File:** `/Users/navin/Developer/recollect/src/utils/constants.ts` (Line 352-357)
 
 ```typescript
-export const SKIP_OG_IMAGE_DOMAINS = [
-	"amazon.in",
-	"twitter.com",
-	"x.com",
-	"amazon.com",
-];
+export const SKIP_OG_IMAGE_DOMAINS = ["amazon.in", "twitter.com", "x.com", "amazon.com"];
 ```
 
 ### Accepted File Types
@@ -550,12 +533,12 @@ Includes MIME types for images, audio, video, and documents
 ```typescript
 // WRONG - will always add https://
 if (!url.startsWith("http") || !url.startsWith("https")) {
-	finalUrl = `https://${url}`;
+  finalUrl = `https://${url}`;
 }
 
 // CORRECT - should be:
 if (!url.startsWith("http://") && !url.startsWith("https://")) {
-	finalUrl = `https://${url}`;
+  finalUrl = `https://${url}`;
 }
 ```
 
@@ -599,7 +582,7 @@ R2 Storage Upload & Blur Hash Generation
 
 ```typescript
 export type UrlInput = {
-	urlText: string;
+  urlText: string;
 };
 ```
 

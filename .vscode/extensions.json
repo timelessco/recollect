@@ -1,28 +1,18 @@
 {
-	"recommendations": [
-		// Prettier is an opinionated code formatter.
-		"esbenp.prettier-vscode",
+  "recommendations": [
+    // Linters
+    "oxc.oxc-vscode",
+    "stylelint.vscode-stylelint",
 
-		// ESLint, Find and fix problems in your JavaScript code
-		"dbaeumer.vscode-eslint",
-		"DavidAnson.vscode-markdownlint",
-		"streetsidesoftware.code-spell-checker",
+    // Frontend
+    "bradlc.vscode-tailwindcss",
 
-		// Frontend
-		"bradlc.vscode-tailwindcss",
-		"stylelint.vscode-stylelint",
-
-		// REST Client allows you to send HTTP request and view the response in Visual Studio Code directly.
-		// Makes use of `.http` files
-		"humao.rest-client",
-
-		// Quality of life extensions
-		"yoavbls.pretty-ts-errors",
-		"vivaxy.vscode-conventional-commits",
-		"aaron-bond.better-comments",
-		"formulahendry.auto-close-tag",
-		"formulahendry.auto-rename-tag",
-		"christian-kohler.npm-intellisense",
-		"christian-kohler.path-intellisense"
-	]
+    // Quality of life extensions
+    "yoavbls.pretty-ts-errors",
+    "aaron-bond.better-comments",
+    "formulahendry.auto-close-tag",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.npm-intellisense",
+    "christian-kohler.path-intellisense"
+  ]
 }

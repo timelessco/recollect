@@ -1,7 +1,11 @@
+/* oxlint-disable no-barrel-file -- OpenAPI supplement barrel is the established pattern; build-time only */
+export * from "./ai-enrichment";
 export * from "./api-key";
 export * from "./bookmarks";
+export * from "./bucket";
 export * from "./categories";
 export * from "./category";
+export * from "./chrome-bookmarks";
 export * from "./cron";
 export * from "./dev";
 export * from "./instagram";
@@ -11,7 +15,9 @@ export * from "./profiles";
 export * from "./public-categories";
 export * from "./raindrop";
 export * from "./revalidate";
+export * from "./screenshot";
 export * from "./share";
 export * from "./tags";
+export * from "./tests";
 export * from "./twitter";
 export * from "./user";

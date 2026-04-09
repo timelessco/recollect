@@ -1,37 +1,31 @@
 import { CF_IMAGE_LOADER_URL } from "./constants";
 
 const normalizeImagePath = (imagePath: string): string =>
-	imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
+  imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
 
-type CloudflareImageLoaderProps = {
-	quality?: number;
-	src: string;
-	width: number;
-};
+interface CloudflareImageLoaderProps {
+  quality?: number;
+  src: string;
+  width: number;
+}
 
 export default function cloudflareImageLoader({
-	src,
-	width,
-	quality,
+  quality,
+  src,
+  width,
 }: CloudflareImageLoaderProps): string {
-	if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") {
-		return src;
-	}
+  // process.env used intentionally — NEXT_PUBLIC_VERCEL_ENV inlined by Next.js
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") {
+    return src;
+  }
 
-	const parameters = [
-		`width=${width}`,
-		"format=auto",
-		"fit=scale-down",
-		"onerror=redirect",
-	];
+  const parameters = [`width=${width}`, "format=auto", "fit=scale-down", "onerror=redirect"];
 
-	if (quality) {
-		parameters.push(`quality=${quality}`);
-	}
+  if (quality) {
+    parameters.push(`quality=${quality}`);
+  }
 
-	const parametersString = parameters?.join(",");
+  const parametersString = parameters?.join(",");
 
-	return `${CF_IMAGE_LOADER_URL}/${parametersString}/${normalizeImagePath(
-		src,
-	)}`;
+  return `${CF_IMAGE_LOADER_URL}/${parametersString}/${normalizeImagePath(src)}`;
 }

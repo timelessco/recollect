@@ -69,7 +69,7 @@ if (!foundItem) {
 
 ### API Handler Integration
 
-Response helpers in `/src/lib/api-helpers/response.ts` auto-capture exceptions:
+**V1 routes only** — response helpers in `/src/lib/api-helpers/response.ts` auto-capture exceptions. v2 routes: see `api-v2.md` for error routing.
 
 | Helper       | Sentry                  | Use For                       |
 | ------------ | ----------------------- | ----------------------------- |
@@ -105,5 +105,5 @@ Sentry.captureException(error, {
 1. **Always tag operations** - Makes errors filterable in Sentry dashboard
 2. **Include userId when available** - Helps identify affected users
 3. **Use breadcrumbs before risky operations** - Provides context for debugging
-4. **Let response helpers handle API errors** - Consistent capture pattern
+4. **Let response helpers handle API errors** - Consistent capture pattern (v1 only)
 5. **Don't capture strings** - Always pass actual Error objects

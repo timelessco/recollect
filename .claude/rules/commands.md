@@ -3,26 +3,17 @@
 ### After Every Code Change
 
 1. Run IDE diagnostics (LSP) on modified files
-2. Run quality checks:
-
-```bash
-pnpm fix        # Auto-fix all (spelling → css → md → prettier → eslint)
-pnpm lint:types # TypeScript strict checks (includes next typegen + deno check)
-pnpm lint:knip  # Detect unused code (especially after large changes)
-```
-
-3. If types pass, verify build:
-
-```bash
-pnpm build      # Runs OpenAPI gen → next build → next-sitemap
-```
+2. Run in parallel:
+   - `pnpm fix` — auto-fix all (css → md → ultracite)
+   - `pnpm lint:knip` — detect unused code (especially after large changes)
+   - `pnpm build` — confirm build passes (non-trivial changes)
 
 ### Quality Gates by Task Type
 
-- **Components**: `pnpm fix:eslint` → `pnpm lint:types` → verify ARIA → `pnpm build`
-- **Styling**: `pnpm lint:css` → `pnpm fix:prettier` → `pnpm build`
-- **Utilities**: `pnpm lint:types` → `pnpm lint:knip`
-- **Documentation**: `pnpm fix:md` → `pnpm fix:spelling`
+- **Components**: `pnpm fix` → verify ARIA → `pnpm build`
+- **Styling**: `pnpm lint:css` → `pnpm fix` → `pnpm build`
+- **Utilities**: `pnpm fix` → `pnpm lint:knip`
+- **Documentation**: `pnpm fix:md`
 - **Dependencies**: `pnpm check:packages` → `pnpm lint:knip` → `pnpm build`
 - **Supabase migrations**: `pnpm db:types` → verify `database-generated.types.ts`
 
@@ -31,7 +22,7 @@ pnpm build      # Runs OpenAPI gen → next build → next-sitemap
 #### Build
 
 ```bash
-pnpm build            # Turbo: OpenAPI gen → next build → next-sitemap
+pnpm build            # Turbo: OpenAPI gen → next build → serwist build
 pnpm build:ci         # CI-only: skips env validation, OpenAPI gen, sitemap
 pnpm build:analyze    # Bundle size analysis (opens browser)
 pnpm build:debug      # Build with source maps + debug prerender
@@ -53,25 +44,22 @@ pnpm start            # Start production server
 #### Fix (auto-fix)
 
 ```bash
-pnpm fix              # Turbo: full fix chain (spelling → css → md → prettier → eslint via dependsOn)
-pnpm fix:eslint       # Auto-fix ESLint issues
-pnpm fix:prettier     # Auto-fix formatting
+pnpm fix              # Turbo: fix chain (css → md → ultracite via dependsOn)
+pnpm fix:ultracite    # Auto-fix linting + formatting (Oxlint + Oxfmt)
 pnpm fix:css          # Auto-fix Stylelint issues
 pnpm fix:md           # Auto-fix markdown issues
-pnpm fix:spelling     # Rebuild cspell dictionary from scratch
 ```
 
 #### Lint (check only)
 
 ```bash
 pnpm lint             # Turbo: all lint tasks in parallel
-pnpm lint:eslint      # Check ESLint
-pnpm lint:types       # next typegen → tsc --noEmit → deno check edge function
+pnpm lint:ultracite   # Check linting + formatting (Oxlint + Oxfmt)
 pnpm lint:css         # Check Stylelint
 pnpm lint:md          # Check markdown
 pnpm lint:knip        # Check unused code/exports/deps
 pnpm lint:spelling    # Check spelling
-pnpm lint:prettier    # Check formatting
+pnpm lint:types:deno  # Deno type checks for Supabase Edge Functions
 ```
 
 #### Database
@@ -94,17 +82,12 @@ pnpm release:dryrun   # Dry-run release
 pnpm release:pr       # Create release/* branch + PR to main
 pnpm release:pr:dryrun # Preview release changelog (no mutations)
 pnpm release:cleanup  # Post-release: merge main→dev, delete release branch
-pnpm cypress:open     # Open Cypress (no specs exist)
 ```
 
 ### Pre-Commit (Automatic)
 
-- **pre-commit** (lint-staged): Prettier formatting on all staged files
+- **pre-commit** (lint-staged): Ultracite fix on staged JS/TS/JSON files
 - **commit-msg** (commitlint): Conventional commit message validation (`@commitlint/config-conventional`)
-
-### Self-Improvement
-
-After any correction from the user, update `tasks/lessons.md` with the pattern to prevent repeating the same mistake.
 
 ### Elegance Check
 

@@ -1,13 +1,30 @@
-import { type KnipConfig } from "knip";
+import type { KnipConfig } from "knip";
 
 const config: KnipConfig = {
-	project: ["src/**/*.{ts,tsx}!"],
-	entry: ["src/pages/**/*.{js,jsx,ts,tsx}!"],
-	ignoreBinaries: [
-		// release-it after:bump hook argument, not a real binary
-		"prettier",
-	],
-	exclude: ["types", "duplicates", "exports", "files"],
+  entry: ["src/pages/**/*.{js,jsx,ts,tsx}!"],
+  exclude: ["types", "duplicates", "exports", "files"],
+  ignoreBinaries: [
+    // release-it after:bump hook argument, not a real binary
+    "oxfmt",
+  ],
+  ignoreDependencies: [
+    // Axiom client-side packages — used in Phase 17 (middleware logging, WebVitals, useLogger)
+    "@axiomhq/nextjs",
+    "@axiomhq/react",
+    // eslint@10 kept as transitive dep for jsPlugins using @typescript-eslint/utils
+    "eslint",
+    "oxfmt",
+    "oxlint-tsgolint",
+    "@tanstack/eslint-plugin-query",
+    "eslint-plugin-perfectionist",
+    "eslint-plugin-regexp",
+    "eslint-plugin-react-dom",
+    "eslint-plugin-react-naming-convention",
+    "eslint-plugin-react-rsc",
+    "eslint-plugin-react-web-api",
+    "eslint-plugin-react-x",
+  ],
+  project: ["src/**/*.{ts,tsx}!"],
 };
 
 export default config;

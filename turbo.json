@@ -1,66 +1,50 @@
 {
-	"$schema": "https://turbo.build/schema.json",
-	"tasks": {
-		"build:next": {
-			"env": [
-				"NODE_ENV",
-				"VERCEL_ENV",
-				"SUPABASE_SERVICE_KEY",
-				"NEXT_PUBLIC_SENTRY_DSN",
-				"DEV_SUPABASE_SERVICE_KEY",
-				"UMAMI_SRC",
-				"SENTRY_PROJECT",
-				"SENTRY_ORG",
-				"SENTRY_AUTH_TOKEN",
-				"API_KEY_ENCRYPTION_KEY",
-				"UMAMI_ID",
-				"PDF_SECRET_KEY",
-				"PDF_URL_SCREENSHOT_API",
-				"GOOGLE_GEMINI_TOKEN",
-				"RESEND_KEY",
-				"REVALIDATE_SECRET_TOKEN"
-			],
-			"inputs": ["$TURBO_DEFAULT$", ".env", ".env.local"],
-			"outputs": [".next/**", "!.next/cache/**"]
-		},
-		"test": {},
-		"lint:types": {
-			"inputs": ["**/*.{ts,tsx,d.ts,cts,d.cts,mts,d.mts}"],
-			"outputs": ["*.tsbuildinfo"]
-		},
-		"lint:eslint": {
-			"outputs": [".eslintcache"]
-		},
-		"lint:prettier": {
-			"outputs": [".prettiercache"]
-		},
-		"lint:css": {
-			"inputs": ["**/*.css"],
-			"outputs": [".stylelintcache"]
-		},
-		"lint:md": {
-			"inputs": ["**/*.md", ".github/**/*.md"]
-		},
-		"lint:spelling": {
-			"outputs": [".cspellcache"]
-		},
-		"fix:md": {
-			"inputs": ["**/*.md", ".github/**/*.md"]
-		},
-		"fix:css": {
-			"inputs": ["**/*.css"],
-			"outputs": [".stylelintcache"]
-		},
-		"fix:spelling": {
-			"outputs": [".cspellcache"]
-		},
-		"fix:prettier": {
-			"dependsOn": ["fix:md", "fix:css", "fix:spelling"],
-			"outputs": [".prettiercache"]
-		},
-		"fix:eslint": {
-			"dependsOn": ["fix:prettier"],
-			"outputs": [".eslintcache"]
-		}
-	}
+  "$schema": "https://v2-9-1.turborepo.dev/schema.json",
+  "tasks": {
+    "build:next": {
+      "env": [
+        "NODE_ENV",
+        "VERCEL_ENV",
+        "SUPABASE_SERVICE_KEY",
+        "NEXT_PUBLIC_SENTRY_DSN",
+        "DEV_SUPABASE_SERVICE_KEY",
+        "UMAMI_SRC",
+        "SENTRY_PROJECT",
+        "SENTRY_ORG",
+        "SENTRY_AUTH_TOKEN",
+        "API_KEY_ENCRYPTION_KEY",
+        "AXIOM_DATASET",
+        "AXIOM_TOKEN",
+        "UMAMI_ID",
+        "PDF_SECRET_KEY",
+        "PDF_URL_SCREENSHOT_API",
+        "GOOGLE_GEMINI_TOKEN",
+        "RESEND_KEY",
+        "REVALIDATE_SECRET_TOKEN"
+      ],
+      "inputs": ["$TURBO_DEFAULT$", ".env", ".env.local"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "test": {},
+    "lint:ultracite": {},
+    "lint:css": {
+      "inputs": ["**/*.css", "stylelint.config.js"],
+      "outputs": [".stylelintcache"]
+    },
+    "lint:md": {
+      "inputs": ["**/*.md", ".github/**/*.md", ".markdownlint-cli2.jsonc"]
+    },
+    "lint:knip": {},
+    "lint:spelling": {},
+    "fix:md": {
+      "inputs": ["**/*.md", ".github/**/*.md", ".markdownlint-cli2.jsonc"]
+    },
+    "fix:css": {
+      "inputs": ["**/*.css", "stylelint.config.js"],
+      "outputs": [".stylelintcache"]
+    },
+    "fix:ultracite": {
+      "dependsOn": ["fix:md", "fix:css"]
+    }
+  }
 }

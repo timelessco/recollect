@@ -5,46 +5,46 @@ import { useDeleteCollection } from "./useDeleteCollection";
 type PendingMode = "delete-all" | "keep-bookmarks" | null;
 
 interface UseDeleteCollectionActionsProps {
-	categoryId: number;
-	isCurrent: boolean;
+  categoryId: number;
+  isCurrent: boolean;
 }
 
 export function useDeleteCollectionActions({
-	categoryId,
-	isCurrent,
+  categoryId,
+  isCurrent,
 }: UseDeleteCollectionActionsProps): {
-	pendingMode: PendingMode;
-	handleDeleteAll: () => Promise<void>;
-	handleKeepBookmarks: () => Promise<void>;
+  handleDeleteAll: () => Promise<void>;
+  handleKeepBookmarks: () => Promise<void>;
+  pendingMode: PendingMode;
 } {
-	const { onDeleteCollection } = useDeleteCollection();
-	const [pendingMode, setPendingMode] = useState<PendingMode>(null);
+  const { onDeleteCollection } = useDeleteCollection();
+  const [pendingMode, setPendingMode] = useState<PendingMode>(null);
 
-	const handleDeleteAll = useCallback(async () => {
-		setPendingMode("delete-all");
-		try {
-			await onDeleteCollection({
-				current: isCurrent,
-				categoryId,
-				keepBookmarks: false,
-			});
-		} finally {
-			setPendingMode(null);
-		}
-	}, [isCurrent, categoryId, onDeleteCollection]);
+  const handleDeleteAll = useCallback(async () => {
+    setPendingMode("delete-all");
+    try {
+      await onDeleteCollection({
+        categoryId,
+        current: isCurrent,
+        keepBookmarks: false,
+      });
+    } finally {
+      setPendingMode(null);
+    }
+  }, [isCurrent, categoryId, onDeleteCollection]);
 
-	const handleKeepBookmarks = useCallback(async () => {
-		setPendingMode("keep-bookmarks");
-		try {
-			await onDeleteCollection({
-				current: isCurrent,
-				categoryId,
-				keepBookmarks: true,
-			});
-		} finally {
-			setPendingMode(null);
-		}
-	}, [isCurrent, categoryId, onDeleteCollection]);
+  const handleKeepBookmarks = useCallback(async () => {
+    setPendingMode("keep-bookmarks");
+    try {
+      await onDeleteCollection({
+        categoryId,
+        current: isCurrent,
+        keepBookmarks: true,
+      });
+    } finally {
+      setPendingMode(null);
+    }
+  }, [isCurrent, categoryId, onDeleteCollection]);
 
-	return { pendingMode, handleDeleteAll, handleKeepBookmarks };
+  return { handleDeleteAll, handleKeepBookmarks, pendingMode };
 }

@@ -1,111 +1,112 @@
 import fs from "node:fs";
 import path from "node:path";
+
 import * as Sentry from "@sentry/nextjs";
 import { Resend } from "resend";
+
+import { env } from "@/env/server";
 
 const EMAIL_FROM = "admin@share.recollect.so";
 const LOG_PREFIX = "[send-collection-deleted-notification]";
 
 export interface SendCollectionDeletedNotificationProps {
-	categoryName: string;
-	collaboratorEmails: string[];
-	ownerDisplayName: string;
+  categoryName: string;
+  collaboratorEmails: string[];
+  ownerDisplayName: string;
 }
 
 const filePath = path.join(process.cwd(), "public", "logo.png");
 const base64Logo = fs.readFileSync(filePath).toString("base64");
 
 export async function sendCollectionDeletedNotification(
-	props: SendCollectionDeletedNotificationProps,
+  props: SendCollectionDeletedNotificationProps,
 ) {
-	if (process.env.NODE_ENV === "development") {
-		console.log(`${LOG_PREFIX} Dev mode - skipped:`, props);
-		return;
-	}
+  if (env.NODE_ENV === "development") {
+    console.log(`${LOG_PREFIX} Dev mode - skipped:`, props);
+    return;
+  }
 
-	const { categoryName, collaboratorEmails, ownerDisplayName } = props;
+  const { categoryName, collaboratorEmails, ownerDisplayName } = props;
 
-	const resendKey = process.env.RESEND_KEY;
-	if (!resendKey) {
-		console.warn(`${LOG_PREFIX} RESEND_KEY not configured, skipping`);
-		return;
-	}
+  const resendKey = env.RESEND_KEY;
+  if (!resendKey) {
+    console.warn(`${LOG_PREFIX} RESEND_KEY not configured, skipping`);
+    return;
+  }
 
-	const resend = new Resend(resendKey);
+  const resend = new Resend(resendKey);
 
-	const subject = `Collection "${categoryName}" was deleted`;
-	const html = buildEmailHtml({ categoryName, ownerDisplayName });
+  const subject = `Collection "${categoryName}" was deleted`;
+  const html = buildEmailHtml({ categoryName, ownerDisplayName });
 
-	const results = await Promise.allSettled(
-		collaboratorEmails.map((email) =>
-			resend.emails.send({
-				from: EMAIL_FROM,
-				to: email,
-				subject,
-				html,
-				attachments: [
-					{
-						filename: "logo.png",
-						content: base64Logo,
-						contentType: "image/png",
-						contentId: "logo",
-					},
-				],
-			}),
-		),
-	);
+  const results = await Promise.allSettled(
+    collaboratorEmails.map((email) =>
+      resend.emails.send({
+        attachments: [
+          {
+            content: base64Logo,
+            contentId: "logo",
+            contentType: "image/png",
+            filename: "logo.png",
+          },
+        ],
+        from: EMAIL_FROM,
+        html,
+        subject,
+        to: email,
+      }),
+    ),
+  );
 
-	let failureCount = 0;
+  let failureCount = 0;
 
-	for (const result of results) {
-		if (result.status === "rejected") {
-			failureCount++;
-			const error =
-				result.reason instanceof Error
-					? result.reason
-					: new Error(String(result.reason));
-			console.error(`${LOG_PREFIX} Send error:`, error);
-			Sentry.captureException(error, {
-				tags: { operation: "send_collection_deleted_notification" },
-				extra: { categoryName },
-			});
-		} else if (result.value.error) {
-			failureCount++;
-			const apiError = new Error(result.value.error.message);
-			console.error(`${LOG_PREFIX} API error:`, result.value.error);
-			Sentry.captureException(apiError, {
-				tags: { operation: "send_collection_deleted_notification" },
-				extra: { categoryName },
-			});
-		}
-	}
+  for (const result of results) {
+    if (result.status === "rejected") {
+      failureCount += 1;
+      const error =
+        result.reason instanceof Error ? result.reason : new Error(String(result.reason));
+      console.error(`${LOG_PREFIX} Send error:`, error);
+      Sentry.captureException(error, {
+        extra: { categoryName },
+        tags: { operation: "send_collection_deleted_notification" },
+      });
+    } else if (result.value.error) {
+      failureCount += 1;
+      const apiError = new Error(result.value.error.message);
+      console.error(`${LOG_PREFIX} API error:`, result.value.error);
+      Sentry.captureException(apiError, {
+        extra: { categoryName },
+        tags: { operation: "send_collection_deleted_notification" },
+      });
+    }
+  }
 
-	console.log(`${LOG_PREFIX} Done:`, {
-		categoryName,
-		sent: collaboratorEmails.length - failureCount,
-		failed: failureCount,
-	});
+  console.log(`${LOG_PREFIX} Done:`, {
+    categoryName,
+    failed: failureCount,
+    sent: collaboratorEmails.length - failureCount,
+  });
 }
 
 interface BuildEmailHtmlProps {
-	categoryName: string;
-	ownerDisplayName: string;
+  categoryName: string;
+  ownerDisplayName: string;
 }
 
 function escapeHtml(text: string) {
-	return text
-		.replaceAll("&", "&amp;")
-		.replaceAll("<", "&lt;")
-		.replaceAll(">", "&gt;")
-		.replaceAll('"', "&quot;")
-		.replaceAll("'", "&#39;");
+  return text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
 
 function buildEmailHtml(props: BuildEmailHtmlProps) {
-	const categoryName = escapeHtml(props.categoryName);
-	const ownerDisplayName = escapeHtml(props.ownerDisplayName);
+  const categoryName = escapeHtml(props.categoryName);
+  const ownerDisplayName = escapeHtml(props.ownerDisplayName);
 
-	return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 	<body style="margin:0; background:#ececec; font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; text-align:center; -webkit-font-smoothing:antialiased;">
 		<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">

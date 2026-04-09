@@ -1,50 +1,57 @@
-import {
-	UpdateUserProfileInputSchema,
-	UpdateUserProfileOutputSchema,
-} from "./schema";
-import { createPatchApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
-import { apiError, apiWarn } from "@/lib/api-helpers/response";
-import { type Database } from "@/types/database.types";
+import type { Database } from "@/types/database.types";
+
+import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
+import { RecollectApiError } from "@/lib/api-helpers/errors";
+import { getServerContext } from "@/lib/api-helpers/server-context";
 import { PROFILES } from "@/utils/constants";
+import { toDbType } from "@/utils/type-utils";
+
+import { UpdateUserProfileInputSchema, UpdateUserProfileOutputSchema } from "./schema";
 
 type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
 
 const ROUTE = "v2-profiles-update-user-profile";
 
-export const PATCH = createPatchApiHandlerWithAuth({
-	route: ROUTE,
-	inputSchema: UpdateUserProfileInputSchema,
-	outputSchema: UpdateUserProfileOutputSchema,
-	handler: async ({ data, supabase, user, route }) => {
-		const userId = user.id;
+export const PATCH = createAxiomRouteHandler(
+  withAuth({
+    handler: async ({ data, supabase, user }) => {
+      const userId = user.id;
 
-		console.log(`[${route}] API called:`, { userId });
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+      }
 
-		const { data: profileData, error } = await supabase
-			.from(PROFILES)
-			.update(data.updateData as ProfileUpdate)
-			.match({ id: userId })
-			.select();
+      const updatePayload = toDbType<ProfileUpdate>(data.updateData);
 
-		if (error) {
-			return apiError({
-				route,
-				message: "Failed to update profile",
-				error,
-				operation: "profile_update",
-				userId,
-			});
-		}
+      const { data: profileData, error } = await supabase
+        .from(PROFILES)
+        .update(updatePayload)
+        .match({ id: userId })
+        .select();
 
-		if (!profileData || profileData.length === 0) {
-			return apiWarn({
-				route,
-				message: "Profile not found",
-				status: 404,
-				context: { userId },
-			});
-		}
+      if (error) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: error,
+          message: "Failed to update profile",
+          operation: "profile_update",
+        });
+      }
 
-		return profileData;
-	},
-});
+      if (!profileData || profileData.length === 0) {
+        throw new RecollectApiError("not_found", {
+          message: "Profile not found",
+        });
+      }
+
+      if (ctx?.fields) {
+        ctx.fields.profile_updated = true;
+      }
+
+      return profileData;
+    },
+    inputSchema: UpdateUserProfileInputSchema,
+    outputSchema: UpdateUserProfileOutputSchema,
+    route: ROUTE,
+  }),
+);

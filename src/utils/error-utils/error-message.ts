@@ -3,9 +3,9 @@ import { isNullable } from "../assertion-utils";
 /**
  * Represents an error object with a message.
  */
-type ErrorWithMessage = {
-	message: string;
-};
+interface ErrorWithMessage {
+  message: string;
+}
 
 /**
  * Determines whether a value is an Error object.
@@ -13,7 +13,7 @@ type ErrorWithMessage = {
  * @returns {boolean} True if the value is an Error object, false otherwise.
  */
 function isErrorObject(error: unknown): error is Error {
-	return error !== null && typeof error === "object";
+  return error !== null && typeof error === "object";
 }
 
 /**
@@ -22,11 +22,11 @@ function isErrorObject(error: unknown): error is Error {
  * @returns {boolean} True if the object is an ErrorWithMessage, false otherwise.
  */
 function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
-	return (
-		isErrorObject(error) &&
-		"message" in error &&
-		typeof (error as ErrorWithMessage).message === "string"
-	);
+  return (
+    isErrorObject(error) &&
+    "message" in error &&
+    typeof (error as ErrorWithMessage).message === "string"
+  );
 }
 
 /**
@@ -35,17 +35,17 @@ function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
  * @returns {ErrorWithMessage} An ErrorWithMessage object.
  */
 function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
-	if (isErrorWithMessage(maybeError)) {
-		return maybeError;
-	}
+  if (isErrorWithMessage(maybeError)) {
+    return maybeError;
+  }
 
-	try {
-		return new Error(JSON.stringify(maybeError));
-	} catch {
-		// fallback in case there's an error stringification of the maybeError
-		// like with circular references for example.
-		return new Error(String(maybeError));
-	}
+  try {
+    return new Error(JSON.stringify(maybeError));
+  } catch {
+    // fallback in case there's an error stringification of the maybeError
+    // like with circular references for example.
+    return new Error(String(maybeError));
+  }
 }
 
 /**
@@ -54,7 +54,7 @@ function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
  * @returns {string} The message property of the ErrorWithMessage object.
  */
 export function getErrorMessage(error: unknown): string {
-	return toErrorWithMessage(error).message;
+  return toErrorWithMessage(error).message;
 }
 
 /**
@@ -63,13 +63,10 @@ export function getErrorMessage(error: unknown): string {
  * @param {string} errorMessage - The additional error message to be added.
  * @returns {string} - The updated error message.
  */
-export function addAdditionalErrorMessage(
-	error: unknown,
-	errorMessage?: string,
-): string {
-	if (isNullable(errorMessage)) {
-		return getErrorMessage(error);
-	}
+export function addAdditionalErrorMessage(error: unknown, errorMessage?: string): string {
+  if (isNullable(errorMessage)) {
+    return getErrorMessage(error);
+  }
 
-	return `${errorMessage}\n\nCause: ${getErrorMessage(error)}`;
+  return `${errorMessage}\n\nCause: ${getErrorMessage(error)}`;
 }

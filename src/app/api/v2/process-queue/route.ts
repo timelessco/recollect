@@ -1,38 +1,39 @@
-import * as Sentry from "@sentry/nextjs";
+import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
+import { getServerContext } from "@/lib/api-helpers/server-context";
+import { createServerServiceClient } from "@/lib/supabase/service";
+import { processImageQueue } from "@/utils/worker";
 
 import { ProcessQueueInputSchema, ProcessQueueOutputSchema } from "./schema";
-import { createPostApiHandler } from "@/lib/api-helpers/create-handler";
-import { createServiceClient } from "@/utils/supabaseClient";
-import { processImageQueue } from "@/utils/worker";
 
 const ROUTE = "v2-process-queue";
 
-export const POST = createPostApiHandler({
-	inputSchema: ProcessQueueInputSchema,
-	outputSchema: ProcessQueueOutputSchema,
-	route: ROUTE,
-	handler: async ({ route }) => {
-		const supabase = createServiceClient();
+export const POST = createAxiomRouteHandler(
+  withPublic({
+    handler: async () => {
+      const supabase = createServerServiceClient();
 
-		try {
-			const result = await processImageQueue(supabase, {
-				queue_name: "ai-embeddings",
-				batchSize: 1,
-			});
+      // BEFORE operation — input context
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.queue_name = "ai-embeddings";
+      }
 
-			console.log(
-				`[${route}]`,
-				!result?.messageId
-					? "Queue is empty or all items processed"
-					: `Queue Id: ${result.messageId} processed successfully`,
-			);
+      const result = await processImageQueue(supabase, {
+        batchSize: 1,
+        queue_name: "ai-embeddings",
+      });
 
-			return { message: "Queue processed successfully" };
-		} catch (error) {
-			Sentry.captureException(error, {
-				tags: { operation: "process_queue" },
-			});
-			throw error;
-		}
-	},
-});
+      // AFTER operation — outcome
+      if (ctx?.fields) {
+        ctx.fields.message_id = result?.messageId ?? null;
+        ctx.fields.queue_empty = !result?.messageId;
+        ctx.fields.processed_count = result?.messageId ? 1 : 0;
+      }
+
+      return { message: "Queue processed successfully" };
+    },
+    inputSchema: ProcessQueueInputSchema,
+    outputSchema: ProcessQueueOutputSchema,
+    route: ROUTE,
+  }),
+);

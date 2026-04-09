@@ -1,5 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
 import fsExtra from "fs-extra";
 
 import { getGithubCommits } from "./get-commits-since-last-release.js";
@@ -9,85 +10,74 @@ let remoteCommits = [];
 
 // Cache for remote commits to avoid multiple API calls
 async function getRemoteCommits() {
-	if (remoteCommits.length === 0) {
-		remoteCommits = await getGithubCommits();
-	}
+  if (remoteCommits.length === 0) {
+    remoteCommits = await getGithubCommits();
+  }
 
-	return remoteCommits;
+  return remoteCommits;
 }
 
-const owner =
-	"{{#if this.owner}}{{~this.owner}}{{else}}{{~@root.owner}}{{/if}}";
+const owner = "{{#if this.owner}}{{~this.owner}}{{else}}{{~@root.owner}}{{/if}}";
 const host = "{{~@root.host}}";
 const repository =
-	"{{#if this.repository}}{{~this.repository}}{{else}}{{~@root.repository}}{{/if}}";
+  "{{#if this.repository}}{{~this.repository}}{{else}}{{~@root.repository}}{{/if}}";
 const issuePrefixes = ["#"];
 
 const types = [
-	{ type: "feat", section: "⭐ New Features" },
-	{ type: "fix", section: "🐞 Bug Fixes" },
-	{
-		type: "refactor",
-		section: "♻️  Code Refactoring",
-	},
-	{
-		type: "perf",
-		section: "⚡️  Performance Improvements",
-	},
-	{
-		type: "docs",
-		section: "📔 Documentation Changes",
-	},
-	{ type: "test", section: "🧪 Test Updates" },
-	{ type: "build", section: "🛠️ Build Updates" },
-	{ type: "ci", section: "💚 CI Changes" },
-	{ type: "revert", section: "⏪️ Reverted Changes" },
-	{
-		type: "chore",
-		section: "🔨 Maintenance Updates",
-	},
-	{ type: "style", section: "🎨 Code Style Changes" },
+  { type: "feat", section: "⭐ New Features" },
+  { type: "fix", section: "🐞 Bug Fixes" },
+  {
+    type: "refactor",
+    section: "♻️  Code Refactoring",
+  },
+  {
+    type: "perf",
+    section: "⚡️  Performance Improvements",
+  },
+  {
+    type: "docs",
+    section: "📔 Documentation Changes",
+  },
+  { type: "test", section: "🧪 Test Updates" },
+  { type: "build", section: "🛠️ Build Updates" },
+  { type: "ci", section: "💚 CI Changes" },
+  { type: "revert", section: "⏪️ Reverted Changes" },
+  {
+    type: "chore",
+    section: "🔨 Maintenance Updates",
+  },
+  { type: "style", section: "🎨 Code Style Changes" },
 ];
 
 const findTypeEntry = (typesArgument, commitArgument) => {
-	const typeKey = (
-		commitArgument.revert ? "revert" : commitArgument.type || ""
-	).toLowerCase();
+  const typeKey = (commitArgument.revert ? "revert" : commitArgument.type || "").toLowerCase();
 
-	return typesArgument.find((entry) => {
-		return (
-			entry.type === typeKey &&
-			(!entry.scope || entry.scope === commitArgument.scope)
-		);
-	});
+  return typesArgument.find((entry) => {
+    return entry.type === typeKey && (!entry.scope || entry.scope === commitArgument.scope);
+  });
 };
 
 // expand on the simple mustache-style templates supported in
 // configuration (we may eventually want to use handlebars for this).
 const expandTemplate = (templateArgument, context) => {
-	let expanded = templateArgument;
+  let expanded = templateArgument;
 
-	for (const key of Object.keys(context)) {
-		// eslint-disable-next-line unicorn/prefer-string-replace-all
-		expanded = expanded.replace(
-			// Need to disable the rule here because of the runtime error - SyntaxError: Invalid regular expression: /{{host}}/: Lone quantifier brackets
-			// eslint-disable-next-line require-unicode-regexp
-			new RegExp(`{{${key}}}`, "g"),
-			context[key],
-		);
-	}
+  for (const key of Object.keys(context)) {
+    expanded = expanded.replace(
+      // Need to disable the rule here because of the runtime error - SyntaxError: Invalid regular expression: /{{host}}/: Lone quantifier brackets
+      new RegExp(`{{${key}}}`, "g"),
+      context[key],
+    );
+  }
 
-	return expanded;
+  return expanded;
 };
 
-const commitUrlFormat = expandTemplate(
-	"{{host}}/{{owner}}/{{repository}}/commit/{{hash}}",
-	{
-		host,
-		owner,
-		repository,
-	},
-);
+const commitUrlFormat = expandTemplate("{{host}}/{{owner}}/{{repository}}/commit/{{hash}}", {
+  host,
+  owner,
+  repository,
+});
 
 /**
  * Generates a URL for a commit hash based on the provided context.
@@ -96,263 +86,274 @@ const commitUrlFormat = expandTemplate(
  * @returns {string} The URL for the specified commit hash.
  */
 function generateCommitUrl(context, commitHash) {
-	return `${context.host}/${context.owner}/${context.repository}/commit/${commitHash}`;
+  return `${context.host}/${context.owner}/${context.repository}/commit/${commitHash}`;
 }
 
 const addBreakingChanges = (commit, context) => {
-	const breakingHeaderPatternRegex = /^\w*(?:\(.*\))?!: (.*)$/u;
-	const match = breakingHeaderPatternRegex.exec(commit.header);
+  const breakingHeaderPatternRegex = /^\w*(?:\(.*\))?!: (.*)$/u;
+  const match = breakingHeaderPatternRegex.exec(commit.header);
 
-	if (match) {
-		// the description of the change.
-		const noteText = match[1];
+  if (match) {
+    // the description of the change.
+    const noteText = match[1];
 
-		context.breakingChanges.push({
-			scope: commit?.scope,
-			body: commit?.body,
-			quotedBody: commit?.body
-				? commit.body
-						.split("\n")
-						.map((line) => `> ${line}`)
-						.join("\n")
-				: null,
-			smallQuotedBody: commit?.body
-				? `> <sub>${commit.body.split("\n").join("\n> ")}</sub>`
-				: null,
-			subject: commit?.subject,
-			header: noteText,
-			shortHash: commit.shortHash,
-			hashUrl: generateCommitUrl(context, commit.hash),
-		});
+    context.breakingChanges.push({
+      scope: commit?.scope,
+      body: commit?.body,
+      quotedBody: commit?.body
+        ? commit.body
+            .split("\n")
+            .map((line) => `> ${line}`)
+            .join("\n")
+        : null,
+      smallQuotedBody: commit?.body ? `> <sub>${commit.body.split("\n").join("\n> ")}</sub>` : null,
+      subject: commit?.subject,
+      header: noteText,
+      shortHash: commit.shortHash,
+      hashUrl: generateCommitUrl(context, commit.hash),
+    });
 
-		// Remove the commit to the notable changes as it will be added as breaking change
-		commit.body = null;
-	}
+    // Remove the commit to the notable changes as it will be added as breaking change
+    commit.body = null;
+  }
 };
 
 const addNotableChanges = (commit, context) => {
-	// eslint-disable-next-line regexp/optimal-quantifier-concatenation
-	const pattern = /^(?:feat|fix)\(.+\)?!?:\s.*$/u;
-	const match = pattern.exec(commit.header);
+  // eslint-disable-next-line regexp/optimal-quantifier-concatenation
+  const pattern = /^(?:feat|fix)\(.+\)?!?:\s.*$/u;
+  const match = pattern.exec(commit.header);
 
-	if (match && commit?.body) {
-		context.notableChanges.push({
-			scope: commit?.scope,
-			body: commit.body,
-			quotedBody: commit.body
-				.split("\n")
-				.map((line) => `> ${line}`)
-				.join("\n"),
-			smallQuotedBody: `> <sub>${commit.body.split("\n").join("\n> ")}</sub>`,
-			subject: commit?.subject,
-			shortHash: commit.shortHash,
-			hashUrl: generateCommitUrl(context, commit.hash),
-		});
-	}
+  if (match && commit?.body) {
+    context.notableChanges.push({
+      scope: commit?.scope,
+      body: commit.body,
+      quotedBody: commit.body
+        .split("\n")
+        .map((line) => `> ${line}`)
+        .join("\n"),
+      smallQuotedBody: `> <sub>${commit.body.split("\n").join("\n> ")}</sub>`,
+      subject: commit?.subject,
+      shortHash: commit.shortHash,
+      hashUrl: generateCommitUrl(context, commit.hash),
+    });
+  }
 };
 
 const addOtherNotableChanges = (commit, context) => {
-	// eslint-disable-next-line regexp/optimal-quantifier-concatenation
-	const pattern = /^(?:refactor|perf|docs)\(.+\)?!?:\s.*$/u;
-	const match = pattern.exec(commit.header);
+  // eslint-disable-next-line regexp/optimal-quantifier-concatenation
+  const pattern = /^(?:refactor|perf|docs)\(.+\)?!?:\s.*$/u;
+  const match = pattern.exec(commit.header);
 
-	if (match && commit?.body) {
-		context.otherNotableChanges.push({
-			scope: commit?.scope,
-			body: commit.body,
-			quotedBody: commit.body
-				.split("\n")
-				.map((line) => `> ${line}`)
-				.join("\n"),
-			smallQuotedBody: `> <sub>${commit.body.split("\n").join("\n> ")}</sub>`,
-			subject: commit?.subject,
-			shortHash: commit.shortHash,
-			hashUrl: generateCommitUrl(context, commit.hash),
-		});
-	}
+  if (match && commit?.body) {
+    context.otherNotableChanges.push({
+      scope: commit?.scope,
+      body: commit.body,
+      quotedBody: commit.body
+        .split("\n")
+        .map((line) => `> ${line}`)
+        .join("\n"),
+      smallQuotedBody: `> <sub>${commit.body.split("\n").join("\n> ")}</sub>`,
+      subject: commit?.subject,
+      shortHash: commit.shortHash,
+      hashUrl: generateCommitUrl(context, commit.hash),
+    });
+  }
 };
 
+const seenPrNumbers = new Set();
+
 export const transform = async (commitOriginal, context) => {
-	const commit = { ...commitOriginal };
+  const commit = { ...commitOriginal };
 
-	commit.body = commit?.body || commit?.footer;
-	// Join hard-wrapped lines (72-char git convention), preserve paragraph breaks
-	if (commit.body) {
-		commit.body = commit.body.replace(/(?<!\n)\n(?!\n)/g, " ");
-	}
+  commit.body = commit?.body || commit?.footer;
+  // Join hard-wrapped lines (72-char git convention), preserve paragraph breaks
+  if (commit.body) {
+    commit.body = commit.body.replace(/(?<!\n)\n(?!\n)/g, " ");
+  }
 
-	// Remove commit body if it's author is a bot
-	if (commit.authorName === "renovate[bot]") {
-		commit.body = "";
-	}
+  // Remove commit body if it's author is a bot
+  if (commit.authorName === "renovate[bot]") {
+    commit.body = "";
+  }
 
-	const issues = [];
+  // Get remote commit data early (for dedup and PR title override)
+  const commits = await getRemoteCommits();
+  const matchedRemoteCommit = commits.find(
+    (remoteCommit) => remoteCommit.shortHash === commit.shortHash,
+  );
+  if (matchedRemoteCommit?.login) {
+    commit.userLogin = matchedRemoteCommit.login;
+  }
+  commit.prNumber = matchedRemoteCommit?.prNumber ?? null;
 
-	if (!commit?.type || !commit?.scope || !commit?.subject) {
-		const typePattern = /^(\w*)(?:\((.*)\))?!?: (.*)$/;
-		const match = typePattern.exec(commit.header);
+  // Filter release commits
+  if (/^(?:feat\(release\): 🚀|🚀 Release v)/u.test(commit.header)) {
+    return false;
+  }
 
-		if (match) {
-			commit.type = match[1];
-			commit.scope = match[2];
-			commit.subject = match[3];
-		}
-	}
+  // Dedup: one entry per PR
+  if (commit.prNumber !== null) {
+    if (seenPrNumbers.has(commit.prNumber)) {
+      return false;
+    }
+    seenPrNumbers.add(commit.prNumber);
+  }
 
-	const entry = findTypeEntry(types, commit);
+  // Override with PR title for grouped PR entries
+  if (commit.prNumber !== null && matchedRemoteCommit?.prTitle) {
+    commit.header = matchedRemoteCommit.prTitle;
+    commit.subject = null;
+    commit.type = null;
+    commit.scope = null;
+  }
 
-	context.hasBreakingChanges = true;
-	context.breakingChangesTitle = "🧨 BREAKING CHANGE";
-	context.breakingChanges = context.breakingChanges || [];
-	// adds additional breaking change notes
-	// for the special case, test(system)!: hello world, where there is
-	// a '!' but no 'BREAKING CHANGE' in body:
-	addBreakingChanges(commit, context);
+  const issues = [];
 
-	if (context.breakingChanges.length === 0) {
-		context.hasBreakingChanges = false;
-	}
+  if (!commit?.type || !commit?.scope || !commit?.subject) {
+    const typePattern = /^(\w*)(?:\((.*)\))?!?: (.*)$/;
+    const match = typePattern.exec(commit.header);
 
-	context.hasNotableChanges = true;
-	context.notableChangesTitle = "👀 Notable Changes";
-	context.notableChanges = context.notableChanges || [];
+    if (match) {
+      commit.type = match[1];
+      commit.scope = match[2];
+      commit.subject = match[3];
+    }
+  }
 
-	addNotableChanges(commit, context);
+  const entry = findTypeEntry(types, commit);
 
-	if (context.notableChanges.length === 0) {
-		context.hasNotableChanges = false;
-	}
+  context.hasBreakingChanges = true;
+  context.breakingChangesTitle = "🧨 BREAKING CHANGE";
+  context.breakingChanges = context.breakingChanges || [];
+  // adds additional breaking change notes
+  // for the special case, test(system)!: hello world, where there is
+  // a '!' but no 'BREAKING CHANGE' in body:
+  addBreakingChanges(commit, context);
 
-	context.hasOtherNotableChanges = true;
-	context.otherNotableChangesTitle = "📌 Other Notable Changes";
-	context.otherNotableChanges = context.otherNotableChanges || [];
+  if (context.breakingChanges.length === 0) {
+    context.hasBreakingChanges = false;
+  }
 
-	addOtherNotableChanges(commit, context);
+  context.hasNotableChanges = true;
+  context.notableChangesTitle = "👀 Notable Changes";
+  context.notableChanges = context.notableChanges || [];
 
-	if (context.otherNotableChanges.length === 0) {
-		context.hasOtherNotableChanges = false;
-	}
+  addNotableChanges(commit, context);
 
-	if (entry) {
-		commit.type = entry.section;
-	}
+  if (context.notableChanges.length === 0) {
+    context.hasNotableChanges = false;
+  }
 
-	if (commit.scope === "*") {
-		commit.scope = "";
-	}
+  context.hasOtherNotableChanges = true;
+  context.otherNotableChangesTitle = "📌 Other Notable Changes";
+  context.otherNotableChanges = context.otherNotableChanges || [];
 
-	if (typeof commit.hash === "string") {
-		commit.shortHash = commit.hash.slice(0, 7);
-	}
+  addOtherNotableChanges(commit, context);
 
-	if (typeof commit.subject === "string") {
-		// Issue URLs.
-		const issueRegEx = `(${issuePrefixes.join("|")})(\\d+)`;
-		const re = new RegExp(issueRegEx, "gu");
+  if (context.otherNotableChanges.length === 0) {
+    context.hasOtherNotableChanges = false;
+  }
 
-		// eslint-disable-next-line unicorn/prefer-string-replace-all
-		commit.subject = commit.subject.replace(re, (_, prefix, issue) => {
-			issues.push(prefix + issue);
+  if (entry) {
+    commit.type = entry.section;
+  }
 
-			const url = expandTemplate(
-				"{{host}}/{{owner}}/{{repository}}/issues/{{id}}",
-				{
-					host: context.host,
-					owner: context.owner,
-					repository: context.repository,
-					id: issue,
-				},
-			);
+  if (commit.scope === "*") {
+    commit.scope = "";
+  }
 
-			return `[${prefix}${issue}](${url})`;
-		});
+  if (typeof commit.hash === "string") {
+    commit.shortHash = commit.hash.slice(0, 7);
+  }
 
-		// User URLs.
-		// eslint-disable-next-line unicorn/prefer-string-replace-all
-		commit.subject = commit.subject.replace(
-			/\B@([a-z\d](?:-?[a-z\d/]){0,38})/gu,
-			(_, user) => {
-				if (user.includes("/")) {
-					return `@${user}`;
-				}
+  if (typeof commit.subject === "string") {
+    // Issue URLs.
+    const issueRegEx = `(${issuePrefixes.join("|")})(\\d+)`;
+    const re = new RegExp(issueRegEx, "gu");
 
-				const usernameUrl = expandTemplate("{{host}}/{{user}}", {
-					host: context.host,
-					user,
-				});
+    commit.subject = commit.subject.replace(re, (_, prefix, issue) => {
+      issues.push(prefix + issue);
 
-				return `[@${user}](${usernameUrl})`;
-			},
-		);
-	}
+      const url = expandTemplate("{{host}}/{{owner}}/{{repository}}/issues/{{id}}", {
+        host: context.host,
+        owner: context.owner,
+        repository: context.repository,
+        id: issue,
+      });
 
-	// remove references that already appear in the subject
-	commit.references = commit.references.filter((reference) => {
-		if (!issues.includes(reference.prefix + reference.issue)) {
-			return true;
-		}
+      return `[${prefix}${issue}](${url})`;
+    });
 
-		return false;
-	});
+    // User URLs.
+    commit.subject = commit.subject.replace(/\B@([a-z\d](?:-?[a-z\d/]){0,38})/gu, (_, user) => {
+      if (user.includes("/")) {
+        return `@${user}`;
+      }
 
-	// Add GitHub user info
-	const commits = await getRemoteCommits();
-	const matchedRemoteCommit = commits.find(
-		(remoteCommit) => remoteCommit.shortHash === commit.shortHash,
-	);
-	if (matchedRemoteCommit?.login) {
-		commit.userLogin = matchedRemoteCommit.login;
-	}
+      const usernameUrl = expandTemplate("{{host}}/{{user}}", {
+        host: context.host,
+        user,
+      });
 
-	context.hasHighlightedChanges =
-		context.breakingChanges?.length > 0 ||
-		context.notableChanges?.length > 0 ||
-		context.otherNotableChanges?.length > 0;
+      return `[@${user}](${usernameUrl})`;
+    });
+  }
 
-	return commit;
+  // remove references that already appear in the subject
+  commit.references = commit.references.filter((reference) => {
+    if (!issues.includes(reference.prefix + reference.issue)) {
+      return true;
+    }
+
+    return false;
+  });
+
+  context.hasHighlightedChanges =
+    context.breakingChanges?.length > 0 ||
+    context.notableChanges?.length > 0 ||
+    context.otherNotableChanges?.length > 0;
+
+  return commit;
 };
 
 export const mainTemplate = fsExtra.readFileSync(
-	path.resolve(__dirname, "./templates/template.hbs"),
-	"utf8",
+  path.resolve(__dirname, "./templates/template.hbs"),
+  "utf8",
 );
 
 const commitTemplate = fsExtra.readFileSync(
-	path.resolve(__dirname, "./templates/commit.hbs"),
-	"utf8",
+  path.resolve(__dirname, "./templates/commit.hbs"),
+  "utf8",
 );
 
-const issueUrlFormat = expandTemplate(
-	"{{host}}/{{owner}}/{{repository}}/issues/{{id}}",
-	{
-		host,
-		owner,
-		repository,
-		id: "{{this.issue}}",
-		prefix: "{{this.prefix}}",
-	},
-);
+const issueUrlFormat = expandTemplate("{{host}}/{{owner}}/{{repository}}/issues/{{id}}", {
+  host,
+  owner,
+  repository,
+  id: "{{this.issue}}",
+  prefix: "{{this.prefix}}",
+});
 
 export const commitPartial = commitTemplate
-	.replaceAll("{{commitUrlFormat}}", commitUrlFormat)
-	.replaceAll("{{issueUrlFormat}}", issueUrlFormat);
+  .replaceAll("{{commitUrlFormat}}", commitUrlFormat)
+  .replaceAll("{{issueUrlFormat}}", issueUrlFormat);
 
 export function commitGroupsSort(a, b) {
-	const commitGroupOrder = [
-		"🎨 Code Style Changes",
-		"💚 CI Changes",
-		"🔨 Maintenance Updates",
-		"🧪 Test Updates",
-		"🛠️ Build Updates",
-		"⏪️ Reverted Changes",
-		"📔 Documentation Changes",
-		"⚡️  Performance Improvements",
-		"♻️  Code Refactoring",
-		"🐞 Bug Fixes",
-		"⭐ New Features",
-	];
-	const gRankA = commitGroupOrder.indexOf(a.title);
-	const gRankB = commitGroupOrder.indexOf(b.title);
+  const commitGroupOrder = [
+    "🎨 Code Style Changes",
+    "💚 CI Changes",
+    "🔨 Maintenance Updates",
+    "🧪 Test Updates",
+    "🛠️ Build Updates",
+    "⏪️ Reverted Changes",
+    "📔 Documentation Changes",
+    "⚡️  Performance Improvements",
+    "♻️  Code Refactoring",
+    "🐞 Bug Fixes",
+    "⭐ New Features",
+  ];
+  const gRankA = commitGroupOrder.indexOf(a.title);
+  const gRankB = commitGroupOrder.indexOf(b.title);
 
-	return gRankA >= gRankB ? -1 : 1;
+  return gRankA >= gRankB ? -1 : 1;
 }

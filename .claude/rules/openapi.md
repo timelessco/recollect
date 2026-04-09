@@ -24,11 +24,15 @@ oasdiff changelog old.json new.json --format markdown # Local changelog diff
 - Workflow: `.github/workflows/openapi-changelog.yml`
 - Uses `go install github.com/oasdiff/oasdiff@latest` + direct CLI (not Docker action)
 - Spec files in `.oasdiff/` (Docker actions can't see `/tmp`)
-- `docs/API_CHANGELOG.md` is CI-generated, ignored by Prettier + markdownlint
+- `docs/API_CHANGELOG.md` is CI-generated, ignored by oxfmt + markdownlint
 
 ### Factory `.config`
 
-All 4 handler factories in `create-handler.ts` expose `.config` with `factoryName`, `inputSchema`, `outputSchema` -- this is how the scanner discovers schemas.
+All handler factories expose `.config` for the OpenAPI scanner:
+
+**V1 factories** (`create-handler.ts`): `.config` has `{ factoryName, inputSchema, outputSchema }`. The scanner detects auth via `factoryName.includes('WithAuth')`.
+
+**V2 factories** (`create-handler-v2.ts`): `createAxiomRouteHandler` passes `.config` through from the inner `withAuth`/`withPublic` layer. The `.config` shape is: `{ auth: boolean, contract: "v2", factoryName: "withAuth"|"withPublic", inputSchema, outputSchema, route }`. The scanner detects v2 factories via `config.contract === "v2"` and uses bare response schemas (no `{data, error}` envelope). For v2 route authoring patterns, see `api-v2.md`.
 
 **Non-factory routes** can be scanner-discoverable via `Object.assign(handleGet, { config: { ... } satisfies HandlerConfig })`.
 

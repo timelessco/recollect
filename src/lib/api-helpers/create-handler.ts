@@ -1,150 +1,155 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { type SupabaseClient, type User } from "@supabase/supabase-js";
-import { type z } from "zod";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+import type { Database } from "@/types/database.types";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+import type { z } from "zod";
+
+import { requireAuth } from "@/lib/supabase/api";
 
 import { apiError, apiSuccess, parseBody, parseQuery } from "./response";
-import { requireAuth } from "@/lib/supabase/api";
-import { type Database } from "@/types/database.types";
 
 // Context types for handlers
-type AuthHandlerContext<TInput> = {
-	data: TInput;
-	route: string;
-	supabase: SupabaseClient<Database>;
-	user: User;
-};
+interface AuthHandlerContext<TInput> {
+  data: TInput;
+  route: string;
+  supabase: SupabaseClient<Database>;
+  user: User;
+}
 
-type PublicHandlerContext<TInput> = {
-	input: TInput;
-	route: string;
-};
+interface PublicHandlerContext<TInput> {
+  input: TInput;
+  route: string;
+}
 
 // Config types
-type AuthHandlerConfig<TInput, TOutput> = {
-	handler: (ctx: AuthHandlerContext<TInput>) => Promise<NextResponse | TOutput>;
-	inputSchema: z.ZodType<TInput>;
-	outputSchema: z.ZodType<TOutput>;
-	route: string;
-};
+interface AuthHandlerConfig<TInput, TOutput> {
+  handler: (
+    ctx: AuthHandlerContext<TInput>,
+  ) => NextResponse | Promise<NextResponse | TOutput> | TOutput;
+  inputSchema: z.ZodType<TInput>;
+  outputSchema: z.ZodType<TOutput>;
+  route: string;
+}
 
-type PublicHandlerConfig<TInput, TOutput> = {
-	handler: (
-		ctx: PublicHandlerContext<TInput>,
-	) => Promise<NextResponse | TOutput>;
-	inputSchema: z.ZodType<TInput>;
-	outputSchema: z.ZodType<TOutput>;
-	route: string;
-};
+interface PublicHandlerConfig<TInput, TOutput> {
+  handler: (
+    ctx: PublicHandlerContext<TInput>,
+  ) => NextResponse | Promise<NextResponse | TOutput> | TOutput;
+  inputSchema: z.ZodType<TInput>;
+  outputSchema: z.ZodType<TOutput>;
+  route: string;
+}
 
-export type HandlerConfig = {
-	factoryName: string;
-	inputSchema: z.ZodTypeAny;
-	outputSchema: z.ZodTypeAny;
-	route: string;
-};
+export interface HandlerConfig {
+  factoryName: string;
+  inputSchema: z.ZodType;
+  outputSchema: z.ZodType;
+  route: string;
+}
 
 type HandlerFn = ((request: NextRequest) => Promise<NextResponse>) & {
-	config: HandlerConfig;
+  config: HandlerConfig;
 };
 
 // ============================================================
 // Internal helpers
 // ============================================================
 
-async function parseInput<TInput>(
-	request: NextRequest,
-	schema: z.ZodType<TInput>,
-	route: string,
-	method: "body" | "query",
+function parseInput<TInput>(
+  request: NextRequest,
+  schema: z.ZodType<TInput>,
+  route: string,
+  method: "body" | "query",
 ) {
-	if (method === "query") {
-		return parseQuery({ request, schema, route });
-	}
+  if (method === "query") {
+    return parseQuery({ request, route, schema });
+  }
 
-	return await parseBody({ request, schema, route });
+  return parseBody({ request, route, schema });
 }
 
 function createPublicHandlerInternal<TInput, TOutput>(
-	config: PublicHandlerConfig<TInput, TOutput>,
-	factoryName: string,
-	method: "body" | "query",
+  config: PublicHandlerConfig<TInput, TOutput>,
+  factoryName: string,
+  method: "body" | "query",
 ): HandlerFn {
-	const { route, inputSchema, outputSchema, handler } = config;
+  const { handler, inputSchema, outputSchema, route } = config;
 
-	const fn = async (request: NextRequest) => {
-		try {
-			const parsed = await parseInput(request, inputSchema, route, method);
-			if (parsed.errorResponse) {
-				return parsed.errorResponse;
-			}
+  const fn = async (request: NextRequest) => {
+    try {
+      const parsed = await parseInput(request, inputSchema, route, method);
+      if (parsed.errorResponse) {
+        return parsed.errorResponse;
+      }
 
-			const result = await handler({ input: parsed.data, route });
+      const result = await handler({ input: parsed.data, route });
 
-			if (result instanceof NextResponse) {
-				return result;
-			}
+      if (result instanceof NextResponse) {
+        return result;
+      }
 
-			return apiSuccess({ route, data: result, schema: outputSchema });
-		} catch (error) {
-			return apiError({
-				route,
-				message: "An unexpected error occurred",
-				error,
-				operation: `${route}_unexpected`,
-			});
-		}
-	};
+      return apiSuccess({ data: result, route, schema: outputSchema });
+    } catch (error) {
+      return apiError({
+        error,
+        message: "An unexpected error occurred",
+        operation: `${route}_unexpected`,
+        route,
+      });
+    }
+  };
 
-	fn.config = { factoryName, inputSchema, outputSchema, route };
+  fn.config = { factoryName, inputSchema, outputSchema, route };
 
-	return fn;
+  return fn;
 }
 
 function createAuthHandlerInternal<TInput, TOutput>(
-	config: AuthHandlerConfig<TInput, TOutput>,
-	factoryName: string,
-	method: "body" | "query",
+  config: AuthHandlerConfig<TInput, TOutput>,
+  factoryName: string,
+  method: "body" | "query",
 ): HandlerFn {
-	const { route, inputSchema, outputSchema, handler } = config;
+  const { handler, inputSchema, outputSchema, route } = config;
 
-	const fn = async (request: NextRequest) => {
-		try {
-			const auth = await requireAuth(route);
-			if (auth.errorResponse) {
-				return auth.errorResponse;
-			}
+  const fn = async (request: NextRequest) => {
+    try {
+      const auth = await requireAuth(route);
+      if (auth.errorResponse) {
+        return auth.errorResponse;
+      }
 
-			const parsed = await parseInput(request, inputSchema, route, method);
-			if (parsed.errorResponse) {
-				return parsed.errorResponse;
-			}
+      const parsed = await parseInput(request, inputSchema, route, method);
+      if (parsed.errorResponse) {
+        return parsed.errorResponse;
+      }
 
-			const { supabase, user } = auth;
-			const result = await handler({
-				data: parsed.data,
-				supabase,
-				user,
-				route,
-			});
+      const { supabase, user } = auth;
+      const result = await handler({
+        data: parsed.data,
+        route,
+        supabase,
+        user,
+      });
 
-			if (result instanceof NextResponse) {
-				return result;
-			}
+      if (result instanceof NextResponse) {
+        return result;
+      }
 
-			return apiSuccess({ route, data: result, schema: outputSchema });
-		} catch (error) {
-			return apiError({
-				route,
-				message: "An unexpected error occurred",
-				error,
-				operation: `${route}_unexpected`,
-			});
-		}
-	};
+      return apiSuccess({ data: result, route, schema: outputSchema });
+    } catch (error) {
+      return apiError({
+        error,
+        message: "An unexpected error occurred",
+        operation: `${route}_unexpected`,
+        route,
+      });
+    }
+  };
 
-	fn.config = { factoryName, inputSchema, outputSchema, route };
+  fn.config = { factoryName, inputSchema, outputSchema, route };
 
-	return fn;
+  return fn;
 }
 
 // ============================================================
@@ -152,114 +157,100 @@ function createAuthHandlerInternal<TInput, TOutput>(
 // ============================================================
 
 export const createGetApiHandler = <TInput, TOutput>(
-	config: PublicHandlerConfig<TInput, TOutput>,
-): HandlerFn =>
-	createPublicHandlerInternal(config, "createGetApiHandler", "query");
+  config: PublicHandlerConfig<TInput, TOutput>,
+): HandlerFn => createPublicHandlerInternal(config, "createGetApiHandler", "query");
 
 export const createPostApiHandler = <TInput, TOutput>(
-	config: PublicHandlerConfig<TInput, TOutput>,
-): HandlerFn =>
-	createPublicHandlerInternal(config, "createPostApiHandler", "body");
+  config: PublicHandlerConfig<TInput, TOutput>,
+): HandlerFn => createPublicHandlerInternal(config, "createPostApiHandler", "body");
 
 // ============================================================
 // Authenticated Handlers (with auth)
 // ============================================================
 
 export const createGetApiHandlerWithAuth = <TInput, TOutput>(
-	config: AuthHandlerConfig<TInput, TOutput>,
-): HandlerFn =>
-	createAuthHandlerInternal(config, "createGetApiHandlerWithAuth", "query");
+  config: AuthHandlerConfig<TInput, TOutput>,
+): HandlerFn => createAuthHandlerInternal(config, "createGetApiHandlerWithAuth", "query");
 
 export const createPostApiHandlerWithAuth = <TInput, TOutput>(
-	config: AuthHandlerConfig<TInput, TOutput>,
-): HandlerFn =>
-	createAuthHandlerInternal(config, "createPostApiHandlerWithAuth", "body");
+  config: AuthHandlerConfig<TInput, TOutput>,
+): HandlerFn => createAuthHandlerInternal(config, "createPostApiHandlerWithAuth", "body");
 
 export const createPatchApiHandlerWithAuth = <TInput, TOutput>(
-	config: AuthHandlerConfig<TInput, TOutput>,
-): HandlerFn =>
-	createAuthHandlerInternal(config, "createPatchApiHandlerWithAuth", "body");
+  config: AuthHandlerConfig<TInput, TOutput>,
+): HandlerFn => createAuthHandlerInternal(config, "createPatchApiHandlerWithAuth", "body");
 
 export const createPutApiHandlerWithAuth = <TInput, TOutput>(
-	config: AuthHandlerConfig<TInput, TOutput>,
-): HandlerFn =>
-	createAuthHandlerInternal(config, "createPutApiHandlerWithAuth", "body");
+  config: AuthHandlerConfig<TInput, TOutput>,
+): HandlerFn => createAuthHandlerInternal(config, "createPutApiHandlerWithAuth", "body");
 
 export const createDeleteApiHandlerWithAuth = <TInput, TOutput>(
-	config: AuthHandlerConfig<TInput, TOutput>,
-): HandlerFn =>
-	createAuthHandlerInternal(config, "createDeleteApiHandlerWithAuth", "body");
+  config: AuthHandlerConfig<TInput, TOutput>,
+): HandlerFn => createAuthHandlerInternal(config, "createDeleteApiHandlerWithAuth", "body");
 
 // ============================================================
 // Secret-authenticated Handlers
 // ============================================================
 
-type SecretHandlerConfig<TInput, TOutput> = PublicHandlerConfig<
-	TInput,
-	TOutput
-> & {
-	secretEnvVar: string;
+type SecretHandlerConfig<TInput, TOutput> = PublicHandlerConfig<TInput, TOutput> & {
+  secretEnvVar: string;
 };
 
 function createSecretHandlerInternal<TInput, TOutput>(
-	config: SecretHandlerConfig<TInput, TOutput>,
-	factoryName: string,
-	method: "body" | "query",
+  config: SecretHandlerConfig<TInput, TOutput>,
+  factoryName: string,
+  method: "body" | "query",
 ): HandlerFn {
-	const { route, inputSchema, outputSchema, handler, secretEnvVar } = config;
+  const { handler, inputSchema, outputSchema, route, secretEnvVar } = config;
 
-	const fn = async (request: NextRequest) => {
-		try {
-			const secret = process.env[secretEnvVar];
-			if (!secret) {
-				console.error(`[${route}] ${secretEnvVar} is not configured`);
-				return NextResponse.json(
-					{ data: null, error: "Server configuration error" },
-					{ status: 500 },
-				);
-			}
+  const fn = async (request: NextRequest) => {
+    try {
+      // process.env used intentionally — dynamic process.env[secretEnvVar] lookup, not statically analyzable
+      const secret = process.env[secretEnvVar];
+      if (!secret) {
+        console.error(`[${route}] ${secretEnvVar} is not configured`);
+        return NextResponse.json(
+          { data: null, error: "Server configuration error" },
+          { status: 500 },
+        );
+      }
 
-			const authHeader = request.headers.get("authorization");
-			if (authHeader !== `Bearer ${secret}`) {
-				return NextResponse.json(
-					{ data: null, error: "Unauthorized" },
-					{ status: 401 },
-				);
-			}
+      const authHeader = request.headers.get("authorization");
+      if (authHeader !== `Bearer ${secret}`) {
+        return NextResponse.json({ data: null, error: "Unauthorized" }, { status: 401 });
+      }
 
-			const parsed = await parseInput(request, inputSchema, route, method);
-			if (parsed.errorResponse) {
-				return parsed.errorResponse;
-			}
+      const parsed = await parseInput(request, inputSchema, route, method);
+      if (parsed.errorResponse) {
+        return parsed.errorResponse;
+      }
 
-			const result = await handler({ input: parsed.data, route });
+      const result = await handler({ input: parsed.data, route });
 
-			if (result instanceof NextResponse) {
-				return result;
-			}
+      if (result instanceof NextResponse) {
+        return result;
+      }
 
-			return apiSuccess({ route, data: result, schema: outputSchema });
-		} catch (error) {
-			return apiError({
-				route,
-				message: "An unexpected error occurred",
-				error,
-				operation: `${route}_unexpected`,
-			});
-		}
-	};
+      return apiSuccess({ data: result, route, schema: outputSchema });
+    } catch (error) {
+      return apiError({
+        error,
+        message: "An unexpected error occurred",
+        operation: `${route}_unexpected`,
+        route,
+      });
+    }
+  };
 
-	fn.config = { factoryName, inputSchema, outputSchema, route };
+  fn.config = { factoryName, inputSchema, outputSchema, route };
 
-	return fn;
+  return fn;
 }
 
 export const createGetApiHandlerWithSecret = <TInput, TOutput>(
-	config: SecretHandlerConfig<TInput, TOutput>,
-): HandlerFn =>
-	createSecretHandlerInternal(config, "createGetApiHandlerWithSecret", "query");
+  config: SecretHandlerConfig<TInput, TOutput>,
+): HandlerFn => createSecretHandlerInternal(config, "createGetApiHandlerWithSecret", "query");
 
 export const createPostApiHandlerWithSecret = <TInput, TOutput>(
-	config: SecretHandlerConfig<TInput, TOutput>,
-): HandlerFn =>
-	createSecretHandlerInternal(config, "createPostApiHandlerWithSecret", "body");
+  config: SecretHandlerConfig<TInput, TOutput>,
+): HandlerFn => createSecretHandlerInternal(config, "createPostApiHandlerWithSecret", "body");
