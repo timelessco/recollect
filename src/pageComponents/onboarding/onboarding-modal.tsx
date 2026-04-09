@@ -109,9 +109,9 @@ export function OnboardingModal() {
             </button>
 
             {step === "extension" ? (
-              <ExtensionStep onCtaClick={markComplete} />
+              <ExtensionStep onCtaClick={skip} />
             ) : (
-              <AppsStep onCtaClick={markComplete} />
+              <AppsStep onCtaClick={skip} />
             )}
           </div>
         </Dialog.Popup>
