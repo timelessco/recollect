@@ -5,7 +5,7 @@ import type { SavePhase } from "../components/save-view";
 import type { SyncStatus } from "../components/sync-button";
 
 import { MainView, PopupShell } from "../components/popup-overlay";
-import { SafariFrame } from "../components/safari-frame";
+import { SafariFrame } from "../icons/safari-frame";
 
 function easeOutCubic(t: number): number {
   return 1 - (1 - t) ** 3;
