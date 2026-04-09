@@ -11,7 +11,7 @@ import type { SlotProps } from "input-otp";
 import { Button } from "@/components/ui/recollect/button";
 import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
 import { createClient } from "@/lib/supabase/client";
-import { EVERYTHING_URL } from "@/utils/constants";
+import { DISCOVER_URL, EVERYTHING_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
 import { cn } from "@/utils/tailwind-merge";
 
@@ -35,7 +35,7 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
       try {
         const supabase = createClient();
 
-        const { error } = await supabase.auth.verifyOtp({
+        const { data, error } = await supabase.auth.verifyOtp({
           email,
           token: otpValue,
           type: "email",
@@ -46,7 +46,25 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
           return;
         }
 
-        router.push(`/${EVERYTHING_URL}`);
+        // First-time users land on /discover so the welcome modal mounts via
+        // [category_id].tsx's SSR gate. Mirrors resolvePostLoginRedirect —
+        // the App Router /auth/confirm callback is bypassed for in-app OTP
+        // entry (Supabase verifies client-side), so we replicate the gate
+        // here. Fail-open: any read error sends the user to /everything.
+        const userId = data.user?.id;
+        let destination = `/${EVERYTHING_URL}`;
+        if (userId) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("onboarding_complete")
+            .eq("id", userId)
+            .maybeSingle();
+          if (profile?.onboarding_complete === false) {
+            destination = `/${DISCOVER_URL}`;
+          }
+        }
+
+        router.push(destination);
       } catch (error) {
         handleClientError(error, "Failed to verify OTP");
       }
