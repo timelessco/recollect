@@ -530,3 +530,18 @@ No changes
 No changes
 
 
+
+## 2026-04-09 [`6f88d81`](https://github.com/timelessco/recollect/commit/6f88d8168134f402a920828343a223a17ca790d5)
+
+
+
+### API Changes
+
+### PATCH /v2/profiles/mark-onboarding-complete
+-  endpoint added
+
+
+
+
+
+
