@@ -284,7 +284,11 @@ export const BookmarkCard = memo(BookmarkCardInner, (prev, next) => {
     prev.post.meta_data?.height === next.post.meta_data?.height &&
     prev.post.meta_data?.width === next.post.meta_data?.width &&
     prev.post.addedTags?.length === next.post.addedTags?.length &&
-    prev.post.addedCategories?.length === next.post.addedCategories?.length &&
+    // Compare by id — a category swap (drag-drop into a new collection) keeps
+    // length identical, so a length-only check would bail the memo and leave
+    // the card's category chip stale.
+    prev.post.addedCategories?.map((cat) => cat.id).join(",") ===
+      next.post.addedCategories?.map((cat) => cat.id).join(",") &&
     prev.img === next.img &&
     prev.isPublicPage === next.isPublicPage &&
     prev.showAvatar === next.showAvatar &&

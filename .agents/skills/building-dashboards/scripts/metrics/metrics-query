@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# metrics-query: Execute a metrics query against Axiom MetricsDB
+#
+# Usage: metrics-query <deployment> <mpl> <startTime> <endTime>
+#
+# Times: RFC3339 (e.g. 2025-01-01T00:00:00Z) or relative (e.g. now-1h, now-1d).
+#
+# Examples:
+#   metrics-query prod '`otel-metrics`:`http.server.duration` | align to 5m using avg | group by `endpoint` using sum' \
+#     '2025-06-01T00:00:00Z' '2025-06-02T00:00:00Z'
+#   metrics-query prod '`otel-metrics`:`http.server.duration` | align to 5m using avg' now-1h now
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+DEPLOYMENT="${1:-}"
+MPL="${2:-}"
+START_TIME="${3:-}"
+END_TIME="${4:-}"
+
+if [[ -z "$DEPLOYMENT" || -z "$MPL" || -z "$START_TIME" || -z "$END_TIME" ]]; then
+    echo "Usage: metrics-query <deployment> <mpl> <startTime> <endTime>" >&2
+    echo "" >&2
+    echo "Times: RFC3339 (e.g. 2025-01-01T00:00:00Z) or relative (e.g. now-1h, now-1d)." >&2
+    exit 1
+fi
+
+# Extract dataset name from MPL: `dataset`:`metric` ... or dataset:`metric` ...
+DATASET=$(echo "$MPL" | sed 's/`//g' | cut -d: -f1 | tr -d '[:space:]')
+
+QUERY_EDGE_DEPLOYMENT=""
+if [[ -n "$DATASET" ]]; then
+    RESOLVED_URL=$("$SCRIPT_DIR/resolve-url" "$DEPLOYMENT" "$DATASET" 2>/dev/null || true)
+    if [[ -n "$RESOLVED_URL" ]]; then
+        export AXIOM_URL_OVERRIDE="$RESOLVED_URL"
+        # Derive queryEdgeDeployment from edge URL: https://eu-central-1.aws.edge.axiom.co → cloud.eu-central-1.aws
+        if [[ "$RESOLVED_URL" == *".edge.axiom.co" ]]; then
+            QUERY_EDGE_DEPLOYMENT="cloud.$(echo "$RESOLVED_URL" | sed 's|https://||;s|\.edge\.axiom\.co||')"
+        fi
+    fi
+fi
+
+JQ_ARGS=(
+    --arg apl "$MPL"
+    --arg startT "$START_TIME"
+    --arg endT "$END_TIME"
+)
+JQ_EXPR='{"apl": $apl, "startTime": $startT, "endTime": $endT}'
+
+if [[ -n "$QUERY_EDGE_DEPLOYMENT" ]]; then
+    JQ_ARGS+=(--arg edgeDeployment "$QUERY_EDGE_DEPLOYMENT")
+    JQ_EXPR='{"apl": $apl, "startTime": $startT, "endTime": $endT, "queryEdgeDeployment": $edgeDeployment}'
+fi
+
+BODY=$(jq -n "${JQ_ARGS[@]}" "$JQ_EXPR")
+
+AXIOM_ACCEPT="application/json+metrics.v2" "$SCRIPT_DIR/axiom-api" "$DEPLOYMENT" POST "/v1/query/_mpl" "$BODY"

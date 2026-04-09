@@ -145,7 +145,7 @@ export const SAVE_API_KEY_API = "/v1/api-key";
 
 export const GET_API_KEY_API = "/v1/get-gemini-api-key";
 
-// v2 API path constants for ky `api` instance (no leading slash — prefixUrl handles it)
+// v2 API path constants for ky `api` instance (no leading slash — prefix handles it)
 export const V2_FETCH_BOOKMARKS_DATA_API = "v2/bookmark/fetch-bookmarks-data";
 export const V2_SEARCH_BOOKMARKS_API = "v2/bookmark/search-bookmarks";
 export const V2_CHECK_GEMINI_API_KEY_API = "v2/check-gemini-api-key";
