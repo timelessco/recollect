@@ -91,5 +91,5 @@ export function useHandleBookmarksDrop() {
     }
   };
 
-  return { handleBookmarksDrop };
+  return { addCategoryToBookmarkOptimisticMutation, handleBookmarksDrop };
 }

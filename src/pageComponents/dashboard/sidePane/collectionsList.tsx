@@ -13,8 +13,6 @@ import type {
 } from "../../../types/apiTypes";
 import type { CollectionItemTypes } from "./singleListItemComponent";
 
-import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
-
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
@@ -61,11 +59,10 @@ const CollectionsList = () => {
   const session = useSupabaseSession((state) => state.session);
 
   const isCardDragging = useMiscellaneousStore((storeState) => storeState.isCardDragging);
-  const { addCategoryToBookmarkOptimisticMutation } = useAddCategoryToBookmarkOptimisticMutation();
   const { updateCategoryOrderMutation } = useUpdateCategoryOrderOptimisticMutation();
   const { isLoadingCategories } = useFetchCategories();
   const { userProfileData } = useFetchUserProfile();
-  const { handleBookmarksDrop } = useHandleBookmarksDrop();
+  const { addCategoryToBookmarkOptimisticMutation, handleBookmarksDrop } = useHandleBookmarksDrop();
 
   const currentPath = useGetCurrentUrlPath();
 
