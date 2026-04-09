@@ -10,8 +10,9 @@ import type { SlotProps } from "input-otp";
 
 import { Button } from "@/components/ui/recollect/button";
 import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
+import { resolvePostLoginRedirect } from "@/lib/auth/post-login-redirect";
 import { createClient } from "@/lib/supabase/client";
-import { DISCOVER_URL, EVERYTHING_URL } from "@/utils/constants";
+import { EVERYTHING_URL } from "@/utils/constants";
 import { handleClientError } from "@/utils/error-utils/client";
 import { cn } from "@/utils/tailwind-merge";
 
@@ -46,23 +47,14 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
           return;
         }
 
-        // First-time users land on /discover so the welcome modal mounts via
-        // [category_id].tsx's SSR gate. Mirrors resolvePostLoginRedirect —
-        // the App Router /auth/confirm callback is bypassed for in-app OTP
-        // entry (Supabase verifies client-side), so we replicate the gate
-        // here. Fail-open: any read error sends the user to /everything.
-        const userId = data.user?.id;
-        let destination = `/${EVERYTHING_URL}`;
-        if (userId) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("onboarding_complete")
-            .eq("id", userId)
-            .maybeSingle();
-          if (profile?.onboarding_complete === false) {
-            destination = `/${DISCOVER_URL}`;
-          }
-        }
+        // verifyOtp runs client-side, so the App Router /auth/confirm
+        // callback is bypassed for in-app code entry. Route through the
+        // shared helper so first-timers still land on /discover where the
+        // welcome modal mounts.
+        const fallback = `/${EVERYTHING_URL}`;
+        const destination = data.user
+          ? await resolvePostLoginRedirect(supabase, data.user.id, fallback)
+          : fallback;
 
         router.push(destination);
       } catch (error) {
