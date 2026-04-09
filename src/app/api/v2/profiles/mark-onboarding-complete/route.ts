@@ -3,9 +3,9 @@ import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
 import { PROFILES } from "@/utils/constants";
 
-import { CompleteOnboardingInputSchema, CompleteOnboardingOutputSchema } from "./schema";
+import { MarkOnboardingCompleteInputSchema, MarkOnboardingCompleteOutputSchema } from "./schema";
 
-const ROUTE = "v2-profiles-complete-onboarding";
+const ROUTE = "v2-profiles-mark-onboarding-complete";
 
 export const POST = createAxiomRouteHandler(
   withAuth({
@@ -26,7 +26,7 @@ export const POST = createAxiomRouteHandler(
         throw new RecollectApiError("service_unavailable", {
           cause: error,
           message: "Failed to mark onboarding complete",
-          operation: "complete_onboarding",
+          operation: "mark_onboarding_complete",
         });
       }
 
@@ -36,8 +36,8 @@ export const POST = createAxiomRouteHandler(
 
       return { onboarding_complete: true as const };
     },
-    inputSchema: CompleteOnboardingInputSchema,
-    outputSchema: CompleteOnboardingOutputSchema,
+    inputSchema: MarkOnboardingCompleteInputSchema,
+    outputSchema: MarkOnboardingCompleteOutputSchema,
     route: ROUTE,
   }),
 );

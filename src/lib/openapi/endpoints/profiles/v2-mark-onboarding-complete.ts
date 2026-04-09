@@ -5,7 +5,7 @@ import type { EndpointSupplement } from "@/lib/openapi/supplement-types";
  */
 import { bearerAuth } from "@/lib/openapi/registry";
 
-export const v2CompleteOnboardingSupplement = {
+export const v2MarkOnboardingCompleteSupplement = {
   additionalResponses: {
     401: { description: "Not authenticated" },
     503: { description: "Database error while updating profile" },
@@ -13,7 +13,7 @@ export const v2CompleteOnboardingSupplement = {
   description:
     "Marks the authenticated user's onboarding as complete. Idempotent — calling this on a profile where the flag is already true is a harmless re-UPDATE. Called fire-and-forget from the welcome modal on dismiss.",
   method: "post",
-  path: "/v2/profiles/complete-onboarding",
+  path: "/v2/profiles/mark-onboarding-complete",
   requestExamples: {
     "empty-body": {
       description: "No body required — the user is derived from the auth cookie.",
