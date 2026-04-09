@@ -66,7 +66,7 @@ export function BookmarkFavIcon({
     (post?.meta_data?.favIcon ?? post?.meta_data?.twitter_avatar_url) && !hasFavIconError;
 
   if (isImageIcon) {
-    return <figure className="h-[15px] w-[15px]">{icon}</figure>;
+    return <figure className="h-[15px] w-[15px] shrink-0">{icon}</figure>;
   }
 
   const isImageMediaType = post?.meta_data?.mediaType?.startsWith(IMAGE_TYPE_PREFIX);

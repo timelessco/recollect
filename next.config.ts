@@ -12,8 +12,6 @@ const hasSentry = Boolean(
 
 const nextConfig: NextConfig = {
   experimental: {
-    appNewScrollHandler: true,
-    prefetchInlining: true,
     sri: {
       algorithm: "sha256",
     },

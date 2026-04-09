@@ -64,7 +64,13 @@ export function EmailToOtpForm() {
 
   return (
     <Form className="flex w-full flex-col gap-4" errors={errors} onFormSubmit={handleFormSubmit}>
-      <React.Suspense fallback={<EmailField />}>
+      {/*
+        `useQueryState` reads from `useSearchParams`, which opts the whole route
+        out of static rendering unless wrapped in a Suspense boundary. Isolating
+        it here keeps the rest of the form static; the fallback renders a plain
+        autofocused input so the field is usable immediately during hydration.
+      */}
+      <React.Suspense fallback={<EmailField autoFocus />}>
         <EmailFieldWithQueryState />
       </React.Suspense>
 
@@ -85,7 +91,9 @@ type EmailFieldProps = Pick<
   "autoFocus" | "onChange" | "ref" | "value"
 >;
 
-function EmailField({ autoFocus, onChange, ref, value }: EmailFieldProps) {
+function EmailField(props: EmailFieldProps) {
+  const { autoFocus, onChange, ref, value } = props;
+
   return (
     <Field.Root className="flex flex-col gap-1" name="email">
       <Field.Control
