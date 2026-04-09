@@ -1,6 +1,21 @@
 {
   "version": 1,
   "skills": {
+    "axiom-sre": {
+      "source": "axiomhq/skills",
+      "sourceType": "github",
+      "computedHash": "c68aea9b6c0ca3ccc53060dde50af088fe756148e4bd1c98ccb7039b01124afc"
+    },
+    "building-dashboards": {
+      "source": "axiomhq/skills",
+      "sourceType": "github",
+      "computedHash": "dabb1a45a676bbac3924b2cd5563f714d13c826e5dd88220aee42be46dac22e0"
+    },
+    "controlling-costs": {
+      "source": "axiomhq/skills",
+      "sourceType": "github",
+      "computedHash": "7011f64a0959aa9d28a3585ce1d8b991d3a54ecdac3d3f7a1e1e3df46789f32a"
+    },
     "next-best-practices": {
       "source": "vercel-labs/next-skills",
       "sourceType": "github",
