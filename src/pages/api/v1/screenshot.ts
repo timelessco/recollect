@@ -90,6 +90,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
       }
     } else {
       console.log("######################## Screenshot Loading ########################");
+      console.log(url);
+
       try {
         const { data: screenshotData } = await axios.get(
           `${SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`,
