@@ -74,10 +74,23 @@ export const GET = createAxiomRouteHandler(
 
         // Route first-time users to /discover so the welcome modal mounts
         // via [category_id].tsx's SSR gate. Helper fails open to `next`.
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        const destination = user ? await resolvePostLoginRedirect(supabase, user.id, next) : next;
+        // exchangeCodeForSession just succeeded, so getUser should return a
+        // fresh user — but record the error path explicitly so a silent
+        // fallback to `next` is observable in Axiom.
+        const { data: getUserData, error: getUserError } = await supabase.auth.getUser();
+        const user = getUserData?.user;
+
+        let destination = next;
+        if (getUserError || !user?.id) {
+          if (ctx?.fields) {
+            ctx.fields.get_user_after_exchange_failed = true;
+            if (getUserError) {
+              ctx.fields.get_user_error_message = getUserError.message;
+            }
+          }
+        } else {
+          destination = await resolvePostLoginRedirect(supabase, user.id, next);
+        }
 
         if (ctx?.fields) {
           ctx.fields.first_time_user_redirect = destination !== next;
