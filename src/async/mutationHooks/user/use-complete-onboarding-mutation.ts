@@ -20,6 +20,10 @@ interface CompleteOnboardingResponse {
 export function useCompleteOnboardingMutation() {
   return useMutation({
     mutationKey: ["complete-onboarding"],
-    mutationFn: () => api.post(V2_COMPLETE_ONBOARDING_API).json<CompleteOnboardingResponse>(),
+    // ky needs an explicit body — `parseRequestBody` on the server calls
+    // `request.json()`, which throws on a zero-length POST. Sending `{}`
+    // satisfies the empty `z.object({})` input schema.
+    mutationFn: () =>
+      api.post(V2_COMPLETE_ONBOARDING_API, { json: {} }).json<CompleteOnboardingResponse>(),
   });
 }
