@@ -10,7 +10,7 @@ import type { AllotmentHandle, AllotmentProps } from "allotment";
 import { useSidePaneStore } from "../../../store/sidePaneStore";
 
 // Below this width, reset to default
-export const SIDE_PANE_DEFAULT_WIDTH = 244;
+export const SIDE_PANE_DEFAULT_WIDTH = 220;
 // Below this width, snap closed
 export const SIDE_PANE_SNAP_THRESHOLD = 200;
 // Delay for resize animations (ms)
