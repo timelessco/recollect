@@ -13,7 +13,7 @@ export const v2MarkOnboardingCompleteSupplement = {
   },
   description:
     "Marks the authenticated user's onboarding as complete. Idempotent — calling this on a profile where the flag is already true is a harmless re-UPDATE. Called fire-and-forget from the welcome modal on dismiss.",
-  method: "post",
+  method: "patch",
   path: "/v2/profiles/mark-onboarding-complete",
   requestExamples: {
     "empty-body": {

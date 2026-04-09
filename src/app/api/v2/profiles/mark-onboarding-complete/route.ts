@@ -7,7 +7,7 @@ import { MarkOnboardingCompleteInputSchema, MarkOnboardingCompleteOutputSchema }
 
 const ROUTE = "v2-profiles-mark-onboarding-complete";
 
-export const POST = createAxiomRouteHandler(
+export const PATCH = createAxiomRouteHandler(
   withAuth({
     handler: async ({ supabase, user }) => {
       const userId = user.id;
