@@ -30,7 +30,11 @@ const DashboardLayout = dynamic(() => import("./dashboardLayout"), {
 
 const supabase = createClient();
 
-const Dashboard = () => {
+interface DashboardProps {
+  showOnboarding?: boolean;
+}
+
+const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const categorySlug = getCategorySlugFromRouter(router);
@@ -144,7 +148,13 @@ const Dashboard = () => {
     return null;
   }
 
-  return <DashboardLayout>{renderMainPaneContent()}</DashboardLayout>;
+  return (
+    <>
+      <DashboardLayout>{renderMainPaneContent()}</DashboardLayout>
+      {/* Welcome modal slot — the modal itself lands in a follow-up PR; this PR wires the prop through the SSR gate only. */}
+      {showOnboarding ? null : null}
+    </>
+  );
 };
 
 export default Dashboard;
