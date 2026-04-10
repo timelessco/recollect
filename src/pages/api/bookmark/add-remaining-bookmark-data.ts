@@ -18,6 +18,7 @@ import type {
 import type { PostgrestError } from "@supabase/supabase-js";
 import type { VerifyErrors } from "jsonwebtoken";
 
+import { resolveTwitterTitleAndDescription } from "@/lib/bookmarks/add-remaining-bookmark-data";
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";
@@ -330,6 +331,12 @@ export default async function handler(
     ? ogImageMetaDataGeneration
     : imageUrlForMetaDataGeneration;
 
+  const { description: parsedDescription, title: parsedTitle } = resolveTwitterTitleAndDescription(
+    currentData?.title ?? null,
+    currentData?.description ?? null,
+    imageCaption,
+  );
+
   const {
     data,
     error: databaseError,
@@ -339,9 +346,10 @@ export default async function handler(
   } = await supabase
     .from(MAIN_TABLE_NAME)
     .update({
-      description: currentData?.description ?? imageCaption,
+      description: parsedDescription,
       meta_data,
       ogImage: computedOgImage ?? currentData?.ogImage,
+      ...(parsedTitle !== null && { title: parsedTitle }),
     })
     .match({ id })
     .select(`id`);
