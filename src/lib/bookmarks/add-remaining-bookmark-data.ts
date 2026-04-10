@@ -67,9 +67,14 @@ export function resolveTwitterTitleAndDescription(
   const match = title ? /^(.+) on X: "(.+)"(?: \/ X)?$/u.exec(title) : null;
 
   if (match) {
+    const [, rawTitle, rawTweetText] = match;
+    const parsedTitle = rawTitle.trim();
+    const parsedDescription = rawTweetText.trim();
+
     return {
-      description: description ?? match[2]?.trim() ?? null,
-      title: match[1]?.trim() ?? null,
+      description:
+        parsedDescription !== "" ? parsedDescription : (description ?? imageCaption),
+      title: parsedTitle !== "" ? parsedTitle : null,
     };
   }
 
