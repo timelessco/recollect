@@ -72,8 +72,7 @@ export function resolveTwitterTitleAndDescription(
     const parsedDescription = rawTweetText.trim();
 
     return {
-      description:
-        parsedDescription !== "" ? parsedDescription : (description ?? imageCaption),
+      description: parsedDescription !== "" ? parsedDescription : (description ?? imageCaption),
       title: parsedTitle !== "" ? parsedTitle : null,
     };
   }
