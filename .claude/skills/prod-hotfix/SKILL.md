@@ -1,14 +1,6 @@
 ---
 name: prod-hotfix
-description: >
-  Ship a small urgent fix directly to main and backmerge into dev, bypassing
-  the normal release PR pipeline. Use when the user says "hotfix", "quick fix
-  to prod", "push to prod directly", "hotfix to main", "emergency fix", or
-  describes a one/two-file fix that can't wait for the next release cycle. This
-  is the emergency path — prefer the /release skill for normal releases.
-  Execution skill: normalizes local state, pulls both branches, verifies,
-  commits on main, pushes with admin bypass, then merges main → dev.
-disable-model-invocation: true
+description: prod-hotfix
 ---
 
 # Production Hotfix

@@ -1,16 +1,6 @@
 ---
 name: recollect-caller-migration
-description: >
-  Frontend caller migration from v1 Pages Router URLs to v2 App Router
-  endpoints in Recollect. Encodes the proven 5-layer query-hook migration
-  pattern: orphaned constant cleanup, hook rewrite with ky + Zod types,
-  consumer verification (v2 responses need no unwrap), dead code cleanup,
-  and Pages Router route deprecation. Use this skill whenever the user mentions caller migration,
-  wiring up v2, updating a hook to v2, frontend migration, ky migration,
-  v2 factory, api-v2, or the check-gemini pattern. For mutation hook
-  template refactoring and file renaming, use the
-  recollect-mutation-hook-refactoring skill instead.
-disable-model-invocation: true
+description: recollect-caller-migration
 ---
 
 # Caller Migration

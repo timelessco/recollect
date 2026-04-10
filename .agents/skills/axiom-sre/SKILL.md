@@ -1,7 +1,6 @@
 ---
 name: axiom-sre
-description: Expert SRE investigator for incidents and debugging. Uses hypothesis-driven methodology and systematic triage. Can query Axiom observability when available. Use for incident response, root cause analysis, production debugging, or log investigation.
-disable-model-invocation: true
+description: axiom-sre
 ---
 
 > **CRITICAL:** ALL script paths are relative to this SKILL.md file's directory. Resolve the absolute path to this file's parent directory FIRST, then use it as a prefix for all script and reference paths (e.g., `<skill_dir>/scripts/init`). Do NOT assume the working directory is the skill folder.
