@@ -38,6 +38,7 @@
     "check:update": "npx npm-check-updates --interactive --format group --target patch",
     "clean": "rimraf .next .turbo node_modules",
     "clean:modules": "rimraf node_modules",
+    "clean:next": "rimraf .next/dev/cache",
     "clean:turbo": "rimraf .turbo",
     "contributors:add": "all-contributors add",
     "contributors:generate": "all-contributors generate",
