@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRef, useState } from "react";
 
+import { useTimeoutEffect } from "@react-hookz/web";
 import * as Sentry from "@sentry/nextjs";
 
 import { useMarkOnboardedMutation } from "@/async/mutationHooks/user/use-mark-onboarded-mutation";
@@ -28,8 +29,16 @@ const STEP_ORDER: Step[] = ["extension", "apps"];
 const OPSZ_14: React.CSSProperties = { fontVariationSettings: "'opsz' 14" };
 
 export function OnboardingModal() {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("extension");
+
+  // open starts false so Base UI registers data-starting-style on the first
+  // false→true transition. The 1s delay lets the discover screen settle behind
+  // the modal before the fade begins, mirroring how the settings modal animates
+  // in after a user-initiated open.
+  useTimeoutEffect(() => {
+    setOpen(true);
+  }, 1000);
 
   const markOnboardingComplete = useMarkOnboardedMutation();
   const hasMarkedRef = useRef(false);
