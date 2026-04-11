@@ -62,6 +62,11 @@ For pgmq verification, use direct table access:
 SELECT * FROM pgmq."q_queue-name" WHERE condition;
 ```
 
+### Database Gotchas
+
+- `profiles.category_order` updates: batch concat (`|| v_new_category_ids`), NOT read-modify-write loops — Edge Function processes the queue in parallel (`Promise.allSettled`); SELECT-into-var + UPDATE causes lost writes (see `20260209` migration)
+- Always `pnpm db:reset` before `pnpm db:types` — stale local DB drops RPC functions that exist in prod
+
 ### Type Generation
 
 ```bash

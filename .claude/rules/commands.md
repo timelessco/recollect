@@ -32,6 +32,3 @@ Full list in `package.json`. Non-obvious:
 - **pre-commit** (lint-staged): Ultracite fix on staged JS/TS/JSON
 - **commit-msg** (commitlint): Conventional message validation (`@commitlint/config-conventional`)
 
-### Elegance Check
-
-Non-trivial changes: pause, ask "is there a more elegant way?". Skip for simple fixes.
