@@ -201,7 +201,7 @@ function AppsStep({ onCtaClick }: { onCtaClick: () => void }) {
 
       <a
         className="absolute top-[369px] left-1/2 flex h-[32px] -translate-x-1/2 items-center gap-[6px] rounded-[12px] bg-gray-0 px-[12px] py-[5.5px] no-underline shadow-[0px_1px_3px_0px_rgba(0,0,0,0.07),0px_5px_5px_0px_rgba(0,0,0,0.06),0px_11px_7px_0px_rgba(0,0,0,0.04)] outline-hidden transition-transform hover:scale-[1.02] focus-visible:ring-2 focus-visible:ring-gray-300 active:scale-[0.98]"
-        href="https://apps.apple.com/app/recollect"
+        href="https://testflight.apple.com/join/nqxpye48"
         onClick={onCtaClick}
         rel="noopener noreferrer"
         target="_blank"
