@@ -1,9 +1,8 @@
-import { isNullish } from "remeda";
-
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { getServerContext } from "@/lib/api-helpers/server-context";
+import { isNullable } from "@/utils/assertion-utils";
 
 /**
  * API-side post-login redirect resolver for App Router auth callbacks.
@@ -67,7 +66,7 @@ export async function resolveCallbackRedirect(
     return nextPath;
   }
 
-  if (isNullish(profile?.onboarded_at)) {
+  if (isNullable(profile?.onboarded_at)) {
     return "/discover";
   }
   return nextPath;

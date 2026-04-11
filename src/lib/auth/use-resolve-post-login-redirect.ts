@@ -1,11 +1,10 @@
 "use client";
 
-import { isNullish } from "remeda";
-
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { useLogger } from "@/lib/api-helpers/axiom-client";
+import { isNullable } from "@/utils/assertion-utils";
 
 /**
  * Frontend-side post-login redirect resolver, as a React hook.
@@ -51,7 +50,7 @@ export function useResolvePostLoginRedirect() {
       return nextPath;
     }
 
-    if (isNullish(data?.onboarded_at)) {
+    if (isNullable(data?.onboarded_at)) {
       return "/discover";
     }
     return nextPath;

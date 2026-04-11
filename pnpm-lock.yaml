@@ -174,9 +174,6 @@ importers:
       react-stately:
         specifier: 3.45.0
         version: 3.45.0(react@19.2.4)
-      remeda:
-        specifier: 2.33.7
-        version: 2.33.7
       remotion:
         specifier: 4.0.438
         version: 4.0.438(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -7484,9 +7481,6 @@ packages:
     resolution: {integrity: sha512-BwaJwQYUIIAKuDYvpqQTSoy0U7zIy6cHyEjih/aNaFICphGahia4cjDANuFXb7gVZ51hIK9W0io6fjNQWXqICg==}
     engines: {node: ^20.12.0 || >=22.0.0}
     hasBin: true
-
-  remeda@2.33.7:
-    resolution: {integrity: sha512-cXlyjevWx5AcslOUEETG4o8XYi9UkoCXcJmj7XhPFVbla+ITuOBxv6ijBrmbeg+ZhzmDThkNdO+iXKUfrJep1w==}
 
   remotion@4.0.438:
     resolution: {integrity: sha512-keG2GxHh81UFV0zFrwRh+yngXHn6C3z/Nohc+ru49M1TlIcaThG/hD2amJNH9otYzpYJxVjNF1t/i1hqcI8OGw==}
@@ -16391,8 +16385,6 @@ snapshots:
       - '@types/node'
       - magicast
       - supports-color
-
-  remeda@2.33.7: {}
 
   remotion@4.0.438(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:

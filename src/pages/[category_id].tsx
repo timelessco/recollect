@@ -2,11 +2,11 @@ import type { GetServerSideProps, NextPage } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
-import { isNullish } from "remeda";
 
 import type { SingleListData } from "../types/apiTypes";
 
 import { Spinner } from "@/components/spinner";
+import { isNullable } from "@/utils/assertion-utils";
 
 import { useMounted } from "../hooks/useMounted";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../lib/supabase/constants";
@@ -192,7 +192,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     });
     // Fail closed — don't show the modal if we can't read the flag.
   } else {
-    showOnboarding = isNullish(profileRow?.onboarded_at);
+    showOnboarding = isNullable(profileRow?.onboarded_at);
   }
 
   return {
