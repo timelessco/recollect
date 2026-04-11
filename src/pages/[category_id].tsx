@@ -2,6 +2,7 @@ import type { GetServerSideProps, NextPage } from "next";
 
 import * as Sentry from "@sentry/nextjs";
 import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
+import { isNullish } from "remeda";
 
 import type { SingleListData } from "../types/apiTypes";
 
@@ -177,7 +178,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   let showOnboarding = false;
   const { data: profileRow, error: profileError } = await supabase
     .from("profiles")
-    .select("onboarding_complete")
+    .select("onboarded_at")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -191,7 +192,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     });
     // Fail closed — don't show the modal if we can't read the flag.
   } else {
-    showOnboarding = profileRow?.onboarding_complete === false;
+    showOnboarding = isNullish(profileRow?.onboarded_at);
   }
 
   return {

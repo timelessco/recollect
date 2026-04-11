@@ -1,5 +1,7 @@
 "use client";
 
+import { isNullish } from "remeda";
+
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -9,8 +11,9 @@ import { useLogger } from "@/lib/api-helpers/axiom-client";
  * Frontend-side post-login redirect resolver, as a React hook.
  *
  * Returns an async `resolve(supabase, userId, nextPath)` function that
- * reads the user's `onboarding_complete` flag and returns `/discover`
- * for first-timers or `nextPath` for everyone else. Profile-fetch
+ * reads the user's `onboarded_at` timestamp and returns `/discover`
+ * for first-timers (onboarded_at IS NULL) or `nextPath` for everyone else.
+ * Profile-fetch
  * errors are forwarded to Axiom via `useLogger` → `clientLogger`
  * ProxyTransport → `/api/axiom` → server logger → Axiom dataset, so
  * they land in the same place as server-side telemetry.
@@ -35,7 +38,7 @@ export function useResolvePostLoginRedirect() {
   ): Promise<string> => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("onboarding_complete")
+      .select("onboarded_at")
       .eq("id", userId)
       .maybeSingle();
 
@@ -48,7 +51,7 @@ export function useResolvePostLoginRedirect() {
       return nextPath;
     }
 
-    if (data?.onboarding_complete === false) {
+    if (isNullish(data?.onboarded_at)) {
       return "/discover";
     }
     return nextPath;
