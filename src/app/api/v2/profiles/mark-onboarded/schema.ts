@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-export const MarkOnboardingCompleteInputSchema = z.object({});
+export const MarkOnboardedInputSchema = z.object({});
 
-export const MarkOnboardingCompleteOutputSchema = z
+export const MarkOnboardedOutputSchema = z
   .object({})
   .meta({ description: "Empty response — success is conveyed by HTTP 200" });

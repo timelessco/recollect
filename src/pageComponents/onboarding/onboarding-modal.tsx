@@ -6,7 +6,7 @@ import { useRef, useState } from "react";
 
 import * as Sentry from "@sentry/nextjs";
 
-import { useMarkOnboardingCompleteMutation } from "@/async/mutationHooks/user/use-mark-onboarding-complete-mutation";
+import { useMarkOnboardedMutation } from "@/async/mutationHooks/user/use-mark-onboarded-mutation";
 import { Dialog } from "@/components/ui/recollect/dialog";
 import { AppleIcon } from "@/icons/apple-icon";
 
@@ -31,12 +31,13 @@ export function OnboardingModal() {
   const [open, setOpen] = useState(true);
   const [step, setStep] = useState<Step>("extension");
 
-  const markOnboardingComplete = useMarkOnboardingCompleteMutation();
+  const markOnboardingComplete = useMarkOnboardedMutation();
   const hasMarkedRef = useRef(false);
 
-  // Fire-and-forget completion write. Idempotent on the server (UPDATE to
-  // a row already at `true` is a no-op), but we also gate client-side so
-  // duplicate clicks never re-issue the request within one modal session.
+  // Fire-and-forget completion write. Idempotent on the server: the PATCH
+  // route filters `.is('onboarded_at', null)`, so re-calls after the first
+  // are no-ops that preserve the original timestamp. We also gate client-side
+  // so duplicate clicks never re-issue the request within one modal session.
   const markComplete = () => {
     if (hasMarkedRef.current) {
       return;
@@ -47,7 +48,7 @@ export function OnboardingModal() {
         // Breadcrumb stays for trail context if a downstream error captures.
         Sentry.addBreadcrumb({
           category: "onboarding",
-          message: "Failed to mark onboarding complete from client",
+          message: "Failed to record onboarding completion from client",
           level: "warning",
           data: { error: String(err) },
         });
@@ -57,7 +58,7 @@ export function OnboardingModal() {
         // the modal again on next /discover visit.
         Sentry.captureException(err, {
           level: "warning",
-          tags: { operation: "mark_onboarding_complete_client" },
+          tags: { operation: "mark_onboarded_client" },
         });
       },
     });
@@ -65,7 +66,7 @@ export function OnboardingModal() {
 
   // Skip advances through the step machine; on the final step it closes
   // the modal. markComplete() runs on every press — the first press writes
-  // the flag, subsequent presses hit the ref guard and no-op.
+  // the onboarded_at timestamp, subsequent presses hit the ref guard and no-op.
   const skip = () => {
     markComplete();
     const next = STEP_ORDER[STEP_ORDER.indexOf(step) + 1];

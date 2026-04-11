@@ -265,7 +265,7 @@ export type Database = {
           id: string;
           last_synced_instagram_id: string | null;
           last_synced_twitter_id: string | null;
-          onboarding_complete: boolean;
+          onboarded_at: string | null;
           plan: string;
           plan_updated_at: string | null;
           polar_customer_id: string | null;
@@ -289,7 +289,7 @@ export type Database = {
           id: string;
           last_synced_instagram_id?: string | null;
           last_synced_twitter_id?: string | null;
-          onboarding_complete?: boolean;
+          onboarded_at?: string | null;
           plan?: string;
           plan_updated_at?: string | null;
           polar_customer_id?: string | null;
@@ -313,7 +313,7 @@ export type Database = {
           id?: string;
           last_synced_instagram_id?: string | null;
           last_synced_twitter_id?: string | null;
-          onboarding_complete?: boolean;
+          onboarded_at?: string | null;
           plan?: string;
           plan_updated_at?: string | null;
           polar_customer_id?: string | null;
