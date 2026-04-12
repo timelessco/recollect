@@ -1,6 +1,7 @@
 import { colorsNamed } from "culori";
 
 import type { OklabColor } from "@/async/ai/schemas/image-analysis-schema";
+
 import { parseSearchColor } from "@/utils/colorUtils";
 import { GET_HASHTAG_TAG_PATTERN, TAG_MARKUP_REGEX } from "@/utils/constants";
 
