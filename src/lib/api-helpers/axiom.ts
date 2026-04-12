@@ -22,6 +22,31 @@ import { deriveSource, getServerContext, runWithServerContext } from "./server-c
 // Logger Setup
 // ============================================================
 
+/**
+ * Query parameter keys whose values are stripped from wide events before
+ * emission. Credentials and short-lived auth tokens that could be replayed
+ * by an attacker with Axiom read access during the credential's live window.
+ * Presence is preserved — only the value becomes "<redacted>".
+ */
+const SENSITIVE_QUERY_KEYS = new Set([
+  "access_token",
+  "api_key",
+  "code",
+  "password",
+  "refresh_token",
+  "secret",
+  "token",
+  "token_hash",
+]);
+
+function redactSearchParams(searchParams: URLSearchParams): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const [key, value] of searchParams) {
+    result[key] = SENSITIVE_QUERY_KEYS.has(key) ? "<redacted>" : value;
+  }
+  return result;
+}
+
 const baseTransport = new ConsoleTransport({
   prettyPrint: env.NODE_ENV === "development",
 });
@@ -120,7 +145,7 @@ export function createAxiomRouteHandler(
           request_id: ctx?.request_id,
           source: ctx?.source,
           user_id: ctx?.user_id,
-          search_params: Object.fromEntries(request.nextUrl.searchParams.entries()),
+          search_params: redactSearchParams(request.nextUrl.searchParams),
           ...ctx?.fields,
         };
 

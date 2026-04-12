@@ -43,10 +43,9 @@ export const processImageQueue = async (
 
     if (!messages?.length) {
       console.log("[process-image-queue] No messages found in queue");
-      return;
     }
 
-    for (const message of messages) {
+    for (const message of messages ?? []) {
       try {
         const { id, url, user_id } = message.message;
 

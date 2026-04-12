@@ -97,10 +97,10 @@ const SearchInput = (props: SearchInputTypes) => {
     () =>
       userTagsData
         ?.map((item) => ({
-          display: String(item?.name || ""),
+          display: item?.name || "",
           id: String(item?.id || ""),
         }))
-        ?.filter((filterItem) => !addedTags?.includes(String(filterItem?.display || ""))),
+        ?.filter((filterItem) => !addedTags?.includes(filterItem?.display || "")),
     [userTagsData, addedTags],
   );
 

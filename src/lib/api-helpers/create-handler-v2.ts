@@ -380,7 +380,7 @@ export function withRawBody<TInput, TOutput>(
   };
 
   fn.config = {
-    auth: auth,
+    auth,
     contract: "v2" as const,
     factoryName: "withRawBody",
     inputSchema,

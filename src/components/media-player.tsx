@@ -109,6 +109,7 @@ function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProp
     [mediaRef],
   );
 
+  /* oxlint-disable consistent-return */
   useEffect(() => {
     const el = mediaElRef.current;
     if (!el) {

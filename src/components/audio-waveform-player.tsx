@@ -62,6 +62,7 @@ function AudioWaveformPlayerInner({ isActive, onError, src, title }: AudioWavefo
   );
 
   // Create wavesurfer instance once the audio element and container are mounted
+  /* oxlint-disable consistent-return */
   useEffect(() => {
     const container = containerRef.current;
     const audio = audioElRef.current;

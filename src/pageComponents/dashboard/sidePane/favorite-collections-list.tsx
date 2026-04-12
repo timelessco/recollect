@@ -3,23 +3,29 @@ import { Item } from "react-stately";
 
 import type { CollectionItemTypes } from "./singleListItemComponent";
 
-import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 import { useUpdateFavoriteOrderMutation } from "@/async/mutationHooks/user/use-update-favorite-order-mutation";
 import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 import { Collapsible } from "@/components/ui/recollect/collapsible";
+import { useMiscellaneousStore } from "@/store/componentStore";
 import { mutationApiCall } from "@/utils/apiHelpers";
 
 import DownArrowGray from "../../../icons/downArrowGray";
 import { ReorderableListBox } from "./reorderable-list";
 import SingleListItemComponent from "./singleListItemComponent";
+import { useHandleBookmarksDrop } from "./use-handle-bookmarks-drop";
+
+type UseHandleBookmarksDropReturn = ReturnType<typeof useHandleBookmarksDrop>;
 
 interface FavoriteCollectionsListProps {
   favoriteCollections: CollectionItemTypes[];
 }
 
-export function FavoriteCollectionsList({ favoriteCollections }: FavoriteCollectionsListProps) {
+export function FavoriteCollectionsList(props: FavoriteCollectionsListProps) {
+  const { favoriteCollections } = props;
+  const { addCategoryToBookmarkOptimisticMutation, handleBookmarksDrop } = useHandleBookmarksDrop();
   const { updateFavoriteOrderMutation } = useUpdateFavoriteOrderMutation();
   const { userProfileData } = useFetchUserProfile();
+  const isCardDragging = useMiscellaneousStore((storeState) => storeState.isCardDragging);
 
   if (favoriteCollections.length === 0) {
     return null;
@@ -81,6 +87,10 @@ export function FavoriteCollectionsList({ favoriteCollections }: FavoriteCollect
         <Collapsible.Panel>
           <ReorderableListBox
             aria-label="Favorite collections"
+            highlightDropTarget={isCardDragging}
+            onItemDrop={(event) => {
+              void handleBookmarksDrop(event);
+            }}
             onReorder={onReorder}
             renderDragPreview={(items) => (
               <div className="text-gray-1000">{items[0]["text/plain"]}</div>
@@ -90,7 +100,10 @@ export function FavoriteCollectionsList({ favoriteCollections }: FavoriteCollect
           >
             {favoriteCollections.map((item) => (
               <Item key={item.id} textValue={item.name}>
-                <FavoriteCollectionItem item={item} />
+                <FavoriteCollectionItem
+                  addCategoryToBookmarkOptimisticMutation={addCategoryToBookmarkOptimisticMutation}
+                  item={item}
+                />
               </Item>
             ))}
           </ReorderableListBox>
@@ -101,11 +114,12 @@ export function FavoriteCollectionsList({ favoriteCollections }: FavoriteCollect
 }
 
 interface FavoriteCollectionItemProps {
+  addCategoryToBookmarkOptimisticMutation: UseHandleBookmarksDropReturn["addCategoryToBookmarkOptimisticMutation"];
   item: CollectionItemTypes;
 }
 
-function FavoriteCollectionItem({ item }: FavoriteCollectionItemProps) {
-  const { addCategoryToBookmarkOptimisticMutation } = useAddCategoryToBookmarkOptimisticMutation();
+function FavoriteCollectionItem(props: FavoriteCollectionItemProps) {
+  const { addCategoryToBookmarkOptimisticMutation, item } = props;
 
   return (
     <SingleListItemComponent

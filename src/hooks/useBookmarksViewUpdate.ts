@@ -70,25 +70,14 @@ export function useBookmarksViewUpdate() {
 
       const isUserTheCategoryOwner = session?.user?.id === currentCategory?.user_id?.id;
 
-      const updateField = (() => {
-        switch (type) {
-          case "columns": {
-            return "moodboardColumns";
-          }
-          case "info": {
-            return "cardContentViewArray";
-          }
-          case "sort": {
-            return "sortBy";
-          }
-          case "view": {
-            return "bookmarksView";
-          }
-          default: {
-            break;
-          }
-        }
-      })();
+      const updateFieldMap = {
+        columns: "moodboardColumns",
+        info: "cardContentViewArray",
+        sort: "sortBy",
+        view: "bookmarksView",
+      } as const;
+
+      const updateField = updateFieldMap[type];
 
       if (!updateField) {
         return;

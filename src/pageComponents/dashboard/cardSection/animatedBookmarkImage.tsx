@@ -115,6 +115,7 @@ export function AnimatedBookmarkImage({
   // Preload images so we can show them without layout flash.
   // displaySrc is intentionally omitted from deps — including it causes a
   // wasted cleanup+setup cycle when the effect itself updates displaySrc.
+  /* oxlint-disable consistent-return */
   useEffect(() => {
     if (!img) {
       return;

@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "setup": "[ -f \"$CONDUCTOR_ROOT_PATH/.env.local\" ] && cp \"$CONDUCTOR_ROOT_PATH/.env.local\" .env.local || true && [ -d \"$CONDUCTOR_ROOT_PATH/.vercel\" ] && cp -r \"$CONDUCTOR_ROOT_PATH/.vercel\" . || true && [ -f \"$CONDUCTOR_ROOT_PATH/.claude/settings.local.json\" ] && cp \"$CONDUCTOR_ROOT_PATH/.claude/settings.local.json\" .claude/settings.local.json || true && [ -f \"$CONDUCTOR_ROOT_PATH/supabase/seed.sql\" ] && ln -sf \"$CONDUCTOR_ROOT_PATH/supabase/seed.sql\" supabase/seed.sql || true && [ -d \"$CONDUCTOR_ROOT_PATH/.planning\" ] && cp -r \"$CONDUCTOR_ROOT_PATH/.planning\" . || true && pnpm install",
+    "setup": "[ -f \"$CONDUCTOR_ROOT_PATH/.env.local\" ] && cp \"$CONDUCTOR_ROOT_PATH/.env.local\" .env.local || true && [ -d \"$CONDUCTOR_ROOT_PATH/.vercel\" ] && cp -r \"$CONDUCTOR_ROOT_PATH/.vercel\" . || true && [ -f \"$CONDUCTOR_ROOT_PATH/.claude/settings.local.json\" ] && cp \"$CONDUCTOR_ROOT_PATH/.claude/settings.local.json\" .claude/settings.local.json || true && [ -f \"$CONDUCTOR_ROOT_PATH/supabase/seed.sql\" ] && ln -sf \"$CONDUCTOR_ROOT_PATH/supabase/seed.sql\" supabase/seed.sql || true && [ -d \"$CONDUCTOR_ROOT_PATH/.planning\" ] && cp -r \"$CONDUCTOR_ROOT_PATH/.planning\" . || true && pnpm install && pnpm next:typegen",
     "run": "pnpm run dev",
     "archive": ""
   }

@@ -105,6 +105,8 @@
       "rules": {
         // describe("blockName", ...) uses the function name as title — intentional for block tests
         "vitest/prefer-describe-function-title": "off",
+        // Disabled: project uses vitest globals: true — globals without explicit imports is the intended pattern
+        "vitest/prefer-importing-vitest-globals": "off",
         // Disabled: conflicts with prefer-strict-boolean-matchers (ultracite 7.4.0)
         // prefer-strict-boolean-matchers is stricter — enforces toBe(true/false) over toBeTruthy/toBeFalsy
         "vitest/prefer-to-be-truthy": "off",

@@ -13,7 +13,7 @@ import { serwist } from "@serwist/next/config";
 // of determining a revision, however. You may prefer to use
 // the hashes of every extra file you precache.
 const revision =
-  spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).stdout ?? crypto.randomUUID();
+  spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout ?? crypto.randomUUID();
 
 export default serwist.withNextConfig((nextConfig) => ({
   swSrc: "src/app/sw.ts",

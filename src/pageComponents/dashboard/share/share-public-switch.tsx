@@ -21,7 +21,7 @@ export function SharePublicSwitch({ categoryId }: SharePublicSwitchProps) {
   let numericCategoryId: number | null;
   if (typeof dynamicCategoryId === "number") {
     numericCategoryId = dynamicCategoryId;
-  } else if (typeof dynamicCategoryId === "string" && /^\d+$/u.test(String(dynamicCategoryId))) {
+  } else if (typeof dynamicCategoryId === "string" && /^\d+$/u.test(dynamicCategoryId)) {
     numericCategoryId = Number.parseInt(dynamicCategoryId, 10);
   } else {
     numericCategoryId = null;

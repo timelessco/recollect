@@ -28,9 +28,25 @@ const DashboardLayout = dynamic(() => import("./dashboardLayout"), {
   ssr: false,
 });
 
+// @remotion/player touches `window` on import — ssr: false is required.
+// This is the single split point for the entire onboarding tree: modal code,
+// Remotion composition, icons, and the devices.png image. Users past
+// onboarding never download any of this.
+const OnboardingModal = dynamic(
+  async () => {
+    const m = await import("@/pageComponents/onboarding/onboarding-modal");
+    return { default: m.OnboardingModal };
+  },
+  { ssr: false },
+);
+
 const supabase = createClient();
 
-const Dashboard = () => {
+interface DashboardProps {
+  showOnboarding?: boolean;
+}
+
+const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const categorySlug = getCategorySlugFromRouter(router);
@@ -144,7 +160,12 @@ const Dashboard = () => {
     return null;
   }
 
-  return <DashboardLayout>{renderMainPaneContent()}</DashboardLayout>;
+  return (
+    <>
+      <DashboardLayout>{renderMainPaneContent()}</DashboardLayout>
+      {showOnboarding ? <OnboardingModal /> : null}
+    </>
+  );
 };
 
 export default Dashboard;

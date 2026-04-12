@@ -5,7 +5,8 @@
     "[ -f \"$SUPERSET_ROOT_PATH/.claude/settings.local.json\" ] && cp \"$SUPERSET_ROOT_PATH/.claude/settings.local.json\" .claude/settings.local.json || true",
     "[ -f \"$SUPERSET_ROOT_PATH/supabase/seed.sql\" ] && ln -sf \"$SUPERSET_ROOT_PATH/supabase/seed.sql\" supabase/seed.sql || true",
     "[ -d \"$SUPERSET_ROOT_PATH/.planning\" ] && cp -r \"$SUPERSET_ROOT_PATH/.planning\" . || true",
-    "pnpm install"
+    "pnpm install",
+    "pnpm next:typegen"
   ],
   "teardown": []
 }

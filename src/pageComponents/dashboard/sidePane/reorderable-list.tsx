@@ -106,7 +106,7 @@ function ReorderableOption({
 
   const ref = useRef(null);
   const { optionProps } = useOption({ key: item.key }, state, ref);
-  const { focusProps, isFocusVisible } = useFocusRing();
+  const { focusProps } = useFocusRing();
 
   const { dropProps, isDropTarget } = useDroppableItem(
     {
@@ -126,7 +126,7 @@ function ReorderableOption({
   return (
     <li
       {...mergedProps}
-      className={`option-drop relative outline-hidden ${isFocusVisible ? "ring-1 ring-gray-200" : ""} ${
+      className={`option-drop relative outline-hidden ${
         isDropTarget && highlightDropTarget ? "drop-target" : ""
       }`}
       ref={ref}

@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import type { DroppableCollectionReorderEvent } from "react-aria";
 import { Item } from "react-stately";
 
@@ -14,14 +13,9 @@ import type {
 } from "../../../types/apiTypes";
 import type { CollectionItemTypes } from "./singleListItemComponent";
 
-import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
-
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
-import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/use-fetch-paginated-bookmarks";
-import useSearchBookmarks from "../../../async/queryHooks/bookmarks/use-search-bookmarks";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
-import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
 import { mutationApiCall } from "../../../utils/apiHelpers";
@@ -30,11 +24,11 @@ import {
   CATEGORIES_KEY,
   SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
-import { errorToast } from "../../../utils/toastMessages";
 import { CollectionsListSection } from "./collections-list-section";
 import { FavoriteCollectionsList } from "./favorite-collections-list";
 import { ReorderableListBox } from "./reorderable-list";
 import SingleListItemComponent from "./singleListItemComponent";
+import { useHandleBookmarksDrop } from "./use-handle-bookmarks-drop";
 
 const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
   const queryClient = useQueryClient();
@@ -65,23 +59,10 @@ const CollectionsList = () => {
   const session = useSupabaseSession((state) => state.session);
 
   const isCardDragging = useMiscellaneousStore((storeState) => storeState.isCardDragging);
-  const { addCategoryToBookmarkOptimisticMutation } = useAddCategoryToBookmarkOptimisticMutation();
   const { updateCategoryOrderMutation } = useUpdateCategoryOrderOptimisticMutation();
-  const { allCategories, isLoadingCategories } = useFetchCategories();
+  const { isLoadingCategories } = useFetchCategories();
   const { userProfileData } = useFetchUserProfile();
-  const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-  const { everythingData, isEverythingDataLoading } = useFetchPaginatedBookmarks();
-  const { flattenedSearchData } = useSearchBookmarks();
-
-  const flattendPaginationBookmarkData = useMemo(
-    () => everythingData?.pages?.flat() ?? [],
-    [everythingData?.pages],
-  );
-
-  const mergedBookmarkData = useMemo(
-    () => [...flattendPaginationBookmarkData, ...(flattenedSearchData ?? [])],
-    [flattendPaginationBookmarkData, flattenedSearchData],
-  );
+  const { addCategoryToBookmarkOptimisticMutation, handleBookmarksDrop } = useHandleBookmarksDrop();
 
   const currentPath = useGetCurrentUrlPath();
 
@@ -98,61 +79,6 @@ const CollectionsList = () => {
     BOOKMARKS_COUNT_KEY,
     session?.user?.id,
   ]);
-
-  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleBookmarksDrop = async (event: any) => {
-    // Guard: don't process drops while bookmarks are still loading
-    if (isEverythingDataLoading || !everythingData) {
-      return;
-    }
-
-    if (event?.isInternal === false) {
-      const categoryId = Number.parseInt(event?.target?.key as string, 10);
-
-      const currentCategory =
-        find(allCategories?.data, (item) => item?.id === categoryId) ??
-        find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
-      // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorised
-
-      const updateAccessCondition =
-        find(currentCategory?.collabData, (item) => item?.userEmail === session?.user?.email)
-          ?.edit_access === true || currentCategory?.user_id?.id === session?.user?.id;
-
-      await Promise.all(
-        // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- drag event items lack typed API
-        ((event?.items ?? []) as any[]).map(async (item: any) => {
-          const bookmarkId = (await item.getText("text/plain")) as string;
-
-          const foundBookmark = find(
-            mergedBookmarkData,
-            (bookmarkItem) => Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
-          );
-
-          // Ignore drops that aren't bookmarks (e.g., collections dragged between sidebar lists)
-          if (!foundBookmark) {
-            return;
-          }
-
-          // Handle both nested object (from regular fetch) and plain string (from search)
-          const bookmarkCreatedUserId = foundBookmark?.user_id?.id ?? foundBookmark?.user_id;
-          if (bookmarkCreatedUserId === session?.user?.id) {
-            if (!updateAccessCondition) {
-              // if update access is not there then user cannot drag and drop anything into the collection
-              errorToast("Cannot upload in other owners collection");
-              return;
-            }
-
-            addCategoryToBookmarkOptimisticMutation.mutate({
-              bookmark_id: Number.parseInt(bookmarkId, 10),
-              category_id: categoryId,
-            });
-          } else {
-            errorToast("You cannot move collaborators uploads");
-          }
-        }),
-      );
-    }
-  };
 
   const favoriteCategories = userProfileData?.data?.[0]?.favorite_categories ?? [];
 

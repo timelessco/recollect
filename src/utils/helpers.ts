@@ -80,9 +80,7 @@ export const getCategoryIdFromSlug = (
     return slug;
   }
 
-  if (allCategories) {
-    return find(allCategories, (item) => item?.category_slug === slug)?.id;
-  }
+  return find(allCategories, (item) => item?.category_slug === slug)?.id;
 };
 
 export const urlInputErrorText = (errors: FieldErrorsImpl<DeepRequired<UrlInput>>) => {
@@ -109,30 +107,22 @@ export const getUserNameFromEmail = (email: string) => {
 };
 
 export const extractTagNamesFromSearch = (search: string) => {
-  if (typeof search !== "string" || search.length === 0) {
-    return;
-  }
+  const matches =
+    typeof search === "string" && search.length > 0 ? search.match(GET_HASHTAG_TAG_PATTERN) : null;
 
-  const matches = search.match(GET_HASHTAG_TAG_PATTERN);
+  const tagNames =
+    matches && !isEmpty(matches)
+      ? matches
+          .map((item) => {
+            const markupMatch = TAG_MARKUP_REGEX.exec(item);
+            const display = markupMatch?.groups?.display;
 
-  if (!matches || isEmpty(matches)) {
-    return;
-  }
+            return display ?? item.replace("#", "");
+          })
+          .filter((tag): tag is string => typeof tag === "string" && tag.length > 0)
+      : [];
 
-  const tagNames = matches
-    .map((item) => {
-      const markupMatch = TAG_MARKUP_REGEX.exec(item);
-      const display = markupMatch?.groups?.display;
-
-      if (display) {
-        return display;
-      }
-
-      return item.replace("#", "");
-    })
-    .filter((tag): tag is string => typeof tag === "string" && tag.length > 0);
-
-  return isEmpty(tagNames) ? undefined : tagNames;
+  return tagNames.length > 0 ? tagNames : undefined;
 };
 
 export const getBaseUrl = (href: string): string => {
@@ -421,17 +411,19 @@ export const searchSlugKey = (categoryData: { data: CategoriesData[] }) => {
   // Get the category slug from the current router/URL
   const categorySlug = getCategorySlugFromRouter(router);
 
+  // Special case: return undefined for 'everything' or 'search' routes
+  // This matches the behavior of useGetCurrentCategoryId()/CATEGORY_ID
+  /* oxlint-disable unicorn/no-useless-undefined */
+  if (categorySlug === EVERYTHING_URL || categorySlug === SEARCH_URL) {
+    return undefined;
+  }
+  /* oxlint-enable unicorn/no-useless-undefined */
+
   // Find the category in the provided data that matches the current slug
   const categoryIdFromSlug = find(
     categoryData?.data,
     (item) => item?.category_slug === categorySlug,
   )?.id;
-
-  // Special case: return undefined for 'everything' or 'search' routes
-  // This matches the behavior of useGetCurrentCategoryId()/CATEGORY_ID
-  if (categorySlug === EVERYTHING_URL || categorySlug === SEARCH_URL) {
-    return;
-  }
 
   // If we found a matching category with a numeric ID, return the ID
   if (typeof categoryIdFromSlug === "number") {

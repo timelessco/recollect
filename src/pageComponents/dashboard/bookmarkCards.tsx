@@ -60,6 +60,7 @@ export const BookmarkCards = () => {
   const isSearching = !isEmpty(searchText);
 
   // Global clipboard upload handler
+  /* oxlint-disable consistent-return */
   useEffect(() => {
     if (typeof window !== "undefined") {
       const listener = (event: ClipboardEvent) => {

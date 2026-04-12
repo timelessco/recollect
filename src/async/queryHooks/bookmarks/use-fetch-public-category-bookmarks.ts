@@ -50,14 +50,7 @@ export const useFetchPublicCategoryBookmarks = ({
       initialPageParam: 0,
       getNextPageParam: (lastPage, pages) => {
         const lastPageLength = lastPage?.data?.length ?? 0;
-
-        // If the last page has fewer items than the limit, we've reached the end
-        if (lastPageLength < PAGINATION_LIMIT) {
-          return;
-        }
-
-        // Return the next page number
-        return pages.length;
+        return lastPageLength < PAGINATION_LIMIT ? undefined : pages.length;
       },
       queryKey: [PUBLIC_BOOKMARKS_KEY, categorySlug, userName],
       // Hydrate with SSR data if provided

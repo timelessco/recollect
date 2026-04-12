@@ -52,7 +52,7 @@ jobs:
       - if: steps.guard.outputs.skip != 'true'
         name: Install oasdiff
         run: |
-          go install github.com/oasdiff/oasdiff@latest
+          go install github.com/oasdiff/oasdiff@v1.13.1
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
       - if: steps.guard.outputs.skip != 'true'
@@ -67,7 +67,9 @@ jobs:
             # Strip auto-generated heading and demote ## to ### (nest under date heading)
             sed -i '1{/^# API Changelog/d}' .oasdiff/changelog-entry.md
             sed -i 's/^## /### /' .oasdiff/changelog-entry.md
-            # Skip if only whitespace remains after stripping heading
+            # Strip "No changes" lines (oasdiff outputs this when specs are identical)
+            sed -i '/^No changes/d' .oasdiff/changelog-entry.md
+            # Skip if only whitespace remains after stripping heading and no-change lines
             if ! grep -q '[^[:space:]]' .oasdiff/changelog-entry.md; then
               echo "No API changes detected — skipping changelog update"
               exit 0
@@ -100,3 +102,9 @@ on:
   push:
     branches:
       - dev
+    paths:
+      - "src/app/api/**"
+      - "src/lib/openapi/**"
+      - "src/lib/api-helpers/create-handler*.ts"
+      - "scripts/generate-openapi.ts"
+      - "scripts/merge-openapi-supplements.ts"

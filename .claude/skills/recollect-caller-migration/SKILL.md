@@ -1,15 +1,6 @@
 ---
 name: recollect-caller-migration
-description: >
-  Frontend caller migration from v1 Pages Router URLs to v2 App Router
-  endpoints in Recollect. Encodes the proven 5-layer query-hook migration
-  pattern: orphaned constant cleanup, hook rewrite with ky + Zod types,
-  consumer verification (v2 responses need no unwrap), dead code cleanup,
-  and Pages Router route deprecation. Use this skill whenever the user mentions caller migration,
-  wiring up v2, updating a hook to v2, frontend migration, ky migration,
-  v2 factory, api-v2, or the check-gemini pattern. For mutation hook
-  template refactoring and file renaming, use the
-  recollect-mutation-hook-refactoring skill instead.
+description: recollect-caller-migration
 ---
 
 # Caller Migration
@@ -32,7 +23,7 @@ v2 routes return `T` directly on success and `{error: string}` on failure — no
 
 ### Layer 1: Orphaned Constant Cleanup
 
-With ky's `prefixUrl: "/api"`, callers use inline `"v2/route-name"` — no URL constants needed. The old URL constant (e.g., `CHECK_API_KEY_API`) may become orphaned after migration.
+With ky's `prefix: "/api"`, callers use inline `"v2/route-name"` — no URL constants needed. The old URL constant (e.g., `CHECK_API_KEY_API`) may become orphaned after migration.
 
 **Do not update the constant to a v2 path.** Instead:
 
@@ -67,14 +58,14 @@ export const useFetchCheckApiKey = () =>
 **Key details:**
 
 - **Import source:** `import { api } from "@/lib/api-helpers/api-v2"` — NOT `getApi` from `api.ts`
-- **No leading slash:** `"v2/check-gemini-api-key"` not `"/v2/check-gemini-api-key"` — ky's `prefixUrl` joins `/api` + relative path
+- **No leading slash:** `"v2/check-gemini-api-key"` not `"/v2/check-gemini-api-key"` — ky's `prefix` joins `/api` + relative path
 - **No async/await needed:** `api.get().json()` returns a Promise directly, which `queryFn` accepts
 - **ky auto-throws on non-2xx:** React Query catches in `onError` — no manual error checking needed
 - **Zod schema import:** Use `import type` for both the schema and `z` — zero runtime Zod at the consumer. The schema only exists for type inference
 - **Response type — choose the right pattern:**
   - **Non-bookmark responses** (simple shapes like `{hasApiKey: boolean}`): Use `z.infer<typeof OutputSchema>` from the v2 route's schema. The Zod type matches the consumer type perfectly
   - **Bookmark data responses** (anything typed as `SingleListData` downstream): Use `.json<SingleListData[]>()` directly — do NOT use `z.infer`. The hand-written `SingleListData` interface diverges structurally from v2 Zod output schemas (different nullability, `user_id` shape, missing `addedTags`). `as SingleListData` casts fail with TS2352. All migrated bookmark hooks (`use-fetch-paginated-bookmarks`, `use-search-bookmarks`, `use-fetch-bookmark-by-id`) use this pattern
-- **V2 URL constants:** Add a `V2_*` constant to `src/utils/constants.ts` (e.g., `V2_FETCH_BOOKMARK_BY_ID_API = "v2/bookmarks/get/fetch-by-id"`) and use it in the hook. Remove the old v1 URL constant (`FETCH_BOOKMARK_BY_ID_API`) and `NEXT_API_URL` import if orphaned. V2 constants have no leading slash — ky's `prefixUrl` handles the base
+- **V2 URL constants:** Add a `V2_*` constant to `src/utils/constants.ts` (e.g., `V2_FETCH_BOOKMARK_BY_ID_API = "v2/bookmarks/get/fetch-by-id"`) and use it in the hook. Remove the old v1 URL constant (`FETCH_BOOKMARK_BY_ID_API`) and `NEXT_API_URL` import if orphaned. V2 constants have no leading slash — ky's `prefix` handles the base
 - **File naming:** Rename PascalCase files to kebab-case (`useFetchCheckGeminiApiKey.ts` → `use-fetch-check-gemini-api-key.ts`). Use `git mv` with temp-file two-step for case-only renames on macOS
 
 **Lint comment cleanup:** Migration often makes lint suppressions unnecessary. Remove these when they no longer apply:

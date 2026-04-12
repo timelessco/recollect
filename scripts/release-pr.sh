@@ -152,33 +152,74 @@ SEEN_PRS_FILE="$TMPDIR_SECTIONS/_seen_prs"
 touch "$PR_MAP_FILE" "$SEEN_PRS_FILE"
 
 SHA_ARRAY=()
-ALIASES=""
-IDX=0
 while IFS= read -r line; do
 	[ -z "$line" ] && continue
-	SHA="${line%% *}"
-	SHA_ARRAY+=("$SHA")
-	ALIASES="${ALIASES} c${IDX}: object(expression: \"${SHA}\") { ... on Commit { associatedPullRequests(first: 1) { nodes { number title author { login } } } } }"
-	IDX=$((IDX + 1))
+	SHA_ARRAY+=("${line%% *}")
 done <<< "$COMMITS"
 
-if [ "$IDX" -gt 0 ]; then
-	echo "Fetching PR associations for $IDX commits..." >&2
-	QUERY_STRING="query { repository(name: \"${REPO#*/}\", owner: \"${REPO%/*}\") {${ALIASES} } }"
-	gh api graphql -f query="$QUERY_STRING" --jq '
-		.data.repository | to_entries[] |
-		select(.value.associatedPullRequests.nodes | length > 0) |
-		[.key, (.value.associatedPullRequests.nodes[0].number | tostring), .value.associatedPullRequests.nodes[0].title, (.value.associatedPullRequests.nodes[0].author.login // "")] |
-		@tsv
-	' > "$TMPDIR_SECTIONS/_cidx_map" 2> /dev/null || true
+TOTAL=${#SHA_ARRAY[@]}
 
-	while IFS=$'\t' read -r CIDX PR_NUM PR_TITLE AUTHOR; do
-		IDX_NUM="${CIDX#c}"
-		SHA="${SHA_ARRAY[$IDX_NUM]}"
-		if [ -n "$SHA" ]; then
-			printf '%s\t%s\t%s\t%s\n' "$SHA" "$PR_NUM" "$PR_TITLE" "$AUTHOR" >> "$PR_MAP_FILE"
+if [ "$TOTAL" -gt 0 ]; then
+	echo "Fetching PR associations for $TOTAL commits..." >&2
+
+	# GitHub's GraphQL API rejects very large aliased queries (node/complexity
+	# limit). Batch in chunks to stay under the limit and keep failures visible.
+	CHUNK_SIZE=50
+	CHUNK_INDEX=0
+
+	while [ "$CHUNK_INDEX" -lt "$TOTAL" ]; do
+		CHUNK_END=$((CHUNK_INDEX + CHUNK_SIZE))
+		[ "$CHUNK_END" -gt "$TOTAL" ] && CHUNK_END=$TOTAL
+
+		ALIASES=""
+		i=$CHUNK_INDEX
+		while [ "$i" -lt "$CHUNK_END" ]; do
+			ALIASES="${ALIASES} c${i}: object(expression: \"${SHA_ARRAY[$i]}\") { ... on Commit { author { user { login } } associatedPullRequests(first: 1) { nodes { number title author { login } } } } }"
+			i=$((i + 1))
+		done
+
+		QUERY_STRING="query { repository(name: \"${REPO#*/}\", owner: \"${REPO%/*}\") {${ALIASES} } }"
+
+		CHUNK_ERR=$(mktemp)
+		if ! gh api graphql -f query="$QUERY_STRING" --jq '
+			.data.repository | to_entries[] |
+			select(.value != null) |
+			[
+				.key,
+				((.value.associatedPullRequests.nodes[0].number // "") | tostring),
+				(.value.associatedPullRequests.nodes[0].title // ""),
+				(.value.associatedPullRequests.nodes[0].author.login // ""),
+				(.value.author.user.login // "")
+			] | @tsv
+		' > "$TMPDIR_SECTIONS/_cidx_map" 2> "$CHUNK_ERR"; then
+			FIRST_SHA="${SHA_ARRAY[$CHUNK_INDEX]:0:7}"
+			LAST_SHA="${SHA_ARRAY[$((CHUNK_END - 1))]:0:7}"
+			HUMAN_START=$((CHUNK_INDEX + 1))
+			echo "Warning: GraphQL PR enrichment failed for commits ${HUMAN_START}-${CHUNK_END} (${FIRST_SHA}..${LAST_SHA}):" >&2
+			cat "$CHUNK_ERR" >&2
+			rm -f "$CHUNK_ERR"
+			CHUNK_INDEX=$CHUNK_END
+			continue
 		fi
-	done < "$TMPDIR_SECTIONS/_cidx_map"
+		rm -f "$CHUNK_ERR"
+
+		# Parse with cut (not IFS read) — bash read treats tab as IFS whitespace
+		# and collapses consecutive tabs, so rows with empty PR_NUM/PR_TITLE/
+		# PR_AUTHOR but populated COMMIT_LOGIN would shift fields.
+		while IFS= read -r jq_line; do
+			CIDX=$(printf '%s' "$jq_line" | cut -f1)
+			PR_NUM=$(printf '%s' "$jq_line" | cut -f2)
+			PR_TITLE=$(printf '%s' "$jq_line" | cut -f3)
+			PR_AUTHOR=$(printf '%s' "$jq_line" | cut -f4)
+			COMMIT_LOGIN=$(printf '%s' "$jq_line" | cut -f5)
+			IDX_NUM="${CIDX#c}"
+			SHA="${SHA_ARRAY[$IDX_NUM]}"
+			[ -z "$SHA" ] && continue
+			printf '%s\t%s\t%s\t%s\t%s\n' "$SHA" "$PR_NUM" "$PR_TITLE" "$PR_AUTHOR" "$COMMIT_LOGIN" >> "$PR_MAP_FILE"
+		done < "$TMPDIR_SECTIONS/_cidx_map"
+
+		CHUNK_INDEX=$CHUNK_END
+	done
 fi
 
 # --- Process commits ---
@@ -202,15 +243,17 @@ while IFS= read -r line; do
 		"feat(release): 🚀"* | "🚀 Release v"*) continue ;;
 	esac
 
-	# Look up PR from batch map
+	# Look up PR + author login from batch map
 	PR_LINE=$(grep "^${SHA}" "$PR_MAP_FILE" 2> /dev/null | head -1 || true)
 	PR_NUMBER=""
 	PR_TITLE=""
-	AUTHOR=""
+	PR_AUTHOR=""
+	COMMIT_LOGIN=""
 	if [ -n "$PR_LINE" ]; then
 		PR_NUMBER=$(printf '%s' "$PR_LINE" | cut -f2)
 		PR_TITLE=$(printf '%s' "$PR_LINE" | cut -f3)
-		AUTHOR=$(printf '%s' "$PR_LINE" | cut -f4)
+		PR_AUTHOR=$(printf '%s' "$PR_LINE" | cut -f4)
+		COMMIT_LOGIN=$(printf '%s' "$PR_LINE" | cut -f5)
 	fi
 
 	# Dedup: one entry per PR
@@ -229,18 +272,25 @@ while IFS= read -r line; do
 		if [[ "$DESCRIPTION" =~ ^([a-z]+)(\(.+\))?!?:\ (.+)$ ]]; then
 			COMMIT_TYPE="${BASH_REMATCH[1]}"
 		fi
-		if [ -n "$AUTHOR" ]; then
-			ENTRY="* [#$PR_NUMBER]($PR_URL) $DESCRIPTION (@$AUTHOR)"
+		# Prefer PR author; fall back to commit author's GitHub login
+		DISPLAY_LOGIN="${PR_AUTHOR:-$COMMIT_LOGIN}"
+		if [ -n "$DISPLAY_LOGIN" ]; then
+			ENTRY="* $DESCRIPTION ([#$PR_NUMBER]($PR_URL)) — @$DISPLAY_LOGIN"
 		else
-			ENTRY="* [#$PR_NUMBER]($PR_URL) $DESCRIPTION"
+			ENTRY="* $DESCRIPTION ([#$PR_NUMBER]($PR_URL))"
 		fi
 	else
 		COMMIT_URL="https://github.com/$REPO/commit/$SHA"
-		AUTHOR=$(git log -1 --format='%an' "$SHA")
 		if [[ "$SUBJECT" =~ ^([a-z]+)(\(.+\))?!?:\ (.+)$ ]]; then
 			COMMIT_TYPE="${BASH_REMATCH[1]}"
 		fi
-		ENTRY="* $SUBJECT ([$SHORT_SHA]($COMMIT_URL)) — $AUTHOR"
+		if [ -n "$COMMIT_LOGIN" ]; then
+			ENTRY="* $SUBJECT ([$SHORT_SHA]($COMMIT_URL)) — @$COMMIT_LOGIN"
+		else
+			# Fallback: GraphQL didn't resolve a GitHub user (e.g. email-only author)
+			AUTHOR_NAME=$(git log -1 --format='%an' "$SHA")
+			ENTRY="* $SUBJECT ([$SHORT_SHA]($COMMIT_URL)) — $AUTHOR_NAME"
+		fi
 	fi
 
 	# Place in correct section via temp files

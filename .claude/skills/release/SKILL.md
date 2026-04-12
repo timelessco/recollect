@@ -1,11 +1,6 @@
 ---
 name: release
-description: >
-  Automate the full Recollect release pipeline: create release PR, merge to main,
-  monitor CI release workflow, and verify tag + GitHub Release + backmerge. Use when
-  the user says "release", "cut a release", "ship a release", "/release", or wants
-  to trigger the release pipeline. This is an EXECUTION skill — it runs the full
-  workflow without needing context from the caller.
+description: release
 ---
 
 # Release Pipeline
