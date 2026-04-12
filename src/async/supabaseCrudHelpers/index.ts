@@ -7,7 +7,6 @@ import isNull from "lodash/isNull";
 import type {
   AddBookmarkMinDataPayloadTypes,
   AddBookmarkScreenshotPayloadTypes,
-  BookmarkViewDataTypes,
   CategoriesData,
   DeleteBookmarkPayload,
   DeleteUserCategoryApiPayload,
@@ -42,7 +41,6 @@ import {
   DELETE_SHARED_CATEGORIES_USER_API,
   DELETE_USER_API,
   DELETE_USER_CATEGORIES_API,
-  FETCH_BOOKMARKS_VIEW,
   FETCH_SHARED_CATEGORIES_DATA_API,
   FETCH_USER_CATEGORIES_API,
   FETCH_USER_PROFILE_API,
@@ -65,7 +63,7 @@ import {
   GEMINI_MODEL,
 } from "../../utils/constants";
 // eslint-disable-next-line import/no-cycle -- circular dep between helpers and supabaseCrudHelpers needs structural refactor
-import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
+import { parseUploadFileName } from "../../utils/helpers";
 
 // user settings and keys
 export const saveApiKey = async ({
@@ -202,42 +200,6 @@ export const fetchUserTags = async (): Promise<{
     const response = await axios.get<{ data: UserTagsData[]; error: Error }>(
       `${NEXT_API_URL}${FETCH_USER_TAGS_API}`,
     );
-    return response?.data;
-  } catch (error_) {
-    const error = error_ as Error;
-    return { data: null, error };
-  }
-};
-
-export const fetchBookmarksViews = async ({
-  category_id,
-}: {
-  category_id: null | number | string;
-}): Promise<{ data: BookmarkViewDataTypes | null; error: Error }> => {
-  if (!isUserInACategory(category_id as string)) {
-    return {
-      data: null,
-      error: { message: "user not in category", name: "user not in category" },
-    };
-  }
-
-  if (isNull(category_id)) {
-    return {
-      data: null,
-      error: {
-        message: "no access token and category id is null",
-        name: "no access token and category id is nul",
-      },
-    };
-  }
-
-  try {
-    const response = await axios.post<{
-      data: BookmarkViewDataTypes | null;
-      error: Error;
-    }>(`${NEXT_API_URL}${FETCH_BOOKMARKS_VIEW}`, {
-      category_id: isNull(category_id) ? 0 : category_id,
-    });
     return response?.data;
   } catch (error_) {
     const error = error_ as Error;
