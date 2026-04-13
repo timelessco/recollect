@@ -25,7 +25,7 @@ export const POST = createAxiomRouteHandler(
       const serviceClient = createServerServiceClient();
       const { data: sourceBookmark, error: fetchError } = await serviceClient
         .from(MAIN_TABLE_NAME)
-        .select("url, title, description, ogImage, meta_data, screenshot, type")
+        .select("url, title, description, ogImage, meta_data, screenshot, type, user_id")
         .eq("id", data.source_bookmark_id)
         .not("make_discoverable", "is", null)
         .single();
@@ -35,6 +35,13 @@ export const POST = createAxiomRouteHandler(
           cause: fetchError ?? undefined,
           message: "Source bookmark not found or not discoverable",
           operation: "fetch_source_bookmark",
+        });
+      }
+
+      if (sourceBookmark.user_id === userId) {
+        throw new RecollectApiError("conflict", {
+          message: "This bookmark is already in your library",
+          operation: "check_ownership",
         });
       }
 

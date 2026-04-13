@@ -22,11 +22,9 @@ import { PlusIcon } from "@/icons/plus-icon";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { DiscoverSwitch } from "@/pageComponents/dashboard/cardSection/discover-switch";
 import { OgPreferenceSwitch } from "@/pageComponents/dashboard/cardSection/og-preference-switch";
-import { useSupabaseSession } from "@/store/componentStore";
 import { SKIP_OG_IMAGE_DOMAINS } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
 import { cn } from "@/utils/tailwind-merge";
-import { successToast } from "@/utils/toastMessages";
 
 interface EditPopoverProps {
   post: SingleListData;
@@ -93,9 +91,6 @@ interface DiscoverSavePopoverProps {
 export const DiscoverSavePopover = ({ post }: DiscoverSavePopoverProps) => {
   const { allCategories } = useFetchCategories();
   const saveFromDiscoverMutation = useSaveFromDiscoverMutation();
-  const userId = useSupabaseSession((state) => state.session)?.user?.id ?? "";
-  const postUserId = typeof post?.user_id === "object" ? post?.user_id?.id : post?.user_id;
-  const isOwnBookmark = userId && postUserId === userId;
 
   // Synthetic "Everything" item prepended to the list
   const everythingItem: CategoriesData = useMemo(
@@ -139,12 +134,6 @@ export const DiscoverSavePopover = ({ post }: DiscoverSavePopoverProps) => {
     (open: boolean) => {
       // Fire mutation on close if at least one collection selected
       if (!open && selectedCategories.length > 0) {
-        if (isOwnBookmark) {
-          successToast("This bookmark is already in your library");
-          setSelectedCategories([everythingItem]);
-          return;
-        }
-
         saveFromDiscoverMutation.mutate({
           category_ids: selectedCategories.map((c) => c.id),
           source_bookmark_id: post.id,
@@ -153,7 +142,7 @@ export const DiscoverSavePopover = ({ post }: DiscoverSavePopoverProps) => {
         setSelectedCategories([everythingItem]);
       }
     },
-    [selectedCategories, saveFromDiscoverMutation, post.id, everythingItem, isOwnBookmark],
+    [selectedCategories, saveFromDiscoverMutation, post.id, everythingItem],
   );
 
   return (
