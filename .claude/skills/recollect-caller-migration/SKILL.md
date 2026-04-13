@@ -9,7 +9,7 @@ Migrate frontend query hooks from v1 Pages Router URLs to v2 App Router endpoint
 
 v2 routes return `T` directly on success and `{error: string}` on failure — no `{data, error}` envelope. Route handlers use the v2 factory (`create-handler-v2.ts`) with `createAxiomRouteHandler(withAuth/withPublic({...}))` composition and `RecollectApiError` throws for error handling. Callers use **ky** (`api` from `api-v2.ts`) — no `getApi`, no v1 URL constants (`NEXT_API_URL` + constant pattern), no envelope unwrapping. V2 callers use `V2_*` constants from `constants.ts` with ky's prefix.
 
-> **Mutation hook refactoring?** Use the `recollect-mutation-hook-refactoring` skill instead. It covers mutation-hook-template.ts restructuring, file renaming, and structural cleanup. This skill handles API caller migration (query hooks with ky, mutation hooks with ky when its pathfinder completes).
+> **Mutation hook refactoring?** Use the `recollect-mutation-hook-refactoring` skill instead. It covers mutation-hook-template.ts restructuring, file renaming, and structural cleanup. This skill handles API caller migration — both query hooks and mutation hooks with ky.
 
 ## Scope
 
@@ -67,6 +67,11 @@ export const useFetchCheckApiKey = () =>
   - **Bookmark data responses** (anything typed as `SingleListData` downstream): Use `.json<SingleListData[]>()` directly — do NOT use `z.infer`. The hand-written `SingleListData` interface diverges structurally from v2 Zod output schemas (different nullability, `user_id` shape, missing `addedTags`). `as SingleListData` casts fail with TS2352. All migrated bookmark hooks (`use-fetch-paginated-bookmarks`, `use-search-bookmarks`, `use-fetch-bookmark-by-id`) use this pattern
 - **V2 URL constants:** Add a `V2_*` constant to `src/utils/constants.ts` (e.g., `V2_FETCH_BOOKMARK_BY_ID_API = "v2/bookmarks/get/fetch-by-id"`) and use it in the hook. Remove the old v1 URL constant (`FETCH_BOOKMARK_BY_ID_API`) and `NEXT_API_URL` import if orphaned. V2 constants have no leading slash — ky's `prefix` handles the base
 - **File naming:** Rename PascalCase files to kebab-case (`useFetchCheckGeminiApiKey.ts` → `use-fetch-check-gemini-api-key.ts`). Use `git mv` with temp-file two-step for case-only renames on macOS
+- **HTTP method:** Always read the v2 route's exported function name (`GET`, `POST`, `PATCH`, `PUT`, `DELETE`) and match the ky method. v1 uses POST for everything — v2 uses semantically correct methods. `api.patch()` for updates, `api.delete()` for deletes, `api.put()` for upserts
+
+**Empty body rule:** When the v2 route's `inputSchema` is `z.object({})` (empty input), ky calls MUST send `{ json: {} }`. The v2 handler calls `request.json()` for non-GET methods — an empty body causes 400. Always read the v2 route's `schema.ts` to check. Example: `api.delete(V2_DELETE_API_KEY_API, { json: {} }).json()`
+
+**Dead payload fields:** Compare the hook's payload type against the v2 `inputSchema`. Remove fields the server gets from auth context (e.g., `id` when v2 uses `user.id` from cookie auth — Zod strips extra fields silently, but the dead field misleads readers). After removing a field from the hook's type, update all consumer call sites that pass it, and chase the orphan chain (the `session` variable and `useSupabaseSession` import may become unused).
 
 **Lint comment cleanup:** Migration often makes lint suppressions unnecessary. Remove these when they no longer apply:
 - `@ts-expect-error` comments on crud helper casts — ky's `.json<T>()` is properly typed
@@ -127,6 +132,37 @@ const { hasApiKey } = data;
 - **Indirect cache readers:** Also grep for the query key constant (e.g., `BOOKMARKS_COUNT_KEY`) — some components read the cache directly via `queryClient.getQueryData<T>(key)` without importing the hook. These need their cache type generic updated (e.g., `<{ data: T }>` → `<T>`) and their `.data` access removed
 - **Utility function param cascades:** Functions like `optionsMenuListArray` that accept cache data as a parameter need their param type updated when the cache shape changes (e.g., `{ data: BookmarksCountTypes } | undefined` → `BookmarksCountTypes | undefined`)
 - **`prefer-destructuring` lint rule:** When assigning an array element to a `let` variable, oxlint enforces destructuring. Use `[currentBookmark] = bookmark` instead of `currentBookmark = bookmark[0]`. For `const`, use `const [bookmarkData] = bookmark` instead of `const bookmarkData = bookmark[0]`
+
+**`mutationApiCall` + envelope check breakage (mutation hooks):** Consumers that wrap `mutateAsync` with `mutationApiCall` and then check the v1 envelope shape break silently with v2 bare responses. These patterns all fail:
+
+```typescript
+// BROKEN: isNull(undefined) returns false — success block never runs
+const response = await mutationApiCall(mutation.mutateAsync(payload));
+if (isNull(response?.error)) { successToast("Done"); }
+
+// BROKEN: bare T has no .data property — isNil(undefined) is true, !true is false
+if (!isNil(response?.data)) { successToast("Done"); }
+
+// BROKEN: explicit cast doesn't help — property is still undefined
+if (isNull((response as { error: Error })?.error)) { ... }
+```
+
+**Fix:** Replace `mutationApiCall` wrapper + envelope check with try/catch. Since ky throws on non-2xx and React Query propagates the error, reaching the next line after `mutateAsync()` means success:
+
+```typescript
+try {
+  await mutation.mutateAsync(payload);
+  successToast("Done");
+} catch {
+  errorToast("Failed");
+}
+```
+
+**After fixing, chase the orphan chain** — each removal may orphan the next:
+1. `mutationApiCall` import → remove if no other call in the file
+2. `isNull` / `isNil` import → remove if no other usage in the file
+3. `session` variable → may have been used only for `id` in the removed payload (see dead payload fields in Layer 2)
+4. `useSupabaseSession` import → remove if `session` was the only consumer
 
 ### Layer 4: Dead Code Removal
 
@@ -341,10 +377,42 @@ Checked: only `fetch-bookmarks-data` had this mismatch (fixed in Phase 23). `sea
 
 Existing callers using `getApi`/`postApi` from `api.ts` with `handleResponse` continue working against v1 and envelope v2 routes. Do NOT modify `api.ts` or `response.ts` — they serve v1 callers until v1 dies. New v2 migrations always use `api` from `api-v2.ts`.
 
-## Future Classes
+## Mutation Hook Migration
 
-This skill evolves incrementally. New migration classes are added only after their pathfinder proves the pattern.
+Mutation hooks that call crud helpers from `supabaseCrudHelpers/index.ts`. The `mutationFn` replaces the crud helper with a ky call. Same 5-layer pattern applies.
 
-**Planned additions:**
+**Key differences from query hooks:**
 
-- **postApi caller migration** — Mutation hooks using `api.post("v2/route").json<T>()` from ky with bare request/response. Will be added to THIS skill after its pathfinder completes (it's still caller migration, not mutation-hook-template refactoring).
+- **Mutation hooks live at** `src/async/mutationHooks/{domain}/use-{action}-{name}-mutation.ts`
+- **ky method matches v2 route** — not always POST. Check the v2 route's export (`PATCH`, `PUT`, `DELETE`, etc.)
+- **Fire-and-forget mutations** (return value unused in `onSuccess`/`onSettled`): no consumer response shape updates needed for the ky change itself. But consumers that use `mutationApiCall` + envelope checks still break — see Layer 3 `mutationApiCall` section
+- **Return value is often unused:** Most mutation hooks just invalidate queries in `onSuccess`. If `onSuccess` doesn't destructure or read the mutation result, the swap is trivial
+- **Type simplification:** v1 hooks often had `as unknown as ResponseType` casts to bridge axios response shape. These are dead weight with ky — remove the interface and cast entirely
+
+```typescript
+// Mutation hook with ky — fire-and-forget pattern
+export default function useDeleteSharedCategoriesUserMutation() {
+  const session = useSupabaseSession((state) => state.session);
+  const queryClient = useQueryClient();
+
+  const deleteSharedCategoriesUserMutation = useMutation({
+    mutationFn: (payload: { id: number }) =>
+      api.delete(V2_DELETE_SHARED_CATEGORIES_USER_API, { json: payload }).json(),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: [SHARED_CATEGORIES_TABLE_NAME],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: [CATEGORIES_KEY, session?.user?.id],
+      });
+    },
+  });
+  return { deleteSharedCategoriesUserMutation };
+}
+```
+
+**Reference implementations (Phase 23 T1 batch):**
+- `src/async/mutationHooks/share/use-delete-shared-categories-user-mutation.ts` — DELETE with payload
+- `src/async/mutationHooks/user/use-delete-user-mutation.ts` — POST with empty body `{ json: {} }`
+- `src/async/mutationHooks/user/use-api-key-user-mutation.ts` — PUT with payload, .tsx→.ts rename
+- `src/async/mutationHooks/user/use-remove-user-profile-pic-mutation.ts` — DELETE with empty body, dead `id` field removed
