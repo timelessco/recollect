@@ -26,6 +26,7 @@ export interface ParsedSearch {
 
 const HEX_PATTERN = /^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 const MAX_COLOR_HINTS = 3;
+const MAX_TYPE_HINTS = 3;
 
 /** Lowercase CSS color name allowlist (sourced from Culori's colorsNamed map). */
 const CSS_COLOR_NAMES: ReadonlySet<string> = new Set(Object.keys(colorsNamed));
@@ -153,7 +154,7 @@ export function parseSearchTokens(raw: string): ParsedSearch {
   const text = raw.replace(GET_HASHTAG_TAG_PATTERN, "").trim();
   const colorHints = [...hintsByTagName.values()].slice(0, MAX_COLOR_HINTS);
   const plainTags = [...plainTagsSet];
-  const typeHints = [...typeHintsSet].slice(0, MAX_COLOR_HINTS);
+  const typeHints = [...typeHintsSet].slice(0, MAX_TYPE_HINTS);
 
   return { text, plainTags, colorHints, typeHints };
 }
