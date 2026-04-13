@@ -20,6 +20,8 @@ export interface ParsedSearch {
   plainTags: string[];
   /** Search text with all #tokens stripped and trimmed. */
   text: string;
+  /** Matched content-type names (lowercased, from image_keywords.type allowlist). */
+  typeHints: string[];
 }
 
 const HEX_PATTERN = /^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
@@ -27,6 +29,60 @@ const MAX_COLOR_HINTS = 3;
 
 /** Lowercase CSS color name allowlist (sourced from Culori's colorsNamed map). */
 const CSS_COLOR_NAMES: ReadonlySet<string> = new Set(Object.keys(colorsNamed));
+
+/**
+ * Closed list of AI-extracted content types that can be searched via #hash.
+ * Sourced from the Gemini prompt's type enum (prompt-builder.ts).
+ * Multi-word types with spaces excluded — can't be typed as a single #token.
+ */
+const KNOWN_TYPES: ReadonlySet<string> = new Set([
+  "anime",
+  "article",
+  "blog",
+  "book",
+  "course",
+  "deal",
+  "design",
+  "documentation",
+  "ecommerce",
+  "event",
+  "game",
+  "image",
+  "infographic",
+  "instapost",
+  "job",
+  "linkedinpost",
+  "meme",
+  "movie",
+  "music_album",
+  "news",
+  "newsletter",
+  "package",
+  "pdf",
+  "photo",
+  "pin",
+  "place",
+  "podcast",
+  "portfolio",
+  "poster",
+  "product",
+  "productivity",
+  "profile",
+  "recipe",
+  "redditpost",
+  "repo",
+  "research_paper",
+  "restaurant",
+  "review",
+  "streaming",
+  "thread",
+  "tiktok",
+  "tutorial",
+  "tvshow",
+  "video",
+  "webapp",
+  "xpost",
+]);
 
 /**
  * Extract the body of a #token. Handles both bare hashes (`#red`) and the
@@ -52,6 +108,7 @@ export function parseSearchTokens(raw: string): ParsedSearch {
   const matches = raw.match(GET_HASHTAG_TAG_PATTERN) ?? [];
 
   const plainTagsSet = new Set<string>();
+  const typeHintsSet = new Set<string>();
   const hintsByTagName = new Map<string, ColorHint>();
 
   for (const token of matches) {
@@ -85,12 +142,18 @@ export function parseSearchTokens(raw: string): ParsedSearch {
       continue;
     }
 
+    if (KNOWN_TYPES.has(body.toLowerCase())) {
+      typeHintsSet.add(body.toLowerCase());
+      continue;
+    }
+
     plainTagsSet.add(body.toLowerCase());
   }
 
   const text = raw.replace(GET_HASHTAG_TAG_PATTERN, "").trim();
   const colorHints = [...hintsByTagName.values()].slice(0, MAX_COLOR_HINTS);
   const plainTags = [...plainTagsSet];
+  const typeHints = [...typeHintsSet].slice(0, MAX_COLOR_HINTS);
 
-  return { text, plainTags, colorHints };
+  return { text, plainTags, colorHints, typeHints };
 }
