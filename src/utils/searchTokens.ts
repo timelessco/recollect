@@ -33,10 +33,7 @@ const MAX_TYPE_HINTS = 3;
 /** Lowercase CSS color name allowlist (sourced from Culori's colorsNamed map). */
 export const CSS_COLOR_NAMES: ReadonlySet<string> = new Set(Object.keys(colorsNamed));
 
-/** Single-word content types from CONTENT_TYPES — multi-word types excluded (can't be a single #token). */
-export const KNOWN_TYPES: ReadonlySet<string> = new Set(
-  CONTENT_TYPES.filter((t) => !t.includes(" ")),
-);
+export const KNOWN_TYPES: ReadonlySet<string> = new Set(CONTENT_TYPES);
 
 /**
  * Extract the body of a #token. Handles both bare hashes (`#red`) and the
