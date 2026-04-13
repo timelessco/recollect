@@ -117,7 +117,7 @@ const SearchInput = (props: SearchInputTypes) => {
     (query: string, callback: (data: { display: string; id: string }[]) => void) => {
       const q = query.toLowerCase();
 
-      const tags = filteredTagsData.filter((t) => t.display.toLowerCase().startsWith(q));
+      const tags = filteredTagsData.filter((t) => t.display.toLowerCase().includes(q));
 
       if (q.length < MIN_QUERY_LENGTH_FOR_EXTRAS) {
         callback(tags);
