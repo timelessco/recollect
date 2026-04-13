@@ -1,6 +1,8 @@
 import { colorsNamed } from "culori";
 
 import type { OklabColor } from "@/async/ai/schemas/image-analysis-schema";
+
+import { CONTENT_TYPES } from "@/async/ai/schemas/image-analysis-schema";
 import { parseSearchColor } from "@/utils/colorUtils";
 import { GET_HASHTAG_TAG_PATTERN, TAG_MARKUP_REGEX } from "@/utils/constants";
 
@@ -31,59 +33,8 @@ const MAX_TYPE_HINTS = 3;
 /** Lowercase CSS color name allowlist (sourced from Culori's colorsNamed map). */
 const CSS_COLOR_NAMES: ReadonlySet<string> = new Set(Object.keys(colorsNamed));
 
-/**
- * Closed list of AI-extracted content types that can be searched via #hash.
- * Sourced from the Gemini prompt's type enum (prompt-builder.ts).
- * Multi-word types with spaces excluded — can't be typed as a single #token.
- */
-const KNOWN_TYPES: ReadonlySet<string> = new Set([
-  "anime",
-  "article",
-  "blog",
-  "book",
-  "course",
-  "deal",
-  "design",
-  "documentation",
-  "ecommerce",
-  "event",
-  "game",
-  "image",
-  "infographic",
-  "instapost",
-  "job",
-  "linkedinpost",
-  "meme",
-  "movie",
-  "music_album",
-  "news",
-  "newsletter",
-  "package",
-  "pdf",
-  "photo",
-  "pin",
-  "place",
-  "podcast",
-  "portfolio",
-  "poster",
-  "product",
-  "productivity",
-  "profile",
-  "recipe",
-  "redditpost",
-  "repo",
-  "research_paper",
-  "restaurant",
-  "review",
-  "streaming",
-  "thread",
-  "tiktok",
-  "tutorial",
-  "tvshow",
-  "video",
-  "webapp",
-  "xpost",
-]);
+/** Single-word content types from CONTENT_TYPES — multi-word types excluded (can't be a single #token). */
+const KNOWN_TYPES: ReadonlySet<string> = new Set(CONTENT_TYPES.filter((t) => !t.includes(" ")));
 
 /**
  * Extract the body of a #token. Handles both bare hashes (`#red`) and the

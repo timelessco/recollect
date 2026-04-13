@@ -14,6 +14,61 @@ export interface OklabColor {
   l: number;
 }
 
+/**
+ * Closed list of content types for AI extraction and #hash search.
+ * Single source of truth — consumed by prompt-builder.ts and searchTokens.ts.
+ */
+export const CONTENT_TYPES = [
+  "anime",
+  "article",
+  "blog",
+  "book",
+  "course",
+  "deal",
+  "design",
+  "developer tools",
+  "documentation",
+  "ecommerce",
+  "event",
+  "game",
+  "image",
+  "infographic",
+  "instapost",
+  "job",
+  "linkedinpost",
+  "meme",
+  "movie",
+  "music_album",
+  "newsletter",
+  "news",
+  "package",
+  "pdf",
+  "photo",
+  "pin",
+  "place",
+  "podcast",
+  "portfolio",
+  "poster",
+  "product",
+  "productivity",
+  "profile",
+  "recipe",
+  "redditpost",
+  "repo",
+  "research_paper",
+  "restaurant",
+  "review",
+  "social media",
+  "streaming",
+  "thread",
+  "tiktok",
+  "tutorial",
+  "tvshow",
+  "video",
+  "webapp",
+  "xpost",
+] as const;
+
 export interface StructuredKeywords {
   colors?: OklabColor[];
   features?: Record<string, string | string[]>;
