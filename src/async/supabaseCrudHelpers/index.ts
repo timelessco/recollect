@@ -1,7 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import axios from "axios";
 import { isNil } from "lodash";
-import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 
 import type {
@@ -11,7 +10,6 @@ import type {
   DeleteBookmarkPayload,
   DeleteUserCategoryApiPayload,
   FetchSharedCategoriesData,
-  GetUserProfilePicPayload,
   MoveBookmarkToTrashApiPayload,
   ProfilesTableTypes,
   SingleListData,
@@ -23,15 +21,12 @@ import type {
   UploadFileApiResponse,
   UploadProfilePicApiResponse,
   UploadProfilePicPayload,
-  UserProfilePicTypes,
-  UserTagsData,
 } from "../../types/apiTypes";
 import type { GetMediaTypeOutputSchema } from "@/app/api/v2/bookmarks/get/get-media-type/schema";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { z } from "zod";
 
 import { api } from "@/lib/api-helpers/api-v2";
-import { handleClientError } from "@/utils/error-utils/client";
 
 import {
   ADD_BOOKMARK_MIN_DATA,
@@ -39,13 +34,9 @@ import {
   CLEAR_BOOKMARK_TRASH_API,
   DELETE_BOOKMARK_DATA_API,
   DELETE_USER_CATEGORIES_API,
-  FETCH_SHARED_CATEGORIES_DATA_API,
   FETCH_USER_CATEGORIES_API,
   FETCH_USER_PROFILE_API,
-  FETCH_USER_PROFILE_PIC_API,
-  FETCH_USER_TAGS_API,
   GEMINI_MODEL,
-  GET_API_KEY_API,
   MOVE_BOOKMARK_TO_TRASH_API,
   NEXT_API_URL,
   UPDATE_CATEGORY_ORDER_API,
@@ -57,21 +48,6 @@ import {
 } from "../../utils/constants";
 // eslint-disable-next-line import/no-cycle -- circular dep between helpers and supabaseCrudHelpers needs structural refactor
 import { parseUploadFileName } from "../../utils/helpers";
-
-interface GetApiKeyResponse {
-  data: { apiKey: string } | null;
-}
-
-export const getGeminiApiKey = async (): Promise<GetApiKeyResponse> => {
-  try {
-    const response = await axios.get<GetApiKeyResponse>(`${NEXT_API_URL}${GET_API_KEY_API}`);
-
-    return { data: response.data.data };
-  } catch (error) {
-    handleClientError(error, "Failed to get API key try again later ");
-    return { data: null };
-  }
-};
 
 export const addBookmarkMinData = async ({
   category_id,
@@ -152,21 +128,6 @@ export const clearBookmarksInTrash = async () => {
 };
 
 // user tags
-export const fetchUserTags = async (): Promise<{
-  data: null | UserTagsData[];
-  error: Error;
-}> => {
-  try {
-    const response = await axios.get<{ data: UserTagsData[]; error: Error }>(
-      `${NEXT_API_URL}${FETCH_USER_TAGS_API}`,
-    );
-    return response?.data;
-  } catch (error_) {
-    const error = error_ as Error;
-    return { data: null, error };
-  }
-};
-
 // user categories
 
 export const fetchCategoriesData = async (): Promise<{
@@ -217,23 +178,6 @@ export const updateCategoryOrder = async ({ order }: UpdateCategoryOrderApiPaylo
 };
 
 // share
-export const fetchSharedCategoriesData = async (): Promise<{
-  data: FetchSharedCategoriesData[] | null;
-  error: Error;
-}> => {
-  try {
-    const response = await axios.get<{
-      data: FetchSharedCategoriesData[] | null;
-      error: Error;
-    }>(`${NEXT_API_URL}${FETCH_SHARED_CATEGORIES_DATA_API}`);
-
-    return response?.data;
-  } catch (error) {
-    const catchError = error as Error;
-    return { data: null, error: catchError };
-  }
-};
-
 export const updateSharedCategoriesUserAccess = async ({
   id,
   updateData,
@@ -294,28 +238,6 @@ export const updateUserProfile = async ({ updateData }: UpdateUserProfileApiPayl
   } catch (error) {
     return error;
   }
-};
-
-export const getUserProfilePic = async ({
-  email,
-}: GetUserProfilePicPayload): Promise<{
-  data: null | UserProfilePicTypes[];
-  error: Error;
-}> => {
-  if (!isNil(email) && !isEmpty(email)) {
-    try {
-      const response = await axios.get<{
-        data: null | UserProfilePicTypes[];
-        error: Error;
-      }>(`${NEXT_API_URL}${FETCH_USER_PROFILE_PIC_API}?email=${email}`);
-
-      return response?.data;
-    } catch (error) {
-      return { data: null, error: error as Error };
-    }
-  }
-
-  return { data: null, error: "Email not present" as unknown as Error };
 };
 
 // file upload

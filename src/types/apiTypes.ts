@@ -98,11 +98,6 @@ export interface TempTag {
   name: string;
 }
 
-export interface FetchUserTagsDataResponse {
-  data: UserTagsData[];
-  error: null | PostgrestError;
-}
-
 export interface BookmarksTagData {
   bookmark_id: number;
   bookmark_tag_id: number;
@@ -321,10 +316,6 @@ export type DeleteUserApiPayload = Record<string, never>;
 
 export interface RemoveUserProfilePicPayload {
   id: string;
-}
-
-export interface GetUserProfilePicPayload {
-  email: string;
 }
 
 export interface DeleteSharedCategoriesUserApiPayload {

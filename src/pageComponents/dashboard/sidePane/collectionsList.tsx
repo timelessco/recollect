@@ -71,7 +71,7 @@ const CollectionsList = () => {
     session?.user?.id,
   ]);
 
-  const sharedCategoriesData = queryClient.getQueryData<{ data: FetchSharedCategoriesData[] }>([
+  const sharedCategoriesData = queryClient.getQueryData<FetchSharedCategoriesData[]>([
     SHARED_CATEGORIES_TABLE_NAME,
   ]);
 
@@ -93,9 +93,7 @@ const CollectionsList = () => {
         iconColor: item?.icon_color,
         iconValue: item?.icon,
         id: item?.id,
-        isCollab: !isEmpty(
-          find(sharedCategoriesData?.data, (cat) => cat?.category_id === item?.id),
-        ),
+        isCollab: !isEmpty(find(sharedCategoriesData, (cat) => cat?.category_id === item?.id)),
         isFavorite: favoriteCategories.includes(item?.id),
         isPublic: item?.is_public,
         name: item?.category_name,
