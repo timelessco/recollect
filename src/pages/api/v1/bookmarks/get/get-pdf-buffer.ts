@@ -1,3 +1,4 @@
+/** @deprecated Use v2 route at /api/v2/bookmarks/get/get-pdf-buffer instead. Kept for mobile/extension consumers. */
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { z } from "zod";

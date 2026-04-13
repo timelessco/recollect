@@ -71,9 +71,6 @@ export const PREVIEW_PATH = "/preview";
 
 export const PAGINATION_LIMIT = 25;
 
-// this api is to get the pdf buffer
-export const GET_PDF_BUFFER_API = "/v1/bookmarks/get/get-pdf-buffer";
-
 // auth api
 // no auth api yet
 // bookmark api
@@ -104,19 +101,15 @@ export const FETCH_USER_CATEGORIES_API = "/category/fetch-user-categories";
 export const CREATE_USER_CATEGORIES_API = "/category/create-user-category";
 export const DELETE_USER_CATEGORIES_API = "/category/delete-user-category";
 export const UPDATE_USER_CATEGORIES_API = "/category/update-user-category";
-export const UPDATE_CATEGORY_ORDER_API = "/category/update-category-order";
 export const SET_BOOKMARK_CATEGORIES_API = "/category/set-bookmark-categories";
 export const ADD_CATEGORY_TO_BOOKMARK_API = "/category/add-category-to-bookmark";
 export const ADD_CATEGORY_TO_BOOKMARKS_API = "/category/add-category-to-bookmarks";
 export const REMOVE_CATEGORY_FROM_BOOKMARK_API = "/category/remove-category-from-bookmark";
-// share api
-export const FETCH_PUBLIC_CATEGORY_BOOKMARKS_API = "/fetch-public-category-bookmarks";
 // collab share api
 export const UPDATE_SHARED_CATEGORY_USER_ROLE_API = "/share/update-shared-category-user-role";
 export const SEND_EMAIL = "/share/send-email";
 // profiles api
 export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
-export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";
 export const TOGGLE_PREFERRED_OG_DOMAIN_API = "/profiles/toggle-preferred-og-domain";
 export const TOGGLE_FAVORITE_CATEGORY_API = "/profiles/toggle-favorite-category";
 
@@ -138,6 +131,11 @@ export const V2_FETCH_BOOKMARKS_COUNT_API = "v2/bookmark/fetch-bookmarks-count";
 export const V2_FETCH_BOOKMARKS_VIEW_API = "v2/bookmark/fetch-bookmarks-view";
 export const V2_GET_MEDIA_TYPE_API = "v2/bookmarks/get/get-media-type";
 export const V2_MARK_ONBOARDED_API = "v2/profiles/mark-onboarded";
+export const V2_UPDATE_CATEGORY_ORDER_API = "v2/category/update-category-order";
+export const V2_UPDATE_USER_PROFILE_API = "v2/profiles/update-user-profile";
+export const V2_UPLOAD_FILE_REMAINING_DATA_API = "v2/file/upload-file-remaining-data";
+export const V2_GET_PDF_BUFFER_API = "v2/bookmarks/get/get-pdf-buffer";
+export const V2_FETCH_PUBLIC_CATEGORY_BOOKMARKS_API = "v2/fetch-public-category-bookmarks";
 export const V2_SAVE_API_KEY_API = "v2/api-key";
 export const V2_DELETE_API_KEY_API = "v2/delete-api-key";
 export const V2_DELETE_USER_API = "v2/profiles/delete-user";

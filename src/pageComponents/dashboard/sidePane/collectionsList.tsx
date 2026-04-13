@@ -13,7 +13,7 @@ import type {
 } from "../../../types/apiTypes";
 import type { CollectionItemTypes } from "./singleListItemComponent";
 
-import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
+import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/use-update-category-order-optimistic-mutation";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";

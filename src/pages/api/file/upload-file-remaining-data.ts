@@ -1,3 +1,4 @@
+/** @deprecated Use v2 route at /api/v2/file/upload-file-remaining-data instead. Kept for mobile/extension consumers. */
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import type { NextApiResponse } from "next";

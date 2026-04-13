@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 
-import { isNil, isNull } from "lodash";
+import { isNull } from "lodash";
 
 import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
 
@@ -12,8 +12,8 @@ import { cn } from "@/utils/tailwind-merge";
 import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
 import useDeleteUserMutation from "../../async/mutationHooks/user/use-delete-user-mutation";
 import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/use-remove-user-profile-pic-mutation";
+import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
 import useUpdateUsernameMutation from "../../async/mutationHooks/user/use-update-username-mutation";
-import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
@@ -87,15 +87,10 @@ const Settings = ({ onNavigate }: SettingsProps) => {
     }
 
     try {
-      const response = await mutationApiCall(
-        updateUserProfileOptimisticMutation.mutateAsync({
-          updateData: { display_name: data?.displayname },
-        }),
-      );
-
-      if (!isNil(response?.data)) {
-        successToast("Display name has been updated");
-      }
+      await updateUserProfileOptimisticMutation.mutateAsync({
+        updateData: { display_name: data?.displayname },
+      });
+      successToast("Display name has been updated");
     } catch (error) {
       console.error(error);
       errorToast("Something went wrong");
