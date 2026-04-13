@@ -19,7 +19,7 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 
 | #   | Status | Old Path                                    | v2 Path                                        | Repo | Constant                     | Caller                                                                |
 | --- | ------ | ------------------------------------------- | ---------------------------------------------- | ---- | ---------------------------- | --------------------------------------------------------------------- |
-| 1   |        | `/api/bookmark/add-bookmark-min-data`       | `/api/v2/bookmark/add-bookmark-min-data`       | web  | `ADD_BOOKMARK_MIN_DATA`      | supabaseCrudHelpers → useAddBookmarkMinDataOptimisticMutation         |
+| 1   | x      | `/api/bookmark/add-bookmark-min-data`       | `/api/v2/bookmark/add-bookmark-min-data`       | web  | `ADD_BOOKMARK_MIN_DATA`      | supabaseCrudHelpers → useAddBookmarkMinDataOptimisticMutation         |
 | 2   |        | `/api/bookmark/add-remaining-bookmark-data` | `/api/v2/bookmark/add-remaining-bookmark-data` | s2s  | `ADD_REMAINING_BOOKMARK_API` | Pages Router handler only (add-bookmark-min-data, add-url-screenshot) |
 | 3   | x      | `/api/bookmark/add-url-screenshot`          | `/api/v2/bookmark/add-url-screenshot`          | web  | `ADD_URL_SCREENSHOT_API`     | supabaseCrudHelpers → useAddBookmarkScreenshotMutation                |
 | 4   |        | `/api/bookmark/fetch-bookmarks-count`       | `/api/v2/bookmark/fetch-bookmarks-count`       | web  | `FETCH_BOOKMARKS_COUNT`      | supabaseCrudHelpers → useFetchBookmarksCount                          |
@@ -67,7 +67,7 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 | #   | Status | Old Path                               | v2 Path                                   | Repo | Constant                     | Caller                                                                                           |
 | --- | ------ | -------------------------------------- | ----------------------------------------- | ---- | ---------------------------- | ------------------------------------------------------------------------------------------------ |
 | 24  | x      | `/api/profiles/delete-user`            | `/api/v2/profiles/delete-user`            | web  | `DELETE_USER_API`            | supabaseCrudHelpers → useDeleteUserMutation                                                      |
-| 25  |        | `/api/profiles/fetch-user-profile`     | `/api/v2/profiles/fetch-user-profile`     | web  | `FETCH_USER_PROFILE_API`     | supabaseCrudHelpers → useFetchUserProfile                                                        |
+| 25  | x      | `/api/profiles/fetch-user-profile`     | `/api/v2/profiles/fetch-user-profile`     | web  | `FETCH_USER_PROFILE_API`     | supabaseCrudHelpers → useFetchUserProfile                                                        |
 | 26  | x      | `/api/profiles/fetch-user-profile-pic` | `/api/v2/profiles/fetch-user-profile-pic` | web  | `FETCH_USER_PROFILE_PIC_API` | supabaseCrudHelpers → useGetUserProfilePic                                                       |
 | 27  | x      | `/api/profiles/remove-profile-pic`     | `/api/v2/profiles/remove-profile-pic`     | web  | `REMOVE_PROFILE_PIC_API`     | supabaseCrudHelpers → useRemoveUserProfilePicMutation                                            |
 | 28  | x      | `/api/profiles/update-user-profile`    | `/api/v2/profiles/update-user-profile`    | web  | `UPDATE_USER_PROFILE_API`    | supabaseCrudHelpers → useUpdateUserProfileOptimisticMutation, use-update-favorite-order-mutation |
@@ -77,8 +77,8 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 
 | #   | Status | Old Path                               | v2 Path                                   | Repo | Constant                         | Caller                                                |
 | --- | ------ | -------------------------------------- | ----------------------------------------- | ---- | -------------------------------- | ----------------------------------------------------- |
-| 30  |        | `/api/settings/upload-profile-pic`     | `/api/v2/settings/upload-profile-pic`     | web  | `UPLOAD_PROFILE_PIC_API`         | supabaseCrudHelpers → useUploadProfilePicMutation     |
-| 31  |        | `/api/file/upload-file`                | `/api/v2/file/upload-file`                | web  | `UPLOAD_FILE_API`                | supabaseCrudHelpers → useFileUploadOptimisticMutation |
+| 30  | x      | `/api/settings/upload-profile-pic`     | `/api/v2/settings/upload-profile-pic`     | web  | `UPLOAD_PROFILE_PIC_API`         | supabaseCrudHelpers → useUploadProfilePicMutation     |
+| 31  | x      | `/api/file/upload-file`                | `/api/v2/file/upload-file`                | web  | `UPLOAD_FILE_API`                | supabaseCrudHelpers → useFileUploadOptimisticMutation |
 | 32  | x      | `/api/file/upload-file-remaining-data` | `/api/v2/file/upload-file-remaining-data` | web  | `UPLOAD_FILE_REMAINING_DATA_API` | file-upload.ts → useFileUploadOptimisticMutation      |
 
 ### API Keys
@@ -168,9 +168,9 @@ Callers need client change only (postApi/axios → ky), NO URL change.
 
 | Category                                | Total  | Web Repo | External | Done   |
 | --------------------------------------- | ------ | -------- | -------- | ------ |
-| Pages Router → v2 (URL + client change) | 41     | 30       | 11       | 25     |
+| Pages Router → v2 (URL + client change) | 41     | 30       | 11       | 29     |
 | App Router non-v2 (client change only)  | 21     | 19       | 2        | 0      |
-| **Total**                               | **62** | **49**   | **13**   | **25** |
+| **Total**                               | **62** | **49**   | **13**   | **29** |
 
 ---
 

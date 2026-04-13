@@ -3,7 +3,6 @@ import { useCallback } from "react";
 
 import find from "lodash/find";
 import isNil from "lodash/isNil";
-import isNull from "lodash/isNull";
 
 import type { BookmarkViewDataTypes, ProfilesBookmarksView } from "../types/apiTypes";
 import type {
@@ -17,7 +16,7 @@ import useUpdateSharedCategoriesOptimisticMutation from "../async/mutationHooks/
 import useUpdateUserProfileOptimisticMutation from "../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
 import useFetchCategories from "../async/queryHooks/category/use-fetch-categories";
 import useFetchSharedCategories from "../async/queryHooks/share/use-fetch-shared-categories";
-import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";
+import useFetchUserProfile from "../async/queryHooks/user/use-fetch-user-profile";
 import { useLoadersStore, useSupabaseSession } from "../store/componentStore";
 import { getPageViewData, getPageViewKey } from "../utils/bookmarksViewKeyed";
 import { EVERYTHING_URL } from "../utils/constants";
@@ -132,8 +131,8 @@ export function useBookmarksViewUpdate() {
             }
           }
         }
-      } else if (!isNull(userProfileData?.data) && !isNil(userProfileData)) {
-        const raw = userProfileData.data[0]?.bookmarks_view;
+      } else if (!isNil(userProfileData)) {
+        const raw = userProfileData[0]?.bookmarks_view;
         const pageKey = getPageViewKey(categorySlug);
         const defaultPageView: BookmarkViewDataTypes = {
           bookmarksView: "moodboard" satisfies BookmarksViewTypes,

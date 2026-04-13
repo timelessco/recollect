@@ -8,11 +8,6 @@ import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import { NEXT_API_URL, TOGGLE_PREFERRED_OG_DOMAIN_API, USER_PROFILE } from "@/utils/constants";
 import { toggleDomainInArray } from "@/utils/domain";
 
-interface UserProfileCache {
-  data: null | ProfilesTableTypes[];
-  error?: Error;
-}
-
 interface TogglePreferredOgDomainInput {
   domain: string;
 }
@@ -26,7 +21,7 @@ export function useTogglePreferredOgDomainOptimisticMutation() {
     Error,
     TogglePreferredOgDomainInput,
     typeof queryKey,
-    undefined | UserProfileCache
+    ProfilesTableTypes[] | undefined
   >({
     mutationFn: (payload) =>
       postApi<TogglePreferredOgDomainResponse>(`${NEXT_API_URL}${TOGGLE_PREFERRED_OG_DOMAIN_API}`, {
@@ -34,7 +29,7 @@ export function useTogglePreferredOgDomainOptimisticMutation() {
       }),
     queryKey,
     updater: (currentData, variables) => {
-      if (!currentData?.data) {
+      if (!currentData) {
         logCacheMiss("Optimistic Update", "User profile cache missing", {
           userId: session?.user?.id,
         });
@@ -43,21 +38,18 @@ export function useTogglePreferredOgDomainOptimisticMutation() {
 
       const { domain } = variables;
 
-      return {
-        ...currentData,
-        data: currentData.data.map((profile) => {
-          if (profile.id !== session?.user?.id) {
-            return profile;
-          }
+      return currentData.map((profile) => {
+        if (profile.id !== session?.user?.id) {
+          return profile;
+        }
 
-          const existingDomains = profile.preferred_og_domains ?? [];
+        const existingDomains = profile.preferred_og_domains ?? [];
 
-          return {
-            ...profile,
-            preferred_og_domains: toggleDomainInArray(existingDomains, domain),
-          };
-        }),
-      };
+        return {
+          ...profile,
+          preferred_og_domains: toggleDomainInArray(existingDomains, domain),
+        };
+      });
     },
   });
 

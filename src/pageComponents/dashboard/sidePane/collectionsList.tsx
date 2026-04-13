@@ -15,7 +15,7 @@ import type { CollectionItemTypes } from "./singleListItemComponent";
 
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/use-update-category-order-optimistic-mutation";
 import useFetchCategories from "../../../async/queryHooks/category/use-fetch-categories";
-import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
+import useFetchUserProfile from "../../../async/queryHooks/user/use-fetch-user-profile";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
 import { mutationApiCall } from "../../../utils/apiHelpers";
@@ -77,7 +77,7 @@ const CollectionsList = () => {
     session?.user?.id,
   ]);
 
-  const favoriteCategories = userProfileData?.data?.[0]?.favorite_categories ?? [];
+  const favoriteCategories = userProfileData?.[0]?.favorite_categories ?? [];
 
   const collectionsList = session
     ? categoryData?.map((item) => ({
@@ -98,8 +98,8 @@ const CollectionsList = () => {
     : [];
   const sortedList = () => {
     const array: CollectionItemTypes[] = [];
-    if (!isEmpty(userProfileData?.data)) {
-      const apiCategoryOrder = userProfileData?.data?.[0].category_order;
+    if (!isEmpty(userProfileData)) {
+      const apiCategoryOrder = userProfileData?.[0]?.category_order;
 
       if (!isNull(apiCategoryOrder)) {
         if (apiCategoryOrder) {
@@ -164,11 +164,11 @@ const CollectionsList = () => {
   const favoriteCollections = sortedFavorites();
 
   const onReorder = (event: DroppableCollectionReorderEvent) => {
-    const apiOrder = userProfileData?.data?.[0].category_order;
+    const apiOrder = userProfileData?.[0]?.category_order;
 
     const listOrder = isNull(apiOrder)
       ? collectionsList?.map((item) => item?.id)
-      : userProfileData?.data?.[0].category_order;
+      : userProfileData?.[0]?.category_order;
 
     const targetKey = Number.parseInt(event?.target?.key as string, 10);
     const sourceKey = Number.parseInt(event?.keys?.values().next().value as string, 10);

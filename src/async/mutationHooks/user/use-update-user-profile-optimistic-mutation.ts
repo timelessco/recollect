@@ -31,64 +31,56 @@ export default function useUpdateUserProfileOptimisticMutation() {
       return response;
     },
     onMutate: async (data) => {
-      await queryClient.cancelQueries({
-        queryKey: [USER_PROFILE, session?.user?.id],
-      });
+      const queryKey = [USER_PROFILE, session?.user?.id] as const;
+      await queryClient.cancelQueries({ queryKey });
 
-      const previousData = queryClient.getQueryData([USER_PROFILE, session?.user?.id]);
-
+      // Snapshot the previous value
+      const previousData = queryClient.getQueryData<ProfilesTableTypes[]>(queryKey);
+      // Optimistically update to the new value
       if (data?.updateData?.bookmarks_view !== undefined) {
-        queryClient.setQueryData(
-          [USER_PROFILE, session?.user?.id],
-          (old: { data: ProfilesTableTypes[] } | undefined) => {
-            if (!old?.data) {
-              return old;
-            }
+        queryClient.setQueryData<ProfilesTableTypes[]>(queryKey, (old) => {
+          if (!old) {
+            return old;
+          }
 
-            return {
-              ...old,
-              data: old.data.map((item) => ({
-                ...item,
-                ...(item.bookmarks_view !== data.updateData.bookmarks_view && {
-                  bookmarks_view: data.updateData.bookmarks_view,
-                }),
-              })),
-            };
-          },
-        );
+          return old.map((item) => ({
+            ...item,
+            ...(item.bookmarks_view !== data.updateData.bookmarks_view && {
+              bookmarks_view: data.updateData.bookmarks_view,
+            }),
+          }));
+        });
       }
 
       if (data?.updateData?.ai_features_toggle !== undefined) {
-        queryClient.setQueryData(
-          [USER_PROFILE, session?.user?.id],
-          (old: { data: ProfilesTableTypes[] } | undefined) => {
-            if (!old?.data) {
-              return old;
-            }
+        queryClient.setQueryData<ProfilesTableTypes[]>(queryKey, (old) => {
+          if (!old) {
+            return old;
+          }
 
-            return {
-              ...old,
-              data: old.data.map((item) => ({
-                ...item,
-                ai_features_toggle: {
-                  ...item.ai_features_toggle,
-                  ...data.updateData.ai_features_toggle,
-                },
-              })),
-            };
-          },
-        );
+          return old.map((item) => ({
+            ...item,
+            ai_features_toggle: {
+              ...item.ai_features_toggle,
+              ...data.updateData.ai_features_toggle,
+            },
+          }));
+        });
       }
 
-      return { previousData };
+      return { previousData, queryKey };
     },
+    // Use queryKey captured in onMutate so rollback/invalidation target the same
+    // cache entry even if session changes mid-flight.
     onError: (_error, _variables, context) => {
-      queryClient.setQueryData([USER_PROFILE, session?.user?.id], context?.previousData);
+      if (context?.queryKey) {
+        queryClient.setQueryData(context.queryKey, context.previousData);
+      }
     },
-    onSettled: () => {
-      void queryClient.invalidateQueries({
-        queryKey: [USER_PROFILE, session?.user?.id],
-      });
+    onSettled: (_data, _error, _variables, context) => {
+      if (context?.queryKey) {
+        void queryClient.invalidateQueries({ queryKey: context.queryKey });
+      }
     },
   });
   return { updateUserProfileOptimisticMutation };

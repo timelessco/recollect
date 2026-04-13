@@ -32,31 +32,32 @@ export default function useUpdateCategoryOrderOptimisticMutation() {
         queryKey: [CATEGORIES_KEY, session?.user?.id],
       });
 
-      const previousData = queryClient.getQueryData([USER_PROFILE, session?.user?.id]);
+      // Snapshot the previous value
+      const previousData = queryClient.getQueryData<ProfilesTableTypes[]>([
+        USER_PROFILE,
+        session?.user?.id,
+      ]);
 
       const newOrder = data?.order;
 
-      queryClient.setQueryData(
-        [USER_PROFILE, session?.user?.id],
-        (old: { data: ProfilesTableTypes[] } | undefined) =>
-          ({
-            ...old,
+      // Optimistically update to the new value
+      queryClient.setQueryData<ProfilesTableTypes[]>([USER_PROFILE, session?.user?.id], (old) =>
+        old?.map((item) => {
+          if (item.id === session?.user?.id) {
+            return {
+              ...item,
+              category_order: newOrder ?? [],
+            };
+          }
 
-            data: old?.data?.map((item) => {
-              if (item.id === session?.user?.id) {
-                return {
-                  ...item,
-                  category_order: newOrder,
-                };
-              }
-
-              return item;
-            }),
-          }) as { data: ProfilesTableTypes[] },
+          return item;
+        }),
       );
 
+      // Return a context object with the snapshotted value
       return { previousData };
     },
+    // If the mutation fails, use the context returned from onMutate to roll back
     onError: (_error, _variables, context) => {
       queryClient.setQueryData([USER_PROFILE, session?.user?.id], context?.previousData);
     },

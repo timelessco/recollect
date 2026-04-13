@@ -75,7 +75,6 @@ export const PAGINATION_LIMIT = 25;
 // no auth api yet
 // bookmark api
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
-export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
 
 export const FETCH_BOOKMARKS_DISCOVERABLE_API = "/bookmark/fetch-bookmarks-discoverable";
 export const FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API = "/bookmark/fetch-discoverable-by-id";
@@ -106,18 +105,11 @@ export const REMOVE_CATEGORY_FROM_BOOKMARK_API = "/category/remove-category-from
 // collab share api
 export const SEND_EMAIL = "/share/send-email";
 // profiles api
-export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
 export const TOGGLE_PREFERRED_OG_DOMAIN_API = "/profiles/toggle-preferred-og-domain";
 export const TOGGLE_FAVORITE_CATEGORY_API = "/profiles/toggle-favorite-category";
 
-// settings profile api
-export const UPLOAD_PROFILE_PIC_API = "/settings/upload-profile-pic";
-
 // file upload api
-export const UPLOAD_FILE_API = "/file/upload-file";
 export const UPLOAD_FILE_REMAINING_DATA_API = "/file/upload-file-remaining-data";
-
-// user settings and keys
 
 // v2 API path constants for ky `api` instance (no leading slash — prefix handles it)
 export const V2_FETCH_BOOKMARKS_DATA_API = "v2/bookmark/fetch-bookmarks-data";
@@ -144,6 +136,10 @@ export const V2_FETCH_USER_CATEGORIES_API = "v2/category/fetch-user-categories";
 export const V2_UPDATE_SHARED_CATEGORY_USER_ROLE_API = "v2/share/update-shared-category-user-role";
 export const V2_ADD_URL_SCREENSHOT_API = "v2/bookmark/add-url-screenshot";
 export const V2_GET_GEMINI_API_KEY_API = "v2/get-gemini-api-key";
+export const V2_ADD_BOOKMARK_MIN_DATA_API = "v2/bookmark/add-bookmark-min-data";
+export const V2_UPLOAD_FILE_API = "v2/file/upload-file";
+export const V2_UPLOAD_PROFILE_PIC_API = "v2/settings/upload-profile-pic";
+export const V2_FETCH_USER_PROFILE_API = "v2/profiles/fetch-user-profile";
 export const V2_FETCH_USER_PROFILE_PIC_API = "v2/profiles/fetch-user-profile-pic";
 export const V2_FETCH_SHARED_CATEGORIES_DATA_API = "v2/share/fetch-shared-categories-data";
 export const V2_FETCH_USER_TAGS_API = "v2/tags/fetch-user-tags";

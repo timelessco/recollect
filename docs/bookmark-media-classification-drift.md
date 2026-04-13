@@ -1,15 +1,3 @@
----
-title: Bookmark media classification drift
-category: logic-errors
-date: 2026-03-21
-tags:
-  - bookmarks
-  - mime
-  - api
-  - uploads
-  - supabase
----
-
 ## Bookmark media classification drift
 
 ## Problem

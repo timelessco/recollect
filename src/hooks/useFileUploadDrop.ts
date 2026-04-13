@@ -2,7 +2,7 @@ import { useCallback } from "react";
 
 import type { FileType } from "../types/componentTypes";
 
-import useFileUploadOptimisticMutation from "../async/mutationHooks/files/useFileUploadOptimisticMutation";
+import useFileUploadOptimisticMutation from "../async/mutationHooks/files/use-file-upload-optimistic-mutation";
 import { fileUpload } from "../async/uploads/file-upload";
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
 

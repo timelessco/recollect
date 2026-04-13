@@ -7,6 +7,8 @@ import type {
   SingleListData,
 } from "../../../types/apiTypes";
 
+import { api } from "@/lib/api-helpers/api-v2";
+
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { recentlyAddedUrls } from "../../../pageComponents/dashboard/cardSection/animatedBookmarkImage";
@@ -15,6 +17,7 @@ import {
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
+  V2_ADD_BOOKMARK_MIN_DATA_API,
   DOCUMENTS_URL,
   IMAGES_URL,
   menuListItemName,
@@ -26,7 +29,7 @@ import {
 import { handlePdfThumbnailAndUpload } from "../../../utils/file-upload";
 import { checkIfUrlAnImage } from "../../../utils/helpers";
 import { errorToast, successToast } from "../../../utils/toastMessages";
-import { addBookmarkMinData, getMediaType } from "../../supabaseCrudHelpers";
+import { getMediaType } from "../../supabaseCrudHelpers";
 import useAddBookmarkScreenshotMutation from "./use-add-bookmark-screenshot-mutation";
 
 // adds bookmark min data
@@ -43,13 +46,34 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
   const { addLoadingBookmarkId, removeLoadingBookmarkId, setIsBookmarkAdding } = useLoadersStore();
 
   const addBookmarkMinDataOptimisticMutation = useMutation<
-    unknown,
-    { previousData: PaginatedBookmarks },
+    SingleListData[],
+    Error,
     AddBookmarkMinDataPayloadTypes,
-    { previousData: unknown; tempId: number }
+    { previousData: PaginatedBookmarks | undefined; tempId: number }
   >({
     mutationKey: ["add-bookmark-min-data"],
-    mutationFn: addBookmarkMinData,
+    mutationFn: ({ category_id, update_access, url }) => {
+      let finalUrl = url;
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        finalUrl = `https://${url}`;
+      }
+
+      // Type-view pages (/images, /links, /videos, /documents) and /uncategorized
+      // resolve to slug strings via useGetCurrentCategoryId. The v2 endpoint requires
+      // an integer, so coerce any non-number to 0 (Uncategorized) — matches the v1
+      // server-side normalization in pages/api/bookmark/add-bookmark-min-data.ts.
+      const normalizedCategoryId = typeof category_id === "number" ? category_id : 0;
+
+      return api
+        .post(V2_ADD_BOOKMARK_MIN_DATA_API, {
+          json: {
+            category_id: normalizedCategoryId,
+            update_access,
+            url: finalUrl,
+          },
+        })
+        .json<SingleListData[]>();
+    },
     // If the mutation fails, use the context returned from onMutate to roll back
     onMutate: async (data) => {
       setIsBookmarkAdding(true);
@@ -59,7 +83,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       });
 
       // Snapshot the previous value
-      const previousData = queryClient.getQueryData([
+      const previousData = queryClient.getQueryData<PaginatedBookmarks>([
         BOOKMARKS_KEY,
         session?.user?.id,
         CATEGORY_ID,
@@ -158,12 +182,11 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
         return;
       }
 
-      const response = apiResponse as { data: { data: SingleListData[] } };
-      if (!response?.data?.data) {
+      if (!apiResponse?.length) {
         return;
       }
 
-      const [data] = response.data.data;
+      const [data] = apiResponse;
       const url = data?.url;
 
       // Heavy processing (media check, PDF thumbnail, screenshot) runs as
@@ -217,10 +240,8 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       })();
     },
     onSuccess: (apiResponse, _variables, context) => {
-      const response = apiResponse as { data: { data: SingleListData[] }; status: number };
-
-      if (response?.data?.data?.[0]) {
-        const [serverBookmark] = response.data.data;
+      if (apiResponse?.[0]) {
+        const [serverBookmark] = apiResponse;
 
         // Re-add URL for animation continuity across key change (temp → real id).
         // The remounted component consumes this via recentlyAddedUrls.delete().
@@ -259,7 +280,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
           CATEGORY_ID === DOCUMENTS_URL ||
           CATEGORY_ID === TWEETS_URL ||
           CATEGORY_ID === IMAGES_URL) &&
-        response?.status === 200
+        apiResponse?.length
       ) {
         successToast(`This bookmark will be added to ${menuListItemName?.links}`);
       }
