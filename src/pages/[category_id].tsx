@@ -114,8 +114,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 					type,
 					meta_data,
 					sort_index,
-					make_discoverable
-				`,
+					make_discoverable,
+					user_id
+`,
         )
         .is("trash", null)
         .not("make_discoverable", "is", null)

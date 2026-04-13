@@ -90,7 +90,11 @@ export function EditAndDeleteIcons({
           "left-[15px]": isStandardView,
         })}
       >
-        <DiscoverSavePopover post={post} />
+        {isCreatedByUser ? (
+          <EditPopover post={post} userId={userId} />
+        ) : (
+          <DiscoverSavePopover post={post} />
+        )}
         <div className="ml-2">
           <a
             className="z-15 hidden rounded-lg bg-whites-700 p-[5px] text-blacks-800 backdrop-blur-xs outline-none group-hover:flex focus-visible:ring-2 focus-visible:ring-blue-500"

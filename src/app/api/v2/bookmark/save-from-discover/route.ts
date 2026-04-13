@@ -2,7 +2,7 @@ import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-hand
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
-import { BOOKMARK_CATEGORIES_TABLE_NAME, MAIN_TABLE_NAME } from "@/utils/constants";
+import { BOOKMARK_CATEGORIES_TABLE_NAME, bookmarkType, MAIN_TABLE_NAME } from "@/utils/constants";
 
 import { SaveFromDiscoverInputSchema, SaveFromDiscoverOutputSchema } from "./schema";
 
@@ -25,7 +25,7 @@ export const POST = createAxiomRouteHandler(
       const serviceClient = createServerServiceClient();
       const { data: sourceBookmark, error: fetchError } = await serviceClient
         .from(MAIN_TABLE_NAME)
-        .select("url, title, description, ogImage, meta_data, screenshot, type, user_id")
+        .select("url, title, description, ogImage, meta_data, screenshot")
         .eq("id", data.source_bookmark_id)
         .not("make_discoverable", "is", null)
         .single();
@@ -35,13 +35,6 @@ export const POST = createAxiomRouteHandler(
           cause: fetchError ?? undefined,
           message: "Source bookmark not found or not discoverable",
           operation: "fetch_source_bookmark",
-        });
-      }
-
-      if (sourceBookmark.user_id === userId) {
-        throw new RecollectApiError("conflict", {
-          message: "This bookmark is already in your library",
-          operation: "check_ownership",
         });
       }
 
@@ -55,7 +48,7 @@ export const POST = createAxiomRouteHandler(
             ogImage: sourceBookmark.ogImage,
             screenshot: sourceBookmark.screenshot,
             title: sourceBookmark.title,
-            type: sourceBookmark.type,
+            type: bookmarkType,
             url: sourceBookmark.url,
             user_id: userId,
           },
