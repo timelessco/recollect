@@ -11,10 +11,10 @@ import { useSupabaseSession } from "@/store/componentStore";
 import { cn } from "@/utils/tailwind-merge";
 
 import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
+import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
 import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
 import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/useRemoveUserProfilePicMutation";
 import useUpdateUsernameMutation from "../../async/mutationHooks/user/useUpdateUsernameMutation";
-import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
@@ -94,15 +94,10 @@ const Settings = ({ onNavigate }: SettingsProps) => {
     }
 
     try {
-      const response = await mutationApiCall(
-        updateUserProfileOptimisticMutation.mutateAsync({
-          updateData: { display_name: data?.displayname },
-        }),
-      );
-
-      if (!isNil(response?.data)) {
-        successToast("Display name has been updated");
-      }
+      await updateUserProfileOptimisticMutation.mutateAsync({
+        updateData: { display_name: data?.displayname },
+      });
+      successToast("Display name has been updated");
     } catch (error) {
       console.error(error);
       errorToast("Something went wrong");

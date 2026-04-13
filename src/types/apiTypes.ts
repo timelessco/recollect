@@ -364,17 +364,13 @@ export interface UploadProfilePicPayload {
   file: FileType;
 }
 
-type DataResponse = null | SingleListData[];
-type ErrorResponse = null | PostgrestError | string;
-
 export interface GetPublicCategoryBookmarksApiResponseType {
-  category_name: CategoriesData["category_name"] | null;
-  category_views: BookmarkViewDataTypes | null;
-  data: DataResponse;
-  error: ErrorResponse;
+  bookmarks: SingleListData[];
+  categoryName: CategoriesData["category_name"] | null;
+  categoryViews: BookmarkViewDataTypes | null;
   icon: CategoriesData["icon"] | null;
-  icon_color: CategoriesData["icon_color"] | null;
-  is_public: CategoriesData["is_public"] | null;
+  iconColor: CategoriesData["icon_color"] | null;
+  isPublic: CategoriesData["is_public"] | null;
 }
 
 // common types used in next js API

@@ -33,7 +33,7 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 | --- | ------ | -------------------------------------- | -------------------------------------- | ---- | -------------------------- | ------------------------------------------------------------- |
 | 8   | x      | `/api/v1/bookmarks/get/fetch-by-id`    | `/api/v2/bookmarks/get/fetch-by-id`    | web  | `FETCH_BOOKMARK_BY_ID_API` | supabaseCrudHelpers → useFetchBookmarkById                    |
 | 9   |        | `/api/v1/bookmarks/get/get-media-type` | `/api/v2/bookmarks/get/get-media-type` | web  | `GET_MEDIA_TYPE_API`       | supabaseCrudHelpers → useAddBookmarkMinDataOptimisticMutation |
-| 10  |        | `/api/v1/bookmarks/get/get-pdf-buffer` | `/api/v2/bookmarks/get/get-pdf-buffer` | web  | `GET_PDF_BUFFER_API`       | file-upload.ts → useFileUploadOptimisticMutation              |
+| 10  | x      | `/api/v1/bookmarks/get/get-pdf-buffer` | `/api/v2/bookmarks/get/get-pdf-buffer` | web  | `GET_PDF_BUFFER_API`       | file-upload.ts → useFileUploadOptimisticMutation              |
 | 11  |        | `/api/v1/bookmarks/insert`             | `/api/v2/bookmarks/insert`             | ext  | —                          | Chrome extension only                                         |
 | 13  |        | `/api/v1/screenshot`                   | `/api/v2/screenshot`                   | web  | `WORKER_SCREENSHOT_API`    | worker.ts (server-to-server, process-queue dispatch)          |
 | 14  |        | `/api/v1/ai-enrichment`                | `/api/v2/ai-enrichment`                | web  | `AI_ENRICHMENT_API`        | worker.ts (server-to-server, process-queue dispatch)          |
@@ -43,7 +43,7 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 | #   | Status | Old Path                              | v2 Path                                  | Repo | Constant                    | Caller                                                         |
 | --- | ------ | ------------------------------------- | ---------------------------------------- | ---- | --------------------------- | -------------------------------------------------------------- |
 | 15  |        | `/api/category/fetch-user-categories` | `/api/v2/category/fetch-user-categories` | web  | `FETCH_USER_CATEGORIES_API` | supabaseCrudHelpers → useFetchCategories                       |
-| 16  |        | `/api/category/update-category-order` | `/api/v2/category/update-category-order` | web  | `UPDATE_CATEGORY_ORDER_API` | supabaseCrudHelpers → useUpdateCategoryOrderOptimisticMutation |
+| 16  | x      | `/api/category/update-category-order` | `/api/v2/category/update-category-order` | web  | `UPDATE_CATEGORY_ORDER_API` | supabaseCrudHelpers → useUpdateCategoryOrderOptimisticMutation |
 
 ### Tags
 
@@ -55,7 +55,7 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 
 | #   | Status | Old Path                                      | v2 Path                                          | Repo | Constant                               | Caller                                                            |
 | --- | ------ | --------------------------------------------- | ------------------------------------------------ | ---- | -------------------------------------- | ----------------------------------------------------------------- |
-| 18  |        | `/api/fetch-public-category-bookmarks`        | `/api/v2/fetch-public-category-bookmarks`        | web  | `FETCH_PUBLIC_CATEGORY_BOOKMARKS_API`  | use-fetch-public-category-bookmarks + SSR public/[user_name]/[id] |
+| 18  | x      | `/api/fetch-public-category-bookmarks`        | `/api/v2/fetch-public-category-bookmarks`        | web  | `FETCH_PUBLIC_CATEGORY_BOOKMARKS_API`  | use-fetch-public-category-bookmarks + SSR public/[user_name]/[id] |
 | 19  |        | `/api/share/delete-shared-categories-user`    | `/api/v2/share/delete-shared-categories-user`    | web  | `DELETE_SHARED_CATEGORIES_USER_API`    | supabaseCrudHelpers → useDeleteSharedCategoriesUserMutation       |
 | 20  |        | `/api/share/fetch-shared-categories-data`     | `/api/v2/share/fetch-shared-categories-data`     | web  | `FETCH_SHARED_CATEGORIES_DATA_API`     | supabaseCrudHelpers → useFetchSharedCategories                    |
 | 21  |        | `/api/share/send-collaboration-email`         | `/api/v2/share/send-collaboration-email`         | web  | `SEND_COLLABORATION_EMAIL_API`         | supabaseCrudHelpers → useSendCollaborationEmailInviteMutation     |
@@ -70,7 +70,7 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 | 25  |        | `/api/profiles/fetch-user-profile`     | `/api/v2/profiles/fetch-user-profile`     | web  | `FETCH_USER_PROFILE_API`     | supabaseCrudHelpers → useFetchUserProfile                                                        |
 | 26  |        | `/api/profiles/fetch-user-profile-pic` | `/api/v2/profiles/fetch-user-profile-pic` | web  | `FETCH_USER_PROFILE_PIC_API` | supabaseCrudHelpers → useGetUserProfilePic                                                       |
 | 27  |        | `/api/profiles/remove-profile-pic`     | `/api/v2/profiles/remove-profile-pic`     | web  | `REMOVE_PROFILE_PIC_API`     | supabaseCrudHelpers → useRemoveUserProfilePicMutation                                            |
-| 28  |        | `/api/profiles/update-user-profile`    | `/api/v2/profiles/update-user-profile`    | web  | `UPDATE_USER_PROFILE_API`    | supabaseCrudHelpers → useUpdateUserProfileOptimisticMutation, use-update-favorite-order-mutation |
+| 28  | x      | `/api/profiles/update-user-profile`    | `/api/v2/profiles/update-user-profile`    | web  | `UPDATE_USER_PROFILE_API`    | supabaseCrudHelpers → useUpdateUserProfileOptimisticMutation, use-update-favorite-order-mutation |
 | 29  |        | `/api/profiles/update-username`        | `/api/v2/profiles/update-username`        | web  | `UPDATE_USERNAME_API`        | supabaseCrudHelpers → useUpdateUsernameMutation                                                  |
 
 ### Settings / Files
@@ -79,7 +79,7 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 | --- | ------ | -------------------------------------- | ----------------------------------------- | ---- | -------------------------------- | ----------------------------------------------------- |
 | 30  |        | `/api/settings/upload-profile-pic`     | `/api/v2/settings/upload-profile-pic`     | web  | `UPLOAD_PROFILE_PIC_API`         | supabaseCrudHelpers → useUploadProfilePicMutation     |
 | 31  |        | `/api/file/upload-file`                | `/api/v2/file/upload-file`                | web  | `UPLOAD_FILE_API`                | supabaseCrudHelpers → useFileUploadOptimisticMutation |
-| 32  |        | `/api/file/upload-file-remaining-data` | `/api/v2/file/upload-file-remaining-data` | web  | `UPLOAD_FILE_REMAINING_DATA_API` | file-upload.ts → useFileUploadOptimisticMutation      |
+| 32  | x      | `/api/file/upload-file-remaining-data` | `/api/v2/file/upload-file-remaining-data` | web  | `UPLOAD_FILE_REMAINING_DATA_API` | file-upload.ts → useFileUploadOptimisticMutation      |
 
 ### API Keys
 

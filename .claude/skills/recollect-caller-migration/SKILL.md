@@ -128,6 +128,47 @@ const { hasApiKey } = data;
 - **Utility function param cascades:** Functions like `optionsMenuListArray` that accept cache data as a parameter need their param type updated when the cache shape changes (e.g., `{ data: BookmarksCountTypes } | undefined` → `BookmarksCountTypes | undefined`)
 - **`prefer-destructuring` lint rule:** When assigning an array element to a `let` variable, oxlint enforces destructuring. Use `[currentBookmark] = bookmark` instead of `currentBookmark = bookmark[0]`. For `const`, use `const [bookmarkData] = bookmark` instead of `const bookmarkData = bookmark[0]`
 
+### Optimistic Mutation Safety (P6)
+
+When migrating hooks that use `useMutation` with `onMutate`/`onError` (optimistic patterns), audit `onError` immediately — pre-existing bugs become runtime failures after the ky switch.
+
+**Why this matters:** Axios crud helpers catch errors and return them. `onError` never fires because `mutationFn` always resolves. With ky, non-2xx throws → `mutateAsync` rejects → `onError` fires for the first time. If the `onError` signature is wrong, cache rollback breaks silently.
+
+**The bug pattern:**
+
+```typescript
+// BROKEN — first arg is error, not context
+onError: (context: { previousData: ProfilesTableTypes }) => {
+  queryClient.setQueryData([USER_PROFILE, userId], context?.previousData);
+  // context is actually the Error object — previousData is undefined
+  // Cache is set to undefined instead of rolled back
+},
+```
+
+```typescript
+// CORRECT — context is the third argument
+onError: (_error, _variables, context) => {
+  queryClient.setQueryData([USER_PROFILE, userId], context?.previousData);
+},
+```
+
+**Audit checklist for every optimistic mutation hook:**
+
+1. Find `onError` in the hook
+2. Check if first argument is typed as the rollback context (e.g., `(context: { previousData: ... })`)
+3. If yes, fix to `(_error, _variables, context)` — React Query's `onError` signature is `(error, variables, context)`
+4. Verify the `context` type matches what `onMutate` returns (e.g., `{ previousData: unknown }`)
+
+**Payload interface typing:**
+
+When defining local `UpdatePayload` interfaces for mutation hooks, use concrete types from `apiTypes.ts`:
+
+- `bookmarks_view` → `ProfilesBookmarksView` (not `unknown` — `unknown` can't be spread in optimistic updates)
+- `ai_features_toggle` → `AiFeaturesToggle` (not `unknown` — same spread issue)
+- `category_order` → `number[] | null`
+
+Using `unknown` for fields that get spread in `onMutate` causes TS2698 "Spread types may only be created from object types."
+
 ### Layer 4: Dead Code Removal
 
 After verifying layers 1-3 work (the hook fires the v2 request and the UI renders correctly), remove the now-unused crud helper and its types.

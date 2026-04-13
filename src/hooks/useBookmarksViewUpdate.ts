@@ -14,7 +14,7 @@ import type {
 
 import { useUpdateCategoryOptimisticMutation } from "../async/mutationHooks/category/use-update-category-optimistic-mutation";
 import useUpdateSharedCategoriesOptimisticMutation from "../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
-import useUpdateUserProfileOptimisticMutation from "../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
+import useUpdateUserProfileOptimisticMutation from "../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
 import useFetchCategories from "../async/queryHooks/category/useFetchCategories";
 import useFetchSharedCategories from "../async/queryHooks/share/useFetchSharedCategories";
 import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";

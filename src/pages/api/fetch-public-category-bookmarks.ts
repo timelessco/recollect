@@ -1,3 +1,4 @@
+/** @deprecated Use v2 route at /api/v2/fetch-public-category-bookmarks instead. Kept for mobile/extension consumers. */
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import type { NextApiRequest, NextApiResponse } from "next";
@@ -8,8 +9,8 @@ import omit from "lodash/omit";
 import type {
   BookmarkViewDataTypes,
   CategoriesData,
-  GetPublicCategoryBookmarksApiResponseType,
   ProfilesTableTypes,
+  SingleListData,
 } from "../../types/apiTypes";
 import type { PostgrestError } from "@supabase/supabase-js";
 
@@ -21,13 +22,24 @@ import {
 } from "../../utils/constants";
 import { createServiceClient } from "../../utils/supabaseClient";
 
+/** v1 response shape — kept for mobile/extension consumers. */
+interface V1PublicCategoryBookmarksResponse {
+  category_name: CategoriesData["category_name"] | null;
+  category_views: BookmarkViewDataTypes | null;
+  data: null | SingleListData[];
+  error: null | PostgrestError | string;
+  icon: CategoriesData["icon"] | null;
+  icon_color: CategoriesData["icon_color"] | null;
+  is_public: CategoriesData["is_public"] | null;
+}
+
 /**
  * gets bookmarks in a public category with pagination support
  */
 
 export default async function handler(
   request: NextApiRequest,
-  response: NextApiResponse<GetPublicCategoryBookmarksApiResponseType>,
+  response: NextApiResponse<V1PublicCategoryBookmarksResponse>,
 ) {
   const supabase = createServiceClient();
 
@@ -150,7 +162,7 @@ export default async function handler(
     // Remove junction table field from response (not needed in frontend)
     const data = (rawData as Record<string, unknown>[])?.map((item) =>
       omit(item, [BOOKMARK_CATEGORIES_TABLE_NAME]),
-    ) as unknown as GetPublicCategoryBookmarksApiResponseType["data"];
+    ) as unknown as V1PublicCategoryBookmarksResponse["data"];
 
     if (!isNull(error) || !isNull(categoryError)) {
       response.status(500).json({

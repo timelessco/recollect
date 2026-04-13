@@ -17,10 +17,8 @@ import type {
   RemoveUserProfilePicPayload,
   SingleListData,
   SupabaseSessionType,
-  UpdateCategoryOrderApiPayload,
   UpdateSharedCategoriesUserAccessApiPayload,
   UpdateUsernameApiPayload,
-  UpdateUserProfileApiPayload,
   UploadFileApiPayload,
   UploadFileApiResponse,
   UploadProfilePicApiResponse,
@@ -55,9 +53,7 @@ import {
   REMOVE_PROFILE_PIC_API,
   SAVE_API_KEY_API,
   SEND_COLLABORATION_EMAIL_API,
-  UPDATE_CATEGORY_ORDER_API,
   UPDATE_SHARED_CATEGORY_USER_ROLE_API,
-  UPDATE_USER_PROFILE_API,
   UPDATE_USERNAME_API,
   UPLOAD_FILE_API,
   UPLOAD_PROFILE_PIC_API,
@@ -245,18 +241,6 @@ export const deleteUserCategory = async ({
   }
 };
 
-export const updateCategoryOrder = async ({ order }: UpdateCategoryOrderApiPayload) => {
-  try {
-    const response = await axios.post(`${NEXT_API_URL}${UPDATE_CATEGORY_ORDER_API}`, {
-      category_order: order,
-    });
-
-    return response;
-  } catch (error) {
-    return error;
-  }
-};
-
 // share
 export const sendCollaborationEmailInvite = async ({
   category_id,
@@ -355,19 +339,6 @@ export const fetchUserProfiles = async ({
   } catch (error_) {
     const error = error_ as Error;
     return { data: null, error };
-  }
-};
-
-export const updateUserProfile = async ({ updateData }: UpdateUserProfileApiPayload) => {
-  try {
-    const response = await axios.post<{
-      data: null | ProfilesTableTypes[];
-      error: Error;
-    }>(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, { updateData });
-
-    return response?.data;
-  } catch (error) {
-    return error;
   }
 };
 

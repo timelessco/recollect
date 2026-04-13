@@ -150,6 +150,11 @@ export const V2_FETCH_BOOKMARK_BY_ID_API = "v2/bookmarks/get/fetch-by-id";
 export const V2_FETCH_BOOKMARKS_COUNT_API = "v2/bookmark/fetch-bookmarks-count";
 export const V2_FETCH_BOOKMARKS_VIEW_API = "v2/bookmark/fetch-bookmarks-view";
 export const V2_MARK_ONBOARDED_API = "v2/profiles/mark-onboarded";
+export const V2_UPDATE_CATEGORY_ORDER_API = "v2/category/update-category-order";
+export const V2_UPDATE_USER_PROFILE_API = "v2/profiles/update-user-profile";
+export const V2_UPLOAD_FILE_REMAINING_DATA_API = "v2/file/upload-file-remaining-data";
+export const V2_GET_PDF_BUFFER_API = "v2/bookmarks/get/get-pdf-buffer";
+export const V2_FETCH_PUBLIC_CATEGORY_BOOKMARKS_API = "v2/fetch-public-category-bookmarks";
 
 export const DELETE_API_KEY_API = "/v1/delete-api-key";
 

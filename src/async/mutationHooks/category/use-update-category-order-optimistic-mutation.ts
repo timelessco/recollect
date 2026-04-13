@@ -1,20 +1,30 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { CategoriesData, ProfilesTableTypes } from "../../../types/apiTypes";
+import type { UpdateCategoryOrderOutputSchema } from "@/app/api/v2/category/update-category-order/schema";
+import type { ProfilesTableTypes } from "@/types/apiTypes";
+import type { z } from "zod";
 
-import { useSupabaseSession } from "../../../store/componentStore";
-import { CATEGORIES_KEY, USER_PROFILE } from "../../../utils/constants";
-import { updateCategoryOrder } from "../../supabaseCrudHelpers";
+import { api } from "@/lib/api-helpers/api-v2";
+import { useSupabaseSession } from "@/store/componentStore";
+import { CATEGORIES_KEY, USER_PROFILE, V2_UPDATE_CATEGORY_ORDER_API } from "@/utils/constants";
 
-// update collection order optimistically
+type UpdateCategoryOrderResponse = z.infer<typeof UpdateCategoryOrderOutputSchema>;
+
 export default function useUpdateCategoryOrderOptimisticMutation() {
   const session = useSupabaseSession((state) => state.session);
   const queryClient = useQueryClient();
 
   const updateCategoryOrderMutation = useMutation({
-    mutationFn: updateCategoryOrder,
+    mutationFn: async (data: { order: number[] | null }) => {
+      const response = await api
+        .patch(V2_UPDATE_CATEGORY_ORDER_API, {
+          json: { category_order: data.order },
+        })
+        .json<UpdateCategoryOrderResponse>();
+
+      return response;
+    },
     onMutate: async (data) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
         queryKey: [USER_PROFILE, session?.user?.id],
       });
@@ -22,12 +32,10 @@ export default function useUpdateCategoryOrderOptimisticMutation() {
         queryKey: [CATEGORIES_KEY, session?.user?.id],
       });
 
-      // Snapshot the previous value
       const previousData = queryClient.getQueryData([USER_PROFILE, session?.user?.id]);
 
       const newOrder = data?.order;
 
-      // Optimistically update to the new value
       queryClient.setQueryData(
         [USER_PROFILE, session?.user?.id],
         (old: { data: ProfilesTableTypes[] } | undefined) =>
@@ -47,11 +55,9 @@ export default function useUpdateCategoryOrderOptimisticMutation() {
           }) as { data: ProfilesTableTypes[] },
       );
 
-      // Return a context object with the snapshotted value
       return { previousData };
     },
-    // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (context: { previousData: CategoriesData }) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData([USER_PROFILE, session?.user?.id], context?.previousData);
     },
   });
