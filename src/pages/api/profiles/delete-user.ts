@@ -1,6 +1,9 @@
+/**
+ * @deprecated Use the v2 App Router endpoint instead: /api/v2/profiles/delete-user
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
 // oxlint-disable-next-line no-warning-comments -- pre-existing: needs priority fix for user deletion
 // TODO: Fix this in priority
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import type { NextApiRequest, NextApiResponse } from "next";
 

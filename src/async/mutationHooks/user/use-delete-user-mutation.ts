@@ -1,17 +1,16 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useSupabaseSession } from "../../../store/componentStore";
-import { CATEGORIES_KEY, USER_PROFILE } from "../../../utils/constants";
-import { deleteUser } from "../../supabaseCrudHelpers";
+import { api } from "@/lib/api-helpers/api-v2";
 
-// update username
+import { useSupabaseSession } from "../../../store/componentStore";
+import { CATEGORIES_KEY, USER_PROFILE, V2_DELETE_USER_API } from "../../../utils/constants";
+
 export default function useDeleteUserMutation() {
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state.session);
   const deleteUserMutation = useMutation({
-    mutationFn: deleteUser,
+    mutationFn: () => api.post(V2_DELETE_USER_API, { json: {} }).json(),
     onSuccess: () => {
-      // Invalidate and refetch
       void queryClient.invalidateQueries({
         queryKey: [USER_PROFILE, session?.user?.id],
       });

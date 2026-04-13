@@ -2,7 +2,7 @@ import { isNull } from "lodash";
 
 import type { CollabDataInCategory } from "../../../types/apiTypes";
 
-import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
+import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/use-delete-shared-categories-user-mutation";
 import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation";
 import { Select } from "../../../components/ui/recollect/select";
 import DownArrowGray from "../../../icons/downArrowGray";

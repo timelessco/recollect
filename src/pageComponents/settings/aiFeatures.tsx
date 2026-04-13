@@ -7,8 +7,8 @@ import { ShowEyeIcon } from "@/icons/show-eye-icon";
 import { SlashedEyeIcon } from "@/icons/slashed-eye-icon";
 import { handleClientError } from "@/utils/error-utils/client";
 
-import { useApiKeyMutation } from "../../async/mutationHooks/user/useApiKeyUserMutation";
-import { useDeleteApiKeyMutation } from "../../async/mutationHooks/user/useDeleteApiKeyMutation";
+import { useApiKeyMutation } from "../../async/mutationHooks/user/use-api-key-user-mutation";
+import { useDeleteApiKeyMutation } from "../../async/mutationHooks/user/use-delete-api-key-mutation";
 import useFetchGetApiKey from "../../async/queryHooks/ai/api-key/useFetchGetGeminiApiKey";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";

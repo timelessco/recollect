@@ -1,18 +1,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useSupabaseSession } from "../../../store/componentStore";
-import { CATEGORIES_KEY, SHARED_CATEGORIES_TABLE_NAME } from "../../../utils/constants";
-import { sendCollaborationEmailInvite } from "../../supabaseCrudHelpers";
+import { api } from "@/lib/api-helpers/api-v2";
 
-// dels user in a shared category
-export default function useSendCollaborationEmailInviteMutation() {
+import { useSupabaseSession } from "../../../store/componentStore";
+import {
+  CATEGORIES_KEY,
+  SHARED_CATEGORIES_TABLE_NAME,
+  V2_DELETE_SHARED_CATEGORIES_USER_API,
+} from "../../../utils/constants";
+
+export default function useDeleteSharedCategoriesUserMutation() {
   const session = useSupabaseSession((state) => state.session);
   const queryClient = useQueryClient();
 
-  const sendCollaborationEmailInviteMutation = useMutation({
-    mutationFn: sendCollaborationEmailInvite,
+  const deleteSharedCategoriesUserMutation = useMutation({
+    mutationFn: (payload: { id: number }) =>
+      api.delete(V2_DELETE_SHARED_CATEGORIES_USER_API, { json: payload }).json(),
     onSuccess: () => {
-      // Invalidate and refetch
       void queryClient.invalidateQueries({
         queryKey: [SHARED_CATEGORIES_TABLE_NAME],
       });
@@ -21,5 +25,5 @@ export default function useSendCollaborationEmailInviteMutation() {
       });
     },
   });
-  return { sendCollaborationEmailInviteMutation };
+  return { deleteSharedCategoriesUserMutation };
 }

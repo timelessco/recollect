@@ -7,7 +7,7 @@ description: recollect-caller-migration
 
 Migrate frontend query hooks from v1 Pages Router URLs to v2 App Router endpoints using the proven 5-layer pattern. Each layer builds on the previous — execute in order, verify between layers.
 
-v2 routes return `T` directly on success and `{error: string}` on failure — no `{data, error}` envelope. Route handlers use the v2 factory (`create-handler-v2.ts`) with `createAxiomRouteHandler(withAuth/withPublic({...}))` composition and `RecollectApiError` throws for error handling. Callers use **ky** (`api` from `api-v2.ts`) — no `getApi`, no URL constants, no envelope unwrapping.
+v2 routes return `T` directly on success and `{error: string}` on failure — no `{data, error}` envelope. Route handlers use the v2 factory (`create-handler-v2.ts`) with `createAxiomRouteHandler(withAuth/withPublic({...}))` composition and `RecollectApiError` throws for error handling. Callers use **ky** (`api` from `api-v2.ts`) — no `getApi`, no v1 URL constants (`NEXT_API_URL` + constant pattern), no envelope unwrapping. V2 callers use `V2_*` constants from `constants.ts` with ky's prefix.
 
 > **Mutation hook refactoring?** Use the `recollect-mutation-hook-refactoring` skill instead. It covers mutation-hook-template.ts restructuring, file renaming, and structural cleanup. This skill handles API caller migration (query hooks with ky, mutation hooks with ky when its pathfinder completes).
 
@@ -23,9 +23,9 @@ v2 routes return `T` directly on success and `{error: string}` on failure — no
 
 ### Layer 1: Orphaned Constant Cleanup
 
-With ky's `prefix: "/api"`, callers use inline `"v2/route-name"` — no URL constants needed. The old URL constant (e.g., `CHECK_API_KEY_API`) may become orphaned after migration.
+After migration, the old v1 URL constant (e.g., `CHECK_API_KEY_API`) is replaced by a `V2_*` constant (e.g., `V2_CHECK_GEMINI_API_KEY_API`). The old constant may become orphaned.
 
-**Do not update the constant to a v2 path.** Instead:
+**Do not update the old constant to a v2 path — add a new `V2_*` constant instead.** Then:
 
 1. After Layer 2, run `pnpm lint:knip` to check if the URL constant is now orphaned
 2. If orphaned, remove it from `src/utils/constants.ts`
@@ -44,13 +44,13 @@ import type { CheckGeminiApiKeyOutputSchema } from "@/app/api/v2/check-gemini-ap
 import type { z } from "zod";
 
 import { api } from "@/lib/api-helpers/api-v2";
-import { API_KEY_CHECK_KEY } from "@/utils/constants";
+import { API_KEY_CHECK_KEY, V2_CHECK_GEMINI_API_KEY_API } from "@/utils/constants";
 
 type CheckApiKeyResponse = z.infer<typeof CheckGeminiApiKeyOutputSchema>;
 
 export const useFetchCheckApiKey = () =>
   useQuery({
-    queryFn: () => api.get("v2/check-gemini-api-key").json<CheckApiKeyResponse>(),
+    queryFn: () => api.get(V2_CHECK_GEMINI_API_KEY_API).json<CheckApiKeyResponse>(),
     queryKey: [API_KEY_CHECK_KEY],
   });
 ```
