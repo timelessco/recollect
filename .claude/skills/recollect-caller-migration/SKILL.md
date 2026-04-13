@@ -186,12 +186,15 @@ ast-grep --lang ts -p 'USER_TAGS_KEY' src/
 | Helper function params | `data: { data: T[] }` | `data: T[]` |
 | Immer `produce` drafts | `draft.data.push(...)` | `draft.push(...)` |
 | `useCallback` dep arrays | `sharedCategoriesData?.data` | `sharedCategoriesData` |
+| `onMutate` snapshot | `getQueryData([KEY])` (untyped → `unknown`) | `getQueryData<T[]>([KEY])` (typed → correct context inference for `onError`) |
+| `onError` rollback | `onError: (context: {...})` (wrong — first param is error) | `onError: (_error, _variables, context) => { ... }` |
 
 **Places that get missed (from real bugs):**
-- `queryClient.getQueryData` in optimistic mutation hooks — they read cache directly, not via the query hook
+- `queryClient.getQueryData` in optimistic mutation hooks — they read cache directly, not via the query hook. **Must be typed** (`getQueryData<T[]>`) so `onMutate` context type is inferred correctly for `onError` rollback
 - `queryClient.setQueryData` updater callbacks with `(old: { data: T[] })` type annotations
 - Helper functions in `query-cache-helpers.ts` that accept the old envelope shape as a parameter
 - Components that read cache via `queryClient.getQueryData` in render (e.g., `collectionsList.tsx`, `useGetSortBy.ts`)
+- `onError` callback signature — `useMutation` passes `(error, variables, context)` but legacy hooks often name the first param `context`, causing rollback to silently read `error.previousData` (always `undefined`). Fix: `onError: (_error, _variables, context) => { ... }`
 
 #### Refetch Error Handling
 
