@@ -38,10 +38,3 @@ export const env = createEnv({
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,
 });
-
-// No runtime guard needed: NEXT_PUBLIC_DEV_SUPABASE_SERVICE_KEY is only
-// populated in local .env for signed uploads against the local Supabase stack.
-// It is intentionally absent from Vercel (prod + preview), so the value is
-// undefined in every deployed bundle and can't leak a service-role key to the
-// browser. A NODE_ENV-based guard would false-fire on local `next build`
-// because Next forces NODE_ENV=production during build.
