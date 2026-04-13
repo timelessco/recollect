@@ -9,12 +9,12 @@ import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-mo
 import { ToggleDarkMode } from "@/components/toggleDarkMode";
 import { cn } from "@/utils/tailwind-merge";
 
-import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
+import useUploadProfilePicMutation from "../../async/mutationHooks/settings/use-upload-profile-pic-mutation";
 import useDeleteUserMutation from "../../async/mutationHooks/user/use-delete-user-mutation";
 import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/use-remove-user-profile-pic-mutation";
 import useUpdateUsernameMutation from "../../async/mutationHooks/user/use-update-username-mutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
-import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
+import useFetchUserProfile from "../../async/queryHooks/user/use-fetch-user-profile";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -62,7 +62,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
   const { deleteUserMutation } = useDeleteUserMutation();
   const { removeProfilePic } = useRemoveUserProfilePicMutation();
 
-  const userData = userProfileData?.data?.[0];
+  const userData = userProfileData?.[0];
 
   const onSubmit: SubmitHandler<SettingsUsernameFormTypes> = async (data) => {
     if (data?.username === userData?.user_name) {
@@ -156,13 +156,13 @@ const Settings = ({ onNavigate }: SettingsProps) => {
             const { size } = uploadedFile;
             if (size < 1_000_000) {
               const uploadPic = async () => {
-                const response = await mutationApiCall(
-                  uploadProfilePicMutation.mutateAsync({
+                try {
+                  await uploadProfilePicMutation.mutateAsync({
                     file: uploadedFile,
-                  }),
-                );
-                if (isNull(response?.error)) {
+                  });
                   successToast("Profile pic has been updated");
+                } catch {
+                  errorToast("Something went wrong");
                 }
               };
 

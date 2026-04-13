@@ -28,6 +28,10 @@ export const FetchUserProfileOutputSchema = z.array(
       .string()
       .nullable()
       .meta({ description: "Last synced Twitter post ID" }),
+    favorite_categories: z
+      .array(z.number())
+      .nullable()
+      .meta({ description: "IDs of categories marked as favorites" }),
     preferred_og_domains: z
       .array(z.string())
       .nullable()

@@ -17,7 +17,7 @@ import useUpdateSharedCategoriesOptimisticMutation from "../async/mutationHooks/
 import useUpdateUserProfileOptimisticMutation from "../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
 import useFetchCategories from "../async/queryHooks/category/useFetchCategories";
 import useFetchSharedCategories from "../async/queryHooks/share/use-fetch-shared-categories";
-import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";
+import useFetchUserProfile from "../async/queryHooks/user/use-fetch-user-profile";
 import { useLoadersStore, useSupabaseSession } from "../store/componentStore";
 import { mutationApiCall } from "../utils/apiHelpers";
 import { getPageViewData, getPageViewKey } from "../utils/bookmarksViewKeyed";
@@ -135,8 +135,8 @@ export function useBookmarksViewUpdate() {
             }
           }
         }
-      } else if (!isNull(userProfileData?.data) && !isNil(userProfileData)) {
-        const raw = userProfileData.data[0]?.bookmarks_view;
+      } else if (!isNull(userProfileData) && !isNil(userProfileData)) {
+        const raw = userProfileData[0]?.bookmarks_view;
         const pageKey = getPageViewKey(categorySlug);
         const defaultPageView: BookmarkViewDataTypes = {
           bookmarksView: "moodboard" satisfies BookmarksViewTypes,

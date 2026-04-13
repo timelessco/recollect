@@ -4,7 +4,7 @@ import { Item } from "react-stately";
 import type { CollectionItemTypes } from "./singleListItemComponent";
 
 import { useUpdateFavoriteOrderMutation } from "@/async/mutationHooks/user/use-update-favorite-order-mutation";
-import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
+import useFetchUserProfile from "@/async/queryHooks/user/use-fetch-user-profile";
 import { Collapsible } from "@/components/ui/recollect/collapsible";
 import { useMiscellaneousStore } from "@/store/componentStore";
 import { mutationApiCall } from "@/utils/apiHelpers";
@@ -32,7 +32,7 @@ export function FavoriteCollectionsList(props: FavoriteCollectionsListProps) {
   }
 
   const onReorder = (event: DroppableCollectionReorderEvent) => {
-    const currentFavoriteCategories = userProfileData?.data?.[0]?.favorite_categories ?? [];
+    const currentFavoriteCategories = userProfileData?.[0]?.favorite_categories ?? [];
 
     // Fall back to the order from the collections list if no saved order
     const listOrder =

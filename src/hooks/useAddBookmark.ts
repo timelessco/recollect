@@ -1,6 +1,6 @@
 import find from "lodash/find";
 
-import useAddBookmarkMinDataOptimisticMutation from "../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
+import useAddBookmarkMinDataOptimisticMutation from "../async/mutationHooks/bookmarks/use-add-bookmark-min-data-optimistic-mutation";
 import useFetchCategories from "../async/queryHooks/category/useFetchCategories";
 import { useSupabaseSession } from "../store/componentStore";
 import { mutationApiCall } from "../utils/apiHelpers";

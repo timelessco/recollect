@@ -8,11 +8,6 @@ import { useSupabaseSession } from "@/store/componentStore";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import { NEXT_API_URL, UPDATE_USER_PROFILE_API, USER_PROFILE } from "@/utils/constants";
 
-interface UserProfileCache {
-  data: null | ProfilesTableTypes[];
-  error?: Error;
-}
-
 interface UpdateFavoriteOrderInput {
   favorite_categories: number[];
 }
@@ -28,7 +23,7 @@ export function useUpdateFavoriteOrderMutation() {
     Error,
     UpdateFavoriteOrderInput,
     typeof queryKey,
-    undefined | UserProfileCache
+    ProfilesTableTypes[] | undefined
   >({
     mutationFn: (payload) =>
       postApi<UpdateFavoriteOrderResponse>(`${NEXT_API_URL}${UPDATE_USER_PROFILE_API}`, {
@@ -36,26 +31,23 @@ export function useUpdateFavoriteOrderMutation() {
       }),
     queryKey,
     updater: (currentData, variables) => {
-      if (!currentData?.data) {
+      if (!currentData) {
         logCacheMiss("Optimistic Update", "User profile cache missing", {
           userId: session?.user?.id,
         });
         return currentData;
       }
 
-      return {
-        ...currentData,
-        data: currentData.data.map((profile) => {
-          if (profile.id !== session?.user?.id) {
-            return profile;
-          }
+      return currentData.map((profile) => {
+        if (profile.id !== session?.user?.id) {
+          return profile;
+        }
 
-          return {
-            ...profile,
-            favorite_categories: variables.favorite_categories,
-          };
-        }),
-      };
+        return {
+          ...profile,
+          favorite_categories: variables.favorite_categories,
+        };
+      });
     },
   });
 

@@ -6,7 +6,7 @@ import type { BookmarkViewDataTypes } from "../types/apiTypes";
 
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import useFetchSharedCategories from "@/async/queryHooks/share/use-fetch-shared-categories";
-import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
+import useFetchUserProfile from "@/async/queryHooks/user/use-fetch-user-profile";
 import { getPageViewData, getPageViewKey } from "@/utils/bookmarksViewKeyed";
 
 import { useSupabaseSession } from "../store/componentStore";
@@ -66,8 +66,8 @@ const useGetViewValue = (
       return defaultReturnValue;
     }
 
-    if (!isEmpty(userProfilesData?.data)) {
-      const bookmarksView = userProfilesData?.data?.[0]?.bookmarks_view;
+    if (!isEmpty(userProfilesData)) {
+      const bookmarksView = userProfilesData?.[0]?.bookmarks_view;
       const pageKey = getPageViewKey(categorySlug);
       const pageView = getPageViewData(bookmarksView, pageKey);
       const value = pageView?.[viewType];

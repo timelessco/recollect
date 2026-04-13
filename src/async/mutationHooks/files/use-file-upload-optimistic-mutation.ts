@@ -3,6 +3,8 @@ import isNull from "lodash/isNull";
 
 import type { PaginatedBookmarks, UploadFileApiPayload } from "../../../types/apiTypes";
 
+import { api } from "@/lib/api-helpers/api-v2";
+
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { recentlyAddedUrls } from "../../../pageComponents/dashboard/cardSection/animatedBookmarkImage";
@@ -10,6 +12,7 @@ import { useSupabaseSession } from "../../../store/componentStore";
 import {
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
+  V2_UPLOAD_FILE_API,
   bookmarkType,
   DOCUMENT_MIME_TYPES,
   DOCUMENTS_URL,
@@ -33,7 +36,6 @@ import {
 import { getStoragePublicBaseUrl, storageHelpers } from "../../../utils/storageClient";
 import { createClient } from "../../../utils/supabaseClient";
 import { errorToast, successToast } from "../../../utils/toastMessages";
-import { uploadFile } from "../../supabaseCrudHelpers";
 
 // get bookmark screenshot
 export default function useFileUploadOptimisticMutation() {
@@ -95,11 +97,18 @@ export default function useFileUploadOptimisticMutation() {
         }
       }
 
-      // Call the original uploadFile with the updated thumbnail path
-      return uploadFile({
-        ...data,
-        thumbnailPath,
-      });
+      // Call v2 upload-file endpoint with JSON metadata (file binary already uploaded to R2)
+      return api
+        .post(V2_UPLOAD_FILE_API, {
+          json: {
+            category_id: data.category_id,
+            name: parseUploadFileName(data.file?.name),
+            thumbnailPath,
+            type: data.file?.type,
+            uploadFileNamePath: data.uploadFileNamePath,
+          },
+        })
+        .json<{ id: number }[]>();
     },
     onMutate: async (data: UploadFileApiPayload) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
@@ -219,13 +228,7 @@ export default function useFileUploadOptimisticMutation() {
     onSuccess: async (apiResponse, data, context) => {
       const uploadedDataType = data?.file?.type;
 
-      const apiResponseTyped = apiResponse as {
-        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-        data: any;
-        success: boolean;
-      };
-
-      if (apiResponseTyped?.success) {
+      if (apiResponse && apiResponse.length > 0) {
         // Re-add URL for animation continuity — when invalidateQueries refetch
         // replaces the temp entry with real server data, the remounted component
         // consumes this via recentlyAddedUrls.delete() to keep animating.
@@ -246,7 +249,7 @@ export default function useFileUploadOptimisticMutation() {
           try {
             successToast(`generating  thumbnail`);
             await handlePdfThumbnailAndUpload({
-              fileId: apiResponseTyped?.data[0].id,
+              fileId: apiResponse[0].id,
               fileUrl: `${getStoragePublicBaseUrl()}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,
               sessionUserId: session?.user?.id,
             });
