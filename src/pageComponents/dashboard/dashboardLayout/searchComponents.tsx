@@ -23,7 +23,7 @@ const KNOWN_TYPES_ARRAY = [...KNOWN_TYPES].toSorted();
 
 const MAX_COLOR_SUGGESTIONS = 5;
 const MAX_TYPE_SUGGESTIONS = 5;
-const MIN_QUERY_LENGTH_FOR_EXTRAS = 2;
+const MIN_QUERY_LENGTH_FOR_EXTRAS = 1;
 
 interface SearchBarProps {
   categoryId: CategoryIdUrlTypes;
