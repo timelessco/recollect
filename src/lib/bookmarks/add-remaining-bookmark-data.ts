@@ -64,7 +64,7 @@ export function resolveTwitterTitleAndDescription(
   description: null | string,
   imageCaption: null | string,
 ): { description: null | string; title: null | string } {
-  const match = title ? /^(.+) on X: "(.+)"(?: \/ X)?$/u.exec(title) : null;
+  const match = title ? /^(.+) on X: ["\u201C]([\s\S]+)["\u201D](?: \/ X)?$/u.exec(title) : null;
 
   if (match) {
     const [, rawTitle, rawTweetText] = match;
@@ -565,6 +565,14 @@ export async function addRemainingBookmarkData(
     currentData.description,
     imageCaption,
   );
+
+  console.log("[add-remaining-bookmark-data] Twitter title parsing:", {
+    bookmarkId: id,
+    currentTitle: currentData.title?.slice(0, 80),
+    currentDescription: currentData.description?.slice(0, 80),
+    parsedTitle,
+    parsedDescription: parsedDescription?.slice(0, 80),
+  });
 
   console.log("[add-remaining-bookmark-data] Updating bookmark in DB:", {
     bookmarkId: id,
