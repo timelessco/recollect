@@ -16,9 +16,7 @@ const developmentSupabaseAnonKey =
 // (signed upload URL creation) hit local Supabase storage. Only read in non-prod — never
 // falls back to a server-only key that would be undefined client-side.
 const developmentSupabaseServiceKey =
-  env.NEXT_PUBLIC_DEV_SUPABASE_SERVICE_KEY ??
-  process.env.DEV_SUPABASE_SERVICE_KEY ??
-  process.env.SUPABASE_SERVICE_KEY;
+  env.NEXT_PUBLIC_DEV_SUPABASE_SERVICE_KEY ?? process.env.DEV_SUPABASE_SERVICE_KEY;
 
 export const supabaseUrl = !isProductionEnvironment
   ? developmentSupabaseUrl

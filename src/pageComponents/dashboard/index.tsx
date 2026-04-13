@@ -132,8 +132,7 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
         updateData: { provider: session?.user?.app_metadata?.provider },
       });
     }
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [userProfileData?.[0]?.provider]);
+  }, [session?.user?.app_metadata?.provider, updateUserProfileMutateAsync, userProfileData]);
 
   const isDiscoverPage = categorySlug === DISCOVER_URL;
 

@@ -31,18 +31,14 @@ export default function useUpdateUserProfileOptimisticMutation() {
       return response;
     },
     onMutate: async (data) => {
-      await queryClient.cancelQueries({
-        queryKey: [USER_PROFILE, session?.user?.id],
-      });
+      const queryKey = [USER_PROFILE, session?.user?.id] as const;
+      await queryClient.cancelQueries({ queryKey });
 
       // Snapshot the previous value
-      const previousData = queryClient.getQueryData<ProfilesTableTypes[]>([
-        USER_PROFILE,
-        session?.user?.id,
-      ]);
+      const previousData = queryClient.getQueryData<ProfilesTableTypes[]>(queryKey);
       // Optimistically update to the new value
       if (data?.updateData?.bookmarks_view !== undefined) {
-        queryClient.setQueryData<ProfilesTableTypes[]>([USER_PROFILE, session?.user?.id], (old) => {
+        queryClient.setQueryData<ProfilesTableTypes[]>(queryKey, (old) => {
           if (!old) {
             return old;
           }
@@ -57,7 +53,7 @@ export default function useUpdateUserProfileOptimisticMutation() {
       }
 
       if (data?.updateData?.ai_features_toggle !== undefined) {
-        queryClient.setQueryData<ProfilesTableTypes[]>([USER_PROFILE, session?.user?.id], (old) => {
+        queryClient.setQueryData<ProfilesTableTypes[]>(queryKey, (old) => {
           if (!old) {
             return old;
           }
@@ -72,16 +68,19 @@ export default function useUpdateUserProfileOptimisticMutation() {
         });
       }
 
-      return { previousData };
+      return { previousData, queryKey };
     },
-    // If the mutation fails, use the context returned from onMutate to roll back
+    // Use queryKey captured in onMutate so rollback/invalidation target the same
+    // cache entry even if session changes mid-flight.
     onError: (_error, _variables, context) => {
-      queryClient.setQueryData([USER_PROFILE, session?.user?.id], context?.previousData);
+      if (context?.queryKey) {
+        queryClient.setQueryData(context.queryKey, context.previousData);
+      }
     },
-    onSettled: () => {
-      void queryClient.invalidateQueries({
-        queryKey: [USER_PROFILE, session?.user?.id],
-      });
+    onSettled: (_data, _error, _variables, context) => {
+      if (context?.queryKey) {
+        void queryClient.invalidateQueries({ queryKey: context.queryKey });
+      }
     },
   });
   return { updateUserProfileOptimisticMutation };

@@ -38,3 +38,8 @@ export const env = createEnv({
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,
 });
+
+// Fail-fast: a service-role key on the client in production bypasses RLS.
+if (process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_DEV_SUPABASE_SERVICE_KEY) {
+  throw new Error("NEXT_PUBLIC_DEV_SUPABASE_SERVICE_KEY must never be set in production");
+}
