@@ -11,10 +11,9 @@ interface SaveFromDiscoverPayload {
   source_bookmark_id: number;
 }
 
-async function handleSaveError(error: Error) {
+function handleSaveError(error: Error) {
   if (error instanceof HTTPError && error.response.status === 409) {
-    const body = await error.response.json<{ error: string }>();
-    successToast(body.error);
+    successToast("This bookmark is already in your library");
     return;
   }
 
@@ -26,7 +25,7 @@ export function useSaveFromDiscoverMutation() {
     mutationFn: (payload) => api.post(V2_SAVE_FROM_DISCOVER_API, { json: payload }).json(),
     mutationKey: ["save-from-discover"],
     onError: (error) => {
-      void handleSaveError(error);
+      handleSaveError(error);
     },
     showSuccessToast: true,
     skipErrorHandling: true,
