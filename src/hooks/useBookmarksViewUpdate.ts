@@ -16,7 +16,7 @@ import { useUpdateCategoryOptimisticMutation } from "../async/mutationHooks/cate
 import useUpdateSharedCategoriesOptimisticMutation from "../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
 import useUpdateUserProfileOptimisticMutation from "../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
 import useFetchCategories from "../async/queryHooks/category/useFetchCategories";
-import useFetchSharedCategories from "../async/queryHooks/share/useFetchSharedCategories";
+import useFetchSharedCategories from "../async/queryHooks/share/use-fetch-shared-categories";
 import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";
 import { useLoadersStore, useSupabaseSession } from "../store/componentStore";
 import { mutationApiCall } from "../utils/apiHelpers";
@@ -104,13 +104,13 @@ export function useBookmarksViewUpdate() {
           });
         } else {
           const sharedCategoriesId = find(
-            sharedCategoriesData?.data,
+            sharedCategoriesData,
             (item) => item?.category_id === CATEGORY_ID,
           )?.id;
 
           if (sharedCategoriesId !== undefined) {
             const existingSharedCollectionViewsData = find(
-              sharedCategoriesData?.data,
+              sharedCategoriesData,
               (item) => item?.id === sharedCategoriesId,
             );
 
@@ -175,7 +175,7 @@ export function useBookmarksViewUpdate() {
       allCategories?.data,
       categorySlug,
       session?.user?.id,
-      sharedCategoriesData?.data,
+      sharedCategoriesData,
       toggleIsSortByLoading,
       updateCategoryOptimisticMutation,
       updateSharedCategoriesOptimisticMutation,

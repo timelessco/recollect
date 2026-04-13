@@ -1,15 +1,14 @@
 import * as Sentry from "@sentry/nextjs";
-import axios from "axios";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
-  AI_ENRICHMENT_API,
   getBaseUrl,
   instagramType,
   NEXT_API_URL,
   tweetType,
-  WORKER_SCREENSHOT_API,
+  V2_AI_ENRICHMENT_API,
+  V2_SCREENSHOT_API,
 } from "./constants";
 
 interface ProcessParameters {
@@ -153,28 +152,36 @@ export const processImageQueue = async (
           // and generate ocr imagecaption and bulhash for both twitter and raindrop bookmarks,
           // we are not awaiting, because we fire this api and vercel will handle the response
 
-          void axios.post(`${getBaseUrl()}${NEXT_API_URL}${AI_ENRICHMENT_API}`, {
-            id,
-            isInstagramBookmark,
-            isRaindropBookmark,
-            isTwitterBookmark,
-            message,
-            ogImage,
-            queue_name,
-            url,
-            user_id,
+          void fetch(`${getBaseUrl()}${NEXT_API_URL}/${V2_AI_ENRICHMENT_API}`, {
+            body: JSON.stringify({
+              id,
+              isInstagramBookmark,
+              isRaindropBookmark,
+              isTwitterBookmark,
+              message,
+              ogImage,
+              queue_name,
+              url,
+              user_id,
+            }),
+            headers: { "Content-Type": "application/json" },
+            method: "POST",
           });
         } else {
           // here we take screenshot of the url for both twitter and raindrop bookmarks
           // we are not awaiting, because we fire this api and vercel will handle the response
 
-          void axios.post(`${getBaseUrl()}${NEXT_API_URL}${WORKER_SCREENSHOT_API}`, {
-            id,
-            mediaType,
-            message,
-            queue_name,
-            url,
-            user_id,
+          void fetch(`${getBaseUrl()}${NEXT_API_URL}/${V2_SCREENSHOT_API}`, {
+            body: JSON.stringify({
+              id,
+              mediaType,
+              message,
+              queue_name,
+              url,
+              user_id,
+            }),
+            headers: { "Content-Type": "application/json" },
+            method: "POST",
           });
         }
       } catch (error) {

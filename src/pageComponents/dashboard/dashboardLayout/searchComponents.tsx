@@ -7,7 +7,7 @@ import { isEmpty } from "lodash";
 import type { CategoriesData } from "@/types/apiTypes";
 import type { CategoryIdUrlTypes } from "@/types/componentTypes";
 
-import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
+import useFetchUserTags from "@/async/queryHooks/userTags/use-fetch-user-tags";
 import Button from "@/components/atoms/button";
 import { Spinner } from "@/components/spinner";
 import useDebounce from "@/hooks/useDebounce";
@@ -99,13 +99,13 @@ const SearchInput = (props: SearchInputTypes) => {
 
   const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
   const { userTags } = useFetchUserTags();
-  const userTagsData = useMemo(() => userTags?.data ?? [], [userTags]);
+  const userTagsData = useMemo(() => userTags ?? [], [userTags]);
 
   const filteredTagsData = useMemo(
     () =>
       userTagsData
         ?.map((item) => ({
-          display: item?.name || "",
+          display: item?.name ?? "",
           id: String(item?.id || ""),
         }))
         ?.filter((filterItem) => !addedTags?.includes(filterItem?.display || "")),

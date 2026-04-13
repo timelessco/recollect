@@ -35,7 +35,7 @@ export default function useGetSortBy() {
     userId,
   ]);
 
-  const sharedCategoriesData = queryClient.getQueryData<{ data: FetchSharedCategoriesData[] }>([
+  const sharedCategoriesData = queryClient.getQueryData<FetchSharedCategoriesData[]>([
     SHARED_CATEGORIES_TABLE_NAME,
   ]);
 
@@ -57,7 +57,7 @@ export default function useGetSortBy() {
 
       // if user is not the category owner then get value from the shared category table
       const sharedCategoryUserData = find(
-        sharedCategoriesData?.data,
+        sharedCategoriesData,
         (item) => item?.category_id === categoryId && item?.email === session?.user?.email,
       );
 

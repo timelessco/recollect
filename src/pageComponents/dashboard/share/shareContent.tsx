@@ -13,7 +13,7 @@ import { cn } from "@/utils/tailwind-merge";
 import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/use-delete-shared-categories-user-mutation";
 import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/use-send-collaboration-email-invite-mutation";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
-import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
+import useGetUserProfilePic from "../../../async/queryHooks/user/use-get-user-profile-pic";
 import Input from "../../../components/atoms/input";
 import { Spinner } from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -74,8 +74,8 @@ const AccessUserInfo = (props: { isLoggedinUserTheOwner: boolean; item: CollabDa
 
   const { userProfilePicData } = useGetUserProfilePic(item?.userEmail);
 
-  const profilePicUrl = userProfilePicData?.data?.[0]?.profile_pic;
-  const hasProfilePic = !isNull(userProfilePicData?.data) && profilePicUrl;
+  const profilePicUrl = userProfilePicData?.[0]?.profile_pic;
+  const hasProfilePic = !isNull(userProfilePicData) && profilePicUrl;
 
   const showDefaultIcon = !hasProfilePic || imageError || imageLoading;
 
