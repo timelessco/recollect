@@ -9,7 +9,7 @@ import { handleClientError } from "@/utils/error-utils/client";
 
 import { useApiKeyMutation } from "../../async/mutationHooks/user/use-api-key-user-mutation";
 import { useDeleteApiKeyMutation } from "../../async/mutationHooks/user/use-delete-api-key-mutation";
-import useFetchGetApiKey from "../../async/queryHooks/ai/api-key/useFetchGetGeminiApiKey";
+import useFetchGetApiKey from "../../async/queryHooks/ai/api-key/use-fetch-get-gemini-api-key";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -82,12 +82,12 @@ export const AiFeatures = () => {
         return;
       }
 
-      const { data } = await fetchApiKey();
-      if (!data?.data) {
+      const { data } = await fetchApiKey({ throwOnError: true });
+      if (!data) {
         return;
       }
 
-      setApiKey(data.data.apiKey);
+      setApiKey(data.apiKey);
       setShowKey(true);
     } catch (error) {
       handleClientError(error, "Failed to fetch API key");

@@ -98,11 +98,6 @@ export interface TempTag {
   name: string;
 }
 
-export interface FetchUserTagsDataResponse {
-  data: UserTagsData[];
-  error: null | PostgrestError;
-}
-
 export interface BookmarksTagData {
   bookmark_id: number;
   bookmark_tag_id: number;
@@ -323,10 +318,6 @@ export interface RemoveUserProfilePicPayload {
   id: string;
 }
 
-export interface GetUserProfilePicPayload {
-  email: string;
-}
-
 export interface DeleteSharedCategoriesUserApiPayload {
   id: number;
   session: SupabaseSessionType;
@@ -364,17 +355,13 @@ export interface UploadProfilePicPayload {
   file: FileType;
 }
 
-type DataResponse = null | SingleListData[];
-type ErrorResponse = null | PostgrestError | string;
-
 export interface GetPublicCategoryBookmarksApiResponseType {
-  category_name: CategoriesData["category_name"] | null;
-  category_views: BookmarkViewDataTypes | null;
-  data: DataResponse;
-  error: ErrorResponse;
+  bookmarks: SingleListData[];
+  categoryName: CategoriesData["category_name"] | null;
+  categoryViews: BookmarkViewDataTypes | null;
   icon: CategoriesData["icon"] | null;
-  icon_color: CategoriesData["icon_color"] | null;
-  is_public: CategoriesData["is_public"] | null;
+  iconColor: CategoriesData["icon_color"] | null;
+  isPublic: CategoriesData["is_public"] | null;
 }
 
 // common types used in next js API

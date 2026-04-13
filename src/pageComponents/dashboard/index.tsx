@@ -7,16 +7,15 @@ import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 import isNull from "lodash/isNull";
 
-import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
+import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/use-fetch-bookmarks-view";
 import useFetchCategories from "../../async/queryHooks/category/use-fetch-categories";
-import useFetchSharedCategories from "../../async/queryHooks/share/useFetchSharedCategories";
+import useFetchSharedCategories from "../../async/queryHooks/share/use-fetch-shared-categories";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
 import { useSupabaseSession } from "../../store/componentStore";
-import { mutationApiCall } from "../../utils/apiHelpers";
 import { BOOKMARKS_KEY, DISCOVER_URL, LOGIN_URL } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
 import { getCategorySlugFromRouter } from "../../utils/url";
@@ -120,22 +119,18 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
       session?.user?.email !== userProfileData?.data[0]?.email &&
       userProfileData?.data[0]?.email
     ) {
-      void mutationApiCall(
-        updateUserProfileMutateAsync({
-          updateData: { email: session?.user?.email },
-        }),
-      );
+      void updateUserProfileMutateAsync({
+        updateData: { email: session?.user?.email },
+      });
     }
   }, [session?.user?.email, updateUserProfileMutateAsync, userProfileData?.data]);
 
   // this updates the provider in the profiles table if its not present
   useEffect(() => {
     if (!userProfileData?.data?.[0]?.provider && session?.user?.app_metadata?.provider) {
-      void mutationApiCall(
-        updateUserProfileMutateAsync({
-          updateData: { provider: session?.user?.app_metadata?.provider },
-        }),
-      );
+      void updateUserProfileMutateAsync({
+        updateData: { provider: session?.user?.app_metadata?.provider },
+      });
     }
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [userProfileData?.data?.[0]?.provider]);

@@ -5,7 +5,7 @@ import { find, isEmpty } from "lodash";
 import type { BookmarkViewDataTypes } from "../types/apiTypes";
 
 import useFetchCategories from "@/async/queryHooks/category/use-fetch-categories";
-import useFetchSharedCategories from "@/async/queryHooks/share/useFetchSharedCategories";
+import useFetchSharedCategories from "@/async/queryHooks/share/use-fetch-shared-categories";
 import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 import { getPageViewData, getPageViewKey } from "@/utils/bookmarksViewKeyed";
 
@@ -46,11 +46,11 @@ const useGetViewValue = (
         return currentCategoryData?.category_views?.[viewType];
       }
 
-      if (!isEmpty(sharedCategoriesData?.data)) {
+      if (!isEmpty(sharedCategoriesData)) {
         // the user is not the category owner
         // gets the collab users layout data for the shared collection
         const sharedCategoriesDataUserData = find(
-          sharedCategoriesData?.data,
+          sharedCategoriesData,
           (item) => item?.email === userEmail && item?.category_id === categoryIdFromSlug,
         );
 

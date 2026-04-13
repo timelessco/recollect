@@ -5,7 +5,7 @@ import { AutoAssignCollectionIcon } from "@/icons/auto-assign-collection-icon";
 import { ImageKeywordsIcon } from "@/icons/image-keywords-icon";
 import { OcrIcon } from "@/icons/ocr-icon";
 
-import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
+import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import { SettingsToggleCard } from "./settingsToggleCard";
 

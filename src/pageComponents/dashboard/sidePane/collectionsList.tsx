@@ -13,7 +13,7 @@ import type {
 } from "../../../types/apiTypes";
 import type { CollectionItemTypes } from "./singleListItemComponent";
 
-import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
+import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/use-update-category-order-optimistic-mutation";
 import useFetchCategories from "../../../async/queryHooks/category/use-fetch-categories";
 import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
@@ -68,9 +68,9 @@ const CollectionsList = () => {
     session?.user?.id,
   ]);
 
-  const sharedCategoriesData = queryClient.getQueryData<{
-    data: FetchSharedCategoriesData[];
-  }>([SHARED_CATEGORIES_TABLE_NAME]);
+  const sharedCategoriesData = queryClient.getQueryData<FetchSharedCategoriesData[]>([
+    SHARED_CATEGORIES_TABLE_NAME,
+  ]);
 
   const bookmarksCountData = queryClient.getQueryData<BookmarksCountTypes>([
     BOOKMARKS_COUNT_KEY,
@@ -90,9 +90,7 @@ const CollectionsList = () => {
         iconColor: item?.icon_color,
         iconValue: item?.icon,
         id: item?.id,
-        isCollab: !isEmpty(
-          find(sharedCategoriesData?.data, (cat) => cat?.category_id === item?.id),
-        ),
+        isCollab: !isEmpty(find(sharedCategoriesData, (cat) => cat?.category_id === item?.id)),
         isFavorite: favoriteCategories.includes(item?.id),
         isPublic: item?.is_public,
         name: item?.category_name,
