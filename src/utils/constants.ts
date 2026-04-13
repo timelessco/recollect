@@ -71,9 +71,6 @@ export const PREVIEW_PATH = "/preview";
 
 export const PAGINATION_LIMIT = 25;
 
-// this api is to get the pdf buffer
-export const GET_PDF_BUFFER_API = "/v1/bookmarks/get/get-pdf-buffer";
-
 // auth api
 // no auth api yet
 // bookmark api
@@ -104,19 +101,15 @@ export const FETCH_USER_CATEGORIES_API = "/category/fetch-user-categories";
 export const CREATE_USER_CATEGORIES_API = "/category/create-user-category";
 export const DELETE_USER_CATEGORIES_API = "/category/delete-user-category";
 export const UPDATE_USER_CATEGORIES_API = "/category/update-user-category";
-export const UPDATE_CATEGORY_ORDER_API = "/category/update-category-order";
 export const SET_BOOKMARK_CATEGORIES_API = "/category/set-bookmark-categories";
 export const ADD_CATEGORY_TO_BOOKMARK_API = "/category/add-category-to-bookmark";
 export const ADD_CATEGORY_TO_BOOKMARKS_API = "/category/add-category-to-bookmarks";
 export const REMOVE_CATEGORY_FROM_BOOKMARK_API = "/category/remove-category-from-bookmark";
-// share api
-export const FETCH_PUBLIC_CATEGORY_BOOKMARKS_API = "/fetch-public-category-bookmarks";
 // collab share api
 export const UPDATE_SHARED_CATEGORY_USER_ROLE_API = "/share/update-shared-category-user-role";
 export const SEND_EMAIL = "/share/send-email";
 // profiles api
 export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
-export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";
 export const TOGGLE_PREFERRED_OG_DOMAIN_API = "/profiles/toggle-preferred-og-domain";
 export const TOGGLE_FAVORITE_CATEGORY_API = "/profiles/toggle-favorite-category";
 

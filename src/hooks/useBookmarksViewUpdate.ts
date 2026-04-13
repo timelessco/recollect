@@ -19,7 +19,6 @@ import useFetchCategories from "../async/queryHooks/category/useFetchCategories"
 import useFetchSharedCategories from "../async/queryHooks/share/use-fetch-shared-categories";
 import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";
 import { useLoadersStore, useSupabaseSession } from "../store/componentStore";
-import { mutationApiCall } from "../utils/apiHelpers";
 import { getPageViewData, getPageViewKey } from "../utils/bookmarksViewKeyed";
 import { EVERYTHING_URL } from "../utils/constants";
 import { getCategorySlugFromRouter } from "../utils/url";
@@ -115,21 +114,19 @@ export function useBookmarksViewUpdate() {
             );
 
             if (!isNil(existingSharedCollectionViewsData)) {
-              void mutationApiCall(
-                updateSharedCategoriesOptimisticMutation.mutateAsync({
-                  id: sharedCategoriesId,
-                  updateData: {
-                    category_views: {
-                      ...existingSharedCollectionViewsData?.category_views,
-                      cardContentViewArray: ensureCardContentView(
-                        value,
-                        existingSharedCollectionViewsData?.category_views?.cardContentViewArray,
-                      ),
-                      [updateField]: value,
-                    },
+              void updateSharedCategoriesOptimisticMutation.mutateAsync({
+                id: sharedCategoriesId,
+                updateData: {
+                  category_views: {
+                    ...existingSharedCollectionViewsData?.category_views,
+                    cardContentViewArray: ensureCardContentView(
+                      value,
+                      existingSharedCollectionViewsData?.category_views?.cardContentViewArray,
+                    ),
+                    [updateField]: value,
                   },
-                }),
-              );
+                },
+              });
             } else {
               console.error("existing share collab data is not present");
             }
@@ -161,11 +158,9 @@ export function useBookmarksViewUpdate() {
           [pageKey]: updatedPageView,
         };
 
-        void mutationApiCall(
-          updateUserProfileOptimisticMutation.mutateAsync({
-            updateData: { bookmarks_view: nextKeyed },
-          }),
-        );
+        void updateUserProfileOptimisticMutation.mutateAsync({
+          updateData: { bookmarks_view: nextKeyed },
+        });
       } else {
         console.error("user profiles data is null");
       }

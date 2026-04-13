@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 
-import { isNil, isNull } from "lodash";
+import { isNull } from "lodash";
 
 import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
 
@@ -12,8 +12,8 @@ import { cn } from "@/utils/tailwind-merge";
 import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
 import useDeleteUserMutation from "../../async/mutationHooks/user/use-delete-user-mutation";
 import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/use-remove-user-profile-pic-mutation";
-import useUpdateUsernameMutation from "../../async/mutationHooks/user/use-update-username-mutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
+import useUpdateUsernameMutation from "../../async/mutationHooks/user/use-update-username-mutation";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
