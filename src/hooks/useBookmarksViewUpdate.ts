@@ -13,9 +13,9 @@ import type {
 } from "../types/componentStoreTypes";
 
 import { useUpdateCategoryOptimisticMutation } from "../async/mutationHooks/category/use-update-category-optimistic-mutation";
-import useUpdateSharedCategoriesOptimisticMutation from "../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
+import useUpdateSharedCategoriesOptimisticMutation from "../async/mutationHooks/share/use-update-shared-categories-optimistic-mutation";
 import useUpdateUserProfileOptimisticMutation from "../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
-import useFetchCategories from "../async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "../async/queryHooks/category/use-fetch-categories";
 import useFetchSharedCategories from "../async/queryHooks/share/use-fetch-shared-categories";
 import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";
 import { useLoadersStore, useSupabaseSession } from "../store/componentStore";
@@ -65,7 +65,7 @@ export function useBookmarksViewUpdate() {
       value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
       type: BookmarkViewCategories,
     ) => {
-      const currentCategory = find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
+      const currentCategory = find(allCategories, (item) => item?.id === CATEGORY_ID);
 
       const isUserTheCategoryOwner = session?.user?.id === currentCategory?.user_id?.id;
 
@@ -167,7 +167,7 @@ export function useBookmarksViewUpdate() {
     },
     [
       CATEGORY_ID,
-      allCategories?.data,
+      allCategories,
       categorySlug,
       session?.user?.id,
       sharedCategoriesData,

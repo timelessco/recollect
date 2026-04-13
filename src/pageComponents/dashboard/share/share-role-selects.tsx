@@ -1,13 +1,10 @@
-import { isNull } from "lodash";
-
 import type { CollabDataInCategory } from "../../../types/apiTypes";
 
 import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/use-delete-shared-categories-user-mutation";
-import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutationHooks/share/useUpdateSharedCategoriesUserAccessMutation";
+import useUpdateSharedCategoriesUserAccessMutation from "../../../async/mutationHooks/share/use-update-shared-categories-user-access-mutation";
 import { Select } from "../../../components/ui/recollect/select";
 import DownArrowGray from "../../../icons/downArrowGray";
-import { mutationApiCall } from "../../../utils/apiHelpers";
-import { successToast } from "../../../utils/toastMessages";
+import { errorToast, successToast } from "../../../utils/toastMessages";
 
 const rightTextStyles = "text-13 font-medium leading-[15px] text-gray-600";
 
@@ -41,26 +38,32 @@ export const AccessRoleSelect = ({ isLoggedinUserTheOwner, item }: AccessRoleSel
       onValueChange={(value) => {
         if (value !== "No Access") {
           const updateRole = async () => {
-            const response = await mutationApiCall(
-              updateSharedCategoriesUserAccessMutation.mutateAsync({
+            try {
+              await updateSharedCategoriesUserAccessMutation.mutateAsync({
                 id: item.share_id!,
                 updateData: {
-                  edit_access: Boolean(Number.parseInt(value === "Editor" ? "1" : "0", 10)),
+                  edit_access: value === "Editor",
                 },
-              }),
-            );
-            if (isNull((response as { error: Error })?.error)) {
+              });
               successToast("User role changed");
+            } catch {
+              errorToast("Failed to update role");
             }
           };
 
           void updateRole();
         } else {
-          void mutationApiCall(
-            deleteSharedCategoriesUserMutation.mutateAsync({
-              id: item.share_id!,
-            }),
-          );
+          const removeAccess = async () => {
+            try {
+              await deleteSharedCategoriesUserMutation.mutateAsync({
+                id: item.share_id!,
+              });
+            } catch {
+              errorToast("Failed to remove access");
+            }
+          };
+
+          void removeAccess();
         }
       }}
       value={item.edit_access ? "Editor" : "Viewer"}

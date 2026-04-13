@@ -27,7 +27,7 @@ import { handlePdfThumbnailAndUpload } from "../../../utils/file-upload";
 import { checkIfUrlAnImage } from "../../../utils/helpers";
 import { errorToast, successToast } from "../../../utils/toastMessages";
 import { addBookmarkMinData, getMediaType } from "../../supabaseCrudHelpers";
-import useAddBookmarkScreenshotMutation from "./useAddBookmarkScreenshotMutation";
+import useAddBookmarkScreenshotMutation from "./use-add-bookmark-screenshot-mutation";
 
 // adds bookmark min data
 export default function useAddBookmarkMinDataOptimisticMutation() {
@@ -68,8 +68,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
       // Fetch category from cache to build addedCategories
       const allCategories =
-        queryClient.getQueryData<{ data: CategoriesData[] }>([CATEGORIES_KEY, session?.user?.id])
-          ?.data ?? [];
+        queryClient.getQueryData<CategoriesData[]>([CATEGORIES_KEY, session?.user?.id]) ?? [];
 
       const categoryEntry = allCategories.find((cat) => cat.id === data?.category_id);
 

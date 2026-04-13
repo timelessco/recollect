@@ -5,16 +5,13 @@ import isNull from "lodash/isNull";
 
 import type {
   AddBookmarkMinDataPayloadTypes,
-  AddBookmarkScreenshotPayloadTypes,
   CategoriesData,
   DeleteBookmarkPayload,
   DeleteUserCategoryApiPayload,
-  FetchSharedCategoriesData,
   MoveBookmarkToTrashApiPayload,
   ProfilesTableTypes,
   SingleListData,
   SupabaseSessionType,
-  UpdateSharedCategoriesUserAccessApiPayload,
   UploadFileApiPayload,
   UploadFileApiResponse,
   UploadProfilePicApiResponse,
@@ -28,16 +25,13 @@ import { api } from "@/lib/api-helpers/api-v2";
 
 import {
   ADD_BOOKMARK_MIN_DATA,
-  ADD_URL_SCREENSHOT_API,
   CLEAR_BOOKMARK_TRASH_API,
   DELETE_BOOKMARK_DATA_API,
   DELETE_USER_CATEGORIES_API,
-  FETCH_USER_CATEGORIES_API,
   FETCH_USER_PROFILE_API,
   GEMINI_MODEL,
   MOVE_BOOKMARK_TO_TRASH_API,
   NEXT_API_URL,
-  UPDATE_SHARED_CATEGORY_USER_ROLE_API,
   UPLOAD_FILE_API,
   UPLOAD_PROFILE_PIC_API,
   V2_GET_MEDIA_TYPE_API,
@@ -66,21 +60,6 @@ export const addBookmarkMinData = async ({
 
     return apiResponse as { data: { data: SingleListData[] } };
   } catch (error) {
-    return error;
-  }
-};
-
-export const addBookmarkScreenshot = async ({ id, url }: AddBookmarkScreenshotPayloadTypes) => {
-  try {
-    const apiResponse = await axios.post(`${NEXT_API_URL}${ADD_URL_SCREENSHOT_API}`, { id, url });
-
-    return apiResponse;
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(error.message);
-      throw new Error(error.message, { cause: error });
-    }
-
     return error;
   }
 };
@@ -126,23 +105,6 @@ export const clearBookmarksInTrash = async () => {
 // user tags
 // user categories
 
-export const fetchCategoriesData = async (): Promise<{
-  data: CategoriesData[] | null;
-  error: Error;
-}> => {
-  try {
-    const response = await axios.get<{
-      data: CategoriesData[] | null;
-      error: Error;
-    }>(`${NEXT_API_URL}${FETCH_USER_CATEGORIES_API}`);
-
-    return response.data;
-  } catch (error_) {
-    const error = error_ as Error;
-    return { data: null, error };
-  }
-};
-
 export const deleteUserCategory = async ({
   category_id,
   keep_bookmarks,
@@ -162,24 +124,6 @@ export const deleteUserCategory = async ({
 };
 
 // share
-export const updateSharedCategoriesUserAccess = async ({
-  id,
-  updateData,
-}: UpdateSharedCategoriesUserAccessApiPayload) => {
-  try {
-    const response = await axios.post<{
-      data: FetchSharedCategoriesData[] | null;
-      error: Error;
-    }>(`${NEXT_API_URL}${UPDATE_SHARED_CATEGORY_USER_ROLE_API}`, {
-      id,
-      updateData,
-    });
-
-    return response?.data;
-  } catch (error) {
-    return error;
-  }
-};
 
 // profiles
 export const fetchUserProfiles = async ({

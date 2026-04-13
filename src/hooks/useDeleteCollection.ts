@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import find from "lodash/find";
 
 import useDeleteCategoryOptimisticMutation from "../async/mutationHooks/category/useDeleteCategoryOptimisticMutation";
-import useFetchCategories from "../async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "../async/queryHooks/category/use-fetch-categories";
 import { useSupabaseSession } from "../store/componentStore";
 import { mutationApiCall } from "../utils/apiHelpers";
 import { EVERYTHING_URL } from "../utils/constants";
@@ -27,7 +27,7 @@ export const useDeleteCollection = () => {
     async (props: OnDeleteCollectionProps) => {
       const { categoryId, current, keepBookmarks = false } = props;
 
-      const currentCategory = find(allCategories?.data, (item) => item?.id === categoryId);
+      const currentCategory = find(allCategories, (item) => item?.id === categoryId);
 
       if (currentCategory?.user_id?.id !== session?.user?.id) {
         errorToast("Only collection owner can delete this collection");
@@ -54,7 +54,7 @@ export const useDeleteCollection = () => {
         await router.push(`/${currentCategory.category_slug}`);
       }
     },
-    [allCategories?.data, deleteCategoryOptimisticMutation, router, session],
+    [allCategories, deleteCategoryOptimisticMutation, router, session],
   );
 
   return { onDeleteCollection };

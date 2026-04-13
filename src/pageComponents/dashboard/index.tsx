@@ -9,7 +9,7 @@ import isNull from "lodash/isNull";
 
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/use-fetch-bookmarks-view";
-import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "../../async/queryHooks/category/use-fetch-categories";
 import useFetchSharedCategories from "../../async/queryHooks/share/use-fetch-shared-categories";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
