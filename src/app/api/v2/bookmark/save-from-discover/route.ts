@@ -62,9 +62,24 @@ export const POST = createAxiomRouteHandler(
         ])
         .select();
 
-      if (insertError || !insertedData || insertedData.length === 0) {
+      if (insertError) {
+        if (insertError.code === "23505") {
+          throw new RecollectApiError("conflict", {
+            cause: insertError,
+            message: "This bookmark is already in your library",
+            operation: "insert_bookmark",
+          });
+        }
+
         throw new RecollectApiError("service_unavailable", {
-          cause: insertError ?? undefined,
+          cause: insertError,
+          message: "Failed to save bookmark",
+          operation: "insert_bookmark",
+        });
+      }
+
+      if (!insertedData || insertedData.length === 0) {
+        throw new RecollectApiError("service_unavailable", {
           message: "Failed to save bookmark",
           operation: "insert_bookmark",
         });
