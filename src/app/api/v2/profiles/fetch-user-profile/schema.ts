@@ -13,10 +13,10 @@ export const FetchUserProfileOutputSchema = z.array(
     api_key: z.string().nullable().meta({ description: "Encrypted Gemini API key" }),
     bookmark_count: z.number().nullable().meta({ description: "Total number of bookmarks" }),
     bookmarks_view: z.unknown().nullable().meta({ description: "Default bookmark view settings" }),
-    category_order: z
-      .array(z.number())
-      .nullable()
-      .meta({ description: "Ordered array of category IDs" }),
+    category_order: z.array(z.number().nullable()).nullable().meta({
+      description:
+        "Ordered array of category IDs. Elements may be null for categories deleted without compacting the ordering array.",
+    }),
     display_name: z.string().nullable().meta({ description: "User's display name" }),
     email: z.string().nullable().meta({ description: "User's email address" }),
     id: z.string().meta({ description: "User's unique identifier" }),
