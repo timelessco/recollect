@@ -25,7 +25,10 @@ export default function useDeleteCategoryOptimisticMutation() {
       });
 
       // Snapshot the previous value
-      const previousData = queryClient.getQueryData([CATEGORIES_KEY, session?.user?.id]);
+      const previousData = queryClient.getQueryData<CategoriesData[]>([
+        CATEGORIES_KEY,
+        session?.user?.id,
+      ]);
 
       // Optimistically update to the new value
       queryClient.setQueryData(
@@ -38,7 +41,11 @@ export default function useDeleteCategoryOptimisticMutation() {
       return { previousData };
     },
     // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (context: { previousData: CategoriesData }) => {
+    onError: (
+      _error,
+      _variables,
+      context: { previousData: CategoriesData[] | undefined } | undefined,
+    ) => {
       queryClient.setQueryData([CATEGORIES_KEY, session?.user?.id], context?.previousData);
     },
     // Always refetch after error or success:
