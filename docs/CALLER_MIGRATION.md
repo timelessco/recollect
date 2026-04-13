@@ -168,9 +168,9 @@ Callers need client change only (postApi/axios → ky), NO URL change.
 
 | Category                                | Total  | Web Repo | External | Done   |
 | --------------------------------------- | ------ | -------- | -------- | ------ |
-| Pages Router → v2 (URL + client change) | 41     | 30       | 11       | 11     |
+| Pages Router → v2 (URL + client change) | 41     | 30       | 11       | 16     |
 | App Router non-v2 (client change only)  | 21     | 19       | 2        | 0      |
-| **Total**                               | **62** | **49**   | **13**   | **11** |
+| **Total**                               | **62** | **49**   | **13**   | **16** |
 
 ---
 

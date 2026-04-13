@@ -7,15 +7,16 @@ import { isEmpty } from "lodash";
 
 import type { GetPublicCategoryBookmarksApiResponseType } from "../../../types/apiTypes";
 
-import { useFetchPublicCategoryBookmarks } from "../../../async/queryHooks/bookmarks/use-fetch-public-category-bookmarks";
-import CardSection from "../../../pageComponents/dashboard/cardSection";
-import { iconMap } from "../../../utils/commonData";
 import {
   BLACK_COLOR,
   getBaseUrl,
   V2_FETCH_PUBLIC_CATEGORY_BOOKMARKS_API,
   WHITE_COLOR,
-} from "../../../utils/constants";
+} from "@/utils/constants";
+
+import { useFetchPublicCategoryBookmarks } from "../../../async/queryHooks/bookmarks/use-fetch-public-category-bookmarks";
+import CardSection from "../../../pageComponents/dashboard/cardSection";
+import { iconMap } from "../../../utils/commonData";
 
 type PublicCategoryPageProps = GetPublicCategoryBookmarksApiResponseType;
 
