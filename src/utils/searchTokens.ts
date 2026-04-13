@@ -2,6 +2,7 @@ import { colorsNamed } from "culori";
 
 import type { OklabColor } from "@/async/ai/schemas/image-analysis-schema";
 
+import { CONTENT_TYPES } from "@/async/ai/schemas/image-analysis-schema";
 import { parseSearchColor } from "@/utils/colorUtils";
 import { GET_HASHTAG_TAG_PATTERN, TAG_MARKUP_REGEX } from "@/utils/constants";
 
@@ -21,13 +22,19 @@ export interface ParsedSearch {
   plainTags: string[];
   /** Search text with all #tokens stripped and trimmed. */
   text: string;
+  /** Matched content-type names (lowercased, from image_keywords.type allowlist). */
+  typeHints: string[];
 }
 
 const HEX_PATTERN = /^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 const MAX_COLOR_HINTS = 3;
+const MAX_TYPE_HINTS = 3;
 
 /** Lowercase CSS color name allowlist (sourced from Culori's colorsNamed map). */
 const CSS_COLOR_NAMES: ReadonlySet<string> = new Set(Object.keys(colorsNamed));
+
+/** Single-word content types from CONTENT_TYPES — multi-word types excluded (can't be a single #token). */
+const KNOWN_TYPES: ReadonlySet<string> = new Set(CONTENT_TYPES.filter((t) => !t.includes(" ")));
 
 /**
  * Extract the body of a #token. Handles both bare hashes (`#red`) and the
@@ -53,6 +60,7 @@ export function parseSearchTokens(raw: string): ParsedSearch {
   const matches = raw.match(GET_HASHTAG_TAG_PATTERN) ?? [];
 
   const plainTagsSet = new Set<string>();
+  const typeHintsSet = new Set<string>();
   const hintsByTagName = new Map<string, ColorHint>();
 
   for (const token of matches) {
@@ -86,12 +94,18 @@ export function parseSearchTokens(raw: string): ParsedSearch {
       continue;
     }
 
+    if (KNOWN_TYPES.has(body.toLowerCase())) {
+      typeHintsSet.add(body.toLowerCase());
+      continue;
+    }
+
     plainTagsSet.add(body.toLowerCase());
   }
 
   const text = raw.replace(GET_HASHTAG_TAG_PATTERN, "").trim();
   const colorHints = [...hintsByTagName.values()].slice(0, MAX_COLOR_HINTS);
   const plainTags = [...plainTagsSet];
+  const typeHints = [...typeHintsSet].slice(0, MAX_TYPE_HINTS);
 
-  return { text, plainTags, colorHints };
+  return { text, plainTags, colorHints, typeHints };
 }
