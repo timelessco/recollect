@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { UpdateSharedCategoriesUserAccessApiPayload } from "../../../types/apiTypes";
+import type {
+  FetchSharedCategoriesData,
+  UpdateSharedCategoriesUserAccessApiPayload,
+} from "../../../types/apiTypes";
 
 import { api } from "../../../lib/api-helpers/api-v2";
 import { useSupabaseSession } from "../../../store/componentStore";
@@ -17,7 +20,9 @@ export default function useUpdateSharedCategoriesUserAccessMutation() {
 
   const updateSharedCategoriesUserAccessMutation = useMutation({
     mutationFn: (payload: UpdateSharedCategoriesUserAccessApiPayload) =>
-      api.patch(V2_UPDATE_SHARED_CATEGORY_USER_ROLE_API, { json: payload }).json(),
+      api
+        .patch(V2_UPDATE_SHARED_CATEGORY_USER_ROLE_API, { json: payload })
+        .json<FetchSharedCategoriesData[]>(),
     onSuccess: () => {
       // Invalidate and refetch
       void queryClient.invalidateQueries({

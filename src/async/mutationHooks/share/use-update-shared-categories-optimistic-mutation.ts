@@ -25,7 +25,9 @@ export default function useUpdateSharedCategoriesOptimisticMutation() {
 
   const updateSharedCategoriesOptimisticMutation = useMutation({
     mutationFn: (payload: UpdateSharedCategoriesUserAccessApiPayload) =>
-      api.patch(V2_UPDATE_SHARED_CATEGORY_USER_ROLE_API, { json: payload }).json(),
+      api
+        .patch(V2_UPDATE_SHARED_CATEGORY_USER_ROLE_API, { json: payload })
+        .json<FetchSharedCategoriesData[]>(),
     onMutate: async (data) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
