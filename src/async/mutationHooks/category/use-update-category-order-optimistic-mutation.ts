@@ -1,20 +1,30 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { ProfilesTableTypes } from "../../../types/apiTypes";
+import type { UpdateCategoryOrderOutputSchema } from "@/app/api/v2/category/update-category-order/schema";
+import type { ProfilesTableTypes } from "@/types/apiTypes";
+import type { z } from "zod";
 
-import { useSupabaseSession } from "../../../store/componentStore";
-import { CATEGORIES_KEY, USER_PROFILE } from "../../../utils/constants";
-import { updateCategoryOrder } from "../../supabaseCrudHelpers";
+import { api } from "@/lib/api-helpers/api-v2";
+import { useSupabaseSession } from "@/store/componentStore";
+import { CATEGORIES_KEY, USER_PROFILE, V2_UPDATE_CATEGORY_ORDER_API } from "@/utils/constants";
 
-// update collection order optimistically
+type UpdateCategoryOrderResponse = z.infer<typeof UpdateCategoryOrderOutputSchema>;
+
 export default function useUpdateCategoryOrderOptimisticMutation() {
   const session = useSupabaseSession((state) => state.session);
   const queryClient = useQueryClient();
 
   const updateCategoryOrderMutation = useMutation({
-    mutationFn: updateCategoryOrder,
+    mutationFn: async (data: { order: number[] | null }) => {
+      const response = await api
+        .patch(V2_UPDATE_CATEGORY_ORDER_API, {
+          json: { category_order: data.order },
+        })
+        .json<UpdateCategoryOrderResponse>();
+
+      return response;
+    },
     onMutate: async (data) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
         queryKey: [USER_PROFILE, session?.user?.id],
       });
@@ -36,7 +46,7 @@ export default function useUpdateCategoryOrderOptimisticMutation() {
           if (item.id === session?.user?.id) {
             return {
               ...item,
-              category_order: newOrder,
+              category_order: newOrder ?? [],
             };
           }
 

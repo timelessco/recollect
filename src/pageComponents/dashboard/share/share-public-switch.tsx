@@ -1,7 +1,7 @@
 import { find } from "lodash";
 
 import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
-import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "@/async/queryHooks/category/use-fetch-categories";
 import { Switch } from "@/components/ui/recollect/switch";
 import useGetCurrentCategoryId from "@/hooks/useGetCurrentCategoryId";
 import { useMiscellaneousStore } from "@/store/componentStore";
@@ -27,7 +27,7 @@ export function SharePublicSwitch({ categoryId }: SharePublicSwitchProps) {
     numericCategoryId = null;
   }
 
-  const currentCategory = find(categoryData?.data ?? [], (item) => item?.id === numericCategoryId);
+  const currentCategory = find(categoryData ?? [], (item) => item?.id === numericCategoryId);
 
   const canToggle = numericCategoryId !== null && currentCategory !== undefined;
 

@@ -1,13 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { SingleListData } from "../../../types/apiTypes";
+import type { AddBookmarkScreenshotPayloadTypes, SingleListData } from "../../../types/apiTypes";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import { api } from "../../../lib/api-helpers/api-v2";
 import { useLoadersStore, useSupabaseSession } from "../../../store/componentStore";
-import { BOOKMARKS_KEY } from "../../../utils/constants";
+import { BOOKMARKS_KEY, V2_ADD_URL_SCREENSHOT_API } from "../../../utils/constants";
 import { errorToast } from "../../../utils/toastMessages";
-import { addBookmarkScreenshot } from "../../supabaseCrudHelpers";
 
 // get bookmark screenshot
 export default function useAddBookmarkScreenshotMutation() {
@@ -19,17 +19,17 @@ export default function useAddBookmarkScreenshotMutation() {
   const { removeLoadingBookmarkId } = useLoadersStore();
 
   const addBookmarkScreenshotMutation = useMutation({
-    mutationFn: addBookmarkScreenshot,
+    mutationFn: (payload: AddBookmarkScreenshotPayloadTypes) =>
+      api.post(V2_ADD_URL_SCREENSHOT_API, { json: payload }).json<SingleListData[]>(),
     onError: (error, variables) => {
       errorToast(`Screenshot error: ${error.message}`);
       if (variables.id) {
         removeLoadingBookmarkId(variables.id);
       }
     },
-    onSettled: (apiResponse) => {
-      const response = apiResponse as { data: { data: SingleListData[] } };
-      if (response?.data?.data[0]?.id) {
-        removeLoadingBookmarkId(response?.data?.data[0]?.id);
+    onSettled: (response) => {
+      if (response?.[0]?.id) {
+        removeLoadingBookmarkId(response[0].id);
       }
 
       void queryClient.invalidateQueries({

@@ -1,16 +1,20 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { FetchSharedCategoriesData } from "../../../types/apiTypes";
+import type {
+  FetchSharedCategoriesData,
+  UpdateSharedCategoriesUserAccessApiPayload,
+} from "../../../types/apiTypes";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
+import { api } from "../../../lib/api-helpers/api-v2";
 import { useSupabaseSession } from "../../../store/componentStore";
 import {
   BOOKMARKS_KEY,
   SHARED_CATEGORIES_TABLE_NAME,
   USER_PROFILE,
+  V2_UPDATE_SHARED_CATEGORY_USER_ROLE_API,
 } from "../../../utils/constants";
-import { updateSharedCategoriesUserAccess } from "../../supabaseCrudHelpers";
 
 // updates shared cat data optimistically
 export default function useUpdateSharedCategoriesOptimisticMutation() {
@@ -20,7 +24,10 @@ export default function useUpdateSharedCategoriesOptimisticMutation() {
   const { sortBy } = useGetSortBy();
 
   const updateSharedCategoriesOptimisticMutation = useMutation({
-    mutationFn: updateSharedCategoriesUserAccess,
+    mutationFn: (payload: UpdateSharedCategoriesUserAccessApiPayload) =>
+      api
+        .patch(V2_UPDATE_SHARED_CATEGORY_USER_ROLE_API, { json: payload })
+        .json<FetchSharedCategoriesData[]>(),
     onMutate: async (data) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({

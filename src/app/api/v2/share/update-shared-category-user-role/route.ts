@@ -2,6 +2,7 @@ import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-hand
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
 import { SHARED_CATEGORIES_TABLE_NAME } from "@/utils/constants";
+import { toJson } from "@/utils/type-utils";
 
 import {
   UpdateSharedCategoryUserRoleInputSchema,
@@ -24,9 +25,18 @@ export const PATCH = createAxiomRouteHandler(
         ctx.fields.new_edit_access = data.updateData.edit_access;
       }
 
+      const updatePayload = {
+        ...(data.updateData.edit_access !== undefined && {
+          edit_access: data.updateData.edit_access,
+        }),
+        ...(data.updateData.category_views !== undefined && {
+          category_views: toJson(data.updateData.category_views),
+        }),
+      };
+
       const { data: updated, error } = await supabase
         .from(SHARED_CATEGORIES_TABLE_NAME)
-        .update(data.updateData)
+        .update(updatePayload)
         .eq("id", data.id)
         .or(`user_id.eq.${userId},email.eq.${email}`)
         .select();

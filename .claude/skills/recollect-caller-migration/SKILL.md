@@ -27,7 +27,7 @@ Every ky call MUST use a `V2_*` constant from `src/utils/constants.ts` — never
 
 1. **Create** the V2 constant: `export const V2_FETCH_USER_TAGS_API = "v2/tags/fetch-user-tags";` (no leading slash)
 2. **Use** it in the hook: `api.get(V2_FETCH_USER_TAGS_API).json<T>()`
-3. **Never** inline: `api.get("v2/tags/fetch-user-tags")` — this violates P1 and gets flagged in review
+3. **Never** inline: `api.get("v2/tags/fetch-user-tags")` — violates the V2 constant rule and gets flagged in review
 4. After Layer 2, check if the old v1 URL constant (e.g., `FETCH_USER_TAGS_API`) is orphaned — if so, remove it from `constants.ts`
 5. If other code still references the v1 constant, leave it — cleaned up when those callers migrate
 
@@ -88,11 +88,11 @@ queryFn: async () => {
 ```
 Do NOT use `.json<T>().then(mapper)` — it triggers the lint rule.
 
-**Reference implementations (Phase 23):**
+**Reference implementations:**
 - `src/async/queryHooks/bookmarks/use-fetch-paginated-bookmarks.ts` — hard-class with session, searchParams, `useInfiniteQuery`
 - `src/async/queryHooks/bookmarks/use-fetch-bookmark-by-id.ts` — easy-class, simple `useQuery`
 - `src/async/queryHooks/bookmarks/use-fetch-bookmarks-count.ts` — hard-class with field name mapping
-- `src/async/queryHooks/ai/api-key/use-fetch-check-gemini-api-key.ts` — Phase 15 pathfinder (canonical for `z.infer` pattern)
+- `src/async/queryHooks/ai/api-key/use-fetch-check-gemini-api-key.ts` — canonical for `z.infer` pattern
 
 ### Layer 3: Consumer Verification
 
@@ -132,6 +132,47 @@ const { hasApiKey } = data;
 - Search for all consumers: `ast-grep --lang tsx -p 'useFetchHookName' src/`
 - **`prefer-destructuring` lint rule:** When assigning an array element to a `let` variable, oxlint enforces destructuring. Use `[currentBookmark] = bookmark` instead of `currentBookmark = bookmark[0]`. For `const`, use `const [bookmarkData] = bookmark` instead of `const bookmarkData = bookmark[0]`
 
+### Optimistic Mutation Safety
+
+When migrating hooks that use `useMutation` with `onMutate`/`onError` (optimistic patterns), audit `onError` immediately — pre-existing bugs become runtime failures after the ky switch.
+
+**Why this matters:** Axios crud helpers catch errors and return them. `onError` never fires because `mutationFn` always resolves. With ky, non-2xx throws → `mutateAsync` rejects → `onError` fires for the first time. If the `onError` signature is wrong, cache rollback breaks silently.
+
+**The bug pattern:**
+
+```typescript
+// BROKEN — first arg is error, not context
+onError: (context: { previousData: ProfilesTableTypes }) => {
+  queryClient.setQueryData([USER_PROFILE, userId], context?.previousData);
+  // context is actually the Error object — previousData is undefined
+  // Cache is set to undefined instead of rolled back
+},
+```
+
+```typescript
+// CORRECT — context is the third argument
+onError: (_error, _variables, context) => {
+  queryClient.setQueryData([USER_PROFILE, userId], context?.previousData);
+},
+```
+
+**Audit checklist for every optimistic mutation hook:**
+
+1. Find `onError` in the hook
+2. Check if first argument is typed as the rollback context (e.g., `(context: { previousData: ... })`)
+3. If yes, fix to `(_error, _variables, context)` — React Query's `onError` signature is `(error, variables, context)`
+4. Verify the `context` type matches what `onMutate` returns (e.g., `{ previousData: unknown }`)
+
+**Payload interface typing:**
+
+When defining local `UpdatePayload` interfaces for mutation hooks, use concrete types from `apiTypes.ts`:
+
+- `bookmarks_view` → `ProfilesBookmarksView` (not `unknown` — `unknown` can't be spread in optimistic updates)
+- `ai_features_toggle` → `AiFeaturesToggle` (not `unknown` — same spread issue)
+- `category_order` → `number[] | null`
+
+Using `unknown` for fields that get spread in `onMutate` causes TS2698 "Spread types may only be created from object types."
+
 **`mutationApiCall` + envelope check breakage (mutation hooks):** Consumers that wrap `mutateAsync` with `mutationApiCall` and then check the v1 envelope shape break silently with v2 bare responses. These patterns all fail:
 
 ```typescript
@@ -156,6 +197,8 @@ try {
   errorToast("Failed");
 }
 ```
+
+**Fire-and-forget wrappers:** Even when the consumer doesn't check the result (`void mutationApiCall(mutateAsync(...))`), remove the wrapper — `mutationApiCall` only adds value for its error toast on `response.response.status !== 200`, which never triggers with ky (errors throw instead of returning status objects). Replace `void mutationApiCall(mutateAsync(payload))` with `void mutateAsync(payload)`.
 
 **After fixing, chase the orphan chain** — each removal may orphan the next:
 1. `mutationApiCall` import → remove if no other call in the file
@@ -204,6 +247,23 @@ Hooks with `enabled: false` are consumed via `refetch()`. With ky, HTTP errors t
 ```typescript
 const { data } = await fetchApiKey({ throwOnError: true });
 ```
+
+#### Shared Type Split (v2 camelCase vs v1 snake_case)
+
+When a v2 route returns camelCase fields but the shared type in `apiTypes.ts` uses snake_case (matching the old v1 response), the shared type must be updated to match v2 — and the v1 route gets its own local interface to preserve its contract.
+
+**When this applies:** The v2 output schema has `categoryName`, `iconColor`, `isPublic` but the shared `apiTypes.ts` type has `category_name`, `icon_color`, `is_public`. The web frontend now hits v2, so the shared type must match v2.
+
+**Steps:**
+
+1. **Update the shared type** in `apiTypes.ts` to match v2 field names (camelCase). Also remove envelope fields (`data`/`error`) — v2 returns bare response
+2. **Create a local v1 interface** in the Pages Router handler file. Copy the old snake_case shape, name it `V1{RouteName}Response`, use it only in that file's `NextApiResponse<>` generic
+3. **Update all frontend consumers** — SSR pages (`getStaticProps`/`getServerSideProps`), components, and hooks that read the old snake_case fields. Search: `ast-grep --lang tsx -p 'TypeName' src/`
+4. **Update the query hook** if it accesses fields by name (e.g., `page?.data` → `page?.bookmarks`, `data?.category_name` → `data?.categoryName`)
+
+**This is different from "Field Name Mismatch Mapping"** — that pattern adds a runtime mapping function to preserve the old interface for cache consumers. This pattern updates the shared type itself because there are no downstream cache consumers relying on the old field names (or because consumers are few enough to update directly).
+
+**Reference:** `GetPublicCategoryBookmarksApiResponseType` — updated from snake_case with `data`/`error` envelope to camelCase with `bookmarks` array. V1 handler got local `V1PublicCategoryBookmarksResponse`.
 
 ### Layer 4: Dead Code Removal
 
@@ -327,10 +387,10 @@ export default function useFetchBookmarksCount() {
 **This is temporary** — mapping functions are removed when hand-written types are retired in favor of Zod-inferred types post-migration.
 
 **Reference implementation:**
-`src/async/queryHooks/bookmarks/use-fetch-bookmarks-count.ts` — Phase 23 field mapping pathfinder
+`src/async/queryHooks/bookmarks/use-fetch-bookmarks-count.ts` — field mapping pathfinder
 
 **Reference implementation:**
-`src/async/queryHooks/bookmarks/use-fetch-paginated-bookmarks.ts` — Phase 23 hard-class pathfinder output
+`src/async/queryHooks/bookmarks/use-fetch-paginated-bookmarks.ts` — hard-class pathfinder output
 
 ## Server-Side Callers
 
@@ -345,7 +405,7 @@ void fetch(`${getBaseUrl()}${NEXT_API_URL}/${V2_AI_ENRICHMENT_API}`, {
 });
 ```
 
-- Use `V2_*` constant for the route segment (same P1 rule — never inline strings)
+- Use `V2_*` constant for the route segment (same V2 constant rule — never inline strings)
 - Keep `getBaseUrl()` + `NEXT_API_URL` for full URL construction
 - Keep `void` prefix for fire-and-forget calls (worker dispatches)
 - Remove `axios` import if orphaned after migration
@@ -426,7 +486,7 @@ export const GET = createAxiomRouteHandler(
 - `getServerContext()?.fields` — populate with business context for wide events (one log line per request with all context)
 - `create-handler.ts` is envelope-only (`{data: T, error: null}`) — used by v1 routes only
 
-**Reference implementation:** `src/app/api/v2/check-gemini-api-key/route.ts` (Phase 17 canonical reference)
+**Reference implementation:** `src/app/api/v2/check-gemini-api-key/route.ts` (canonical v2 handler reference)
 
 ### v2 Schema Field Naming
 
@@ -436,7 +496,7 @@ v2 output schema field names MUST match the frontend `SingleListData` convention
 
 The frontend rendering components (`bookmarkCardParts.tsx`, `bookmarkCard.tsx`) access these fields directly. A mismatch causes silent `undefined` access — bookmarks render without categories/tags.
 
-Checked: only `fetch-bookmarks-data` had this mismatch (fixed in Phase 23). `search-bookmarks` and `fetch-by-id` already use the correct names. Routes that don't stitch junction data (add-bookmark-min-data, fetch-bookmarks-count, etc.) are unaffected.
+Checked: only `fetch-bookmarks-data` had this mismatch (now fixed). `search-bookmarks` and `fetch-by-id` already use the correct names. Routes that don't stitch junction data (add-bookmark-min-data, fetch-bookmarks-count, etc.) are unaffected.
 
 ## v1 Legacy Note
 
@@ -476,7 +536,7 @@ export default function useDeleteSharedCategoriesUserMutation() {
 }
 ```
 
-**Reference implementations (Phase 23 T1 batch):**
+**Reference implementations:**
 - `src/async/mutationHooks/share/use-delete-shared-categories-user-mutation.ts` — DELETE with payload
 - `src/async/mutationHooks/user/use-delete-user-mutation.ts` — POST with empty body `{ json: {} }`
 - `src/async/mutationHooks/user/use-api-key-user-mutation.ts` — PUT with payload, .tsx→.ts rename

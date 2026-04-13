@@ -71,15 +71,10 @@ export const PREVIEW_PATH = "/preview";
 
 export const PAGINATION_LIMIT = 25;
 
-// this api is to get the pdf buffer
-export const GET_PDF_BUFFER_API = "/v1/bookmarks/get/get-pdf-buffer";
-
 // auth api
 // no auth api yet
 // bookmark api
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
-
-export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
 
 export const FETCH_BOOKMARKS_DISCOVERABLE_API = "/bookmark/fetch-bookmarks-discoverable";
 export const FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API = "/bookmark/fetch-discoverable-by-id";
@@ -100,23 +95,16 @@ export const ADD_TAG_TO_BOOKMARK_API = "/tags/add-tag-to-bookmark";
 export const REMOVE_TAG_FROM_BOOKMARK_API = "/tags/remove-tag-from-bookmark";
 export const CREATE_AND_ASSIGN_TAG_API = "/tags/create-and-assign-tag";
 // category api
-export const FETCH_USER_CATEGORIES_API = "/category/fetch-user-categories";
 export const CREATE_USER_CATEGORIES_API = "/category/create-user-category";
 export const DELETE_USER_CATEGORIES_API = "/category/delete-user-category";
 export const UPDATE_USER_CATEGORIES_API = "/category/update-user-category";
-export const UPDATE_CATEGORY_ORDER_API = "/category/update-category-order";
 export const SET_BOOKMARK_CATEGORIES_API = "/category/set-bookmark-categories";
 export const ADD_CATEGORY_TO_BOOKMARK_API = "/category/add-category-to-bookmark";
 export const ADD_CATEGORY_TO_BOOKMARKS_API = "/category/add-category-to-bookmarks";
 export const REMOVE_CATEGORY_FROM_BOOKMARK_API = "/category/remove-category-from-bookmark";
-// share api
-export const FETCH_PUBLIC_CATEGORY_BOOKMARKS_API = "/fetch-public-category-bookmarks";
 // collab share api
-export const UPDATE_SHARED_CATEGORY_USER_ROLE_API = "/share/update-shared-category-user-role";
 export const SEND_EMAIL = "/share/send-email";
 // profiles api
-
-export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";
 export const TOGGLE_PREFERRED_OG_DOMAIN_API = "/profiles/toggle-preferred-og-domain";
 export const TOGGLE_FAVORITE_CATEGORY_API = "/profiles/toggle-favorite-category";
 
@@ -137,6 +125,11 @@ export const V2_FETCH_BOOKMARKS_COUNT_API = "v2/bookmark/fetch-bookmarks-count";
 export const V2_FETCH_BOOKMARKS_VIEW_API = "v2/bookmark/fetch-bookmarks-view";
 export const V2_GET_MEDIA_TYPE_API = "v2/bookmarks/get/get-media-type";
 export const V2_MARK_ONBOARDED_API = "v2/profiles/mark-onboarded";
+export const V2_UPDATE_CATEGORY_ORDER_API = "v2/category/update-category-order";
+export const V2_UPDATE_USER_PROFILE_API = "v2/profiles/update-user-profile";
+export const V2_UPLOAD_FILE_REMAINING_DATA_API = "v2/file/upload-file-remaining-data";
+export const V2_GET_PDF_BUFFER_API = "v2/bookmarks/get/get-pdf-buffer";
+export const V2_FETCH_PUBLIC_CATEGORY_BOOKMARKS_API = "v2/fetch-public-category-bookmarks";
 export const V2_SAVE_API_KEY_API = "v2/api-key";
 export const V2_DELETE_API_KEY_API = "v2/delete-api-key";
 export const V2_DELETE_USER_API = "v2/profiles/delete-user";
@@ -144,6 +137,9 @@ export const V2_REMOVE_PROFILE_PIC_API = "v2/profiles/remove-profile-pic";
 export const V2_UPDATE_USERNAME_API = "v2/profiles/update-username";
 export const V2_DELETE_SHARED_CATEGORIES_USER_API = "v2/share/delete-shared-categories-user";
 export const V2_SEND_COLLABORATION_EMAIL_API = "v2/share/send-collaboration-email";
+export const V2_FETCH_USER_CATEGORIES_API = "v2/category/fetch-user-categories";
+export const V2_UPDATE_SHARED_CATEGORY_USER_ROLE_API = "v2/share/update-shared-category-user-role";
+export const V2_ADD_URL_SCREENSHOT_API = "v2/bookmark/add-url-screenshot";
 export const V2_GET_GEMINI_API_KEY_API = "v2/get-gemini-api-key";
 export const V2_ADD_BOOKMARK_MIN_DATA_API = "v2/bookmark/add-bookmark-min-data";
 export const V2_UPLOAD_FILE_API = "v2/file/upload-file";

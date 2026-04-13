@@ -1,7 +1,7 @@
 import find from "lodash/find";
 
 import useAddBookmarkMinDataOptimisticMutation from "../async/mutationHooks/bookmarks/use-add-bookmark-min-data-optimistic-mutation";
-import useFetchCategories from "../async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "../async/queryHooks/category/use-fetch-categories";
 import { useSupabaseSession } from "../store/componentStore";
 import { mutationApiCall } from "../utils/apiHelpers";
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
@@ -17,7 +17,7 @@ export function useAddBookmark() {
     const hasProtocol = url?.startsWith("http://") || url?.startsWith("https://");
     const finalUrl = hasProtocol ? url : `https://${url}`;
 
-    const currentCategory = find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
+    const currentCategory = find(allCategories, (item) => item?.id === CATEGORY_ID);
 
     const updateAccessCondition =
       typeof CATEGORY_ID === "number"

@@ -1,20 +1,36 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { ProfilesTableTypes } from "../../../types/apiTypes";
+import type { AiFeaturesToggle, ProfilesBookmarksView, ProfilesTableTypes } from "@/types/apiTypes";
 
-import { useSupabaseSession } from "../../../store/componentStore";
-import { USER_PROFILE } from "../../../utils/constants";
-import { updateUserProfile } from "../../supabaseCrudHelpers";
+import { api } from "@/lib/api-helpers/api-v2";
+import { useSupabaseSession } from "@/store/componentStore";
+import { USER_PROFILE, V2_UPDATE_USER_PROFILE_API } from "@/utils/constants";
 
-// update user profile date optimistically
+interface UpdateUserProfilePayload {
+  updateData: {
+    ai_features_toggle?: AiFeaturesToggle;
+    bookmarks_view?: ProfilesBookmarksView;
+    display_name?: null | string;
+    email?: null | string;
+    provider?: null | string;
+  };
+}
+
 export default function useUpdateUserProfileOptimisticMutation() {
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state.session);
 
   const updateUserProfileOptimisticMutation = useMutation({
-    mutationFn: updateUserProfile,
+    mutationFn: async (data: UpdateUserProfilePayload) => {
+      const response = await api
+        .patch(V2_UPDATE_USER_PROFILE_API, {
+          json: { updateData: data.updateData },
+        })
+        .json<ProfilesTableTypes[]>();
+
+      return response;
+    },
     onMutate: async (data) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
         queryKey: [USER_PROFILE, session?.user?.id],
       });
@@ -56,14 +72,12 @@ export default function useUpdateUserProfileOptimisticMutation() {
         });
       }
 
-      // Return a context object with the snapshotted value
       return { previousData };
     },
     // If the mutation fails, use the context returned from onMutate to roll back
     onError: (_error, _variables, context) => {
       queryClient.setQueryData([USER_PROFILE, session?.user?.id], context?.previousData);
     },
-    // Always refetch after error or success:
     onSettled: () => {
       void queryClient.invalidateQueries({
         queryKey: [USER_PROFILE, session?.user?.id],
