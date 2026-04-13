@@ -20,7 +20,13 @@ export default function useAddBookmarkScreenshotMutation() {
 
   const addBookmarkScreenshotMutation = useMutation({
     mutationFn: (payload: AddBookmarkScreenshotPayloadTypes) =>
-      api.post(V2_ADD_URL_SCREENSHOT_API, { json: payload }).json<SingleListData[]>(),
+      // ky default timeout is 10s, but the server-side screenshot capture has a
+      // 30s budget plus R2 upload + DB writes — completions of 11–24s are normal.
+      // Aborting at 10s makes the browser cancel a request the server still
+      // finishes, surfacing a misleading "Screenshot error" toast on a successful row.
+      api
+        .post(V2_ADD_URL_SCREENSHOT_API, { json: payload, timeout: 60_000 })
+        .json<SingleListData[]>(),
     onError: (error, variables) => {
       errorToast(`Screenshot error: ${error.message}`);
       if (variables.id) {

@@ -11,9 +11,14 @@ const developmentSupabaseUrl = env.NEXT_PUBLIC_DEV_SUPABASE_URL ?? env.NEXT_PUBL
 const developmentSupabaseAnonKey =
   env.NEXT_PUBLIC_DEV_SUPABASE_ANON_KEY ?? env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// process.env used intentionally — server secrets, can't import server env in shared file
+// process.env used intentionally — server secrets, can't import server env in shared file.
+// NEXT_PUBLIC_DEV_SUPABASE_SERVICE_KEY is a local-dev escape hatch that lets browser code
+// (signed upload URL creation) hit local Supabase storage. Only read in non-prod — never
+// falls back to a server-only key that would be undefined client-side.
 const developmentSupabaseServiceKey =
-  process.env.DEV_SUPABASE_SERVICE_KEY ?? process.env.SUPABASE_SERVICE_KEY;
+  env.NEXT_PUBLIC_DEV_SUPABASE_SERVICE_KEY ??
+  process.env.DEV_SUPABASE_SERVICE_KEY ??
+  process.env.SUPABASE_SERVICE_KEY;
 
 export const supabaseUrl = !isProductionEnvironment
   ? developmentSupabaseUrl
