@@ -102,7 +102,12 @@ export default async function handler(request: NextApiRequest, response: NextApi
     const urlScope = matchedSiteScope?.[0]?.replace("@", "")?.toLowerCase() ?? "";
 
     const searchWithoutSiteScope = search.replace(GET_SITE_SCOPE_PATTERN, "");
-    const { text: searchText, plainTags, colorHints } = parseSearchTokens(searchWithoutSiteScope);
+    const {
+      text: searchText,
+      plainTags,
+      colorHints,
+      typeHints,
+    } = parseSearchTokens(searchWithoutSiteScope);
     const tagName = plainTags.length > 0 ? plainTags : undefined;
 
     // Determine category_scope for junction table filtering
@@ -135,6 +140,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
         ),
         search_text: searchText,
         tag_scope: tagName,
+        type_hints: typeHints.length > 0 ? typeHints : null,
         url_scope: urlScope,
       })
       .range(offset, offset + limit - 1);
