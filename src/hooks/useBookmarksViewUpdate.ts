@@ -3,7 +3,6 @@ import { useCallback } from "react";
 
 import find from "lodash/find";
 import isNil from "lodash/isNil";
-import isNull from "lodash/isNull";
 
 import type { BookmarkViewDataTypes, ProfilesBookmarksView } from "../types/apiTypes";
 import type {
@@ -132,7 +131,7 @@ export function useBookmarksViewUpdate() {
             }
           }
         }
-      } else if (!isNull(userProfileData) && !isNil(userProfileData)) {
+      } else if (!isNil(userProfileData)) {
         const raw = userProfileData[0]?.bookmarks_view;
         const pageKey = getPageViewKey(categorySlug);
         const defaultPageView: BookmarkViewDataTypes = {

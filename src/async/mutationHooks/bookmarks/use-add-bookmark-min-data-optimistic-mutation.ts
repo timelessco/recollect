@@ -47,9 +47,9 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
   const addBookmarkMinDataOptimisticMutation = useMutation<
     SingleListData[],
-    { previousData: PaginatedBookmarks },
+    Error,
     AddBookmarkMinDataPayloadTypes,
-    { previousData: unknown; tempId: number }
+    { previousData: PaginatedBookmarks | undefined; tempId: number }
   >({
     mutationKey: ["add-bookmark-min-data"],
     mutationFn: ({ category_id, update_access, url }) => {
@@ -58,10 +58,16 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
         finalUrl = `https://${url}`;
       }
 
+      // Type-view pages (/images, /links, /videos, /documents) and /uncategorized
+      // resolve to slug strings via useGetCurrentCategoryId. The v2 endpoint requires
+      // an integer, so coerce any non-number to 0 (Uncategorized) — matches the v1
+      // server-side normalization in pages/api/bookmark/add-bookmark-min-data.ts.
+      const normalizedCategoryId = typeof category_id === "number" ? category_id : 0;
+
       return api
         .post(V2_ADD_BOOKMARK_MIN_DATA_API, {
           json: {
-            category_id: category_id ?? 0,
+            category_id: normalizedCategoryId,
             update_access,
             url: finalUrl,
           },
@@ -77,7 +83,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       });
 
       // Snapshot the previous value
-      const previousData = queryClient.getQueryData([
+      const previousData = queryClient.getQueryData<PaginatedBookmarks>([
         BOOKMARKS_KEY,
         session?.user?.id,
         CATEGORY_ID,

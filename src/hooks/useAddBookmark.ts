@@ -3,7 +3,6 @@ import find from "lodash/find";
 import useAddBookmarkMinDataOptimisticMutation from "../async/mutationHooks/bookmarks/use-add-bookmark-min-data-optimistic-mutation";
 import useFetchCategories from "../async/queryHooks/category/use-fetch-categories";
 import { useSupabaseSession } from "../store/componentStore";
-import { mutationApiCall } from "../utils/apiHelpers";
 import useGetCurrentCategoryId from "./useGetCurrentCategoryId";
 
 export function useAddBookmark() {
@@ -25,13 +24,11 @@ export function useAddBookmark() {
             ?.edit_access === true || currentCategory?.user_id?.id === session?.user?.id
         : true;
 
-    void mutationApiCall(
-      addBookmarkMinDataOptimisticMutation.mutateAsync({
-        category_id: CATEGORY_ID,
-        update_access: updateAccessCondition,
-        url: finalUrl,
-      }),
-    );
+    void addBookmarkMinDataOptimisticMutation.mutateAsync({
+      category_id: CATEGORY_ID,
+      update_access: updateAccessCondition,
+      url: finalUrl,
+    });
   };
 
   return { onAddBookmark };

@@ -27,10 +27,7 @@ export default function useGetSortBy() {
 
   const categoryData = queryClient.getQueryData<CategoriesData[]>([CATEGORIES_KEY, userId]);
 
-  const userProfilesData = queryClient.getQueryData<{ data: ProfilesTableTypes[] }>([
-    USER_PROFILE,
-    userId,
-  ]);
+  const userProfilesData = queryClient.getQueryData<ProfilesTableTypes[]>([USER_PROFILE, userId]);
 
   const sharedCategoriesData = queryClient.getQueryData<FetchSharedCategoriesData[]>([
     SHARED_CATEGORIES_TABLE_NAME,
@@ -61,7 +58,7 @@ export default function useGetSortBy() {
       return sharedCategoryUserData?.category_views?.sortBy;
     }
 
-    const bookmarksView = userProfilesData?.data[0]?.bookmarks_view;
+    const bookmarksView = userProfilesData?.[0]?.bookmarks_view;
     const pageKey = getPageViewKey(categorySlug);
     const pageView = getPageViewData(bookmarksView, pageKey);
     return pageView?.sortBy as string | undefined;

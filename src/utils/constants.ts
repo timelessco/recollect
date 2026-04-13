@@ -108,13 +108,8 @@ export const SEND_EMAIL = "/share/send-email";
 export const TOGGLE_PREFERRED_OG_DOMAIN_API = "/profiles/toggle-preferred-og-domain";
 export const TOGGLE_FAVORITE_CATEGORY_API = "/profiles/toggle-favorite-category";
 
-// settings profile api
-
 // file upload api
-
 export const UPLOAD_FILE_REMAINING_DATA_API = "/file/upload-file-remaining-data";
-
-// user settings and keys
 
 // v2 API path constants for ky `api` instance (no leading slash — prefix handles it)
 export const V2_FETCH_BOOKMARKS_DATA_API = "v2/bookmark/fetch-bookmarks-data";

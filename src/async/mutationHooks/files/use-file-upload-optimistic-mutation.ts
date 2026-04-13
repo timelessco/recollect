@@ -97,11 +97,17 @@ export default function useFileUploadOptimisticMutation() {
         }
       }
 
+      // Type-view pages (/images, /links, /videos, /documents) and /uncategorized
+      // resolve to slug strings via useGetCurrentCategoryId. The v2 endpoint requires
+      // an integer, so coerce any non-number to 0 (Uncategorized) — matches the v1
+      // server-side normalization for non-category targets.
+      const normalizedCategoryId = typeof data.category_id === "number" ? data.category_id : 0;
+
       // Call v2 upload-file endpoint with JSON metadata (file binary already uploaded to R2)
       return api
         .post(V2_UPLOAD_FILE_API, {
           json: {
-            category_id: data.category_id,
+            category_id: normalizedCategoryId,
             name: parseUploadFileName(data.file?.name),
             thumbnailPath,
             type: data.file?.type,
@@ -117,7 +123,7 @@ export default function useFileUploadOptimisticMutation() {
       });
 
       // Snapshot the previous value
-      const previousData = queryClient.getQueryData([
+      const previousData = queryClient.getQueryData<PaginatedBookmarks>([
         BOOKMARKS_KEY,
         session?.user?.id,
         CATEGORY_ID,

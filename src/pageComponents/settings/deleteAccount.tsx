@@ -46,12 +46,12 @@ export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
 
   const { deleteUserMutation } = useDeleteUserMutation();
 
-  const userProfilesData = queryClient.getQueryData<{ data: ProfilesTableTypes[] | null }>([
+  const userProfilesData = queryClient.getQueryData<ProfilesTableTypes[]>([
     USER_PROFILE,
     session?.user?.id,
-  ])!;
+  ]);
 
-  const userData = userProfilesData?.data?.[0];
+  const userData = userProfilesData?.[0];
   const {
     formState: { errors },
     handleSubmit,
