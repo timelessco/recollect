@@ -14,12 +14,10 @@ import type {
   GetUserProfilePicPayload,
   MoveBookmarkToTrashApiPayload,
   ProfilesTableTypes,
-  RemoveUserProfilePicPayload,
   SingleListData,
   SupabaseSessionType,
   UpdateCategoryOrderApiPayload,
   UpdateSharedCategoriesUserAccessApiPayload,
-  UpdateUsernameApiPayload,
   UpdateUserProfileApiPayload,
   UploadFileApiPayload,
   UploadFileApiResponse,
@@ -39,65 +37,26 @@ import {
   ADD_BOOKMARK_MIN_DATA,
   ADD_URL_SCREENSHOT_API,
   CLEAR_BOOKMARK_TRASH_API,
-  DELETE_API_KEY_API,
   DELETE_BOOKMARK_DATA_API,
-  DELETE_SHARED_CATEGORIES_USER_API,
-  DELETE_USER_API,
   DELETE_USER_CATEGORIES_API,
   FETCH_SHARED_CATEGORIES_DATA_API,
   FETCH_USER_CATEGORIES_API,
   FETCH_USER_PROFILE_API,
   FETCH_USER_PROFILE_PIC_API,
   FETCH_USER_TAGS_API,
+  GEMINI_MODEL,
   GET_API_KEY_API,
   MOVE_BOOKMARK_TO_TRASH_API,
   NEXT_API_URL,
-  REMOVE_PROFILE_PIC_API,
-  SAVE_API_KEY_API,
-  SEND_COLLABORATION_EMAIL_API,
   UPDATE_CATEGORY_ORDER_API,
   UPDATE_SHARED_CATEGORY_USER_ROLE_API,
   UPDATE_USER_PROFILE_API,
-  UPDATE_USERNAME_API,
   UPLOAD_FILE_API,
   UPLOAD_PROFILE_PIC_API,
-  GEMINI_MODEL,
+  V2_GET_MEDIA_TYPE_API,
 } from "../../utils/constants";
 // eslint-disable-next-line import/no-cycle -- circular dep between helpers and supabaseCrudHelpers needs structural refactor
 import { parseUploadFileName } from "../../utils/helpers";
-
-// user settings and keys
-export const saveApiKey = async ({
-  apikey,
-}: {
-  apikey: string;
-}): Promise<{ data: unknown; message: string }> => {
-  try {
-    const response = await axios.post<{ data: unknown; message: string }>(
-      `${NEXT_API_URL}${SAVE_API_KEY_API}`,
-      { apikey },
-    );
-
-    return response?.data;
-  } catch {
-    throw new Error("Invalid API key");
-  }
-};
-
-export const deleteApiKey = async (): Promise<{
-  data: unknown;
-  message: string;
-}> => {
-  try {
-    const response = await axios.delete<{ data: unknown; message: string }>(
-      `${NEXT_API_URL}${DELETE_API_KEY_API}`,
-    );
-
-    return response?.data;
-  } catch {
-    throw new Error("Failed to delete API key");
-  }
-};
 
 interface GetApiKeyResponse {
   data: { apiKey: string } | null;
@@ -258,27 +217,6 @@ export const updateCategoryOrder = async ({ order }: UpdateCategoryOrderApiPaylo
 };
 
 // share
-export const sendCollaborationEmailInvite = async ({
-  category_id,
-  edit_access,
-  emailList,
-  hostUrl,
-}: {
-  category_id: number;
-  edit_access: boolean;
-  emailList: string[];
-  hostUrl: string;
-}) => {
-  const response = await axios.post(`${NEXT_API_URL}${SEND_COLLABORATION_EMAIL_API}`, {
-    category_id,
-    edit_access,
-    emailList,
-    hostUrl,
-  });
-
-  return response;
-};
-
 export const fetchSharedCategoriesData = async (): Promise<{
   data: FetchSharedCategoriesData[] | null;
   error: Error;
@@ -293,19 +231,6 @@ export const fetchSharedCategoriesData = async (): Promise<{
   } catch (error) {
     const catchError = error as Error;
     return { data: null, error: catchError };
-  }
-};
-
-export const deleteSharedCategoriesUser = async ({ id }: { id: number }) => {
-  try {
-    const response = await axios.post<{
-      data: FetchSharedCategoriesData[] | null;
-      error: Error;
-    }>(`${NEXT_API_URL}${DELETE_SHARED_CATEGORIES_USER_API}`, { id });
-
-    return response?.data;
-  } catch (error) {
-    return error;
   }
 };
 
@@ -371,32 +296,6 @@ export const updateUserProfile = async ({ updateData }: UpdateUserProfileApiPayl
   }
 };
 
-export const updateUsername = async ({ id, username }: UpdateUsernameApiPayload) => {
-  try {
-    const response = await axios.post<{
-      data: null | ProfilesTableTypes[];
-      error: Error;
-    }>(`${NEXT_API_URL}${UPDATE_USERNAME_API}`, { id, username });
-
-    return response?.data;
-  } catch (error) {
-    return error;
-  }
-};
-
-export const deleteUser = async () => {
-  try {
-    const response = await axios.post<{
-      data: null | ProfilesTableTypes[];
-      error: Error;
-    }>(`${NEXT_API_URL}${DELETE_USER_API}`, {});
-
-    return response?.data;
-  } catch (error) {
-    return error;
-  }
-};
-
 export const getUserProfilePic = async ({
   email,
 }: GetUserProfilePicPayload): Promise<{
@@ -417,19 +316,6 @@ export const getUserProfilePic = async ({
   }
 
   return { data: null, error: "Email not present" as unknown as Error };
-};
-
-export const removeUserProfilePic = async ({ id }: RemoveUserProfilePicPayload) => {
-  try {
-    const response = await axios.post<{
-      data: null | ProfilesTableTypes[];
-      error: Error;
-    }>(`${NEXT_API_URL}${REMOVE_PROFILE_PIC_API}`, { id });
-
-    return response?.data;
-  } catch (error) {
-    return error;
-  }
 };
 
 // file upload
@@ -486,7 +372,7 @@ type GetMediaTypeResponse = z.infer<typeof GetMediaTypeOutputSchema>;
 export const getMediaType = async (url: string): Promise<null | string> => {
   try {
     const data = await api
-      .get("v2/bookmarks/get/get-media-type", { searchParams: { url } })
+      .get(V2_GET_MEDIA_TYPE_API, { searchParams: { url } })
       .json<GetMediaTypeResponse>();
 
     return data.mediaType ?? null;

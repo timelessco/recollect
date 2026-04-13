@@ -10,8 +10,8 @@ import type { CollabDataInCategory } from "../../../types/apiTypes";
 
 import { cn } from "@/utils/tailwind-merge";
 
-import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
-import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/useSendCollaborationEmailInviteMutation";
+import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/use-delete-shared-categories-user-mutation";
+import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/use-send-collaboration-email-invite-mutation";
 import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
 import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
 import Input from "../../../components/atoms/input";

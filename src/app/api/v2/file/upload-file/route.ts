@@ -48,7 +48,7 @@ async function getMediaType(url: string): Promise<null | string> {
   try {
     const encodedUrl = encodeURIComponent(url);
     const response = await fetch(
-      `${getBaseUrl()}${NEXT_API_URL}/v1/bookmarks/get/get-media-type?url=${encodedUrl}`,
+      `${getBaseUrl()}${NEXT_API_URL}/v2/bookmarks/get/get-media-type?url=${encodedUrl}`,
       { method: "GET" },
     );
 

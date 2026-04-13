@@ -3,12 +3,11 @@ import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 
 import { useQueryClient } from "@tanstack/react-query";
-import isNull from "lodash/isNull";
 
 import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
 import type { ProfilesTableTypes } from "@/types/apiTypes";
 
-import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
+import useDeleteUserMutation from "../../async/mutationHooks/user/use-delete-user-mutation";
 import { signOut } from "../../async/supabaseCrudHelpers";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
@@ -17,7 +16,6 @@ import { Spinner } from "../../components/spinner";
 import { BackIconBlack } from "../../icons/actionIcons/backIconBlack";
 import { TrashIconGray } from "../../icons/trash-icon-gray";
 import { useSupabaseSession } from "../../store/componentStore";
-import { mutationApiCall } from "../../utils/apiHelpers";
 import {
   settingsDeleteButtonRedClassName,
   settingsInputClassName,
@@ -69,9 +67,8 @@ export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
     if (userData?.user_name !== data?.confirmText) {
       errorToast("The username does not match");
     } else {
-      const response = await mutationApiCall(deleteUserMutation.mutateAsync());
-
-      if (isNull(response?.error)) {
+      try {
+        await deleteUserMutation.mutateAsync();
         successToast("Account has been successfully deleted");
         // Sign out to clear all Supabase auth cookies
         await signOut(supabase);
@@ -79,6 +76,8 @@ export const DeleteAccount = ({ onNavigate }: DeleteAccountProps) => {
         setSession(undefined);
         // Redirect to login page
         void router.push(`/${LOGIN_URL}`);
+      } catch {
+        errorToast("Failed to delete account. Please try again.");
       }
     }
   };

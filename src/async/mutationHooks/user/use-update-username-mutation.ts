@@ -1,17 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useSupabaseSession } from "../../../store/componentStore";
-import { CATEGORIES_KEY, USER_PROFILE } from "../../../utils/constants";
-import { updateUsername } from "../../supabaseCrudHelpers";
+import { api } from "@/lib/api-helpers/api-v2";
 
-// update username
+import { useSupabaseSession } from "../../../store/componentStore";
+import { CATEGORIES_KEY, USER_PROFILE, V2_UPDATE_USERNAME_API } from "../../../utils/constants";
+
 export default function useUpdateUsernameMutation() {
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state.session);
   const updateUsernameMutation = useMutation({
-    mutationFn: updateUsername,
+    mutationFn: (payload: { username: string }) =>
+      api.patch(V2_UPDATE_USERNAME_API, { json: payload }).json(),
     onSuccess: () => {
-      // Invalidate and refetch
       void queryClient.invalidateQueries({
         queryKey: [USER_PROFILE, session?.user?.id],
       });
