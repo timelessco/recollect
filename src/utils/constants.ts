@@ -71,8 +71,6 @@ export const PREVIEW_PATH = "/preview";
 
 export const PAGINATION_LIMIT = 25;
 
-// this api is to get the media type of the url
-export const GET_MEDIA_TYPE_API = "/v1/bookmarks/get/get-media-type";
 // this api is to get the pdf buffer
 export const GET_PDF_BUFFER_API = "/v1/bookmarks/get/get-pdf-buffer";
 

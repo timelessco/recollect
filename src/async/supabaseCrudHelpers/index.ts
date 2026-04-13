@@ -28,8 +28,11 @@ import type {
   UserProfilePicTypes,
   UserTagsData,
 } from "../../types/apiTypes";
+import type { GetMediaTypeOutputSchema } from "@/app/api/v2/bookmarks/get/get-media-type/schema";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { z } from "zod";
 
+import { api } from "@/lib/api-helpers/api-v2";
 import { handleClientError } from "@/utils/error-utils/client";
 
 import {
@@ -47,8 +50,6 @@ import {
   FETCH_USER_PROFILE_PIC_API,
   FETCH_USER_TAGS_API,
   GET_API_KEY_API,
-  GET_MEDIA_TYPE_API,
-  getBaseUrl,
   MOVE_BOOKMARK_TO_TRASH_API,
   NEXT_API_URL,
   REMOVE_PROFILE_PIC_API,
@@ -480,25 +481,16 @@ export const signOut = async (supabase: SupabaseClient<any, "public", any>) => {
   await supabase.auth.signOut({ scope: "local" });
 };
 
+type GetMediaTypeResponse = z.infer<typeof GetMediaTypeOutputSchema>;
+
 export const getMediaType = async (url: string): Promise<null | string> => {
   try {
-    const encodedUrl = encodeURIComponent(url);
-
-    const response = await fetch(
-      `${getBaseUrl()}${NEXT_API_URL}${GET_MEDIA_TYPE_API}?url=${encodedUrl}`,
-      { method: "GET" },
-    );
-
-    if (!response.ok) {
-      console.error("Error in getting media type");
-      return null;
-    }
-
-    const data = (await response.json()) as { mediaType?: string };
+    const data = await api
+      .get("v2/bookmarks/get/get-media-type", { searchParams: { url } })
+      .json<GetMediaTypeResponse>();
 
     return data.mediaType ?? null;
-  } catch (error) {
-    console.error("Error getting media type:", error);
+  } catch {
     return null;
   }
 };

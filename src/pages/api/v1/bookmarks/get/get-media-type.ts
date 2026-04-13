@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use the v2 App Router endpoint instead: /api/v2/bookmarks/get/get-media-type
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import axios from "axios";
