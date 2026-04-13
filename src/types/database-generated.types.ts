@@ -683,6 +683,7 @@ export type Database = {
           color_hints?: Json;
           search_text?: string;
           tag_scope?: string[];
+          type_hints?: string[];
           url_scope?: string;
         };
         Returns: {
