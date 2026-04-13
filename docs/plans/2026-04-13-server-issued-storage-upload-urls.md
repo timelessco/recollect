@@ -48,7 +48,7 @@ After this lands, no Cloudflare R2 credential and no Supabase service-role key i
 ### Storage backend boundary
 
 - All `utils/storageClient.ts` and `utils/r2Client.ts` exports become server-only. They are never imported by any file that ends up in the browser bundle.
-- The Cloudflare R2 environment variables (`NEXT_PUBLIC_CLOUDFLARE_ACCESS_KEY_ID`, `NEXT_PUBLIC_CLOUDFLARE_SECRET_ACCESS_KEY`, `NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID`) are renamed to drop the `NEXT_PUBLIC_` prefix and are migrated from the client env schema to the server env schema. The bucket *name* and the public-bucket *URL* remain client-public because the client needs to resolve `getStoragePublicBaseUrl()` for read-only display, and neither value grants any mutation capability.
+- The Cloudflare R2 environment variables (`NEXT_PUBLIC_CLOUDFLARE_ACCESS_KEY_ID`, `NEXT_PUBLIC_CLOUDFLARE_SECRET_ACCESS_KEY`, `NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID`) are renamed to drop the `NEXT_PUBLIC_` prefix and are migrated from the client env schema to the server env schema. The bucket _name_ and the public-bucket _URL_ remain client-public because the client needs to resolve `getStoragePublicBaseUrl()` for read-only display, and neither value grants any mutation capability.
 - The local-dev workaround introduced today (`NEXT_PUBLIC_DEV_SUPABASE_SERVICE_KEY` exposed to the browser, and the matching client-side `createServiceClient()` fallback) is removed as part of this work. Once the client no longer constructs signed URLs at all, the browser has no reason to hold any service key.
 
 ### New v3 route
@@ -110,7 +110,7 @@ If the user decides to introduce Vitest as part of this work, the first three mo
 ## Out of Scope
 
 - Adding a JavaScript test runner (Vitest/Jest/Playwright) to the project. If desired, that lands as a separate PR before this one so the new modules can ship with tests.
-- Migrating any *non-upload* storage operation. Server-side `uploadObject`, `getPublicUrl`, `listObjects`, `deleteObject(s)`, and download-signed-URL helpers continue to live inside server routes and helpers as today. No client code calls them.
+- Migrating any _non-upload_ storage operation. Server-side `uploadObject`, `getPublicUrl`, `listObjects`, `deleteObject(s)`, and download-signed-URL helpers continue to live inside server routes and helpers as today. No client code calls them.
 - The profile-pic upload at `POST /api/v2/settings/upload-profile-pic` already uses a server-side proxy upload model (file binary tunnels through Next.js, no signed URL). It is not migrated to the new flow, because the proxy model already keeps credentials server-only and there is no security gain from changing it.
 - The graceful-degradation work I flagged earlier (video upload should not hard-fail when thumbnail generation fails). Tracked separately.
 - iOS app migration. The new route exists and is documented; iOS adopts on its own timeline.
