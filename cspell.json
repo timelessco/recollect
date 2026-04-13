@@ -168,7 +168,6 @@
     ".husky",
     ".vscode",
     "public",
-    "docs/superpowers",
     "CHANGELOG.md",
     "pnpm-lock.yaml"
   ]
