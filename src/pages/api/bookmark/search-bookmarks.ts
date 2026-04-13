@@ -13,11 +13,9 @@ import type { PostgrestError } from "@supabase/supabase-js";
 import type { VerifyErrors } from "jsonwebtoken";
 
 import { getBookmarkMediaCategoryPredicate } from "../../../utils/bookmark-category-filters";
-import { parseSearchColor } from "../../../utils/colorUtils";
 import {
   bookmarkType,
   DISCOVER_URL,
-  GET_HASHTAG_TAG_PATTERN,
   GET_SITE_SCOPE_PATTERN,
   INSTAGRAM_URL,
   instagramType,
@@ -30,11 +28,12 @@ import {
 } from "../../../utils/constants";
 import {
   checkIsUserOwnerOfCategory,
-  extractTagNamesFromSearch,
   isUserCollaboratorInCategory,
   isUserInACategoryInApi,
 } from "../../../utils/helpers";
+import { parseSearchTokens } from "../../../utils/searchTokens";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
+import { toJson } from "../../../utils/type-utils";
 
 type DataResponse = null | SingleListData[];
 type ErrorResponse = { message: string } | null | PostgrestError | VerifyErrors;
@@ -102,24 +101,9 @@ export default async function handler(request: NextApiRequest, response: NextApi
     const matchedSiteScope = search.match(GET_SITE_SCOPE_PATTERN);
     const urlScope = matchedSiteScope?.[0]?.replace("@", "")?.toLowerCase() ?? "";
 
-    // Strip color: prefix first so # in hex values doesn't get parsed as a tag
-    const colorMatch = /color:(\S+)/i.exec(search);
-    const searchColor = colorMatch ? parseSearchColor(colorMatch[1]) : null;
-    const searchWithoutColor = search.replace(/color:\S*/i, "");
-
-    // color: prefix present but invalid color → no results
-    if (colorMatch && !searchColor) {
-      console.warn("[search-bookmarks] Unrecognized color value:", colorMatch[1]);
-      response.status(200).json({ data: [], error: null });
-      return;
-    }
-
-    const searchText = searchWithoutColor
-      ?.replace(GET_SITE_SCOPE_PATTERN, "")
-      ?.replace(GET_HASHTAG_TAG_PATTERN, "")
-      ?.trim();
-
-    const tagName = extractTagNamesFromSearch(searchWithoutColor);
+    const searchWithoutSiteScope = search.replace(GET_SITE_SCOPE_PATTERN, "");
+    const { text: searchText, plainTags, colorHints } = parseSearchTokens(searchWithoutSiteScope);
+    const tagName = plainTags.length > 0 ? plainTags : undefined;
 
     // Determine category_scope for junction table filtering
     // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
@@ -131,7 +115,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
     console.log("[search-bookmarks] Parsed search parameters:", {
       categoryScope,
-      searchColor,
+      colorHintCount: colorHints.length,
       searchText,
       tagName,
       urlScope,
@@ -141,9 +125,14 @@ export default async function handler(request: NextApiRequest, response: NextApi
     let query = supabase
       .rpc("search_bookmarks_url_tag_scope", {
         category_scope: isDiscoverPage ? null : categoryScope,
-        color_a: searchColor?.a ?? null,
-        color_b: searchColor?.b ?? null,
-        color_l: searchColor?.l ?? null,
+        color_hints: toJson(
+          colorHints.map((h) => ({
+            tag_name: h.tagName,
+            l: h.oklab.l,
+            a: h.oklab.a,
+            b: h.oklab.b,
+          })),
+        ),
         search_text: searchText,
         tag_scope: tagName,
         url_scope: urlScope,

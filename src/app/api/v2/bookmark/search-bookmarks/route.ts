@@ -6,26 +6,25 @@ import { getServerContext } from "@/lib/api-helpers/server-context";
 import { createApiClient, getApiUser } from "@/lib/supabase/api";
 import { getBookmarkMediaCategoryPredicate } from "@/utils/bookmark-category-filters";
 import { isUserOwnerOrAnyCollaborator } from "@/utils/category-auth";
-import { parseSearchColor } from "@/utils/colorUtils";
 import {
   AUDIO_URL,
   bookmarkType,
   DISCOVER_URL,
   DOCUMENTS_URL,
-  GET_HASHTAG_TAG_PATTERN,
   GET_SITE_SCOPE_PATTERN,
   IMAGES_URL,
   instagramType,
   INSTAGRAM_URL,
   LINKS_URL,
   PAGINATION_LIMIT,
-  TAG_MARKUP_REGEX,
   TRASH_URL,
   tweetType,
   TWEETS_URL,
   UNCATEGORIZED_URL,
   VIDEOS_URL,
 } from "@/utils/constants";
+import { parseSearchTokens } from "@/utils/searchTokens";
+import { toJson } from "@/utils/type-utils";
 
 import { SearchBookmarksInputSchema, SearchBookmarksOutputSchema } from "./schema";
 
@@ -50,31 +49,6 @@ const SPECIAL_CATEGORY_URLS = new Set([
  */
 function isUserCollection(categoryId: string): boolean {
   return categoryId !== "null" && categoryId !== "" && !SPECIAL_CATEGORY_URLS.has(categoryId);
-}
-
-/**
- * Extracts tag names from search query (e.g., "#typescript" -> ["typescript"]).
- * Ported from helpers.ts extractTagNamesFromSearch.
- */
-function extractTagNames(search: string): string[] | undefined {
-  if (search.length === 0) {
-    return undefined;
-  }
-
-  const matches = search.match(GET_HASHTAG_TAG_PATTERN);
-  if (!matches || matches.length === 0) {
-    return undefined;
-  }
-
-  const tagNames = matches
-    .map((item) => {
-      const markupMatch = TAG_MARKUP_REGEX.exec(item);
-      const display = markupMatch?.groups?.display;
-      return display ?? item.replace("#", "");
-    })
-    .filter((tag): tag is string => typeof tag === "string" && tag.length > 0);
-
-  return tagNames.length === 0 ? undefined : tagNames;
 }
 
 export const GET = createAxiomRouteHandler(
@@ -126,26 +100,13 @@ export const GET = createAxiomRouteHandler(
         ctx.fields.offset = offset;
       }
 
-      // Parse search modifiers: @domain.com site scope, #tag filters, color: prefix
+      // Parse search modifiers: @domain.com site scope, then #-tokens (plain tags + color hints)
       const matchedSiteScope = search.match(GET_SITE_SCOPE_PATTERN);
       const urlScope = matchedSiteScope?.at(0)?.replace("@", "")?.toLowerCase() ?? "";
 
-      // Strip color: prefix first so # in hex values doesn't get parsed as a tag
-      const colorMatch = /color:(\S+)/i.exec(search);
-      const searchColor = colorMatch ? parseSearchColor(colorMatch[1]) : null;
-      const searchWithoutColor = search.replace(/color:\S*/i, "");
-
-      // color: prefix present but invalid color → no results
-      if (colorMatch && !searchColor) {
-        return NextResponse.json([]);
-      }
-
-      const searchText = searchWithoutColor
-        .replace(GET_SITE_SCOPE_PATTERN, "")
-        .replace(GET_HASHTAG_TAG_PATTERN, "")
-        .trim();
-
-      const tagName = extractTagNames(searchWithoutColor);
+      const searchWithoutSiteScope = search.replace(GET_SITE_SCOPE_PATTERN, "");
+      const { text: searchText, plainTags, colorHints } = parseSearchTokens(searchWithoutSiteScope);
+      const tagName = plainTags.length > 0 ? plainTags : undefined;
 
       if (ctx?.fields) {
         ctx.fields.search_text = searchText || null;
@@ -165,10 +126,14 @@ export const GET = createAxiomRouteHandler(
       let rpcQuery = supabase
         .rpc("search_bookmarks_url_tag_scope", {
           category_scope: isDiscoverPage ? undefined : categoryScope,
-          color_a: searchColor?.a ?? undefined,
-          color_b: searchColor?.b ?? undefined,
-          color_l: searchColor?.l ?? undefined,
-
+          color_hints: toJson(
+            colorHints.map((h) => ({
+              tag_name: h.tagName,
+              l: h.oklab.l,
+              a: h.oklab.a,
+              b: h.oklab.b,
+            })),
+          ),
           search_text: searchText,
           tag_scope: tagName,
           url_scope: urlScope,
