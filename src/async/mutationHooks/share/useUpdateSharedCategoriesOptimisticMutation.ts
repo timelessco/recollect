@@ -28,27 +28,26 @@ export default function useUpdateSharedCategoriesOptimisticMutation() {
       });
 
       // Snapshot the previous value
-      const previousData = queryClient.getQueryData([SHARED_CATEGORIES_TABLE_NAME]);
+      const previousData = queryClient.getQueryData<FetchSharedCategoriesData[]>([
+        SHARED_CATEGORIES_TABLE_NAME,
+      ]);
 
       // Optimistically update to the new value
-      queryClient.setQueryData(
-        [SHARED_CATEGORIES_TABLE_NAME],
-        (old: { data: FetchSharedCategoriesData[] } | undefined) =>
-          ({
-            ...old,
-
-            data: old?.data?.map((item) => ({
+      queryClient.setQueryData<FetchSharedCategoriesData[]>([SHARED_CATEGORIES_TABLE_NAME], (old) =>
+        old?.map(
+          (item) =>
+            ({
               ...item,
               category_views: data?.updateData?.category_views,
-            })),
-          }) as { data: FetchSharedCategoriesData[] },
+            }) as FetchSharedCategoriesData,
+        ),
       );
 
       // Return a context object with the snapshotted value
       return { previousData };
     },
     // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (context: { previousData: FetchSharedCategoriesData }) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData([SHARED_CATEGORIES_TABLE_NAME], context?.previousData);
     },
     // Always refetch after error or success:

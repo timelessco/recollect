@@ -83,8 +83,6 @@ export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
 
 export const FETCH_BOOKMARKS_DISCOVERABLE_API = "/bookmark/fetch-bookmarks-discoverable";
 export const FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API = "/bookmark/fetch-discoverable-by-id";
-export const WORKER_SCREENSHOT_API = "/v1/screenshot";
-export const AI_ENRICHMENT_API = "/v1/ai-enrichment";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
 export const CLEAR_BOOKMARK_TRASH_API = "/bookmark/clear-bookmark-trash";
 export const ADD_REMAINING_BOOKMARK_API = "/bookmark/add-remaining-bookmark-data";
@@ -98,7 +96,6 @@ export const FETCH_PUBLIC_BOOKMARK_BY_ID_API = "/api/bookmark/fetch-public-bookm
 export const PUBLIC_PAGE_SSR_ITEM_LIMIT = 24;
 
 // tags api
-export const FETCH_USER_TAGS_API = "/tags/fetch-user-tags";
 export const ADD_TAG_TO_BOOKMARK_API = "/tags/add-tag-to-bookmark";
 export const REMOVE_TAG_FROM_BOOKMARK_API = "/tags/remove-tag-from-bookmark";
 export const CREATE_AND_ASSIGN_TAG_API = "/tags/create-and-assign-tag";
@@ -115,18 +112,11 @@ export const REMOVE_CATEGORY_FROM_BOOKMARK_API = "/category/remove-category-from
 // share api
 export const FETCH_PUBLIC_CATEGORY_BOOKMARKS_API = "/fetch-public-category-bookmarks";
 // collab share api
-export const FETCH_SHARED_CATEGORIES_DATA_API = "/share/fetch-shared-categories-data";
 export const UPDATE_SHARED_CATEGORY_USER_ROLE_API = "/share/update-shared-category-user-role";
-export const DELETE_SHARED_CATEGORIES_USER_API = "/share/delete-shared-categories-user";
-export const SEND_COLLABORATION_EMAIL_API = "/share/send-collaboration-email";
 export const SEND_EMAIL = "/share/send-email";
 // profiles api
 export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
 export const UPDATE_USER_PROFILE_API = "/profiles/update-user-profile";
-export const FETCH_USER_PROFILE_PIC_API = "/profiles/fetch-user-profile-pic";
-export const UPDATE_USERNAME_API = "/profiles/update-username";
-export const DELETE_USER_API = "/profiles/delete-user";
-export const REMOVE_PROFILE_PIC_API = "/profiles/remove-profile-pic";
 export const TOGGLE_PREFERRED_OG_DOMAIN_API = "/profiles/toggle-preferred-og-domain";
 export const TOGGLE_FAVORITE_CATEGORY_API = "/profiles/toggle-favorite-category";
 
@@ -138,9 +128,6 @@ export const UPLOAD_FILE_API = "/file/upload-file";
 export const UPLOAD_FILE_REMAINING_DATA_API = "/file/upload-file-remaining-data";
 
 // user settings and keys
-export const SAVE_API_KEY_API = "/v1/api-key";
-
-export const GET_API_KEY_API = "/v1/get-gemini-api-key";
 
 // v2 API path constants for ky `api` instance (no leading slash — prefix handles it)
 export const V2_FETCH_BOOKMARKS_DATA_API = "v2/bookmark/fetch-bookmarks-data";
@@ -149,14 +136,26 @@ export const V2_CHECK_GEMINI_API_KEY_API = "v2/check-gemini-api-key";
 export const V2_FETCH_BOOKMARK_BY_ID_API = "v2/bookmarks/get/fetch-by-id";
 export const V2_FETCH_BOOKMARKS_COUNT_API = "v2/bookmark/fetch-bookmarks-count";
 export const V2_FETCH_BOOKMARKS_VIEW_API = "v2/bookmark/fetch-bookmarks-view";
+export const V2_GET_MEDIA_TYPE_API = "v2/bookmarks/get/get-media-type";
 export const V2_MARK_ONBOARDED_API = "v2/profiles/mark-onboarded";
 export const V2_UPDATE_CATEGORY_ORDER_API = "v2/category/update-category-order";
 export const V2_UPDATE_USER_PROFILE_API = "v2/profiles/update-user-profile";
 export const V2_UPLOAD_FILE_REMAINING_DATA_API = "v2/file/upload-file-remaining-data";
 export const V2_GET_PDF_BUFFER_API = "v2/bookmarks/get/get-pdf-buffer";
 export const V2_FETCH_PUBLIC_CATEGORY_BOOKMARKS_API = "v2/fetch-public-category-bookmarks";
-
-export const DELETE_API_KEY_API = "/v1/delete-api-key";
+export const V2_SAVE_API_KEY_API = "v2/api-key";
+export const V2_DELETE_API_KEY_API = "v2/delete-api-key";
+export const V2_DELETE_USER_API = "v2/profiles/delete-user";
+export const V2_REMOVE_PROFILE_PIC_API = "v2/profiles/remove-profile-pic";
+export const V2_UPDATE_USERNAME_API = "v2/profiles/update-username";
+export const V2_DELETE_SHARED_CATEGORIES_USER_API = "v2/share/delete-shared-categories-user";
+export const V2_SEND_COLLABORATION_EMAIL_API = "v2/share/send-collaboration-email";
+export const V2_GET_GEMINI_API_KEY_API = "v2/get-gemini-api-key";
+export const V2_FETCH_USER_PROFILE_PIC_API = "v2/profiles/fetch-user-profile-pic";
+export const V2_FETCH_SHARED_CATEGORIES_DATA_API = "v2/share/fetch-shared-categories-data";
+export const V2_FETCH_USER_TAGS_API = "v2/tags/fetch-user-tags";
+export const V2_AI_ENRICHMENT_API = "v2/ai-enrichment";
+export const V2_SCREENSHOT_API = "v2/screenshot";
 
 // Screenshot api
 export const SCREENSHOT_API = "https://vercel-puppeteer-screenshot-api.vercel.app";

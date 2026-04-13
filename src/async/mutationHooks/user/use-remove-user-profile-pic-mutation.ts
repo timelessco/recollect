@@ -1,17 +1,20 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useSupabaseSession } from "../../../store/componentStore";
-import { USER_PROFILE, USER_PROFILE_PIC } from "../../../utils/constants";
-import { removeUserProfilePic } from "../../supabaseCrudHelpers";
+import { api } from "@/lib/api-helpers/api-v2";
 
-// update username
+import { useSupabaseSession } from "../../../store/componentStore";
+import {
+  USER_PROFILE,
+  USER_PROFILE_PIC,
+  V2_REMOVE_PROFILE_PIC_API,
+} from "../../../utils/constants";
+
 export default function useRemoveUserProfilePicMutation() {
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state.session);
   const removeProfilePic = useMutation({
-    mutationFn: removeUserProfilePic,
+    mutationFn: () => api.delete(V2_REMOVE_PROFILE_PIC_API, { json: {} }).json(),
     onSuccess: () => {
-      // Invalidate and refetch
       void queryClient.invalidateQueries({
         queryKey: [USER_PROFILE, session?.user?.id],
       });

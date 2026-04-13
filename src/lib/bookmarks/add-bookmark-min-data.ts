@@ -23,6 +23,7 @@ import {
   NEXT_API_URL,
   OG_IMAGE_PREFERRED_SITES,
   SKIP_OG_IMAGE_DOMAINS,
+  V2_GET_MEDIA_TYPE_API,
 } from "@/utils/constants";
 import { vet } from "@/utils/try";
 
@@ -47,7 +48,7 @@ async function getMediaType(url: string): Promise<null | string> {
   try {
     const encodedUrl = encodeURIComponent(url);
     const response = await fetch(
-      `${getBaseUrl()}${NEXT_API_URL}/v1/bookmarks/get/get-media-type?url=${encodedUrl}`,
+      `${getBaseUrl()}${NEXT_API_URL}/${V2_GET_MEDIA_TYPE_API}?url=${encodedUrl}`,
       { method: "GET" },
     );
 

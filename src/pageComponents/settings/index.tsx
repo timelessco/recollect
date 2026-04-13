@@ -7,14 +7,13 @@ import { isNil, isNull } from "lodash";
 import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
 
 import { ToggleDarkMode } from "@/components/toggleDarkMode";
-import { useSupabaseSession } from "@/store/componentStore";
 import { cn } from "@/utils/tailwind-merge";
 
 import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
+import useDeleteUserMutation from "../../async/mutationHooks/user/use-delete-user-mutation";
+import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/use-remove-user-profile-pic-mutation";
+import useUpdateUsernameMutation from "../../async/mutationHooks/user/use-update-username-mutation";
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
-import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
-import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/useRemoveUserProfilePicMutation";
-import useUpdateUsernameMutation from "../../async/mutationHooks/user/useUpdateUsernameMutation";
 import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
@@ -51,7 +50,6 @@ interface SettingsProps {
 
 const Settings = ({ onNavigate }: SettingsProps) => {
   const inputFileRef = useRef<HTMLInputElement>(null);
-  const session = useSupabaseSession((state) => state.session);
 
   const { userProfileData } = useFetchUserProfile();
 
@@ -73,17 +71,12 @@ const Settings = ({ onNavigate }: SettingsProps) => {
     }
 
     try {
-      const response = await mutationApiCall(
-        updateUsernameMutation.mutateAsync({
-          id: session!.user!.id,
-          username: data?.username,
-        }),
-      );
-      if (!isNil(response?.data)) {
-        successToast("User name has been updated");
-      }
-    } catch (error) {
-      console.error(error);
+      await updateUsernameMutation.mutateAsync({
+        username: data?.username,
+      });
+      successToast("User name has been updated");
+    } catch {
+      errorToast("Failed to update username. Please try again.");
     }
   };
 
@@ -221,13 +214,11 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                 isDisabled={isNull(userData?.profile_pic)}
                 onClick={() => {
                   async function removePic() {
-                    const response = await mutationApiCall(
-                      removeProfilePic.mutateAsync({
-                        id: userData!.id,
-                      }),
-                    );
-                    if (isNull(response?.error)) {
+                    try {
+                      await removeProfilePic.mutateAsync();
                       successToast("Profile pic has been removed");
+                    } catch {
+                      errorToast("Failed to remove profile pic. Please try again.");
                     }
                   }
 
