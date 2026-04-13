@@ -7,7 +7,6 @@ import isNull from "lodash/isNull";
 import type {
   AddBookmarkMinDataPayloadTypes,
   AddBookmarkScreenshotPayloadTypes,
-  BookmarkViewDataTypes,
   CategoriesData,
   DeleteBookmarkPayload,
   DeleteUserCategoryApiPayload,
@@ -29,8 +28,11 @@ import type {
   UserProfilePicTypes,
   UserTagsData,
 } from "../../types/apiTypes";
+import type { GetMediaTypeOutputSchema } from "@/app/api/v2/bookmarks/get/get-media-type/schema";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { z } from "zod";
 
+import { api } from "@/lib/api-helpers/api-v2";
 import { handleClientError } from "@/utils/error-utils/client";
 
 import {
@@ -42,15 +44,12 @@ import {
   DELETE_SHARED_CATEGORIES_USER_API,
   DELETE_USER_API,
   DELETE_USER_CATEGORIES_API,
-  FETCH_BOOKMARKS_VIEW,
   FETCH_SHARED_CATEGORIES_DATA_API,
   FETCH_USER_CATEGORIES_API,
   FETCH_USER_PROFILE_API,
   FETCH_USER_PROFILE_PIC_API,
   FETCH_USER_TAGS_API,
   GET_API_KEY_API,
-  GET_MEDIA_TYPE_API,
-  getBaseUrl,
   MOVE_BOOKMARK_TO_TRASH_API,
   NEXT_API_URL,
   REMOVE_PROFILE_PIC_API,
@@ -65,7 +64,7 @@ import {
   GEMINI_MODEL,
 } from "../../utils/constants";
 // eslint-disable-next-line import/no-cycle -- circular dep between helpers and supabaseCrudHelpers needs structural refactor
-import { isUserInACategory, parseUploadFileName } from "../../utils/helpers";
+import { parseUploadFileName } from "../../utils/helpers";
 
 // user settings and keys
 export const saveApiKey = async ({
@@ -202,42 +201,6 @@ export const fetchUserTags = async (): Promise<{
     const response = await axios.get<{ data: UserTagsData[]; error: Error }>(
       `${NEXT_API_URL}${FETCH_USER_TAGS_API}`,
     );
-    return response?.data;
-  } catch (error_) {
-    const error = error_ as Error;
-    return { data: null, error };
-  }
-};
-
-export const fetchBookmarksViews = async ({
-  category_id,
-}: {
-  category_id: null | number | string;
-}): Promise<{ data: BookmarkViewDataTypes | null; error: Error }> => {
-  if (!isUserInACategory(category_id as string)) {
-    return {
-      data: null,
-      error: { message: "user not in category", name: "user not in category" },
-    };
-  }
-
-  if (isNull(category_id)) {
-    return {
-      data: null,
-      error: {
-        message: "no access token and category id is null",
-        name: "no access token and category id is nul",
-      },
-    };
-  }
-
-  try {
-    const response = await axios.post<{
-      data: BookmarkViewDataTypes | null;
-      error: Error;
-    }>(`${NEXT_API_URL}${FETCH_BOOKMARKS_VIEW}`, {
-      category_id: isNull(category_id) ? 0 : category_id,
-    });
     return response?.data;
   } catch (error_) {
     const error = error_ as Error;
@@ -518,25 +481,16 @@ export const signOut = async (supabase: SupabaseClient<any, "public", any>) => {
   await supabase.auth.signOut({ scope: "local" });
 };
 
+type GetMediaTypeResponse = z.infer<typeof GetMediaTypeOutputSchema>;
+
 export const getMediaType = async (url: string): Promise<null | string> => {
   try {
-    const encodedUrl = encodeURIComponent(url);
-
-    const response = await fetch(
-      `${getBaseUrl()}${NEXT_API_URL}${GET_MEDIA_TYPE_API}?url=${encodedUrl}`,
-      { method: "GET" },
-    );
-
-    if (!response.ok) {
-      console.error("Error in getting media type");
-      return null;
-    }
-
-    const data = (await response.json()) as { mediaType?: string };
+    const data = await api
+      .get("v2/bookmarks/get/get-media-type", { searchParams: { url } })
+      .json<GetMediaTypeResponse>();
 
     return data.mediaType ?? null;
-  } catch (error) {
-    console.error("Error getting media type:", error);
+  } catch {
     return null;
   }
 };

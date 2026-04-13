@@ -71,8 +71,6 @@ export const PREVIEW_PATH = "/preview";
 
 export const PAGINATION_LIMIT = 25;
 
-// this api is to get the media type of the url
-export const GET_MEDIA_TYPE_API = "/v1/bookmarks/get/get-media-type";
 // this api is to get the pdf buffer
 export const GET_PDF_BUFFER_API = "/v1/bookmarks/get/get-pdf-buffer";
 
@@ -89,7 +87,6 @@ export const WORKER_SCREENSHOT_API = "/v1/screenshot";
 export const AI_ENRICHMENT_API = "/v1/ai-enrichment";
 export const MOVE_BOOKMARK_TO_TRASH_API = "/bookmark/move-bookmark-to-trash";
 export const CLEAR_BOOKMARK_TRASH_API = "/bookmark/clear-bookmark-trash";
-export const FETCH_BOOKMARKS_VIEW = "/bookmark/fetch-bookmarks-view";
 export const ADD_REMAINING_BOOKMARK_API = "/bookmark/add-remaining-bookmark-data";
 
 export const TOGGLE_BOOKMARK_DISCOVERABLE_API = "/bookmark/toggle-discoverable-on-bookmark";
@@ -151,6 +148,7 @@ export const V2_SEARCH_BOOKMARKS_API = "v2/bookmark/search-bookmarks";
 export const V2_CHECK_GEMINI_API_KEY_API = "v2/check-gemini-api-key";
 export const V2_FETCH_BOOKMARK_BY_ID_API = "v2/bookmarks/get/fetch-by-id";
 export const V2_FETCH_BOOKMARKS_COUNT_API = "v2/bookmark/fetch-bookmarks-count";
+export const V2_FETCH_BOOKMARKS_VIEW_API = "v2/bookmark/fetch-bookmarks-view";
 export const V2_MARK_ONBOARDED_API = "v2/profiles/mark-onboarded";
 
 export const DELETE_API_KEY_API = "/v1/delete-api-key";

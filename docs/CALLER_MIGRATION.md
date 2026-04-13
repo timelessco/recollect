@@ -24,7 +24,7 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 | 3   |        | `/api/bookmark/add-url-screenshot`          | `/api/v2/bookmark/add-url-screenshot`          | web  | `ADD_URL_SCREENSHOT_API`     | supabaseCrudHelpers → useAddBookmarkScreenshotMutation                |
 | 4   |        | `/api/bookmark/fetch-bookmarks-count`       | `/api/v2/bookmark/fetch-bookmarks-count`       | web  | `FETCH_BOOKMARKS_COUNT`      | supabaseCrudHelpers → useFetchBookmarksCount                          |
 | 5   |        | `/api/bookmark/fetch-bookmarks-data`        | `/api/v2/bookmark/fetch-bookmarks-data`        | web  | `FETCH_BOOKMARKS_DATA_API`   | supabaseCrudHelpers → useFetchPaginatedBookmarks                      |
-| 6   |        | `/api/bookmark/fetch-bookmarks-view`        | `/api/v2/bookmark/fetch-bookmarks-view`        | web  | `FETCH_BOOKMARKS_VIEW`       | supabaseCrudHelpers → useFetchBookmarksView                           |
+| 6   | x      | `/api/bookmark/fetch-bookmarks-view`        | `/api/v2/bookmark/fetch-bookmarks-view`        | web  | `FETCH_BOOKMARKS_VIEW`       | supabaseCrudHelpers → useFetchBookmarksView                           |
 | 7   |        | `/api/bookmark/search-bookmarks`            | `/api/v2/bookmark/search-bookmarks`            | web  | `SEARCH_BOOKMARKS`           | supabaseCrudHelpers → useSearchBookmarks                              |
 
 ### Bookmark (v1-prefixed)
