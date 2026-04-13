@@ -306,7 +306,18 @@ $function$;
 COMMENT ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint, jsonb) IS
   'Bookmark search with URL/tag/category filters and color hints. Color hints are an array of {tag_name,l,a,b} entries; a row matches a hint when it has a tag with that name OR its dominant image colors fall within OKLAB distance. Tag-matched rows always sort above color-only matches (strict precedence). Capped at 3 hints by the route handler.';
 
--- PART 4: Smoke verification — function exists with new signature
+-- PART 4: Restore access controls (lost when signature changed in 20260330)
+-- Original pattern from 20260105000100_add_discover_changes.sql
+
+REVOKE EXECUTE ON FUNCTION public.color_matches_oklab(jsonb, double precision, double precision, double precision) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.color_matches_oklab(jsonb, double precision, double precision, double precision) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.color_matches_oklab(jsonb, double precision, double precision, double precision) TO anon;
+
+REVOKE EXECUTE ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint, jsonb) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint, jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint, jsonb) TO anon;
+
+-- PART 5: Smoke verification — function exists with new signature
 DO $$
 DECLARE
   v_helper_exists int;
