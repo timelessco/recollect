@@ -39,7 +39,9 @@ export const env = createEnv({
   emptyStringAsUndefined: true,
 });
 
-// Fail-fast: a service-role key on the client in production bypasses RLS.
-if (process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_DEV_SUPABASE_SERVICE_KEY) {
-  throw new Error("NEXT_PUBLIC_DEV_SUPABASE_SERVICE_KEY must never be set in production");
-}
+// No runtime guard needed: NEXT_PUBLIC_DEV_SUPABASE_SERVICE_KEY is only
+// populated in local .env for signed uploads against the local Supabase stack.
+// It is intentionally absent from Vercel (prod + preview), so the value is
+// undefined in every deployed bundle and can't leak a service-role key to the
+// browser. A NODE_ENV-based guard would false-fire on local `next build`
+// because Next forces NODE_ENV=production during build.

@@ -49,8 +49,25 @@ function parseScreenshotResponse(json: unknown) {
         typeof metaData.isPageScreenshot === "boolean" ? metaData.isPageScreenshot : undefined,
       title: typeof metaData.title === "string" ? metaData.title : undefined,
     },
-    screenshotData: typeof screenshot.data === "string" ? screenshot.data : "",
+    screenshotBuffer: extractScreenshotBuffer(screenshot.data),
   };
+}
+
+/**
+ * The screenshot service returns the JPEG as Node's serialized Buffer shape
+ * (`{ type: "Buffer", data: number[] }`) — `JSON.stringify(buffer)` produces this.
+ * v1 worked because it called `Buffer.from(numberArray)` directly. v2's old
+ * `typeof === "string"` guard silently dropped the array and uploaded 0 bytes,
+ * which broke downstream blurhash + Gemini image analysis.
+ */
+function extractScreenshotBuffer(data: unknown): Buffer {
+  if (Array.isArray(data)) {
+    return Buffer.from(data as number[]);
+  }
+  if (typeof data === "string") {
+    return Buffer.from(data, "base64");
+  }
+  return Buffer.alloc(0);
 }
 
 /* oxlint-enable @typescript-eslint/no-unsafe-type-assertion */
@@ -112,9 +129,7 @@ export const POST = createAxiomRouteHandler(
 
       // Path B — Screenshot SUCCEEDED
       // 2. Upload screenshot to R2
-      const base64data = Buffer.from(screenshotResponse.screenshotData, "binary").toString(
-        "base64",
-      );
+      const base64data = screenshotResponse.screenshotBuffer.toString("base64");
 
       const { description, isPageScreenshot, title } = screenshotResponse.metaData ?? {};
 
