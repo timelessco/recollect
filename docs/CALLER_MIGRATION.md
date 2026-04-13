@@ -21,7 +21,7 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 | --- | ------ | ------------------------------------------- | ---------------------------------------------- | ---- | ---------------------------- | --------------------------------------------------------------------- |
 | 1   |        | `/api/bookmark/add-bookmark-min-data`       | `/api/v2/bookmark/add-bookmark-min-data`       | web  | `ADD_BOOKMARK_MIN_DATA`      | supabaseCrudHelpers → useAddBookmarkMinDataOptimisticMutation         |
 | 2   |        | `/api/bookmark/add-remaining-bookmark-data` | `/api/v2/bookmark/add-remaining-bookmark-data` | s2s  | `ADD_REMAINING_BOOKMARK_API` | Pages Router handler only (add-bookmark-min-data, add-url-screenshot) |
-| 3   |        | `/api/bookmark/add-url-screenshot`          | `/api/v2/bookmark/add-url-screenshot`          | web  | `ADD_URL_SCREENSHOT_API`     | supabaseCrudHelpers → useAddBookmarkScreenshotMutation                |
+| 3   | x      | `/api/bookmark/add-url-screenshot`          | `/api/v2/bookmark/add-url-screenshot`          | web  | `ADD_URL_SCREENSHOT_API`     | supabaseCrudHelpers → useAddBookmarkScreenshotMutation                |
 | 4   |        | `/api/bookmark/fetch-bookmarks-count`       | `/api/v2/bookmark/fetch-bookmarks-count`       | web  | `FETCH_BOOKMARKS_COUNT`      | supabaseCrudHelpers → useFetchBookmarksCount                          |
 | 5   |        | `/api/bookmark/fetch-bookmarks-data`        | `/api/v2/bookmark/fetch-bookmarks-data`        | web  | `FETCH_BOOKMARKS_DATA_API`   | supabaseCrudHelpers → useFetchPaginatedBookmarks                      |
 | 6   | x      | `/api/bookmark/fetch-bookmarks-view`        | `/api/v2/bookmark/fetch-bookmarks-view`        | web  | `FETCH_BOOKMARKS_VIEW`       | supabaseCrudHelpers → useFetchBookmarksView                           |
@@ -42,7 +42,7 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 
 | #   | Status | Old Path                              | v2 Path                                  | Repo | Constant                    | Caller                                                         |
 | --- | ------ | ------------------------------------- | ---------------------------------------- | ---- | --------------------------- | -------------------------------------------------------------- |
-| 15  |        | `/api/category/fetch-user-categories` | `/api/v2/category/fetch-user-categories` | web  | `FETCH_USER_CATEGORIES_API` | supabaseCrudHelpers → useFetchCategories                       |
+| 15  | x      | `/api/category/fetch-user-categories` | `/api/v2/category/fetch-user-categories` | web  | `FETCH_USER_CATEGORIES_API` | supabaseCrudHelpers → useFetchCategories                       |
 | 16  |        | `/api/category/update-category-order` | `/api/v2/category/update-category-order` | web  | `UPDATE_CATEGORY_ORDER_API` | supabaseCrudHelpers → useUpdateCategoryOrderOptimisticMutation |
 
 ### Tags
@@ -60,7 +60,7 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 | 20  |        | `/api/share/fetch-shared-categories-data`     | `/api/v2/share/fetch-shared-categories-data`     | web  | `FETCH_SHARED_CATEGORIES_DATA_API`     | supabaseCrudHelpers → useFetchSharedCategories                    |
 | 21  | x      | `/api/share/send-collaboration-email`         | `/api/v2/share/send-collaboration-email`         | web  | `SEND_COLLABORATION_EMAIL_API`         | supabaseCrudHelpers → useSendCollaborationEmailInviteMutation     |
 | 22  |        | `/api/share/send-email`                       | `/api/v2/share/send-email`                       | s2s  | `SEND_EMAIL`                           | Pages Router handler only (send-collaboration-email)              |
-| 23  |        | `/api/share/update-shared-category-user-role` | `/api/v2/share/update-shared-category-user-role` | web  | `UPDATE_SHARED_CATEGORY_USER_ROLE_API` | supabaseCrudHelpers → useUpdateSharedCategoriesUserAccessMutation |
+| 23  | x      | `/api/share/update-shared-category-user-role` | `/api/v2/share/update-shared-category-user-role` | web  | `UPDATE_SHARED_CATEGORY_USER_ROLE_API` | supabaseCrudHelpers → useUpdateSharedCategoriesUserAccessMutation |
 
 ### Profiles
 

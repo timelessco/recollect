@@ -25,10 +25,7 @@ export default function useGetSortBy() {
 
   const userId = session?.user?.id;
 
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
-    CATEGORIES_KEY,
-    userId,
-  ]);
+  const categoryData = queryClient.getQueryData<CategoriesData[]>([CATEGORIES_KEY, userId]);
 
   const userProfilesData = queryClient.getQueryData<{ data: ProfilesTableTypes[] }>([
     USER_PROFILE,
@@ -41,7 +38,7 @@ export default function useGetSortBy() {
 
   const isInNonCategoryPage = typeof categoryId !== "number";
 
-  const currentCategory = find(categoryData?.data, (item) => item?.id === categoryId);
+  const currentCategory = find(categoryData, (item) => item?.id === categoryId);
 
   const getSortValue = () => {
     if (!isInNonCategoryPage) {

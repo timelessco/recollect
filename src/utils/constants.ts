@@ -79,7 +79,6 @@ export const GET_PDF_BUFFER_API = "/v1/bookmarks/get/get-pdf-buffer";
 // bookmark api
 export const DELETE_BOOKMARK_DATA_API = "/bookmark/delete-bookmark";
 export const ADD_BOOKMARK_MIN_DATA = "/bookmark/add-bookmark-min-data";
-export const ADD_URL_SCREENSHOT_API = "/bookmark/add-url-screenshot";
 
 export const FETCH_BOOKMARKS_DISCOVERABLE_API = "/bookmark/fetch-bookmarks-discoverable";
 export const FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API = "/bookmark/fetch-discoverable-by-id";
@@ -103,7 +102,6 @@ export const ADD_TAG_TO_BOOKMARK_API = "/tags/add-tag-to-bookmark";
 export const REMOVE_TAG_FROM_BOOKMARK_API = "/tags/remove-tag-from-bookmark";
 export const CREATE_AND_ASSIGN_TAG_API = "/tags/create-and-assign-tag";
 // category api
-export const FETCH_USER_CATEGORIES_API = "/category/fetch-user-categories";
 export const CREATE_USER_CATEGORIES_API = "/category/create-user-category";
 export const DELETE_USER_CATEGORIES_API = "/category/delete-user-category";
 export const UPDATE_USER_CATEGORIES_API = "/category/update-user-category";
@@ -116,7 +114,6 @@ export const REMOVE_CATEGORY_FROM_BOOKMARK_API = "/category/remove-category-from
 export const FETCH_PUBLIC_CATEGORY_BOOKMARKS_API = "/fetch-public-category-bookmarks";
 // collab share api
 export const FETCH_SHARED_CATEGORIES_DATA_API = "/share/fetch-shared-categories-data";
-export const UPDATE_SHARED_CATEGORY_USER_ROLE_API = "/share/update-shared-category-user-role";
 export const SEND_EMAIL = "/share/send-email";
 // profiles api
 export const FETCH_USER_PROFILE_API = "/profiles/fetch-user-profile";
@@ -152,6 +149,9 @@ export const V2_REMOVE_PROFILE_PIC_API = "v2/profiles/remove-profile-pic";
 export const V2_UPDATE_USERNAME_API = "v2/profiles/update-username";
 export const V2_DELETE_SHARED_CATEGORIES_USER_API = "v2/share/delete-shared-categories-user";
 export const V2_SEND_COLLABORATION_EMAIL_API = "v2/share/send-collaboration-email";
+export const V2_FETCH_USER_CATEGORIES_API = "v2/category/fetch-user-categories";
+export const V2_UPDATE_SHARED_CATEGORY_USER_ROLE_API = "v2/share/update-shared-category-user-role";
+export const V2_ADD_URL_SCREENSHOT_API = "v2/bookmark/add-url-screenshot";
 
 // Screenshot api
 export const SCREENSHOT_API = "https://vercel-puppeteer-screenshot-api.vercel.app";

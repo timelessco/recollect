@@ -4,7 +4,7 @@ import { find, isEmpty } from "lodash";
 
 import type { BookmarkViewDataTypes } from "../types/apiTypes";
 
-import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "@/async/queryHooks/category/use-fetch-categories";
 import useFetchSharedCategories from "@/async/queryHooks/share/useFetchSharedCategories";
 import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
 import { getPageViewData, getPageViewKey } from "@/utils/bookmarksViewKeyed";
@@ -33,17 +33,11 @@ const useGetViewValue = (
   const { sharedCategoriesData } = useFetchSharedCategories();
   const { userProfileData: userProfilesData } = useFetchUserProfile();
 
-  const currentCategoryData = find(
-    categoryData?.data,
-    (item) => item?.category_slug === categorySlug,
-  );
+  const currentCategoryData = find(categoryData, (item) => item?.category_slug === categorySlug);
 
   const isUserTheCategoryOwner = userId === currentCategoryData?.user_id?.id;
 
-  const categoryIdFromSlug = find(
-    categoryData?.data,
-    (item) => item?.category_slug === categorySlug,
-  )?.id;
+  const categoryIdFromSlug = find(categoryData, (item) => item?.category_slug === categorySlug)?.id;
 
   if (!isPublicPage) {
     if (categorySlug && isUserInACategory(categorySlug)) {

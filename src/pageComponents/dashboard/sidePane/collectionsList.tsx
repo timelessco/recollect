@@ -14,7 +14,7 @@ import type {
 import type { CollectionItemTypes } from "./singleListItemComponent";
 
 import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
-import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "../../../async/queryHooks/category/use-fetch-categories";
 import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
@@ -33,17 +33,14 @@ import { useHandleBookmarksDrop } from "./use-handle-bookmarks-drop";
 const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state.session);
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
+  const categoryData = queryClient.getQueryData<CategoriesData[]>([
     CATEGORIES_KEY,
     session?.user?.id,
   ]);
 
   const userId = session?.user?.id;
 
-  const singleCategoryData = find(
-    categoryData?.data,
-    (item) => item.category_name === collectionName,
-  );
+  const singleCategoryData = find(categoryData, (item) => item.category_name === collectionName);
 
   const isUserCollectionOwner = singleCategoryData?.user_id?.id === userId;
 
@@ -66,14 +63,14 @@ const CollectionsList = () => {
 
   const currentPath = useGetCurrentUrlPath();
 
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
+  const categoryData = queryClient.getQueryData<CategoriesData[]>([
     CATEGORIES_KEY,
     session?.user?.id,
   ]);
 
-  const sharedCategoriesData = queryClient.getQueryData<{ data: FetchSharedCategoriesData[] }>([
-    SHARED_CATEGORIES_TABLE_NAME,
-  ]);
+  const sharedCategoriesData = queryClient.getQueryData<{
+    data: FetchSharedCategoriesData[];
+  }>([SHARED_CATEGORIES_TABLE_NAME]);
 
   const bookmarksCountData = queryClient.getQueryData<BookmarksCountTypes>([
     BOOKMARKS_COUNT_KEY,
@@ -83,7 +80,7 @@ const CollectionsList = () => {
   const favoriteCategories = userProfileData?.data?.[0]?.favorite_categories ?? [];
 
   const collectionsList = session
-    ? categoryData?.data?.map((item) => ({
+    ? categoryData?.map((item) => ({
         count: find(
           bookmarksCountData?.categoryCount,
           (catItem) => catItem?.category_id === item?.id,

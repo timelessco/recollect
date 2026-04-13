@@ -30,11 +30,8 @@ export default function useDeleteCategoryOptimisticMutation() {
       // Optimistically update to the new value
       queryClient.setQueryData(
         [CATEGORIES_KEY, session?.user?.id],
-        (old: { data: CategoriesData[] } | undefined) =>
-          ({
-            ...old,
-            data: old?.data?.filter((item) => item?.id !== data?.category_id),
-          }) as { data: CategoriesData[] },
+        (old: CategoriesData[] | undefined) =>
+          old?.filter((item) => item?.id !== data?.category_id) ?? [],
       );
 
       // Return a context object with the snapshotted value

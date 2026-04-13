@@ -19,7 +19,7 @@ import { cn } from "@/utils/tailwind-merge";
 
 import loaderGif from "../../../../public/loader-gif.gif";
 import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/use-fetch-bookmarks-count";
-import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "../../../async/queryHooks/category/use-fetch-categories";
 import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
@@ -82,8 +82,8 @@ const CardSection = ({
 
   const showAvatar =
     !isPublicPage &&
-    (find(allCategories?.data, (item) => item?.category_slug === categorySlug)?.collabData
-      ?.length ?? 0) > 1;
+    (find(allCategories, (item) => item?.category_slug === categorySlug)?.collabData?.length ?? 0) >
+      1;
   const isBookmarkLoading = useLoadersStore((state) => state.isBookmarkAdding);
   const { lightboxId, lightboxOpen, setLightboxId, setLightboxOpen } = useMiscellaneousStore();
   // Handle route changes for lightbox

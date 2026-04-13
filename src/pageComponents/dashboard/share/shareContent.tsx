@@ -12,7 +12,7 @@ import { cn } from "@/utils/tailwind-merge";
 
 import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/use-delete-shared-categories-user-mutation";
 import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/use-send-collaboration-email-invite-mutation";
-import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "../../../async/queryHooks/category/use-fetch-categories";
 import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
 import Input from "../../../components/atoms/input";
 import { Spinner } from "../../../components/spinner";
@@ -187,7 +187,7 @@ const ShareContent = (props: ShareContentProps) => {
     }
   };
 
-  const currentCategory = find(categoryData?.data ?? [], (item) => item?.id === dynamicCategoryId);
+  const currentCategory = find(categoryData ?? [], (item) => item?.id === dynamicCategoryId);
 
   const isUserTheCategoryOwner = currentCategory?.user_id?.id === session?.user?.id;
 
