@@ -17,3 +17,18 @@
 
 
 
+
+## 2026-04-13 [`9167465`](https://github.com/timelessco/recollect/commit/91674655483bd06d4da13dec73d30e8ab6995de4)
+
+
+
+### API Changes
+
+### PATCH /v2/share/update-shared-category-user-role
+-  added the new optional request property 'updateData/category_views'
+
+
+
+
+
+
