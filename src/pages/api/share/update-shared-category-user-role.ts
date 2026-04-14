@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use the v2 App Router endpoint instead: /api/v2/share/update-shared-category-user-role
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
 import type { NextApiResponse } from "next";
 
 import isNull from "lodash/isNull";

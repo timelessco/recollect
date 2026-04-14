@@ -1,6 +1,6 @@
 ---
 name: building-dashboards
-description: Designs and builds Axiom dashboards via API. Covers chart types, APL and metrics/MPL query patterns, SmartFilters, layout, and configuration options. Use when creating dashboards, migrating from Splunk, or configuring chart options.
+description: building-dashboards
 ---
 
 # Building Dashboards

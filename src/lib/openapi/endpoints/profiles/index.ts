@@ -4,6 +4,7 @@ export { v2CheckGeminiApiKeySupplement } from "./v2-check-gemini-api-key";
 export { v2DeleteUserSupplement } from "./v2-delete-user";
 export { v2FetchUserProfileSupplement } from "./v2-fetch-user-profile";
 export { v2FetchUserProfilePicSupplement } from "./v2-fetch-user-profile-pic";
+export { v2MarkOnboardedSupplement } from "./v2-mark-onboarded";
 export { v2RemoveProfilePicSupplement } from "./v2-remove-profile-pic";
 export { v2UpdateUserProfileSupplement } from "./v2-update-user-profile";
 export { v2UpdateUsernameSupplement } from "./v2-update-username";

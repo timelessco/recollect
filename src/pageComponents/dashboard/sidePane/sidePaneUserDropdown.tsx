@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 
 import isNull from "lodash/isNull";
 
-import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
+import useFetchUserProfile from "@/async/queryHooks/user/use-fetch-user-profile";
 import { Menu } from "@/components/ui/recollect/menu";
 
 import { signOut } from "../../../async/supabaseCrudHelpers";
@@ -58,7 +58,7 @@ const SidePaneUserDropdown = () => {
 
 const SidePaneUserTrigger = () => {
   const { isLoading, userProfileData } = useFetchUserProfile();
-  const userData = userProfileData?.data?.[0];
+  const userData = userProfileData?.[0];
 
   return (
     <div className="-ml-0.25 flex w-4/5 items-center space-x-2">

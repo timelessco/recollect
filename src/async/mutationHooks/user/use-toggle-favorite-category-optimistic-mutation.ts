@@ -7,11 +7,6 @@ import { useSupabaseSession } from "@/store/componentStore";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import { NEXT_API_URL, TOGGLE_FAVORITE_CATEGORY_API, USER_PROFILE } from "@/utils/constants";
 
-interface UserProfileCache {
-  data: null | ProfilesTableTypes[];
-  error?: Error;
-}
-
 interface ToggleFavoriteCategoryInput {
   category_id: number;
 }
@@ -29,7 +24,7 @@ export function useToggleFavoriteCategoryOptimisticMutation() {
     Error,
     ToggleFavoriteCategoryInput,
     typeof queryKey,
-    undefined | UserProfileCache
+    ProfilesTableTypes[] | undefined
   >({
     mutationFn: (payload) =>
       postApi<ToggleFavoriteCategoryResponse>(`${NEXT_API_URL}${TOGGLE_FAVORITE_CATEGORY_API}`, {
@@ -37,7 +32,7 @@ export function useToggleFavoriteCategoryOptimisticMutation() {
       }),
     queryKey,
     updater: (currentData, variables) => {
-      if (!currentData?.data) {
+      if (!currentData) {
         logCacheMiss("Optimistic Update", "User profile cache missing", {
           userId: session?.user?.id,
         });
@@ -46,21 +41,18 @@ export function useToggleFavoriteCategoryOptimisticMutation() {
 
       const { category_id } = variables;
 
-      return {
-        ...currentData,
-        data: currentData.data.map((profile) => {
-          if (profile.id !== session?.user?.id) {
-            return profile;
-          }
+      return currentData.map((profile) => {
+        if (profile.id !== session?.user?.id) {
+          return profile;
+        }
 
-          const existingFavorites = profile.favorite_categories ?? [];
+        const existingFavorites = profile.favorite_categories ?? [];
 
-          return {
-            ...profile,
-            favorite_categories: toggleIdInArray(existingFavorites, category_id),
-          };
-        }),
-      };
+        return {
+          ...profile,
+          favorite_categories: toggleIdInArray(existingFavorites, category_id),
+        };
+      });
     },
   });
 

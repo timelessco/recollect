@@ -7,16 +7,15 @@ import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 import isNull from "lodash/isNull";
 
-import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
-import useFetchBookmarksView from "../../async/queryHooks/bookmarks/useFetchBookmarksView";
-import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
-import useFetchSharedCategories from "../../async/queryHooks/share/useFetchSharedCategories";
-import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
+import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
+import useFetchBookmarksView from "../../async/queryHooks/bookmarks/use-fetch-bookmarks-view";
+import useFetchCategories from "../../async/queryHooks/category/use-fetch-categories";
+import useFetchSharedCategories from "../../async/queryHooks/share/use-fetch-shared-categories";
+import useFetchUserProfile from "../../async/queryHooks/user/use-fetch-user-profile";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
 import { useSupabaseSession } from "../../store/componentStore";
-import { mutationApiCall } from "../../utils/apiHelpers";
 import { BOOKMARKS_KEY, DISCOVER_URL, LOGIN_URL } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
 import { getCategorySlugFromRouter } from "../../utils/url";
@@ -28,9 +27,25 @@ const DashboardLayout = dynamic(() => import("./dashboardLayout"), {
   ssr: false,
 });
 
+// @remotion/player touches `window` on import — ssr: false is required.
+// This is the single split point for the entire onboarding tree: modal code,
+// Remotion composition, icons, and the devices.png image. Users past
+// onboarding never download any of this.
+const OnboardingModal = dynamic(
+  async () => {
+    const m = await import("@/pageComponents/onboarding/onboarding-modal");
+    return { default: m.OnboardingModal };
+  },
+  { ssr: false },
+);
+
 const supabase = createClient();
 
-const Dashboard = () => {
+interface DashboardProps {
+  showOnboarding?: boolean;
+}
+
+const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const categorySlug = getCategorySlugFromRouter(router);
@@ -99,30 +114,25 @@ const Dashboard = () => {
   // if the user email as been changed then this updates the email in the profiles table
   useEffect(() => {
     if (
-      !isNull(userProfileData?.data) &&
-      !isEmpty(userProfileData?.data) &&
-      session?.user?.email !== userProfileData?.data[0]?.email &&
-      userProfileData?.data[0]?.email
+      !isNull(userProfileData) &&
+      !isEmpty(userProfileData) &&
+      session?.user?.email !== userProfileData?.[0]?.email &&
+      userProfileData?.[0]?.email
     ) {
-      void mutationApiCall(
-        updateUserProfileMutateAsync({
-          updateData: { email: session?.user?.email },
-        }),
-      );
+      void updateUserProfileMutateAsync({
+        updateData: { email: session?.user?.email },
+      });
     }
-  }, [session?.user?.email, updateUserProfileMutateAsync, userProfileData?.data]);
+  }, [session?.user?.email, updateUserProfileMutateAsync, userProfileData]);
 
   // this updates the provider in the profiles table if its not present
   useEffect(() => {
-    if (!userProfileData?.data?.[0]?.provider && session?.user?.app_metadata?.provider) {
-      void mutationApiCall(
-        updateUserProfileMutateAsync({
-          updateData: { provider: session?.user?.app_metadata?.provider },
-        }),
-      );
+    if (!userProfileData?.[0]?.provider && session?.user?.app_metadata?.provider) {
+      void updateUserProfileMutateAsync({
+        updateData: { provider: session?.user?.app_metadata?.provider },
+      });
     }
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [userProfileData?.data?.[0]?.provider]);
+  }, [session?.user?.app_metadata?.provider, updateUserProfileMutateAsync, userProfileData]);
 
   const isDiscoverPage = categorySlug === DISCOVER_URL;
 
@@ -144,7 +154,12 @@ const Dashboard = () => {
     return null;
   }
 
-  return <DashboardLayout>{renderMainPaneContent()}</DashboardLayout>;
+  return (
+    <>
+      <DashboardLayout>{renderMainPaneContent()}</DashboardLayout>
+      {showOnboarding ? <OnboardingModal /> : null}
+    </>
+  );
 };
 
 export default Dashboard;

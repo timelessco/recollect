@@ -1,13 +1,6 @@
 ---
 name: recollect-mutation-hook-refactoring
-description: >
-  Mutation hook template refactoring and file renaming for Recollect
-  post-migration cleanup. Covers mutation-hook-template.ts restructuring,
-  file renaming, and structural cleanup after API migration. Use this
-  skill when the user mentions mutation hook template, file renaming,
-  legacy cleanup, post-migration, or structural cleanup. For API caller
-  migration (getApi/postApi patterns with Zod types), use the
-  recollect-caller-migration skill instead.
+description: recollect-mutation-hook-refactoring
 ---
 
 # Mutation Hook Refactoring

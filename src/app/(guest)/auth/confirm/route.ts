@@ -7,6 +7,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
 import { getServerContext } from "@/lib/api-helpers/server-context";
+import { resolveCallbackRedirect } from "@/lib/auth/resolve-callback-redirect";
 import { createServerClient } from "@/lib/supabase/server";
 import { getErrorMessage } from "@/utils/error-utils/error-message";
 
@@ -100,7 +101,17 @@ export const GET = createAxiomRouteHandler(
           ctx.fields.verify_otp_completed = true;
         }
 
-        return successRedirect(request, next);
+        // Route first-time users to /discover so the welcome modal mounts
+        // via [category_id].tsx's SSR gate. Helper fetches the fresh user,
+        // falls open to `next` when getUser can't resolve them, and records
+        // that edge case in Axiom wide events.
+        const destination = await resolveCallbackRedirect(supabase, next);
+
+        if (ctx?.fields) {
+          ctx.fields.first_time_user_redirect = destination !== next;
+        }
+
+        return successRedirect(request, destination);
       } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
         if (ctx?.fields) {

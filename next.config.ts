@@ -12,6 +12,12 @@ const hasSentry = Boolean(
 
 const nextConfig: NextConfig = {
   experimental: {
+    // Dev server preloads every page's JS into memory at startup, bloating RSS on large apps.
+    // Lazy-loading on first request keeps memory low with no steady-state penalty.
+    preloadEntriesOnStart: false,
+    // RSC HMR re-fetches all data on every save, hammering Supabase and slowing refreshes.
+    // Caching fetch responses across HMR cycles eliminates redundant round-trips.
+    serverComponentsHmrCache: true,
     sri: {
       algorithm: "sha256",
     },

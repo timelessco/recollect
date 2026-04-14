@@ -1,6 +1,6 @@
 import type { SettingsPage } from "../dashboard/modals/settings-modal";
 
-import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
+import useFetchUserProfile from "../../async/queryHooks/user/use-fetch-user-profile";
 import { AppleIcon } from "../../icons/apple-icon";
 import { GoogleLoginIcon } from "../../icons/googleLoginIcon";
 import { InfoIcon } from "../../icons/info-icon";
@@ -29,7 +29,7 @@ function SettingsEmailCardContent({ onNavigate }: SettingsEmailCardContentProps)
   const session = useSupabaseSession((state) => state.session);
   const { userProfileData } = useFetchUserProfile();
 
-  const userData = userProfileData?.data?.[0];
+  const userData = userProfileData?.[0];
   const provider = session?.user?.app_metadata?.provider;
   const isEmailProvider = provider === "email";
 

@@ -3,6 +3,10 @@ import { z } from "zod";
 export const UpdateSharedCategoryUserRoleInputSchema = z.object({
   id: z.int().meta({ description: "Shared category record ID to update" }),
   updateData: z.object({
+    category_views: z
+      .unknown()
+      .optional()
+      .meta({ description: "View settings override for this shared category" }),
     edit_access: z
       .boolean()
       .optional()

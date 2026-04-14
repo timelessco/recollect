@@ -265,6 +265,7 @@ export type Database = {
           id: string;
           last_synced_instagram_id: string | null;
           last_synced_twitter_id: string | null;
+          onboarded_at: string | null;
           plan: string;
           plan_updated_at: string | null;
           polar_customer_id: string | null;
@@ -288,6 +289,7 @@ export type Database = {
           id: string;
           last_synced_instagram_id?: string | null;
           last_synced_twitter_id?: string | null;
+          onboarded_at?: string | null;
           plan?: string;
           plan_updated_at?: string | null;
           polar_customer_id?: string | null;
@@ -311,6 +313,7 @@ export type Database = {
           id?: string;
           last_synced_instagram_id?: string | null;
           last_synced_twitter_id?: string | null;
+          onboarded_at?: string | null;
           plan?: string;
           plan_updated_at?: string | null;
           polar_customer_id?: string | null;
@@ -452,6 +455,10 @@ export type Database = {
         Returns: undefined;
       };
       check_bookmarks_view_keyed_shape: { Args: { v: Json }; Returns: boolean };
+      color_matches_oklab: {
+        Args: { colors: Json; hint_a: number; hint_b: number; hint_l: number };
+        Returns: boolean;
+      };
       create_and_assign_tag: {
         Args: { p_bookmark_id: number; p_tag_name: string };
         Returns: {
@@ -673,11 +680,10 @@ export type Database = {
       search_bookmarks_url_tag_scope: {
         Args: {
           category_scope?: number;
-          color_a?: number;
-          color_b?: number;
-          color_l?: number;
+          color_hints?: Json;
           search_text?: string;
           tag_scope?: string[];
+          type_hints?: string[];
           url_scope?: string;
         };
         Returns: {

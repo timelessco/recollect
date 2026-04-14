@@ -1,26 +1,6 @@
 ---
 name: recollect-api-migrator
-description: >
-  Migrates Recollect API routes from Pages Router to App Router v2 paths.
-  Use when asked to "migrate the next route", "implement MIG-XX", or
-  "create v2 endpoint for [route-name]".
-  Examples:
-  <example>
-  Context: Developer is working through the migration plan and wants to move to the next route.
-  user: "Migrate the next route"
-  assistant: "I'll use the recollect-api-migrator agent to discover and migrate the next unchecked MIG-XX route from the requirements file."
-  <commentary>
-  The phrase "migrate the next route" is the primary trigger. The agent should auto-discover the next unchecked item from .planning/REQUIREMENTS.md.
-  </commentary>
-  </example>
-  <example>
-  Context: Developer references a specific ticket number from the migration plan.
-  user: "Implement MIG-07"
-  assistant: "I'll use the recollect-api-migrator agent to migrate the route specified under MIG-07."
-  <commentary>
-  An explicit MIG-XX reference should always trigger this agent. The agent reads the requirements file to resolve the ticket to a source file and v2 target path.
-  </commentary>
-  </example>
+description: Migrates Recollect API routes from Pages Router to App Router v2 paths. Manual-invoke only — do not auto-trigger.
 model: inherit
 color: green
 tools:

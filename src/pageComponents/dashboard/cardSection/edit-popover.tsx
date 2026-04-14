@@ -6,7 +6,7 @@ import type { CategoriesData, SingleListData, UserTagsData } from "@/types/apiTy
 import { useAddTagToBookmarkOptimisticMutation } from "@/async/mutationHooks/tags/use-add-tag-to-bookmark-optimistic-mutation";
 import { useCreateAndAssignTagOptimisticMutation } from "@/async/mutationHooks/tags/use-create-and-assign-tag-optimistic-mutation";
 import { useRemoveTagFromBookmarkOptimisticMutation } from "@/async/mutationHooks/tags/use-remove-tag-from-bookmark-optimistic-mutation";
-import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
+import useFetchUserTags from "@/async/queryHooks/userTags/use-fetch-user-tags";
 import { CollectionIcon } from "@/components/collectionIcon";
 import { Combobox } from "@/components/ui/recollect/combobox";
 import { Popover } from "@/components/ui/recollect/popover";
@@ -116,7 +116,7 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
   const { createAndAssignTagOptimisticMutation } = useCreateAndAssignTagOptimisticMutation();
 
   const selectedTagIds = useBookmarkTags(bookmarkId);
-  const allTags = useMemo(() => userTags?.data ?? [], [userTags?.data]);
+  const allTags = useMemo(() => userTags ?? [], [userTags]);
 
   const tagMap = useMemo(() => new Map(allTags.map((tag) => [tag.id, tag])), [allTags]);
 

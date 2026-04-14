@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use the v2 App Router endpoint instead: /api/v2/category/fetch-user-categories
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
 import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";

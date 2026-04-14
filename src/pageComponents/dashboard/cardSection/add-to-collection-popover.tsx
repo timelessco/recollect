@@ -5,7 +5,7 @@ import isEmpty from "lodash/isEmpty";
 
 import { useAddCategoryToBookmarksOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmarks-optimistic-mutation";
 import { useRemoveCategoryFromBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-remove-category-from-bookmark-optimistic-mutation";
-import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "@/async/queryHooks/category/use-fetch-categories";
 import { CollectionIcon } from "@/components/collectionIcon";
 import { Menu } from "@/components/ui/recollect/menu";
 import { ScrollArea } from "@/components/ui/recollect/scroll-area";
@@ -72,11 +72,11 @@ function AddToCollectionMenuItems({
   const { removeCategoryFromBookmarkOptimisticMutation } =
     useRemoveCategoryFromBookmarkOptimisticMutation();
 
-  if (isEmpty(allCategories?.data)) {
+  if (isEmpty(allCategories)) {
     return null;
   }
 
-  const categories = allCategories?.data ?? [];
+  const categories = allCategories ?? [];
 
   const handleToggle = (categoryId: number, checked: boolean) => {
     const selectedIds = [...selectedKeys].map(Number);

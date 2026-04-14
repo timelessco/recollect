@@ -1,5 +1,7 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-
+/**
+ * @deprecated Use the v2 App Router endpoint instead: /api/v2/profiles/update-username
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
 import type { NextApiResponse } from "next";
 
 import { isEmpty } from "lodash";

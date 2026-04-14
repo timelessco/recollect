@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use the v2 App Router endpoint instead: /api/v2/settings/upload-profile-pic
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
 // oxlint-disable-next-line no-warning-comments -- pre-existing: needs priority fix for profile pic upload
 // TODO: Fix this in priority
 

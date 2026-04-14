@@ -48,7 +48,7 @@ async function getMediaType(url: string): Promise<null | string> {
   try {
     const encodedUrl = encodeURIComponent(url);
     const response = await fetch(
-      `${getBaseUrl()}${NEXT_API_URL}/v1/bookmarks/get/get-media-type?url=${encodedUrl}`,
+      `${getBaseUrl()}${NEXT_API_URL}/v2/bookmarks/get/get-media-type?url=${encodedUrl}`,
       { method: "GET" },
     );
 
@@ -94,13 +94,17 @@ async function processVideo(
   aiToggles: AiToggles,
   userCollections: UserCollection[],
 ): Promise<VideoResult> {
-  if (!thumbnailPath) {
-    throw new RecollectApiError("bad_request", {
-      message: "thumbnailPath is missing for video file",
-    });
+  // Missing thumbnail is degraded, not fatal: client-side codecs/CORS can fail
+  // on legitimate videos. The bookmark still gets created with a null ogImage,
+  // and the rendering layer falls back to the type-icon placeholder.
+  const ctx = getServerContext();
+  if (!thumbnailPath && ctx?.fields) {
+    ctx.fields.video_thumbnail_missing = true;
   }
 
-  const { data: thumbnailUrl } = storageHelpers.getPublicUrl(thumbnailPath);
+  const { data: thumbnailUrl } = thumbnailPath
+    ? storageHelpers.getPublicUrl(thumbnailPath)
+    : { data: null };
   const ogImage = thumbnailUrl?.publicUrl ?? null;
 
   let imgData: { encoded?: null | string; height?: null | number; width?: null | number } = {};
@@ -114,7 +118,6 @@ async function processVideo(
     try {
       imgData = await blurhashFromURL(thumbnailUrl.publicUrl);
     } catch (error) {
-      const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.blurhash_error = error instanceof Error ? error.message : String(error);
       }
@@ -136,7 +139,6 @@ async function processVideo(
       ocrData = imageToTextResult?.ocr_text ?? null;
       ocrStatus = imageToTextResult?.ocr_text ? "success" : "no_text";
     } catch (error) {
-      const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.image_caption_error = error instanceof Error ? error.message : String(error);
       }

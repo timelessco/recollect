@@ -15,7 +15,6 @@ import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 
 import { upload, uploadVideo } from "@/lib/storage/media-upload";
 
-// eslint-disable-next-line import/no-cycle -- circular dep between helpers and supabaseCrudHelpers needs structural refactor
 import { getMediaType } from "../async/supabaseCrudHelpers";
 import {
   AUDIO_MIME_PREFIX,

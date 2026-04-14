@@ -19,13 +19,9 @@ export default function useIsUserCategoryOwner() {
     return { isOwner: true };
   }
 
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
-    CATEGORIES_KEY,
-    userId,
-  ]);
+  const categoryData = queryClient.getQueryData<CategoriesData[]>([CATEGORIES_KEY, userId]);
 
-  const isOwner =
-    find(categoryData?.data, (item) => item?.id === categoryId)?.user_id?.id === userId;
+  const isOwner = find(categoryData, (item) => item?.id === categoryId)?.user_id?.id === userId;
 
   return { isOwner };
 }

@@ -13,11 +13,9 @@ import type {
 } from "../../../types/apiTypes";
 import type { CollectionItemTypes } from "./singleListItemComponent";
 
-import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
-
-import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
-import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
-import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
+import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/use-update-category-order-optimistic-mutation";
+import useFetchCategories from "../../../async/queryHooks/category/use-fetch-categories";
+import useFetchUserProfile from "../../../async/queryHooks/user/use-fetch-user-profile";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
 import { mutationApiCall } from "../../../utils/apiHelpers";
@@ -35,17 +33,14 @@ import { useHandleBookmarksDrop } from "./use-handle-bookmarks-drop";
 const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state.session);
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
+  const categoryData = queryClient.getQueryData<CategoriesData[]>([
     CATEGORIES_KEY,
     session?.user?.id,
   ]);
 
   const userId = session?.user?.id;
 
-  const singleCategoryData = find(
-    categoryData?.data,
-    (item) => item.category_name === collectionName,
-  );
+  const singleCategoryData = find(categoryData, (item) => item.category_name === collectionName);
 
   const isUserCollectionOwner = singleCategoryData?.user_id?.id === userId;
 
@@ -61,20 +56,19 @@ const CollectionsList = () => {
   const session = useSupabaseSession((state) => state.session);
 
   const isCardDragging = useMiscellaneousStore((storeState) => storeState.isCardDragging);
-  const { addCategoryToBookmarkOptimisticMutation } = useAddCategoryToBookmarkOptimisticMutation();
   const { updateCategoryOrderMutation } = useUpdateCategoryOrderOptimisticMutation();
   const { isLoadingCategories } = useFetchCategories();
   const { userProfileData } = useFetchUserProfile();
-  const { handleBookmarksDrop } = useHandleBookmarksDrop();
+  const { addCategoryToBookmarkOptimisticMutation, handleBookmarksDrop } = useHandleBookmarksDrop();
 
   const currentPath = useGetCurrentUrlPath();
 
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
+  const categoryData = queryClient.getQueryData<CategoriesData[]>([
     CATEGORIES_KEY,
     session?.user?.id,
   ]);
 
-  const sharedCategoriesData = queryClient.getQueryData<{ data: FetchSharedCategoriesData[] }>([
+  const sharedCategoriesData = queryClient.getQueryData<FetchSharedCategoriesData[]>([
     SHARED_CATEGORIES_TABLE_NAME,
   ]);
 
@@ -83,10 +77,10 @@ const CollectionsList = () => {
     session?.user?.id,
   ]);
 
-  const favoriteCategories = userProfileData?.data?.[0]?.favorite_categories ?? [];
+  const favoriteCategories = userProfileData?.[0]?.favorite_categories ?? [];
 
   const collectionsList = session
-    ? categoryData?.data?.map((item) => ({
+    ? categoryData?.map((item) => ({
         count: find(
           bookmarksCountData?.categoryCount,
           (catItem) => catItem?.category_id === item?.id,
@@ -96,9 +90,7 @@ const CollectionsList = () => {
         iconColor: item?.icon_color,
         iconValue: item?.icon,
         id: item?.id,
-        isCollab: !isEmpty(
-          find(sharedCategoriesData?.data, (cat) => cat?.category_id === item?.id),
-        ),
+        isCollab: !isEmpty(find(sharedCategoriesData, (cat) => cat?.category_id === item?.id)),
         isFavorite: favoriteCategories.includes(item?.id),
         isPublic: item?.is_public,
         name: item?.category_name,
@@ -106,8 +98,8 @@ const CollectionsList = () => {
     : [];
   const sortedList = () => {
     const array: CollectionItemTypes[] = [];
-    if (!isEmpty(userProfileData?.data)) {
-      const apiCategoryOrder = userProfileData?.data?.[0].category_order;
+    if (!isEmpty(userProfileData)) {
+      const apiCategoryOrder = userProfileData?.[0]?.category_order;
 
       if (!isNull(apiCategoryOrder)) {
         if (apiCategoryOrder) {
@@ -172,11 +164,11 @@ const CollectionsList = () => {
   const favoriteCollections = sortedFavorites();
 
   const onReorder = (event: DroppableCollectionReorderEvent) => {
-    const apiOrder = userProfileData?.data?.[0].category_order;
+    const apiOrder = userProfileData?.[0]?.category_order;
 
     const listOrder = isNull(apiOrder)
       ? collectionsList?.map((item) => item?.id)
-      : userProfileData?.data?.[0].category_order;
+      : userProfileData?.[0]?.category_order;
 
     const targetKey = Number.parseInt(event?.target?.key as string, 10);
     const sourceKey = Number.parseInt(event?.keys?.values().next().value as string, 10);

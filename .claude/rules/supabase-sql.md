@@ -8,34 +8,33 @@ paths:
 
 ### General
 
-- Use lowercase for SQL reserved words to maintain consistency and readability. Exception: Migration files may use uppercase keywords for better readability of function definitions.
-- Employ consistent, descriptive identifiers for tables, columns, and other database objects.
-- Use white space and indentation to enhance the readability of your code.
-- Store dates in ISO 8601 format (`yyyy-mm-ddThh:mm:ss.sssss`).
-- Include comments for complex logic, using '/\*...\*/' for block comments and '--' for line comments.
+- Lowercase SQL reserved words for consistency. Exception: migration files may use uppercase keywords for readability of function definitions
+- Consistent, descriptive identifiers for tables, columns, and other DB objects
+- Whitespace and indentation for readability
+- ISO 8601 dates (`yyyy-mm-ddThh:mm:ss.sssss`)
+- Comments: `/* ... */` for block, `--` for line (use for complex logic)
 
-### Naming Conventions
+### Naming
 
-- Avoid SQL reserved words and ensure names are unique and under 63 characters.
-- Use snake_case for tables and columns.
-- Prefer plurals for table names
-- Prefer singular names for columns.
+- Avoid reserved words; names unique and under 63 characters
+- `snake_case` for tables and columns
+- **Plural** table names, **singular** column names
+- No prefixes like `tbl_`; no table name matching its column names
 
 ### Tables
 
-- Avoid prefixes like 'tbl\_' and ensure no table name matches any of its column names.
-- Always add an `id` column of type `identity generated always` unless otherwise specified.
-- Create all tables in the `public` schema unless otherwise specified.
-- Always add the schema to SQL queries for clarity.
-- Always add a comment to describe what the table does. The comment can be up to 1024 characters.
+- Always add an `id` column of type `identity generated always` unless otherwise specified
+- Create all tables in the `public` schema unless otherwise specified
+- Always schema-qualify in queries
+- Always add a comment describing the table (up to 1024 chars)
 
 ### Columns
 
-- Use singular names and avoid generic names like 'id'.
-- For references to foreign tables, use the singular of the table name with the `_id` suffix. For example `user_id` to reference the `users` table
-- Always use lowercase except in cases involving acronyms or when readability would be enhanced by an exception.
+- Singular names; avoid generic names like `id` on FKs
+- Foreign keys: `{singular_table}_id` (e.g., `user_id` → `users`)
+- Lowercase except for acronyms or readability exceptions
 
-##### Examples
+Example:
 
 ```sql
 create table books (
@@ -48,10 +47,9 @@ comment on table books is 'A list of all the books in the library.';
 
 ### Queries
 
-- When the query is shorter keep it on just a few lines. As it gets larger start adding newlines for readability
-- Add spaces for readability.
+Short queries on a few lines; add newlines as they grow. Add spaces for readability.
 
-Smaller queries:
+Small:
 
 ```sql
 select *
@@ -63,7 +61,7 @@ set end_date = '2023-12-31'
 where employee_id = 1001;
 ```
 
-Larger queries:
+Larger:
 
 ```sql
 select
@@ -73,10 +71,9 @@ from employees
 where start_date between '2021-01-01' and '2021-12-31' and status = 'employed';
 ```
 
-#### Joins and Subqueries
+### Joins and Subqueries
 
-- Format joins and subqueries for clarity, aligning them with related SQL clauses.
-- Prefer full table names when referencing tables. This helps for readability.
+Format for clarity, align with related clauses. Prefer full table names.
 
 ```sql
 select
@@ -90,7 +87,7 @@ where employees.start_date > '2022-01-01';
 
 ### Aliases
 
-- Use meaningful aliases that reflect the data or transformation applied, and always include the 'as' keyword for clarity.
+Meaningful aliases that reflect the data; always include `as`:
 
 ```sql
 select count(*) as total_employees
@@ -98,16 +95,14 @@ from employees
 where end_date is null;
 ```
 
-### Complex queries and CTEs
+### Complex Queries / CTEs
 
-- If a query is extremely complex, prefer a CTE.
-- Make sure the CTE is clear and linear. Prefer readability over performance.
-- Add comments to each block.
+For extremely complex queries, prefer a CTE. Keep it clear and linear (readability over performance). Comment each block.
 
 ```sql
 with
   department_employees as (
-    -- Get all employees and their departments
+    -- All employees and their departments
     select
       employees.department_id,
       employees.first_name,
@@ -118,7 +113,7 @@ with
       join departments on employees.department_id = departments.department_id
   ),
   employee_counts as (
-    -- Count how many employees in each department
+    -- Count employees per department
     select
       department_name,
       count(*) as num_employees

@@ -5,8 +5,8 @@ import { AutoAssignCollectionIcon } from "@/icons/auto-assign-collection-icon";
 import { ImageKeywordsIcon } from "@/icons/image-keywords-icon";
 import { OcrIcon } from "@/icons/ocr-icon";
 
-import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
-import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
+import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
+import useFetchUserProfile from "../../async/queryHooks/user/use-fetch-user-profile";
 import { SettingsToggleCard } from "./settingsToggleCard";
 
 interface AiToggleConfig {
@@ -47,7 +47,7 @@ export function AiFeaturesToggleSection() {
   const { isLoading, userProfileData } = useFetchUserProfile();
   const { updateUserProfileOptimisticMutation } = useUpdateUserProfileOptimisticMutation();
 
-  const userData = userProfileData?.data?.[0];
+  const userData = userProfileData?.[0];
   const aiFeatures = userData?.ai_features_toggle;
 
   return (

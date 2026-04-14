@@ -1,9 +1,6 @@
 ---
 name: next-browser
-description: >-
-  CLI that gives agents what humans get from React DevTools and the Next.js
-  dev overlay — component trees, props, hooks, PPR shells, errors, network —
-  as shell commands that return structured text.
+description: next-browser
 ---
 
 # next-browser

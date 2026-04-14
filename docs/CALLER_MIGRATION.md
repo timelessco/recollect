@@ -19,12 +19,12 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 
 | #   | Status | Old Path                                    | v2 Path                                        | Repo | Constant                     | Caller                                                                |
 | --- | ------ | ------------------------------------------- | ---------------------------------------------- | ---- | ---------------------------- | --------------------------------------------------------------------- |
-| 1   |        | `/api/bookmark/add-bookmark-min-data`       | `/api/v2/bookmark/add-bookmark-min-data`       | web  | `ADD_BOOKMARK_MIN_DATA`      | supabaseCrudHelpers → useAddBookmarkMinDataOptimisticMutation         |
+| 1   | x      | `/api/bookmark/add-bookmark-min-data`       | `/api/v2/bookmark/add-bookmark-min-data`       | web  | `ADD_BOOKMARK_MIN_DATA`      | supabaseCrudHelpers → useAddBookmarkMinDataOptimisticMutation         |
 | 2   |        | `/api/bookmark/add-remaining-bookmark-data` | `/api/v2/bookmark/add-remaining-bookmark-data` | s2s  | `ADD_REMAINING_BOOKMARK_API` | Pages Router handler only (add-bookmark-min-data, add-url-screenshot) |
-| 3   |        | `/api/bookmark/add-url-screenshot`          | `/api/v2/bookmark/add-url-screenshot`          | web  | `ADD_URL_SCREENSHOT_API`     | supabaseCrudHelpers → useAddBookmarkScreenshotMutation                |
+| 3   | x      | `/api/bookmark/add-url-screenshot`          | `/api/v2/bookmark/add-url-screenshot`          | web  | `ADD_URL_SCREENSHOT_API`     | supabaseCrudHelpers → useAddBookmarkScreenshotMutation                |
 | 4   |        | `/api/bookmark/fetch-bookmarks-count`       | `/api/v2/bookmark/fetch-bookmarks-count`       | web  | `FETCH_BOOKMARKS_COUNT`      | supabaseCrudHelpers → useFetchBookmarksCount                          |
 | 5   |        | `/api/bookmark/fetch-bookmarks-data`        | `/api/v2/bookmark/fetch-bookmarks-data`        | web  | `FETCH_BOOKMARKS_DATA_API`   | supabaseCrudHelpers → useFetchPaginatedBookmarks                      |
-| 6   |        | `/api/bookmark/fetch-bookmarks-view`        | `/api/v2/bookmark/fetch-bookmarks-view`        | web  | `FETCH_BOOKMARKS_VIEW`       | supabaseCrudHelpers → useFetchBookmarksView                           |
+| 6   | x      | `/api/bookmark/fetch-bookmarks-view`        | `/api/v2/bookmark/fetch-bookmarks-view`        | web  | `FETCH_BOOKMARKS_VIEW`       | supabaseCrudHelpers → useFetchBookmarksView                           |
 | 7   |        | `/api/bookmark/search-bookmarks`            | `/api/v2/bookmark/search-bookmarks`            | web  | `SEARCH_BOOKMARKS`           | supabaseCrudHelpers → useSearchBookmarks                              |
 
 ### Bookmark (v1-prefixed)
@@ -32,63 +32,63 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 | #   | Status | Old Path                               | v2 Path                                | Repo | Constant                   | Caller                                                        |
 | --- | ------ | -------------------------------------- | -------------------------------------- | ---- | -------------------------- | ------------------------------------------------------------- |
 | 8   | x      | `/api/v1/bookmarks/get/fetch-by-id`    | `/api/v2/bookmarks/get/fetch-by-id`    | web  | `FETCH_BOOKMARK_BY_ID_API` | supabaseCrudHelpers → useFetchBookmarkById                    |
-| 9   |        | `/api/v1/bookmarks/get/get-media-type` | `/api/v2/bookmarks/get/get-media-type` | web  | `GET_MEDIA_TYPE_API`       | supabaseCrudHelpers → useAddBookmarkMinDataOptimisticMutation |
-| 10  |        | `/api/v1/bookmarks/get/get-pdf-buffer` | `/api/v2/bookmarks/get/get-pdf-buffer` | web  | `GET_PDF_BUFFER_API`       | file-upload.ts → useFileUploadOptimisticMutation              |
+| 9   | x      | `/api/v1/bookmarks/get/get-media-type` | `/api/v2/bookmarks/get/get-media-type` | web  | `GET_MEDIA_TYPE_API`       | supabaseCrudHelpers → useAddBookmarkMinDataOptimisticMutation |
+| 10  | x      | `/api/v1/bookmarks/get/get-pdf-buffer` | `/api/v2/bookmarks/get/get-pdf-buffer` | web  | `GET_PDF_BUFFER_API`       | file-upload.ts → useFileUploadOptimisticMutation              |
 | 11  |        | `/api/v1/bookmarks/insert`             | `/api/v2/bookmarks/insert`             | ext  | —                          | Chrome extension only                                         |
-| 13  |        | `/api/v1/screenshot`                   | `/api/v2/screenshot`                   | web  | `WORKER_SCREENSHOT_API`    | worker.ts (server-to-server, process-queue dispatch)          |
-| 14  |        | `/api/v1/ai-enrichment`                | `/api/v2/ai-enrichment`                | web  | `AI_ENRICHMENT_API`        | worker.ts (server-to-server, process-queue dispatch)          |
+| 13  | x      | `/api/v1/screenshot`                   | `/api/v2/screenshot`                   | web  | `WORKER_SCREENSHOT_API`    | worker.ts (server-to-server, process-queue dispatch)          |
+| 14  | x      | `/api/v1/ai-enrichment`                | `/api/v2/ai-enrichment`                | web  | `AI_ENRICHMENT_API`        | worker.ts (server-to-server, process-queue dispatch)          |
 
 ### Category
 
 | #   | Status | Old Path                              | v2 Path                                  | Repo | Constant                    | Caller                                                         |
 | --- | ------ | ------------------------------------- | ---------------------------------------- | ---- | --------------------------- | -------------------------------------------------------------- |
-| 15  |        | `/api/category/fetch-user-categories` | `/api/v2/category/fetch-user-categories` | web  | `FETCH_USER_CATEGORIES_API` | supabaseCrudHelpers → useFetchCategories                       |
-| 16  |        | `/api/category/update-category-order` | `/api/v2/category/update-category-order` | web  | `UPDATE_CATEGORY_ORDER_API` | supabaseCrudHelpers → useUpdateCategoryOrderOptimisticMutation |
+| 15  | x      | `/api/category/fetch-user-categories` | `/api/v2/category/fetch-user-categories` | web  | `FETCH_USER_CATEGORIES_API` | supabaseCrudHelpers → useFetchCategories                       |
+| 16  | x      | `/api/category/update-category-order` | `/api/v2/category/update-category-order` | web  | `UPDATE_CATEGORY_ORDER_API` | supabaseCrudHelpers → useUpdateCategoryOrderOptimisticMutation |
 
 ### Tags
 
 | #   | Status | Old Path                    | v2 Path                        | Repo | Constant              | Caller                                 |
 | --- | ------ | --------------------------- | ------------------------------ | ---- | --------------------- | -------------------------------------- |
-| 17  |        | `/api/tags/fetch-user-tags` | `/api/v2/tags/fetch-user-tags` | web  | `FETCH_USER_TAGS_API` | supabaseCrudHelpers → useFetchUserTags |
+| 17  | x      | `/api/tags/fetch-user-tags` | `/api/v2/tags/fetch-user-tags` | web  | `FETCH_USER_TAGS_API` | supabaseCrudHelpers → useFetchUserTags |
 
 ### Share / Collaboration
 
 | #   | Status | Old Path                                      | v2 Path                                          | Repo | Constant                               | Caller                                                            |
 | --- | ------ | --------------------------------------------- | ------------------------------------------------ | ---- | -------------------------------------- | ----------------------------------------------------------------- |
-| 18  |        | `/api/fetch-public-category-bookmarks`        | `/api/v2/fetch-public-category-bookmarks`        | web  | `FETCH_PUBLIC_CATEGORY_BOOKMARKS_API`  | use-fetch-public-category-bookmarks + SSR public/[user_name]/[id] |
-| 19  |        | `/api/share/delete-shared-categories-user`    | `/api/v2/share/delete-shared-categories-user`    | web  | `DELETE_SHARED_CATEGORIES_USER_API`    | supabaseCrudHelpers → useDeleteSharedCategoriesUserMutation       |
-| 20  |        | `/api/share/fetch-shared-categories-data`     | `/api/v2/share/fetch-shared-categories-data`     | web  | `FETCH_SHARED_CATEGORIES_DATA_API`     | supabaseCrudHelpers → useFetchSharedCategories                    |
-| 21  |        | `/api/share/send-collaboration-email`         | `/api/v2/share/send-collaboration-email`         | web  | `SEND_COLLABORATION_EMAIL_API`         | supabaseCrudHelpers → useSendCollaborationEmailInviteMutation     |
+| 18  | x      | `/api/fetch-public-category-bookmarks`        | `/api/v2/fetch-public-category-bookmarks`        | web  | `FETCH_PUBLIC_CATEGORY_BOOKMARKS_API`  | use-fetch-public-category-bookmarks + SSR public/[user_name]/[id] |
+| 19  | x      | `/api/share/delete-shared-categories-user`    | `/api/v2/share/delete-shared-categories-user`    | web  | `DELETE_SHARED_CATEGORIES_USER_API`    | supabaseCrudHelpers → useDeleteSharedCategoriesUserMutation       |
+| 20  | x      | `/api/share/fetch-shared-categories-data`     | `/api/v2/share/fetch-shared-categories-data`     | web  | `FETCH_SHARED_CATEGORIES_DATA_API`     | supabaseCrudHelpers → useFetchSharedCategories                    |
+| 21  | x      | `/api/share/send-collaboration-email`         | `/api/v2/share/send-collaboration-email`         | web  | `SEND_COLLABORATION_EMAIL_API`         | supabaseCrudHelpers → useSendCollaborationEmailInviteMutation     |
 | 22  |        | `/api/share/send-email`                       | `/api/v2/share/send-email`                       | s2s  | `SEND_EMAIL`                           | Pages Router handler only (send-collaboration-email)              |
-| 23  |        | `/api/share/update-shared-category-user-role` | `/api/v2/share/update-shared-category-user-role` | web  | `UPDATE_SHARED_CATEGORY_USER_ROLE_API` | supabaseCrudHelpers → useUpdateSharedCategoriesUserAccessMutation |
+| 23  | x      | `/api/share/update-shared-category-user-role` | `/api/v2/share/update-shared-category-user-role` | web  | `UPDATE_SHARED_CATEGORY_USER_ROLE_API` | supabaseCrudHelpers → useUpdateSharedCategoriesUserAccessMutation |
 
 ### Profiles
 
 | #   | Status | Old Path                               | v2 Path                                   | Repo | Constant                     | Caller                                                                                           |
 | --- | ------ | -------------------------------------- | ----------------------------------------- | ---- | ---------------------------- | ------------------------------------------------------------------------------------------------ |
-| 24  |        | `/api/profiles/delete-user`            | `/api/v2/profiles/delete-user`            | web  | `DELETE_USER_API`            | supabaseCrudHelpers → useDeleteUserMutation                                                      |
-| 25  |        | `/api/profiles/fetch-user-profile`     | `/api/v2/profiles/fetch-user-profile`     | web  | `FETCH_USER_PROFILE_API`     | supabaseCrudHelpers → useFetchUserProfile                                                        |
-| 26  |        | `/api/profiles/fetch-user-profile-pic` | `/api/v2/profiles/fetch-user-profile-pic` | web  | `FETCH_USER_PROFILE_PIC_API` | supabaseCrudHelpers → useGetUserProfilePic                                                       |
-| 27  |        | `/api/profiles/remove-profile-pic`     | `/api/v2/profiles/remove-profile-pic`     | web  | `REMOVE_PROFILE_PIC_API`     | supabaseCrudHelpers → useRemoveUserProfilePicMutation                                            |
-| 28  |        | `/api/profiles/update-user-profile`    | `/api/v2/profiles/update-user-profile`    | web  | `UPDATE_USER_PROFILE_API`    | supabaseCrudHelpers → useUpdateUserProfileOptimisticMutation, use-update-favorite-order-mutation |
-| 29  |        | `/api/profiles/update-username`        | `/api/v2/profiles/update-username`        | web  | `UPDATE_USERNAME_API`        | supabaseCrudHelpers → useUpdateUsernameMutation                                                  |
+| 24  | x      | `/api/profiles/delete-user`            | `/api/v2/profiles/delete-user`            | web  | `DELETE_USER_API`            | supabaseCrudHelpers → useDeleteUserMutation                                                      |
+| 25  | x      | `/api/profiles/fetch-user-profile`     | `/api/v2/profiles/fetch-user-profile`     | web  | `FETCH_USER_PROFILE_API`     | supabaseCrudHelpers → useFetchUserProfile                                                        |
+| 26  | x      | `/api/profiles/fetch-user-profile-pic` | `/api/v2/profiles/fetch-user-profile-pic` | web  | `FETCH_USER_PROFILE_PIC_API` | supabaseCrudHelpers → useGetUserProfilePic                                                       |
+| 27  | x      | `/api/profiles/remove-profile-pic`     | `/api/v2/profiles/remove-profile-pic`     | web  | `REMOVE_PROFILE_PIC_API`     | supabaseCrudHelpers → useRemoveUserProfilePicMutation                                            |
+| 28  | x      | `/api/profiles/update-user-profile`    | `/api/v2/profiles/update-user-profile`    | web  | `UPDATE_USER_PROFILE_API`    | supabaseCrudHelpers → useUpdateUserProfileOptimisticMutation, use-update-favorite-order-mutation |
+| 29  | x      | `/api/profiles/update-username`        | `/api/v2/profiles/update-username`        | web  | `UPDATE_USERNAME_API`        | supabaseCrudHelpers → useUpdateUsernameMutation                                                  |
 
 ### Settings / Files
 
 | #   | Status | Old Path                               | v2 Path                                   | Repo | Constant                         | Caller                                                |
 | --- | ------ | -------------------------------------- | ----------------------------------------- | ---- | -------------------------------- | ----------------------------------------------------- |
-| 30  |        | `/api/settings/upload-profile-pic`     | `/api/v2/settings/upload-profile-pic`     | web  | `UPLOAD_PROFILE_PIC_API`         | supabaseCrudHelpers → useUploadProfilePicMutation     |
-| 31  |        | `/api/file/upload-file`                | `/api/v2/file/upload-file`                | web  | `UPLOAD_FILE_API`                | supabaseCrudHelpers → useFileUploadOptimisticMutation |
-| 32  |        | `/api/file/upload-file-remaining-data` | `/api/v2/file/upload-file-remaining-data` | web  | `UPLOAD_FILE_REMAINING_DATA_API` | file-upload.ts → useFileUploadOptimisticMutation      |
+| 30  | x      | `/api/settings/upload-profile-pic`     | `/api/v2/settings/upload-profile-pic`     | web  | `UPLOAD_PROFILE_PIC_API`         | supabaseCrudHelpers → useUploadProfilePicMutation     |
+| 31  | x      | `/api/file/upload-file`                | `/api/v2/file/upload-file`                | web  | `UPLOAD_FILE_API`                | supabaseCrudHelpers → useFileUploadOptimisticMutation |
+| 32  | x      | `/api/file/upload-file-remaining-data` | `/api/v2/file/upload-file-remaining-data` | web  | `UPLOAD_FILE_REMAINING_DATA_API` | file-upload.ts → useFileUploadOptimisticMutation      |
 
 ### API Keys
 
 | #   | Status | Old Path                       | v2 Path                        | Repo | Constant             | Caller                                        |
 | --- | ------ | ------------------------------ | ------------------------------ | ---- | -------------------- | --------------------------------------------- |
 | 33  | x      | `/api/v1/check-gemini-api-key` | `/api/v2/check-gemini-api-key` | web  | `CHECK_API_KEY_API`  | Already migrated (v2.1 pathfinder)            |
-| 34  |        | `/api/v1/api-key`              | `/api/v2/api-key`              | web  | `SAVE_API_KEY_API`   | supabaseCrudHelpers → useApiKeyUserMutation   |
-| 35  |        | `/api/v1/get-gemini-api-key`   | `/api/v2/get-gemini-api-key`   | web  | `GET_API_KEY_API`    | supabaseCrudHelpers → useFetchGetGeminiApiKey |
-| 36  |        | `/api/v1/delete-api-key`       | `/api/v2/delete-api-key`       | web  | `DELETE_API_KEY_API` | supabaseCrudHelpers → useDeleteApiKeyMutation |
+| 34  | x      | `/api/v1/api-key`              | `/api/v2/api-key`              | web  | `SAVE_API_KEY_API`   | supabaseCrudHelpers → useApiKeyUserMutation   |
+| 35  | x      | `/api/v1/get-gemini-api-key`   | `/api/v2/get-gemini-api-key`   | web  | `GET_API_KEY_API`    | supabaseCrudHelpers → useFetchGetGeminiApiKey |
+| 36  | x      | `/api/v1/delete-api-key`       | `/api/v2/delete-api-key`       | web  | `DELETE_API_KEY_API` | supabaseCrudHelpers → useDeleteApiKeyMutation |
 
 ### Other
 
@@ -166,13 +166,13 @@ Callers need client change only (postApi/axios → ky), NO URL change.
 
 ## Summary
 
-| Category                                | Total  | Web Repo | External | Done  |
-| --------------------------------------- | ------ | -------- | -------- | ----- |
-| Pages Router → v2 (URL + client change) | 41     | 30       | 11       | 1     |
-| App Router non-v2 (client change only)  | 21     | 19       | 2        | 0     |
-| **Total**                               | **62** | **49**   | **13**   | **1** |
+| Category                                | Total  | Web Repo | External | Done   |
+| --------------------------------------- | ------ | -------- | -------- | ------ |
+| Pages Router → v2 (URL + client change) | 41     | 30       | 11       | 29     |
+| App Router non-v2 (client change only)  | 21     | 19       | 2        | 0      |
+| **Total**                               | **62** | **49**   | **13**   | **29** |
 
 ---
 
 _Created: 2026-03-30_
-_Last updated: 2026-03-30_
+_Last updated: 2026-04-13_
