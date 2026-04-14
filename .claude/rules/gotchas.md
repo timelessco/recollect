@@ -6,6 +6,7 @@ Scope-loaded detail rules: `.claude/rules/next-config.md` (`next.config.ts`), `.
 
 - `middleware.ts` is named `proxy.ts` — exports `proxy`, not `middleware`
 - Check `lsof -iTCP:3000` before `pnpm dev` — may be running elsewhere
+- Before `pnpm dev`, confirm Supabase local is up (`npx supabase status` or `lsof -iTCP:54321`). If the dev server is already running on 3000, Supabase is implicitly up — skip the check. Start via `pnpm db:start` if down
 - `build:ci` skips env/OpenAPI/sitemap — use `pnpm build` locally
 - No test suite — `pnpm test` exits 0 with "no test specified"
 - CI runs lint only (no build gate); build failures surface on Vercel
