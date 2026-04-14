@@ -78,12 +78,17 @@ gh pr merge {PR_NUMBER} --merge --admin
 
 ### Step 4: Monitor the release workflow
 
-The `Release` workflow triggers on push to `main`. Watch it:
+The `Release` workflow triggers on push to `main`. Watch it via the **Monitor tool** (not Bash `run_in_background`) so step transitions stream as notifications instead of being swallowed into a background task file:
 
-```bash
-# Get the run ID and watch it
-gh run watch $(gh run list --workflow=release.yml --branch=main --limit=1 --json databaseId -q '.[0].databaseId')
 ```
+Monitor tool:
+  command: gh run watch $(gh run list --limit 1 --json databaseId --jq '.[0].databaseId') --exit-status 2>&1 | grep -E --line-buffered "^\s*[✓✗*]|completed|failed|error|Error|cancelled"
+  description: release workflow steps
+  timeout_ms: 600000
+  persistent: false
+```
+
+`--exit-status` bubbles workflow failures into Monitor's completion event; the grep emits every step transition plus failure signatures so silence can't look like success.
 
 If no run appears, wait a few seconds and retry `gh run list` — GitHub Actions can have a brief delay.
 
