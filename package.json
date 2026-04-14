@@ -1,6 +1,6 @@
 {
   "name": "recollect",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "description": "Bookmarks is an open source url manager built using nextjs and supabase.",
   "keywords": [
