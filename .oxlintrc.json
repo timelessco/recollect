@@ -24,6 +24,7 @@
     "scripts/release-it/**",
     ".agents/**",
     ".claude/**",
+    "graphify-out/**",
     "scripts/utils/try.ts",
     ".ncurc.cjs",
     "supabase/functions/**",

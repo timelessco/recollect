@@ -10,7 +10,7 @@ For the dense engineering reference (every file:line, every state transition, ev
 
 A bookmark card has one image tile. That tile is always in one of three visible states:
 
-```
+```text
  ┌──────────────────────┐   ┌──────────────────────┐   ┌──────────────────────┐
  │                      │   │                      │   │                      │
  │   [ actual image ]   │   │    ⟳  spinner        │   │       (broken)       │
@@ -46,7 +46,7 @@ Combine these six answers and you get the card's current situation. Combine the 
 
 Bookmarks don't all arrive the same way. Think of it like a mailroom with four doors:
 
-```
+```text
  ┌─────────────────────────────────────────────────────────────────────┐
  │                                                                     │
  │   Door A:  User types / pastes a URL in the app                     │
@@ -85,7 +85,7 @@ The four doors behave differently enough that each has its own bugs. See §5.
 
 Every render, the card walks through this decision tree top-to-bottom:
 
-```
+```text
  START
    │
    ├─► Is this card allowed to show an image at all?
@@ -133,7 +133,7 @@ That single fact is the root of almost every bug on this page.
 
 **What happens internally:**
 
-```
+```text
 t=0  You press Enter
 t=1  Optimistic card shows "Getting screenshot"   ✓ correct
 t=2  (a few hundred ms of network)
@@ -181,7 +181,7 @@ Twitter / Instagram / Raindrop usually send an image URL with the bookmark, so y
 
 The reason we can't just "show 'Cannot fetch' when there's no image" is that **four different real situations all look identical to the client:**
 
-```
+```text
   Same signature — opposite meanings
   ──────────────────────────────────
   real ID · no image · not processing · no load error

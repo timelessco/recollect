@@ -45,7 +45,7 @@ Iterations 1 and 2 already shipped: every intermediate render now says _"Getting
 
 Every bookmark card's placeholder is a pure function of:
 
-```
+```text
 S = ( ID_SIGN        : NEG (optimistic tempId) | POS (real server id)
     , OG_IMAGE       : NULL | URL
     , LOADING        : loadingBookmarkIds.has(id)   → TRUE | FALSE
@@ -286,7 +286,7 @@ E3 (`add-remaining-bookmark-data`) fires via `next/server after()` from both E1 
 
 ### 6.5 pgmq Queue Topology
 
-```
+```text
 twitter_imports       → worker routes by ogImage presence → v2-ai-enrichment (E5)
 instagram_imports     → worker → E5
 raindrop_imports      → process_raindrop_bookmark RPC → ai-embeddings queue → E5
@@ -301,7 +301,7 @@ Queue worker is `src/utils/worker.ts` (`processImageQueue`). Triggered by Edge F
 
 ### 7.1 Class A — URL + Screenshot Pipeline (Manual, Paste, PDF)
 
-```
+```text
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 t₀  USER SUBMITS URL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -458,7 +458,7 @@ t₇  BACKGROUND after(addRemainingBookmarkData)    (running since t₄)
 
 ### 7.2 Class B — URL Sync Image/Audio
 
-```
+```text
 t₀..t₃: identical to Class A up to and including cache swap.
         Server returns row WITH ogImage already set (image URL itself,
         or AUDIO_OG_IMAGE_FALLBACK_URL).
@@ -478,7 +478,7 @@ No gap. No ambiguity.
 
 ### 7.3 Class C — File Upload
 
-```
+```text
 t₀  User drops file / paperclip / paste
 t₁  onMutate:
      - Compute preGeneratedUrl (R2 public URL, deterministic)
@@ -521,7 +521,7 @@ t₅  Refetch lands → temp row REPLACED wholesale. React remounts
 
 ### 7.4 Class D — Queue Imports
 
-```
+```text
 t₀  User triggers import (CSV) or extension pushes (Twitter/IG/Chrome).
 
 t₁  POST to /api/{raindrop|twitter|instagram|v2/chrome-bookmarks}/...
@@ -561,7 +561,7 @@ CARD at first render:
 
 ### 7.5 Class E — Prior-session Abandoned Bookmark (temporal)
 
-```
+```text
 Not an ingress; any row where the pipeline gave up in a prior session.
 
 At load: useQuery hydrates. Card mounts for row with:
@@ -585,7 +585,7 @@ At load: useQuery hydrates. Card mounts for row with:
 
 Exact render tree today:
 
-```
+```text
                  ImgLogicComponent (imageCard.tsx)
                         │
                         ▼
@@ -652,7 +652,7 @@ Every row is a reachable steady state. `F/T` = FALSE/TRUE.
 
 ## 10. The Fundamental Ambiguity
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │  Signature { POS, ogImage=NULL, !loading, !imgError } is    │
 │  shared by FOUR physically distinct states:                 │

@@ -194,7 +194,7 @@ if (!url.startsWith("http://") && !url.startsWith("https://")) {
 
 ### Accepted by `URL_PATTERN`
 
-```
+```text
 https://example.com
 http://example.com
 www.example.com
@@ -206,7 +206,7 @@ example.com/path?query=value#hash
 
 ### Rejected
 
-```
+```text
 example            (no TLD)
 http://            (no domain)
 ftp://example.com  (wrong protocol — URL_PATTERN doesn't match `ftp`)
