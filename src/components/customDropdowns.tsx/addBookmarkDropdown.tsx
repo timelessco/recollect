@@ -10,7 +10,7 @@ import { Popover } from "@/components/ui/recollect/popover";
 import { useAddBookmark } from "@/hooks/useAddBookmark";
 import { useFileUploadDrop } from "@/hooks/useFileUploadDrop";
 import { AddBookmarkInputIcon } from "@/icons/miscellaneousIcons/add-bookmark-input-icon";
-import PlusIconWhite from "@/icons/plusIconWhite";
+import { PlusIcon } from "@/icons/plus-icon";
 import { grayInputClassName } from "@/utils/commonClassNames";
 import { URL_PATTERN } from "@/utils/constants";
 
@@ -39,9 +39,7 @@ const AddBookmarkDropdown = () => {
         className="flex items-center rounded-full bg-gray-950 p-[7px] text-white outline-hidden filter-[drop-shadow(0_3px_6px_rgba(0,0,0,0.07))_drop-shadow(0_11px_11px_rgba(0,0,0,0.06))] hover:bg-gray-800"
         title="create"
       >
-        <figure className="h-4 w-4 text-gray-0">
-          <PlusIconWhite />
-        </figure>
+        <PlusIcon className="size-4 text-gray-0" />
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner align="end">
