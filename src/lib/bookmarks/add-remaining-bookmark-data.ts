@@ -232,6 +232,10 @@ async function downloadImageAsBase64(imageUrl: string): Promise<null | string> {
       imageUrl,
       sizeBytes: arrayBuffer.byteLength,
     });
+    if (arrayBuffer.byteLength === 0) {
+      console.error("[add-remaining-bookmark-data] Image body was empty:", { imageUrl });
+      return null;
+    }
     return Buffer.from(arrayBuffer).toString("base64");
   } catch (error) {
     console.error("[add-remaining-bookmark-data] Image download exception:", { error, imageUrl });

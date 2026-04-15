@@ -6,6 +6,7 @@ import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-h
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { storeQueueError } from "@/lib/api-helpers/queue";
 import { getServerContext } from "@/lib/api-helpers/server-context";
+import { parseScreenshotResponse } from "@/lib/bookmarks/parse-screenshot-response";
 import { upload } from "@/lib/storage/media-upload";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";
@@ -131,7 +132,11 @@ export const POST = createAxiomRouteHandler(
               throw new Error("Failed to generate PDF thumbnail in worker", { cause: error });
             }
           } else {
-            // Regular screenshot via screenshot service
+            // Regular screenshot via screenshot service. The upstream returns the JPEG as
+            // `{ type: "Buffer", data: number[] }`; `parseScreenshotResponse` handles that
+            // shape plus a legacy base64-string path. A 0-byte buffer must throw — the
+            // queue-worker path silently uploaded empty R2 blobs for months before this
+            // guard was added, which bubbled up as Gemini `INVALID_ARGUMENT`.
             try {
               const response = await fetch(`${SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`);
               if (!response.ok) {
@@ -139,30 +144,15 @@ export const POST = createAxiomRouteHandler(
               }
 
               const screenshotData: unknown = await response.json();
-              const screenshotRecord = isRecord(screenshotData) ? screenshotData : {};
-              const screenshotInner = isRecord(screenshotRecord.screenshot)
-                ? screenshotRecord.screenshot
-                : {};
-              const screenshotBinaryData =
-                typeof screenshotInner.data === "string" ? screenshotInner.data : "";
+              const { metaData: responseMeta, screenshotBuffer } =
+                parseScreenshotResponse(screenshotData);
 
-              const base64data = Buffer.from(screenshotBinaryData, "binary").toString("base64");
+              if (screenshotBuffer.byteLength === 0) {
+                throw new Error("Screenshot service returned empty payload");
+              }
 
-              const metaDataRecord = isRecord(screenshotRecord.metaData)
-                ? screenshotRecord.metaData
-                : {};
-              // Coerce to boolean — declared type in apiTypes.ts is `boolean | null`.
-              // v1 preserved `{}` as a no-value sentinel; the lightbox reads this via loose
-              // truthy check (LightboxRenderers.tsx:224) and incorrectly applies 50%
-              // page-screenshot scaling when the value is `{}`. Writing `false` when the
-              // screenshot service omits the field keeps the contract honest and prevents
-              // new rows from reintroducing the bug after the backfill.
-              isPageScreenshot =
-                typeof metaDataRecord.isPageScreenshot === "boolean"
-                  ? metaDataRecord.isPageScreenshot
-                  : false;
-
-              publicURL = await upload(base64data, user_id);
+              isPageScreenshot = responseMeta.isPageScreenshot ?? false;
+              publicURL = await upload(screenshotBuffer.toString("base64"), user_id);
             } catch (error) {
               throw new Error("Failed to take screenshot in worker", { cause: error });
             }

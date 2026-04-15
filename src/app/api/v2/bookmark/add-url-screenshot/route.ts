@@ -6,6 +6,7 @@ import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
 import { addRemainingBookmarkData } from "@/lib/bookmarks/add-remaining-bookmark-data";
 import { collectAdditionalImages, collectVideo } from "@/lib/bookmarks/collect-screenshot-media";
+import { parseScreenshotResponse } from "@/lib/bookmarks/parse-screenshot-response";
 import { upload } from "@/lib/storage/media-upload";
 import { isNullable } from "@/utils/assertion-utils";
 import { MAIN_TABLE_NAME, SCREENSHOT_API } from "@/utils/constants";
@@ -25,52 +26,6 @@ interface BookmarkScreenshotFetchRow {
   ogImage: null | string;
   title: null | string;
 }
-
-/* oxlint-disable @typescript-eslint/no-unsafe-type-assertion -- external API type boundary with runtime guards */
-
-/** Parses the screenshot API JSON response safely from an unknown value */
-function parseScreenshotResponse(json: unknown) {
-  const obj = json !== null && typeof json === "object" ? (json as Record<string, unknown>) : {};
-  const metaData =
-    obj.metaData !== null && typeof obj.metaData === "object"
-      ? (obj.metaData as Record<string, unknown>)
-      : {};
-  const screenshot =
-    obj.screenshot !== null && typeof obj.screenshot === "object"
-      ? (obj.screenshot as Record<string, unknown>)
-      : {};
-
-  return {
-    allImages: Array.isArray(obj.allImages) ? (obj.allImages as string[]) : undefined,
-    allVideos: Array.isArray(obj.allVideos) ? (obj.allVideos as string[]) : undefined,
-    metaData: {
-      description: typeof metaData.description === "string" ? metaData.description : undefined,
-      isPageScreenshot:
-        typeof metaData.isPageScreenshot === "boolean" ? metaData.isPageScreenshot : undefined,
-      title: typeof metaData.title === "string" ? metaData.title : undefined,
-    },
-    screenshotBuffer: extractScreenshotBuffer(screenshot.data),
-  };
-}
-
-/**
- * The screenshot service returns the JPEG as Node's serialized Buffer shape
- * (`{ type: "Buffer", data: number[] }`) — `JSON.stringify(buffer)` produces this.
- * v1 worked because it called `Buffer.from(numberArray)` directly. v2's old
- * `typeof === "string"` guard silently dropped the array and uploaded 0 bytes,
- * which broke downstream blurhash + Gemini image analysis.
- */
-function extractScreenshotBuffer(data: unknown): Buffer {
-  if (Array.isArray(data)) {
-    return Buffer.from(data as number[]);
-  }
-  if (typeof data === "string") {
-    return Buffer.from(data, "base64");
-  }
-  return Buffer.alloc(0);
-}
-
-/* oxlint-enable @typescript-eslint/no-unsafe-type-assertion */
 
 export const POST = createAxiomRouteHandler(
   withAuth({
