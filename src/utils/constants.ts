@@ -154,6 +154,7 @@ export const V2_TWITTER_LAST_SYNCED_ID_API = "v2/twitter/last-synced-id";
 export const V2_RAINDROP_IMPORT_RETRY_API = "v2/raindrop/import/retry";
 export const V2_RAINDROP_IMPORT_STATUS_API = "v2/raindrop/import/status";
 export const V2_INSTAGRAM_SYNC_RETRY_API = "v2/instagram/sync/retry";
+export const V2_INSTAGRAM_SYNC_STATUS_API = "v2/instagram/sync/status";
 
 // Screenshot api
 export const SCREENSHOT_API = "https://vercel-puppeteer-screenshot-api.vercel.app";
