@@ -29,7 +29,6 @@ const ROUTE = "v2-bookmark-fetch-bookmarks-data";
 // Supabase type inference fails on dynamic select strings and FK join syntax.
 // These interfaces match the actual runtime shapes for .overrideTypes<T>() usage.
 interface BookmarkRow {
-  category_id: number;
   description: string | null;
   enriched_at: string | null;
   enrichment_status: string | null;
@@ -271,7 +270,7 @@ export const GET = createAxiomRouteHandler(
       const { data: bookmarksWithTags } = tagsResult;
       const { data: bookmarksWithCategories } = categoriesResult;
 
-      // Stitch tags and categories onto each bookmark
+      // Stitch tags and categories from the junction tables onto each bookmark.
       const finalData = bookmarkData.map((item) => {
         const matchedTags = bookmarksWithTags?.filter((tagItem) => tagItem.bookmark_id === item.id);
         const matchedCategories = bookmarksWithCategories?.filter(

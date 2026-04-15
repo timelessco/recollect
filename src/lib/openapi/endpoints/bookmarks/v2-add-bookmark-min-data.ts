@@ -55,7 +55,6 @@ export const v2AddBookmarkMinDataSupplement = {
       summary: "Bookmark created successfully",
       value: [
         {
-          category_id: 0,
           description: "An example article description",
           id: 42,
           inserted_at: "2026-03-27T00:00:00.000Z",

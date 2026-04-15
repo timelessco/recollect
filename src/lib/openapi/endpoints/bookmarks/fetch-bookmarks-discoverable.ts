@@ -14,7 +14,6 @@ export const fetchBookmarksDiscoverableSupplement = {
   responseExample: {
     data: [
       {
-        category_id: 7,
         description: "The latest AI research from OpenAI",
         id: 101,
         inserted_at: "2024-03-15T10:30:00Z",
