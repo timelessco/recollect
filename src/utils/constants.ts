@@ -148,6 +148,7 @@ export const V2_FETCH_USER_TAGS_API = "v2/tags/fetch-user-tags";
 export const V2_AI_ENRICHMENT_API = "v2/ai-enrichment";
 export const V2_SCREENSHOT_API = "v2/screenshot";
 export const V2_TOGGLE_BOOKMARK_DISCOVERABLE_API = "v2/bookmark/toggle-discoverable-on-bookmark";
+export const V2_IPHONE_SHARE_ERROR_API = "v2/iphone-share-error";
 
 // Screenshot api
 export const SCREENSHOT_API = "https://vercel-puppeteer-screenshot-api.vercel.app";

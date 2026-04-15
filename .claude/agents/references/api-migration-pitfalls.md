@@ -22,7 +22,7 @@ Known pitfalls discovered during production API migrations. Read by the `recolle
 
 9. **Supplement example timestamps:** Use `+00:00` offset in example data (e.g., `"2024-03-15T10:30:00+00:00"`), not `Z` (`"2024-03-15T10:30:00Z"`). Matches actual Supabase output.
 
-10. **Two-pass supplement creation:** Step 3 creates metadata-only (no examples). Step 4c adds named examples from real E2E results. Don't fabricate examples in Step 3. If `/recollect-api-tester` cannot run (Chrome MCP or Supabase MCP unavailable), E2E is skipped — report to the user so the dependency can be fixed.
+10. **Two-pass supplement creation:** Step 3 creates metadata-only (no examples). Step 4e adds named examples from real E2E results. Don't fabricate examples in Step 3. If `/recollect-api-tester` cannot run (Chrome MCP or Supabase MCP unavailable), E2E is skipped — report to the user so the dependency can be fixed.
 
 11. **No PII in examples:** Never real emails, names, or user IDs. Use `user@example.com`, `another@example.com`, `550e8400-e29b-41d4-a716-446655440000`.
 

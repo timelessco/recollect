@@ -164,6 +164,21 @@ Repoint each caller to the v2 URL via the `api` ky instance:
 
 Update the mutation hook's error handling — v2 throws on non-2xx (no envelope). Only repoint callers that hit the exact route being migrated. Leave every other caller untouched.
 
+**4c.5. Caller migration audit (mandatory).**
+
+Invoke the `/recollect-caller-migration` skill against every hook, SSR page, or helper file you modified in Step 4c. The skill codifies the envelope → bare-response transition as a 5-layer audit. Any finding is blocking — fix before proceeding to E2E.
+
+Risks the skill catches that the route-side `/v2-route-audit` cannot see:
+
+- `response.data` unwraps that assumed the old `{ data, error }` envelope
+- `mutationApiCall` plus `isNull` / `isNil` checks whose truthiness flipped once the response is bare `T`
+- `queryClient.getQueryData` / `setQueryData` consumers that read or wrote the `.data` slot
+- Dead payload fields that are no longer in the v2 input schema (ky will send them; server ignores; future readers assume they matter)
+- Orphaned v1 URL constants in `src/utils/constants.ts` once this was the last consumer
+- Inline `v2/...` strings that should be a `V2_*` constant instead
+
+If the skill is unavailable (for example, the repo has drifted off its documented state), stop and report to the user. Do not silently skip the audit and present static checks alone as "caller verified".
+
 **4d. E2E response verification (mandatory).**
 
 Invoke `/recollect-api-tester`. Pass:
