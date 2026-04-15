@@ -137,6 +137,7 @@ export const V2_UPDATE_SHARED_CATEGORY_USER_ROLE_API = "v2/share/update-shared-c
 export const V2_ADD_URL_SCREENSHOT_API = "v2/bookmark/add-url-screenshot";
 export const V2_GET_GEMINI_API_KEY_API = "v2/get-gemini-api-key";
 export const V2_ADD_BOOKMARK_MIN_DATA_API = "v2/bookmark/add-bookmark-min-data";
+export const V2_TOGGLE_FAVORITE_CATEGORY_API = "v2/profiles/toggle-favorite-category";
 export const V2_UPLOAD_FILE_API = "v2/file/upload-file";
 export const V2_UPLOAD_PROFILE_PIC_API = "v2/settings/upload-profile-pic";
 export const V2_FETCH_USER_PROFILE_API = "v2/profiles/fetch-user-profile";
