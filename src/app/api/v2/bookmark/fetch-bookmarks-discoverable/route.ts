@@ -52,7 +52,6 @@ export const GET = createAxiomRouteHandler(
           url,
           description,
           ogImage,
-          screenshot,
           trash,
           type,
           meta_data,

@@ -25,7 +25,6 @@ const BookmarkSchema = z.object({
     .meta({ description: "Whether bookmark is publicly discoverable" }),
   meta_data: z.unknown().meta({ description: "Parsed metadata from the bookmarked page" }),
   ogImage: z.string().nullable().meta({ description: "Open Graph image URL" }),
-  screenshot: z.string().nullable().meta({ description: "Screenshot URL of the bookmarked page" }),
   sort_index: z.string().nullable().meta({ description: "Sort position within the category" }),
   title: z.string().nullable().meta({ description: "Bookmark title" }),
   trash: z.string().nullable().meta({ description: "Whether bookmark is in trash" }),

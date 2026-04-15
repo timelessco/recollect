@@ -44,7 +44,6 @@ const SearchBookmarkItemSchema = z.object({
     .string()
     .nullable()
     .meta({ description: "Open Graph image URL (camelCase mapped from ogimage)" }),
-  screenshot: z.string().nullable().meta({ description: "Screenshot image URL" }),
   sort_index: z.string().nullable().meta({ description: "Sort index for ordering" }),
   title: z.string().nullable().meta({ description: "Bookmark title" }),
   trash: z.unknown().nullable().meta({ description: "Trash status — null if not trashed" }),

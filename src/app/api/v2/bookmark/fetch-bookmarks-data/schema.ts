@@ -44,7 +44,6 @@ export const FetchBookmarksDataOutputSchema = z.array(
     make_discoverable: z.string().nullable().meta({ description: "Discoverable timestamp if set" }),
     meta_data: z.unknown().nullable().meta({ description: "Enriched metadata object" }),
     ogImage: z.string().nullable().meta({ description: "Open Graph image URL" }),
-    screenshot: z.string().nullable().meta({ description: "Screenshot URL" }),
     sort_index: z.string().nullable().meta({ description: "Sort index for tweets" }),
     addedTags: z.array(TagSchema).meta({ description: "Tags stitched from junction table" }),
     title: z.string().nullable().meta({ description: "Bookmark title" }),

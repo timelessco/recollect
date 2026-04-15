@@ -60,7 +60,7 @@ export const GET = createAxiomRouteHandler(
       const { data: bookmarkData, error: bookmarkError } = await supabase
         .from(MAIN_TABLE_NAME)
         .select(
-          "id, inserted_at, title, url, description, ogImage, screenshot, trash, type, meta_data, sort_index, make_discoverable",
+          "id, inserted_at, title, url, description, ogImage, trash, type, meta_data, sort_index, make_discoverable",
         )
         .eq("id", id)
         .is("trash", null)

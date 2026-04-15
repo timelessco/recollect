@@ -106,7 +106,6 @@ export const FetchDiscoverableByIdOutputSchema = z.object({
     description: "Extended metadata JSONB",
   }),
   ogImage: z.string().nullable().meta({ description: "OG image URL" }),
-  screenshot: z.string().nullable().meta({ description: "Screenshot URL" }),
   sort_index: z.string().nullable().meta({ description: "Fractional index for manual ordering" }),
   title: z.string().nullable().meta({ description: "Page title" }),
   trash: z

@@ -26,7 +26,6 @@ const happyPathResponse = {
     width: 2400,
   },
   ogImage: "https://media.example.com/bookmarks/og.jpg",
-  screenshot: null,
   sort_index: null,
   title: "GitHub - example/recollect: open source bookmark manager",
   trash: null,
@@ -90,7 +89,7 @@ export const v2FetchDiscoverableByIdSupplement = {
   responseExamples: {
     "happy-path": {
       description:
-        "Send `?id=12624` — returns the bookmark, nullable columns (`screenshot`, `sort_index`, `trash`) stay `null`, empty junction tables come back as empty arrays.",
+        "Send `?id=12624` — returns the bookmark, nullable columns (`sort_index`, `trash`) stay `null`, empty junction tables come back as empty arrays.",
       summary: "Discoverable bookmark with empty relations",
       value: happyPathResponse,
     },

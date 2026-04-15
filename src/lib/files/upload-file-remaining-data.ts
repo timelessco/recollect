@@ -29,7 +29,6 @@ interface FileMetaData {
   ocr?: null | string;
   ocr_status?: "limit_reached" | "no_text" | "success";
   ogImgBlurUrl?: null | string;
-  screenshot?: null | string;
   twitter_avatar_url?: null | string;
   video_url?: null | string;
   width?: null | number;
@@ -172,7 +171,6 @@ export async function uploadFileRemainingData(props: UploadFileRemainingDataProp
     ocr: imageOcrValue ?? null,
     ocr_status: ocrStatus,
     ogImgBlurUrl: imgData.encoded ?? null,
-    screenshot: null,
     twitter_avatar_url: null,
     video_url: null,
     width: imgData.width ?? null,

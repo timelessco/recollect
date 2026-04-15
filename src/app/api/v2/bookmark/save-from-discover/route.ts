@@ -25,7 +25,7 @@ export const POST = createAxiomRouteHandler(
       const serviceClient = createServerServiceClient();
       const { data: sourceBookmark, error: fetchError } = await serviceClient
         .from(MAIN_TABLE_NAME)
-        .select("url, title, description, ogImage, meta_data, screenshot")
+        .select("url, title, description, ogImage, meta_data")
         .eq("id", data.source_bookmark_id)
         .not("make_discoverable", "is", null)
         .single();
@@ -46,7 +46,6 @@ export const POST = createAxiomRouteHandler(
             description: sourceBookmark.description,
             meta_data: sourceBookmark.meta_data,
             ogImage: sourceBookmark.ogImage,
-            screenshot: sourceBookmark.screenshot,
             title: sourceBookmark.title,
             type: bookmarkType,
             url: sourceBookmark.url,

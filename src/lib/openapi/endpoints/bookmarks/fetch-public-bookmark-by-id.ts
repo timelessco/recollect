@@ -21,7 +21,6 @@ export const fetchPublicBookmarkByIdSupplement = {
       make_discoverable: null,
       meta_data: null,
       ogImage: "https://www.typescriptlang.org/og.png",
-      screenshot: null,
       title: "TypeScript Handbook",
       trash: null,
       type: "article",

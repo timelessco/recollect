@@ -194,7 +194,6 @@ export type Database = {
           make_discoverable: string | null;
           meta_data: Json | null;
           ogImage: string | null;
-          screenshot: string | null;
           sort_index: string | null;
           title: string | null;
           trash: string | null;
@@ -211,7 +210,6 @@ export type Database = {
           make_discoverable?: string | null;
           meta_data?: Json | null;
           ogImage?: string | null;
-          screenshot?: string | null;
           sort_index?: string | null;
           title?: string | null;
           trash?: string | null;
@@ -228,7 +226,6 @@ export type Database = {
           make_discoverable?: string | null;
           meta_data?: Json | null;
           ogImage?: string | null;
-          screenshot?: string | null;
           sort_index?: string | null;
           title?: string | null;
           trash?: string | null;
@@ -625,7 +622,6 @@ export type Database = {
           make_discoverable: string;
           meta_data: Json;
           ogimage: string;
-          screenshot: string;
           sort_index: string;
           title: string;
           trash: string;

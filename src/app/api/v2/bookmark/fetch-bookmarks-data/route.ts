@@ -37,7 +37,6 @@ interface BookmarkRow {
   make_discoverable: string | null;
   meta_data: unknown;
   ogImage: string | null;
-  screenshot: string | null;
   sort_index: string | null;
   title: string | null;
   trash: string | null;
