@@ -57,7 +57,8 @@ export const GET = createAxiomRouteHandler(
           type,
           meta_data,
           sort_index,
-          make_discoverable
+          make_discoverable,
+          user_id
         `,
         )
         .is("trash", null)

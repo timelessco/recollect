@@ -85,6 +85,7 @@ export const v2FetchBookmarksDiscoverableSupplement = {
           trash: null,
           type: "article",
           url: "https://example.com/article-1",
+          user_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         },
         {
           description: null,
@@ -99,6 +100,7 @@ export const v2FetchBookmarksDiscoverableSupplement = {
           trash: null,
           type: "bookmark",
           url: "https://example.com/article-2",
+          user_id: "b2c3d4e5-f6a7-8901-bcde-f23456789012",
         },
       ] as const,
     },
