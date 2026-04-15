@@ -110,3 +110,38 @@
 
 
 
+
+## 2026-04-15 [`c6d5fbd`](https://github.com/timelessco/recollect/commit/c6d5fbd0b1e26352352ca952f166df978664bbe0)
+
+
+
+### API Changes
+
+### GET /v2/bookmark/fetch-bookmarks-discoverable
+-  endpoint added
+
+
+### GET /v2/bookmark/fetch-discoverable-by-id
+-  endpoint added
+
+
+### GET /v2/bookmark/fetch-public-bookmark-by-id
+-  endpoint added
+
+
+### GET /v2/bookmarks/check-url
+-  endpoint added
+
+
+### GET /v2/dev/session
+-  endpoint added
+
+
+### POST /v2/pdf-thumbnail
+-  endpoint added
+
+
+
+
+
+
