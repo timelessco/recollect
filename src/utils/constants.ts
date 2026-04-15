@@ -147,6 +147,7 @@ export const V2_FETCH_SHARED_CATEGORIES_DATA_API = "v2/share/fetch-shared-catego
 export const V2_FETCH_USER_TAGS_API = "v2/tags/fetch-user-tags";
 export const V2_AI_ENRICHMENT_API = "v2/ai-enrichment";
 export const V2_SCREENSHOT_API = "v2/screenshot";
+export const V2_TOGGLE_BOOKMARK_DISCOVERABLE_API = "v2/bookmark/toggle-discoverable-on-bookmark";
 
 // Screenshot api
 export const SCREENSHOT_API = "https://vercel-puppeteer-screenshot-api.vercel.app";
