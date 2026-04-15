@@ -8,6 +8,9 @@ import {
 
 const ROUTE = "raindrop-import-retry";
 
+/**
+ * @deprecated Use /api/v2/raindrop/import/retry instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     console.log(`[${route}] API called:`, { data, userId: user.id });
