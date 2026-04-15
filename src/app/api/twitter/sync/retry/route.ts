@@ -8,6 +8,9 @@ import {
 
 const ROUTE = "twitter-sync-retry";
 
+/**
+ * @deprecated Use /api/v2/twitter/sync/retry instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     console.log(`[${route}] API called:`, { data, userId: user.id });
