@@ -4,6 +4,10 @@ import isNull from "lodash/isNull";
 
 import useFetchUserProfile from "@/async/queryHooks/user/use-fetch-user-profile";
 import { Menu } from "@/components/ui/recollect/menu";
+import { AppleIcon } from "@/icons/apple-icon";
+import { ChromeIcon } from "@/icons/chrome-icon";
+// import { PlayStoreIcon } from "@/icons/play-store-icon";
+import { SignOutIcon } from "@/icons/sign-out-icon";
 
 import { signOut } from "../../../async/supabaseCrudHelpers";
 import UserAvatar from "../../../components/userAvatar";
@@ -11,6 +15,21 @@ import DownArrowGray from "../../../icons/downArrowGray";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { LOGIN_URL } from "../../../utils/constants";
 import { createClient } from "../../../utils/supabaseClient";
+
+const CHROME_EXTENSION_URL =
+  "https://chromewebstore.google.com/detail/recollect-%E2%80%94-save-anything/hghngcbiflcoekclkkealmlbginmloef";
+const IOS_APP_URL = "https://testflight.apple.com/join/nqxpye48";
+// const ANDROID_APP_URL = "#";
+
+const itemClassName =
+  "flex h-[26px] cursor-pointer items-center gap-[6px] overflow-clip rounded-lg px-2 py-[5.5px] text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800 outline-hidden data-highlighted:bg-gray-200 data-highlighted:text-gray-900";
+
+const openExternal = (href: string) => {
+  if (typeof window === "undefined" || href === "#") {
+    return;
+  }
+  window.open(href, "_blank", "noopener,noreferrer");
+};
 
 const SidePaneUserDropdown = () => {
   const setSession = useSupabaseSession((state) => state.setSession);
@@ -40,13 +59,42 @@ const SidePaneUserDropdown = () => {
         </Menu.Trigger>
         <Menu.Portal>
           <Menu.Positioner align="start">
-            <Menu.Popup className="leading-[20px]">
+            <Menu.Popup className="w-[203px] p-[6px]" style={{ fontFeatureSettings: "'case'" }}>
               <Menu.Item
+                className={itemClassName}
+                onClick={() => {
+                  openExternal(CHROME_EXTENSION_URL);
+                }}
+              >
+                <ChromeIcon className="size-4" />
+                Download Extension
+              </Menu.Item>
+              <Menu.Item
+                className={itemClassName}
+                onClick={() => {
+                  openExternal(IOS_APP_URL);
+                }}
+              >
+                <AppleIcon className="size-4" />
+                Download iOS & iPadOS
+              </Menu.Item>
+              {/* <Menu.Item
+                className={itemClassName}
+                onClick={() => {
+                  openExternal(ANDROID_APP_URL);
+                }}
+              >
+                <PlayStoreIcon className="size-4" />
+                Download Android
+              </Menu.Item> */}
+              <Menu.Item
+                className={itemClassName}
                 onClick={() => {
                   void handleSignOut();
                 }}
               >
-                Sign Out
+                <SignOutIcon className="size-4" />
+                Sign out
               </Menu.Item>
             </Menu.Popup>
           </Menu.Positioner>
