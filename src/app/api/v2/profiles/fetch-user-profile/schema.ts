@@ -19,6 +19,10 @@ export const FetchUserProfileOutputSchema = z.array(
       .meta({ description: "Ordered array of category IDs" }),
     display_name: z.string().nullable().meta({ description: "User's display name" }),
     email: z.string().nullable().meta({ description: "User's email address" }),
+    freeTierCutoffAt: z.string().meta({
+      description:
+        "ISO timestamp representing the earliest `saved_at` a free-tier user may import. Equals `auth.users.created_at` — always non-null.",
+    }),
     id: z.string().meta({ description: "User's unique identifier" }),
     last_synced_instagram_id: z
       .string()
@@ -28,12 +32,30 @@ export const FetchUserProfileOutputSchema = z.array(
       .string()
       .nullable()
       .meta({ description: "Last synced Twitter post ID" }),
+    plan: z.enum(["free", "plus", "pro"]).meta({
+      description:
+        "Normalized subscription tier. Any value not in the enum is coerced to `free` at the API boundary.",
+    }),
+    planChangedAt: z.string().meta({
+      description:
+        "ISO timestamp of the last plan transition. Falls back to `auth.users.created_at` when `profiles.plan_updated_at` is null — always non-null.",
+    }),
     preferred_og_domains: z
       .array(z.string())
       .nullable()
       .meta({ description: "Domains with preferred Open Graph image handling" }),
     profile_pic: z.string().nullable().meta({ description: "URL of the user's profile picture" }),
     provider: z.string().nullable().meta({ description: "OAuth authentication provider" }),
+    subscription_current_period_end: z.string().nullable().meta({
+      description:
+        "ISO timestamp (Supabase `timestamptz`) marking the end of the current paid billing period. Null for free users.",
+    }),
+    subscription_status: z
+      .string()
+      .nullable()
+      .meta({
+        description: "Raw subscription status from the billing provider. Null for free users.",
+      }),
     user_name: z.string().nullable().meta({ description: "User's chosen username" }),
   }),
 );

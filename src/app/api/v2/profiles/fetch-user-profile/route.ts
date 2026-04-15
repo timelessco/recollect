@@ -1,5 +1,7 @@
 import uniqid from "uniqid";
 
+import type { z } from "zod";
+
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
@@ -16,12 +18,53 @@ function getUserNameFromEmail(email: string): null | string {
   return null;
 }
 
+type EnrichedProfile = z.infer<typeof FetchUserProfileOutputSchema>[number];
+
+function normalizePlan(raw: unknown): EnrichedProfile["plan"] {
+  if (raw === "free" || raw === "plus" || raw === "pro") {
+    return raw;
+  }
+
+  return "free";
+}
+
+type RawProfileRow = Record<string, unknown> & {
+  plan?: unknown;
+  plan_updated_at?: null | string;
+  subscription_current_period_end?: null | string;
+  subscription_status?: null | string;
+};
+
+/* oxlint-disable @typescript-eslint/no-unsafe-type-assertion -- DB row shape is validated at runtime via outputSchema.safeParse in the factory */
+function enrichProfiles(
+  rows: null | RawProfileRow[],
+  userCreatedAt: string,
+): EnrichedProfile[] | null {
+  if (!rows) {
+    return rows;
+  }
+
+  return rows.map(
+    (row) =>
+      ({
+        ...row,
+        freeTierCutoffAt: userCreatedAt,
+        plan: normalizePlan(row.plan),
+        planChangedAt: row.plan_updated_at ?? userCreatedAt,
+        subscription_current_period_end: row.subscription_current_period_end ?? null,
+        subscription_status: row.subscription_status ?? null,
+      }) as EnrichedProfile,
+  );
+}
+/* oxlint-enable @typescript-eslint/no-unsafe-type-assertion */
+
 const ROUTE = "v2-profiles-fetch-user-profile";
 
 export const GET = createAxiomRouteHandler(
   withAuth({
     handler: async ({ data, supabase, user }) => {
       const userId = user.id;
+      const userCreatedAt = user.created_at;
 
       const ctx = getServerContext();
       if (ctx?.fields) {
@@ -43,7 +86,7 @@ export const GET = createAxiomRouteHandler(
 
       const profile = profileData?.at(0);
       if (!profile) {
-        return profileData;
+        return enrichProfiles(profileData, userCreatedAt);
       }
 
       async function syncProfilePic(avatar: string) {
@@ -116,7 +159,7 @@ export const GET = createAxiomRouteHandler(
         ctx.fields.assigned_username = Boolean(usernameResult);
       }
 
-      return usernameResult ?? picResult ?? profileData;
+      return enrichProfiles(usernameResult ?? picResult ?? profileData, userCreatedAt);
     },
     inputSchema: FetchUserProfileInputSchema,
     outputSchema: FetchUserProfileOutputSchema,
