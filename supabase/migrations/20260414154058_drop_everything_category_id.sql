@@ -14,4 +14,4 @@ DROP FUNCTION IF EXISTS public.search_bookmarks(character varying);
 DROP FUNCTION IF EXISTS public.search_bookmarks_debugging(character varying);
 DROP FUNCTION IF EXISTS public.search_bookmarks_debugging(character varying, character varying);
 
-ALTER TABLE public.everything DROP COLUMN category_id;
+ALTER TABLE public.everything DROP COLUMN IF EXISTS category_id;
