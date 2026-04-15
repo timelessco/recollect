@@ -162,6 +162,7 @@ export const V2_FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API = "v2/bookmark/fetch-disco
 export const V2_FETCH_PUBLIC_BOOKMARK_BY_ID_API = "v2/bookmark/fetch-public-bookmark-by-id";
 export const V2_CHECK_URL_API = "v2/bookmarks/check-url";
 export const V2_PDF_THUMBNAIL_API = "v2/pdf-thumbnail";
+export const V2_DEV_SESSION_API = "v2/dev/session";
 
 // Screenshot api
 export const SCREENSHOT_API = "https://vercel-puppeteer-screenshot-api.vercel.app";
