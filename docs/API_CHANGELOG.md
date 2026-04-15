@@ -91,3 +91,22 @@
 
 
 
+
+## 2026-04-15 [`d16e1bd`](https://github.com/timelessco/recollect/commit/d16e1bd9a9d1c3b799400e466fe28c5d255b3a30)
+
+
+
+### API Changes
+
+### GET /bookmark/fetch-bookmarks-discoverable
+-  added the required property 'data/items/user_id' to the response with the '200' status
+
+
+### POST /v2/bookmark/save-from-discover
+-  endpoint added
+
+
+
+
+
+
