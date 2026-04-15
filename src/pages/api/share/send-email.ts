@@ -9,6 +9,7 @@ import { Resend } from "resend";
 import { z } from "zod";
 
 import { env } from "@/env/server";
+import { escapeHtml } from "@/lib/email/escape-html";
 
 const EmailRequestSchema = z.object({
   category_name: z.string(),
@@ -67,7 +68,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 													You have been invited to a collection
 												</h1>
 												<p class="subtitle" style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; font-weight: 400; font-size: 16px; line-height: 100%; letter-spacing: 0; text-align: center; color: #6b6b6b; margin: 0 0 32px 0;">
-													<span style="color:#323232; font-weight:500;">${data.display_name}</span> has invited you to join the <span style="color:#000000; font-weight:600;">${data.category_name}</span> collection
+													<span style="color:#323232; font-weight:500;">${escapeHtml(data.display_name)}</span> has invited you to join the <span style="color:#000000; font-weight:600;">${escapeHtml(data.category_name)}</span> collection
 												</p>
 												<a href="${data.url}" class="button" style="display:inline-block; background:#000; color:#ffffff; padding:7px 10px; border-radius:12px; text-decoration:none; font-size:14px; font-weight:500;">
 													Accept Invite
