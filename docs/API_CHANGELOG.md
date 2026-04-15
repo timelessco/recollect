@@ -29,3 +29,18 @@
 
 
 
+
+## 2026-04-15 [`31d697d`](https://github.com/timelessco/recollect/commit/31d697dc854f6480e88e6f3902fe8423ccd97c35)
+
+
+
+### API Changes
+
+### POST /v2/profiles/toggle-favorite-category
+-  endpoint added
+
+
+
+
+
+
