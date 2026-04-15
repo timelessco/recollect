@@ -6,6 +6,9 @@ import { CheckUrlInputSchema, CheckUrlOutputSchema } from "./schema";
 
 const ROUTE = "bookmarks-check-url";
 
+/**
+ * @deprecated Use /api/v2/bookmarks/check-url instead. Retained for iOS and extension clients.
+ */
 export const GET = createGetApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     console.log(`[${route}] API called:`, { url: data.url, userId: user.id });

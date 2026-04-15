@@ -14,6 +14,9 @@ const getRange = (page: number) => {
   return { rangeEnd, rangeStart };
 };
 
+/**
+ * @deprecated Use /api/v2/bookmark/fetch-bookmarks-discoverable instead. Retained for iOS and extension clients.
+ */
 export const GET = createGetApiHandler({
   handler: async ({ input, route }) => {
     const { page } = input;

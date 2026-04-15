@@ -103,10 +103,7 @@ export const DiscoverBookmarkCards = ({ isDiscoverPage }: DiscoverBookmarkCardsP
   // Determine if we're currently searching (searchText is debounced at source)
   const isSearching = !isEmpty(searchText);
 
-  const flattenedDiscoverData = useMemo(
-    () => discoverData?.pages?.flatMap((page) => page?.data ?? []) ?? [],
-    [discoverData],
-  );
+  const flattenedDiscoverData = useMemo(() => discoverData?.pages?.flat() ?? [], [discoverData]);
 
   // Hardcoded view configuration for discover (same as DiscoverGuestView)
   const discoverCategoryViews = useMemo<BookmarkViewDataTypes>(
