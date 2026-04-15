@@ -157,6 +157,7 @@ export const V2_INSTAGRAM_SYNC_RETRY_API = "v2/instagram/sync/retry";
 export const V2_INSTAGRAM_SYNC_STATUS_API = "v2/instagram/sync/status";
 export const V2_TWITTER_SYNC_RETRY_API = "v2/twitter/sync/retry";
 export const V2_TWITTER_SYNC_STATUS_API = "v2/twitter/sync/status";
+export const V2_FETCH_BOOKMARKS_DISCOVERABLE_API = "v2/bookmark/fetch-bookmarks-discoverable";
 
 // Screenshot api
 export const SCREENSHOT_API = "https://vercel-puppeteer-screenshot-api.vercel.app";

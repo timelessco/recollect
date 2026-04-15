@@ -13,6 +13,7 @@ export { v2AddUrlScreenshotSupplement } from "./v2-add-url-screenshot";
 export { v2BookmarksInsertSupplement } from "./v2-bookmarks-insert";
 export { v2FetchBookmarksCountSupplement } from "./v2-fetch-bookmarks-count";
 export { v2FetchBookmarksDataSupplement } from "./v2-fetch-bookmarks-data";
+export { v2FetchBookmarksDiscoverableSupplement } from "./v2-fetch-bookmarks-discoverable";
 export { v2FetchBookmarksViewSupplement } from "./v2-fetch-bookmarks-view";
 export { v2FetchByIdSupplement } from "./v2-fetch-by-id";
 export { v2GetMediaTypeSupplement } from "./v2-get-media-type";
