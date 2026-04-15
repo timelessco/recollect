@@ -60,11 +60,28 @@ export const POST = createAxiomRouteHandler(
       }
 
       const raw: unknown = await response.json();
+      // `String(raw.publicUrl)` used to coerce `undefined` → `"undefined"` and `null` →
+      // `"null"`, persisting those as live URLs. Require a real string before returning.
       const publicUrl =
-        typeof raw === "object" && raw !== null && "publicUrl" in raw ? String(raw.publicUrl) : "";
+        typeof raw === "object" &&
+        raw !== null &&
+        "publicUrl" in raw &&
+        typeof raw.publicUrl === "string" &&
+        raw.publicUrl.length > 0
+          ? raw.publicUrl
+          : null;
+
+      if (publicUrl === null) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: new Error("PDF service returned no publicUrl"),
+          context: { url: sanitizedUrl },
+          message: "PDF Thumbnail service returned an invalid response",
+          operation: "pdf_thumbnail_empty",
+        });
+      }
 
       if (ctx?.fields) {
-        ctx.fields.thumbnail_generated = publicUrl.length > 0;
+        ctx.fields.thumbnail_generated = true;
       }
 
       const result: PdfThumbnailOutput = { publicUrl };

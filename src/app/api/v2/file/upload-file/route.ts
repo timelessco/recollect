@@ -297,7 +297,7 @@ export const POST = createAxiomRouteHandler(
         .from(MAIN_TABLE_NAME)
         .insert([
           {
-            description: typeof metaData.img_caption === "string" ? metaData.img_caption : "",
+            description: typeof metaData.img_caption === "string" ? metaData.img_caption : null,
             meta_data: toJson(metaData),
             ogImage,
             title: fileName,
