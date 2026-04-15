@@ -107,6 +107,7 @@ const DiscoverableBookmarkRowSchema = z.object({
     .meta({ description: "ISO timestamp when trashed, null if not trashed" }),
   type: z.string().nullable().meta({ description: "Content type" }),
   url: z.string().nullable().meta({ description: "Bookmarked URL" }),
+  user_id: z.string().meta({ description: "UUID of the bookmark owner" }),
 });
 
 export const FetchDiscoverBookmarksResponseSchema = z.array(DiscoverableBookmarkRowSchema);
