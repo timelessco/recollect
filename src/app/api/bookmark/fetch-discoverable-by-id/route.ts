@@ -15,6 +15,9 @@ import { FetchDiscoverableByIdQuerySchema, FetchDiscoverableByIdResponseSchema }
 
 const ROUTE = "fetch-discoverable-by-id";
 
+/**
+ * @deprecated Use /api/v2/bookmark/fetch-discoverable-by-id instead. Retained for iOS and extension clients.
+ */
 export const GET = createGetApiHandler({
   handler: async ({ input, route }) => {
     const { id } = input;
