@@ -17,6 +17,7 @@ export { v2FetchBookmarksDiscoverableSupplement } from "./v2-fetch-bookmarks-dis
 export { v2FetchBookmarksViewSupplement } from "./v2-fetch-bookmarks-view";
 export { v2FetchByIdSupplement } from "./v2-fetch-by-id";
 export { v2FetchDiscoverableByIdSupplement } from "./v2-fetch-discoverable-by-id";
+export { v2FetchPublicBookmarkByIdSupplement } from "./v2-fetch-public-bookmark-by-id";
 export { v2GetMediaTypeSupplement } from "./v2-get-media-type";
 export { v2GetPdfBufferSupplement } from "./v2-get-pdf-buffer";
 export { v2SearchBookmarksSupplement } from "./v2-search-bookmarks";

@@ -8,14 +8,12 @@ import * as Sentry from "@sentry/nextjs";
 import { format } from "date-fns";
 import { z } from "zod";
 
-import type { FetchDataResponse, SingleListData } from "../../../../../types/apiTypes";
+import type { SingleListData } from "../../../../../types/apiTypes";
 
 import { CustomLightBox } from "../../../../../components/lightbox/LightBox";
-import { FETCH_PUBLIC_BOOKMARK_BY_ID_API, getBaseUrl } from "../../../../../utils/constants";
+import { getBaseUrl, V2_FETCH_PUBLIC_BOOKMARK_BY_ID_API } from "../../../../../utils/constants";
 import { HttpStatus } from "../../../../../utils/error-utils/common";
 import { buildPublicCategoryUrl } from "../../../../../utils/url-builders";
-
-type FetchPublicBookmarkByIdResponse = FetchDataResponse<null | SingleListData>;
 
 const PublicPreviewParamsSchema = z.object({
   bookmark_id: z.string().regex(/^\d+$/u, "Bookmark ID must be numeric").transform(Number),
@@ -110,7 +108,7 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (context
 
   try {
     const response = await fetch(
-      `${getBaseUrl()}${FETCH_PUBLIC_BOOKMARK_BY_ID_API}?bookmark_id=${bookmark_id}&user_name=${user_name}&category_slug=${categorySlug}`,
+      `${getBaseUrl()}/api/${V2_FETCH_PUBLIC_BOOKMARK_BY_ID_API}?bookmark_id=${bookmark_id}&user_name=${user_name}&category_slug=${categorySlug}`,
     );
 
     if (response.status === HttpStatus.NOT_FOUND) {
@@ -146,14 +144,14 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (context
       return { notFound: true };
     }
 
+    // v2 returns the bookmark row directly; errors surface via non-2xx HTTP status above.
     // oxlint-disable-next-line no-unsafe-type-assertion -- response.json() types as unknown in oxlint
-    const data = (await response.json()) as FetchPublicBookmarkByIdResponse;
+    const bookmark = (await response.json()) as null | SingleListData;
 
-    if (!data?.data || data?.error) {
-      console.warn(`[${ROUTE}] Bookmark data not found or contains error`, {
+    if (!bookmark) {
+      console.warn(`[${ROUTE}] Bookmark data not found`, {
         bookmark_id,
         categorySlug,
-        error: data?.error,
         user_name,
       });
       return { notFound: true };
@@ -161,7 +159,7 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (context
 
     return {
       props: {
-        bookmark: data.data,
+        bookmark,
       },
       revalidate: 1800,
     };
