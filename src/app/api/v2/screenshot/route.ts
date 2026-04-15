@@ -9,7 +9,7 @@ import { getServerContext } from "@/lib/api-helpers/server-context";
 import { upload } from "@/lib/storage/media-upload";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";
-import { isNonNullable } from "@/utils/assertion-utils";
+import { isEmptyString, isNonNullable } from "@/utils/assertion-utils";
 import { autoAssignCollections, fetchUserCollections } from "@/utils/auto-assign-collections";
 import { MAIN_TABLE_NAME, PDF_MIME_TYPE, SCREENSHOT_API } from "@/utils/constants";
 import { blurhashFromURL } from "@/utils/getBlurHash";
@@ -81,95 +81,131 @@ export const POST = createAxiomRouteHandler(
       }
 
       try {
-        let publicURL: null | string = null;
-        let isPageScreenshot: unknown = false;
-
-        if (mediaType === PDF_MIME_TYPE) {
-          // PDF screenshot via external API
-          try {
-            const response = await fetch(env.PDF_URL_SCREENSHOT_API, {
-              body: JSON.stringify({ url, userId: user_id }),
-              headers: {
-                Authorization: `Bearer ${env.PDF_SECRET_KEY}`,
-                "Content-Type": "application/json",
-              },
-              method: "POST",
-            });
-            if (!response.ok) {
-              throw new Error(`PDF screenshot API returned ${String(response.status)}`);
-            }
-
-            const pdfResult: unknown = await response.json();
-            publicURL =
-              isRecord(pdfResult) && typeof pdfResult.publicUrl === "string"
-                ? pdfResult.publicUrl
-                : null;
-          } catch (error) {
-            throw new Error("Failed to generate PDF thumbnail in worker", { cause: error });
-          }
-        } else {
-          // Regular screenshot via screenshot service
-          try {
-            const response = await fetch(`${SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`);
-            if (!response.ok) {
-              throw new Error(`Screenshot API returned ${String(response.status)}`);
-            }
-
-            const screenshotData: unknown = await response.json();
-            const screenshotRecord = isRecord(screenshotData) ? screenshotData : {};
-            const screenshotInner = isRecord(screenshotRecord.screenshot)
-              ? screenshotRecord.screenshot
-              : {};
-            const screenshotBinaryData =
-              typeof screenshotInner.data === "string" ? screenshotInner.data : "";
-
-            const base64data = Buffer.from(screenshotBinaryData, "binary").toString("base64");
-
-            const metaDataRecord = isRecord(screenshotRecord.metaData)
-              ? screenshotRecord.metaData
-              : {};
-            // Preserve v1 behavior: isPageScreenshot can be boolean or {} (fallback)
-            isPageScreenshot = metaDataRecord.isPageScreenshot ?? {};
-
-            publicURL = await upload(base64data, user_id);
-          } catch (error) {
-            throw new Error("Failed to take screenshot in worker", { cause: error });
-          }
-        }
-
-        // Update bookmark with ogImage
-        const { data: updatedData, error: updateError } = await supabase
-          .from(MAIN_TABLE_NAME)
-          .update({ ogImage: publicURL })
-          .eq("id", id)
-          .eq("user_id", user_id)
-          .select();
-
-        if (updateError) {
-          await storeQueueError({
-            errorReason: "screenshot: db_update_failed",
-            msgId: message.msg_id,
-            queueName: queue_name,
-            route,
-          });
-          throw new RecollectApiError("service_unavailable", {
-            cause: updateError,
-            message: "Error updating bookmark",
-            operation: "screenshot_db_update",
-          });
-        }
-
-        const ogImage = updatedData?.at(0)?.ogImage ?? publicURL ?? "";
-
-        // Get existing metadata for AI enrichment context
+        // Fetch current bookmark state — used for idempotency + AI context in one round trip.
+        // If `ogImage` is already set (pgmq retry after a prior partial success, or an admin
+        // replay from the pgmq."a_ai-embeddings" archive via retry_ai_embeddings_archive /
+        // admin_retry_ai_embeddings_archives), we skip screenshot capture + R2 upload + DB
+        // write and only re-run AI enrichment. This keeps retries cheap and leaves the
+        // existing archive-on-failure path intact so AI failures still hit the dead-letter
+        // queue and can be replayed when Gemini recovers.
         const { data: existing } = await supabase
           .from(MAIN_TABLE_NAME)
-          .select("meta_data, title, description, type")
-          .eq("url", url)
+          .select("ogImage, meta_data, title, description, type")
+          .eq("id", id)
           .eq("user_id", user_id)
           .single();
 
         const existingMeta = isRecord(existing?.meta_data) ? existing.meta_data : {};
+        const existingOgImage =
+          isNonNullable(existing?.ogImage) && !isEmptyString(existing.ogImage)
+            ? existing.ogImage
+            : null;
+
+        let publicURL: null | string = existingOgImage;
+        let isPageScreenshot: unknown = existingMeta.isPageScreenshot ?? false;
+
+        const screenshotSkipped = existingOgImage !== null;
+
+        if (!screenshotSkipped) {
+          if (mediaType === PDF_MIME_TYPE) {
+            // PDF screenshot via external API
+            try {
+              const response = await fetch(env.PDF_URL_SCREENSHOT_API, {
+                body: JSON.stringify({ url, userId: user_id }),
+                headers: {
+                  Authorization: `Bearer ${env.PDF_SECRET_KEY}`,
+                  "Content-Type": "application/json",
+                },
+                method: "POST",
+              });
+              if (!response.ok) {
+                throw new Error(`PDF screenshot API returned ${String(response.status)}`);
+              }
+
+              const pdfResult: unknown = await response.json();
+              publicURL =
+                isRecord(pdfResult) && typeof pdfResult.publicUrl === "string"
+                  ? pdfResult.publicUrl
+                  : null;
+            } catch (error) {
+              throw new Error("Failed to generate PDF thumbnail in worker", { cause: error });
+            }
+          } else {
+            // Regular screenshot via screenshot service
+            try {
+              const response = await fetch(`${SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`);
+              if (!response.ok) {
+                throw new Error(`Screenshot API returned ${String(response.status)}`);
+              }
+
+              const screenshotData: unknown = await response.json();
+              const screenshotRecord = isRecord(screenshotData) ? screenshotData : {};
+              const screenshotInner = isRecord(screenshotRecord.screenshot)
+                ? screenshotRecord.screenshot
+                : {};
+              const screenshotBinaryData =
+                typeof screenshotInner.data === "string" ? screenshotInner.data : "";
+
+              const base64data = Buffer.from(screenshotBinaryData, "binary").toString("base64");
+
+              const metaDataRecord = isRecord(screenshotRecord.metaData)
+                ? screenshotRecord.metaData
+                : {};
+              // Coerce to boolean — declared type in apiTypes.ts is `boolean | null`.
+              // v1 preserved `{}` as a no-value sentinel; the lightbox reads this via loose
+              // truthy check (LightboxRenderers.tsx:224) and incorrectly applies 50%
+              // page-screenshot scaling when the value is `{}`. Writing `false` when the
+              // screenshot service omits the field keeps the contract honest and prevents
+              // new rows from reintroducing the bug after the backfill.
+              isPageScreenshot =
+                typeof metaDataRecord.isPageScreenshot === "boolean"
+                  ? metaDataRecord.isPageScreenshot
+                  : false;
+
+              publicURL = await upload(base64data, user_id);
+            } catch (error) {
+              throw new Error("Failed to take screenshot in worker", { cause: error });
+            }
+          }
+
+          // Persist `isPageScreenshot` alongside `ogImage` so a retry after a
+          // partial-success (AI or blurhash failure before the final meta write)
+          // can still read the flag from `existingMeta` instead of defaulting to
+          // `false` and losing the lightbox screenshot-scaling signal.
+          const { error: updateError } = await supabase
+            .from(MAIN_TABLE_NAME)
+            .update({
+              ogImage: publicURL,
+              meta_data: toJson({
+                ...existingMeta,
+                isPageScreenshot,
+                mediaType,
+              }),
+            })
+            .eq("id", id)
+            .eq("user_id", user_id);
+
+          if (updateError) {
+            await storeQueueError({
+              errorReason: "screenshot: db_update_failed",
+              msgId: message.msg_id,
+              queueName: queue_name,
+              route,
+            });
+            throw new RecollectApiError("service_unavailable", {
+              cause: updateError,
+              message: "Error updating bookmark",
+              operation: "screenshot_db_update",
+            });
+          }
+        }
+
+        if (screenshotSkipped && ctx?.fields) {
+          ctx.fields.screenshot_skipped = true;
+        }
+
+        const ogImage = publicURL ?? "";
+
         const newMeta: Record<string, unknown> = {
           ...existingMeta,
           isPageScreenshot,
@@ -181,7 +217,9 @@ export const POST = createAxiomRouteHandler(
           type: existing?.type ?? undefined,
         });
 
-        // AI enrichment (toggle-gated)
+        // AI enrichment (toggle-gated). Throws propagate to the outer catch and become a 503
+        // so pgmq retries and eventually archives the message — recoverable via
+        // retry_ai_embeddings_archive / admin_retry_ai_embeddings_archives once Gemini is up.
         const aiToggles = await fetchAiToggles({ supabase, userId: user_id });
         const userCollections = await fetchUserCollections({
           autoAssignEnabled: aiToggles.autoAssignCollections,
@@ -230,12 +268,30 @@ export const POST = createAxiomRouteHandler(
           ctx.fields.blurhash_empty = true;
         }
 
-        // Update metadata in DB
-        await supabase
+        // Update metadata in DB. A Supabase `{error}` here is otherwise silent — the outer
+        // try/catch only sees thrown exceptions, so without this check a failed meta_data
+        // write would return 200, pgmq would delete the message, and AI enrichment would be
+        // permanently lost for this bookmark (no archive handle). Throw to route into the
+        // same 503 → pgmq archive → replay path as every other failure in this handler.
+        const { error: metaUpdateError } = await supabase
           .from(MAIN_TABLE_NAME)
           .update({ meta_data: toJson(newMeta) })
-          .eq("url", url)
+          .eq("id", id)
           .eq("user_id", user_id);
+
+        if (metaUpdateError) {
+          await storeQueueError({
+            errorReason: "screenshot: meta_update_failed",
+            msgId: message.msg_id,
+            queueName: queue_name,
+            route,
+          });
+          throw new RecollectApiError("service_unavailable", {
+            cause: metaUpdateError,
+            message: "Error updating bookmark metadata",
+            operation: "screenshot_meta_update",
+          });
+        }
 
         // Auto-assign collections (non-critical, handled internally)
         await autoAssignCollections({
