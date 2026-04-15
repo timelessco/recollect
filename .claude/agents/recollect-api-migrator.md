@@ -18,6 +18,65 @@ maxTurns: 40
 
 Produce a v2 twin of one App Router v1 route, plus the caller repoint, `@deprecated` JSDoc on v1, OpenAPI supplement, V2 URL constant, and per-route summary file. Every migration passes static checks and an E2E verification matrix before completing.
 
+## Orchestration Protocol
+
+This agent supports two invocation modes plus a back-compat fallback. The modes exist so an orchestrator can parallelize code generation across many routes while serializing the two surfaces that genuinely cannot run concurrently: shared-file writes (`constants.ts`, barrels, crud helpers) and `/recollect-api-tester` (single logged-in Chrome tab).
+
+**Input parameters** (orchestrator passes these via the agent prompt):
+
+- `mode`: `"codegen"` | `"verify"` | omitted (end-to-end)
+- `route`: v1 route path, e.g. `profiles/toggle-favorite-category`
+- For `mode: "verify"` — also pass `caller_files` (array of paths the codegen run modified) so the verify pass knows which callers to audit
+
+### Mode dispatch
+
+| Mode | Steps run | Parallel-safe across routes? |
+|------|-----------|------------------------------|
+| `codegen` | 0, 1, 2, 3 (metadata only), 4c, 4g, 5 | ✅ Multiple agents run concurrently, one per route |
+| `verify` | 4a, 4c.5, 4d, 4e, 4f, 6 | Partial — see bands below |
+| omitted | All steps 0–8 end-to-end | ❌ Legacy single-route flow |
+
+### Verify-mode bands
+
+- **Band V1 — parallel-safe across routes**: Step 4a (static checks), Step 4c.5 (`/recollect-caller-migration`), Step 4f (`/v2-route-audit`). Orchestrator may fan these out.
+- **Band V2 — sequential across routes (Chrome tab contention)**: Step 4d (`/recollect-api-tester`). Orchestrator must serialize; one route at a time.
+- **Band V3 — parallel-safe after each route's Band V2 completes**: Step 4e (supplement examples), Step 6 (summary file).
+- **Orchestrator finalization — once, after every route's verify has passed**: `pnpm fix && pnpm lint && pnpm build && pnpm lint:knip`.
+
+### Codegen mode — return contract
+
+Codegen MUST NOT write to shared files. Return the required edits as patch text in a structured block so the orchestrator applies them serially. Sequential-write targets:
+
+- `src/utils/constants.ts` (V2 URL constant append)
+- `src/lib/openapi/endpoints/index.ts` (top-level barrel, only when introducing a new domain)
+- `src/lib/openapi/endpoints/<domain>/index.ts` (domain barrel append)
+- `src/async/supabaseCrudHelpers/index.ts` (entry deletion, only if this migration is the last consumer)
+
+Codegen returns this shape instead of writing:
+
+```
+✅ Codegen ready: <source> → <target>
+- Route file: <path>
+- Schema file: <path>
+- Supplement file: <path>
+- Caller file(s) modified: <paths>
+- Route constant: "v2-<kebab-name>"
+
+SHARED-FILE PATCHES (apply serially in orchestrator):
+- src/utils/constants.ts (append):
+    export const V2_<NAME>_API = "v2/<path>";
+- src/lib/openapi/endpoints/<domain>/index.ts (append):
+    export { v2<CamelName>Supplement } from "./v2-<kebab-name>";
+- src/lib/openapi/endpoints/index.ts (append, only if <domain> is new):
+    export * from "./<domain>";
+- src/async/supabaseCrudHelpers/index.ts (delete entry, only if last consumer):
+    <lines to remove>
+```
+
+### Back-compat
+
+When `mode` is omitted, the agent runs Steps 0–8 end-to-end exactly as before: writes shared files directly, runs E2E inline, writes the full summary file, runs the final build. Existing single-route invocations keep working unchanged.
+
 ## Hard Constraints
 
 - **One route per invocation.** Migrate route migration + caller repoint for that one route + `@deprecated` on v1 + OpenAPI supplement + summary. Do not touch any other route or any other caller.
@@ -28,6 +87,8 @@ Produce a v2 twin of one App Router v1 route, plus the caller repoint, `@depreca
 - **No modifying** session-level batch-prompt documents (e.g. `~/.claude/session-documents/caller-migration-batch-prompts.md`).
 - **E2E verification is mandatory.** Don't skip, don't defer, don't present a summary until every matrix case passes.
 - **Write a per-route summary file** at `~/.claude/session-documents/v2-migration-<endpoint-name>.md` rather than returning a full report inline — orchestrator context is limited.
+- **In `mode: codegen`** — do not write to `src/utils/constants.ts`, `src/lib/openapi/endpoints/index.ts`, `src/lib/openapi/endpoints/<domain>/index.ts`, or `src/async/supabaseCrudHelpers/index.ts`. Return the required changes as `SHARED-FILE PATCHES` in the readiness summary so the orchestrator applies them serially. Parallel Edit-tool calls on the same file race.
+- **In `mode: verify`** — do not run `/recollect-api-tester` concurrently with another verify agent. The skill drives a single logged-in Chrome tab; concurrent invocations race on the browser. If the orchestrator spawned you in parallel with siblings for Band V2, wait for the orchestrator's serialization signal — don't bypass.
 
 ## URL Mapping
 
@@ -126,6 +187,8 @@ Add the barrel export in `src/lib/openapi/endpoints/<domain>/index.ts`:
 export { v2<CamelName>Supplement } from "./v2-<kebab-name>";
 ```
 
+In `mode: codegen`, do not write this barrel line directly. Emit it in the `SHARED-FILE PATCHES` block so the orchestrator applies it serially alongside other routes' barrel appends.
+
 ### Step 4 — Verify
 
 **4a. Static checks.**
@@ -148,6 +211,8 @@ export const V2_<SCREAMING_NAME>_API = "v2/<same-path>";
 ```
 
 No leading slash.
+
+In `mode: codegen`, do not write this line to `constants.ts` directly. Emit it as a line in the `SHARED-FILE PATCHES` block so the orchestrator appends it serially alongside other routes' constants.
 
 **4c. Repoint the caller(s).**
 
@@ -304,7 +369,11 @@ Run `pnpm fix` if any formatter dirtied the tree — then re-check `git status` 
 
 ### Step 8 — Return
 
-Return ONLY this to the orchestrator:
+Return shape depends on the mode.
+
+**`mode: codegen`** — return the readiness summary plus shared-file patches (see "Codegen mode — return contract" in the Orchestration Protocol section above). Do not claim the migration is verified; verification is the orchestrator's next phase.
+
+**`mode: verify`** or **mode omitted** — return ONLY this:
 
 ```
 ✅ Migration verified: <source> → <target>
