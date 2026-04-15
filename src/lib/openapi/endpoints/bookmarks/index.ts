@@ -11,6 +11,7 @@ export { v2AddBookmarkMultipleCategoriesSupplement } from "./v2-add-bookmark-mul
 export { v2AddRemainingBookmarkDataSupplement } from "./v2-add-remaining-bookmark-data";
 export { v2AddUrlScreenshotSupplement } from "./v2-add-url-screenshot";
 export { v2BookmarksInsertSupplement } from "./v2-bookmarks-insert";
+export { v2CheckUrlSupplement } from "./v2-check-url";
 export { v2FetchBookmarksCountSupplement } from "./v2-fetch-bookmarks-count";
 export { v2FetchBookmarksDataSupplement } from "./v2-fetch-bookmarks-data";
 export { v2FetchBookmarksDiscoverableSupplement } from "./v2-fetch-bookmarks-discoverable";

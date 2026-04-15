@@ -160,6 +160,7 @@ export const V2_TWITTER_SYNC_STATUS_API = "v2/twitter/sync/status";
 export const V2_FETCH_BOOKMARKS_DISCOVERABLE_API = "v2/bookmark/fetch-bookmarks-discoverable";
 export const V2_FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API = "v2/bookmark/fetch-discoverable-by-id";
 export const V2_FETCH_PUBLIC_BOOKMARK_BY_ID_API = "v2/bookmark/fetch-public-bookmark-by-id";
+export const V2_CHECK_URL_API = "v2/bookmarks/check-url";
 
 // Screenshot api
 export const SCREENSHOT_API = "https://vercel-puppeteer-screenshot-api.vercel.app";
