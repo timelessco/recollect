@@ -29,11 +29,36 @@ function normalizePlan(raw: unknown): EnrichedProfile["plan"] {
 }
 
 type RawProfileRow = Record<string, unknown> & {
+  category_order?: null | (null | number | string)[];
   plan?: unknown;
   plan_updated_at?: null | string;
   subscription_current_period_end?: null | string;
   subscription_status?: null | string;
 };
+
+// PostgREST serializes Postgres `int8` arrays as JSON strings (to preserve
+// 64-bit precision), so `category_order` arrives as `["379"]`, not `[379]`.
+// Sparse positions in the array surface as `null` — drop them rather than
+// coerce to 0, which would silently inject "Uncategorized" into the order.
+function coerceCategoryOrder(raw: RawProfileRow["category_order"]): null | number[] {
+  if (!raw) {
+    return null;
+  }
+
+  const result: number[] = [];
+  for (const value of raw) {
+    if (value === null || value === undefined) {
+      continue;
+    }
+
+    const numeric = typeof value === "number" ? value : Number(value);
+    if (Number.isFinite(numeric)) {
+      result.push(numeric);
+    }
+  }
+
+  return result;
+}
 
 /* oxlint-disable @typescript-eslint/no-unsafe-type-assertion -- DB row shape is validated at runtime via outputSchema.safeParse in the factory */
 function enrichProfiles(
@@ -48,6 +73,7 @@ function enrichProfiles(
     (row) =>
       ({
         ...row,
+        category_order: coerceCategoryOrder(row.category_order),
         freeTierCutoffAt: userCreatedAt,
         plan: normalizePlan(row.plan),
         planChangedAt: row.plan_updated_at ?? userCreatedAt,
