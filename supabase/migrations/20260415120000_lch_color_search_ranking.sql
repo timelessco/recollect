@@ -159,7 +159,7 @@ BEGIN
 
   -- Soft score: weighted quadratic distance wrapped in a Gaussian falloff.
   -- The hue term is scaled by C_q * C_s so hue differences only matter when
-  -- both colors are chromatic (borrows CIEDE2000 structure).
+  -- both colors are chromatic.
   dh_rad := dh_deg * pi() / 180.0;
   d_l := hint_l - stored_l;
   d_c := q_c - s_c;
