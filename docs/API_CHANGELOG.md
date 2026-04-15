@@ -59,3 +59,18 @@
 
 
 
+
+## 2026-04-15 [`b7d0282`](https://github.com/timelessco/recollect/commit/b7d02829cfd217b8868b90a0314ea3599754ad15)
+
+
+
+### API Changes
+
+### GET /v2/twitter/sync/status
+-  endpoint added
+
+
+
+
+
+
