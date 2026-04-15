@@ -44,3 +44,18 @@
 
 
 
+
+## 2026-04-15 [`61b67f6`](https://github.com/timelessco/recollect/commit/61b67f6a26a8bbe9fcbb422eec80bd60cf403e62)
+
+
+
+### API Changes
+
+### POST /v2/instagram/last-synced-id
+-  endpoint added
+
+
+
+
+
+
