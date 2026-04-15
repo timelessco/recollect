@@ -74,3 +74,39 @@
 
 
 
+
+## 2026-04-15 [`9065e88`](https://github.com/timelessco/recollect/commit/9065e886487b70b92746ffd70be95ca2e09886f3)
+
+
+
+### API Changes
+
+### PATCH /v2/profiles/update-user-profile
+- :warning: the 'updateData/display_name' request property's minLength was increased from '0' to '1'
+- :warning: added the pattern '^[\d\sA-Za-z]+$/u' to the request property 'updateData/display_name'
+- :warning: the 'updateData/display_name' request property's maxLength was set to '100'
+
+
+
+
+
+
+
+## 2026-04-15 [`d16e1bd`](https://github.com/timelessco/recollect/commit/d16e1bd9a9d1c3b799400e466fe28c5d255b3a30)
+
+
+
+### API Changes
+
+### GET /bookmark/fetch-bookmarks-discoverable
+-  added the required property 'data/items/user_id' to the response with the '200' status
+
+
+### POST /v2/bookmark/save-from-discover
+-  endpoint added
+
+
+
+
+
+

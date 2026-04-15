@@ -183,3 +183,17 @@ for delete
 to authenticated
 using ( (select auth.uid()) = user_id );
 ```
+
+### RLS — Hardening Checklist
+
+When replacing permissive policies or adding RLS to existing tables, the per-op template is necessary but not sufficient:
+
+- **Junction tables**: INSERT/UPDATE must verify BOTH FK sides via subquery, not just `user_id = auth.uid()`. FK + UNIQUE alone let a caller reserve another user's slot under their own `user_id`.
+- **Column-scoped UPDATE**: RLS cannot restrict which columns mutate. Pair the policy with a `BEFORE UPDATE` trigger that blocks non-whitelisted column changes when `OLD.user_id IS DISTINCT FROM auth.uid()`.
+- **Cross-FK owner UPDATE**: if the row FKs into another ownership-checked table, `WITH CHECK` must re-assert FK ownership (`AND fk_id IN (SELECT id FROM other_table WHERE user_id = auth.uid())`) or the owner can repoint to a row they don't own.
+- **Drop legacy policies by exact name, including typos**: prod may have `"auth acceess"`. Use `DROP POLICY IF EXISTS` with the live name, not the corrected spelling.
+- **End every RLS migration with a verification `DO $$`**: assert expected policy names exist and `count(*) FROM pg_policies WHERE (qual='true' OR with_check='true')` on target tables is zero. A typo otherwise leaves the hole open silently.
+
+### RLS — cspell-safe comment vocabulary
+
+Use `defense` (not `defence`), `preferences` (not `prefs`), `redirected`/`redirecting` (not `repointed`/`repointing`), `tag associations` (not `taggings`).
