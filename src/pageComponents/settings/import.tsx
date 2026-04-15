@@ -2,266 +2,265 @@
 
 import { useRef, useState } from "react";
 
-import Button from "../../components/atoms/button";
-import { Spinner } from "../../components/spinner";
-import { InfoIcon } from "../../icons/info-icon";
-import { RaindropIcon } from "../../icons/raindrop-icon";
-import { type SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
+import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
 
 import { useImportBookmarksMutation } from "@/async/mutationHooks/bookmarks/use-import-bookmarks-mutation";
 import { saveButtonClassName } from "@/utils/commonClassNames";
 import { handleClientError } from "@/utils/error-utils/client";
 
+import Button from "../../components/atoms/button";
+import { Spinner } from "../../components/spinner";
+import { InfoIcon } from "../../icons/info-icon";
+import { RaindropIcon } from "../../icons/raindrop-icon";
+
 const REQUIRED_CSV_COLUMNS = ["url"] as const;
 
-type ImportBookmarksProps = {
-	onNavigate: (page: SettingsPage) => void;
+interface ImportBookmarksProps {
+  onNavigate: (page: SettingsPage) => void;
+}
+
+const parseCSV = async (file: File) => {
+  const Papa = await import("papaparse");
+
+  // eslint-disable-next-line promise/avoid-new -- wrapping callback-based Papa.parse API
+  return new Promise<Papa.ParseResult<Record<string, string>>>((resolve, reject) => {
+    Papa.parse(file, {
+      complete: (results) => {
+        if (results.errors.length === 0) {
+          resolve(results as Papa.ParseResult<Record<string, string>>);
+        } else {
+          reject(
+            new Error(
+              `CSV parsing errors: ${results.errors.map((error) => error.message).join(", ")}`,
+            ),
+          );
+        }
+      },
+      error: (error) => {
+        reject(error);
+      },
+      header: true,
+      skipEmptyLines: true,
+    });
+  });
 };
 
 export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
-	const [selectedFile, setSelectedFile] = useState<File | null>(null);
-	const [bookmarkCount, setBookmarkCount] = useState<number | null>(null);
-	const [parseError, setParseError] = useState<string | null>(null);
-	const [dragActive, setDragActive] = useState(false);
-	const inputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [bookmarkCount, setBookmarkCount] = useState<null | number>(null);
+  const [parseError, setParseError] = useState<null | string>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-	const { importBookmarksMutation } = useImportBookmarksMutation();
-	const { isPending, isSuccess } = importBookmarksMutation;
+  const { importBookmarksMutation } = useImportBookmarksMutation();
+  const { isPending, isSuccess } = importBookmarksMutation;
 
-	const parseCSV = async (file: File) => {
-		const Papa = await import("papaparse");
+  const handleFile = async (fileToProcess: File) => {
+    setSelectedFile(null);
+    setBookmarkCount(null);
+    setParseError(null);
+    importBookmarksMutation.reset();
 
-		return await new Promise<Papa.ParseResult<Record<string, string>>>(
-			(resolve, reject) => {
-				Papa.parse(file, {
-					header: true,
-					skipEmptyLines: true,
-					complete: (results) => {
-						if (results.errors.length === 0) {
-							resolve(results as Papa.ParseResult<Record<string, string>>);
-						} else {
-							reject(
-								new Error(
-									`CSV parsing errors: ${results.errors.map((error) => error.message).join(", ")}`,
-								),
-							);
-						}
-					},
-					error: (error) => reject(error),
-				});
-			},
-		);
-	};
+    try {
+      const results = await parseCSV(fileToProcess);
 
-	const handleFile = async (fileToProcess: File) => {
-		setSelectedFile(null);
-		setBookmarkCount(null);
-		setParseError(null);
-		importBookmarksMutation.reset();
+      // Validate required columns exist
+      const columns = results.meta.fields ?? [];
+      const missingColumns = REQUIRED_CSV_COLUMNS.filter((col) => !columns.includes(col));
 
-		try {
-			const results = await parseCSV(fileToProcess);
+      if (missingColumns.length > 0) {
+        setParseError(`CSV missing required columns: ${missingColumns.join(", ")}`);
+        setBookmarkCount(null);
+        setSelectedFile(null);
+        return;
+      }
 
-			// Validate required columns exist
-			const columns = results.meta.fields ?? [];
-			const missingColumns = REQUIRED_CSV_COLUMNS.filter(
-				(col) => !columns.includes(col),
-			);
+      setSelectedFile(fileToProcess);
+      setBookmarkCount(results.data.length);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Error parsing CSV file";
+      setParseError(message);
+      setBookmarkCount(null);
+      setSelectedFile(null);
+    }
+  };
 
-			if (missingColumns.length > 0) {
-				setParseError(
-					`CSV missing required columns: ${missingColumns.join(", ")}`,
-				);
-				setBookmarkCount(null);
-				setSelectedFile(null);
-				return;
-			}
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const chosenFile = event.target.files?.[0];
+    if (chosenFile) {
+      void handleFile(chosenFile);
+    }
+  };
 
-			setSelectedFile(fileToProcess);
-			setBookmarkCount(results.data.length);
-		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Error parsing CSV file";
-			setParseError(message);
-			setBookmarkCount(null);
-			setSelectedFile(null);
-		}
-	};
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragActive(false);
+    const droppedFile = event.dataTransfer.files?.[0];
+    if (droppedFile && (droppedFile.type === "text/csv" || droppedFile.name.endsWith(".csv"))) {
+      void handleFile(droppedFile);
+    }
+  };
 
-	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const chosenFile = event.target.files?.[0];
-		if (chosenFile) {
-			void handleFile(chosenFile);
-		}
-	};
+  const handleImport = async () => {
+    if (!selectedFile) {
+      return;
+    }
 
-	const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-		event.preventDefault();
-		setDragActive(false);
-		const droppedFile = event.dataTransfer.files?.[0];
-		if (
-			droppedFile &&
-			(droppedFile.type === "text/csv" || droppedFile.name.endsWith(".csv"))
-		) {
-			void handleFile(droppedFile);
-		}
-	};
+    try {
+      const results = await parseCSV(selectedFile);
+      const records = results.data as {
+        cover: string;
+        created?: string;
+        excerpt: string;
+        folder?: string;
+        title: string;
+        url: string;
+      }[];
 
-	const handleImport = async () => {
-		if (!selectedFile) {
-			return;
-		}
+      if (!records.length) {
+        return;
+      }
 
-		try {
-			const results = await parseCSV(selectedFile);
-			const records = results.data as Array<{
-				title: string;
-				excerpt: string;
-				url: string;
-				cover: string;
-				folder?: string;
-				created?: string;
-			}>;
+      const bookmarks = records.map((bookmark) => ({
+        category_name: bookmark.folder ?? null,
+        description: bookmark.excerpt || null,
+        inserted_at: bookmark.created ?? null,
+        ogImage: bookmark.cover || null,
+        title: bookmark.title || null,
+        url: bookmark.url,
+      }));
 
-			if (!records.length) {
-				return;
-			}
+      importBookmarksMutation.mutate({ bookmarks });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("CSV parsing errors")) {
+        handleClientError(error, "Error parsing CSV file");
+      }
+    }
+  };
 
-			const bookmarks = records.map((bookmark) => ({
-				title: bookmark.title || null,
-				description: bookmark.excerpt || null,
-				url: bookmark.url,
-				ogImage: bookmark.cover || null,
-				category_name: bookmark.folder || null,
-				inserted_at: bookmark.created || null,
-			}));
+  const isFileUploaded = Boolean(selectedFile) && bookmarkCount !== null && !parseError;
+  return (
+    <>
+      <h2 className="mb-6 text-lg leading-[115%] font-semibold tracking-normal text-gray-900">
+        Import
+      </h2>
+      <p className="mb-2 align-middle text-sm leading-[115%] tracking-[0.02em] text-gray-800">
+        Import from Raindrop
+      </p>
 
-			importBookmarksMutation.mutate({ bookmarks });
-		} catch (error) {
-			if (
-				error instanceof Error &&
-				error.message.includes("CSV parsing errors")
-			) {
-				handleClientError(error, "Error parsing CSV file");
-			}
-		}
-	};
+      <div
+        className={`relative flex flex-col items-center justify-center rounded-lg bg-gray-100 py-[75px] transition-colors ${
+          !isFileUploaded && dragActive ? "bg-gray-200" : ""
+        }`}
+        onDragLeave={
+          !isFileUploaded
+            ? () => {
+                setDragActive(false);
+              }
+            : undefined
+        }
+        onDragOver={
+          !isFileUploaded
+            ? (event) => {
+                event.preventDefault();
+                setDragActive(true);
+              }
+            : undefined
+        }
+        onDrop={!isFileUploaded ? handleDrop : undefined}
+      >
+        <RaindropIcon className="mb-1.5 w-8" />
+        <p className="mb-1.5 align-middle text-sm leading-[115%] font-normal tracking-normal text-gray-800">
+          {(() => {
+            if (parseError) {
+              return parseError;
+            }
 
-	const isFileUploaded =
-		Boolean(selectedFile) && bookmarkCount !== null && !parseError;
-	return (
-		<>
-			<h2 className="mb-6 text-lg leading-[115%] font-semibold tracking-normal text-gray-900">
-				Import
-			</h2>
-			<p className="mb-2 align-middle text-sm leading-[115%] tracking-[0.02em] text-gray-800">
-				Import from Raindrop
-			</p>
+            if (!isFileUploaded) {
+              return "Drop the CSV file here or";
+            }
 
-			<div
-				className={`relative flex flex-col items-center justify-center rounded-lg bg-gray-100 py-[75px] transition-colors ${
-					!isFileUploaded ? `${dragActive ? "bg-gray-200" : ""}` : ""
-				}`}
-				onDrop={!isFileUploaded ? handleDrop : undefined}
-				onDragOver={
-					!isFileUploaded
-						? (event) => {
-								event.preventDefault();
-								setDragActive(true);
-							}
-						: undefined
-				}
-				onDragLeave={!isFileUploaded ? () => setDragActive(false) : undefined}
-			>
-				<RaindropIcon className="mb-1.5 w-8" />
-				<p className="mb-1.5 align-middle text-sm leading-[115%] font-normal tracking-normal text-gray-800">
-					{parseError
-						? parseError
-						: isFileUploaded
-							? isSuccess
-								? "Successfully imported bookmarks"
-								: `Found ${bookmarkCount} Bookmarks`
-							: "Drop the CSV file here or"}
-				</p>
-				<Button
-					className={`relative py-[4.5px] ${saveButtonClassName} rounded-[5px] ${isSuccess ? "bg-gray-600 hover:bg-gray-600" : ""}`}
-					isDisabled={
-						isFileUploaded
-							? isSuccess || isPending || bookmarkCount === 0
-							: false
-					}
-					onClick={
-						isFileUploaded
-							? handleImport
-							: () => {
-									inputRef.current?.click();
-								}
-					}
-				>
-					<span className="inline-flex min-h-[15px] items-center justify-center">
-						{isFileUploaded ? (
-							isPending ? (
-								<Spinner className="mx-12.5 h-3 w-3" />
-							) : isSuccess ? (
-								"Imported"
-							) : (
-								"Import Bookmarks"
-							)
-						) : (
-							"Choose File"
-						)}
-					</span>
-				</Button>
-				<input
-					ref={inputRef}
-					type="file"
-					accept=".csv"
-					className="hidden"
-					onChange={handleFileChange}
-				/>
-			</div>
+            return isSuccess
+              ? "Successfully imported bookmarks"
+              : `Found ${bookmarkCount} Bookmarks`;
+          })()}
+        </p>
+        <Button
+          className={`relative py-[4.5px] ${saveButtonClassName} rounded-[5px] ${isSuccess ? "bg-gray-600 hover:bg-gray-600" : ""}`}
+          isDisabled={isFileUploaded ? isSuccess || isPending || bookmarkCount === 0 : false}
+          onClick={
+            isFileUploaded
+              ? () => {
+                  void handleImport();
+                }
+              : () => {
+                  inputRef.current?.click();
+                }
+          }
+        >
+          <span className="inline-flex min-h-[15px] items-center justify-center">
+            {(() => {
+              if (!isFileUploaded) {
+                return "Choose File";
+              }
 
-			<div
-				className={`mt-2 flex text-13 leading-[150%] tracking-normal text-gray-600 ${
-					!isFileUploaded ? "flex-wrap" : ""
-				}`}
-			>
-				<span className={`mr-2 shrink-0 ${!isFileUploaded ? "py-0.5" : ""}`}>
-					<InfoIcon className="h-4.5 w-4.5 text-gray-600" />
-				</span>
-				<span
-					className={`${!isFileUploaded ? "flex items-center justify-center" : ""}`}
-				>
-					{!isFileUploaded ? (
-						<>
-							<span>Export a CSV from</span>
-							<a
-								className="ml-1 underline"
-								href="https://app.raindrop.io/settings/backups"
-								rel="noopener noreferrer"
-								target="_blank"
-							>
-								Raindrop
-							</a>
-						</>
-					) : (
-						<>
-							<span>Please add your own AI</span>
-							<button
-								className="ml-1 underline"
-								onClick={() => onNavigate("ai-features")}
-								type="button"
-							>
-								API key
-							</button>
-							<span className="ml-1">
-								as the free account only adds AI optimisation for the first 1000
-								bookmarks
-							</span>
-						</>
-					)}
-				</span>
-			</div>
-		</>
-	);
+              if (isPending) {
+                return <Spinner className="mx-12.5 h-3 w-3" />;
+              }
+
+              return isSuccess ? "Imported" : "Import Bookmarks";
+            })()}
+          </span>
+        </Button>
+        <input
+          accept=".csv"
+          className="hidden"
+          onChange={handleFileChange}
+          ref={inputRef}
+          type="file"
+        />
+      </div>
+
+      <div
+        className={`mt-2 flex text-13 leading-[150%] tracking-normal text-gray-600 ${
+          !isFileUploaded ? "flex-wrap" : ""
+        }`}
+      >
+        <span className={`mr-2 shrink-0 ${!isFileUploaded ? "py-0.5" : ""}`}>
+          <InfoIcon className="h-4.5 w-4.5 text-gray-600" />
+        </span>
+        <span className={!isFileUploaded ? "flex items-center justify-center" : ""}>
+          {!isFileUploaded ? (
+            <>
+              <span>Export a CSV from</span>
+              <a
+                className="ml-1 underline"
+                href="https://app.raindrop.io/settings/backups"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Raindrop
+              </a>
+            </>
+          ) : (
+            <>
+              <span>Please add your own AI</span>
+              <button
+                className="ml-1 underline"
+                onClick={() => {
+                  onNavigate("ai-features");
+                }}
+                type="button"
+              >
+                API key
+              </button>
+              <span className="ml-1">
+                as the free account only adds AI optimisation for the first 1000 bookmarks
+              </span>
+            </>
+          )}
+        </span>
+      </div>
+    </>
+  );
 };

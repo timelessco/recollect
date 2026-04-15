@@ -19,6 +19,6 @@
 		"target": "ES5",
 		"typeRoots": ["./node_modules/@types", "@types", "./env/environment.d.ts"]
 	},
-	"exclude": ["node_modules", ".next", "cypress"],
+	"exclude": ["node_modules", ".next"],
 	"include": ["./**/*"]
 }

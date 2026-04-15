@@ -1,20 +1,35 @@
 {
-	"version": 1,
-	"skills": {
-		"next-best-practices": {
-			"source": "vercel-labs/next-skills",
-			"sourceType": "github",
-			"computedHash": "515ba75178bd44875812d9a560bdf14651f86709f89cf1d4f209638e879807f3"
-		},
-		"next-browser": {
-			"source": "vercel-labs/next-browser",
-			"sourceType": "github",
-			"computedHash": "1bf8ba12e92bf1dca525d46ca1d9ea2b572ea5b4be1101cc673a43f91880c115"
-		},
-		"next-upgrade": {
-			"source": "vercel-labs/next-skills",
-			"sourceType": "github",
-			"computedHash": "be6bbf6ab1dc2cc6f2505cea52d497920c04f5b532c0846ee201f6029b803fb0"
-		}
-	}
+  "version": 1,
+  "skills": {
+    "axiom-sre": {
+      "source": "axiomhq/skills",
+      "sourceType": "github",
+      "computedHash": "c68aea9b6c0ca3ccc53060dde50af088fe756148e4bd1c98ccb7039b01124afc"
+    },
+    "building-dashboards": {
+      "source": "axiomhq/skills",
+      "sourceType": "github",
+      "computedHash": "dabb1a45a676bbac3924b2cd5563f714d13c826e5dd88220aee42be46dac22e0"
+    },
+    "controlling-costs": {
+      "source": "axiomhq/skills",
+      "sourceType": "github",
+      "computedHash": "7011f64a0959aa9d28a3585ce1d8b991d3a54ecdac3d3f7a1e1e3df46789f32a"
+    },
+    "next-best-practices": {
+      "source": "vercel-labs/next-skills",
+      "sourceType": "github",
+      "computedHash": "515ba75178bd44875812d9a560bdf14651f86709f89cf1d4f209638e879807f3"
+    },
+    "next-browser": {
+      "source": "vercel-labs/next-browser",
+      "sourceType": "github",
+      "computedHash": "1bf8ba12e92bf1dca525d46ca1d9ea2b572ea5b4be1101cc673a43f91880c115"
+    },
+    "next-upgrade": {
+      "source": "vercel-labs/next-skills",
+      "sourceType": "github",
+      "computedHash": "be6bbf6ab1dc2cc6f2505cea52d497920c04f5b532c0846ee201f6029b803fb0"
+    }
+  }
 }

@@ -1,43 +1,46 @@
-import { createGetApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
-import { apiError } from "@/lib/api-helpers/response";
+import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
+import { RecollectApiError } from "@/lib/api-helpers/errors";
+import { getServerContext } from "@/lib/api-helpers/server-context";
 import { PROFILES } from "@/utils/constants";
 
-import {
-	CheckGeminiApiKeyInputSchema,
-	CheckGeminiApiKeyOutputSchema,
-} from "./schema";
+import { CheckGeminiApiKeyInputSchema, CheckGeminiApiKeyOutputSchema } from "./schema";
 
 const ROUTE = "v2-profiles-check-gemini-api-key";
 
-export const GET = createGetApiHandlerWithAuth({
-	route: ROUTE,
-	inputSchema: CheckGeminiApiKeyInputSchema,
-	outputSchema: CheckGeminiApiKeyOutputSchema,
-	handler: async ({ supabase, user, route }) => {
-		const userId = user.id;
+export const GET = createAxiomRouteHandler(
+  withAuth({
+    handler: async ({ supabase, user }) => {
+      const userId = user.id;
 
-		console.log(`[${route}] API called:`, { userId });
+      const ctx = getServerContext();
+      if (ctx?.fields) {
+        ctx.fields.user_id = userId;
+      }
 
-		const { data: profileData, error: profileError } = await supabase
-			.from(PROFILES)
-			.select("api_key")
-			.eq("id", userId)
-			.single();
+      const { data: profileData, error: profileError } = await supabase
+        .from(PROFILES)
+        .select("api_key")
+        .eq("id", userId)
+        .single();
 
-		if (profileError) {
-			return apiError({
-				route,
-				message: "Failed to check API key status",
-				error: profileError,
-				operation: "gemini_api_key_check",
-				userId,
-			});
-		}
+      if (profileError) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: profileError,
+          message: "Failed to check API key status",
+          operation: "gemini_api_key_check",
+        });
+      }
 
-		const hasApiKey = Boolean(profileData?.api_key);
+      const hasApiKey = Boolean(profileData?.api_key);
 
-		console.log(`[${route}] API key check completed:`, { hasApiKey, userId });
+      if (ctx?.fields) {
+        ctx.fields.has_api_key = hasApiKey;
+      }
 
-		return { hasApiKey };
-	},
-});
+      return { hasApiKey };
+    },
+    inputSchema: CheckGeminiApiKeyInputSchema,
+    outputSchema: CheckGeminiApiKeyOutputSchema,
+    route: ROUTE,
+  }),
+);

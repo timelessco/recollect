@@ -10,17 +10,9 @@ enabled = true
 port = 54321
 # Schemas to expose in your API. Tables, views and stored procedures in this schema will get API
 # endpoints. `public` and `graphql_public` schemas are included by default.
-schemas = [
-  "public",
-  "graphql_public",
-  "pgmq_public"
-]
+schemas = ["public", "graphql_public", "pgmq_public"]
 # Extra schemas to add to the search_path of every request.
-extra_search_path = [
-  "public",
-  "extensions",
-  "pgmq_public"
-]
+extra_search_path = ["public", "extensions", "pgmq_public"]
 # The maximum number of rows returns from a view, table, or stored procedure. Limits payload size
 # for accidental or malicious requests.
 max_rows = 1000
@@ -75,10 +67,10 @@ sql_paths = ["./seeds/00-cleanup.sql", "./seed.sql"]
 enabled = false
 # List of IPv4 CIDR blocks allowed to connect to the database.
 # Defaults to allow all IPv4 connections. Set empty array to block all IPs.
-allowed_cidrs = [ "0.0.0.0/0" ]
+allowed_cidrs = ["0.0.0.0/0"]
 # List of IPv6 CIDR blocks allowed to connect to the database.
 # Defaults to allow all IPv6 connections. Set empty array to block all IPs.
-allowed_cidrs_v6 = [ "::/0" ]
+allowed_cidrs_v6 = ["::/0"]
 
 [realtime]
 enabled = true
@@ -122,28 +114,72 @@ file_size_limit = "50MiB"
 public = true
 file_size_limit = "50MiB"
 allowed_mime_types = [
-  "image/gif", "image/vnd.microsoft.icon", "image/jpeg", "image/jpg",
-  "image/png", "image/svg+xml", "image/tiff", "image/webp", "image/apng",
-  "image/avif", "image/bmp",
-  "audio/midi", "audio/x-midi", "audio/mpeg", "audio/ogg", "audio/3gpp",
-  "audio/3gpp2", "audio/webm", "audio/wav", "audio/aac",
-  "video/mp4", "video/mpeg", "video/ogg", "video/mp2t", "video/webm",
-  "video/3gpp", "video/3gpp2", "video/x-msvideo",
-  "application/msword", "application/pdf"
+  "image/gif",
+  "image/vnd.microsoft.icon",
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/svg+xml",
+  "image/tiff",
+  "image/webp",
+  "image/apng",
+  "image/avif",
+  "image/bmp",
+  "audio/midi",
+  "audio/x-midi",
+  "audio/mpeg",
+  "audio/ogg",
+  "audio/3gpp",
+  "audio/3gpp2",
+  "audio/webm",
+  "audio/wav",
+  "audio/aac",
+  "video/mp4",
+  "video/mpeg",
+  "video/ogg",
+  "video/mp2t",
+  "video/webm",
+  "video/3gpp",
+  "video/3gpp2",
+  "video/x-msvideo",
+  "application/msword",
+  "application/pdf",
 ]
 
 [storage.buckets.recollect-dev]
 public = true
 file_size_limit = "50MiB"
 allowed_mime_types = [
-  "image/gif", "image/vnd.microsoft.icon", "image/jpeg", "image/jpg",
-  "image/png", "image/svg+xml", "image/tiff", "image/webp", "image/apng",
-  "image/avif", "image/bmp",
-  "audio/midi", "audio/x-midi", "audio/mpeg", "audio/ogg", "audio/3gpp",
-  "audio/3gpp2", "audio/webm", "audio/wav", "audio/aac",
-  "video/mp4", "video/mpeg", "video/ogg", "video/mp2t", "video/webm",
-  "video/3gpp", "video/3gpp2", "video/x-msvideo",
-  "application/msword", "application/pdf"
+  "image/gif",
+  "image/vnd.microsoft.icon",
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/svg+xml",
+  "image/tiff",
+  "image/webp",
+  "image/apng",
+  "image/avif",
+  "image/bmp",
+  "audio/midi",
+  "audio/x-midi",
+  "audio/mpeg",
+  "audio/ogg",
+  "audio/3gpp",
+  "audio/3gpp2",
+  "audio/webm",
+  "audio/wav",
+  "audio/aac",
+  "video/mp4",
+  "video/mpeg",
+  "video/ogg",
+  "video/mp2t",
+  "video/webm",
+  "video/3gpp",
+  "video/3gpp2",
+  "video/x-msvideo",
+  "application/msword",
+  "application/pdf",
 ]
 
 [auth]
@@ -388,6 +424,10 @@ verify_jwt = false
 
 # Raindrop import queue consumer - same auth pattern as Instagram worker
 [functions.process-raindrop-imports]
+verify_jwt = false
+
+# Chrome bookmark import queue consumer - same auth pattern as Raindrop worker
+[functions.process-chrome-bookmark-imports]
 verify_jwt = false
 
 [analytics]

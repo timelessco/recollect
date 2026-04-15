@@ -33,20 +33,11 @@ node_modules
 # Next.js
 ############################
 
-.next/*
+.next
 next-env.d.ts
 
 # Next PWA
-**/public/precache.*.*.js
-**/public/sw.js
-**/public/workbox-*.js
-**/public/worker-*.js
-**/public/fallback-*.js
-**/public/precache.*.*.js.map
-**/public/sw.js.map
-**/public/workbox-*.js.map
-**/public/worker-*.js.map
-**/public/fallback-*.js
+public/sw*
 
 # Generated OpenAPI spec (regenerated via prebuild:next)
 public/openapi.json
@@ -79,12 +70,6 @@ public/sitemap-0.xml
 !.vscode/extensions.json
 !.vscode/settings.json
 
-# Prettier cache
-.prettiercache
-
-# Eslint cache
-.eslintcache
-
 # Stylelint cache
 .stylelintcache
 
@@ -93,6 +78,7 @@ public/sitemap-0.xml
 
 # Extras(if any)
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
 .claude/worktrees
 .worktrees
 .planning

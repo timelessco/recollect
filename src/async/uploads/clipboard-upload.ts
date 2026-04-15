@@ -1,29 +1,29 @@
-import { type UseMutationResult } from "@tanstack/react-query";
 import { isEmpty } from "lodash";
 
-import {
-	type AddBookmarkMinDataPayloadTypes,
-	type BookmarksPaginatedDataTypes,
-	type UploadFileApiPayload,
+import type {
+  AddBookmarkMinDataPayloadTypes,
+  PaginatedBookmarks,
+  UploadFileApiPayload,
 } from "../../types/apiTypes";
-import { type CategoryIdUrlTypes } from "../../types/componentTypes";
+import type { CategoryIdUrlTypes } from "../../types/componentTypes";
+import type { UseMutationResult } from "@tanstack/react-query";
+
 import { mutationApiCall } from "../../utils/apiHelpers";
 import { URL_PATTERN } from "../../utils/constants";
-
 import { fileUpload } from "./file-upload";
 
 type AddMinDataMutationType = UseMutationResult<
-	unknown,
-	{ previousData: BookmarksPaginatedDataTypes },
-	AddBookmarkMinDataPayloadTypes,
-	{ previousData: unknown }
+  unknown,
+  { previousData: PaginatedBookmarks },
+  AddBookmarkMinDataPayloadTypes,
+  { previousData: unknown }
 >;
 
 export type FileUploadMutationType = UseMutationResult<
-	unknown,
-	{ previousData: BookmarksPaginatedDataTypes },
-	UploadFileApiPayload,
-	{ previousData: unknown }
+  unknown,
+  Error,
+  UploadFileApiPayload,
+  { preGeneratedUrl: string; previousData: unknown; tempId: number }
 >;
 
 /**
@@ -35,28 +35,28 @@ export type FileUploadMutationType = UseMutationResult<
  * @param {FileUploadMutationType} fileUploadOptimisticMutation the mutation for file uploads
  */
 export const clipboardUpload = async (
-	text: string | undefined,
-	files: FileList | undefined,
-	category_id: CategoryIdUrlTypes,
-	addBookmarkMinDataOptimisticMutation: AddMinDataMutationType,
-	fileUploadOptimisticMutation: FileUploadMutationType,
+  text: string | undefined,
+  files: FileList | undefined,
+  category_id: CategoryIdUrlTypes,
+  addBookmarkMinDataOptimisticMutation: AddMinDataMutationType,
+  fileUploadOptimisticMutation: FileUploadMutationType,
 ) => {
-	if (files) {
-		await fileUpload(files, fileUploadOptimisticMutation, category_id);
-	}
+  if (files) {
+    fileUpload(files, fileUploadOptimisticMutation, category_id);
+  }
 
-	if (text) {
-		// check if the text is a bookmark url
-		const isUrl = text?.match(URL_PATTERN);
+  if (text) {
+    // check if the text is a bookmark url
+    const isUrl = text?.match(URL_PATTERN);
 
-		if (isUrl && !isEmpty(isUrl)) {
-			await mutationApiCall(
-				addBookmarkMinDataOptimisticMutation.mutateAsync({
-					url: text.trim(),
-					category_id,
-					update_access: true,
-				}),
-			);
-		}
-	}
+    if (isUrl && !isEmpty(isUrl)) {
+      await mutationApiCall(
+        addBookmarkMinDataOptimisticMutation.mutateAsync({
+          category_id,
+          update_access: true,
+          url: text.trim(),
+        }),
+      );
+    }
+  }
 };

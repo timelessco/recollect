@@ -7,74 +7,67 @@ import { isNullable } from "@/utils/assertion-utils";
 import { cn } from "@/utils/tailwind-merge";
 
 export type LinkProps = AriaCurrentLinkProps & {
-	hasImageChildren?: boolean;
+  hasImageChildren?: boolean;
 };
 
 export function Link(props: LinkProps) {
-	const { className, children, hasImageChildren, ...rest } = props;
+  const { children, className, hasImageChildren, ...rest } = props;
 
-	return (
-		<AriaCurrentLink
-			data-slot="aria-current-link"
-			className={cn(
-				"rounded-xs underline transition data-disabled:cursor-default data-disabled:no-underline",
-				!hasImageChildren &&
-					"outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-				hasImageChildren && "group",
-				className,
-			)}
-			{...rest}
-		>
-			{children}
-			<ImageFocusRing hasImageChildren={hasImageChildren} />
-		</AriaCurrentLink>
-	);
+  return (
+    <AriaCurrentLink
+      className={cn(
+        "rounded-xs underline transition data-disabled:cursor-default data-disabled:no-underline",
+        !hasImageChildren && "outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+        hasImageChildren && "group",
+        className,
+      )}
+      data-slot="aria-current-link"
+      {...rest}
+    >
+      {children}
+      <ImageFocusRing hasImageChildren={hasImageChildren} />
+    </AriaCurrentLink>
+  );
 }
 
 type AriaCurrentLinkProps = React.ComponentProps<typeof NextLink>;
 
 function AriaCurrentLink(props: AriaCurrentLinkProps) {
-	const { href, ...rest } = props;
+  const { href, ...rest } = props;
 
-	const pathname = usePathname();
-	const isCurrentRoute = pathname === href;
+  const pathname = usePathname();
+  const isCurrentRoute = pathname === href;
 
-	return (
-		<NextLink
-			aria-current={isCurrentRoute ? "page" : undefined}
-			href={href}
-			{...rest}
-		/>
-	);
+  return <NextLink aria-current={isCurrentRoute ? "page" : undefined} href={href} {...rest} />;
 }
 
 interface ImageFocusRingProps {
-	hasImageChildren?: boolean;
+  hasImageChildren?: boolean;
 }
 
 function ImageFocusRing(props: ImageFocusRingProps) {
-	const { hasImageChildren } = props;
+  const { hasImageChildren } = props;
 
-	if (isNullable(hasImageChildren)) {
-		return null;
-	}
+  if (isNullable(hasImageChildren)) {
+    return null;
+  }
 
-	return (
-		<div
-			className="group-focus-visible:ring-ring/50 absolute inset-0 size-full transition ring-inset group-focus-visible:ring"
-			data-slot="image-focus-ring"
-		/>
-	);
+  return (
+    <div
+      className="group-focus-visible:ring-ring/50 absolute inset-0 size-full transition ring-inset group-focus-visible:ring"
+      data-slot="image-focus-ring"
+    />
+  );
 }
 
 export function LinkHint() {
-	const { pending } = useLinkStatus();
+  const { pending } = useLinkStatus();
 
-	return (
-		<span
-			aria-hidden
-			className={`link-hint ${pending ? "is-pending" : ""}`}
-			data-slot="link-hint"
-		/>
-	);
+  return (
+    <span
+      aria-hidden
+      className={`link-hint ${pending ? "is-pending" : ""}`}
+      data-slot="link-hint"
+    />
+  );
 }

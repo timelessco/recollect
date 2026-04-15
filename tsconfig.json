@@ -1,51 +1,40 @@
 {
-	"$schema": "https://json.schemastore.org/tsconfig",
-	"compilerOptions": {
-		"strictNullChecks": true,
-		"allowJs": true,
-		"allowUnreachableCode": false,
-		"allowImportingTsExtensions": true,
-		"downlevelIteration": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"incremental": true,
-		"isolatedModules": true,
-		"jsx": "react-jsx",
-		"lib": [
-			"dom",
-			"dom.iterable",
-			"esnext",
-			"esnext.asynciterable",
-			"webworker"
-		],
-		"module": "ESNext",
-		"moduleResolution": "bundler",
-		"noEmit": true,
-		"noUnusedParameters": true,
-		"paths": {
-			"@/*": ["./src/*"]
-		},
-		"plugins": [{ "name": "next" }],
-		"resolveJsonModule": true,
-		"skipLibCheck": true,
-		"strict": true,
-		"target": "ESNext",
-		"typeRoots": [
-			"./node_modules/@types",
-			"@types",
-			"./env/environment.d.ts"
-			// "@serwist/next/typings"
-		],
-		"useUnknownInCatchVariables": true
-	},
-	"exclude": [".next", "cypress", "public/sw.js"],
-	"include": [
-		"src/**/*",
-		"scripts/**/*",
-		"package-typings/**/*",
-		"./*.ts",
-		"./.*.ts",
-		".next/types/**/*.ts",
-		".next/dev/types/**/*.ts"
-	]
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "allowJs": true,
+    "allowUnreachableCode": false,
+    "allowImportingTsExtensions": true,
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "lib": ["dom", "dom.iterable", "esnext", "esnext.asynciterable", "webworker"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noUnusedParameters": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "plugins": [{ "name": "next" }],
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ESNext",
+    "typeRoots": ["./node_modules/@types", "@types"],
+    "useUnknownInCatchVariables": true
+  },
+  "exclude": [".next", "public/sw.js"],
+  "include": [
+    "src/**/*",
+    "scripts/**/*",
+    "package-typings/**/*",
+    "./*.ts",
+    "./.*.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ]
 }

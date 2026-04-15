@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+
 import { useTimeoutEffect } from "@react-hookz/web";
 
 /**
@@ -10,32 +11,29 @@ import { useTimeoutEffect } from "@react-hookz/web";
  * @param minDurationMs - Minimum duration in milliseconds (default: 200ms)
  * @returns Extended isPending that stays true for minimum duration
  */
-export function usePendingWithMinDuration(
-	actualIsPending: boolean,
-	minDurationMs: number = 300,
-): boolean {
-	const [isExtended, setIsExtended] = React.useState(false);
-	const previousIsPendingRef = React.useRef(actualIsPending);
+export function usePendingWithMinDuration(actualIsPending: boolean, minDurationMs = 300): boolean {
+  const [isExtended, setIsExtended] = React.useState(false);
+  const previousIsPendingRef = React.useRef(actualIsPending);
 
-	// Track when actualIsPending transitions from false → true
-	React.useEffect(() => {
-		const previousIsPending = previousIsPendingRef.current;
-		previousIsPendingRef.current = actualIsPending;
+  // Track when actualIsPending transitions from false → true
+  React.useEffect(() => {
+    const previousIsPending = previousIsPendingRef.current;
+    previousIsPendingRef.current = actualIsPending;
 
-		// When actualIsPending becomes true (false → true transition)
-		if (actualIsPending && !previousIsPending) {
-			setIsExtended(true);
-		}
-	}, [actualIsPending]);
+    // When actualIsPending becomes true (false → true transition)
+    if (actualIsPending && !previousIsPending) {
+      setIsExtended(true);
+    }
+  }, [actualIsPending]);
 
-	// Set up timeout to clear isExtended after minimum duration
-	useTimeoutEffect(
-		() => {
-			setIsExtended(false);
-		},
-		isExtended ? minDurationMs : undefined,
-	);
+  // Set up timeout to clear isExtended after minimum duration
+  useTimeoutEffect(
+    () => {
+      setIsExtended(false);
+    },
+    isExtended ? minDurationMs : undefined,
+  );
 
-	// isPending is true if either actual pending OR extended duration active
-	return actualIsPending || isExtended;
+  // isPending is true if either actual pending OR extended duration active
+  return actualIsPending || isExtended;
 }

@@ -27,7 +27,7 @@
 	<a href="https://github.com/timelessco/recollect/blob/main/LICENSE.md" target="_blank">
 		<img alt="License: MIT" src="https://img.shields.io/github/license/timelessco/recollect?color=21bb42">
 	</a>
-	<img alt="Style: Prettier" src="https://img.shields.io/badge/style-prettier-21bb42.svg" />
+	<img alt="Style: Oxfmt" src="https://img.shields.io/badge/style-oxfmt-21bb42.svg" />
 	<img alt="TypeScript: Strict" src="https://img.shields.io/badge/typescript-strict-21bb42.svg" />
 </p>
 

@@ -1,21 +1,23 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { type NextApiRequest, type NextApiResponse } from "next";
-import { type PostgrestError } from "@supabase/supabase-js";
+import type { NextApiRequest, NextApiResponse } from "next";
+
 import isNull from "lodash/isNull";
 import omit from "lodash/omit";
 
-import {
-	type BookmarkViewDataTypes,
-	type CategoriesData,
-	type GetPublicCategoryBookmarksApiResponseType,
-	type ProfilesTableTypes,
+import type {
+  BookmarkViewDataTypes,
+  CategoriesData,
+  GetPublicCategoryBookmarksApiResponseType,
+  ProfilesTableTypes,
 } from "../../types/apiTypes";
+import type { PostgrestError } from "@supabase/supabase-js";
+
 import {
-	BOOKMARK_CATEGORIES_TABLE_NAME,
-	CATEGORIES_TABLE_NAME,
-	MAIN_TABLE_NAME,
-	PAGINATION_LIMIT,
+  BOOKMARK_CATEGORIES_TABLE_NAME,
+  CATEGORIES_TABLE_NAME,
+  MAIN_TABLE_NAME,
+  PAGINATION_LIMIT,
 } from "../../utils/constants";
 import { createServiceClient } from "../../utils/supabaseClient";
 
@@ -24,23 +26,23 @@ import { createServiceClient } from "../../utils/supabaseClient";
  */
 
 export default async function handler(
-	request: NextApiRequest,
-	response: NextApiResponse<GetPublicCategoryBookmarksApiResponseType>,
+  request: NextApiRequest,
+  response: NextApiResponse<GetPublicCategoryBookmarksApiResponseType>,
 ) {
-	const supabase = createServiceClient();
+  const supabase = createServiceClient();
 
-	// Parse pagination parameters
-	const page = Math.max(0, Math.floor(Number(request.query.page) || 0));
-	const limit = Math.max(
-		1,
-		Math.min(100, Math.floor(Number(request.query.limit) || PAGINATION_LIMIT)),
-	);
+  // Parse pagination parameters
+  const page = Math.max(0, Math.floor(Number(request.query.page) || 0));
+  const limit = Math.max(
+    1,
+    Math.min(100, Math.floor(Number(request.query.limit) || PAGINATION_LIMIT)),
+  );
 
-	// get category data
-	const { data: categoryData, error: categoryError } = (await supabase
-		.from(CATEGORIES_TABLE_NAME)
-		.select(
-			`
+  // get category data
+  const { data: categoryData, error: categoryError } = (await supabase
+    .from(CATEGORIES_TABLE_NAME)
+    .select(
+      `
 			id,
       user_id (
         email,
@@ -52,59 +54,59 @@ export default async function handler(
 			category_name,
 			is_public
     `,
-		)
-		.eq("category_slug", request.query.category_slug)) as unknown as {
-		data: Array<{
-			category_name: CategoriesData["category_name"];
-			category_views: BookmarkViewDataTypes;
-			icon: CategoriesData["icon"];
-			icon_color: CategoriesData["icon_color"];
-			id: CategoriesData["id"];
-			is_public: CategoriesData["is_public"];
-			user_id: {
-				email: ProfilesTableTypes["email"];
-				user_name: ProfilesTableTypes["user_name"];
-			};
-		}>;
-		error: PostgrestError;
-	};
+    )
+    .eq("category_slug", request.query.category_slug)) as unknown as {
+    data: {
+      category_name: CategoriesData["category_name"];
+      category_views: BookmarkViewDataTypes;
+      icon: CategoriesData["icon"];
+      icon_color: CategoriesData["icon_color"];
+      id: CategoriesData["id"];
+      is_public: CategoriesData["is_public"];
+      user_id: {
+        email: ProfilesTableTypes["email"];
+        user_name: ProfilesTableTypes["user_name"];
+      };
+    }[];
+    error: PostgrestError;
+  };
 
-	if (categoryData[0]?.user_id?.user_name !== request.query.user_name) {
-		// this is to check if we change user name in url then this page should show 404
-		// status is 200 as DB is not giving any error
-		response.status(200).json({
-			data: null,
-			error: "username mismatch from url query",
-			category_views: null,
-			icon: null,
-			icon_color: null,
-			category_name: null,
-			is_public: null,
-		});
+  if (categoryData[0]?.user_id?.user_name !== request.query.user_name) {
+    // this is to check if we change user name in url then this page should show 404
+    // status is 200 as DB is not giving any error
+    response.status(200).json({
+      category_name: null,
+      category_views: null,
+      data: null,
+      error: "username mismatch from url query",
+      icon: null,
+      icon_color: null,
+      is_public: null,
+    });
 
-		console.log("username mismatch from url query");
-	} else {
-		const sortBy = categoryData[0]?.category_views?.sortBy;
-		const categoryId = categoryData[0]?.id;
+    console.log("username mismatch from url query");
+  } else {
+    const sortBy = categoryData[0]?.category_views?.sortBy;
+    const categoryId = categoryData[0]?.id;
 
-		if (!categoryId) {
-			response.status(404).json({
-				data: null,
-				error: "category not found",
-				category_views: null,
-				icon: null,
-				icon_color: null,
-				category_name: null,
-				is_public: null,
-			});
-			return;
-		}
+    if (!categoryId) {
+      response.status(404).json({
+        category_name: null,
+        category_views: null,
+        data: null,
+        error: "category not found",
+        icon: null,
+        icon_color: null,
+        is_public: null,
+      });
+      return;
+    }
 
-		// Query through junction table for many-to-many relationship
-		let query = supabase
-			.from(MAIN_TABLE_NAME)
-			.select(
-				`
+    // Query through junction table for many-to-many relationship
+    let query = supabase
+      .from(MAIN_TABLE_NAME)
+      .select(
+        `
 				*,
 				${BOOKMARK_CATEGORIES_TABLE_NAME}!inner (
 					category_id (
@@ -118,59 +120,59 @@ export default async function handler(
 				),
 				user_id!inner (id, profile_pic)
 			`,
-			)
-			.eq(`${BOOKMARK_CATEGORIES_TABLE_NAME}.category_id`, categoryId)
-			.is("trash", null);
+      )
+      .eq(`${BOOKMARK_CATEGORIES_TABLE_NAME}.category_id`, categoryId)
+      .is("trash", null);
 
-		if (sortBy === "date-sort-ascending") {
-			query = query.order("id", { ascending: false });
-		}
+    if (sortBy === "date-sort-ascending") {
+      query = query.order("id", { ascending: false });
+    }
 
-		if (sortBy === "date-sort-descending") {
-			query = query.order("id", { ascending: true });
-		}
+    if (sortBy === "date-sort-descending") {
+      query = query.order("id", { ascending: true });
+    }
 
-		if (sortBy === "alphabetical-sort-ascending") {
-			query = query.order("title", { ascending: true });
-		}
+    if (sortBy === "alphabetical-sort-ascending") {
+      query = query.order("title", { ascending: true });
+    }
 
-		if (sortBy === "alphabetical-sort-descending") {
-			query = query.order("title", { ascending: false });
-		}
+    if (sortBy === "alphabetical-sort-descending") {
+      query = query.order("title", { ascending: false });
+    }
 
-		// Apply pagination
-		const from = page * limit;
-		const to = from + limit - 1;
-		query = query.range(from, to);
+    // Apply pagination
+    const from = page * limit;
+    const to = from + limit - 1;
+    query = query.range(from, to);
 
-		const { data: rawData, error } = await query;
+    const { data: rawData, error } = await query;
 
-		// Remove junction table field from response (not needed in frontend)
-		const data = (rawData as Array<Record<string, unknown>>)?.map((item) =>
-			omit(item, [BOOKMARK_CATEGORIES_TABLE_NAME]),
-		) as GetPublicCategoryBookmarksApiResponseType["data"];
+    // Remove junction table field from response (not needed in frontend)
+    const data = (rawData as Record<string, unknown>[])?.map((item) =>
+      omit(item, [BOOKMARK_CATEGORIES_TABLE_NAME]),
+    ) as unknown as GetPublicCategoryBookmarksApiResponseType["data"];
 
-		if (!isNull(error) || !isNull(categoryError)) {
-			response.status(500).json({
-				data: null,
-				error,
-				category_views: null,
-				icon: null,
-				icon_color: null,
-				category_name: null,
-				is_public: null,
-			});
-			throw new Error("ERROR: get public category bookmark error");
-		} else {
-			response.status(200).json({
-				data,
-				error: null,
-				category_views: categoryData[0]?.category_views,
-				icon: categoryData[0]?.icon,
-				icon_color: categoryData[0]?.icon_color,
-				category_name: categoryData[0]?.category_name,
-				is_public: categoryData[0]?.is_public,
-			});
-		}
-	}
+    if (!isNull(error) || !isNull(categoryError)) {
+      response.status(500).json({
+        category_name: null,
+        category_views: null,
+        data: null,
+        error,
+        icon: null,
+        icon_color: null,
+        is_public: null,
+      });
+      throw new Error("ERROR: get public category bookmark error");
+    } else {
+      response.status(200).json({
+        category_name: categoryData[0]?.category_name,
+        category_views: categoryData[0]?.category_views,
+        data,
+        error: null,
+        icon: categoryData[0]?.icon,
+        icon_color: categoryData[0]?.icon_color,
+        is_public: categoryData[0]?.is_public,
+      });
+    }
+  }
 }

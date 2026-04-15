@@ -6,6 +6,7 @@ description: >
   the user says "release", "cut a release", "ship a release", "/release", or wants
   to trigger the release pipeline. This is an EXECUTION skill — it runs the full
   workflow without needing context from the caller.
+disable-model-invocation: true
 ---
 
 # Release Pipeline
@@ -40,7 +41,36 @@ Extract the PR number from the script output — it prints the PR URL as the las
 
 If the script exits with "No new commits since [tag]. Nothing to release." — there's nothing to release. Stop here.
 
-### Step 2: Merge the release PR
+### Step 2: Notify Slack
+
+Post to Recollect dev channel (`C09139Z0Y75`) using `mcp__claude_ai_Slack__slack_send_message`.
+
+All data is already available from Step 1 output — `PR_URL`, `PR_NUMBER`, the changelog (PR body), and whether `docs/API_CHANGELOG.md` had content. No need to re-fetch.
+
+1. **Main message** (single line — use the PR title from Step 1):
+   ```
+   **{PR_TITLE}** <{PR_URL}|#{PR_NUMBER}>
+   ```
+
+2. **Thread reply 1** — the PR description/changelog from Step 1 output. Convert from GitHub markdown to Slack mrkdwn using `**double asterisks**` for bold:
+   - `### Header` → `**Header**` on its own line (bold section header)
+   - `[text](url)` → `<url|text>`
+   - `* commit description — author` → `• commit description — **author**` (bold the author name)
+   - `* bullet` → `• bullet`
+   - Add a blank line before each section header for visual separation
+
+   Post as thread reply using `thread_ts` from the main message response.
+
+3. **Thread reply 2** (only if API changelog was posted as PR comment in Step 1) — read `docs/API_CHANGELOG.md` and post as second thread reply, tagging Karthik for visibility:
+   ```
+   **API Changelog** cc <@UAZBN2CGZ>
+
+   {contents of docs/API_CHANGELOG.md}
+   ```
+
+If the Slack MCP tool is unavailable, log a warning and continue.
+
+### Step 3: Merge the release PR
 
 Branch protection requires `--admin` to bypass:
 
@@ -50,9 +80,9 @@ gh pr merge {PR_NUMBER} --merge --admin
 
 - **Must use `--merge`** (NOT `--squash`) — the release workflow's `if` condition checks for `/release/` in the merge commit message
 - **Must use `--admin`** — branch protection blocks direct merge otherwise
-- Do NOT pass `--auto` or wait for CI — the `release` label skips CodeRabbit and Semantic PR validation
+- Do NOT pass `--auto` or wait for CI — the `release` label skips CodeRabbit review
 
-### Step 3: Monitor the release workflow
+### Step 4: Monitor the release workflow
 
 The `Release` workflow triggers on push to `main`. Watch it:
 
@@ -67,7 +97,9 @@ The workflow has two jobs:
 1. **Release** (~30s) — runs `pnpm release` (release-it creates tag + GitHub Release)
 2. **Cleanup** (~8s) — backmerges main→dev, clears `docs/API_CHANGELOG.md`, deletes release branch
 
-### Step 4: Verify release artifacts
+### Step 5: Verify release artifacts
+
+A Slack notification fires automatically via `release-notify.yml` when the GitHub Release is published — no manual announcement needed.
 
 ```bash
 # Latest tag
@@ -86,7 +118,7 @@ The backmerge commit message is `chore(release): merge main back into dev after 
 
 Note: `git log origin/dev..origin/main` may show the release tag commit even after successful backmerge — the merge commit on dev and the tagged commit on main have different SHAs. This is normal. Check `git log origin/dev | head` instead to confirm the merge commit arrived.
 
-### Step 5: Sync local dev
+### Step 6: Sync local dev
 
 ```bash
 git switch dev
@@ -124,7 +156,7 @@ pnpm release:cleanup
 
 - **Merge commit required** — squash breaks the release workflow's tag detection (`if: contains(github.event.head_commit.message, '/release/')`)
 - **`--admin` required** — branch protection blocks direct merge
-- **`release` label on PR** — skips CodeRabbit and Semantic PR validation
+- **`release` label on PR** — skips CodeRabbit review
 - **`GITHUB_TOKEN` required** for local `pnpm release` — the changelog writer fetches commit author data from GitHub API
 - **Don't push to dev after merge** — wait for CI backmerge to complete, or you'll create divergence
 - **Don't run `pnpm release:cleanup` after CI success** — CI already handles backmerge + branch deletion; running it manually creates empty merge commits

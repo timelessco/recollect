@@ -1,10 +1,8 @@
-import { produce, type Draft } from "immer";
+import { produce } from "immer";
 
-import {
-	type PaginatedBookmarks,
-	type SingleListData,
-	type UserTagsData,
-} from "@/types/apiTypes";
+import type { PaginatedBookmarks, SingleListData, UserTagsData } from "@/types/apiTypes";
+import type { Draft } from "immer";
+
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 
 /**
@@ -15,41 +13,41 @@ import { logCacheMiss } from "@/utils/cache-debug-helpers";
  * @param updater - Function that mutates the bookmark (Immer handles immutability)
  */
 export function updateBookmarkInPaginatedData(
-	data: PaginatedBookmarks | undefined,
-	bookmarkId: number,
-	updater: (bookmark: Draft<SingleListData>) => void,
+  data: PaginatedBookmarks | undefined,
+  bookmarkId: number,
+  updater: (bookmark: Draft<SingleListData>) => void,
 ): PaginatedBookmarks | undefined {
-	if (!data?.pages) {
-		return data;
-	}
+  if (!data?.pages) {
+    return data;
+  }
 
-	let bookmarkFound = false;
+  let bookmarkFound = false;
 
-	const result = produce(data, (draft) => {
-		for (const page of draft.pages) {
-			// Skip undefined pages or pages without data array
-			if (!page?.data) {
-				continue;
-			}
+  const result = produce(data, (draft) => {
+    for (const page of draft.pages) {
+      // Skip undefined pages
+      if (!page) {
+        continue;
+      }
 
-			const bookmark = page.data.find((bm) => bm.id === bookmarkId);
-			if (bookmark) {
-				updater(bookmark);
-				bookmarkFound = true;
-				// Early exit after bookmark found and updated
-				return;
-			}
-		}
-	});
+      const bookmark = page.find((bm) => bm.id === bookmarkId);
+      if (bookmark) {
+        updater(bookmark);
+        bookmarkFound = true;
+        // Early exit after bookmark found and updated
+        return;
+      }
+    }
+  });
 
-	if (!bookmarkFound) {
-		logCacheMiss("Cache Update", "Bookmark not found in paginated cache", {
-			bookmarkId,
-			pageCount: data.pages.length,
-		});
-	}
+  if (!bookmarkFound) {
+    logCacheMiss("Cache Update", "Bookmark not found in paginated cache", {
+      bookmarkId,
+      pageCount: data.pages.length,
+    });
+  }
 
-	return result;
+  return result;
 }
 
 /**
@@ -63,24 +61,24 @@ export function updateBookmarkInPaginatedData(
  * @returns true if temp tag was found and swapped, false otherwise
  */
 export function swapTempTagId(
-	bookmark: Draft<SingleListData>,
-	tempId: number,
-	realTag: { id: number; name: string | null },
+  bookmark: Draft<SingleListData>,
+  tempId: number,
+  realTag: { id: number; name: null | string },
 ): boolean {
-	const tag = bookmark.addedTags?.find((existing) => existing.id === tempId);
-	if (tag) {
-		tag.id = realTag.id;
-		tag.name = realTag.name ?? tag.name;
-		return true;
-	}
+  const tag = bookmark.addedTags?.find((existing) => existing.id === tempId);
+  if (tag) {
+    tag.id = realTag.id;
+    tag.name = realTag.name ?? tag.name;
+    return true;
+  }
 
-	logCacheMiss("Cache Update", "Temp tag not found in bookmark", {
-		bookmarkId: bookmark.id,
-		tempId,
-		realTagId: realTag.id,
-		existingTagIds: bookmark.addedTags?.map((tag) => tag.id) ?? [],
-	});
-	return false;
+  logCacheMiss("Cache Update", "Temp tag not found in bookmark", {
+    bookmarkId: bookmark.id,
+    existingTagIds: bookmark.addedTags?.map((t) => t.id) ?? [],
+    realTagId: realTag.id,
+    tempId,
+  });
+  return false;
 }
 
 /**
@@ -95,37 +93,37 @@ export function swapTempTagId(
  * @param [realTag.created_at] - The creation timestamp (optional)
  */
 export function swapTempTagInUserTagsCache(
-	data: { data: UserTagsData[] } | undefined,
-	tempId: number,
-	realTag: {
-		id: number;
-		name: string | null;
-		user_id?: string;
-		created_at?: string;
-	},
+  data: { data: UserTagsData[] } | undefined,
+  tempId: number,
+  realTag: {
+    created_at?: string;
+    id: number;
+    name: null | string;
+    user_id?: string;
+  },
 ): { data: UserTagsData[] } | undefined {
-	if (!data?.data) {
-		return data;
-	}
+  if (!data?.data) {
+    return data;
+  }
 
-	return produce(data, (draft) => {
-		const tag = draft.data.find((existing) => existing.id === tempId);
-		if (!tag) {
-			logCacheMiss("Cache Update", "Temp tag not found in user tags cache", {
-				tempId,
-				tagCount: draft.data.length,
-			});
-			return;
-		}
+  return produce(data, (draft) => {
+    const tag = draft.data.find((existing) => existing.id === tempId);
+    if (!tag) {
+      logCacheMiss("Cache Update", "Temp tag not found in user tags cache", {
+        tagCount: draft.data.length,
+        tempId,
+      });
+      return;
+    }
 
-		tag.id = realTag.id;
-		tag.name = realTag.name ?? tag.name;
-		if (realTag.user_id) {
-			tag.user_id = realTag.user_id;
-		}
+    tag.id = realTag.id;
+    tag.name = realTag.name ?? tag.name;
+    if (realTag.user_id) {
+      tag.user_id = realTag.user_id;
+    }
 
-		if (realTag.created_at) {
-			tag.created_at = realTag.created_at;
-		}
-	});
+    if (realTag.created_at) {
+      tag.created_at = realTag.created_at;
+    }
+  });
 }

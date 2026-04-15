@@ -1,5 +1,5 @@
-import { useMemo } from "react";
 import { useRouter } from "next/router";
+import { useMemo } from "react";
 
 import { DISCOVER_URL, isPublicPath } from "@/utils/constants";
 import { getCategorySlugFromRouter } from "@/utils/url";
@@ -7,20 +7,20 @@ import { getCategorySlugFromRouter } from "@/utils/url";
 /**
  * Page context information derived from router
  */
-export type PageContext = {
-	/**
-	 * Whether the current page is a public page (e.g., /public/user/collection)
-	 */
-	isPublicPage: boolean;
-	/**
-	 * Whether the current page is the discover page
-	 */
-	isDiscoverPage: boolean;
-	/**
-	 * Current category slug from the URL, or null if not in a category route
-	 */
-	categorySlug: string | null;
-};
+export interface PageContext {
+  /**
+   * Current category slug from the URL, or null if not in a category route
+   */
+  categorySlug: null | string;
+  /**
+   * Whether the current page is the discover page
+   */
+  isDiscoverPage: boolean;
+  /**
+   * Whether the current page is a public page (e.g., /public/user/collection)
+   */
+  isPublicPage: boolean;
+}
 
 /**
  * Hook to get page context information from the router
@@ -42,15 +42,15 @@ export type PageContext = {
  * ```
  */
 export const usePageContext = (): PageContext => {
-	const router = useRouter();
+  const router = useRouter();
 
-	return useMemo(() => {
-		const categorySlug = getCategorySlugFromRouter(router);
+  return useMemo(() => {
+    const categorySlug = getCategorySlugFromRouter(router);
 
-		return {
-			isPublicPage: isPublicPath(router.asPath),
-			isDiscoverPage: categorySlug === DISCOVER_URL,
-			categorySlug,
-		};
-	}, [router]);
+    return {
+      categorySlug,
+      isDiscoverPage: categorySlug === DISCOVER_URL,
+      isPublicPage: isPublicPath(router.asPath),
+    };
+  }, [router]);
 };

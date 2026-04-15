@@ -1,77 +1,77 @@
-import {
-	PdfThumbnailInputSchema,
-	PdfThumbnailOutputSchema,
-	type PdfThumbnailOutput,
-} from "./schema";
+import type { PdfThumbnailOutput } from "./schema";
+
+import { env } from "@/env/server";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
 import { vet } from "@/utils/try";
 
+import { PdfThumbnailInputSchema, PdfThumbnailOutputSchema } from "./schema";
+
 const ROUTE = "pdf-thumbnail";
 
 export const POST = createPostApiHandlerWithAuth({
-	route: ROUTE,
-	inputSchema: PdfThumbnailInputSchema,
-	outputSchema: PdfThumbnailOutputSchema,
-	handler: async ({ data, user, route }) => {
-		const sanitizedUrl = data.url.split("?")[0];
+  handler: async ({ data, route, user }) => {
+    const [sanitizedUrl] = data.url.split("?");
 
-		console.log(`[${route}] API called:`, {
-			userId: user.id,
-			url: sanitizedUrl,
-		});
+    console.log(`[${route}] API called:`, {
+      url: sanitizedUrl,
+      userId: user.id,
+    });
 
-		const pdfApiUrl = process.env.PDF_URL_SCREENSHOT_API;
-		const pdfApiKey = process.env.PDF_SECRET_KEY;
+    const pdfApiUrl = env.PDF_URL_SCREENSHOT_API;
+    const pdfApiKey = env.PDF_SECRET_KEY;
 
-		if (!pdfApiUrl || !pdfApiKey) {
-			return apiError({
-				route,
-				message: "PDF Thumbnail service is not configured",
-				error: new Error("Missing PDF_URL_SCREENSHOT_API or PDF_SECRET_KEY"),
-				operation: "pdf_thumbnail_config",
-				userId: user.id,
-			});
-		}
+    if (!pdfApiUrl || !pdfApiKey) {
+      return apiError({
+        error: new Error("Missing PDF_URL_SCREENSHOT_API or PDF_SECRET_KEY"),
+        message: "PDF Thumbnail service is not configured",
+        operation: "pdf_thumbnail_config",
+        route,
+        userId: user.id,
+      });
+    }
 
-		const [fetchError, response] = await vet(() =>
-			fetch(pdfApiUrl, {
-				body: JSON.stringify({ url: data.url, userId: user.id }),
-				headers: {
-					Authorization: `Bearer ${pdfApiKey}`,
-					"Content-Type": "application/json",
-				},
-				method: "POST",
-			}),
-		);
+    const [fetchError, response] = await vet(() =>
+      fetch(pdfApiUrl, {
+        body: JSON.stringify({ url: data.url, userId: user.id }),
+        headers: {
+          Authorization: `Bearer ${pdfApiKey}`,
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      }),
+    );
 
-		if (fetchError) {
-			return apiError({
-				route,
-				message: "PDF Thumbnail service is unreachable",
-				error: fetchError,
-				operation: "pdf_thumbnail_network",
-				userId: user.id,
-				extra: { url: sanitizedUrl },
-			});
-		}
+    if (fetchError) {
+      return apiError({
+        error: fetchError,
+        extra: { url: sanitizedUrl },
+        message: "PDF Thumbnail service is unreachable",
+        operation: "pdf_thumbnail_network",
+        route,
+        userId: user.id,
+      });
+    }
 
-		if (!response.ok) {
-			return apiError({
-				route,
-				message: "PDF Thumbnail service failed",
-				error: new Error(`PDF service responded with ${response.status}`),
-				operation: "pdf_thumbnail_fetch",
-				userId: user.id,
-				extra: { url: sanitizedUrl, status: response.status },
-			});
-		}
+    if (!response.ok) {
+      return apiError({
+        error: new Error(`PDF service responded with ${response.status}`),
+        extra: { status: response.status, url: sanitizedUrl },
+        message: "PDF Thumbnail service failed",
+        operation: "pdf_thumbnail_fetch",
+        route,
+        userId: user.id,
+      });
+    }
 
-		const raw = (await response.json()) as Record<string, unknown>;
-		const sanitizedJsonData: PdfThumbnailOutput = {
-			publicUrl: String(raw.publicUrl),
-		};
+    const raw: unknown = await response.json();
+    const publicUrl =
+      typeof raw === "object" && raw !== null && "publicUrl" in raw ? String(raw.publicUrl) : "";
+    const sanitizedJsonData: PdfThumbnailOutput = { publicUrl };
 
-		return sanitizedJsonData;
-	},
+    return sanitizedJsonData;
+  },
+  inputSchema: PdfThumbnailInputSchema,
+  outputSchema: PdfThumbnailOutputSchema,
+  route: ROUTE,
 });

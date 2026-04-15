@@ -1,44 +1,42 @@
 // LOGIN AND SIGN UP FLOW
 export const grayInputClassName =
-	"block w-full bg-gray-alpha-100 appearance-none border-none text-sm leading-4 placeholder:text-sm placeholder:text-gray-600 text-gray-900 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0 placeholder:font-normal font-normal outline-hidden";
+  "block w-full bg-gray-alpha-100 appearance-none border-none text-sm leading-4 placeholder:text-sm placeholder:text-gray-600 text-gray-900 rounded-lg px-[10px] py-[7px] border-transparent focus:border-transparent focus:ring-0 placeholder:font-normal font-normal outline-hidden";
 export const buttonDarkClassName =
-	"flex w-full h-[30px] justify-center rounded-lg bg-gray-900 text-13 py-[7.5px] font-medium leading-[15px] text-gray-0 hover:bg-gray-800";
+  "flex w-full h-[30px] justify-center rounded-lg bg-gray-900 text-13 py-[7.5px] font-medium leading-[15px] text-gray-0 hover:bg-gray-800";
 export const buttonLightClassName =
-	"flex cursor-pointer w-full justify-center items-center rounded-lg bg-white text-13 font-medium leading-[15px] text-gray-800 py-[7px] hover:bg-gray-100 shadow-custom-2";
+  "flex cursor-pointer w-full justify-center items-center rounded-lg bg-white text-13 font-medium leading-[15px] text-gray-800 py-[7px] hover:bg-gray-100 shadow-custom-2";
 export const bottomBarText = "text-gray-800 font-450 text-sm leading-4";
 export const bottomBarButton =
-	"font-450 text-sm leading-4 text-gray-800 py-[7px] px-[10px] bg-gray-100 rounded-lg hover:bg-gray-100 ";
+  "font-450 text-sm leading-4 text-gray-800 py-[7px] px-[10px] bg-gray-100 rounded-lg hover:bg-gray-100 ";
 
 // DROPDOWN COMMON CLASS NAMES
 
 export const dropdownMenuClassName =
-	"bg-gray-50 rounded-xl shadow-custom-3 p-1 w-45 outline-hidden";
+  "bg-gray-50 rounded-xl shadow-custom-3 p-1 w-45 outline-hidden";
 export const dropdownMenuItemClassName =
-	"text-gray-800 font-450 text-13 leading-[115%] tracking-[0.01em] px-2 py-[5px] hover:bg-gray-200 focus:bg-gray-200 cursor-pointer rounded-lg hover:text-gray-900 focus:text-gray-900";
+  "text-gray-800 font-450 text-13 leading-[115%] tracking-[0.01em] px-2 py-[5px] hover:bg-gray-200 focus:bg-gray-200 cursor-pointer rounded-lg hover:text-gray-900 focus:text-gray-900";
 
 // SETTINGS PAGE CLASS NAMES
 
-export const settingsMainHeadingClassName =
-	"text-gray-900 text-lg font-semibold leading-[115%] ";
+export const settingsMainHeadingClassName = "text-gray-900 text-lg font-semibold leading-[115%] ";
 export const settingsInputLabelClassName =
-	"text-gray-600 font-[420] text-sm leading-4 tracking-[0.02em] mb-[6px]";
+  "text-gray-600 font-[420] text-sm leading-4 tracking-[0.02em] mb-[6px]";
 export const settingsInputContainerClassName =
-	"relative flex max-sm:w-full items-center rounded-lg bg-gray-100 pl-[10px] pr-[3px]";
+  "relative flex max-sm:w-full items-center rounded-lg bg-gray-100 pl-[10px] pr-[3px]";
 
 export const settingsInputClassName =
-	"rounded-none bg-gray-100 text-sm font-[420] leading-4 tracking-[0.02em] text-gray-800  outline-hidden placeholder:text-gray-alpha-600 py-[7px]";
+  "rounded-none bg-gray-100 text-sm font-[420] leading-4 tracking-[0.02em] text-gray-800  outline-hidden placeholder:text-gray-alpha-600 py-[7px]";
 
 export const settingsSubHeadingClassName =
-	"text-sm font-medium leading-4 max-sm:leading-none tracking-[1.5%] text-gray-900";
+  "text-sm font-medium leading-4 max-sm:leading-none tracking-[1.5%] text-gray-900";
 
-export const settingsParagraphClassName =
-	"text-[14px] font-medium leading-[115%] text-gray-900";
+export const settingsParagraphClassName = "text-[14px] font-medium leading-[115%] text-gray-900";
 
 export const settingsDeleteButtonRedClassName =
-	"bg-gray-100 px-2 py-[7px] text-sm font-[420] leading-4 tracking-[0.02em] text-[#CD2B31] hover:bg-gray-200";
+  "bg-gray-100 px-2 py-[7px] text-sm font-[420] leading-4 tracking-[0.02em] text-[#CD2B31] hover:bg-gray-200";
 
 export const settingsLightButtonClassName =
-	"rounded-lg bg-gray-50 px-3 py-[7.5px] text-sm font-medium leading-[115%]  text-gray-800 hover:bg-gray-400  filter-[drop-shadow(0_0_0.5px_rgba(0,0,0,0.6))_drop-shadow(0_1px_1px_rgba(0,0,0,0.1))]";
+  "rounded-lg bg-gray-50 px-3 py-[7.5px] text-sm font-medium leading-[115%]  text-gray-800 hover:bg-gray-400  filter-[drop-shadow(0_0_0.5px_rgba(0,0,0,0.6))_drop-shadow(0_1px_1px_rgba(0,0,0,0.1))]";
 
 export const saveButtonClassName =
-	"rounded-lg bg-gray-50 text-13 font-medium leading-[115%] text-gray-800 filter-[drop-shadow(0_0_0.5px_rgba(0,0,0,0.6))_drop-shadow(0_1px_1px_rgba(0,0,0,0.1))] hover:bg-gray-200";
+  "rounded-lg bg-gray-50 text-13 font-medium leading-[115%] text-gray-800 filter-[drop-shadow(0_0_0.5px_rgba(0,0,0,0.6))_drop-shadow(0_1px_1px_rgba(0,0,0,0.1))] hover:bg-gray-200";

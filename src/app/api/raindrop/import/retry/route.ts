@@ -1,62 +1,59 @@
-import {
-	RaindropImportRetryInputSchema as RetryInputSchema,
-	RaindropImportRetryOutputSchema as RetryOutputSchema,
-} from "./schema";
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
 import { apiError } from "@/lib/api-helpers/response";
+
+import {
+  RaindropImportRetryInputSchema as RetryInputSchema,
+  RaindropImportRetryOutputSchema as RetryOutputSchema,
+} from "./schema";
 
 const ROUTE = "raindrop-import-retry";
 
 export const POST = createPostApiHandlerWithAuth({
-	route: ROUTE,
-	inputSchema: RetryInputSchema,
-	outputSchema: RetryOutputSchema,
-	handler: async ({ data, supabase, user, route }) => {
-		console.log(`[${route}] API called:`, { userId: user.id, data });
+  handler: async ({ data, route, supabase, user }) => {
+    console.log(`[${route}] API called:`, { data, userId: user.id });
 
-		if ("msg_ids" in data) {
-			console.log(`[${route}] Taking per-message path:`, {
-				msgIds: data.msg_ids,
-			});
-			const { data: result, error } = await supabase.rpc(
-				"retry_raindrop_import",
-				{
-					p_user_id: user.id,
-					p_msg_ids: data.msg_ids,
-				},
-			);
+    if ("msg_ids" in data) {
+      console.log(`[${route}] Taking per-message path:`, {
+        msgIds: data.msg_ids,
+      });
+      const { data: result, error } = await supabase.rpc("retry_raindrop_import", {
+        p_msg_ids: data.msg_ids,
+        p_user_id: user.id,
+      });
 
-			if (error) {
-				console.error(`[${route}] Retry error:`, error);
-				return apiError({
-					route,
-					message: "Failed to retry imports",
-					error,
-					operation: "retry_imports",
-					userId: user.id,
-				});
-			}
+      if (error) {
+        console.error(`[${route}] Retry error:`, error);
+        return apiError({
+          error,
+          message: "Failed to retry imports",
+          operation: "retry_imports",
+          route,
+          userId: user.id,
+        });
+      }
 
-			return result;
-		}
+      return result;
+    }
 
-		console.log(`[${route}] Taking retry-all path`);
-		const { data: result, error } = await supabase.rpc(
-			"retry_all_raindrop_imports",
-			{ p_user_id: user.id },
-		);
+    console.log(`[${route}] Taking retry-all path`);
+    const { data: result, error } = await supabase.rpc("retry_all_raindrop_imports", {
+      p_user_id: user.id,
+    });
 
-		if (error) {
-			console.error(`[${route}] Retry all error:`, error);
-			return apiError({
-				route,
-				message: "Failed to retry all imports",
-				error,
-				operation: "retry_all_imports",
-				userId: user.id,
-			});
-		}
+    if (error) {
+      console.error(`[${route}] Retry all error:`, error);
+      return apiError({
+        error,
+        message: "Failed to retry all imports",
+        operation: "retry_all_imports",
+        route,
+        userId: user.id,
+      });
+    }
 
-		return result;
-	},
+    return result;
+  },
+  inputSchema: RetryInputSchema,
+  outputSchema: RetryOutputSchema,
+  route: ROUTE,
 });

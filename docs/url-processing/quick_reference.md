@@ -128,8 +128,8 @@ import { useForm } from "react-hook-form";
 
 const { register } = useForm();
 register("url", {
-	required: true,
-	pattern: URL_PATTERN,
+  required: true,
+  pattern: URL_PATTERN,
 });
 ```
 
@@ -178,7 +178,7 @@ Current (WRONG):
 
 ```typescript
 if (!url.startsWith("http") || !url.startsWith("https")) {
-	finalUrl = `https://${url}`;
+  finalUrl = `https://${url}`;
 }
 ```
 
@@ -191,7 +191,7 @@ Should be:
 
 ```typescript
 if (!url.startsWith("http://") && !url.startsWith("https://")) {
-	finalUrl = `https://${url}`;
+  finalUrl = `https://${url}`;
 }
 ```
 
@@ -213,9 +213,9 @@ if (!url.startsWith("http://") && !url.startsWith("https://")) {
 
 ```typescript
 {
-	success: boolean;
-	mediaType: string | null;
-	error: string | null;
+  success: boolean;
+  mediaType: string | null;
+  error: string | null;
 }
 ```
 
@@ -223,8 +223,8 @@ if (!url.startsWith("http://") && !url.startsWith("https://")) {
 
 ```typescript
 {
-	success: boolean;
-	error: string | null;
+  success: boolean;
+  error: string | null;
 }
 ```
 

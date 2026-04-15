@@ -4,18 +4,12 @@
 
 ```tree
 .
-├── cypress/                # E2E testing with Cypress
-│   ├── e2e/               # Test specs
-│   ├── fixtures/          # Test data
-│   └── support/           # Custom commands and helpers
-│
-├── env/                   # Environment configuration
-│   ├── client.js         # Client-side env schema
-│   ├── server.js         # Server-side env schema
-│   └── schema.js         # Zod validation schemas
+├── src/env/               # Environment validation (@t3-oss/env-nextjs)
+│   ├── server.ts         # Server env schema + Vercel preset
+│   ├── client.ts         # Client (NEXT_PUBLIC_*) env schema
+│   └── index.ts          # Barrel export for build-time validation
 │
 ├── public/                # Static assets
-│   ├── app-svgs/         # Application SVG icons
 │   ├── fonts/            # Custom fonts (Inter)
 │   └── ...               # Other static files
 │
@@ -109,13 +103,12 @@
 - **`tsconfig.json`** - TypeScript configuration
 - **`turbo.json`** - Turbo monorepo task configuration
 - **`package.json`** - Project dependencies and scripts
-- **`.prettierrc.json`** - Code formatting rules
+- **`.oxfmtrc.jsonc`** - Code formatting rules
 - **`stylelint.config.js`** - CSS linting rules
 - **`knip.ts`** - Unused dependency detection
 
 ### Testing & Quality
 
-- **`cypress/`** - E2E testing setup
 - **`cspell.json`** - Spell checking configuration
 - **`project-words.txt`** - Custom dictionary
 

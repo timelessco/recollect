@@ -55,13 +55,13 @@ import { CheckUrlInputSchema, CheckUrlOutputSchema } from "./schema";
 const ROUTE = "bookmarks-check-url";
 
 export const GET = createGetApiHandlerWithAuth({
-	route: ROUTE,
-	inputSchema: CheckUrlInputSchema,
-	outputSchema: CheckUrlOutputSchema,
-	handler: async ({ data, supabase, user, route }) => {
-		// ... business logic
-		return { exists: true as const, bookmarkId: "42" };
-	},
+  route: ROUTE,
+  inputSchema: CheckUrlInputSchema,
+  outputSchema: CheckUrlOutputSchema,
+  handler: async ({ data, supabase, user, route }) => {
+    // ... business logic
+    return { exists: true as const, bookmarkId: "42" };
+  },
 });
 ```
 
@@ -76,12 +76,12 @@ Colocate Zod schemas next to `route.ts`:
 import { z } from "zod";
 
 export const CheckUrlInputSchema = z.object({
-	url: z.string(),
+  url: z.string(),
 });
 
 export const CheckUrlOutputSchema = z.discriminatedUnion("exists", [
-	z.object({ exists: z.literal(true), bookmarkId: z.string() }),
-	z.object({ exists: z.literal(false) }),
+  z.object({ exists: z.literal(true), bookmarkId: z.string() }),
+  z.object({ exists: z.literal(false) }),
 ]);
 ```
 
@@ -95,17 +95,16 @@ import { type EndpointSupplement } from "@/lib/openapi/supplement-types";
 import { bearerAuth } from "@/lib/openapi/registry";
 
 export const checkUrlSupplement = {
-	path: "/bookmarks/check-url",
-	method: "get",
-	tags: ["Bookmarks"],
-	summary: "Check if a URL is already bookmarked",
-	description:
-		"Checks whether the authenticated user has already saved a given URL.",
-	security: [{ [bearerAuth.name]: [] }, {}],
-	responseExample: {
-		data: { exists: true, bookmarkId: "42" },
-		error: null,
-	},
+  path: "/bookmarks/check-url",
+  method: "get",
+  tags: ["Bookmarks"],
+  summary: "Check if a URL is already bookmarked",
+  description: "Checks whether the authenticated user has already saved a given URL.",
+  security: [{ [bearerAuth.name]: [] }, {}],
+  responseExample: {
+    data: { exists: true, bookmarkId: "42" },
+    error: null,
+  },
 } satisfies EndpointSupplement;
 ```
 
@@ -144,24 +143,24 @@ For endpoints with multiple named examples, extract example data to a colocated 
 ```typescript
 // src/lib/openapi/endpoints/twitter/sync-examples.ts
 export const twitterSyncRequestExamples = {
-	"single-tweet": {
-		summary: "Sync single tweet",
-		description: "Sync a single Twitter/X bookmark.",
-		value: {
-			bookmarks: [{ url: "https://x.com/user/status/123", title: "Tweet" }],
-		},
-	},
+  "single-tweet": {
+    summary: "Sync single tweet",
+    description: "Sync a single Twitter/X bookmark.",
+    value: {
+      bookmarks: [{ url: "https://x.com/user/status/123", title: "Tweet" }],
+    },
+  },
 } as const;
 
 export const twitterSyncResponse400Examples = {
-	"empty-bookmarks": {
-		summary: "Empty bookmarks array",
-		description: "Fails when bookmarks array has no elements.",
-		value: {
-			data: null,
-			error: "bookmarks: Array must contain at least 1 element(s)",
-		},
-	},
+  "empty-bookmarks": {
+    summary: "Empty bookmarks array",
+    description: "Fails when bookmarks array has no elements.",
+    value: {
+      data: null,
+      error: "bookmarks: Array must contain at least 1 element(s)",
+    },
+  },
 } as const;
 ```
 
@@ -169,23 +168,20 @@ Then reference from the supplement:
 
 ```typescript
 // src/lib/openapi/endpoints/twitter/sync.ts
-import {
-	twitterSyncRequestExamples,
-	twitterSyncResponse400Examples,
-} from "./sync-examples";
+import { twitterSyncRequestExamples, twitterSyncResponse400Examples } from "./sync-examples";
 
 export const twitterSyncSupplement = {
-	path: "/twitter/sync",
-	method: "post",
-	tags: ["Twitter"],
-	summary: "Sync Twitter/X bookmarks",
-	description: "Enqueues a batch of Twitter/X bookmarks for async archiving.",
-	security: [{ [bearerAuth.name]: [] }, {}],
-	requestExamples: twitterSyncRequestExamples,
-	response400Examples: twitterSyncResponse400Examples,
-	additionalResponses: {
-		400: { description: "Invalid request body or bookmark data" },
-	},
+  path: "/twitter/sync",
+  method: "post",
+  tags: ["Twitter"],
+  summary: "Sync Twitter/X bookmarks",
+  description: "Enqueues a batch of Twitter/X bookmarks for async archiving.",
+  security: [{ [bearerAuth.name]: [] }, {}],
+  requestExamples: twitterSyncRequestExamples,
+  response400Examples: twitterSyncResponse400Examples,
+  additionalResponses: {
+    400: { description: "Invalid request body or bookmark data" },
+  },
 } satisfies EndpointSupplement;
 ```
 

@@ -6,16 +6,16 @@
  * resolving relative to the page origin.
  */
 export const edgeFunctionServers = [
-	{
-		url: "http://127.0.0.1:54321/functions/v1",
-		description: "Local",
-	},
-	{
-		url: "https://cjsdfdveobrpffjbkpca.supabase.co/functions/v1",
-		description: "Dev",
-	},
-	{
-		url: "https://fgveraehgourpwwzlzhy.supabase.co/functions/v1",
-		description: "Prod",
-	},
+  {
+    description: "Local",
+    url: "http://127.0.0.1:54321/functions/v1",
+  },
+  {
+    description: "Dev",
+    url: "https://cjsdfdveobrpffjbkpca.supabase.co/functions/v1",
+  },
+  {
+    description: "Prod",
+    url: "https://fgveraehgourpwwzlzhy.supabase.co/functions/v1",
+  },
 ];

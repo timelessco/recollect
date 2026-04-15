@@ -1,46 +1,44 @@
 # Recollect
 
-Bookmark management app with AI enrichment — organize, search, and collaborate on web bookmarks.
-
-**Stack**: Next.js 16.2 (App + Pages Router), Supabase, React Query, Zustand, Tailwind v4, Base UI
-
-**Architecture**: Hybrid routing (App Router for new APIs, Pages Router for dashboard), optimistic mutations, pgmq queues for async processing.
+Bookmark manager with AI enrichment. **Stack:** Next.js 16.2.1 (App + Pages Router), Supabase, React Query, Zustand, Tailwind v4, Base UI. **Architecture:** hybrid routing (App = new APIs, Pages = dashboard), optimistic mutations, pgmq queues for async work.
 
 Before any Next.js work, read the relevant doc in `node_modules/next/dist/docs/` — bundled docs match the installed version exactly.
 
 ## Domain
 
-- **Base UI** (`@base-ui/react`): Primary component library. Combobox in `/src/components/ui/recollect/combobox`, ScrollArea in `scroll-area.tsx`
-- **React Aria**: Legacy (dashboard + lightbox, 4 files)
-- **Ariakit**: Specialized use cases
-- **Multi-select**: `use-category-multi-select` hook with Base UI Combobox + match-sorter
+- **UI libs:** Base UI (`@base-ui/react`) is primary — Combobox at `src/components/ui/recollect/combobox`, ScrollArea at `scroll-area.tsx`. React Aria is legacy (4 files: dashboard + lightbox). Ariakit for specialized cases
+- **Multi-select:** `use-category-multi-select` hook (Base UI Combobox + match-sorter)
 - `category_id: 0` = Uncategorized (auto-managed) — keep `.min(0)` in schemas
-- `ogImage` (camelCase) — not `og_image`
-- OpenAPI tags are capitalized: `"Bookmarks"`, `"Categories"`, `"iPhone"`
-- `knip` for detecting unused code when making large changes
+- Field casing: `ogImage` not `og_image`. OpenAPI tags capitalized: `"Bookmarks"`, `"Categories"`, `"iPhone"`
+- **Supabase type boundaries:** `src/utils/type-utils.ts` `toJson()`/`toDbType()` — never inline `as unknown as Json`
+- **Ultracite** (Oxlint + Oxfmt): `pnpm fix` auto-fixes, `pnpm dlx ultracite doctor` for setup diagnostics
+- **Zod `.meta({ description })`** required on every schema field — flows to OpenAPI spec + Scalar UI
+- **Env:** `@t3-oss/env-nextjs` in `src/env/` (split server/client, Vercel preset on server). Every `process.env` left in code has an inline comment explaining non-migration
+- **v2 API contract:** `/api/v2/*` returns `T` on success (no envelope); errors return `{error: string}` + HTTP status. v2 uses `create-handler-v2.ts` with `error()`/`warn()` context helpers; non-v2 uses `create-handler.ts` + `{data, error}` envelope. `response.ts` is FROZEN — never modify `apiSuccess`/`apiError`/`apiWarn`
+  - OpenAPI v2 supplements: bare response examples (`{ field: value }`), not envelope
+  - v2 URL constants in `api-v2.ts` (ky `api` instance): **no leading slash** — `"v2/bookmark/..."`. v1 keeps leading slashes. Both in `constants.ts`
+- `knip` for unused-code detection on large changes
 
 ## Commands
 
 ```bash
-pnpm fix        # Auto-fix all (spelling → css → md → prettier → eslint)
-pnpm lint:types # TypeScript strict checks
-pnpm lint:knip  # Detect unused code/exports/deps
-pnpm build      # Verify build passes
-pnpm db:types   # Generate Supabase types from local schema
+pnpm fix               # Auto-fix (Ultracite + CSS + MD)
+pnpm lint              # All quality checks (parallel)
+pnpm lint:knip         # Detect unused code
+pnpm lint:types:deno   # Deno types for Edge Functions
+pnpm build             # Verify build
+pnpm db:types          # Generate Supabase types from local schema
+pnpm prebuild:next     # Regenerate OpenAPI spec (SKIP_ENV_VALIDATION=1)
 ```
 
 ## References
 
-- [`docs/CODEBASE_MAP.md`](./docs/CODEBASE_MAP.md) — Architecture map, module guides, data flows
+- [`docs/CODEBASE_MAP.md`](./docs/CODEBASE_MAP.md) — architecture, module guides, data flows
 - [`docs/OPENAPI_GUIDE.md`](./docs/OPENAPI_GUIDE.md) — OpenAPI endpoint docs (`/openapi-endpoints` skill)
-- [`docs/project_overview.md`](./docs/project_overview.md) — Tech stack, features
-- [`docs/project_structure.md`](./docs/project_structure.md) — Directory layout
+- [`docs/project_overview.md`](./docs/project_overview.md) — tech stack, features
+- [`docs/project_structure.md`](./docs/project_structure.md) — directory layout
+- `.claude/agents/references/` — migration agent reference data
 
 ## Verification
 
-After changes, run in order:
-
-1. `pnpm fix` — auto-fix all quality issues
-2. `pnpm lint:types` — TypeScript strict checks
-3. `pnpm lint:knip` — detect unused code (especially after large changes)
-4. `pnpm build` — confirm build passes (non-trivial changes)
+After changes, run in order: `pnpm fix` → `pnpm lint` (all checks in parallel) → `pnpm build` (non-trivial changes).

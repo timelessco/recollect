@@ -1,61 +1,53 @@
-import {
-	R2_MAIN_BUCKET_NAME,
-	STORAGE_USER_PROFILE_PATH,
-} from "@/utils/constants";
+import { RecollectApiError } from "@/lib/api-helpers/errors";
+import { R2_MAIN_BUCKET_NAME, STORAGE_USER_PROFILE_PATH } from "@/utils/constants";
 import { storageHelpers } from "@/utils/storageClient";
 
 export interface DeleteProfilePicProps {
-	userId: string;
+  userId: string;
 }
 
-function toErrorMessage(err: unknown): string {
-	if (err instanceof Error) {
-		return err.message;
-	}
+export async function deleteProfilePic(props: DeleteProfilePicProps): Promise<void> {
+  const { userId } = props;
 
-	return JSON.stringify(err);
-}
+  const { data: list, error: listError } = await storageHelpers.listObjects(
+    R2_MAIN_BUCKET_NAME,
+    `${STORAGE_USER_PROFILE_PATH}/${userId}/`,
+  );
 
-export async function deleteProfilePic(
-	props: DeleteProfilePicProps,
-): Promise<void> {
-	const { userId } = props;
+  if (listError !== null) {
+    throw new RecollectApiError("service_unavailable", {
+      cause: listError,
+      message: "Failed to list profile pictures",
+      operation: "delete_profile_pic",
+    });
+  }
 
-	const { data: list, error: listError } = await storageHelpers.listObjects(
-		R2_MAIN_BUCKET_NAME,
-		`${STORAGE_USER_PROFILE_PATH}/${userId}/`,
-	);
+  const filesToRemove = list && list.length > 0 ? list.map((x) => `${x.Key}`) : [];
 
-	if (listError !== null) {
-		throw new Error(
-			`Failed to list profile pictures: ${toErrorMessage(listError)}`,
-		);
-	}
+  if (filesToRemove.length > 0) {
+    const { error: deleteError } = await storageHelpers.deleteObjects(
+      R2_MAIN_BUCKET_NAME,
+      filesToRemove,
+    );
 
-	const filesToRemove =
-		list && list.length > 0 ? list.map((x) => `${x.Key}`) : [];
+    if (deleteError !== null) {
+      throw new RecollectApiError("service_unavailable", {
+        cause: deleteError,
+        message: "Failed to delete profile pictures",
+        operation: "delete_profile_pic",
+      });
+    }
+  }
 
-	if (filesToRemove.length > 0) {
-		const { error: deleteError } = await storageHelpers.deleteObjects(
-			R2_MAIN_BUCKET_NAME,
-			filesToRemove,
-		);
+  const { error: folderDeleteError } = await storageHelpers.deleteObjects(R2_MAIN_BUCKET_NAME, [
+    `${STORAGE_USER_PROFILE_PATH}/${userId}/`,
+  ]);
 
-		if (deleteError !== null) {
-			throw new Error(
-				`Failed to delete profile pictures: ${toErrorMessage(deleteError)}`,
-			);
-		}
-	}
-
-	const { error: folderDeleteError } = await storageHelpers.deleteObjects(
-		R2_MAIN_BUCKET_NAME,
-		[`${STORAGE_USER_PROFILE_PATH}/${userId}/`],
-	);
-
-	if (folderDeleteError !== null) {
-		throw new Error(
-			`Failed to delete profile folder: ${toErrorMessage(folderDeleteError)}`,
-		);
-	}
+  if (folderDeleteError !== null) {
+    throw new RecollectApiError("service_unavailable", {
+      cause: folderDeleteError,
+      message: "Failed to delete profile folder",
+      operation: "delete_profile_pic",
+    });
+  }
 }

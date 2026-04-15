@@ -20,7 +20,7 @@ Add "Continue with Apple" as a third OAuth sign-in option on the `/login` page. 
 - [x] Button styling matches the existing Google button (dark bg, `rounded-lg`, `text-13`, `font-medium`)
 - [x] Pending/loading state works identically to Google button
 - [x] No changes to OAuth callback route, middleware, or Supabase config
-- [x] `pnpm fix` passes (spelling, css, md, prettier, eslint)
+- [x] `pnpm fix` passes (spelling, css, md, oxfmt, eslint)
 - [x] `pnpm lint:types` passes (no new errors — pre-existing MediaPlayer/switch.tsx issues)
 - [x] `pnpm lint:knip` passes (no unused exports/imports)
 - [x] `pnpm build` passes

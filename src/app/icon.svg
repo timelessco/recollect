@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 32 32">
+  <style>
+    @media (color-gamut: p3) {
+      .foreground {
+        fill: oklch(100% 0 0);
+      }
+    }
+  </style>
+  <rect width="32" height="32" fill="#000" rx="9.333" />
+  <path
+    fill="#fff"
+    d="M9.09 8.272v15.417a1 1 0 0 0 1.597.803l4.96-3.685a1 1 0 0 1 1.195.001l4.932 3.678a1 1 0 0 0 1.598-.801V12.272a5 5 0 0 0-5-5H10.09a1 1 0 0 0-1 1"
+  />
+</svg>

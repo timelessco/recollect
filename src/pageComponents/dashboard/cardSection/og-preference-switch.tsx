@@ -1,85 +1,78 @@
 import { useQueryClient } from "@tanstack/react-query";
 
+import type { ProfilesTableTypes } from "@/types/apiTypes";
+
 import { useTogglePreferredOgDomainOptimisticMutation } from "@/async/mutationHooks/user/use-toggle-preferred-og-domain-optimistic-mutation";
 import { Switch } from "@/components/ui/recollect/switch";
 import ImageIcon from "@/icons/imageIcon";
-import { type ProfilesTableTypes } from "@/types/apiTypes";
 import { USER_PROFILE } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
 
 interface OgPreferenceSwitchProps {
-	bookmarkUrl: string;
-	userId: string;
+  bookmarkUrl: string;
+  userId: string;
 }
 
-export function OgPreferenceSwitch({
-	bookmarkUrl,
-	userId,
-}: OgPreferenceSwitchProps) {
-	return (
-		<div className="flex items-center justify-between gap-3 px-2 py-[7.5px]">
-			<div className="flex items-center gap-2">
-				<div className="flex h-4 w-4 items-center justify-center text-gray-800">
-					<ImageIcon size="16" />
-				</div>
-				<span className="text-13 leading-4 font-450 text-gray-800">
-					Use OG image for this site
-				</span>
-			</div>
-			<div className="flex shrink-0 items-center">
-				<OgPreferenceSwitchToggle bookmarkUrl={bookmarkUrl} userId={userId} />
-			</div>
-		</div>
-	);
+export function OgPreferenceSwitch({ bookmarkUrl, userId }: OgPreferenceSwitchProps) {
+  return (
+    <div className="flex items-center justify-between gap-3 px-2 py-[7.5px]">
+      <div className="flex items-center gap-2">
+        <div className="flex h-4 w-4 items-center justify-center text-gray-800">
+          <ImageIcon size="16" />
+        </div>
+        <span className="text-13 leading-4 font-450 text-gray-800">Use OG image for this site</span>
+      </div>
+      <div className="flex shrink-0 items-center">
+        <OgPreferenceSwitchToggle bookmarkUrl={bookmarkUrl} userId={userId} />
+      </div>
+    </div>
+  );
 }
 
 interface OgPreferenceSwitchToggleProps {
-	bookmarkUrl: string;
-	userId: string;
+  bookmarkUrl: string;
+  userId: string;
 }
 
-function OgPreferenceSwitchToggle({
-	bookmarkUrl,
-	userId,
-}: OgPreferenceSwitchToggleProps) {
-	const queryClient = useQueryClient();
-	const { togglePreferredOgDomainOptimisticMutation } =
-		useTogglePreferredOgDomainOptimisticMutation();
+function OgPreferenceSwitchToggle({ bookmarkUrl, userId }: OgPreferenceSwitchToggleProps) {
+  const queryClient = useQueryClient();
+  const { togglePreferredOgDomainOptimisticMutation } =
+    useTogglePreferredOgDomainOptimisticMutation();
 
-	const domain = getDomain(bookmarkUrl);
+  const domain = getDomain(bookmarkUrl);
 
-	type UserProfileCache = { data: ProfilesTableTypes[] | null; error?: Error };
-	const profileData = queryClient.getQueryData<UserProfileCache>([
-		USER_PROFILE,
-		userId,
-	]);
+  interface UserProfileCache {
+    data: null | ProfilesTableTypes[];
+    error?: Error;
+  }
+  const profileData = queryClient.getQueryData<UserProfileCache>([USER_PROFILE, userId]);
 
-	const isPreferred = (() => {
-		if (!domain) {
-			return false;
-		}
+  const isPreferred = (() => {
+    if (!domain) {
+      return false;
+    }
 
-		const preferredDomains = profileData?.data?.[0]?.preferred_og_domains ?? [];
-		return preferredDomains.some(
-			(existingDomain) => existingDomain.toLowerCase() === domain.toLowerCase(),
-		);
-	})();
+    const preferredDomains = profileData?.data?.[0]?.preferred_og_domains ?? [];
+    return preferredDomains.some(
+      (existingDomain) => existingDomain.toLowerCase() === domain.toLowerCase(),
+    );
+  })();
 
-	const handleToggle = () => {
-		if (!domain) {
-			return;
-		}
+  const handleToggle = () => {
+    if (!domain) {
+      return;
+    }
 
-		togglePreferredOgDomainOptimisticMutation.mutate({ domain });
-	};
+    togglePreferredOgDomainOptimisticMutation.mutate({ domain });
+  };
 
-	return (
-		<Switch
-			aria-label="Use OG image for this site"
-			checked={isPreferred}
-			onCheckedChange={handleToggle}
-			disabled={false}
-			size="small"
-		/>
-	);
+  return (
+    <Switch
+      aria-label="Use OG image for this site"
+      checked={isPreferred}
+      disabled={false}
+      onCheckedChange={handleToggle}
+      size="small"
+    />
+  );
 }
