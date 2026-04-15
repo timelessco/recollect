@@ -22,14 +22,7 @@ const IOS_APP_URL = "https://testflight.apple.com/join/nqxpye48";
 // const ANDROID_APP_URL = "#";
 
 const itemClassName =
-  "flex h-[26px] cursor-pointer items-center gap-[6px] overflow-clip rounded-lg px-2 py-[5.5px] text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800 outline-hidden data-highlighted:bg-gray-200 data-highlighted:text-gray-900";
-
-const openExternal = (href: string) => {
-  if (typeof window === "undefined" || href === "#") {
-    return;
-  }
-  window.open(href, "_blank", "noopener,noreferrer");
-};
+  "flex h-[26px] cursor-pointer items-center gap-[6px] overflow-clip rounded-lg px-2 py-[5.5px] text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800 no-underline outline-hidden data-highlighted:bg-gray-200 data-highlighted:text-gray-900";
 
 const SidePaneUserDropdown = () => {
   const setSession = useSupabaseSession((state) => state.setSession);
@@ -62,31 +55,31 @@ const SidePaneUserDropdown = () => {
             <Menu.Popup className="w-[203px] p-[6px]" style={{ fontFeatureSettings: "'case'" }}>
               <Menu.Item
                 className={itemClassName}
-                onClick={() => {
-                  openExternal(CHROME_EXTENSION_URL);
-                }}
-              >
-                <ChromeIcon className="size-4" />
-                Download Extension
-              </Menu.Item>
+                render={
+                  <a href={CHROME_EXTENSION_URL} rel="noopener noreferrer" target="_blank">
+                    <ChromeIcon className="size-4" />
+                    Download Extension
+                  </a>
+                }
+              />
               <Menu.Item
                 className={itemClassName}
-                onClick={() => {
-                  openExternal(IOS_APP_URL);
-                }}
-              >
-                <AppleIcon className="size-4" />
-                Download iOS & iPadOS
-              </Menu.Item>
+                render={
+                  <a href={IOS_APP_URL} rel="noopener noreferrer" target="_blank">
+                    <AppleIcon className="size-4" />
+                    Download iOS & iPadOS
+                  </a>
+                }
+              />
               {/* <Menu.Item
                 className={itemClassName}
-                onClick={() => {
-                  openExternal(ANDROID_APP_URL);
-                }}
-              >
-                <PlayStoreIcon className="size-4" />
-                Download Android
-              </Menu.Item> */}
+                render={
+                  <a href={ANDROID_APP_URL} rel="noopener noreferrer" target="_blank">
+                    <PlayStoreIcon className="size-4" />
+                    Download Android
+                  </a>
+                }
+              /> */}
               <Menu.Item
                 className={itemClassName}
                 onClick={() => {
