@@ -52,7 +52,6 @@ export const v2FetchUserCategoriesSupplement = {
           id: 574,
           is_favorite: false,
           is_public: false,
-          order_index: null,
           user_id: {
             email: "user@example.com",
             id: "550e8400-e29b-41d4-a716-446655440000",
@@ -92,7 +91,6 @@ export const v2FetchUserCategoriesSupplement = {
           id: 567,
           is_favorite: false,
           is_public: false,
-          order_index: 1,
           user_id: {
             email: "user@example.com",
             id: "550e8400-e29b-41d4-a716-446655440000",

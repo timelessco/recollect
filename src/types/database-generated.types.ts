@@ -150,7 +150,6 @@ export type Database = {
           icon_color: string | null;
           id: number;
           is_public: boolean;
-          order_index: number | null;
           user_id: string | null;
         };
         Insert: {
@@ -162,7 +161,6 @@ export type Database = {
           icon_color?: string | null;
           id?: number;
           is_public?: boolean;
-          order_index?: number | null;
           user_id?: string | null;
         };
         Update: {
@@ -174,7 +172,6 @@ export type Database = {
           icon_color?: string | null;
           id?: number;
           is_public?: boolean;
-          order_index?: number | null;
           user_id?: string | null;
         };
         Relationships: [
@@ -609,15 +606,6 @@ export type Database = {
       retry_twitter_import: {
         Args: { p_msg_ids: number[]; p_user_id: string };
         Returns: Json;
-      };
-      search_bookmarks_debug: {
-        Args: { search_text: string };
-        Returns: {
-          caption: string;
-          has_meta: boolean;
-          id: number;
-          title: string;
-        }[];
       };
       search_bookmarks_url_tag_scope: {
         Args: {
