@@ -20,6 +20,7 @@ const happyPathResponse = {
     isPageScreenshot: true,
     mediaType: "text/html; charset=utf-8",
     ocr: "Text extracted via OCR from the page image.",
+    // cspell:disable-next-line -- blurhash placeholder, opaque compact encoding
     ogImgBlurUrl: "U02$T_xvi~%g_NjIt8kV?HkDozWB?IoyozVu",
     screenshot: "https://media.example.com/bookmarks/screenshot.jpg",
     width: 2400,

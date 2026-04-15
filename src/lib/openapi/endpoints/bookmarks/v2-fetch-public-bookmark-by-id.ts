@@ -85,6 +85,7 @@ export const v2FetchPublicBookmarkByIdSupplement = {
           isOgImagePreferred: false,
           isPageScreenshot: true,
           mediaType: null,
+          // cspell:disable-next-line -- blurhash placeholder, opaque compact encoding
           ogImgBlurUrl: "U01VrS%MM{j?xvogj[ofIUa~xuofWCogt7j@",
           screenshot: "https://example.com/screenshot.jpg",
           width: 1794,
