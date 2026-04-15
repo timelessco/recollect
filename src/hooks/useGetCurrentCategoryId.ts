@@ -16,14 +16,14 @@ export default function useGetCurrentCategoryId() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const allCategories = queryClient.getQueryData<{ data: CategoriesData[] }>([
+  const allCategories = queryClient.getQueryData<CategoriesData[]>([
     CATEGORIES_KEY,
     session?.user?.id,
   ]);
 
   const categorySlug = getCategorySlugFromRouter(router);
   // disabling here as everywhere else is correct case
-  const category_id = getCategoryIdFromSlug(categorySlug, allCategories?.data) ?? null;
+  const category_id = getCategoryIdFromSlug(categorySlug, allCategories) ?? null;
 
   return { category_id } as { category_id: CategoryIdUrlTypes };
 }

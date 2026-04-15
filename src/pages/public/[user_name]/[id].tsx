@@ -7,16 +7,16 @@ import { isEmpty } from "lodash";
 
 import type { GetPublicCategoryBookmarksApiResponseType } from "../../../types/apiTypes";
 
+import {
+  BLACK_COLOR,
+  getBaseUrl,
+  V2_FETCH_PUBLIC_CATEGORY_BOOKMARKS_API,
+  WHITE_COLOR,
+} from "@/utils/constants";
+
 import { useFetchPublicCategoryBookmarks } from "../../../async/queryHooks/bookmarks/use-fetch-public-category-bookmarks";
 import CardSection from "../../../pageComponents/dashboard/cardSection";
 import { iconMap } from "../../../utils/commonData";
-import {
-  BLACK_COLOR,
-  FETCH_PUBLIC_CATEGORY_BOOKMARKS_API,
-  getBaseUrl,
-  NEXT_API_URL,
-  WHITE_COLOR,
-} from "../../../utils/constants";
 
 type PublicCategoryPageProps = GetPublicCategoryBookmarksApiResponseType;
 
@@ -39,7 +39,7 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
           <div
             className="mr-2 flex items-center justify-center rounded-full p-0.5"
             style={{
-              backgroundColor: props?.icon_color ?? BLACK_COLOR,
+              backgroundColor: props?.iconColor ?? BLACK_COLOR,
               height: 20,
               width: 20,
             }}
@@ -47,11 +47,9 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
             {props?.icon &&
               iconMap
                 .get(props.icon)
-                ?.icon(props?.icon_color === WHITE_COLOR ? BLACK_COLOR : WHITE_COLOR, "14")}
+                ?.icon(props?.iconColor === WHITE_COLOR ? BLACK_COLOR : WHITE_COLOR, "14")}
           </div>
-          <p className="text-xl leading-[23px] font-semibold text-gray-900">
-            {props.category_name}
-          </p>
+          <p className="text-xl leading-[23px] font-semibold text-gray-900">{props.categoryName}</p>
         </div>
       </header>
       <main>
@@ -105,7 +103,7 @@ export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (co
   try {
     // Fetch the first full page for SEO and initial render
     const response = await fetch(
-      `${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${categorySlug}&user_name=${userName}&page=0`,
+      `${getBaseUrl()}/api/${V2_FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${categorySlug}&user_name=${userName}&page=0`,
     );
 
     if (!response.ok) {
@@ -136,7 +134,7 @@ export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (co
     // oxlint-disable-next-line no-unsafe-type-assertion -- response.json() types as unknown in oxlint
     const data = (await response.json()) as GetPublicCategoryBookmarksApiResponseType;
 
-    if (!data?.is_public) {
+    if (!data?.isPublic) {
       console.warn(`[${ROUTE}] Category is not public`, {
         categorySlug,
         userName,

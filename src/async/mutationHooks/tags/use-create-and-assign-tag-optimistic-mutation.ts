@@ -54,9 +54,9 @@ export function useCreateAndAssignTagOptimisticMutation() {
       {
         getQueryKey: () => [USER_TAGS_KEY, session?.user?.id],
         updater: (currentData, variables) => {
-          const data = currentData as { data: UserTagsData[] } | undefined;
+          const data = currentData as UserTagsData[] | undefined;
 
-          if (!data?.data) {
+          if (!data) {
             logCacheMiss("Optimistic Update", "User tags cache not found", {
               bookmarkId: variables.bookmarkId,
             });
@@ -73,7 +73,7 @@ export function useCreateAndAssignTagOptimisticMutation() {
           };
 
           return produce(data, (draft) => {
-            draft.data.push(tempTag as UserTagsData);
+            draft.push(tempTag as UserTagsData);
           });
         },
       },
@@ -105,15 +105,13 @@ export function useCreateAndAssignTagOptimisticMutation() {
       }
 
       // Update USER_TAGS_KEY cache - swap temp tag with real tag
-      queryClient.setQueryData<{ data: UserTagsData[] }>(
-        [USER_TAGS_KEY, session?.user?.id],
-        (current) =>
-          swapTempTagInUserTagsCache(current, tempId, {
-            created_at: realTag.created_at ?? undefined,
-            id: realTag.id,
-            name: realTag.name,
-            user_id: realTag.user_id ?? undefined,
-          }),
+      queryClient.setQueryData<UserTagsData[]>([USER_TAGS_KEY, session?.user?.id], (current) =>
+        swapTempTagInUserTagsCache(current, tempId, {
+          created_at: realTag.created_at ?? undefined,
+          id: realTag.id,
+          name: realTag.name,
+          user_id: realTag.user_id ?? undefined,
+        }),
       );
 
       void queryClient.invalidateQueries({

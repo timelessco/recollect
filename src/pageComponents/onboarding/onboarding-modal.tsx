@@ -198,6 +198,7 @@ function AppsStep({ onCtaClick }: { onCtaClick: () => void }) {
         className="pointer-events-none absolute top-[41px] left-[69px] block"
         height={308}
         src="/onboarding/devices.png"
+        unoptimized
         width={379}
       />
 

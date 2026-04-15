@@ -61,8 +61,7 @@ export function useAddCategoryToBookmarksOptimisticMutation() {
 
       // Resolve category from cache - skip optimistic update if not found
       const allCategories =
-        queryClient.getQueryData<{ data: CategoriesData[] }>([CATEGORIES_KEY, session?.user?.id])
-          ?.data ?? [];
+        queryClient.getQueryData<CategoriesData[]>([CATEGORIES_KEY, session?.user?.id]) ?? [];
       const newCategoryEntry = allCategories.find((cat) => cat.id === variables.category_id);
 
       // If category not in cache, skip optimistic update and wait for server response

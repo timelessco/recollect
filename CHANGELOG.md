@@ -1,5 +1,599 @@
 # Changelog
 
+## [0.6.0](https://github.com/timelessco/recollect/compare/v0.5.0...v0.6.0) (2026-04-14)
+
+### 👀 Notable Changes
+
+
+#### `api` — 🐛 harden screenshot parsing, video uploads, env guard
+
+> <sub>- Parse screenshot buffer from Node's `{type:"Buffer",data:number[]}` shape   so v2 uploads match v1 behavior; the old `typeof === "string"` guard   silently dropped the array and uploaded 0 bytes, breaking blurhash and   Gemini image analysis downstream - Treat missing video thumbnailPath as degraded instead of fatal — client   codec or CORS failures on legitimate videos should still let the bookmark   through with a null ogImage and fall back to the type-icon placeholder - Drop the NODE_ENV-based service-key guard in env/client; it false-fired   on local `next build` (Next forces NODE_ENV=production). The key is only   in local .env and never set on Vercel, so there's no leak surface to guard</sub>
+
+<sub>Introduced in [`4ce772ff`](https://github.com/timelessco/recollect/commit/4ce772ff9fc018fafef2220137dd917f66afa977)</sub>
+
+
+---
+
+
+#### `api` — 🐛 address CodeRabbit feedback on optimistic mutations, env guards
+
+> <sub>- Capture [USER_PROFILE, userId] queryKey in onMutate context so   rollback/invalidation targets the same entry if session changes mid-flight - Add runtime guard that throws if NEXT_PUBLIC_DEV_SUPABASE_SERVICE_KEY is   set in production (client bundle exposing a service-role key bypasses RLS) - Drop SUPABASE_SERVICE_KEY fallback from the non-prod dev chain so missing   dev vars fail loudly instead of silently routing through the prod key - Include session provider and mutateAsync in dashboard provider-sync effect   deps so the sync runs after session hydration, matching the email-sync effect</sub>
+
+<sub>Introduced in [`39049b9d`](https://github.com/timelessco/recollect/commit/39049b9d9b65cfbe8570c1bcc4f3991f8309c510)</sub>
+
+
+---
+
+
+#### `api` — 🐛 allow null elements in v2 profile category_order output
+
+> <sub>Postgres int4[] can store null elements (e.g., after deleting a category without compacting the ordering array). Supabase's generated number[] type misses this, and the v2 output schemas inherited the optimistic shape — v1 had no output validation so the mismatch was silent until callers migrated to v2.</sub>
+
+<sub>Introduced in [`77e5c1b1`](https://github.com/timelessco/recollect/commit/77e5c1b1a61d2b0437878050f64439eba30a7504)</sub>
+
+
+---
+
+
+#### `api` — 🐛 tighten v2 ky mutation typing and drop dead mutationApiCall wrappers
+
+> <sub>- Fix TError generic on addBookmarkMinData useMutation (was holding context   type) and tighten TContext.previousData to PaginatedBookmarks | undefined - Add <PaginatedBookmarks> generic to getQueryData snapshots in   add-bookmark-min-data and upload-file optimistic mutations so onError   context type infers correctly for rollback - Drop mutationApiCall wrappers from useAddBookmark and clipboard-upload:   envelope error checks silently no-op against bare v2 ky responses - Align AddMinDataMutationType alias in clipboard-upload with fixed hook   generics - Fix 3 missed USER_PROFILE cache consumers still typed as envelope   (useGetSortBy, changeEmail, deleteAccount) — bare ProfilesTableTypes[] - Extract normalizedCategoryId for non-number category slugs in   add-bookmark-min-data and upload-file mutations - Drop redundant isNull check in useBookmarksViewUpdate (isNil covers both) - Clean stray empty comment blocks in constants.ts</sub>
+
+<sub>Introduced in [`3dad222e`](https://github.com/timelessco/recollect/commit/3dad222e3ad92d0a5111a439069bc2ea22ae85ed)</sub>
+
+
+---
+
+
+#### `category` — correct onError rollback signature in delete mutation
+
+> <sub>React Query's onError receives (error, variables, context) — the handler was treating the first param as context, so rollback silently set the cache to undefined instead of restoring the snapshot.</sub>
+
+<sub>Introduced in [`879a5522`](https://github.com/timelessco/recollect/commit/879a55225fdcb66f3fa9d4fba79dd2e7d9dc56fd)</sub>
+
+
+---
+
+
+#### `docs` — 🐛 update migration tracker done count and use path alias
+
+> <sub>Update CALLER_MIGRATION.md summary from Done=11 to Done=16 to match actual x-marked rows. Convert relative import to @/ alias in public category page.</sub>
+
+<sub>Introduced in [`338ba54e`](https://github.com/timelessco/recollect/commit/338ba54e8284bf857082125fb8c97329e93f4d09)</sub>
+
+
+---
+
+
+#### `api` — 🐛 fix onError rollback in shared-categories mutation
+
+> <sub>- Pre-existing bug: onError first param was named `context` but   useMutation passes (error, variables, context) — rollback read   `error.previousData` which is always undefined - Type getQueryData with FetchSharedCategoriesData[] so onMutate   context type is inferred correctly</sub>
+
+<sub>Introduced in [`2141494f`](https://github.com/timelessco/recollect/commit/2141494f3904b95131839b9255fc9c6d706a0c4d)</sub>
+
+
+---
+
+
+#### `db` — migrate legacy content type names to joined format
+
+> <sub>Backfill existing image_keywords.type arrays to replace spaces and underscores with joined lowercase: developertools, socialmedia, researchpaper, musicalbum.</sub>
+
+<sub>Introduced in [`7d2e8f56`](https://github.com/timelessco/recollect/commit/7d2e8f56c88418a871f185f76aaf109b23cf28cb)</sub>
+
+
+---
+
+
+#### `search` — use substring match for tags to preserve existing behavior
+
+> <sub>react-mentions uses substring matching by default when data is a static array. The getSuggestions callback was using startsWith which silently broke contains-match for user tags.</sub>
+
+<sub>Introduced in [`1dd5e39e`](https://github.com/timelessco/recollect/commit/1dd5e39e1e5975a3fdb57d142e4646af916fad2a)</sub>
+
+
+---
+
+
+#### `db` — restore REVOKE/GRANT on search functions
+
+> <sub>PUBLIC access was lost when the function signature changed in 20260330. Restore the original pattern from 20260105: revoke from PUBLIC, grant to authenticated + anon.</sub>
+
+<sub>Introduced in [`0b94a437`](https://github.com/timelessco/recollect/commit/0b94a43758b7c57f432aa13eaf7ec9a2bb349177)</sub>
+
+
+---
+
+
+#### `db` — add type_hints parameter to search_bookmarks_url_tag_scope
+
+> <sub>Drops old 5-param overload before recreating with 6 params to avoid stale pg_proc entries and union types in generated types.</sub>
+
+<sub>Introduced in [`9b966559`](https://github.com/timelessco/recollect/commit/9b966559c4fd92f51a658008026fde3cde2012b6)</sub>
+
+
+---
+
+
+#### `onboarding` — welcome modal with Remotion showcase for first-time users
+
+> <sub>The welcome modal itself: a dynamic-imported, Remotion-powered showcase that renders on /discover for first-time users. Dismissing or closing the modal fires a fire-and-forget mutation to mark onboarding complete.
+> 
+> - Add OnboardingModal with Download Extension + skip CTAs - Vendor the RecollectShowcase2 Remotion composition, components, and icons - Add useCompleteOnboardingMutation hook - Add devices.png and chrome.svg assets - Mount OnboardingModal from Dashboard via the showOnboarding prop (one-line   JSX swap plus the dynamic import — the rest of the wiring landed in PR 2) - Exclude src/remotion from oxlint + oxfmt (vendored code) - Add @remotion/player + remotion runtime deps</sub>
+
+<sub>Introduced in [`18060f0c`](https://github.com/timelessco/recollect/commit/18060f0cefa89d060e0368bc39309493a1969108)</sub>
+
+
+---
+
+
+#### `auth` — redirect first-time users to /discover after login
+
+> <sub>Routes first-time users (profiles.onboarding_complete = false) to /discover on successful auth, and threads the flag through the [category_id] SSR gate so that authenticated /discover visits can detect first-timers even if the auth callback misroutes them.
+> 
+> No modal and no new UI yet — Dashboard accepts the showOnboarding prop but renders a null slot. The welcome modal that fills that slot lands in a follow-up PR.
+> 
+> - Add resolvePostLoginRedirect helper - Call the helper from confirm (magic link), oauth, and verifyOtp flows - Query onboarding_complete in [category_id].tsx getServerSideProps for   authenticated /discover visits and pass showOnboarding to Dashboard - Dashboard accepts showOnboarding prop; the modal mount lands in PR 3</sub>
+
+<sub>Introduced in [`c45dd787`](https://github.com/timelessco/recollect/commit/c45dd787c1b9c331e7cf7300fe6ea90156d5e67a)</sub>
+
+
+---
+
+
+#### `api` — add v2 PATCH /profiles/mark-onboarding-complete endpoint (#913)
+
+> <sub>* feat(api): add v2/profiles/complete-onboarding endpoint
+> 
+> Foundation PR for the onboarding flow: the profiles schema change, the regenerated database types, and the v2 endpoint that marks a user's onboarding as complete. No UI or redirect wiring yet — those land in follow-up PRs.
+> 
+> - Migration: add onboarding_complete boolean to profiles - v2 POST /profiles/complete-onboarding handler + schema - OpenAPI supplement + profiles index re-export - V2_COMPLETE_ONBOARDING_API constant
+> 
+> * refactor(api): rename complete-onboarding route to mark-onboarding-complete
+> 
+> Renames the v2 endpoint and associated identifiers so the action is expressed as a verb on the resource, matching the rest of the codebase ("mark X complete" reads more naturally than "complete X"). Same behavior — directory, constant, ROUTE name, schema classes, supplement export, and operation name all track the new name.
+> 
+> - Directory: complete-onboarding/ → mark-onboarding-complete/ - Constant:  V2_COMPLETE_ONBOARDING_API → V2_MARK_ONBOARDING_COMPLETE_API              (value: "v2/profiles/mark-onboarding-complete") - Schemas:   CompleteOnboarding{Input,Output}Schema              → MarkOnboardingComplete{Input,Output}Schema - ROUTE:     "v2-profiles-mark-onboarding-complete" - OpenAPI:   v2CompleteOnboardingSupplement              → v2MarkOnboardingCompleteSupplement - Operation: mark_onboarding_complete
+> 
+> * refactor(api): use .eq() for single-column filter in mark-onboarding-complete
+> 
+> .match() reads as "multi-column filter" to grep; .eq() is the convention for single-column filters across the rest of the codebase. Same query under the hood — just more consistent with the rest of the v2 handlers.
+> 
+> * fix(api): handle profile not found error in mark-onboarding-complete endpoint
+> 
+> * refactor(api): update mark-onboarding-complete endpoint to return an empty response
+> 
+> * refactor(api): change mark-onboarding-complete endpoint method from POST to PATCH</sub>
+
+<sub>Introduced in [`6f88d816`](https://github.com/timelessco/recollect/commit/6f88d8168134f402a920828343a223a17ca790d5)</sub>
+
+
+---
+
+
+#### `sidePane` — 🐛 scope drag-drop spinner to dropped-on list
+
+> <sub>- Dragging a bookmark onto a sidebar collection never showed a spinner   because useMutation state is per-hook-call: the drop handler and the   spinner reader were observing different instances. - Each sidebar list now owns its own useHandleBookmarksDrop instance, so   the drop-target call and the spinner read share a single useMutation. - Spinner now appears only on the list the user actually dropped onto.</sub>
+
+<sub>Introduced in [`911011bd`](https://github.com/timelessco/recollect/commit/911011bdc79dcb50503868828f51633d9c781ee3)</sub>
+
+
+---
+
+
+#### `release` — 🐛 chunk GraphQL query and add @login to all changelog entries
+
+> <sub>The single 342-alias GraphQL query in release-pr.sh was hitting GitHub's node/complexity limit, failing silently (2>/dev/null || true), leaving PR_MAP_FILE empty, and falling every commit through to the commit-link +</sub>
+
+<sub>Introduced in [`57ee6b8d`](https://github.com/timelessco/recollect/commit/57ee6b8d4b1a91653b3dc8b3de4a9a988b2d74ac)</sub>
+
+
+---
+
+
+#### `api` — replace color: prefix with # in v1 and v2 search routes
+
+> <sub>Both the v2 App Router route and the deprecated v1 Pages Router route previously used a /color:(\S+)/i regex to extract a single CSS color name or hex from the raw search string, passed three OKLAB floats to the RPC, and early-returned an empty result on a malformed color value.
+> 
+> Replace that with parseSearchTokens from @/utils/searchTokens, which returns plain tags (AND-required, unchanged behavior) plus color hints (OR-paired tag-name + OKLAB, new behavior). The new RPC argument color_hints is built by mapping the hint array into {tag_name, l, a, b} objects and wrapping with toJson for the jsonb type boundary.
+> 
+> Side effects: - Delete the local extractTagNames helper in the v2 route and drop the   now-unused GET_HASHTAG_TAG_PATTERN/TAG_MARKUP_REGEX constant imports. - In v1 drop the equivalent extractTagNamesFromSearch import. - v1 still passes null (not undefined) for category_scope on discover   pages, preserving the v1/v2 shape difference intentionally. - v1 keeps its relative import style throughout.</sub>
+
+<sub>Introduced in [`142fc73c`](https://github.com/timelessco/recollect/commit/142fc73c1f6f62773d8b4fddafd19ffe926b2fd7)</sub>
+
+
+---
+
+
+#### `db` — add color_hints param and tag-precedence sort to search RPC
+
+> <sub>Drop the single-color overload of search_bookmarks_url_tag_scope that took three float parameters (color_l/color_a/color_b) and recreate it with a single color_hints jsonb parameter — an array of {tag_name, l, a, b} entries, capped at three by the route handler.
+> 
+> A row now matches a hint when it has a tag with the given name OR its dominant image colors fall within OKLAB distance. Hints are evaluated with OR semantics across the array, so a hint satisfies either branch.
+> 
+> A new top-level ORDER BY expression guarantees strict precedence: tag-matched rows always rank above color-only matches. When color_hints is empty, the sort expression is 0 for every row and the full ORDER BY degenerates to the existing combined relevance score plus inserted_at, so non-color searches behave identically to before.
+> 
+> Within each section the existing scoring is preserved: text similarity plus per-position color closeness (1/pos weight) taken as the MAX across the cross product of hints × stored colors, so the single-hint case is byte-identical to the previous behavior.
+> 
+> Extract the OKLAB distance match into a reusable color_matches_oklab(colors, l, a, b) helper — pure refactor of the inline WHERE block from the previous migration, behavior unchanged.
+> 
+> Regenerate src/types/database-generated.types.ts to reflect the new Args shape.</sub>
+
+<sub>Introduced in [`f41dbf0a`](https://github.com/timelessco/recollect/commit/f41dbf0a9454db5d6347a7c1bb8f25027dd4285d)</sub>
+
+
+---
+
+
+#### `search` — add #-token parser for color hints and plain tags
+
+> <sub>Introduce src/utils/searchTokens.ts, a pure parser that classifies every #-prefixed token in a search string as one of three kinds:
+> 
+> - hex (3/4/6/8 digit) → color hint with uppercased tag-name + OKLAB</sub>
+
+<sub>Introduced in [`9c928b36`](https://github.com/timelessco/recollect/commit/9c928b36693f3c10a9d72f875f29d315d2de1e08)</sub>
+
+
+
+
+### 📌 Other Notable Changes
+
+
+#### `migration` — 📝 mark 6 completed v2 caller migrations
+
+> <sub>- Tick screenshot, ai-enrichment, fetch-user-tags,   fetch-shared-categories, fetch-user-profile-pic, and get-gemini-api-key</sub>
+
+<sub>Introduced in [`af70ca09`](https://github.com/timelessco/recollect/commit/af70ca0972e575313cc8010b76019092fec7f0ab)</sub>
+
+
+---
+
+
+#### `api` — ♻️ migrate T5 very-hard callers to v2 ky
+
+> <sub>- Migrate fetchUserProfiles query hook to v2 GET with cookie auth,   update 12 direct consumers and 6 indirect cache readers from   envelope shape { data: T[] } to bare T[], fix onError signature   bugs in 2 optimistic mutation hooks, add favorite_categories to   v2 output schema - Migrate addBookmarkMinData mutation to v2 POST, fix double-unwrap   in onSettled/onSuccess, preserve URL normalization and category_id   fallback, remove crud helper - Migrate uploadFile mutation to v2 POST with JSON metadata, keep   client-side R2 upload and video thumbnail generation, fix onSuccess   response shape from envelope to bare array - Migrate uploadProfilePic mutation to v2 POST with native FormData,   fix P3 envelope check in settings (mutationApiCall + isNull →   try/catch), remove crud helper - Remove 4 crud helpers, 4 v1 URL constants, break circular dep   between helpers and supabaseCrudHelpers, deprecate 4 Pages Router   routes, update migration tracker</sub>
+
+<sub>Introduced in [`f2824574`](https://github.com/timelessco/recollect/commit/f282457419af442977d1e6a58342402737c93fe0)</sub>
+
+
+---
+
+
+#### `api` — clean up orphaned constants and dead mutationApiCall wrappers
+
+> <sub>Remove 4 orphaned v1 URL constants after caller migrations, strip dead mutationApiCall wrappers from ky-migrated mutation consumers, and evolve the caller migration skill with shared type split pattern and vocabulary cleanup.</sub>
+
+<sub>Introduced in [`9aa1f085`](https://github.com/timelessco/recollect/commit/9aa1f0854c3c12e7588253df7513a45ad28c41a4)</sub>
+
+
+---
+
+
+#### `api` — ♻️ migrate 3 hard callers to v2 ky client
+
+> <sub>- Migrate fetchCategoriesData to ky GET with 24 consumer site updates - Migrate updateSharedCategoriesUserAccess to ky PATCH (2 hooks as unit) - Migrate addBookmarkScreenshot to ky POST, fix double-unwrap - Update all cache consumers from {data: T[]} envelope to bare T[] - Fix mutationApiCall + isNull pattern in share-role-selects with try/catch - Add category_views to v2 update-shared-category-user-role schema - Remove 3 crud helpers, 3 v1 URL constants, deprecate 3 Pages Router routes</sub>
+
+<sub>Introduced in [`0319a05e`](https://github.com/timelessco/recollect/commit/0319a05e2dd994eb5822afb0145d461ead2d25e0)</sub>
+
+
+---
+
+
+#### `skill` — 📝 add onError/onMutate traps to caller migration skill
+
+> <sub>- Document onError callback signature bug (first param is error, not   context) in cache shape migration table and "places that get missed" - Add getQueryData typing requirement for onMutate context inference</sub>
+
+<sub>Introduced in [`35e0795e`](https://github.com/timelessco/recollect/commit/35e0795efebc933fd84502fd300201255092d08e)</sub>
+
+
+---
+
+
+#### `api` — ♻️ migrate 6 moderate callers to v2 ky
+
+> <sub>- Migrate updateCategoryOrder, updateUserProfile, favorite-order,   file-upload (PDF buffer + upload-remaining), and   public-category-bookmarks to v2 ky client - Fix onError argument order in optimistic hooks — pre-existing bug   where first arg (error) was treated as rollback context, now   reachable because ky throws on non-2xx unlike axios crud helpers - Update SSR getStaticProps and client hook for public category page   with v2 camelCase field names (bookmarks, categoryName, iconColor) - Remove updateCategoryOrder and updateUserProfile crud helpers - Add P6 safety rule to caller-migration skill for onError audits</sub>
+
+<sub>Introduced in [`01492c26`](https://github.com/timelessco/recollect/commit/01492c26dd6f29cf5b6b748d2c19b4df08b59c51)</sub>
+
+
+---
+
+
+#### `api` — ♻️ migrate remaining callers to v2 ky client
+
+> <sub>- Migrate query hooks: get-gemini-api-key, fetch-shared-categories,   fetch-user-profile-pic, fetch-user-tags - Migrate server-side callers: worker.ts (ai-enrichment, screenshot),   add-bookmark-min-data, add-remaining-bookmark-data (get-media-type) - Update V2 constant for getMediaType in supabaseCrudHelpers - Update all cache consumers (bare response, no envelope unwrap) - Remove dead crud helpers, orphaned constants, and envelope types - Deprecate Pages Router routes with @deprecated JSDoc - Rename hook files to kebab-case</sub>
+
+<sub>Introduced in [`6dde1038`](https://github.com/timelessco/recollect/commit/6dde1038c7a0c79fc67b5dc1316911786e10750d)</sub>
+
+
+---
+
+
+#### `api` — 📝 update migration tracker summary totals
+
+> <sub>- Update Done count from 1 to 11 to match actual completed rows - Update _Last updated_ timestamp to 2026-04-13</sub>
+
+<sub>Introduced in [`c8e7e6b0`](https://github.com/timelessco/recollect/commit/c8e7e6b0e62676dff7033ff0cc46b767fc5ea10b)</sub>
+
+
+---
+
+
+#### `search` — normalize CONTENT_TYPES to joined lowercase format
+
+> <sub>Standardize all content types to use joined words (no spaces or underscores): developertools, musicalbum, researchpaper, socialmedia. Remove the space filter from KNOWN_TYPES since all types are now single tokens.</sub>
+
+<sub>Introduced in [`e860fd64`](https://github.com/timelessco/recollect/commit/e860fd645cb973a3c4b8e0ae811e5dc7bee49856)</sub>
+
+
+---
+
+
+#### `api` — ♻️ migrate 7 mutation callers to v2 ky client
+
+> <sub>- Migrate mutation hooks to ky: delete-shared-categories-user,   send-collaboration-email, api-key, delete-api-key, delete-user,   remove-profile-pic, update-username - Add V2_* URL constants for all migrated endpoints - Remove dead crud helpers and orphaned v1 URL constants - Update consumers: replace mutationApiCall/isNull pattern with   try/catch for ky's auto-throw behavior - Deprecate 7 Pages Router routes with @deprecated JSDoc - Migrate iframe-test.ts from axios to native fetch - Fix skill doc contradiction: intro said "no URL constants" while   Layer 2 required V2_* constants</sub>
+
+<sub>Introduced in [`764adc84`](https://github.com/timelessco/recollect/commit/764adc843da42cd3bd5db210662f44351367e701)</sub>
+
+
+---
+
+
+#### `search` — extract CONTENT_TYPES to shared constant
+
+> <sub>Single source of truth in image-analysis-schema.ts, consumed by prompt-builder.ts (AI prompt) and searchTokens.ts (hash search).</sub>
+
+<sub>Introduced in [`5be39dbf`](https://github.com/timelessco/recollect/commit/5be39dbfb622d64ea253033deeeb5113ff3724de)</sub>
+
+
+---
+
+
+#### `search` — use dedicated MAX_TYPE_HINTS constant
+
+> <sub>Avoids semantic coupling between color hint cap and type hint cap.</sub>
+
+<sub>Introduced in [`b82c2a10`](https://github.com/timelessco/recollect/commit/b82c2a10a64d45cd3b106e870e1fb0086f2847c2)</sub>
+
+
+---
+
+
+#### `api` — migrate get-media-type caller to v2 ky client
+
+> <sub>Replace fetch() with ky api.get() in getMediaType utility, remove orphaned GET_MEDIA_TYPE_API constant and getBaseUrl import, deprecate the v1 Pages Router route.</sub>
+
+<sub>Introduced in [`e0a560c4`](https://github.com/timelessco/recollect/commit/e0a560c46d40c7215f9d3ad4315c89db4eca699a)</sub>
+
+
+---
+
+
+#### `api` — migrate fetch-bookmarks-view caller to v2 ky client
+
+> <sub>POST→GET method change with searchParams. Remove fetchBookmarksViews crud helper, FETCH_BOOKMARKS_VIEW constant, isUserInACategory import. Rename hook to kebab-case. Deprecate Pages Router route.</sub>
+
+<sub>Introduced in [`5d5c2d2c`](https://github.com/timelessco/recollect/commit/5d5c2d2c1ea89aed6ea296ec2ecf727fbb9ffd79)</sub>
+
+
+---
+
+
+#### `deps` — ♻️ drop remeda, use local isNullable
+
+> <sub>- Swap isNullish from remeda for isNullable from @/utils/assertion-utils   across the three onboarding call sites - Uninstall remeda — semantics match the project helper (value == null)</sub>
+
+<sub>Introduced in [`ebaa854f`](https://github.com/timelessco/recollect/commit/ebaa854f5b4aafcf5c3544557fef3a6d85016093)</sub>
+
+
+---
+
+
+#### `onboarding` — swap onboarding_complete flag for onboarded_at timestamp
+
+> <sub>Replace the boolean `profiles.onboarding_complete` column with a nullable `onboarded_at` timestamptz. NULL means the user has not yet finished onboarding (welcome modal mounts); a non-NULL value records when they first dismissed the flow. Switching to a timestamp preserves first-completion history for future cohort re-targeting instead of collapsing it into a one-bit flag. Every existing row lands at NULL so UAT users re-see the modal once after the migration.
+> 
+> The PATCH handler now distinguishes three cases the previous update-with-filter shape collapsed into one: profile row missing → 404 so the caller can re-provision (returning 200 left the client stuck in an onboarding loop because both the SSR gate and the callback redirect read `onboarded_at IS NULL`), already onboarded → idempotent no-op preserving the original timestamp, not yet onboarded → write the timestamp guarded by `.is('onboarded_at', null)` against a concurrent write that might have landed between the SELECT and UPDATE.
+> 
+> Rename the route path and constant from mark-onboarding-complete to mark-onboarded, along with the mutation hook, OpenAPI supplement, barrel export, and welcome-modal import. Update the SSR gate and both post-login redirect resolvers to read the new column, and pull in remeda for `isNullish` at those call sites.</sub>
+
+<sub>Introduced in [`95942026`](https://github.com/timelessco/recollect/commit/959420264e01d950c1caa87e41ad7c733f354309)</sub>
+
+
+---
+
+
+#### `dev` — optimize local dev server memory and HMR performance
+
+> <sub>Add preloadEntriesOnStart: false to lazy-load page modules on demand instead of preloading all at startup, reducing RSS on large apps. Add serverComponentsHmrCache: true to cache fetch responses across HMR cycles, eliminating redundant Supabase round-trips during dev. Add clean:next script to purge Turbopack dev cache independently.</sub>
+
+<sub>Introduced in [`59da3b46`](https://github.com/timelessco/recollect/commit/59da3b46e0cecc1e627d829a19b4ba2feddee557)</sub>
+
+
+
+
+<details>
+<summary>🗃️ Commits</summary>
+
+
+
+#### ⭐ New Features
+
+- **`api`** add v2 PATCH /profiles/mark-onboarding-complete endpoint ([#913](https://github.com/timelessco/recollect/issues/913)) — [`6f88d81`](https://github.com/timelessco/recollect/commit/6f88d8168134f402a920828343a223a17ca790d5)
+
+- **`api`** pass typeHints to search RPC in v1 route — [`0259c88`](https://github.com/timelessco/recollect/commit/0259c88c4fa703c2b74122bea3465f2b3f832f68)
+
+- **`api`** pass typeHints to search RPC in v2 route — [`527b3ee`](https://github.com/timelessco/recollect/commit/527b3eea6a95e3e44f6207072456abfbfb1d87be)
+
+- **`api`** replace color: prefix with # in v1 and v2 search routes — [`142fc73`](https://github.com/timelessco/recollect/commit/142fc73c1f6f62773d8b4fddafd19ffe926b2fd7), closes [#regulartag](https://github.com/timelessco/recollect/issues/regulartag) [#FF0000](https://github.com/timelessco/recollect/issues/FF0000) [#red](https://github.com/timelessco/recollect/issues/red)
+
+- **`auth`** redirect first-time users to /discover after login — [`c45dd78`](https://github.com/timelessco/recollect/commit/c45dd787c1b9c331e7cf7300fe6ea90156d5e67a)
+
+- **`db`** add color_hints param and tag-precedence sort to search RPC — [`f41dbf0`](https://github.com/timelessco/recollect/commit/f41dbf0a9454db5d6347a7c1bb8f25027dd4285d)
+
+- **`db`** add type_hints parameter to search_bookmarks_url_tag_scope — [`9b96655`](https://github.com/timelessco/recollect/commit/9b966559c4fd92f51a658008026fde3cde2012b6)
+
+- **`db`** migrate legacy content type names to joined format — [`7d2e8f5`](https://github.com/timelessco/recollect/commit/7d2e8f56c88418a871f185f76aaf109b23cf28cb)
+
+- **`onboarding`** delay modal open by 1s so Base UI registers data-starting-style on initial render — [`18c0efe`](https://github.com/timelessco/recollect/commit/18c0efea48462e812bf4822a0b64364a0e3dd309)
+
+- **`onboarding`** welcome modal with Remotion showcase for first-time users — [`18060f0`](https://github.com/timelessco/recollect/commit/18060f0cefa89d060e0368bc39309493a1969108)
+
+- **`search`** add #-token parser for color hints and plain tags — [`9c928b3`](https://github.com/timelessco/recollect/commit/9c928b36693f3c10a9d72f875f29d315d2de1e08), closes [#-token](https://github.com/timelessco/recollect/issues/-token) [#red](https://github.com/timelessco/recollect/issues/red) [#navy](https://github.com/timelessco/recollect/issues/navy)
+
+- **`search`** add type hint classification to parseSearchTokens — [`77c1bb6`](https://github.com/timelessco/recollect/commit/77c1bb6eca61f1bc23606263871f9a2e47e2fd06)
+
+- **`search`** merge colors and types into search suggestions dropdown — [`0bb11a8`](https://github.com/timelessco/recollect/commit/0bb11a86d8986a3deccf7dcdb12824902929b937)
+
+- **`search`** show color and type suggestions after 1 character — [`8d232a1`](https://github.com/timelessco/recollect/commit/8d232a174eab26438a9b237f8c4afc344df29fff)
+
+
+
+#### 🐞 Bug Fixes
+
+- address PR review — remove cspell ignore, UPPERCASE SQL keywords — [`76bf0e5`](https://github.com/timelessco/recollect/commit/76bf0e567f9d53a62cbff0476b234e09ac63be10)
+
+- **`api`** 🐛 address CodeRabbit feedback on optimistic mutations, env guards — [`39049b9`](https://github.com/timelessco/recollect/commit/39049b9d9b65cfbe8570c1bcc4f3991f8309c510)
+
+- **`api`** 🐛 allow null elements in v2 profile category_order output — [`77e5c1b`](https://github.com/timelessco/recollect/commit/77e5c1b1a61d2b0437878050f64439eba30a7504)
+
+- **`api`** 🐛 fix onError rollback in shared-categories mutation — [`2141494`](https://github.com/timelessco/recollect/commit/2141494f3904b95131839b9255fc9c6d706a0c4d)
+
+- **`api`** 🐛 harden screenshot parsing, video uploads, env guard — [`4ce772f`](https://github.com/timelessco/recollect/commit/4ce772ff9fc018fafef2220137dd917f66afa977)
+
+- **`api`** 🐛 tighten v2 ky mutation typing and drop dead mutationApiCall wrappers — [`3dad222`](https://github.com/timelessco/recollect/commit/3dad222e3ad92d0a5111a439069bc2ea22ae85ed)
+
+- **`category`** correct onError rollback signature in delete mutation — [`879a552`](https://github.com/timelessco/recollect/commit/879a55225fdcb66f3fa9d4fba79dd2e7d9dc56fd)
+
+- **`db`** restore REVOKE/GRANT on search functions — [`0b94a43`](https://github.com/timelessco/recollect/commit/0b94a43758b7c57f432aa13eaf7ec9a2bb349177)
+
+- **`docs`** 🐛 update migration tracker done count and use path alias — [`338ba54`](https://github.com/timelessco/recollect/commit/338ba54e8284bf857082125fb8c97329e93f4d09)
+
+- **`release`** 🐛 chunk GraphQL query and add [@login](https://github.com/login) to all changelog entries — [`57ee6b8`](https://github.com/timelessco/recollect/commit/57ee6b8d4b1a91653b3dc8b3de4a9a988b2d74ac), closes [#912](https://github.com/timelessco/recollect/issues/912) [#N](https://github.com/timelessco/recollect/issues/N)
+
+- **`search`** use substring match for tags to preserve existing behavior — [`1dd5e39`](https://github.com/timelessco/recollect/commit/1dd5e39e1e5975a3fdb57d142e4646af916fad2a)
+
+- **`sidePane`** 🐛 scope drag-drop spinner to dropped-on list — [`911011b`](https://github.com/timelessco/recollect/commit/911011bdc79dcb50503868828f51633d9c781ee3)
+
+- **`sidePane`** remove unused focus ring visual indicator from reorderable list — [`f56cd6d`](https://github.com/timelessco/recollect/commit/f56cd6d1ed34713cd21063c8df752d67774cc73f)
+
+
+
+#### ♻️  Code Refactoring
+
+- **`api`** ♻️ migrate 3 hard callers to v2 ky client — [`0319a05`](https://github.com/timelessco/recollect/commit/0319a05e2dd994eb5822afb0145d461ead2d25e0)
+
+- **`api`** ♻️ migrate 6 moderate callers to v2 ky — [`01492c2`](https://github.com/timelessco/recollect/commit/01492c26dd6f29cf5b6b748d2c19b4df08b59c51)
+
+- **`api`** ♻️ migrate 7 mutation callers to v2 ky client — [`764adc8`](https://github.com/timelessco/recollect/commit/764adc843da42cd3bd5db210662f44351367e701)
+
+- **`api`** ♻️ migrate remaining callers to v2 ky client — [`6dde103`](https://github.com/timelessco/recollect/commit/6dde1038c7a0c79fc67b5dc1316911786e10750d)
+
+- **`api`** ♻️ migrate T5 very-hard callers to v2 ky — [`f282457`](https://github.com/timelessco/recollect/commit/f282457419af442977d1e6a58342402737c93fe0)
+
+- **`api`** clean up orphaned constants and dead mutationApiCall wrappers — [`9aa1f08`](https://github.com/timelessco/recollect/commit/9aa1f0854c3c12e7588253df7513a45ad28c41a4)
+
+- **`api`** migrate fetch-bookmarks-view caller to v2 ky client — [`5d5c2d2`](https://github.com/timelessco/recollect/commit/5d5c2d2c1ea89aed6ea296ec2ecf727fbb9ffd79)
+
+- **`api`** migrate get-media-type caller to v2 ky client — [`e0a560c`](https://github.com/timelessco/recollect/commit/e0a560c46d40c7215f9d3ad4315c89db4eca699a)
+
+- **`auth`** enhance user retrieval and error handling in confirm and oauth routes — [`46a588c`](https://github.com/timelessco/recollect/commit/46a588c52c1eaf702b1f0fd9b15a02b08b29cae6)
+
+- **`auth`** replace post-login redirect logic with callback redirect resolver — [`a7308ca`](https://github.com/timelessco/recollect/commit/a7308caccbc043693dcc69eb9d7a9da897200cfe)
+
+- **`auth`** replace resolvePostLoginRedirect function with useResolvePostLoginRedirect hook — [`fe34ad1`](https://github.com/timelessco/recollect/commit/fe34ad1cb38bf2c00f3c6c825427c1c07658d894)
+
+- **`auth`** simplify user retrieval and redirect logic in confirm route — [`5528ded`](https://github.com/timelessco/recollect/commit/5528ded85ec02e097c9629e3165d3f83184a7849)
+
+- **`auth`** update post-login redirect logic to use clientLogger for error handling — [`9be96ae`](https://github.com/timelessco/recollect/commit/9be96ae991083828b9f73d7bbf3d0283015a6ffa)
+
+- **`deps`** ♻️ drop remeda, use local isNullable — [`ebaa854`](https://github.com/timelessco/recollect/commit/ebaa854f5b4aafcf5c3544557fef3a6d85016093)
+
+- **`icons`** move SafariFrame component to icons directory — [`281d87d`](https://github.com/timelessco/recollect/commit/281d87d2e5848846cb8ca65789d4f90cc281f553)
+
+- **`mutations`** replace inline types with canonical api types and add json generics — [`c8638f1`](https://github.com/timelessco/recollect/commit/c8638f1f5815a5901a1d8ae72a748b9c06ff21c6)
+
+- **`onboarding`** swap App Store link for TestFlight invite in AppsStep — [`1c7f5d0`](https://github.com/timelessco/recollect/commit/1c7f5d086c2bd6c01cf85759f961105265d9eb1d)
+
+- **`onboarding`** swap onboarding_complete flag for onboarded_at timestamp — [`9594202`](https://github.com/timelessco/recollect/commit/959420264e01d950c1caa87e41ad7c733f354309)
+
+- **`profiles`** trim comments and openapi description in onboarding-complete endpoint — [`4865e76`](https://github.com/timelessco/recollect/commit/4865e764f1fd9175c86c9e519c0bea1b7c50533c)
+
+- **`search`** export CSS_COLOR_NAMES and KNOWN_TYPES constants — [`0e64cdc`](https://github.com/timelessco/recollect/commit/0e64cdcb75ab0bdd064f8337642526c9ffd3d63f)
+
+- **`search`** extract CONTENT_TYPES to shared constant — [`5be39db`](https://github.com/timelessco/recollect/commit/5be39dbfb622d64ea253033deeeb5113ff3724de)
+
+- **`search`** normalize CONTENT_TYPES to joined lowercase format — [`e860fd6`](https://github.com/timelessco/recollect/commit/e860fd645cb973a3c4b8e0ae811e5dc7bee49856)
+
+- **`search`** use dedicated MAX_TYPE_HINTS constant — [`b82c2a1`](https://github.com/timelessco/recollect/commit/b82c2a10a64d45cd3b106e870e1fb0086f2847c2)
+
+
+
+#### ⚡️  Performance Improvements
+
+- **`dev`** optimize local dev server memory and HMR performance — [`59da3b4`](https://github.com/timelessco/recollect/commit/59da3b46e0cecc1e627d829a19b4ba2feddee557)
+
+
+
+#### 📔 Documentation Changes
+
+- **`api`** 📝 update migration tracker summary totals — [`c8e7e6b`](https://github.com/timelessco/recollect/commit/c8e7e6b0e62676dff7033ff0cc46b767fc5ea10b)
+
+- **`api`** update API changelog [skip ci] — [`aa97035`](https://github.com/timelessco/recollect/commit/aa970357874e0fd127534437f5410eae54a2933c)
+
+- **`api`** update API changelog [skip ci] — [`42d7ecc`](https://github.com/timelessco/recollect/commit/42d7eccccb49c4f77566303df5e55d78b64f9188)
+
+- **`api`** update API changelog [skip ci] — [`e52ddba`](https://github.com/timelessco/recollect/commit/e52ddba9f02b13142d2d15e495f6da0a292fd931)
+
+- **`api`** update API changelog [skip ci] — [`3e06962`](https://github.com/timelessco/recollect/commit/3e06962b3896c59b4f7a1a8f1572856664e1a8f5)
+
+- **`migration`** 📝 mark 6 completed v2 caller migrations — [`af70ca0`](https://github.com/timelessco/recollect/commit/af70ca0972e575313cc8010b76019092fec7f0ab), closes [924/#925](https://github.com/924/recollect/issues/925)
+
+- **`plans`** add server-issued storage upload URLs plan and wire local-dev Supabase service key — [`186cbdc`](https://github.com/timelessco/recollect/commit/186cbdc370d2b99fe8734859aa46602ee9a91bdf)
+
+- **`skill`** 📝 add onError/onMutate traps to caller migration skill — [`35e0795`](https://github.com/timelessco/recollect/commit/35e0795efebc933fd84502fd300201255092d08e)
+
+- **`skill`** update caller-migration skill with mutation hook patterns and HTTP method rules — [`c167ce0`](https://github.com/timelessco/recollect/commit/c167ce09ee2699c3d6a20fea0a9738a15d921590)
+
+
+
+#### 🔨 Maintenance Updates
+
+- **`claude`** consolidate and refactor agent rules, add prod-hotfix skill and supabase SQL patterns — [`a956587`](https://github.com/timelessco/recollect/commit/a9565872349a0b74e7cc0b7bbbed7d364dac1a99)
+
+- **`claude`** extract gotchas into scoped rule files with path-based triggers — [`0f8526e`](https://github.com/timelessco/recollect/commit/0f8526e1926e22a596e80292c46836451cf9a3bc)
+
+- **`config`** update oxfmtrc and oxlintrc to remove src/remotion from ignored paths — [`529854e`](https://github.com/timelessco/recollect/commit/529854e38ab73167fd18882b421fd3ebeecc21f6)
+
+- **`cspell`** add 'docs/superpowers' to ignore list in cspell configuration — [`6a946d3`](https://github.com/timelessco/recollect/commit/6a946d3e8b128a8ff1c7c0c5c4fe5234e4d5402f)
+
+- **`env`** remove stale comment about local Supabase service key guard — [`b60f7e6`](https://github.com/timelessco/recollect/commit/b60f7e69a53f60b6a4a811b161e711d46337b1ea)
+
+- **`release`** clear API changelog after release — [`19822ab`](https://github.com/timelessco/recollect/commit/19822ab9791e692dd25618202191e36a09a04f14)
+
+- **`setup`** run next:typegen after install in new worktrees — [`459a0b5`](https://github.com/timelessco/recollect/commit/459a0b508a3362b50266c2fc25c8adce5e3c8cc4)
+
+- **`skills`** strip rich descriptions and disable-model-invocation from SKILL.md frontmatter — [`09330eb`](https://github.com/timelessco/recollect/commit/09330eb866263ae696a9b6c5dc1761ebefe315fe)
+
+- **`superset`** sync CLAUDE.local.md and graphify-out in worktree setup — [`4eea1c1`](https://github.com/timelessco/recollect/commit/4eea1c1ad456176c415399b7f21c87c1d62ceb64)
+
+
+
+#### 🎨 Code Style Changes
+
+- **`dashboard`** 💄 narrow side pane default width to 220px — [`1d177dc`](https://github.com/timelessco/recollect/commit/1d177dc908f5feff7aab4c5170ec9ae2e714afdf)
+
+- **`db`** use UPPERCASE SQL keywords in type_hints migration — [`9d36714`](https://github.com/timelessco/recollect/commit/9d36714eb3c3f598b6fb23e47ec5e39a4872ee8a)
+
+
+
+
+- The staged changes are all docs cleanup: deleting stale planning/brainstorm/spec files and moving+stripping frontmatter from one solution doc. — [`831e0cf`](https://github.com/timelessco/recollect/commit/831e0cf6617b19bb1d2f88c9a3b2a32148e4edcf)
+
+
+
+</details>
+
 ## [0.5.0](https://github.com/timelessco/recollect/compare/v0.4.0...v0.5.0) (2026-04-09)
 
 ### 👀 Notable Changes

@@ -105,7 +105,12 @@ export const GET = createAxiomRouteHandler(
       const urlScope = matchedSiteScope?.at(0)?.replace("@", "")?.toLowerCase() ?? "";
 
       const searchWithoutSiteScope = search.replace(GET_SITE_SCOPE_PATTERN, "");
-      const { text: searchText, plainTags, colorHints } = parseSearchTokens(searchWithoutSiteScope);
+      const {
+        text: searchText,
+        plainTags,
+        colorHints,
+        typeHints,
+      } = parseSearchTokens(searchWithoutSiteScope);
       const tagName = plainTags.length > 0 ? plainTags : undefined;
 
       if (ctx?.fields) {
@@ -136,6 +141,7 @@ export const GET = createAxiomRouteHandler(
           ),
           search_text: searchText,
           tag_scope: tagName,
+          type_hints: typeHints.length > 0 ? typeHints : undefined,
           url_scope: urlScope,
         })
         .range(offset, offset + PAGINATION_LIMIT - 1);

@@ -12,8 +12,8 @@ import { useAddTagToBookmarkOptimisticMutation } from "@/async/mutationHooks/tag
 import { useCreateAndAssignTagOptimisticMutation } from "@/async/mutationHooks/tags/use-create-and-assign-tag-optimistic-mutation";
 import { useRemoveTagFromBookmarkOptimisticMutation } from "@/async/mutationHooks/tags/use-remove-tag-from-bookmark-optimistic-mutation";
 import { useFetchDiscoverableBookmarkById } from "@/async/queryHooks/bookmarks/use-fetch-discoverable-bookmark-by-id";
-import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
-import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
+import useFetchCategories from "@/async/queryHooks/category/use-fetch-categories";
+import useFetchUserTags from "@/async/queryHooks/userTags/use-fetch-user-tags";
 import { CollectionIcon } from "@/components/collectionIcon";
 import { Combobox } from "@/components/ui/recollect/combobox";
 import { Popover } from "@/components/ui/recollect/popover";
@@ -76,13 +76,13 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
   }, [queryClient, post.id]);
 
   const categoryItemsMap = useMemo(
-    () => new Map((allCategories?.data ?? []).map((cat) => [cat.id, cat])),
-    [allCategories?.data],
+    () => new Map((allCategories ?? []).map((cat) => [cat.id, cat])),
+    [allCategories],
   );
 
   const tagItemsMap = useMemo(
-    () => new Map((userTags?.data ?? []).map((tag) => [tag.id, tag])),
-    [userTags?.data],
+    () => new Map((userTags ?? []).map((tag) => [tag.id, tag])),
+    [userTags],
   );
 
   // Resolve server-fetched ids against the items list so selectedItems contain
@@ -248,9 +248,9 @@ export const DiscoverSavePopover = ({ post }: DiscoverSavePopoverProps) => {
   );
 
   const items = useMemo(() => {
-    const cats = allCategories?.data ?? [];
+    const cats = allCategories ?? [];
     return [everythingItem, ...cats];
-  }, [allCategories?.data, everythingItem]);
+  }, [allCategories, everythingItem]);
 
   // Local state for selected categories — "Everything" pre-selected
   const [selectedCategories, setSelectedCategories] = useState([everythingItem]);
@@ -350,7 +350,7 @@ export const TagMultiSelect = ({
   const { createAndAssignTagOptimisticMutation } = useCreateAndAssignTagOptimisticMutation();
 
   const selectedTagIds = useBookmarkTags(bookmarkId);
-  const allTags = useMemo(() => userTags?.data ?? [], [userTags?.data]);
+  const allTags = useMemo(() => userTags ?? [], [userTags]);
 
   const tagMap = useMemo(() => new Map(allTags.map((tag) => [tag.id, tag])), [allTags]);
 

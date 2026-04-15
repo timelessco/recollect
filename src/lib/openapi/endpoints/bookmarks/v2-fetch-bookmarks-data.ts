@@ -26,7 +26,8 @@ export const v2FetchBookmarksDataSupplement = {
         value: "trash",
       },
       "uncategorized-page": {
-        description: "Send `?category_id=uncategorized` — returns bookmarks with category_id 0.",
+        description:
+          "Send `?category_id=uncategorized` — returns bookmarks not assigned to any category.",
         summary: "Uncategorized bookmarks",
         value: "uncategorized",
       },
@@ -86,7 +87,6 @@ export const v2FetchBookmarksDataSupplement = {
               id: 724,
             },
           ],
-          category_id: 724,
           description: "A comprehensive guide to modern CSS",
           enriched_at: "2025-01-15T10:30:00+00:00",
           enrichment_status: "completed",

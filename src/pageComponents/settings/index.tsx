@@ -2,20 +2,19 @@ import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 
-import { isNil, isNull } from "lodash";
+import { isNull } from "lodash";
 
 import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
 
 import { ToggleDarkMode } from "@/components/toggleDarkMode";
-import { useSupabaseSession } from "@/store/componentStore";
 import { cn } from "@/utils/tailwind-merge";
 
-import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
-import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
-import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/useRemoveUserProfilePicMutation";
-import useUpdateUsernameMutation from "../../async/mutationHooks/user/useUpdateUsernameMutation";
-import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
-import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
+import useUploadProfilePicMutation from "../../async/mutationHooks/settings/use-upload-profile-pic-mutation";
+import useDeleteUserMutation from "../../async/mutationHooks/user/use-delete-user-mutation";
+import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/use-remove-user-profile-pic-mutation";
+import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
+import useUpdateUsernameMutation from "../../async/mutationHooks/user/use-update-username-mutation";
+import useFetchUserProfile from "../../async/queryHooks/user/use-fetch-user-profile";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -23,7 +22,6 @@ import { Spinner } from "../../components/spinner";
 import UserAvatar from "../../components/userAvatar";
 import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
 import ImageIcon from "../../icons/imageIcon";
-import { mutationApiCall } from "../../utils/apiHelpers";
 import {
   saveButtonClassName,
   settingsDeleteButtonRedClassName,
@@ -51,7 +49,6 @@ interface SettingsProps {
 
 const Settings = ({ onNavigate }: SettingsProps) => {
   const inputFileRef = useRef<HTMLInputElement>(null);
-  const session = useSupabaseSession((state) => state.session);
 
   const { userProfileData } = useFetchUserProfile();
 
@@ -64,7 +61,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
   const { deleteUserMutation } = useDeleteUserMutation();
   const { removeProfilePic } = useRemoveUserProfilePicMutation();
 
-  const userData = userProfileData?.data?.[0];
+  const userData = userProfileData?.[0];
 
   const onSubmit: SubmitHandler<SettingsUsernameFormTypes> = async (data) => {
     if (data?.username === userData?.user_name) {
@@ -73,17 +70,12 @@ const Settings = ({ onNavigate }: SettingsProps) => {
     }
 
     try {
-      const response = await mutationApiCall(
-        updateUsernameMutation.mutateAsync({
-          id: session!.user!.id,
-          username: data?.username,
-        }),
-      );
-      if (!isNil(response?.data)) {
-        successToast("User name has been updated");
-      }
-    } catch (error) {
-      console.error(error);
+      await updateUsernameMutation.mutateAsync({
+        username: data?.username,
+      });
+      successToast("User name has been updated");
+    } catch {
+      errorToast("Failed to update username. Please try again.");
     }
   };
 
@@ -94,15 +86,10 @@ const Settings = ({ onNavigate }: SettingsProps) => {
     }
 
     try {
-      const response = await mutationApiCall(
-        updateUserProfileOptimisticMutation.mutateAsync({
-          updateData: { display_name: data?.displayname },
-        }),
-      );
-
-      if (!isNil(response?.data)) {
-        successToast("Display name has been updated");
-      }
+      await updateUserProfileOptimisticMutation.mutateAsync({
+        updateData: { display_name: data?.displayname },
+      });
+      successToast("Display name has been updated");
     } catch (error) {
       console.error(error);
       errorToast("Something went wrong");
@@ -163,13 +150,13 @@ const Settings = ({ onNavigate }: SettingsProps) => {
             const { size } = uploadedFile;
             if (size < 1_000_000) {
               const uploadPic = async () => {
-                const response = await mutationApiCall(
-                  uploadProfilePicMutation.mutateAsync({
+                try {
+                  await uploadProfilePicMutation.mutateAsync({
                     file: uploadedFile,
-                  }),
-                );
-                if (isNull(response?.error)) {
+                  });
                   successToast("Profile pic has been updated");
+                } catch {
+                  errorToast("Something went wrong");
                 }
               };
 
@@ -226,13 +213,11 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                 isDisabled={isNull(userData?.profile_pic)}
                 onClick={() => {
                   async function removePic() {
-                    const response = await mutationApiCall(
-                      removeProfilePic.mutateAsync({
-                        id: userData!.id,
-                      }),
-                    );
-                    if (isNull(response?.error)) {
+                    try {
+                      await removeProfilePic.mutateAsync();
                       successToast("Profile pic has been removed");
+                    } catch {
+                      errorToast("Failed to remove profile pic. Please try again.");
                     }
                   }
 

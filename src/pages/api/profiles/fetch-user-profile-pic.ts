@@ -1,5 +1,7 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-
+/**
+ * @deprecated Use the v2 App Router endpoint instead: GET /api/v2/profiles/fetch-user-profile-pic
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";

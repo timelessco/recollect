@@ -5,7 +5,7 @@ import { Button } from "@base-ui/react/button";
 
 import type { SingleListData } from "@/types/apiTypes";
 
-import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "@/async/queryHooks/category/use-fetch-categories";
 import { ClearTrashDropdown } from "@/components/clearTrashDropdown";
 import { usePageContext } from "@/hooks/use-page-context";
 import BackIcon from "@/icons/actionIcons/backIcon";
@@ -47,8 +47,7 @@ export function EditAndDeleteIcons({
 
   const isCategoryOwner =
     !isUserInACategory(categorySlug!) ||
-    allCategories?.data?.find((item) => item?.category_slug === categorySlug)?.user_id?.id ===
-      userId;
+    allCategories?.find((item) => item?.category_slug === categorySlug)?.user_id?.id === userId;
 
   const isListView = cardTypeCondition === viewValues.list;
   const isStandardView =

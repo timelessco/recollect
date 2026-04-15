@@ -1,16 +1,28 @@
 
-## 2026-04-11 [`ed8f502`](https://github.com/timelessco/recollect/commit/ed8f502159490339203b67f6915854844966e1cc)
+## 2026-04-15 [`dc9e262`](https://github.com/timelessco/recollect/commit/dc9e2621e559d35e3879089f858eaeb72b8ece91)
 
 
 
 ### API Changes
 
-### PATCH /v2/profiles/mark-onboarded
--  endpoint added
+### GET /bookmark/fetch-bookmarks-discoverable
+- :warning: removed the required property 'data/items/category_id' from the response with the '200' status
 
 
-### PATCH /v2/profiles/mark-onboarding-complete
-- :warning: api path removed without deprecation
+### GET /bookmark/fetch-discoverable-by-id
+- :warning: removed the required property 'data/category_id' from the response with the '200' status
+
+
+### POST /v2/bookmark/add-bookmark-min-data
+- :warning: removed the required property '/items/category_id' from the response with the '200' status
+
+
+### GET /v2/bookmark/fetch-bookmarks-data
+- :warning: removed the required property '/items/category_id' from the response with the '200' status
+
+
+### GET /v2/bookmarks/get/fetch-by-id
+- :warning: removed the required property '/items/category_id' from the response with the '200' status
 
 
 

@@ -189,7 +189,6 @@ export type Database = {
       };
       everything: {
         Row: {
-          category_id: number;
           description: string | null;
           enriched_at: string | null;
           enrichment_status: string | null;
@@ -207,7 +206,6 @@ export type Database = {
           user_id: string;
         };
         Insert: {
-          category_id?: number;
           description?: string | null;
           enriched_at?: string | null;
           enrichment_status?: string | null;
@@ -225,7 +223,6 @@ export type Database = {
           user_id: string;
         };
         Update: {
-          category_id?: number;
           description?: string | null;
           enriched_at?: string | null;
           enrichment_status?: string | null;
@@ -613,24 +610,6 @@ export type Database = {
         Args: { p_msg_ids: number[]; p_user_id: string };
         Returns: Json;
       };
-      search_bookmarks: {
-        Args: { search_text: string };
-        Returns: {
-          category_id: number;
-          description: string;
-          id: number;
-          inserted_at: string;
-          meta_data: Json;
-          ogimage: string;
-          screenshot: string;
-          sort_index: string;
-          title: string;
-          trash: boolean;
-          type: string;
-          url: string;
-          user_id: string;
-        }[];
-      };
       search_bookmarks_debug: {
         Args: { search_text: string };
         Returns: {
@@ -640,49 +619,13 @@ export type Database = {
           title: string;
         }[];
       };
-      search_bookmarks_debugging:
-        | {
-            Args: { search_text: string };
-            Returns: {
-              category_id: number;
-              description: string;
-              id: number;
-              inserted_at: string;
-              meta_data: Json;
-              ogimage: string;
-              screenshot: string;
-              sort_index: string;
-              title: string;
-              trash: boolean;
-              type: string;
-              url: string;
-              user_id: string;
-            }[];
-          }
-        | {
-            Args: { search_text: string; url_scope: string };
-            Returns: {
-              category_id: number;
-              description: string;
-              id: number;
-              inserted_at: string;
-              meta_data: Json;
-              ogimage: string;
-              screenshot: string;
-              sort_index: string;
-              title: string;
-              trash: boolean;
-              type: string;
-              url: string;
-              user_id: string;
-            }[];
-          };
       search_bookmarks_url_tag_scope: {
         Args: {
           category_scope?: number;
           color_hints?: Json;
           search_text?: string;
           tag_scope?: string[];
+          type_hints?: string[];
           url_scope?: string;
         };
         Returns: {

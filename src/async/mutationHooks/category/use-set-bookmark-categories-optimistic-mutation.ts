@@ -74,8 +74,7 @@ export function useSetBookmarkCategoriesOptimisticMutation({
 
       // Resolve categories from cache - skip optimistic update if not found
       const allCategories =
-        queryClient.getQueryData<{ data: CategoriesData[] }>([CATEGORIES_KEY, session?.user?.id])
-          ?.data ?? [];
+        queryClient.getQueryData<CategoriesData[]>([CATEGORIES_KEY, session?.user?.id]) ?? [];
 
       // EXCLUSIVE MODEL: Filter out 0 from input (users cannot manually assign to 0)
       const nonZeroCategoryIds = variables.category_ids.filter(

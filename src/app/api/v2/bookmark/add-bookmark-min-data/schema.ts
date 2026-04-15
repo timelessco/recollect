@@ -7,7 +7,6 @@ export const AddBookmarkMinDataInputSchema = z.object({
 });
 
 const BookmarkRow = z.object({
-  category_id: z.int().meta({ description: "Category ID the bookmark belongs to" }),
   description: z.string().nullable().meta({ description: "Bookmark description from OG scraping" }),
   enriched_at: z.string().nullable().meta({ description: "Timestamp of last enrichment" }),
   enrichment_status: z.string().nullable().meta({ description: "Enrichment pipeline status" }),

@@ -57,10 +57,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
   const currentPath = useGetCurrentUrlPath();
 
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
-    CATEGORIES_KEY,
-    userId,
-  ]);
+  const categoryData = queryClient.getQueryData<CategoriesData[]>([CATEGORIES_KEY, userId]);
 
   const bookmarksCountData = queryClient.getQueryData<BookmarksCountTypes>([
     BOOKMARKS_COUNT_KEY,
@@ -69,10 +66,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
   const optionsMenuList = optionsMenuListArray(currentPath, bookmarksCountData);
 
-  const currentCategoryData = find(
-    categoryData?.data,
-    (item) => item?.category_slug === currentPath,
-  );
+  const currentCategoryData = find(categoryData, (item) => item?.category_slug === currentPath);
   const headerName =
     currentCategoryData?.category_name ?? find(optionsMenuList, (item) => item?.current)?.name;
 

@@ -93,8 +93,7 @@ export const POST = createAxiomRouteHandler(
       }
 
       const [inserted] = insertedData;
-      const { category_id: _, ...rest } = inserted;
-      return { ...rest, category_ids: data.category_ids };
+      return { ...inserted, category_ids: data.category_ids };
     },
     inputSchema: AddBookmarkMultipleCategoriesInputSchema,
     outputSchema: AddBookmarkMultipleCategoriesOutputSchema,

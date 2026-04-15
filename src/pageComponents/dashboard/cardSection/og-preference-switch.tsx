@@ -41,18 +41,14 @@ function OgPreferenceSwitchToggle({ bookmarkUrl, userId }: OgPreferenceSwitchTog
 
   const domain = getDomain(bookmarkUrl);
 
-  interface UserProfileCache {
-    data: null | ProfilesTableTypes[];
-    error?: Error;
-  }
-  const profileData = queryClient.getQueryData<UserProfileCache>([USER_PROFILE, userId]);
+  const profileData = queryClient.getQueryData<ProfilesTableTypes[]>([USER_PROFILE, userId]);
 
   const isPreferred = (() => {
     if (!domain) {
       return false;
     }
 
-    const preferredDomains = profileData?.data?.[0]?.preferred_og_domains ?? [];
+    const preferredDomains = profileData?.[0]?.preferred_og_domains ?? [];
     return preferredDomains.some(
       (existingDomain) => existingDomain.toLowerCase() === domain.toLowerCase(),
     );

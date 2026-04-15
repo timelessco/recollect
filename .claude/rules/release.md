@@ -1,6 +1,7 @@
 ---
 paths:
   - "scripts/release-it/**"
+  - "scripts/release/**"
   - "scripts/release-pr.sh"
   - ".release-it*"
   - ".github/workflows/release*.yml"
