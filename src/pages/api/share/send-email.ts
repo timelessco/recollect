@@ -92,6 +92,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
     if (emailError) {
       console.error("Email send error:", emailError);
       response.status(500).json({ data: `error: ${emailError.message}` });
+      return;
     }
 
     response.status(200).json({ data: emailResponse });
