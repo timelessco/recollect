@@ -56,7 +56,7 @@ DECLARE
   c_chroma_floors CONSTANT double precision[] := ARRAY[
     0.035, 0.050, 0.080, 0.090, 0.060, 0.050, 0.060, 0.080, 0.090, 0.075, 0.050, 0.040
   ];
-  c_window_mult CONSTANT double precision[] := ARRAY[
+  c_window_multiplier CONSTANT double precision[] := ARRAY[
     1.00, 1.00, 0.70, 0.55, 0.70, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00
   ];
   c_hue_hi_chroma CONSTANT double precision := 30.0;
@@ -66,8 +66,8 @@ DECLARE
   c_w_c           CONSTANT double precision := 0.9;
   c_w_h           CONSTANT double precision := 1.6;
   c_sigma_sq      CONSTANT double precision := 0.16;  -- sigma = 0.4
-  c_achro_cap     CONSTANT double precision := 0.04;
-  c_achro_query   CONSTANT double precision := 0.04;
+  c_achromatic_cap     CONSTANT double precision := 0.04;
+  c_achromatic_query   CONSTANT double precision := 0.04;
   c_bucket_sz     CONSTANT double precision := 30.0;  -- 360 / 12 buckets
 
   q_c double precision;
@@ -79,7 +79,7 @@ DECLARE
   nxt integer;
   t double precision;
   floor_val double precision;
-  mult_val double precision;
+  multiplier_val double precision;
   base_window double precision;
   window_deg double precision;
   dh_deg double precision;
@@ -94,8 +94,8 @@ BEGIN
 
   -- Achromatic branch: query is grey/white/black. Reject saturated stored colors,
   -- score survivors on lightness delta only.
-  IF q_c < c_achro_query THEN
-    IF s_c > c_achro_cap THEN
+  IF q_c < c_achromatic_query THEN
+    IF s_c > c_achromatic_cap THEN
       RETURN 0;
     END IF;
     d_l := hint_l - stored_l;
@@ -146,8 +146,8 @@ BEGIN
     base_window := c_hue_lo_chroma
       + (q_c / c_hi_threshold) * (c_hue_hi_chroma - c_hue_lo_chroma);
   END IF;
-  mult_val := c_window_mult[idx + 1] * (1.0 - t) + c_window_mult[nxt + 1] * t;
-  window_deg := base_window * mult_val;
+  multiplier_val := c_window_multiplier[idx + 1] * (1.0 - t) + c_window_multiplier[nxt + 1] * t;
+  window_deg := base_window * multiplier_val;
 
   dh_deg := abs(q_eff_h - s_h);
   IF dh_deg > 180.0 THEN
