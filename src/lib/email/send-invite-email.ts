@@ -5,6 +5,7 @@ import * as Sentry from "@sentry/nextjs";
 import { Resend } from "resend";
 
 import { env } from "@/env/server";
+import { escapeHtml } from "@/lib/email/escape-html";
 
 const EMAIL_FROM = "admin@share.recollect.so";
 const LOG_PREFIX = "[send-invite-email]";
@@ -22,15 +23,6 @@ export interface SendInviteEmailResult {
 
 const filePath = path.join(process.cwd(), "public", "logo.png");
 const base64Logo = fs.readFileSync(filePath).toString("base64");
-
-function escapeHtml(text: string) {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
 
 function buildEmailHtml(props: { categoryName: string; displayName: string; inviteUrl: string }) {
   const categoryName = escapeHtml(props.categoryName);
