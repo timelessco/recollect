@@ -49,6 +49,7 @@ export default async function handler(
     }
 
     const userId = userData.data.user.id;
+    const userCreatedAt = userData.data.user.created_at;
     const existingOauthAvatar = request.query?.avatar;
 
     // Validate userId
@@ -193,8 +194,16 @@ export default async function handler(
       }
     }
 
+    // Enrich each row with plan metadata for extension gating (additive — matches v2 semantics)
+    const enrichedData = finalData?.map((row) => ({
+      ...row,
+      freeTierCutoffAt: userCreatedAt,
+      plan: (row as { plan?: unknown }).plan ?? "free",
+      planChangedAt: (row as { plan_updated_at?: null | string }).plan_updated_at ?? userCreatedAt,
+    })) as unknown as DataResponse;
+
     // Success - return profile data
-    response.status(200).json({ data: finalData, error: null });
+    response.status(200).json({ data: enrichedData, error: null });
   } catch (unexpectedError) {
     // Catch any unexpected errors
     console.error("[fetch-user-profile] Unexpected error:", unexpectedError, {
