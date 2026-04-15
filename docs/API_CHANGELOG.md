@@ -74,3 +74,20 @@
 
 
 
+
+## 2026-04-15 [`9065e88`](https://github.com/timelessco/recollect/commit/9065e886487b70b92746ffd70be95ca2e09886f3)
+
+
+
+### API Changes
+
+### PATCH /v2/profiles/update-user-profile
+- :warning: the 'updateData/display_name' request property's minLength was increased from '0' to '1'
+- :warning: added the pattern '^[\d\sA-Za-z]+$/u' to the request property 'updateData/display_name'
+- :warning: the 'updateData/display_name' request property's maxLength was set to '100'
+
+
+
+
+
+
