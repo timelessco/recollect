@@ -1,4 +1,5 @@
 import { createPostApiHandlerWithAuth } from "@/lib/api-helpers/create-handler";
+import { getFreeTierContext, partitionByCutoff } from "@/lib/api-helpers/free-tier-gate";
 import { apiError } from "@/lib/api-helpers/response";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { toJson } from "@/utils/type-utils";
@@ -8,7 +9,7 @@ import { InstagramSyncInputSchema, InstagramSyncOutputSchema } from "./schema";
 const ROUTE = "instagram-sync";
 
 export const POST = createPostApiHandlerWithAuth({
-  handler: async ({ data, route, user }) => {
+  handler: async ({ data, route, supabase, user }) => {
     const userId = user.id;
 
     console.log(`[${route}] Inserting ${data.bookmarks.length} bookmarks`, {
@@ -28,12 +29,29 @@ export const POST = createPostApiHandlerWithAuth({
 
     const inMemorySkipped = data.bookmarks.length - uniqueBookmarks.length;
 
+    // Free-tier cutoff: silently drop bookmarks saved before the user's signup
+    const freeTier = await getFreeTierContext(supabase, userId, user.created_at);
+    const { kept: allowedBookmarks, skipped: cutoffSkipped } = freeTier.isFree
+      ? partitionByCutoff(
+          uniqueBookmarks,
+          (bookmark) => bookmark.saved_at,
+          freeTier.freeTierCutoffMs,
+        )
+      : { kept: uniqueBookmarks, skipped: 0 };
+
+    if (allowedBookmarks.length === 0) {
+      return {
+        inserted: 0,
+        skipped: inMemorySkipped + cutoffSkipped,
+      };
+    }
+
     // Call transactional RPC for synchronous dedup + insert
     const serviceClient = createServerServiceClient();
     const { data: result, error: rpcError } = await serviceClient.rpc(
       "enqueue_instagram_bookmarks",
       {
-        p_bookmarks: toJson(uniqueBookmarks),
+        p_bookmarks: toJson(allowedBookmarks),
         p_user_id: userId,
       },
     );
@@ -62,14 +80,16 @@ export const POST = createPostApiHandlerWithAuth({
       });
     }
 
+    const totalSkipped = parsed.data.skipped + inMemorySkipped + cutoffSkipped;
+
     console.log(`[${route}] Result:`, {
       inserted: parsed.data.inserted,
-      skipped: parsed.data.skipped + inMemorySkipped,
+      skipped: totalSkipped,
     });
 
     return {
       inserted: parsed.data.inserted,
-      skipped: parsed.data.skipped + inMemorySkipped,
+      skipped: totalSkipped,
     };
   },
   inputSchema: InstagramSyncInputSchema,
