@@ -16,7 +16,6 @@ const BookmarkSchema = z.object({
   addedCategories: z
     .array(CategorySchema)
     .meta({ description: "Array of categories this bookmark belongs to" }),
-  category_id: z.int().meta({ description: "Primary category ID" }),
   description: z.string().nullable().meta({ description: "Bookmark description or excerpt" }),
   id: z.int().meta({ description: "Bookmark unique identifier" }),
   inserted_at: z.string().meta({ description: "Timestamp when bookmark was created" }),

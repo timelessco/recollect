@@ -36,7 +36,6 @@ export const FetchBookmarksDataOutputSchema = z.array(
     addedCategories: z
       .array(CategorySchema)
       .meta({ description: "Categories stitched from junction table" }),
-    category_id: z.int().meta({ description: "Primary category ID" }),
     description: z.string().nullable().meta({ description: "Bookmark description" }),
     enriched_at: z.string().nullable().meta({ description: "Enrichment timestamp" }),
     enrichment_status: z.string().nullable().meta({ description: "Enrichment pipeline status" }),
