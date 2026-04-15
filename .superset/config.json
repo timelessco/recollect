@@ -6,7 +6,6 @@
     "[ -f \"$SUPERSET_ROOT_PATH/supabase/seed.sql\" ] && ln -sf \"$SUPERSET_ROOT_PATH/supabase/seed.sql\" supabase/seed.sql || true",
     "[ -d \"$SUPERSET_ROOT_PATH/.planning\" ] && cp -r \"$SUPERSET_ROOT_PATH/.planning\" . || true",
     "[ -f \"$SUPERSET_ROOT_PATH/CLAUDE.local.md\" ] && cp \"$SUPERSET_ROOT_PATH/CLAUDE.local.md\" . || true",
-    "[ -d \"$SUPERSET_ROOT_PATH/graphify-out\" ] && ln -sf \"$SUPERSET_ROOT_PATH/graphify-out\" graphify-out || true",
     "pnpm install",
     "pnpm next:typegen"
   ],
