@@ -143,8 +143,8 @@ WITH CHECK (
 
 -- Update: split by role so invitees cannot rewrite invite metadata.
 -- Owners can touch their own rows; WITH CHECK re-asserts category
--- ownership so a malicious owner-row cannot be repointed to a
--- category they don't own (defence in depth, mirrors insert).
+-- ownership so a malicious owner-row cannot be redirected to a
+-- category they don't own (defense in depth, mirrors insert).
 CREATE POLICY "shared_categories_update_owner"
 ON public.shared_categories FOR UPDATE TO authenticated
 USING (user_id = (SELECT auth.uid()))
@@ -157,7 +157,7 @@ WITH CHECK (
 );
 
 -- Invitees may update only acceptance state and their per-invite
--- view prefs. Column-level enforcement lives in the BEFORE UPDATE
+-- view preferences. Column-level enforcement lives in the BEFORE UPDATE
 -- trigger below (Postgres RLS cannot restrict by column).
 CREATE POLICY "shared_categories_update_invitee"
 ON public.shared_categories FOR UPDATE TO authenticated
@@ -174,7 +174,7 @@ USING (
 -- Invitee column guard: when the current row is NOT owned by the
 -- caller (i.e. they're matching via email), the only columns they
 -- may mutate are is_accept_pending and category_views. Blocks
--- self-escalation of edit_access, repointing category_id to a
+-- self-escalation of edit_access, redirecting category_id to a
 -- private collection, and overwriting user_id to DoS the owner's
 -- management of the invite.
 CREATE OR REPLACE FUNCTION public.shared_categories_invitee_update_guard()
@@ -239,7 +239,7 @@ USING (user_id = (SELECT auth.uid()));
 -- insert {bookmark_id: <another_user's>, tag_id: <their_own>,
 -- user_id: auth.uid()} — FK constraints only enforce existence,
 -- not RLS, and the unique (tag_id, bookmark_id) pair could be
--- used to pollute or reserve another user's taggings.
+-- used to pollute or reserve another user's tag associations.
 CREATE POLICY "bookmark_tags_insert"
 ON public.bookmark_tags FOR INSERT TO authenticated
 WITH CHECK (
