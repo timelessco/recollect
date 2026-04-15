@@ -150,6 +150,7 @@ export const V2_SCREENSHOT_API = "v2/screenshot";
 export const V2_TOGGLE_BOOKMARK_DISCOVERABLE_API = "v2/bookmark/toggle-discoverable-on-bookmark";
 export const V2_IPHONE_SHARE_ERROR_API = "v2/iphone-share-error";
 export const V2_INSTAGRAM_LAST_SYNCED_ID_API = "v2/instagram/last-synced-id";
+export const V2_TWITTER_LAST_SYNCED_ID_API = "v2/twitter/last-synced-id";
 
 // Screenshot api
 export const SCREENSHOT_API = "https://vercel-puppeteer-screenshot-api.vercel.app";
