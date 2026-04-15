@@ -1,12 +1,17 @@
 import { useCallback, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
+import { useQueryClient } from "@tanstack/react-query";
+
 import type { CategoriesData, SingleListData, UserTagsData } from "@/types/apiTypes";
 
 import { useSaveFromDiscoverMutation } from "@/async/mutationHooks/bookmarks/use-save-from-discover-mutation";
+import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
+import { useRemoveCategoryFromBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-remove-category-from-bookmark-optimistic-mutation";
 import { useAddTagToBookmarkOptimisticMutation } from "@/async/mutationHooks/tags/use-add-tag-to-bookmark-optimistic-mutation";
 import { useCreateAndAssignTagOptimisticMutation } from "@/async/mutationHooks/tags/use-create-and-assign-tag-optimistic-mutation";
 import { useRemoveTagFromBookmarkOptimisticMutation } from "@/async/mutationHooks/tags/use-remove-tag-from-bookmark-optimistic-mutation";
+import { useFetchDiscoverableBookmarkById } from "@/async/queryHooks/bookmarks/use-fetch-discoverable-bookmark-by-id";
 import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
 import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
 import { CollectionIcon } from "@/components/collectionIcon";
@@ -16,13 +21,14 @@ import { ScrollArea } from "@/components/ui/recollect/scroll-area";
 import { useBookmarkTags } from "@/hooks/use-bookmark-tags";
 import { useCategoryMultiSelect } from "@/hooks/use-category-multi-select";
 import { useIsPublicPage } from "@/hooks/use-is-public-page";
+import { usePageContext } from "@/hooks/use-page-context";
 import { EditIcon } from "@/icons/edit-icon";
 import { HashIcon } from "@/icons/hash-icon";
 import { PlusIcon } from "@/icons/plus-icon";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { DiscoverSwitch } from "@/pageComponents/dashboard/cardSection/discover-switch";
 import { OgPreferenceSwitch } from "@/pageComponents/dashboard/cardSection/og-preference-switch";
-import { SKIP_OG_IMAGE_DOMAINS } from "@/utils/constants";
+import { BOOKMARKS_KEY, DISCOVER_URL, SKIP_OG_IMAGE_DOMAINS } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
 import { cn } from "@/utils/tailwind-merge";
 
@@ -34,6 +40,122 @@ interface EditPopoverProps {
 export const EditPopover = ({ post, userId }: EditPopoverProps) => {
   const postUserId = typeof post?.user_id === "object" ? post?.user_id?.id : post?.user_id;
   const isOwner = userId && postUserId === userId;
+  const { isDiscoverPage } = usePageContext();
+  const queryClient = useQueryClient();
+
+  // Discover bookmarks are fetched without relations; pull the discoverable
+  // bookmark by id (server runs BOOKMARK_CATEGORIES + BOOKMARK_TAGS junction
+  // queries) so we can source chip state for the popover.
+  const { bookmark: discoverableBookmark } = useFetchDiscoverableBookmarkById(post.id, {
+    enabled: Boolean(isOwner) && isDiscoverPage,
+  });
+
+  // Need the full all-categories / all-tags lists so we can resolve the
+  // discoverable response to the SAME object references the dropdowns use as
+  // their items — Base UI's selection (and the tick) match by reference, not id.
+  // These already mount inside the multi-selects; calling here just lets us
+  // resolve discoverable ids → item references with the same data.
+  const { allCategories } = useFetchCategories();
+  const { userTags } = useFetchUserTags();
+
+  const { addCategoryToBookmarkOptimisticMutation } = useAddCategoryToBookmarkOptimisticMutation();
+  const { removeCategoryFromBookmarkOptimisticMutation } =
+    useRemoveCategoryFromBookmarkOptimisticMutation();
+  const { addTagToBookmarkOptimisticMutation } = useAddTagToBookmarkOptimisticMutation();
+  const { removeTagFromBookmarkOptimisticMutation } = useRemoveTagFromBookmarkOptimisticMutation();
+  const { createAndAssignTagOptimisticMutation } = useCreateAndAssignTagOptimisticMutation();
+
+  // Refetch the discoverable bookmark after each mutation so the chips reflect
+  // the post-mutation server state. The optimistic mutations target the
+  // dashboard cache, which doesn't contain this bookmark, so we settle on
+  // invalidate-and-refetch for visual consistency on /discover.
+  const invalidateDiscoverableBookmark = useCallback(() => {
+    void queryClient.invalidateQueries({
+      queryKey: [BOOKMARKS_KEY, DISCOVER_URL, post.id],
+    });
+  }, [queryClient, post.id]);
+
+  const categoryItemsMap = useMemo(
+    () => new Map((allCategories?.data ?? []).map((cat) => [cat.id, cat])),
+    [allCategories?.data],
+  );
+
+  const tagItemsMap = useMemo(
+    () => new Map((userTags?.data ?? []).map((tag) => [tag.id, tag])),
+    [userTags?.data],
+  );
+
+  // Resolve server-fetched ids against the items list so selectedItems contain
+  // the same references as items — required for ItemIndicator (the tick).
+  const discoverSelectedCategories = useMemo<CategoriesData[] | undefined>(
+    () =>
+      isDiscoverPage && discoverableBookmark?.addedCategories
+        ? discoverableBookmark.addedCategories
+            .map((cat) => categoryItemsMap.get(cat.id))
+            .filter((cat): cat is CategoriesData => cat !== undefined)
+        : undefined,
+    [isDiscoverPage, discoverableBookmark?.addedCategories, categoryItemsMap],
+  );
+
+  const discoverSelectedTags = useMemo<UserTagsData[] | undefined>(
+    () =>
+      isDiscoverPage && discoverableBookmark?.addedTags
+        ? discoverableBookmark.addedTags
+            .map((tag) => tagItemsMap.get(tag.id))
+            .filter((tag): tag is UserTagsData => tag !== undefined)
+        : undefined,
+    [isDiscoverPage, discoverableBookmark?.addedTags, tagItemsMap],
+  );
+
+  const handleDiscoverAddCategory = useCallback(
+    (category: CategoriesData) => {
+      addCategoryToBookmarkOptimisticMutation.mutate(
+        { bookmark_id: post.id, category_id: category.id },
+        { onSettled: invalidateDiscoverableBookmark },
+      );
+    },
+    [addCategoryToBookmarkOptimisticMutation, post.id, invalidateDiscoverableBookmark],
+  );
+
+  const handleDiscoverRemoveCategory = useCallback(
+    (category: CategoriesData) => {
+      removeCategoryFromBookmarkOptimisticMutation.mutate(
+        { bookmark_id: post.id, category_id: category.id },
+        { onSettled: invalidateDiscoverableBookmark },
+      );
+    },
+    [removeCategoryFromBookmarkOptimisticMutation, post.id, invalidateDiscoverableBookmark],
+  );
+
+  const handleDiscoverAddTag = useCallback(
+    (tag: UserTagsData) => {
+      addTagToBookmarkOptimisticMutation.mutate(
+        { bookmarkId: post.id, tagId: tag.id },
+        { onSettled: invalidateDiscoverableBookmark },
+      );
+    },
+    [addTagToBookmarkOptimisticMutation, post.id, invalidateDiscoverableBookmark],
+  );
+
+  const handleDiscoverRemoveTag = useCallback(
+    (tag: UserTagsData) => {
+      removeTagFromBookmarkOptimisticMutation.mutate(
+        { bookmarkId: post.id, tagId: tag.id },
+        { onSettled: invalidateDiscoverableBookmark },
+      );
+    },
+    [removeTagFromBookmarkOptimisticMutation, post.id, invalidateDiscoverableBookmark],
+  );
+
+  const handleDiscoverCreateTag = useCallback(
+    (name: string) => {
+      createAndAssignTagOptimisticMutation.mutate(
+        { _tempId: -Date.now(), bookmarkId: post.id, name },
+        { onSettled: invalidateDiscoverableBookmark },
+      );
+    },
+    [createAndAssignTagOptimisticMutation, post.id, invalidateDiscoverableBookmark],
+  );
 
   // Non-owners see nothing
   if (!isOwner) {
@@ -49,7 +171,12 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
           </div>
 
           <div className="w-full">
-            <CategoryMultiSelect bookmarkId={post.id} />
+            <CategoryMultiSelect
+              bookmarkId={post.id}
+              onAdd={isDiscoverPage ? handleDiscoverAddCategory : undefined}
+              onRemove={isDiscoverPage ? handleDiscoverRemoveCategory : undefined}
+              selectedItems={discoverSelectedCategories}
+            />
           </div>
         </div>
         <div className="w-full">
@@ -58,7 +185,13 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
           </div>
 
           <div className="w-full">
-            <TagMultiSelect bookmarkId={post.id} />
+            <TagMultiSelect
+              bookmarkId={post.id}
+              onAdd={isDiscoverPage ? handleDiscoverAddTag : undefined}
+              onCreate={isDiscoverPage ? handleDiscoverCreateTag : undefined}
+              onRemove={isDiscoverPage ? handleDiscoverRemoveTag : undefined}
+              selectedItems={discoverSelectedTags}
+            />
           </div>
         </div>
       </div>
@@ -198,9 +331,19 @@ export function EditPopoverShell({ children, onOpenChange, triggerIcon }: EditPo
 
 interface TagMultiSelectProps {
   bookmarkId: number;
+  onAdd?: (tag: UserTagsData) => void;
+  onCreate?: (tagName: string) => void;
+  onRemove?: (tag: UserTagsData) => void;
+  selectedItems?: UserTagsData[];
 }
 
-export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
+export const TagMultiSelect = ({
+  bookmarkId,
+  onAdd: onAddOverride,
+  onCreate: onCreateOverride,
+  onRemove: onRemoveOverride,
+  selectedItems,
+}: TagMultiSelectProps) => {
   const { userTags } = useFetchUserTags();
   const { addTagToBookmarkOptimisticMutation } = useAddTagToBookmarkOptimisticMutation();
   const { removeTagFromBookmarkOptimisticMutation } = useRemoveTagFromBookmarkOptimisticMutation();
@@ -211,7 +354,7 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
 
   const tagMap = useMemo(() => new Map(allTags.map((tag) => [tag.id, tag])), [allTags]);
 
-  const selectedTags = useMemo(
+  const selectedTagsFromCache = useMemo(
     () =>
       selectedTagIds
         .map((id) => tagMap.get(id))
@@ -219,28 +362,36 @@ export const TagMultiSelect = ({ bookmarkId }: TagMultiSelectProps) => {
     [selectedTagIds, tagMap],
   );
 
-  const handleAdd = (tag: UserTagsData) => {
-    addTagToBookmarkOptimisticMutation.mutate({
-      bookmarkId,
-      tagId: tag.id,
-    });
-  };
+  const selectedTags = selectedItems ?? selectedTagsFromCache;
 
-  const handleRemove = (tag: UserTagsData) => {
-    removeTagFromBookmarkOptimisticMutation.mutate({
-      bookmarkId,
-      tagId: tag.id,
+  const handleAdd =
+    onAddOverride ??
+    ((tag: UserTagsData) => {
+      addTagToBookmarkOptimisticMutation.mutate({
+        bookmarkId,
+        tagId: tag.id,
+      });
     });
-  };
 
-  const handleCreate = (tagName: string) => {
-    createAndAssignTagOptimisticMutation.mutate({
-      // Pre-generate temp ID so both BOOKMARKS_KEY and USER_TAGS_KEY caches use same ID
-      _tempId: -Date.now(),
-      bookmarkId,
-      name: tagName,
+  const handleRemove =
+    onRemoveOverride ??
+    ((tag: UserTagsData) => {
+      removeTagFromBookmarkOptimisticMutation.mutate({
+        bookmarkId,
+        tagId: tag.id,
+      });
     });
-  };
+
+  const handleCreate =
+    onCreateOverride ??
+    ((tagName: string) => {
+      createAndAssignTagOptimisticMutation.mutate({
+        // Pre-generate temp ID so both BOOKMARKS_KEY and USER_TAGS_KEY caches use same ID
+        _tempId: -Date.now(),
+        bookmarkId,
+        name: tagName,
+      });
+    });
 
   return (
     <Combobox.Root
