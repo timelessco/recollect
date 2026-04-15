@@ -1,7 +1,7 @@
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
-import { createApiClient } from "@/lib/supabase/api";
+import { createServerServiceClient } from "@/lib/supabase/service";
 import {
   BOOKMARK_CATEGORIES_TABLE_NAME,
   BOOKMARK_TAGS_TABLE_NAME,
@@ -25,9 +25,26 @@ interface CategoryJoinRow {
     icon: string | null;
     icon_color: string | null;
     id: number;
+    is_public: boolean | null;
   } | null;
 }
 
+/**
+ * Public discoverable bookmark detail (with tags + categories). Uses the v2
+ * standard for public-data reads: `withPublic` + `createServerServiceClient()`
+ * + explicit handler-side gating.
+ *
+ * Why service: the v1 anon-client implementation had inconsistent RLS
+ * coverage — `bookmark_tags` has no anon policy (cookie-less callers like
+ * the ISR page at `/discover/preview/[id]` silently got empty tag arrays).
+ * Service client makes visibility decisions explicit in handler code.
+ *
+ * Privacy gating below: categories use `!inner` join + `is_public = true`
+ * filter — discoverable bookmarks may live in private user collections, and
+ * exposing those collection names/slugs would leak the owner's private
+ * organization. This matches v1's anon-RLS behavior (the
+ * `bookmark_categories_select_public` policy enforced the same constraint).
+ */
 export const GET = createAxiomRouteHandler(
   withPublic({
     handler: async ({ input }) => {
@@ -38,7 +55,7 @@ export const GET = createAxiomRouteHandler(
         ctx.fields.bookmark_id = id;
       }
 
-      const { supabase } = await createApiClient();
+      const supabase = createServerServiceClient();
 
       const { data: bookmarkData, error: bookmarkError } = await supabase
         .from(MAIN_TABLE_NAME)
@@ -72,7 +89,9 @@ export const GET = createAxiomRouteHandler(
           .overrideTypes<TagJoinRow[], { merge: false }>(),
         supabase
           .from(BOOKMARK_CATEGORIES_TABLE_NAME)
-          .select("bookmark_id, category_id(id, category_name, category_slug, icon, icon_color)")
+          .select(
+            "bookmark_id, category_id(id, category_name, category_slug, icon, icon_color, is_public)",
+          )
           .eq("bookmark_id", id)
           .overrideTypes<CategoryJoinRow[], { merge: false }>(),
       ]);
@@ -103,7 +122,7 @@ export const GET = createAxiomRouteHandler(
 
       const addedCategories =
         categoriesResult.data
-          ?.filter((item) => item.category_id !== null)
+          ?.filter((item) => item.category_id !== null && item.category_id.is_public === true)
           .map((item) => ({
             category_name: item.category_id?.category_name ?? null,
             category_slug: item.category_id?.category_slug ?? "",

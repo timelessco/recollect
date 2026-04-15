@@ -1,8 +1,7 @@
 import { env } from "@/env/server";
-import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
+import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
-import { createApiClient, getApiUser } from "@/lib/supabase/api";
 
 import { DevSessionInputSchema, DevSessionOutputSchema } from "./schema";
 
@@ -10,17 +9,22 @@ const ROUTE = "v2-dev-session";
 
 /**
  * Dev-only endpoint that returns the current Supabase session token for API
- * testing. Must be accessed via browser — relies on session cookies, not
- * bearer tokens. Returns 404 in production.
+ * testing via Scalar UI. Returns 404 in production.
  *
- * Uses `withPublic` + manual `createApiClient()` because the route is meant
- * to read the browser's Supabase auth cookie rather than a validated bearer
- * token. `withAuth` would reject the cookie-only request before the handler
- * runs.
+ * Uses `withAuth` because the route fundamentally requires a logged-in user —
+ * its purpose is to echo the caller's session. The factory injects
+ * `{ supabase, user }`; `auth.getSession()` is still called directly because
+ * the route returns the raw access token, which `withAuth` does not expose
+ * on `user`.
+ *
+ * Behavior trade-off: in production, unauthenticated callers now receive
+ * 401 instead of 404. Existence of an auth-required route is not a
+ * meaningful information leak, and this removes ~15 lines of duplicated
+ * auth boilerplate.
  */
 export const GET = createAxiomRouteHandler(
-  withPublic({
-    handler: async () => {
+  withAuth({
+    handler: async ({ supabase, user }) => {
       const ctx = getServerContext();
 
       if (env.NODE_ENV !== "development" || env.VERCEL_ENV === "production") {
@@ -29,27 +33,6 @@ export const GET = createAxiomRouteHandler(
         }
         throw new RecollectApiError("not_found", {
           message: "Not found",
-        });
-      }
-
-      const { supabase, token } = await createApiClient();
-
-      const {
-        data: { user },
-        error: userError,
-      } = await getApiUser(supabase, token);
-
-      if (userError) {
-        throw new RecollectApiError("unauthorized", {
-          cause: userError,
-          message: userError.message,
-          operation: "dev_session_get_user",
-        });
-      }
-
-      if (!user) {
-        throw new RecollectApiError("unauthorized", {
-          message: "No active session found",
         });
       }
 
