@@ -159,6 +159,16 @@ after(async () => {
 - On success: `supabase.schema("pgmq_public").rpc("delete", ...)` — delete errors are non-throwing (`ctx.fields` only)
 - Partial failure: keep message, annotate with `update_queue_message_error` RPC
 
+### Queue Consumer Idempotency Contract
+
+Queue handlers (screenshot, ai-enrichment) must be safe to re-run:
+
+- Upfront SELECT persisted fields; short-circuit capture/upload/DB-write if already set. Flag the skip path via `ctx.fields.<op>_skipped = true` so Axiom distinguishes fresh runs from replays
+- External-response parsing: use shared extractors that throw on unrecognized shape (`src/lib/bookmarks/parse-screenshot-response.ts` is the reference). Guard `byteLength === 0` before persisting — `response.ok` is not sufficient; R2 stores 0-byte uploads and returns `ETag = d41d8cd98f00b204e9800998ecf8427e` (MD5 of empty)
+- Enrichment (AI / blurhash / downstream fetch) MUST throw on failure — never silent try/catch. Silent-swallow converts a retryable 503 into a 200 that deletes the pgmq message forever. The archive + replay pipeline is the designed recovery path; don't bypass it
+- Idempotency + stale data trap: a non-null persisted URL is not proof the underlying bytes are valid. When recovering from a prior data-corruption bug, NULL the persisted field in `everything` BEFORE replaying via `retry_ai_embeddings_archive` — otherwise the short-circuit re-feeds corrupt bytes to the next layer and `is_final_retry=true` permanently deletes the message
+- Full debug playbook (Axiom vs Sentry, archive state SQL, replay recipes, env var gotchas): `~/.claude/projects/-Users-navin-Developer-recollect/memory/reference_queue_route_debugging.md`
+
 ### Auth Patterns
 
 - `withAuth`: auto-handles auth, handler gets `{ data, supabase, user }`
