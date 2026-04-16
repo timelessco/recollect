@@ -206,6 +206,8 @@ export interface ProfilesTableTypes {
   preferred_og_domains?: null | string[];
   profile_pic: string;
   provider: null | string;
+  subscription_current_period_end: null | string;
+  subscription_status: null | string;
   user_name: string;
 }
 

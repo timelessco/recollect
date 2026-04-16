@@ -54,12 +54,9 @@ export const FetchUserProfileOutputSchema = z.array(
       description:
         "ISO timestamp (Supabase `timestamptz`) marking the end of the current paid billing period. Null for free users.",
     }),
-    subscription_status: z
-      .string()
-      .nullable()
-      .meta({
-        description: "Raw subscription status from the billing provider. Null for free users.",
-      }),
+    subscription_status: z.string().nullable().meta({
+      description: "Raw subscription status from the billing provider. Null for free users.",
+    }),
     user_name: z.string().nullable().meta({ description: "User's chosen username" }),
   }),
 );
