@@ -15,7 +15,7 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
   }
 
   return (
-    <TooltipPrimitive.Provider>
+    <TooltipPrimitive.Provider closeDelay={0} delay={0}>
       <div className="group flex items-center">
         {colors.map((hex, index) => (
           <div
