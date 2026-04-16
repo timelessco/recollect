@@ -61,7 +61,7 @@ export function SidepaneContent({
   const metaData = currentBookmark?.meta_data;
   const showKeywords = hasKeywords(metaData?.image_keywords) && vercelEnvironment !== "production";
   const bookmarkColors = getBookmarkColors(metaData?.image_keywords);
-  const collapsedOffset = (currentBookmark?.addedTags?.length ?? 0) > 0 ? 145 : 110;
+  const collapsedOffset = (currentBookmark?.addedTags?.length ?? 0) > 0 ? 109 : 74;
 
   useEffect(() => {
     setShowMore(false);
@@ -69,7 +69,7 @@ export function SidepaneContent({
 
     const timeoutId = setTimeout(() => {
       if (expandableRef?.current) {
-        setHasAIOverflowContent(expandableRef.current.scrollHeight > 120);
+        setHasAIOverflowContent(expandableRef.current.scrollHeight > 84);
       }
 
       if (descriptionRef?.current) {
