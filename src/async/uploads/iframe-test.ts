@@ -1,7 +1,3 @@
-import axios from "axios";
-
-import type { AxiosResponseHeaders, RawAxiosResponseHeaders } from "axios";
-
 /**
  * Checks if a URL can be embedded in an iframe.
  * Performs a HEAD request and examines X-Frame-Options and CSP headers.
@@ -32,60 +28,55 @@ export const canEmbedInIframe = async (url: string): Promise<boolean> => {
     }, 5000);
 
     // Send HEAD request to minimize data transfer
-    const response = await axios?.head(url, {
-      // Avoid infinite redirects
-      maxRedirects: 5,
+    const response = await fetch(url, {
+      method: "HEAD",
+      redirect: "follow",
       signal: controller?.signal,
-      // Only allow 2xx and 3xx
-      validateStatus: (status) => status >= 200 && status < 400,
     });
     // Clear timeout on success
     clearTimeout(timeoutId);
 
+    // Only allow 2xx responses (fetch follows redirects transparently)
+    if (!response.ok) {
+      return false;
+    }
+
     // Check the headers for iframe restrictions
-    return checkIframeHeaders(response?.headers);
+    return checkIframeHeaders(response.headers);
   } catch {
     // Any error (timeout, network, CORS, etc.) defaults to false
     return false;
   }
 };
 
-// Type for normalized headers for easier access
-type NormalizedHeaders = Record<string, string | string[]>;
-
 /**
  * Examines response headers to determine if iframe embedding is allowed.
- * @param headers - Axios response headers
+ * @param headers - Fetch Response headers
  * @returns boolean indicating if embedding is allowed
  */
-const checkIframeHeaders = (headers: AxiosResponseHeaders | RawAxiosResponseHeaders): boolean => {
-  // Normalize header names to lowercase for consistent access
-  const normalizedHeaders: NormalizedHeaders = {};
-  for (const key of Object.keys(headers)) {
-    normalizedHeaders[key?.toLowerCase()] = headers?.[key] as string | string[];
-  }
-
+const checkIframeHeaders = (headers: Headers): boolean => {
   // --- X-Frame-Options Check ---
-  const xFrameOptions = normalizedHeaders?.["x-frame-options"];
+  const xFrameOptions = headers.get("x-frame-options");
   if (typeof xFrameOptions === "string") {
-    const value = xFrameOptions?.toLowerCase();
-    if (value === "deny" || value === "sameorigin" || value?.startsWith("allow-from ")) {
+    const value = xFrameOptions.toLowerCase();
+    if (value === "deny" || value === "sameorigin" || value.startsWith("allow-from ")) {
       // cannot embed
       return false;
     }
   }
 
   // --- Content-Security-Policy frame-ancestors Check ---
-  const csp = normalizedHeaders?.["content-security-policy"];
+  const csp = headers.get("content-security-policy");
   if (csp) {
-    // CSP can be an array or string
-    const policies = Array.isArray(csp) ? csp : [csp];
+    // Headers.get() concatenates multiple same-name headers with ", "
+    // Split on "," to handle multiple policies
+    const policies = csp.split(",").map((p) => p.trim());
 
     for (const policy of policies) {
       // Extract frame-ancestors directive
       const frameAncestorsMatch = /frame-ancestors\s+([^;]+)/iu.exec(policy);
       if (frameAncestorsMatch) {
-        const directive = frameAncestorsMatch?.[1]?.trim()?.toLowerCase();
+        const directive = frameAncestorsMatch[1]?.trim().toLowerCase();
 
         if (directive === "'none'" || directive === "'self'") {
           // embedding is blocked
@@ -93,7 +84,7 @@ const checkIframeHeaders = (headers: AxiosResponseHeaders | RawAxiosResponseHead
         }
 
         // Check if directive allows any domain (wildcard or unsafe-inline)
-        const sources = directive?.split(/\s+/u)?.filter((source) => source?.length > 0);
+        const sources = directive?.split(/\s+/u).filter((source) => source.length > 0);
 
         // If no sources are specified, block embedding
         if (!sources?.length) {

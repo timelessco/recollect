@@ -39,6 +39,7 @@ Pre-flight: `npx supabase status` to verify local is running.
 ### Migration Safety Rules
 
 - NEVER add database indexes without explicit user approval — may conflict with production
+- NEVER drop an index without `EXPLAIN ANALYZE` evidence that no live query uses its ordered-access or filter path. Paste the plan into the migration header. Check `pg_stat_user_indexes.idx_scan` on dev/prod for non-zero usage, and read the index's `COMMENT ON INDEX` (via `\d+ <table>` or `pg_indexes`) — it may document load-bearing consumers. "Not referenced by the function I just dropped" is not sufficient; `ORDER BY` and filter queries elsewhere may still depend on it
 - NEVER create a new migration file when the user wants changes merged into an existing one — check for existing PR migrations first
 - NEVER modify an already-committed migration file — breaks remote/cloud sync. Only add new migrations with later timestamps
 - NEVER put production-specific setup (vault secrets, pg_cron jobs) in migration files — use `docs/setup-production-*.sql`
@@ -61,6 +62,11 @@ For pgmq verification, use direct table access:
 ```sql
 SELECT * FROM pgmq."q_queue-name" WHERE condition;
 ```
+
+### Database Gotchas
+
+- `profiles.category_order` updates: batch concat (`|| v_new_category_ids`), NOT read-modify-write loops — Edge Function processes the queue in parallel (`Promise.allSettled`); SELECT-into-var + UPDATE causes lost writes (see `20260209` migration)
+- Always `pnpm db:reset` before `pnpm db:types` — stale local DB drops RPC functions that exist in prod
 
 ### Type Generation
 

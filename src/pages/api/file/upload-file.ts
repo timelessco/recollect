@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use the v2 App Router endpoint instead: /api/v2/file/upload-file
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
 // you might want to use regular 'fs' and not a promise one
 import type { NextApiRequest, NextApiResponse } from "next";
 

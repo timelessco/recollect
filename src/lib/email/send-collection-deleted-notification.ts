@@ -5,6 +5,7 @@ import * as Sentry from "@sentry/nextjs";
 import { Resend } from "resend";
 
 import { env } from "@/env/server";
+import { escapeHtml } from "@/lib/email/escape-html";
 
 const EMAIL_FROM = "admin@share.recollect.so";
 const LOG_PREFIX = "[send-collection-deleted-notification]";
@@ -91,15 +92,6 @@ export async function sendCollectionDeletedNotification(
 interface BuildEmailHtmlProps {
   categoryName: string;
   ownerDisplayName: string;
-}
-
-function escapeHtml(text: string) {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
 }
 
 function buildEmailHtml(props: BuildEmailHtmlProps) {

@@ -1,6 +1,6 @@
 {
   "name": "recollect",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "description": "Bookmarks is an open source url manager built using nextjs and supabase.",
   "keywords": [
@@ -68,9 +68,9 @@
     "release": "release-it --ci",
     "release:cleanup": "./scripts/release-cleanup.sh",
     "release:dryrun": "release-it --dry-run",
-    "release:pr": "./scripts/release-pr.sh",
-    "release:pr:dryrun": "./scripts/release-pr.sh --dry-run",
-    "release:pr:yes": "./scripts/release-pr.sh --yes",
+    "release:pr": "node ./scripts/release/release-pr.js",
+    "release:pr:dryrun": "node ./scripts/release/release-pr.js --dry-run",
+    "release:pr:yes": "node ./scripts/release/release-pr.js --yes",
     "start": "next start",
     "test": "echo \"no test specified\" && exit 0"
   },
@@ -146,6 +146,7 @@
     "@asteasolutions/zod-to-openapi": "8.5.0",
     "@commitlint/cli": "20.5.0",
     "@commitlint/config-conventional": "20.5.0",
+    "@inquirer/prompts": "8.4.1",
     "@next/bundle-analyzer": "16.2.2",
     "@next/env": "16.2.2",
     "@octokit/core": "7.0.6",
@@ -184,6 +185,7 @@
     "eslint-plugin-react-web-api": "4.2.3",
     "eslint-plugin-react-x": "4.2.3",
     "eslint-plugin-regexp": "3.1.0",
+    "execa": "8.0.1",
     "fs-extra": "11.3.4",
     "git-remote-origin-url": "4.0.0",
     "git-url-parse": "16.1.0",

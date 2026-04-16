@@ -1,13 +1,6 @@
 ---
 name: v2-route-audit
-description: >
-  Audit v2 API routes for observability, error handling, and logging compliance. Runs 10 checks:
-  getServerContext import, entity ID placement, outcome flags, field count, PII, console usage,
-  Sentry absence, logger.warn format, error cause propagation, RecollectApiError usage.
-  Reports pass/fail checklist and offers to fix gaps. Use when: "audit this route", "check wide
-  events", "audit all routes", after finishing a v2 route handler, or reviewing any v2 API route.
-  POST-IMPLEMENTATION audit — load after writing the route, not before.
-disable-model-invocation: true
+description: v2-route-audit
 ---
 
 # v2 Route Audit

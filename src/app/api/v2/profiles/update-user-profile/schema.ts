@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { DISPLAY_NAME_CHECK_PATTERN } from "@/utils/constants";
+
 const UpdateDataSchema = z
   .object({
     ai_features_toggle: z
@@ -13,7 +15,15 @@ const UpdateDataSchema = z
       .nullable()
       .optional()
       .meta({ description: "Updated ordered array of category IDs" }),
-    display_name: z.string().nullable().optional().meta({ description: "Updated display name" }),
+    display_name: z
+      .string()
+      .trim()
+      .min(1)
+      .max(100)
+      .regex(DISPLAY_NAME_CHECK_PATTERN, "Display name should not contain special characters")
+      .nullable()
+      .optional()
+      .meta({ description: "Updated display name" }),
     email: z.string().nullable().optional().meta({ description: "Updated email address" }),
     favorite_categories: z
       .array(z.int())
@@ -46,10 +56,10 @@ export const UpdateUserProfileOutputSchema = z.array(
     api_key: z.string().nullable().meta({ description: "Encrypted Gemini API key" }),
     bookmark_count: z.number().nullable().meta({ description: "Total number of bookmarks" }),
     bookmarks_view: z.unknown().nullable().meta({ description: "Default bookmark view settings" }),
-    category_order: z
-      .array(z.number())
-      .nullable()
-      .meta({ description: "Ordered array of category IDs" }),
+    category_order: z.array(z.number().nullable()).nullable().meta({
+      description:
+        "Ordered array of category IDs. Elements may be null for categories deleted without compacting the ordering array.",
+    }),
     display_name: z.string().nullable().meta({ description: "User's display name" }),
     email: z.string().nullable().meta({ description: "User's email address" }),
     id: z.string().meta({ description: "User's unique identifier" }),

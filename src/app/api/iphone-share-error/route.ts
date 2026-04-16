@@ -6,6 +6,9 @@ import { IphoneShareErrorPayloadSchema, IphoneShareErrorResponseSchema } from ".
 
 const ROUTE = "iphone-share-error";
 
+/**
+ * @deprecated Use /api/v2/iphone-share-error instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: ({ data, route, user }) => {
     const { context, deviceInfo, message, stackTrace } = data;

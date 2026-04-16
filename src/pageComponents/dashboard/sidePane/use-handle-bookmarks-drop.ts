@@ -5,7 +5,7 @@ import find from "lodash/find";
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/use-fetch-paginated-bookmarks";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/use-search-bookmarks";
-import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "@/async/queryHooks/category/use-fetch-categories";
 import { useSupabaseSession } from "@/store/componentStore";
 import { errorToast } from "@/utils/toastMessages";
 
@@ -42,7 +42,7 @@ export function useHandleBookmarksDrop() {
         return;
       }
 
-      const currentCategory = find(allCategories?.data, (item) => item?.id === categoryId);
+      const currentCategory = find(allCategories, (item) => item?.id === categoryId);
 
       // If target category not found, abort the drop
       if (!currentCategory) {

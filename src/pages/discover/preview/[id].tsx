@@ -8,18 +8,16 @@ import * as Sentry from "@sentry/nextjs";
 import { format } from "date-fns";
 import { z } from "zod";
 
-import type { FetchDataResponse, SingleListData } from "../../../types/apiTypes";
+import type { SingleListData } from "../../../types/apiTypes";
 
 import { CustomLightBox } from "../../../components/lightbox/LightBox";
 import {
   DISCOVER_URL,
-  FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API,
   getBaseUrl,
   NEXT_API_URL,
+  V2_FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API,
 } from "../../../utils/constants";
 import { HttpStatus } from "../../../utils/error-utils/common";
-
-type FetchDiscoverableBookmarkByIdResponse = FetchDataResponse<null | SingleListData>;
 
 const DiscoverPreviewParamsSchema = z.object({
   id: z.string().regex(/^\d+$/u, "Bookmark ID must be numeric").transform(Number),
@@ -97,7 +95,7 @@ export const getStaticProps: GetStaticProps<DiscoverPreviewProps> = async (conte
 
   try {
     const response = await fetch(
-      `${getBaseUrl()}${NEXT_API_URL}${FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API}?id=${bookmarkId}`,
+      `${getBaseUrl()}${NEXT_API_URL}/${V2_FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API}?id=${bookmarkId}`,
     );
 
     if (response.status === HttpStatus.NOT_FOUND) {
@@ -127,20 +125,13 @@ export const getStaticProps: GetStaticProps<DiscoverPreviewProps> = async (conte
       return { notFound: true };
     }
 
+    // v2 returns bare T on 200 — no { data, error } envelope unwrap
     // oxlint-disable-next-line no-unsafe-type-assertion -- response.json() types as unknown in oxlint
-    const data = (await response.json()) as FetchDiscoverableBookmarkByIdResponse;
-
-    if (!data?.data || data?.error) {
-      console.warn(`[${ROUTE}] Bookmark data not found or contains error`, {
-        bookmarkId,
-        error: data?.error,
-      });
-      return { notFound: true };
-    }
+    const bookmark = (await response.json()) as SingleListData;
 
     return {
       props: {
-        bookmark: data.data,
+        bookmark,
       },
       revalidate: 300,
     };

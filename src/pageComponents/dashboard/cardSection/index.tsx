@@ -19,8 +19,8 @@ import { cn } from "@/utils/tailwind-merge";
 
 import loaderGif from "../../../../public/loader-gif.gif";
 import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/use-fetch-bookmarks-count";
-import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
-import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
+import useFetchCategories from "../../../async/queryHooks/category/use-fetch-categories";
+import useFetchUserProfile from "../../../async/queryHooks/user/use-fetch-user-profile";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetViewValue from "../../../hooks/useGetViewValue";
@@ -76,14 +76,14 @@ const CardSection = ({
 
   const categorySlug = getCategorySlugFromRouter(router);
   const preferredDomainsSet = useMemo(() => {
-    const domains = profileData?.data?.[0]?.preferred_og_domains ?? [];
+    const domains = profileData?.[0]?.preferred_og_domains ?? [];
     return new Set(domains.map((item) => item.toLowerCase()));
   }, [profileData]);
 
   const showAvatar =
     !isPublicPage &&
-    (find(allCategories?.data, (item) => item?.category_slug === categorySlug)?.collabData
-      ?.length ?? 0) > 1;
+    (find(allCategories, (item) => item?.category_slug === categorySlug)?.collabData?.length ?? 0) >
+      1;
   const isBookmarkLoading = useLoadersStore((state) => state.isBookmarkAdding);
   const { lightboxId, lightboxOpen, setLightboxId, setLightboxOpen } = useMiscellaneousStore();
   // Handle route changes for lightbox

@@ -183,3 +183,18 @@ for delete
 to authenticated
 using ( (select auth.uid()) = user_id );
 ```
+
+### RLS — Hardening Checklist
+
+When replacing permissive policies or adding RLS to existing tables, the per-op template is necessary but not sufficient:
+
+- **Junction tables**: INSERT/UPDATE must verify BOTH FK sides via subquery, not just `user_id = auth.uid()`. FK + UNIQUE alone let a caller reserve another user's slot under their own `user_id`.
+- **Column-scoped UPDATE**: RLS cannot restrict which columns mutate. Pair the policy with a `BEFORE UPDATE` trigger that blocks non-whitelisted column changes when `OLD.user_id IS DISTINCT FROM auth.uid()`.
+- **Cross-FK owner UPDATE**: if the row FKs into another ownership-checked table, `WITH CHECK` must re-assert FK ownership or the owner can redirect to a row they don't own. Use the `SECURITY DEFINER` helper below — a raw subquery causes the cycle.
+- **Cross-table policy cycles (Postgres 42P17)**: a policy on A that subqueries B cycles if any policy on B (directly or transitively) subqueries A — Postgres evaluates each referenced table's full policy stack and throws `ERROR 42P17 infinite recursion detected in policy for relation` at the first DML. `UPDATE` policies evaluate together, so a cycle in the owner variant also breaks the invitee variant. Break it with a `SECURITY DEFINER` helper (see `public.user_owns_bookmark` in `20251208115323_bookmark_categories_many_to_many.sql`, `public.user_owns_category` in `20260415192425_fix_shared_categories_rls_recursion.sql`): `SET search_path = public, pg_temp` with fully-qualified `public.*` / `auth.*` references in the body, `STABLE`, `REVOKE EXECUTE ... FROM PUBLIC` then `GRANT EXECUTE ... TO authenticated` (new functions grant EXECUTE to PUBLIC by default), guarded by `IF p_user_id IS DISTINCT FROM auth.uid() THEN RETURN false; END IF;` to block cross-user enumeration. The qualified-name form is the live convention in both helpers and is equivalent to `search_path = ''` for safety as long as every identifier stays schema-qualified.
+- **Drop legacy policies by exact name, including typos**: prod may have `"auth acceess"`. Use `DROP POLICY IF EXISTS` with the live name, not the corrected spelling.
+- **End every RLS migration with a verification `DO $$`**: assert expected policy names exist, `count(*) FROM pg_policies WHERE (qual='true' OR with_check='true')` on target tables is zero, and probe for cycles — flag any pair where both sides' `qual`/`with_check` reference the other without a `user_owns_*` helper. Typos and latent cycles ship silently otherwise. Word-boundary regex in these probes MUST use Postgres ARE `\y` (or `\m`/`\M`) — `\b` matches a backspace character in POSIX/ARE and silently never fires, which leaves the verifier passing on broken state.
+
+### RLS — cspell-safe comment vocabulary
+
+Use `defense` (not `defence`), `preferences` (not `prefs`), `redirected`/`redirecting` (not `repointed`/`repointing`), `tag associations` (not `taggings`).

@@ -2,9 +2,13 @@ import { useRouter } from "next/router";
 
 import isNull from "lodash/isNull";
 
-import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
+import useFetchUserProfile from "@/async/queryHooks/user/use-fetch-user-profile";
 import { PlanBadge } from "@/components/planBadge";
 import { Menu } from "@/components/ui/recollect/menu";
+import { AppleIcon } from "@/icons/apple-icon";
+import { ChromeIcon } from "@/icons/chrome-icon";
+// import { PlayStoreIcon } from "@/icons/play-store-icon";
+import { SignOutIcon } from "@/icons/sign-out-icon";
 
 import { signOut } from "../../../async/supabaseCrudHelpers";
 import UserAvatar from "../../../components/userAvatar";
@@ -12,6 +16,14 @@ import DownArrowGray from "../../../icons/downArrowGray";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { LOGIN_URL } from "../../../utils/constants";
 import { createClient } from "../../../utils/supabaseClient";
+
+const CHROME_EXTENSION_URL =
+  "https://chromewebstore.google.com/detail/recollect-%E2%80%94-save-anything/hghngcbiflcoekclkkealmlbginmloef";
+const IOS_APP_URL = "https://testflight.apple.com/join/nqxpye48";
+// const ANDROID_APP_URL = "#";
+
+const itemClassName =
+  "flex h-[26px] cursor-pointer items-center gap-[6px] overflow-clip rounded-lg px-2 py-[5.5px] text-13 leading-[115%] font-450 tracking-[0.01em] text-gray-800 no-underline outline-hidden data-highlighted:bg-gray-200 data-highlighted:text-gray-900";
 
 const SidePaneUserDropdown = () => {
   const setSession = useSupabaseSession((state) => state.setSession);
@@ -41,13 +53,42 @@ const SidePaneUserDropdown = () => {
         </Menu.Trigger>
         <Menu.Portal>
           <Menu.Positioner align="start">
-            <Menu.Popup className="leading-[20px]">
+            <Menu.Popup className="w-[203px] p-[6px]" style={{ fontFeatureSettings: "'case'" }}>
               <Menu.Item
+                className={itemClassName}
+                render={
+                  <a href={CHROME_EXTENSION_URL} rel="noopener noreferrer" target="_blank">
+                    <ChromeIcon className="size-4" />
+                    Download Extension
+                  </a>
+                }
+              />
+              <Menu.Item
+                className={itemClassName}
+                render={
+                  <a href={IOS_APP_URL} rel="noopener noreferrer" target="_blank">
+                    <AppleIcon className="size-4" />
+                    Download iOS & iPadOS
+                  </a>
+                }
+              />
+              {/* <Menu.Item
+                className={itemClassName}
+                render={
+                  <a href={ANDROID_APP_URL} rel="noopener noreferrer" target="_blank">
+                    <PlayStoreIcon className="size-4" />
+                    Download Android
+                  </a>
+                }
+              /> */}
+              <Menu.Item
+                className={itemClassName}
                 onClick={() => {
                   void handleSignOut();
                 }}
               >
-                Sign Out
+                <SignOutIcon className="size-4" />
+                Sign out
               </Menu.Item>
             </Menu.Popup>
           </Menu.Positioner>
@@ -59,7 +100,7 @@ const SidePaneUserDropdown = () => {
 
 const SidePaneUserTrigger = () => {
   const { isLoading, userProfileData } = useFetchUserProfile();
-  const userData = userProfileData?.data?.[0];
+  const userData = userProfileData?.[0];
 
   return (
     <div className="-ml-0.25 flex w-4/5 items-center space-x-2">

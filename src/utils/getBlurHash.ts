@@ -50,7 +50,17 @@ export const blurhashFromURL = async (source: string, options: IOptions = {}): P
     returnedBuffer = await sharp(fileBuffer).toBuffer();
   } else {
     const response = await fetch(source);
+
+    if (!response.ok) {
+      throw new Error(`Blurhash fetch failed: ${response.status} ${response.statusText}`);
+    }
+
     const arrayBuffer = await response.arrayBuffer();
+
+    if (arrayBuffer.byteLength === 0) {
+      throw new Error(`Empty image body for blurhash: ${source}`);
+    }
+
     returnedBuffer = Buffer.from(arrayBuffer);
 
     const { height: remoteHeight, width: remoteWidth } = imageSize(returnedBuffer);

@@ -159,13 +159,25 @@ after(async () => {
 - On success: `supabase.schema("pgmq_public").rpc("delete", ...)` — delete errors are non-throwing (`ctx.fields` only)
 - Partial failure: keep message, annotate with `update_queue_message_error` RPC
 
+### Queue Consumer Idempotency Contract
+
+Queue handlers (screenshot, ai-enrichment) must be safe to re-run:
+
+- Upfront SELECT persisted fields; short-circuit capture/upload/DB-write if already set. Flag the skip path via `ctx.fields.<op>_skipped = true` so Axiom distinguishes fresh runs from replays
+- External-response parsing: use shared extractors that throw on unrecognized shape (`src/lib/bookmarks/parse-screenshot-response.ts` is the reference). Guard `byteLength === 0` before persisting — `response.ok` is not sufficient; R2 stores 0-byte uploads and returns `ETag = d41d8cd98f00b204e9800998ecf8427e` (MD5 of empty)
+- Enrichment (AI / blurhash / downstream fetch) MUST throw on failure — never silent try/catch. Silent-swallow converts a retryable 503 into a 200 that deletes the pgmq message forever. The archive + replay pipeline is the designed recovery path; don't bypass it
+- Idempotency + stale data trap: a non-null persisted URL is not proof the underlying bytes are valid. When recovering from a prior data-corruption bug, NULL the persisted field in `everything` BEFORE replaying via `retry_ai_embeddings_archive` — otherwise the short-circuit re-feeds corrupt bytes to the next layer and `is_final_retry=true` permanently deletes the message
+- Full debug playbook (Axiom vs Sentry, archive state SQL, replay recipes, env var gotchas): `~/.claude/projects/-Users-navin-Developer-recollect/memory/reference_queue_route_debugging.md`
+
 ### Auth Patterns
 
 - `withAuth`: auto-handles auth, handler gets `{ data, supabase, user }`
-- `withRawBody` with `auth: "required"`: metadata only for OpenAPI scanner — manual `createApiClient()` + `getApiUser()` + `RecollectApiError("unauthorized")` in handler body, manually set `ctx.user_id`
-- `withPublic` with conditional auth: manual `createApiClient()`, set `alsCtx.user_id` manually
 - `withSecret`: timing-safe bearer token via `secretEnvVar` config
-- `createServerServiceClient()` (synchronous, don't `await`): for RLS-bypass operations (queue workers, admin deletes, public data)
+- `withRawBody` with `auth: "required"`: metadata only for OpenAPI scanner — manual `createApiClient()` + `getApiUser()` + `RecollectApiError("unauthorized")` in handler body, manually set `ctx.user_id`
+- **`withPublic` defaults to `createServerServiceClient()`** (synchronous, don't `await`) + explicit handler-side gating. Use for public-data reads (cross-user public shares, discover feed, public category bookmarks), pre-login lookups (provider check), invite flows, queue workers, and any route touching a table without a matching anon RLS policy. RLS coverage in this codebase is incomplete (`categories` and `bookmark_tags` have no anon policies; `everything.anon_discover_access` references the pre-migration boolean `trash` column) — do not lean on it for public reads.
+- **`withPublic` + `createApiClient()` + conditional `getApiUser()`** (anon client with optional auth): only when one URL serves two audiences via a request-time discriminator. Canonical example: `search-bookmarks` (discover branch is anon, every other branch requires auth for `user_id` scoping and collaborator checks). See pitfall #34 for the safety checklist.
+
+> Pitfall #28 (always preserve v1's `createApiClient()` call when migrating to `withPublic`) is **superseded** — the factory choice still maps from v1, but the client choice now defaults to service-role.
 
 ### Gotchas
 

@@ -38,7 +38,6 @@ export const CreateCategoryResponseSchema = z
       icon_color: z.string().nullable().meta({ description: "Icon color hex code" }),
       id: z.number().meta({ description: "Category ID" }),
       is_public: z.boolean().meta({ description: "Whether collection is publicly visible" }),
-      order_index: z.number().nullable().meta({ description: "Sort order position" }),
       user_id: z.string().nullable().meta({ description: "Owner user ID" }),
     }),
   )

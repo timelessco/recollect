@@ -6,8 +6,8 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import isEmpty from "lodash/isEmpty";
 import omit from "lodash/omit";
 
+import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/use-add-bookmark-min-data-optimistic-mutation";
 import { useMoveBookmarkToTrashOptimisticMutation } from "../../async/mutationHooks/bookmarks/use-move-bookmark-to-trash-optimistic-mutation";
-import useAddBookmarkMinDataOptimisticMutation from "../../async/mutationHooks/bookmarks/useAddBookmarkMinDataOptimisticMutation";
 import useDeleteBookmarksOptimisticMutation from "../../async/mutationHooks/bookmarks/useDeleteBookmarksOptimisticMutation";
 import useFetchBookmarksCount from "../../async/queryHooks/bookmarks/use-fetch-bookmarks-count";
 import useFetchPaginatedBookmarks from "../../async/queryHooks/bookmarks/use-fetch-paginated-bookmarks";

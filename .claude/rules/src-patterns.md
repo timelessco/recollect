@@ -62,6 +62,12 @@ Three sidebar sections with different `CATEGORY_ID` resolution:
 - **Collections**: slug-based (e.g., `/funky-mhd2z350`) — resolved to numeric ID via `getCategoryIdFromSlug` cache lookup
 - **Type Views**: `/images`, `/videos`, `/links`, `/documents`, `/tweets`, `/instagram`, `/audios` — media-type filters, NOT DB categories. Slug returned as-is (e.g., `"images"`)
 
+### Async Code (oxlint traps)
+
+- `no-floating-promises` + `no-misused-promises` both active. Prefix unhandled promises with `void`. Event handlers: sync wrapper with `void` — `onClick={() => { void doAsyncWork(); }}`. `startTransition` accepts async callbacks directly (React 19 types). Never `void (async () => {...})()` IIFE — breaks React transition tracking
+- `require-await` checks outer function scope only — `await` inside nested callbacks (e.g. `startTransition(async () => { await ... })`) doesn't count. Remove outer `async`, keep inner
+- `prefer-await-to-then` active — `.then()` chains in `queryFn`/`mutationFn` get flagged. Use `async () => { const data = await api.get(...).json<T>(); return mapFn(data); }`
+
 ### Component Patterns
 
 - **Images**: NextImage with blurhash

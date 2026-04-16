@@ -1,16 +1,14 @@
-import type { ToggleFavoriteCategoryResponse } from "@/app/api/profiles/toggle-favorite-category/route";
+import type { ToggleFavoriteCategoryOutputSchema } from "@/app/api/v2/profiles/toggle-favorite-category/schema";
 import type { ProfilesTableTypes } from "@/types/apiTypes";
+import type { z } from "zod";
 
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
-import { postApi } from "@/lib/api-helpers/api";
+import { api } from "@/lib/api-helpers/api-v2";
 import { useSupabaseSession } from "@/store/componentStore";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
-import { NEXT_API_URL, TOGGLE_FAVORITE_CATEGORY_API, USER_PROFILE } from "@/utils/constants";
+import { USER_PROFILE, V2_TOGGLE_FAVORITE_CATEGORY_API } from "@/utils/constants";
 
-interface UserProfileCache {
-  data: null | ProfilesTableTypes[];
-  error?: Error;
-}
+type ToggleFavoriteCategoryResponse = z.infer<typeof ToggleFavoriteCategoryOutputSchema>;
 
 interface ToggleFavoriteCategoryInput {
   category_id: number;
@@ -29,15 +27,19 @@ export function useToggleFavoriteCategoryOptimisticMutation() {
     Error,
     ToggleFavoriteCategoryInput,
     typeof queryKey,
-    undefined | UserProfileCache
+    ProfilesTableTypes[] | undefined
   >({
-    mutationFn: (payload) =>
-      postApi<ToggleFavoriteCategoryResponse>(`${NEXT_API_URL}${TOGGLE_FAVORITE_CATEGORY_API}`, {
-        category_id: payload.category_id,
-      }),
+    mutationFn: async (payload) => {
+      const response = await api
+        .post(V2_TOGGLE_FAVORITE_CATEGORY_API, {
+          json: { category_id: payload.category_id },
+        })
+        .json<ToggleFavoriteCategoryResponse>();
+      return response;
+    },
     queryKey,
     updater: (currentData, variables) => {
-      if (!currentData?.data) {
+      if (!currentData) {
         logCacheMiss("Optimistic Update", "User profile cache missing", {
           userId: session?.user?.id,
         });
@@ -46,21 +48,18 @@ export function useToggleFavoriteCategoryOptimisticMutation() {
 
       const { category_id } = variables;
 
-      return {
-        ...currentData,
-        data: currentData.data.map((profile) => {
-          if (profile.id !== session?.user?.id) {
-            return profile;
-          }
+      return currentData.map((profile) => {
+        if (profile.id !== session?.user?.id) {
+          return profile;
+        }
 
-          const existingFavorites = profile.favorite_categories ?? [];
+        const existingFavorites = profile.favorite_categories ?? [];
 
-          return {
-            ...profile,
-            favorite_categories: toggleIdInArray(existingFavorites, category_id),
-          };
-        }),
-      };
+        return {
+          ...profile,
+          favorite_categories: toggleIdInArray(existingFavorites, category_id),
+        };
+      });
     },
   });
 

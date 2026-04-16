@@ -1,17 +1,16 @@
 import type {
-  ToggleBookmarkDiscoverablePayload,
-  ToggleBookmarkDiscoverableResponse,
-} from "@/app/api/bookmark/toggle-discoverable-on-bookmark/schema";
+  ToggleDiscoverableOnBookmarkInput,
+  ToggleDiscoverableOnBookmarkOutput,
+} from "@/app/api/v2/bookmark/toggle-discoverable-on-bookmark/schema";
 import type { PaginatedBookmarks } from "@/types/apiTypes";
 
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
-import { postApi } from "@/lib/api-helpers/api";
+import { api } from "@/lib/api-helpers/api-v2";
 import {
   BOOKMARKS_KEY,
   DISCOVER_URL,
-  NEXT_API_URL,
-  TOGGLE_BOOKMARK_DISCOVERABLE_API,
+  V2_TOGGLE_BOOKMARK_DISCOVERABLE_API,
 } from "@/utils/constants";
 import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
 
@@ -19,18 +18,17 @@ export function useToggleDiscoverableOptimisticMutation() {
   const { queryKey, searchQueryKey } = useBookmarkMutationContext();
 
   const toggleDiscoverableOptimisticMutation = useReactQueryOptimisticMutation<
-    ToggleBookmarkDiscoverableResponse,
+    ToggleDiscoverableOnBookmarkOutput,
     Error,
-    ToggleBookmarkDiscoverablePayload,
+    ToggleDiscoverableOnBookmarkInput,
     typeof queryKey,
     PaginatedBookmarks
   >({
     invalidates: [BOOKMARKS_KEY, DISCOVER_URL],
     mutationFn: (variables) =>
-      postApi<ToggleBookmarkDiscoverableResponse>(
-        `${NEXT_API_URL}${TOGGLE_BOOKMARK_DISCOVERABLE_API}`,
-        variables,
-      ),
+      api
+        .post(V2_TOGGLE_BOOKMARK_DISCOVERABLE_API, { json: variables })
+        .json<ToggleDiscoverableOnBookmarkOutput>(),
     queryKey,
     secondaryQueryKey: searchQueryKey,
     updater: (currentData, variables) =>

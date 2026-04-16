@@ -117,6 +117,11 @@ Before generating any Supabase auth code:
 
 **Consequences of wrong implementation:** breaks in production, fails to maintain session state, causes authentication loops, results in security vulnerabilities.
 
+### Client Gotchas
+
+- `createServerServiceClient()` (`@/lib/supabase/service`) is synchronous — don't `await`
+- `@supabase/postgrest-js` >=2.101.0 constrains `.eq()` column to `keyof Row`. For RPC functions with union overloads `Row` degrades and rejects valid columns — use `.filter("col", "eq", val)` (untyped column, same PostgREST query). Pass `undefined` (not `null`) for optional RPC args — `null` doesn't match `T | undefined`, breaking overload resolution
+
 ### Health Check Patterns
 
 `getClaims()` does **NOT** make a network call — it validates the JWT locally (signature + expiration) from the cookie. A null result does not mean Supabase is unreachable.

@@ -13,10 +13,10 @@ export const FetchUserProfileOutputSchema = z.array(
     api_key: z.string().nullable().meta({ description: "Encrypted Gemini API key" }),
     bookmark_count: z.number().nullable().meta({ description: "Total number of bookmarks" }),
     bookmarks_view: z.unknown().nullable().meta({ description: "Default bookmark view settings" }),
-    category_order: z
-      .array(z.number())
-      .nullable()
-      .meta({ description: "Ordered array of category IDs" }),
+    category_order: z.array(z.number().nullable()).nullable().meta({
+      description:
+        "Ordered array of category IDs. Elements may be null for categories deleted without compacting the ordering array.",
+    }),
     display_name: z.string().nullable().meta({ description: "User's display name" }),
     email: z.string().nullable().meta({ description: "User's email address" }),
     freeTierCutoffAt: z.string().meta({
@@ -32,6 +32,10 @@ export const FetchUserProfileOutputSchema = z.array(
       .string()
       .nullable()
       .meta({ description: "Last synced Twitter post ID" }),
+    favorite_categories: z
+      .array(z.number())
+      .nullable()
+      .meta({ description: "IDs of categories marked as favorites" }),
     plan: z.enum(["free", "plus", "pro"]).meta({
       description:
         "Normalized subscription tier. Any value not in the enum is coerced to `free` at the API boundary.",

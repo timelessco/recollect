@@ -6,6 +6,7 @@ import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
 import type { SingleListData } from "../types/apiTypes";
 
 import { Spinner } from "@/components/spinner";
+import { isNullable } from "@/utils/assertion-utils";
 
 import { useMounted } from "../hooks/useMounted";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../lib/supabase/constants";
@@ -108,13 +109,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 					description,
 					ogImage,
 					screenshot,
-					category_id,
 					trash,
 					type,
 					meta_data,
 					sort_index,
-					make_discoverable
-				`,
+					make_discoverable,
+					user_id
+`,
         )
         .is("trash", null)
         .not("make_discoverable", "is", null)
@@ -177,7 +178,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   let showOnboarding = false;
   const { data: profileRow, error: profileError } = await supabase
     .from("profiles")
-    .select("onboarding_complete")
+    .select("onboarded_at")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -191,7 +192,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     });
     // Fail closed — don't show the modal if we can't read the flag.
   } else {
-    showOnboarding = profileRow?.onboarding_complete === false;
+    showOnboarding = isNullable(profileRow?.onboarded_at);
   }
 
   return {

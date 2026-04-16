@@ -91,6 +91,16 @@ export const imageToText = async (
 
     const contentType = imageResponse.headers.get("content-type") ?? "image/jpeg";
     const imageBuffer = await imageResponse.arrayBuffer();
+
+    // Second line of defense against an empty upstream payload — R2 happily returns
+    // `200 OK` with `content-length: 0` for blobs that were written empty. Sending
+    // that to Gemini produces a misleading `INVALID_ARGUMENT` instead of the true
+    // root cause (upstream capture stored 0 bytes). Throwing here makes the failure
+    // legible and keeps the archive + replay pipeline intact.
+    if (imageBuffer.byteLength === 0) {
+      throw new Error(`Empty image body from ${imageUrl}`);
+    }
+
     const imageBytes = Buffer.from(imageBuffer).toString("base64");
 
     // Call Gemini with structured output

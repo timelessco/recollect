@@ -5,3 +5,6 @@ export { twitterSyncFolderBookmarksSupplement } from "./sync-folder-bookmarks";
 export { twitterSyncFoldersSupplement } from "./sync-folders";
 export { twitterSyncRetrySupplement } from "./sync-retry";
 export { twitterSyncStatusSupplement } from "./sync-status";
+export { v2TwitterLastSyncedIdSupplement } from "./v2-last-synced-id";
+export { v2TwitterSyncRetrySupplement } from "./v2-sync-retry";
+export { v2TwitterSyncStatusSupplement } from "./v2-sync-status";

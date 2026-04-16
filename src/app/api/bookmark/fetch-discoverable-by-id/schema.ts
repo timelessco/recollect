@@ -97,7 +97,6 @@ export const FetchDiscoverableByIdResponseSchema = z.object({
     .optional()
     .meta({ description: "Categories assigned to this bookmark" }),
   addedTags: z.array(TagSchema).optional().meta({ description: "Tags assigned to this bookmark" }),
-  category_id: z.number().meta({ description: "Primary category ID for this bookmark" }),
   description: z.string().nullable().meta({ description: "Page or OG description" }),
   id: z.number().meta({ description: "Bookmark ID" }),
   inserted_at: z.string().meta({ description: "ISO timestamp when bookmark was created" }),

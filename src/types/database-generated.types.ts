@@ -150,7 +150,6 @@ export type Database = {
           icon_color: string | null;
           id: number;
           is_public: boolean;
-          order_index: number | null;
           user_id: string | null;
         };
         Insert: {
@@ -162,7 +161,6 @@ export type Database = {
           icon_color?: string | null;
           id?: number;
           is_public?: boolean;
-          order_index?: number | null;
           user_id?: string | null;
         };
         Update: {
@@ -174,7 +172,6 @@ export type Database = {
           icon_color?: string | null;
           id?: number;
           is_public?: boolean;
-          order_index?: number | null;
           user_id?: string | null;
         };
         Relationships: [
@@ -189,7 +186,6 @@ export type Database = {
       };
       everything: {
         Row: {
-          category_id: number;
           description: string | null;
           enriched_at: string | null;
           enrichment_status: string | null;
@@ -207,7 +203,6 @@ export type Database = {
           user_id: string;
         };
         Insert: {
-          category_id?: number;
           description?: string | null;
           enriched_at?: string | null;
           enrichment_status?: string | null;
@@ -225,7 +220,6 @@ export type Database = {
           user_id: string;
         };
         Update: {
-          category_id?: number;
           description?: string | null;
           enriched_at?: string | null;
           enrichment_status?: string | null;
@@ -265,7 +259,7 @@ export type Database = {
           id: string;
           last_synced_instagram_id: string | null;
           last_synced_twitter_id: string | null;
-          onboarding_complete: boolean;
+          onboarded_at: string | null;
           plan: string;
           plan_updated_at: string | null;
           polar_customer_id: string | null;
@@ -289,7 +283,7 @@ export type Database = {
           id: string;
           last_synced_instagram_id?: string | null;
           last_synced_twitter_id?: string | null;
-          onboarding_complete?: boolean;
+          onboarded_at?: string | null;
           plan?: string;
           plan_updated_at?: string | null;
           polar_customer_id?: string | null;
@@ -313,7 +307,7 @@ export type Database = {
           id?: string;
           last_synced_instagram_id?: string | null;
           last_synced_twitter_id?: string | null;
-          onboarding_complete?: boolean;
+          onboarded_at?: string | null;
           plan?: string;
           plan_updated_at?: string | null;
           polar_customer_id?: string | null;
@@ -455,6 +449,10 @@ export type Database = {
         Returns: undefined;
       };
       check_bookmarks_view_keyed_shape: { Args: { v: Json }; Returns: boolean };
+      color_matches_oklab: {
+        Args: { colors: Json; hint_a: number; hint_b: number; hint_l: number };
+        Returns: boolean;
+      };
       create_and_assign_tag: {
         Args: { p_bookmark_id: number; p_tag_name: string };
         Returns: {
@@ -609,78 +607,13 @@ export type Database = {
         Args: { p_msg_ids: number[]; p_user_id: string };
         Returns: Json;
       };
-      search_bookmarks: {
-        Args: { search_text: string };
-        Returns: {
-          category_id: number;
-          description: string;
-          id: number;
-          inserted_at: string;
-          meta_data: Json;
-          ogimage: string;
-          screenshot: string;
-          sort_index: string;
-          title: string;
-          trash: boolean;
-          type: string;
-          url: string;
-          user_id: string;
-        }[];
-      };
-      search_bookmarks_debug: {
-        Args: { search_text: string };
-        Returns: {
-          caption: string;
-          has_meta: boolean;
-          id: number;
-          title: string;
-        }[];
-      };
-      search_bookmarks_debugging:
-        | {
-            Args: { search_text: string };
-            Returns: {
-              category_id: number;
-              description: string;
-              id: number;
-              inserted_at: string;
-              meta_data: Json;
-              ogimage: string;
-              screenshot: string;
-              sort_index: string;
-              title: string;
-              trash: boolean;
-              type: string;
-              url: string;
-              user_id: string;
-            }[];
-          }
-        | {
-            Args: { search_text: string; url_scope: string };
-            Returns: {
-              category_id: number;
-              description: string;
-              id: number;
-              inserted_at: string;
-              meta_data: Json;
-              ogimage: string;
-              screenshot: string;
-              sort_index: string;
-              title: string;
-              trash: boolean;
-              type: string;
-              url: string;
-              user_id: string;
-            }[];
-          };
       search_bookmarks_url_tag_scope: {
         Args: {
           category_scope?: number;
-          color_a?: number;
-          color_b?: number;
-          color_l?: number;
+          color_hints?: Json;
           search_text?: string;
           tag_scope?: string[];
+          type_hints?: string[];
           url_scope?: string;
         };
         Returns: {

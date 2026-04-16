@@ -1,12 +1,6 @@
 ---
 name: release
-description: >
-  Automate the full Recollect release pipeline: create release PR, merge to main,
-  monitor CI release workflow, and verify tag + GitHub Release + backmerge. Use when
-  the user says "release", "cut a release", "ship a release", "/release", or wants
-  to trigger the release pipeline. This is an EXECUTION skill — it runs the full
-  workflow without needing context from the caller.
-disable-model-invocation: true
+description: release
 ---
 
 # Release Pipeline
@@ -84,12 +78,17 @@ gh pr merge {PR_NUMBER} --merge --admin
 
 ### Step 4: Monitor the release workflow
 
-The `Release` workflow triggers on push to `main`. Watch it:
+The `Release` workflow triggers on push to `main`. Watch it via the **Monitor tool** (not Bash `run_in_background`) so step transitions stream as notifications instead of being swallowed into a background task file:
 
-```bash
-# Get the run ID and watch it
-gh run watch $(gh run list --workflow=release.yml --branch=main --limit=1 --json databaseId -q '.[0].databaseId')
 ```
+Monitor tool:
+  command: gh run watch $(gh run list --limit 1 --json databaseId --jq '.[0].databaseId') --exit-status 2>&1 | grep -E --line-buffered "^\s*[✓✗*]|completed|failed|error|Error|cancelled"
+  description: release workflow steps
+  timeout_ms: 600000
+  persistent: false
+```
+
+`--exit-status` bubbles workflow failures into Monitor's completion event; the grep emits every step transition plus failure signatures so silence can't look like success.
 
 If no run appears, wait a few seconds and retry `gh run list` — GitHub Actions can have a brief delay.
 
@@ -160,4 +159,4 @@ pnpm release:cleanup
 - **`GITHUB_TOKEN` required** for local `pnpm release` — the changelog writer fetches commit author data from GitHub API
 - **Don't push to dev after merge** — wait for CI backmerge to complete, or you'll create divergence
 - **Don't run `pnpm release:cleanup` after CI success** — CI already handles backmerge + branch deletion; running it manually creates empty merge commits
-- **API changelog** — `release-pr.sh` posts `docs/API_CHANGELOG.md` as a PR comment (if non-empty); the backmerge step clears the file automatically
+- **API changelog** — `scripts/release/release-pr.js` posts `docs/API_CHANGELOG.md` as a PR comment (if non-empty); the backmerge step clears the file automatically

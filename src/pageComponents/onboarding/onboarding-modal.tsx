@@ -4,9 +4,10 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRef, useState } from "react";
 
+import { useTimeoutEffect } from "@react-hookz/web";
 import * as Sentry from "@sentry/nextjs";
 
-import { useMarkOnboardingCompleteMutation } from "@/async/mutationHooks/user/use-mark-onboarding-complete-mutation";
+import { useMarkOnboardedMutation } from "@/async/mutationHooks/user/use-mark-onboarded-mutation";
 import { Dialog } from "@/components/ui/recollect/dialog";
 import { AppleIcon } from "@/icons/apple-icon";
 
@@ -28,15 +29,24 @@ const STEP_ORDER: Step[] = ["extension", "apps"];
 const OPSZ_14: React.CSSProperties = { fontVariationSettings: "'opsz' 14" };
 
 export function OnboardingModal() {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("extension");
 
-  const markOnboardingComplete = useMarkOnboardingCompleteMutation();
+  // open starts false so Base UI registers data-starting-style on the first
+  // false→true transition. The 1s delay lets the discover screen settle behind
+  // the modal before the fade begins, mirroring how the settings modal animates
+  // in after a user-initiated open.
+  useTimeoutEffect(() => {
+    setOpen(true);
+  }, 1000);
+
+  const markOnboardingComplete = useMarkOnboardedMutation();
   const hasMarkedRef = useRef(false);
 
-  // Fire-and-forget completion write. Idempotent on the server (UPDATE to
-  // a row already at `true` is a no-op), but we also gate client-side so
-  // duplicate clicks never re-issue the request within one modal session.
+  // Fire-and-forget completion write. Idempotent on the server: the PATCH
+  // route filters `.is('onboarded_at', null)`, so re-calls after the first
+  // are no-ops that preserve the original timestamp. We also gate client-side
+  // so duplicate clicks never re-issue the request within one modal session.
   const markComplete = () => {
     if (hasMarkedRef.current) {
       return;
@@ -47,7 +57,7 @@ export function OnboardingModal() {
         // Breadcrumb stays for trail context if a downstream error captures.
         Sentry.addBreadcrumb({
           category: "onboarding",
-          message: "Failed to mark onboarding complete from client",
+          message: "Failed to record onboarding completion from client",
           level: "warning",
           data: { error: String(err) },
         });
@@ -57,7 +67,7 @@ export function OnboardingModal() {
         // the modal again on next /discover visit.
         Sentry.captureException(err, {
           level: "warning",
-          tags: { operation: "mark_onboarding_complete_client" },
+          tags: { operation: "mark_onboarded_client" },
         });
       },
     });
@@ -65,7 +75,7 @@ export function OnboardingModal() {
 
   // Skip advances through the step machine; on the final step it closes
   // the modal. markComplete() runs on every press — the first press writes
-  // the flag, subsequent presses hit the ref guard and no-op.
+  // the onboarded_at timestamp, subsequent presses hit the ref guard and no-op.
   const skip = () => {
     markComplete();
     const next = STEP_ORDER[STEP_ORDER.indexOf(step) + 1];
@@ -188,6 +198,7 @@ function AppsStep({ onCtaClick }: { onCtaClick: () => void }) {
         className="pointer-events-none absolute top-[41px] left-[69px] block"
         height={308}
         src="/onboarding/devices.png"
+        unoptimized
         width={379}
       />
 
@@ -200,7 +211,7 @@ function AppsStep({ onCtaClick }: { onCtaClick: () => void }) {
 
       <a
         className="absolute top-[369px] left-1/2 flex h-[32px] -translate-x-1/2 items-center gap-[6px] rounded-[12px] bg-gray-0 px-[12px] py-[5.5px] no-underline shadow-[0px_1px_3px_0px_rgba(0,0,0,0.07),0px_5px_5px_0px_rgba(0,0,0,0.06),0px_11px_7px_0px_rgba(0,0,0,0.04)] outline-hidden transition-transform hover:scale-[1.02] focus-visible:ring-2 focus-visible:ring-gray-300 active:scale-[0.98]"
-        href="https://apps.apple.com/app/recollect"
+        href="https://testflight.apple.com/join/nqxpye48"
         onClick={onCtaClick}
         rel="noopener noreferrer"
         target="_blank"

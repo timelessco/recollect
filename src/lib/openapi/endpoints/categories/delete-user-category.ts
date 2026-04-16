@@ -27,7 +27,6 @@ export const deleteUserCategorySupplement = {
       icon_color: "#6366f1",
       id: 7,
       is_public: false,
-      order_index: 2,
       user_id: "550e8400-e29b-41d4-a716-446655440000",
     },
     error: null,

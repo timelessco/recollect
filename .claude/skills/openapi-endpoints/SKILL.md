@@ -1,16 +1,6 @@
 ---
 name: openapi-endpoints
-description: >
-  End-to-end OpenAPI endpoint documentation lab for Recollect. Autonomously discovers route
-  handlers, audits Zod schemas for .meta() descriptions, creates supplement files, updates
-  barrel exports, regenerates the spec, and verifies in both the JSON output and the Scalar
-  UI at /api-docs. This is an EXECUTION skill — it runs the full workflow without needing
-  context from the caller. Use when creating new App Router endpoints, adding OpenAPI docs
-  to existing endpoints, updating endpoint schemas, writing supplement files, adding named
-  examples, or registering edge function endpoints. Also use when someone says "document this
-  endpoint", "add OpenAPI", "create supplement", "add to api-docs", or mentions any endpoint
-  that needs OpenAPI documentation — even if they don't say "OpenAPI" explicitly.
-disable-model-invocation: true
+description: openapi-endpoints
 ---
 
 # OpenAPI Endpoint Documentation Lab

@@ -2,13 +2,15 @@ import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { getServerContext } from "@/lib/api-helpers/server-context";
+import { isNullable } from "@/utils/assertion-utils";
 
 /**
  * API-side post-login redirect resolver for App Router auth callbacks.
  *
  * Fetches the just-authenticated user, reads their profile's
- * `onboarding_complete` flag, and returns `/discover` for first-timers
- * or `nextPath` for everyone else. Silent fallbacks (getUser returning
+ * `onboarded_at` timestamp, and returns `/discover` for first-timers
+ * (onboarded_at IS NULL) or `nextPath` for everyone else. Silent fallbacks
+ * (getUser returning
  * nothing right after a successful auth operation, profile SELECT
  * failing) are recorded in Axiom wide events via `ctx.fields` so the
  * edge cases are searchable in production without Sentry.
@@ -53,7 +55,7 @@ export async function resolveCallbackRedirect(
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("onboarding_complete")
+    .select("onboarded_at")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -64,7 +66,7 @@ export async function resolveCallbackRedirect(
     return nextPath;
   }
 
-  if (profile?.onboarding_complete === false) {
+  if (isNullable(profile?.onboarded_at)) {
     return "/discover";
   }
   return nextPath;

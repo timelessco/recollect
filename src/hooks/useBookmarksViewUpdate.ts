@@ -3,7 +3,6 @@ import { useCallback } from "react";
 
 import find from "lodash/find";
 import isNil from "lodash/isNil";
-import isNull from "lodash/isNull";
 
 import type { BookmarkViewDataTypes, ProfilesBookmarksView } from "../types/apiTypes";
 import type {
@@ -13,13 +12,12 @@ import type {
 } from "../types/componentStoreTypes";
 
 import { useUpdateCategoryOptimisticMutation } from "../async/mutationHooks/category/use-update-category-optimistic-mutation";
-import useUpdateSharedCategoriesOptimisticMutation from "../async/mutationHooks/share/useUpdateSharedCategoriesOptimisticMutation";
-import useUpdateUserProfileOptimisticMutation from "../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
-import useFetchCategories from "../async/queryHooks/category/useFetchCategories";
-import useFetchSharedCategories from "../async/queryHooks/share/useFetchSharedCategories";
-import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";
+import useUpdateSharedCategoriesOptimisticMutation from "../async/mutationHooks/share/use-update-shared-categories-optimistic-mutation";
+import useUpdateUserProfileOptimisticMutation from "../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
+import useFetchCategories from "../async/queryHooks/category/use-fetch-categories";
+import useFetchSharedCategories from "../async/queryHooks/share/use-fetch-shared-categories";
+import useFetchUserProfile from "../async/queryHooks/user/use-fetch-user-profile";
 import { useLoadersStore, useSupabaseSession } from "../store/componentStore";
-import { mutationApiCall } from "../utils/apiHelpers";
 import { getPageViewData, getPageViewKey } from "../utils/bookmarksViewKeyed";
 import { EVERYTHING_URL } from "../utils/constants";
 import { getCategorySlugFromRouter } from "../utils/url";
@@ -66,7 +64,7 @@ export function useBookmarksViewUpdate() {
       value: BookmarksSortByTypes | BookmarksViewTypes | number[] | string[],
       type: BookmarkViewCategories,
     ) => {
-      const currentCategory = find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
+      const currentCategory = find(allCategories, (item) => item?.id === CATEGORY_ID);
 
       const isUserTheCategoryOwner = session?.user?.id === currentCategory?.user_id?.id;
 
@@ -104,39 +102,37 @@ export function useBookmarksViewUpdate() {
           });
         } else {
           const sharedCategoriesId = find(
-            sharedCategoriesData?.data,
+            sharedCategoriesData,
             (item) => item?.category_id === CATEGORY_ID,
           )?.id;
 
           if (sharedCategoriesId !== undefined) {
             const existingSharedCollectionViewsData = find(
-              sharedCategoriesData?.data,
+              sharedCategoriesData,
               (item) => item?.id === sharedCategoriesId,
             );
 
             if (!isNil(existingSharedCollectionViewsData)) {
-              void mutationApiCall(
-                updateSharedCategoriesOptimisticMutation.mutateAsync({
-                  id: sharedCategoriesId,
-                  updateData: {
-                    category_views: {
-                      ...existingSharedCollectionViewsData?.category_views,
-                      cardContentViewArray: ensureCardContentView(
-                        value,
-                        existingSharedCollectionViewsData?.category_views?.cardContentViewArray,
-                      ),
-                      [updateField]: value,
-                    },
+              void updateSharedCategoriesOptimisticMutation.mutateAsync({
+                id: sharedCategoriesId,
+                updateData: {
+                  category_views: {
+                    ...existingSharedCollectionViewsData?.category_views,
+                    cardContentViewArray: ensureCardContentView(
+                      value,
+                      existingSharedCollectionViewsData?.category_views?.cardContentViewArray,
+                    ),
+                    [updateField]: value,
                   },
-                }),
-              );
+                },
+              });
             } else {
               console.error("existing share collab data is not present");
             }
           }
         }
-      } else if (!isNull(userProfileData?.data) && !isNil(userProfileData)) {
-        const raw = userProfileData.data[0]?.bookmarks_view;
+      } else if (!isNil(userProfileData)) {
+        const raw = userProfileData[0]?.bookmarks_view;
         const pageKey = getPageViewKey(categorySlug);
         const defaultPageView: BookmarkViewDataTypes = {
           bookmarksView: "moodboard" satisfies BookmarksViewTypes,
@@ -161,21 +157,19 @@ export function useBookmarksViewUpdate() {
           [pageKey]: updatedPageView,
         };
 
-        void mutationApiCall(
-          updateUserProfileOptimisticMutation.mutateAsync({
-            updateData: { bookmarks_view: nextKeyed },
-          }),
-        );
+        void updateUserProfileOptimisticMutation.mutateAsync({
+          updateData: { bookmarks_view: nextKeyed },
+        });
       } else {
         console.error("user profiles data is null");
       }
     },
     [
       CATEGORY_ID,
-      allCategories?.data,
+      allCategories,
       categorySlug,
       session?.user?.id,
-      sharedCategoriesData?.data,
+      sharedCategoriesData,
       toggleIsSortByLoading,
       updateCategoryOptimisticMutation,
       updateSharedCategoriesOptimisticMutation,

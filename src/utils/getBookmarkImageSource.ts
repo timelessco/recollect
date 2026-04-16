@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import type { SingleListData } from "../types/apiTypes";
 
-import useFetchUserProfile from "../async/queryHooks/user/useFetchUserProfile";
+import useFetchUserProfile from "../async/queryHooks/user/use-fetch-user-profile";
 import { getDomain } from "./domain";
 
 /**
@@ -19,7 +19,7 @@ export const useBookmarkImageSources = (bookmarks: SingleListData[]): Record<num
       (bookmark) => bookmark && typeof bookmark.id === "number",
     );
 
-    if (!profileData?.data?.[0]?.preferred_og_domains) {
+    if (!profileData?.[0]?.preferred_og_domains) {
       // No preferred domains, use ogImage for all
       for (const bookmark of validBookmarks) {
         imageSources[bookmark.id] = bookmark?.ogImage;
@@ -28,7 +28,7 @@ export const useBookmarkImageSources = (bookmarks: SingleListData[]): Record<num
       return imageSources;
     }
 
-    const preferredDomains = profileData.data[0].preferred_og_domains ?? [];
+    const preferredDomains = profileData?.[0]?.preferred_og_domains ?? [];
     const preferredDomainSet = new Set(preferredDomains.map((domain) => domain.toLowerCase()));
 
     for (const bookmark of validBookmarks) {

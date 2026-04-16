@@ -2,6 +2,8 @@ import type { ImageToTextContextProps, UserCollection } from "./image-analysis-s
 import type { AiToggles } from "@/utils/ai-feature-toggles";
 import type { BookmarkContentType } from "@/utils/resolve-content-type";
 
+import { CONTENT_TYPES } from "./image-analysis-schema";
+
 // System instruction — passed as config.systemInstruction in the Gemini API call
 export const SYSTEM_INSTRUCTION = [
   "You are a bookmark metadata extraction system.",
@@ -154,7 +156,7 @@ const KEYWORDS_SECTION = [
   "Extract ALL applicable keyword fields for this image. Each field you can fill should be filled.",
   "",
   '"type": Pick 1–3 from this CLOSED list (most specific first):',
-  '"article", "blog", "documentation", "infographic", "meme", "newsletter", "recipe", "tutorial", "image", "photo", "poster", "video", "music_album", "podcast", "movie", "tvshow", "anime", "game", "xpost", "instapost", "redditpost", "pin", "thread", "product", "deal", "review", "repo", "portfolio", "webapp", "ecommerce", "streaming", "news", "design", "developer tools", "productivity", "social media", "course", "book", "research_paper", "job", "event", "place", "restaurant", "pdf", "profile", "package", "linkedinpost", "tiktok"',
+  CONTENT_TYPES.map((t) => `"${t}"`).join(", "),
   "",
 
   '"people": ONLY named/identifiable people — use actual names. Include directors, cast, authors. Omit if no one is identifiable.',

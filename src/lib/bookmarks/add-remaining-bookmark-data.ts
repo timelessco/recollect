@@ -23,6 +23,7 @@ import {
   NEXT_API_URL,
   R2_MAIN_BUCKET_NAME,
   STORAGE_SCRAPPED_IMAGES_PATH,
+  V2_GET_MEDIA_TYPE_API,
 } from "@/utils/constants";
 import { blurhashFromURL } from "@/utils/getBlurHash";
 import { resolveContentType } from "@/utils/resolve-content-type";
@@ -74,7 +75,7 @@ async function getMediaType(url: string): Promise<null | string> {
   try {
     const encodedUrl = encodeURIComponent(url);
     const response = await fetch(
-      `${getBaseUrl()}${NEXT_API_URL}/v1/bookmarks/get/get-media-type?url=${encodedUrl}`,
+      `${getBaseUrl()}${NEXT_API_URL}/${V2_GET_MEDIA_TYPE_API}?url=${encodedUrl}`,
       { method: "GET" },
     );
 
@@ -231,6 +232,10 @@ async function downloadImageAsBase64(imageUrl: string): Promise<null | string> {
       imageUrl,
       sizeBytes: arrayBuffer.byteLength,
     });
+    if (arrayBuffer.byteLength === 0) {
+      console.error("[add-remaining-bookmark-data] Image body was empty:", { imageUrl });
+      return null;
+    }
     return Buffer.from(arrayBuffer).toString("base64");
   } catch (error) {
     console.error("[add-remaining-bookmark-data] Image download exception:", { error, imageUrl });
