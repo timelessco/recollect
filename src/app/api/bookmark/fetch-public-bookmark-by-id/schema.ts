@@ -111,7 +111,6 @@ const BookmarkSchema = z.object({
     description: "Extended metadata JSONB",
   }),
   ogImage: z.string().nullable().meta({ description: "OG image URL" }),
-  screenshot: z.string().nullable().meta({ description: "Screenshot URL" }),
   title: z.string().nullable().meta({ description: "Page title" }),
   trash: z
     .string()

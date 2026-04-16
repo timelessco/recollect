@@ -108,7 +108,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 					url,
 					description,
 					ogImage,
-					screenshot,
 					trash,
 					type,
 					meta_data,

@@ -95,7 +95,6 @@ export const v2FetchBookmarksDataSupplement = {
           make_discoverable: null,
           meta_data: null,
           ogImage: "https://example.com/og.png",
-          screenshot: "https://example.com/screenshot.png",
           sort_index: null,
           addedTags: [
             { id: 1, name: "css" },

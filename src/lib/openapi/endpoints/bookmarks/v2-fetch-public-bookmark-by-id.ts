@@ -91,7 +91,6 @@ export const v2FetchPublicBookmarkByIdSupplement = {
           width: 1794,
         },
         ogImage: "https://example.com/og.jpg",
-        screenshot: null,
         title: "ReUI on X",
         trash: null,
         type: "bookmark",

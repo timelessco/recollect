@@ -25,7 +25,7 @@ export interface ImgMetadataType {
   ocr: null | string;
   ocr_status?: "limit_reached" | "no_text" | "success";
   ogImgBlurUrl: null | string;
-  screenshot: null | string;
+  screenshot?: null | string;
   twitter_avatar_url: null | string;
   video_url: null | string;
   width: null | number;
@@ -44,7 +44,6 @@ export interface SingleListData {
   meta_data: ImgMetadataType;
   ogImage: string;
   ogimage?: string;
-  screenshot: string;
   title: string;
   trash: null | string;
   type: string;
@@ -75,7 +74,6 @@ export interface UrlData {
   description: string;
   id?: number;
   ogImage: string;
-  screenshot: string;
   title: string;
   url: string;
   user_id: string;

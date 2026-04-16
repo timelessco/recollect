@@ -40,7 +40,6 @@ export const GET = createGetApiHandler({
 				url,
 				description,
 				ogImage,
-				screenshot,
 				trash,
 				type,
 				meta_data,

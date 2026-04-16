@@ -70,7 +70,6 @@ export const v2SearchBookmarksSupplement = {
           make_discoverable: null,
           meta_data: {},
           ogImage: "https://example.com/og-image.jpg",
-          screenshot: null,
           sort_index: "0",
           title: "React Hooks Guide",
           trash: null,

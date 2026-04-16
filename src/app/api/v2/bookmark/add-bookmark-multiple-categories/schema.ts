@@ -25,7 +25,6 @@ const BookmarkRow = z.object({
   make_discoverable: z.string().nullable().meta({ description: "Discoverability status" }),
   meta_data: z.unknown().meta({ description: "Enriched metadata (favicon, media type, iframe)" }),
   ogImage: z.string().nullable().meta({ description: "Open Graph image URL" }),
-  screenshot: z.string().nullable().meta({ description: "Screenshot image URL" }),
   sort_index: z.string().nullable().meta({ description: "Sort order index" }),
   title: z.string().nullable().meta({ description: "Bookmark title from OG scraping" }),
   trash: z.string().nullable().meta({ description: "Trash timestamp if soft-deleted" }),

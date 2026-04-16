@@ -20,7 +20,6 @@ export const fetchBookmarksDiscoverableSupplement = {
         make_discoverable: "2024-03-15T12:00:00Z",
         meta_data: null,
         ogImage: "https://openai.com/og.png",
-        screenshot: null,
         sort_index: "a0",
         title: "OpenAI Research Blog",
         trash: null,

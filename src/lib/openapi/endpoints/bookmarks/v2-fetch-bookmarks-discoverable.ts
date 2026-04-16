@@ -65,7 +65,7 @@ export const v2FetchBookmarksDiscoverableSupplement = {
     },
     "happy-path": {
       description:
-        "Send `?page=0` — returns up to 25 discoverable bookmarks. Public feed: identical response for logged-in and logged-out callers. Nullable fields (title, description, screenshot, sort_index, trash) may be null per row.",
+        "Send `?page=0` — returns up to 25 discoverable bookmarks. Public feed: identical response for logged-in and logged-out callers. Nullable fields (title, description, sort_index, trash) may be null per row.",
       summary: "Discoverable feed (first page)",
       value: [
         {
@@ -79,7 +79,6 @@ export const v2FetchBookmarksDiscoverableSupplement = {
             width: 1200,
           },
           ogImage: "https://example.com/og/article-1.png",
-          screenshot: null,
           sort_index: null,
           title: "Article One",
           trash: null,
@@ -94,7 +93,6 @@ export const v2FetchBookmarksDiscoverableSupplement = {
           make_discoverable: "2024-03-16T09:00:00.000000+00:00",
           meta_data: null,
           ogImage: "https://example.com/og/article-2.png",
-          screenshot: null,
           sort_index: null,
           title: null,
           trash: null,
