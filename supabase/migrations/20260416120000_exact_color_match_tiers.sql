@@ -351,7 +351,7 @@ END;
 $function$;
 
 COMMENT ON FUNCTION public.search_bookmarks_url_tag_scope(character varying, character varying, text[], bigint, jsonb, text[]) IS
-  'Bookmark search with URL/tag/category/color/type filters. Color hints are an array of {tag_name,l,a,b} entries; a row matches a hint when it has a tag with that name OR at least one dominant image color scores >= 0.22 under the OKLCh two-stage ranker. Ranking prioritizes (A) near-exact dominant-color match (OKLab distance <= 0.05), (B) near-exact non-dominant match (distance <= 0.02), then color-tag match, then type-hint tier, then fuzzy similarity + recency. Capped at 3 color hints by the route handler.';
+  'Bookmark search with URL/tag/category/color/type filters. Accepts up to 3 color hints as {tag_name,l,a,b} (cap enforced by the route handler; the function itself iterates every hint passed in). A row qualifies for a hint when it has a tag with that name OR some palette color (any position, not only the dominant) scores >= 0.22 under lch_color_score × exp(-0.4 * (pos - 1)) positional decay. ORDER BY tiers, highest first: (A) dominant palette color (index 0) within OKLab distance 0.05 of any hint, (B) non-dominant palette color (index > 0) within OKLab distance 0.02 of any hint, (C) color-tag match, (D) type-hint tier (tag match > type-only match > none), (E) text similarity (url/title/description/captions/image_keywords) + MAX(lch_color_score × positional decay) across all hint x palette pairs, (F) inserted_at DESC as final tiebreaker.';
 
 -- PART 3: Restore access controls. `CREATE OR REPLACE` preserves existing
 -- grants, but the `DROP FUNCTION` above removed them, so re-grant explicitly.
