@@ -370,6 +370,7 @@ GRANT EXECUTE ON FUNCTION public.search_bookmarks_url_tag_scope(character varyin
 DO $$
 DECLARE
   v_overload_count int;
+  v_expected_signature_present int;
   v_body text;
 BEGIN
   SELECT COUNT(*) INTO v_overload_count
@@ -377,6 +378,14 @@ BEGIN
   JOIN pg_namespace n ON n.oid = p.pronamespace
   WHERE n.nspname = 'public'
     AND p.proname = 'search_bookmarks_url_tag_scope';
+
+  SELECT COUNT(*) INTO v_expected_signature_present
+  FROM pg_proc p
+  JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'public'
+    AND p.proname = 'search_bookmarks_url_tag_scope'
+    AND pg_get_function_identity_arguments(p.oid) =
+      'search_text character varying, url_scope character varying, tag_scope text[], category_scope bigint, color_hints jsonb, type_hints text[]';
 
   SELECT pg_get_functiondef(p.oid) INTO v_body
   FROM pg_proc p
@@ -386,6 +395,9 @@ BEGIN
 
   IF v_overload_count <> 1 THEN
     RAISE EXCEPTION 'search_bookmarks_url_tag_scope has % overloads, expected 1', v_overload_count;
+  END IF;
+  IF v_expected_signature_present <> 1 THEN
+    RAISE EXCEPTION 'search_bookmarks_url_tag_scope does not match the expected 6-arg RPC signature (search_text varchar, url_scope varchar, tag_scope text[], category_scope bigint, color_hints jsonb, type_hints text[])';
   END IF;
   IF v_body NOT LIKE '%>= 0.50%' THEN
     RAISE EXCEPTION 'Fuzzy quality floor (0.50) missing';
