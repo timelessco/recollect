@@ -192,20 +192,11 @@ export const LoaderImgPlaceholder = ({
       cardTypeCondition === viewValues.list,
   });
 
-  const statusText = (() => {
-    // Image is being preloaded by AnimatedBookmarkImage — keep showing "Fetching data..."
-    // so the text doesn't flash to "Cannot fetch image" during the preload window
-    if (isPreloading) {
-      return "Fetching data...";
-    }
-    if (isLoading) {
-      return "Taking screenshot....";
-    }
-    if (id < 0) {
-      return "Fetching data...";
-    }
-    return "Cannot fetch image for this bookmark";
-  })();
+  // Two states only:
+  //   - Image is on its way (optimistic insert, server pipeline running, or
+  //     preloading crossfade): "Getting screenshot"
+  //   - Pipeline done and still no image (terminal failure): no text
+  const statusText = isPreloading || isLoading || id < 0 ? "Getting screenshot" : null;
 
   return (
     <div className={loaderClassName}>
@@ -215,7 +206,7 @@ export const LoaderImgPlaceholder = ({
         loader={(source) => source.src}
         src={loaderGif}
       />
-      {!(cardTypeCondition === viewValues.list) && (
+      {statusText && cardTypeCondition !== viewValues.list && (
         <AnimatePresence mode="wait">
           <motion.p
             animate={{ opacity: 1 }}
