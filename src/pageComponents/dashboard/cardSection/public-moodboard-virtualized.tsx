@@ -45,6 +45,53 @@ export const PublicMoodboardVirtualized = ({
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 
+  // SSR + pre-hydration fallback: the virtualizer relies on a scroll element +
+  // viewport dimensions that don't exist on the server, so its output ships
+  // empty. Render a simple column-based grid instead so guest /discover HTML
+  // contains indexable bookmark content for crawlers. After mount, the
+  // virtualizer takes over below and the DOM swaps to absolute positioning.
+  // Mirrors the pre-regression `PublicMoodboard` (removed in PR #815, commit
+  // dccf0582, "replace PublicMoodboard with virtualized version for improved
+  // performance" — reintroduced here as a mount-gated fallback so we keep
+  // virtualization post-hydration).
+  if (!mounted) {
+    const columns = Array.from({ length: lanes }, (_, col) =>
+      bookmarksList.map((_bookmark, idx) => idx).filter((idx) => idx % lanes === col),
+    );
+
+    return (
+      <div className="relative flex w-full">
+        {columns.map((indices, colIndex) => (
+          <div
+            className="min-w-0 flex-1 pr-3 pl-3"
+            key={
+              indices[0] !== undefined
+                ? (bookmarksList[indices[0]]?.id ?? indices[0])
+                : `moodboard-col-${colIndex}`
+            }
+          >
+            {indices.map((idx) => {
+              const bookmark = bookmarksList[idx];
+              if (!bookmark) {
+                return null;
+              }
+
+              return (
+                <div
+                  className="group relative mb-6 flex rounded-lg outline-hidden duration-150 hover:shadow-lg"
+                  key={bookmark.id}
+                >
+                  <BookmarkCardOverlay bookmark={bookmark} />
+                  {renderCard(bookmark)}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full" style={{ height: rowVirtualizer.getTotalSize() }}>
       {virtualItems.map((virtualRow) => {
