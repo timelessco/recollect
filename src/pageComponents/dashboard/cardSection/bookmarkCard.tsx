@@ -27,13 +27,19 @@ export function getImgForPost(
   const postUrl = post?.url;
   const postOgImage = post?.ogImage;
   const postCoverImage = post?.meta_data?.coverImage;
+  // Show the captured screenshot (set by the screenshot route) between the
+  // t2 capture and t3 AI-enrichment writes. Once `ogImage` is populated by
+  // enrichment, it wins.
+  const postScreenshot = post?.meta_data?.screenshot ?? undefined;
   if (preferredDomainsSet.size === 0) {
-    return postOgImage;
+    return postOgImage ?? postScreenshot;
   }
 
   const domain = getDomain(postUrl ?? "");
   const isPreferred = domain && preferredDomainsSet.has(domain);
-  return isPreferred ? (postCoverImage ?? postOgImage) : postOgImage;
+  return isPreferred
+    ? (postCoverImage ?? postOgImage ?? postScreenshot)
+    : (postOgImage ?? postScreenshot);
 }
 
 export interface BookmarkCardProps {
@@ -281,6 +287,8 @@ export const BookmarkCard = memo(BookmarkCardInner, (prev, next) => {
     prev.post.trash === next.post.trash &&
     prev.post.inserted_at === next.post.inserted_at &&
     prev.post.meta_data?.ogImgBlurUrl === next.post.meta_data?.ogImgBlurUrl &&
+    prev.post.meta_data?.screenshot === next.post.meta_data?.screenshot &&
+    prev.post.meta_data?.coverImage === next.post.meta_data?.coverImage &&
     prev.post.meta_data?.height === next.post.meta_data?.height &&
     prev.post.meta_data?.width === next.post.meta_data?.width &&
     prev.post.addedTags?.length === next.post.addedTags?.length &&

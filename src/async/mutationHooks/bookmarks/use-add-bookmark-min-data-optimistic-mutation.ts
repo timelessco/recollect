@@ -8,6 +8,7 @@ import type {
 } from "../../../types/apiTypes";
 
 import { api } from "@/lib/api-helpers/api-v2";
+import { openBookmarkEnrichmentSubscription } from "@/lib/supabase/realtime/bookmark-enrichment-subscription";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
@@ -235,6 +236,13 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
 
         if (data?.id) {
           addLoadingBookmarkId(data.id);
+          if (session?.user?.id) {
+            openBookmarkEnrichmentSubscription({
+              bookmarkId: data.id,
+              queryClient,
+              userId: session.user.id,
+            });
+          }
         }
         addBookmarkScreenshotMutation.mutate({ id: data.id, url: data.url });
       })();

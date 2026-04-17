@@ -117,7 +117,41 @@ export const POST = createAxiomRouteHandler(
       const updatedTitle = title?.slice(0, MAX_LENGTH) ?? existingBookmark.title;
       const updatedDescription = description?.slice(0, MAX_LENGTH) ?? existingBookmark.description;
 
-      // 4. Collect additional images + video in parallel
+      // 4. Early write — land the screenshot URL in the DB as soon as the R2
+      // upload is done. The subsequent additionalImages + video collection can
+      // take several seconds; without this split, Realtime subscribers (the
+      // bookmark-enrichment channel) wouldn't see the screenshot until that
+      // whole batch finishes. Writing screenshot first lets the UI render it
+      // live while the rest of the meta_data is still being assembled.
+      const earlyMetaData = {
+        ...existingMetaData,
+        coverImage: existingBookmark.ogImage,
+        isPageScreenshot,
+        screenshot: publicURL,
+      };
+
+      const { error: earlyUpdateError } = await supabase
+        .from(MAIN_TABLE_NAME)
+        .update({
+          description: updatedDescription,
+          meta_data: toJson(earlyMetaData),
+          title: updatedTitle,
+        })
+        .match({ id: data.id, user_id: userId });
+
+      if (earlyUpdateError) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: earlyUpdateError,
+          message: "Error persisting screenshot",
+          operation: "update_bookmark_screenshot_early",
+        });
+      }
+
+      if (ctx?.fields) {
+        ctx.fields.has_screenshot = true;
+      }
+
+      // 5. Collect additional images + video in parallel
       const [additionalImagesSettled, additionalVideoSettled] = await Promise.allSettled([
         collectAdditionalImages({
           allImages: screenshotResponse.allImages,
@@ -153,26 +187,21 @@ export const POST = createAxiomRouteHandler(
         ctx.fields.video_collection_error = additionalVideoResult.error;
       }
 
-      // 5. Build updated meta_data with screenshot
-      const updatedMetaData = {
-        ...existingMetaData,
+      // 6. Final write — merge additionalImages + additionalVideos on top of
+      // the meta_data persisted in the early write.
+      const finalMetaData = {
+        ...earlyMetaData,
         additionalImages,
         additionalVideos:
           additionalVideoResult.success && additionalVideoResult.url
             ? [additionalVideoResult.url]
             : [],
-        coverImage: existingBookmark.ogImage,
-        isPageScreenshot,
-        screenshot: publicURL,
       };
 
-      // 6. Update bookmark in DB
       const { data: updateData, error: updateError } = await supabase
         .from(MAIN_TABLE_NAME)
         .update({
-          description: updatedDescription,
-          meta_data: toJson(updatedMetaData),
-          title: updatedTitle,
+          meta_data: toJson(finalMetaData),
         })
         .match({ id: data.id, user_id: userId })
         .select("id, ogImage, title, description, meta_data");
@@ -191,10 +220,6 @@ export const POST = createAxiomRouteHandler(
           message: "No data returned from the database",
           operation: "update_bookmark_screenshot",
         });
-      }
-
-      if (ctx?.fields) {
-        ctx.fields.has_screenshot = true;
       }
 
       // 7. Fire remaining enrichment in background

@@ -15,6 +15,7 @@ import useFetchBookmarksView from "../../async/queryHooks/bookmarks/use-fetch-bo
 import useFetchCategories from "../../async/queryHooks/category/use-fetch-categories";
 import useFetchSharedCategories from "../../async/queryHooks/share/use-fetch-shared-categories";
 import useFetchUserProfile from "../../async/queryHooks/user/use-fetch-user-profile";
+import { useSignOutRealtimeTeardown } from "../../hooks/use-sign-out-realtime-teardown";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
@@ -61,6 +62,8 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
 
   const setSession = useSupabaseSession((state) => state.setSession);
   const session = useSupabaseSession((state) => state.session);
+
+  useSignOutRealtimeTeardown();
 
   useEffect(() => {
     const fetchSession = async () => {
