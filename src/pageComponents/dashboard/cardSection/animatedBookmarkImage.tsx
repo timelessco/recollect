@@ -18,7 +18,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/utils/tailwind-merge";
 
 import loaderGif from "../../../../public/loader-gif.gif";
-import { useLoadersStore } from "../../../store/componentStore";
+import { useBookmarkEnrichmentActive } from "../../../hooks/use-bookmark-enrichment-active";
 import { defaultBlur, viewValues } from "../../../utils/constants";
 
 /**
@@ -181,7 +181,7 @@ export const LoaderImgPlaceholder = ({
   id: number;
   isPreloading?: boolean;
 }) => {
-  const isLoading = useLoadersStore((s) => s.loadingBookmarkIds.has(id));
+  const isLoading = useBookmarkEnrichmentActive(id);
 
   const loaderClassName = cn({
     "flex aspect-[1.8] w-full flex-col items-center justify-center gap-2 rounded-lg bg-gray-100 text-center duration-150 group-hover:rounded-b-none":

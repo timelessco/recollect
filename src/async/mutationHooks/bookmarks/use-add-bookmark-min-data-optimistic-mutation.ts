@@ -8,7 +8,10 @@ import type {
 } from "../../../types/apiTypes";
 
 import { api } from "@/lib/api-helpers/api-v2";
-import { openBookmarkEnrichmentSubscription } from "@/lib/supabase/realtime/bookmark-enrichment-subscription";
+import {
+  openBookmarkEnrichmentSubscription,
+  teardownBookmarkEnrichmentSubscription,
+} from "@/lib/supabase/realtime/bookmark-enrichment-subscription";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
@@ -44,7 +47,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
   // We'll initialize the mutation with a default value and update it when we have the actual ID
   const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
   const { sortBy } = useGetSortBy();
-  const { addLoadingBookmarkId, removeLoadingBookmarkId, setIsBookmarkAdding } = useLoadersStore();
+  const { setIsBookmarkAdding } = useLoadersStore();
 
   const addBookmarkMinDataOptimisticMutation = useMutation<
     SingleListData[],
@@ -191,22 +194,30 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       const url = data?.url;
 
       // Heavy processing (media check, PDF thumbnail, screenshot) runs as
-      // fire-and-forget so it doesn't block the render cycle
+      // fire-and-forget so it doesn't block the render cycle.
+      //
+      // The enrichment subscription was opened in onSuccess (right after the
+      // temp → real ID swap) so the loading state is live for the full
+      // pipeline. Here we tear it down on paths that don't feed the
+      // screenshot/enrichment flow (plain image / audio URLs) and leave it
+      // alive for PDF (DB write happens inside handlePdfThumbnailAndUpload)
+      // and the regular screenshot path.
       void (async () => {
         const isUrlOfMimeType = await checkIfUrlAnImage(url);
         if (isUrlOfMimeType) {
+          void teardownBookmarkEnrichmentSubscription(data.id, "not_applicable");
           return;
         }
 
         const mediaType = await getMediaType(url);
         // Audio URLs already have ogImage fallback set in add-bookmark-min-data
         if (mediaType?.includes("audio")) {
+          void teardownBookmarkEnrichmentSubscription(data.id, "not_applicable");
           return;
         }
 
         if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
           try {
-            addLoadingBookmarkId(data.id);
             successToast("Generating thumbnail");
             await handlePdfThumbnailAndUpload({
               fileId: data.id,
@@ -224,26 +235,16 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
             } catch (retryError) {
               console.error("PDF thumbnail upload failed after retry:", retryError);
               errorToast("thumbnail generation failed");
+              void teardownBookmarkEnrichmentSubscription(data.id, "screenshot_failed");
             }
           } finally {
             void queryClient.invalidateQueries({
               queryKey: [BOOKMARKS_KEY, session?.user?.id],
             });
-            removeLoadingBookmarkId(data.id);
           }
           return;
         }
 
-        if (data?.id) {
-          addLoadingBookmarkId(data.id);
-          if (session?.user?.id) {
-            openBookmarkEnrichmentSubscription({
-              bookmarkId: data.id,
-              queryClient,
-              userId: session.user.id,
-            });
-          }
-        }
         addBookmarkScreenshotMutation.mutate({ id: data.id, url: data.url });
       })();
     },
@@ -281,6 +282,20 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
             } as PaginatedBookmarks;
           },
         );
+
+        // Open the enrichment subscription as soon as the real id is known.
+        // The onSettled IIFE tears it down on paths that don't feed the
+        // pipeline (image/audio URLs) once the async media type check
+        // resolves. Opening here (instead of after the media check) closes
+        // the ~200–1000ms gap where the card would otherwise show no
+        // loading indicator while we probe the URL's content type.
+        if (session?.user?.id) {
+          openBookmarkEnrichmentSubscription({
+            bookmarkId: serverBookmark.id,
+            queryClient,
+            userId: session.user.id,
+          });
+        }
       }
 
       if (
