@@ -47,13 +47,23 @@ export function parseBookmarkRealtimePayload(payload: unknown): BookmarkRealtime
 }
 
 /**
- * A row is terminal (safe to tear down the subscription) when both the
- * screenshot URL (stored on `meta_data.screenshot`) and the final enrichment
- * `ogImage` are populated. Either being null means the enrichment pipeline is
- * still running.
+ * A row is terminal (safe to tear down the subscription) when the enrichment
+ * pipeline for its media type has finished writing.
+ *
+ * - PDF (`meta_data.mediaType === "application/pdf"`): the PDF flow writes
+ *   `ogImage` to the thumbnail URL via `uploadFileRemainingData` and never
+ *   touches `meta_data.screenshot`, so terminal = `ogImage` populated.
+ * - Regular URL: the screenshot route writes `meta_data.screenshot` (t2) and
+ *   `after()` enrichment writes the final `ogImage` (t3); terminal = both.
  */
 export function isRowTerminal(row: BookmarkRealtimeRow): boolean {
-  const screenshot =
-    row.meta_data && typeof row.meta_data === "object" ? row.meta_data.screenshot : null;
+  const meta = row.meta_data && typeof row.meta_data === "object" ? row.meta_data : null;
+  const mediaType = typeof meta?.mediaType === "string" ? meta.mediaType : null;
+
+  if (mediaType === "application/pdf") {
+    return Boolean(row.ogImage);
+  }
+
+  const screenshot = meta?.screenshot ?? null;
   return Boolean(screenshot) && Boolean(row.ogImage);
 }

@@ -13,7 +13,7 @@ import type { BookmarkImageProps } from "./animatedBookmarkImage";
 
 import { cn } from "@/utils/tailwind-merge";
 
-import { useLoadersStore } from "../../../store/componentStore";
+import { useBookmarkEnrichmentActive } from "../../../hooks/use-bookmark-enrichment-active";
 import { viewValues } from "../../../utils/constants";
 import {
   AnimatedBookmarkImage,
@@ -62,7 +62,7 @@ const ImgLogicComponent = ({
       cardTypeCondition === viewValues.card || cardTypeCondition === viewValues.moodboard,
   });
 
-  const isLoading = useLoadersStore((s) => s.loadingBookmarkIds.has(id));
+  const isLoading = useBookmarkEnrichmentActive(id);
   const [errorImg, setErrorImg] = useState<null | string>(null);
 
   if (!hasCoverImg) {

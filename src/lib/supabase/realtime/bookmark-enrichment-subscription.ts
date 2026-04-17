@@ -12,6 +12,7 @@ type TeardownReason =
   | "auth_error"
   | "channel_error"
   | "delete_event"
+  | "not_applicable"
   | "screenshot_failed"
   | "terminal"
   | "timeout";
@@ -38,6 +39,38 @@ const SENTRY_OPERATION = "realtime_bookmark_subscribe";
 
 const active = new Map<number, SubscriptionRecord>();
 const waiting: OpenArgs[] = [];
+const listeners = new Set<() => void>();
+
+function notifyListeners(): void {
+  for (const listener of listeners) {
+    listener();
+  }
+}
+
+/**
+ * Subscribe to changes in the manager's active-subscription state. Called
+ * whenever a subscription is opened, torn down, or promoted from the waiting
+ * queue. Returns an unsubscribe function. Used by `useBookmarkEnrichmentActive`
+ * via React's `useSyncExternalStore`.
+ */
+export function subscribeToBookmarkEnrichmentChanges(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+/**
+ * Reads whether an enrichment subscription is currently alive for a given
+ * bookmark id (either active and not torn-down, or queued waiting for a slot).
+ * Used as the "is this bookmark still loading?" signal in card UI.
+ */
+export function isBookmarkEnrichmentActive(bookmarkId: number): boolean {
+  if (isSubscriptionAlive(bookmarkId)) {
+    return true;
+  }
+  return waiting.some((queued) => queued.bookmarkId === bookmarkId);
+}
 
 function breadcrumb(message: string, bookmarkId: number, extra?: Record<string, unknown>): void {
   Sentry.addBreadcrumb({
@@ -50,10 +83,12 @@ function breadcrumb(message: string, bookmarkId: number, extra?: Record<string, 
 
 /**
  * Open a Realtime subscription that watches a newly-added bookmark row for
- * enrichment-pipeline UPDATEs and DELETE. Idempotent per bookmark id.
- * Callers should only open for URLs that will trigger the screenshot mutation
- * (i.e., not image / audio / PDF media URLs) — media paths never reach the
- * terminal state and would always hit the 90s timeout.
+ * enrichment-pipeline UPDATEs and DELETE. Idempotent per bookmark id. May be
+ * called before the media type is known; the caller (the add-bookmark
+ * mutation) tears down via `teardownBookmarkEnrichmentSubscription` on
+ * non-enriching paths (plain image / audio URLs) once the media check
+ * resolves, so the subscription is always either productive or short-lived.
+ * Terminal conditions cover both PDF and regular-URL enrichment.
  */
 export function openBookmarkEnrichmentSubscription(args: OpenArgs): void {
   if (active.has(args.bookmarkId)) {
@@ -72,6 +107,7 @@ export function openBookmarkEnrichmentSubscription(args: OpenArgs): void {
       activeCount: active.size,
       waitingCount: waiting.length,
     });
+    notifyListeners();
     return;
   }
   openChannel(args);
@@ -116,6 +152,7 @@ function openChannel(args: OpenArgs): void {
   });
 
   breadcrumb("opened", args.bookmarkId, { activeCount: active.size });
+  notifyListeners();
 }
 
 function handleStatus(args: OpenArgs, status: string): void {
@@ -224,6 +261,7 @@ async function teardown(bookmarkId: number, reason: TeardownReason): Promise<voi
   record.tornDown = true;
   clearTimeout(record.timeoutHandle);
   active.delete(bookmarkId);
+  notifyListeners();
 
   const supabase = createClient();
   await supabase.removeChannel(record.channel);
