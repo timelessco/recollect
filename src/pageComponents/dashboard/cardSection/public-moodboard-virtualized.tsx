@@ -45,50 +45,34 @@ export const PublicMoodboardVirtualized = ({
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 
-  // SSR + pre-hydration fallback: the virtualizer relies on a scroll element +
-  // viewport dimensions that don't exist on the server, so its output ships
-  // empty. Render a simple column-based grid instead so guest /discover HTML
-  // contains indexable bookmark content for crawlers. After mount, the
-  // virtualizer takes over below and the DOM swaps to absolute positioning.
-  // Mirrors the pre-regression `PublicMoodboard` (removed in PR #815, commit
-  // dccf0582, "replace PublicMoodboard with virtualized version for improved
-  // performance" — reintroduced here as a mount-gated fallback so we keep
-  // virtualization post-hydration).
+  // SSR + pre-hydration fallback: the virtualizer depends on a scroll element +
+  // viewport dimensions that don't exist server-side, so its output ships
+  // empty — crawlers see no bookmark content. Render simple semantic HTML
+  // (title, description, link) so guest /discover is indexable. After mount,
+  // the virtualizer below takes over and the DOM swaps to the full card UI.
+  //
+  // Deliberately avoids `renderCard` (which uses next/image + a custom
+  // Cloudflare loader that throws on SSR) and `BookmarkCardOverlay` (not
+  // needed pre-hydration — anchors carry the bookmark URL directly).
   if (!mounted) {
-    const columns = Array.from({ length: lanes }, (_, col) =>
-      bookmarksList.map((_bookmark, idx) => idx).filter((idx) => idx % lanes === col),
-    );
-
     return (
-      <div className="relative flex w-full">
-        {columns.map((indices, colIndex) => (
-          <div
-            className="min-w-0 flex-1 pr-3 pl-3"
-            key={
-              indices[0] !== undefined
-                ? (bookmarksList[indices[0]]?.id ?? indices[0])
-                : `moodboard-col-${colIndex}`
-            }
-          >
-            {indices.map((idx) => {
-              const bookmark = bookmarksList[idx];
-              if (!bookmark) {
-                return null;
-              }
-
-              return (
-                <div
-                  className="group relative mb-6 flex rounded-lg outline-hidden duration-150 hover:shadow-lg"
-                  key={bookmark.id}
-                >
-                  <BookmarkCardOverlay bookmark={bookmark} />
-                  {renderCard(bookmark)}
-                </div>
-              );
-            })}
-          </div>
+      <ul className="flex flex-col gap-6 p-4">
+        {bookmarksList.map((bookmark) => (
+          <li className="flex flex-col gap-1" key={bookmark.id}>
+            <a
+              className="text-base font-medium text-gray-900 hover:underline"
+              href={bookmark.url ?? "#"}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              {bookmark.title || bookmark.url || "Untitled"}
+            </a>
+            {bookmark.description ? (
+              <p className="text-sm text-gray-700">{bookmark.description}</p>
+            ) : null}
+          </li>
         ))}
-      </div>
+      </ul>
     );
   }
 
