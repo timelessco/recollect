@@ -63,13 +63,15 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
     },
   });
 
-  // getClaims() validates the JWT locally (no network call) — avoids blocking
-  // authenticated navigations on a Supabase round-trip. The onboarding-flag
-  // check is performed client-side in Dashboard via useFetchUserProfile.
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const isAuthenticated = Boolean(claimsData?.claims);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (isAuthenticated) {
+  // Authenticated: skip the profile DB query entirely — onboarding detection
+  // now happens client-side in Dashboard via useFetchUserProfile. Keeps a
+  // single Supabase auth round-trip but drops the profile fetch that was the
+  // dominant latency on sidebar nav to /discover.
+  if (user) {
     return {
       props: {
         isAuthenticated: true,
