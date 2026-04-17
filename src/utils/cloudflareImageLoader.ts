@@ -1,9 +1,4 @@
-// Self-contained loader — no module imports. Next.js loads this file during
-// <Image> SSR on Pages Router routes; any import chain that triggers env
-// validation (e.g. via src/utils/constants.ts → @/env/client) can cause the
-// module's default export to fail to resolve, surfacing as a misleading
-// "customImageLoader is not a function" at runtime. See first SSR hit on
-// guest /discover which exposed this.
+import { CF_IMAGE_LOADER_URL } from "./constants";
 
 const normalizeImagePath = (imagePath: string): string =>
   imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
@@ -19,14 +14,8 @@ export default function cloudflareImageLoader({
   src,
   width,
 }: CloudflareImageLoaderProps): string {
-  // process.env used intentionally — NEXT_PUBLIC_* values are inlined by
-  // Next.js at build time, so no runtime module resolution is needed here.
+  // process.env used intentionally — NEXT_PUBLIC_VERCEL_ENV inlined by Next.js
   if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") {
-    return src;
-  }
-
-  const bucketUrl = process.env.NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL;
-  if (!bucketUrl) {
     return src;
   }
 
@@ -36,5 +25,7 @@ export default function cloudflareImageLoader({
     parameters.push(`quality=${quality}`);
   }
 
-  return `${bucketUrl}/cdn-cgi/image/${parameters.join(",")}/${normalizeImagePath(src)}`;
+  const parametersString = parameters?.join(",");
+
+  return `${CF_IMAGE_LOADER_URL}/${parametersString}/${normalizeImagePath(src)}`;
 }
