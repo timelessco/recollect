@@ -17,6 +17,14 @@ export const FetchUserProfileOutputSchema = z.array(
       description:
         "Ordered array of category IDs. Elements may be null for categories deleted without compacting the ordering array.",
     }),
+    chrome_first_import_at: z.string().nullable().meta({
+      description:
+        "ISO timestamp set on a free user's first Chrome bookmarks import. Subsequent free-tier imports accept only bookmarks with `inserted_at > chrome_first_import_at`. NULL until first import.",
+    }),
+    chrome_historical_synced: z.boolean().meta({
+      description:
+        "TRUE once a paid user has completed a full historical Chrome bookmarks import. Hides the historical-sync toggle in the extension.",
+    }),
     display_name: z.string().nullable().meta({ description: "User's display name" }),
     email: z.string().nullable().meta({ description: "User's email address" }),
     freeTierCutoffAt: z.string().meta({
@@ -24,6 +32,10 @@ export const FetchUserProfileOutputSchema = z.array(
         "ISO timestamp representing the earliest `saved_at` a free-tier user may import. Equals `auth.users.created_at` — always non-null.",
     }),
     id: z.string().meta({ description: "User's unique identifier" }),
+    instagram_historical_synced: z.boolean().meta({
+      description:
+        "TRUE once a paid user has completed a full historical Instagram sync (content script paginated to hasMore=false). Hides the historical-sync toggle in the extension.",
+    }),
     last_synced_instagram_id: z
       .string()
       .nullable()
@@ -56,6 +68,10 @@ export const FetchUserProfileOutputSchema = z.array(
     }),
     subscription_status: z.string().nullable().meta({
       description: "Raw subscription status from the billing provider. Null for free users.",
+    }),
+    twitter_historical_synced: z.boolean().meta({
+      description:
+        "TRUE once a paid user has completed a full historical X (Twitter) sync. Hides the historical-sync toggle in the extension.",
     }),
     user_name: z.string().nullable().meta({ description: "User's chosen username" }),
   }),

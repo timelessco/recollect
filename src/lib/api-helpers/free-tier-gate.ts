@@ -2,7 +2,9 @@ import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { PROFILES } from "@/utils/constants";
+import { MAIN_TABLE_NAME, PROFILES } from "@/utils/constants";
+
+export const FREE_TIER_HISTORICAL_CAP = 10;
 
 export type NormalizedPlan = "free" | "plus" | "pro";
 
@@ -91,4 +93,63 @@ export function partitionByCutoff<T>(
   }
 
   return { kept, skipped };
+}
+
+/**
+ * Returns how many more historical items a free-tier user may sync for a
+ * given bookmark `type`. Counts existing rows in `everything`. Partial syncs
+ * across multiple runs resume naturally because the budget is computed from
+ * the already-synced count (not the request count).
+ */
+export async function getFreeHistoricalBudget(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  bookmarkType: string,
+): Promise<{ alreadySynced: number; remainingBudget: number }> {
+  const { count, error } = await supabase
+    .from(MAIN_TABLE_NAME)
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("type", bookmarkType);
+
+  if (error) {
+    throw new RecollectApiError("service_unavailable", {
+      cause: error,
+      message: "Failed to resolve historical sync budget",
+      operation: "free_historical_budget_fetch",
+    });
+  }
+
+  const alreadySynced = count ?? 0;
+  return {
+    alreadySynced,
+    remainingBudget: Math.max(0, FREE_TIER_HISTORICAL_CAP - alreadySynced),
+  };
+}
+
+/**
+ * Caps a batch to at most `budget` items, keeping the most recent by
+ * `saved_at`. Defense-in-depth — does not trust the extension to sort.
+ */
+export function capByHistoricalBudget<T>(
+  items: readonly T[],
+  getSavedAtIso: (item: T) => null | string | undefined,
+  budget: number,
+): { kept: T[]; skipped: number } {
+  if (budget <= 0) {
+    return { kept: [], skipped: items.length };
+  }
+
+  if (items.length <= budget) {
+    return { kept: [...items], skipped: 0 };
+  }
+
+  const sorted = items.toSorted((a, b) => {
+    const aMs = Date.parse(getSavedAtIso(a) ?? "") || 0;
+    const bMs = Date.parse(getSavedAtIso(b) ?? "") || 0;
+    return bMs - aMs;
+  });
+
+  const kept = sorted.slice(0, budget);
+  return { kept, skipped: items.length - kept.length };
 }

@@ -20,6 +20,8 @@ export const InstagramSyncInputSchema = z.object({
     )
     .min(1, "At least one bookmark required")
     .max(500, "Maximum 500 bookmarks per request"),
+  historicalSyncComplete: z.boolean().optional(),
+  isHistoricalRun: z.boolean().optional(),
 });
 
 export const InstagramSyncOutputSchema = z.object({
