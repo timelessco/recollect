@@ -7,8 +7,6 @@ import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 import isNull from "lodash/isNull";
 
-import { isNullable } from "@/utils/assertion-utils";
-
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/use-fetch-bookmarks-view";
 import useFetchCategories from "../../async/queryHooks/category/use-fetch-categories";
@@ -43,7 +41,11 @@ const OnboardingModal = dynamic(
 
 const supabase = createClient();
 
-const Dashboard = () => {
+interface DashboardProps {
+  showOnboarding?: boolean;
+}
+
+const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const categorySlug = getCategorySlugFromRouter(router);
@@ -133,13 +135,6 @@ const Dashboard = () => {
   }, [session?.user?.app_metadata?.provider, updateUserProfileMutateAsync, userProfileData]);
 
   const isDiscoverPage = categorySlug === DISCOVER_URL;
-
-  // Show the onboarding modal on /discover when the current user's profile
-  // has no onboarded_at timestamp. Gated on profile having loaded — otherwise
-  // the modal would flash while useFetchUserProfile is in-flight.
-  const profile = userProfileData?.[0];
-  const showOnboarding =
-    isDiscoverPage && profile !== undefined && isNullable(profile.onboarded_at);
 
   const renderMainPaneContent = () => {
     if (!isInNotFoundPage) {

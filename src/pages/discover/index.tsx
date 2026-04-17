@@ -6,6 +6,7 @@ import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
 import type { SingleListData } from "../../types/apiTypes";
 
 import { Spinner } from "@/components/spinner";
+import { isNullable } from "@/utils/assertion-utils";
 
 import { useMounted } from "../../hooks/useMounted";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../../lib/supabase/constants";
@@ -16,9 +17,14 @@ import { MAIN_TABLE_NAME, PAGINATION_LIMIT } from "../../utils/constants";
 interface DiscoverPageProps {
   discoverData?: SingleListData[];
   isAuthenticated: boolean;
+  showOnboarding: boolean;
 }
 
-const Discover: NextPage<DiscoverPageProps> = ({ discoverData, isAuthenticated }) => {
+const Discover: NextPage<DiscoverPageProps> = ({
+  discoverData,
+  isAuthenticated,
+  showOnboarding,
+}) => {
   const isMounted = useMounted();
 
   if (!isAuthenticated && discoverData) {
@@ -33,7 +39,7 @@ const Discover: NextPage<DiscoverPageProps> = ({ discoverData, isAuthenticated }
     );
   }
 
-  return <Dashboard />;
+  return <Dashboard showOnboarding={showOnboarding} />;
 };
 
 export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (context) => {
@@ -67,14 +73,35 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Authenticated: skip the profile DB query entirely — onboarding detection
-  // now happens client-side in Dashboard via useFetchUserProfile. Keeps a
-  // single Supabase auth round-trip but drops the profile fetch that was the
-  // dominant latency on sidebar nav to /discover.
+  // Authenticated: read profiles.onboarded_at to decide whether the welcome
+  // modal should mount in first paint. Single source of truth — a client-side
+  // derivation off React Query kept racing with the mark-onboarded mutation's
+  // cache invalidation, causing the modal to reappear on every visit.
   if (user) {
+    let showOnboarding = false;
+    const { data: profileRow, error: profileError } = await supabase
+      .from("profiles")
+      .select("onboarded_at")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      Sentry.captureException(profileError, {
+        extra: { userId: user.id },
+        tags: {
+          operation: "fetch_onboarding_flag",
+          route: "discover-ssr",
+        },
+      });
+      // Fail closed — don't show the modal if we can't read the flag.
+    } else {
+      showOnboarding = isNullable(profileRow?.onboarded_at);
+    }
+
     return {
       props: {
         isAuthenticated: true,
+        showOnboarding,
       },
     };
   }
@@ -118,6 +145,7 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
         props: {
           discoverData: [],
           isAuthenticated: false,
+          showOnboarding: false,
         },
       };
     }
@@ -133,6 +161,7 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
       props: {
         discoverData,
         isAuthenticated: false,
+        showOnboarding: false,
       },
     };
   } catch (error) {
@@ -144,6 +173,7 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
       props: {
         discoverData: [],
         isAuthenticated: false,
+        showOnboarding: false,
       },
     };
   }
