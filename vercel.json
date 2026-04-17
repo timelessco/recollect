@@ -1,5 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/discover",
+      "schedule": "*/5 * * * *"
+    }
+  ],
   "functions": {
     "src/pages/api/profiles/fetch-user-profile.tsx": {
       "maxDuration": 30
