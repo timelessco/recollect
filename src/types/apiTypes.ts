@@ -196,10 +196,13 @@ export interface ProfilesTableTypes {
   ai_features_toggle: AiFeaturesToggle;
   bookmarks_view: ProfilesBookmarksView;
   category_order: number[];
+  chrome_first_import_at: null | string;
+  chrome_historical_synced: boolean;
   display_name: string;
   email: string;
   favorite_categories: number[];
   id: string;
+  instagram_historical_synced: boolean;
   last_synced_instagram_id: null | string;
   last_synced_twitter_id: null | string;
   onboarded_at: null | string;
@@ -209,6 +212,7 @@ export interface ProfilesTableTypes {
   provider: null | string;
   subscription_current_period_end: null | string;
   subscription_status: null | string;
+  twitter_historical_synced: boolean;
   user_name: string;
 }
 

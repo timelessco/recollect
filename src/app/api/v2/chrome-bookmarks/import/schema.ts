@@ -20,6 +20,14 @@ export const ChromeBookmarkImportInputSchema = z.object({
     .min(1, { error: "At least one bookmark required" })
     .max(500, { error: "Maximum 500 bookmarks per request" })
     .meta({ description: "Array of Chrome bookmarks to import" }),
+  historicalSyncComplete: z.boolean().optional().meta({
+    description:
+      "Set when a paid user invoked the historical-sync toggle. Flips chrome_historical_synced on success.",
+  }),
+  isHistoricalRun: z.boolean().optional().meta({
+    description:
+      "True when the user flipped the Historical Sync toggle on. Required to bypass the 10-item cap for paid users on initial import.",
+  }),
 });
 
 export type ChromeBookmarkImportInput = z.infer<typeof ChromeBookmarkImportInputSchema>;
