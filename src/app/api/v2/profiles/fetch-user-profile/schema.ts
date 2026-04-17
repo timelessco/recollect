@@ -32,6 +32,9 @@ export const FetchUserProfileOutputSchema = z.array(
       .array(z.number())
       .nullable()
       .meta({ description: "IDs of categories marked as favorites" }),
+    onboarded_at: z.string().nullable().meta({
+      description: "Timestamp when the user dismissed the welcome modal; null for first-timers",
+    }),
     preferred_og_domains: z
       .array(z.string())
       .nullable()
