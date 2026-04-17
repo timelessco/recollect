@@ -1,8 +1,10 @@
 import "../styles/globals.css";
 
+import type { NextPage } from "next";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { useState } from "react";
+import type { ReactElement } from "react";
 
 import { HydrationBoundary, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -18,12 +20,17 @@ import { ToastSetup } from "@/components/ui/recollect/toast";
 
 import { getBaseUrl } from "../utils/constants";
 
+export type NextPageWithLayout<P = Record<string, unknown>> = NextPage<P> & {
+  getLayout?: (page: ReactElement, pageProps: P) => ReactElement;
+};
+
 const MyApp = ({
   Component,
   pageProps: { ...pageProps },
 }: AppProps<{
   dehydratedState: DehydratedState;
-}>) => {
+}> & { Component: NextPageWithLayout }) => {
+  const getLayout = Component.getLayout ?? ((page: ReactElement) => page);
   // Create a client
   // oxlint-disable-next-line react/hook-use-state -- stable singleton, setter intentionally unused
   const [queryClient] = useState(
@@ -73,9 +80,7 @@ const MyApp = ({
             )}
           </Head>
 
-          <SerwistProvider>
-            <Component {...pageProps} />
-          </SerwistProvider>
+          <SerwistProvider>{getLayout(<Component {...pageProps} />, pageProps)}</SerwistProvider>
         </HydrationBoundary>
         <IosAutozoomFix />
         <ToastSetup />
