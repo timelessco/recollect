@@ -66,21 +66,26 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
   });
 
   try {
+    // getSession() reads the auth cookie locally — no Supabase network round-trip
+    // on the hot path. getUser() was costing ~50–150ms on every sidebar nav to
+    // /discover. Tampered cookies are harmless here: the profiles query below
+    // goes through RLS (rejects invalid JWTs) and Dashboard re-verifies via
+    // getUser() client-side, redirecting to /login on failure.
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (user) {
+    if (session?.user) {
       let showOnboarding = false;
       const { data: profileRow, error: profileError } = await supabase
         .from("profiles")
         .select("onboarded_at")
-        .eq("id", user.id)
+        .eq("id", session.user.id)
         .maybeSingle();
 
       if (profileError) {
         Sentry.captureException(profileError, {
-          extra: { userId: user.id },
+          extra: { userId: session.user.id },
           tags: {
             operation: "fetch_onboarding_flag",
             route: "discover-ssr",

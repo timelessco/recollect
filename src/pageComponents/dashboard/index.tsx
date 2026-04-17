@@ -69,9 +69,9 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
       // If there's an auth error or no user (expired session), redirect to login
       // Skip redirect for discover page (public access allowed)
       // This handles the case where middleware passes but session is actually invalid
-      // Use pathname fallback since categorySlug can be null before Next.js router hydrates
-      const isDiscoverRoute =
-        categorySlug === DISCOVER_URL || window.location.pathname.startsWith(`/${DISCOVER_URL}`);
+      // Read pathname inside the callback — Dashboard persists across route changes,
+      // so this effect runs once but may resolve after the user has navigated.
+      const isDiscoverRoute = window.location.pathname.startsWith(`/${DISCOVER_URL}`);
       if ((error || !data?.user) && !isDiscoverRoute) {
         // Clear stale auth cookie to prevent redirect loop:
         // middleware getClaims() validates JWT locally (no DB check), so a deleted user's
@@ -93,8 +93,11 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
       }
     };
 
+    // Dashboard persists across route changes (via getLayout in _app.tsx), so
+    // fetching once per mount is enough — no need to re-run on every categorySlug
+    // change. Removes a Supabase auth round-trip from every sidebar click.
     void fetchSession();
-  }, [setSession, categorySlug]);
+  }, [setSession]);
 
   const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
   const { isInNotFoundPage } = useIsInNotFoundPage();
