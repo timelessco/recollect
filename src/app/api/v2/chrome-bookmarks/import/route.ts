@@ -2,7 +2,6 @@ import { z } from "zod";
 
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getFreeTierContext, partitionByCutoff } from "@/lib/api-helpers/free-tier-gate";
 import { getServerContext } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { toJson } from "@/utils/type-utils";
@@ -18,7 +17,7 @@ const RpcResultSchema = z.object({
 
 export const POST = createAxiomRouteHandler(
   withAuth({
-    handler: async ({ data, supabase, user }) => {
+    handler: async ({ data, user }) => {
       const userId = user.id;
 
       const ctx = getServerContext();
@@ -45,36 +44,13 @@ export const POST = createAxiomRouteHandler(
         ctx.fields.in_memory_skipped = inMemorySkipped;
       }
 
-      // Free-tier cutoff: silently drop bookmarks predating signup. The Chrome
-      // extension transforms native `dateAdded` (ms epoch) to ISO `inserted_at`
-      // upstream; missing/empty/unparsable timestamps drop for free users.
-      const freeTier = await getFreeTierContext(supabase, userId, user.created_at);
-      const { kept: allowedBookmarks, skipped: cutoffSkipped } = freeTier.isFree
-        ? partitionByCutoff(
-            uniqueBookmarks,
-            (bookmark) => bookmark.inserted_at,
-            freeTier.freeTierCutoffMs,
-          )
-        : { kept: uniqueBookmarks, skipped: 0 };
-
-      if (ctx?.fields) {
-        ctx.fields.free_tier_skipped = cutoffSkipped;
-      }
-
-      if (allowedBookmarks.length === 0) {
-        return {
-          queued: 0,
-          skipped: inMemorySkipped + cutoffSkipped,
-        };
-      }
-
       // Call enqueue_chrome_bookmarks RPC via service role client
       // (authenticated users don't have direct queue access for security)
       const serviceClient = createServerServiceClient();
       const { data: result, error: rpcError } = await serviceClient.rpc(
         "enqueue_chrome_bookmarks",
         {
-          p_bookmarks: toJson(allowedBookmarks),
+          p_bookmarks: toJson(uniqueBookmarks),
           p_user_id: userId,
         },
       );
@@ -96,16 +72,14 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      const totalSkipped = parsed.data.skipped + inMemorySkipped + cutoffSkipped;
-
       if (ctx?.fields) {
         ctx.fields.queued = parsed.data.inserted;
-        ctx.fields.skipped = totalSkipped;
+        ctx.fields.skipped = parsed.data.skipped + inMemorySkipped;
       }
 
       return {
         queued: parsed.data.inserted,
-        skipped: totalSkipped,
+        skipped: parsed.data.skipped + inMemorySkipped,
       };
     },
     inputSchema: ChromeBookmarkImportInputSchema,
