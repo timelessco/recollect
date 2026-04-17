@@ -1,22 +1,11 @@
-import type { NextPage } from "next";
+import type { ReactElement } from "react";
 
-import { Spinner } from "@/components/spinner";
+import type { NextPageWithLayout } from "./_app";
 
-import { useMounted } from "../hooks/useMounted";
 import Dashboard from "../pageComponents/dashboard";
 
-const Home: NextPage = () => {
-  const isMounted = useMounted();
+const CategoryPage: NextPageWithLayout = () => null;
 
-  if (!isMounted) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Spinner className="h-3 w-3 animate-spin" />
-      </div>
-    );
-  }
+CategoryPage.getLayout = (page: ReactElement) => <Dashboard>{page}</Dashboard>;
 
-  return <Dashboard />;
-};
-
-export default Home;
+export default CategoryPage;

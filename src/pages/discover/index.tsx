@@ -1,14 +1,14 @@
-import type { GetServerSideProps, NextPage } from "next";
+import type { GetServerSideProps } from "next";
+import type { ReactElement } from "react";
 
 import * as Sentry from "@sentry/nextjs";
 import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
 
 import type { SingleListData } from "../../types/apiTypes";
+import type { NextPageWithLayout } from "../_app";
 
-import { Spinner } from "@/components/spinner";
 import { isNullable } from "@/utils/assertion-utils";
 
-import { useMounted } from "../../hooks/useMounted";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../../lib/supabase/constants";
 import Dashboard from "../../pageComponents/dashboard";
 import { DiscoverGuestView } from "../../pageComponents/discover/DiscoverGuestView";
@@ -20,30 +20,26 @@ interface DiscoverPageProps {
   showOnboarding: boolean;
 }
 
-const Discover: NextPage<DiscoverPageProps> = ({
-  discoverData,
-  isAuthenticated,
-  showOnboarding,
-}) => {
-  const isMounted = useMounted();
-
+const Discover: NextPageWithLayout<DiscoverPageProps> = ({ discoverData, isAuthenticated }) => {
+  // Guest SSR path — DiscoverGuestView renders server-side so crawlers see
+  // the discoverable-bookmark grid. getLayout below returns `page` verbatim
+  // for guests, skipping the Dashboard shell.
   if (!isAuthenticated && discoverData) {
     return <DiscoverGuestView discoverData={discoverData} />;
   }
 
-  if (!isMounted) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Spinner className="h-3 w-3 animate-spin" />
-      </div>
-    );
-  }
+  // Authenticated — Dashboard (wrapped via getLayout) owns the UI.
+  return null;
+};
 
-  return <Dashboard showOnboarding={showOnboarding} />;
+Discover.getLayout = (page: ReactElement, pageProps: DiscoverPageProps) => {
+  if (!pageProps.isAuthenticated) {
+    return page;
+  }
+  return <Dashboard showOnboarding={pageProps.showOnboarding}>{page}</Dashboard>;
 };
 
 export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (context) => {
-  // Create Supabase client for SSR
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
@@ -73,10 +69,6 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Authenticated: read profiles.onboarded_at to decide whether the welcome
-  // modal should mount in first paint. Single source of truth — a client-side
-  // derivation off React Query kept racing with the mark-onboarded mutation's
-  // cache invalidation, causing the modal to reappear on every visit.
   if (user) {
     let showOnboarding = false;
     const { data: profileRow, error: profileError } = await supabase
