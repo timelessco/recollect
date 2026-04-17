@@ -202,6 +202,7 @@ export interface ProfilesTableTypes {
   id: string;
   last_synced_instagram_id: null | string;
   last_synced_twitter_id: null | string;
+  onboarded_at: null | string;
   plan: string;
   preferred_og_domains?: null | string[];
   profile_pic: string;

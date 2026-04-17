@@ -43,20 +43,22 @@ export const FetchUserProfileOutputSchema = z.array(
     planChangedAt: z.string().meta({
       description:
         "ISO timestamp of the last plan transition. Falls back to `auth.users.created_at` when `profiles.plan_updated_at` is null — always non-null.",
+      onboarded_at: z.string().nullable().meta({
+        description: "Timestamp when the user dismissed the welcome modal; null for first-timers",
+      }),
+      preferred_og_domains: z.array(z.string()).nullable().meta({
+        description: "Domains with preferred Open Graph image handling",
+      }),
+      profile_pic: z.string().nullable().meta({ description: "URL of the user's profile picture" }),
+      provider: z.string().nullable().meta({ description: "OAuth authentication provider" }),
+      subscription_current_period_end: z.string().nullable().meta({
+        description:
+          "ISO timestamp (Supabase `timestamptz`) marking the end of the current paid billing period. Null for free users.",
+      }),
+      subscription_status: z.string().nullable().meta({
+        description: "Raw subscription status from the billing provider. Null for free users.",
+      }),
+      user_name: z.string().nullable().meta({ description: "User's chosen username" }),
     }),
-    preferred_og_domains: z
-      .array(z.string())
-      .nullable()
-      .meta({ description: "Domains with preferred Open Graph image handling" }),
-    profile_pic: z.string().nullable().meta({ description: "URL of the user's profile picture" }),
-    provider: z.string().nullable().meta({ description: "OAuth authentication provider" }),
-    subscription_current_period_end: z.string().nullable().meta({
-      description:
-        "ISO timestamp (Supabase `timestamptz`) marking the end of the current paid billing period. Null for free users.",
-    }),
-    subscription_status: z.string().nullable().meta({
-      description: "Raw subscription status from the billing provider. Null for free users.",
-    }),
-    user_name: z.string().nullable().meta({ description: "User's chosen username" }),
   }),
 );

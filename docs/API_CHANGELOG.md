@@ -145,3 +145,18 @@
 
 
 
+
+## 2026-04-17 [`852511b`](https://github.com/timelessco/recollect/commit/852511b9cf74a0e212f4ea3f18bd15bb937a6584)
+
+
+
+### API Changes
+
+### GET /v2/profiles/fetch-user-profile
+-  added the required property '/items/onboarded_at' to the response with the '200' status
+
+
+
+
+
+
