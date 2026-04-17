@@ -1,5 +1,7 @@
 import uniqid from "uniqid";
 
+import type { z } from "zod";
+
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext } from "@/lib/api-helpers/server-context";
@@ -16,12 +18,79 @@ function getUserNameFromEmail(email: string): null | string {
   return null;
 }
 
+type EnrichedProfile = z.infer<typeof FetchUserProfileOutputSchema>[number];
+
+function normalizePlan(raw: unknown): EnrichedProfile["plan"] {
+  if (raw === "free" || raw === "plus" || raw === "pro") {
+    return raw;
+  }
+
+  return "free";
+}
+
+type RawProfileRow = Record<string, unknown> & {
+  category_order?: null | (null | number | string)[];
+  plan?: unknown;
+  plan_updated_at?: null | string;
+  subscription_current_period_end?: null | string;
+  subscription_status?: null | string;
+};
+
+// PostgREST serializes Postgres `int8` arrays as JSON strings (to preserve
+// 64-bit precision), so `category_order` arrives as `["379"]`, not `[379]`.
+// Sparse positions in the array surface as `null` — drop them rather than
+// coerce to 0, which would silently inject "Uncategorized" into the order.
+function coerceCategoryOrder(raw: RawProfileRow["category_order"]): null | number[] {
+  if (!raw) {
+    return null;
+  }
+
+  const result: number[] = [];
+  for (const value of raw) {
+    if (value === null || value === undefined) {
+      continue;
+    }
+
+    const numeric = typeof value === "number" ? value : Number(value);
+    if (Number.isFinite(numeric)) {
+      result.push(numeric);
+    }
+  }
+
+  return result;
+}
+
+/* oxlint-disable @typescript-eslint/no-unsafe-type-assertion -- DB row shape is validated at runtime via outputSchema.safeParse in the factory */
+function enrichProfiles(
+  rows: null | RawProfileRow[],
+  userCreatedAt: string,
+): EnrichedProfile[] | null {
+  if (!rows) {
+    return rows;
+  }
+
+  return rows.map(
+    (row) =>
+      ({
+        ...row,
+        category_order: coerceCategoryOrder(row.category_order),
+        freeTierCutoffAt: userCreatedAt,
+        plan: normalizePlan(row.plan),
+        planChangedAt: row.plan_updated_at ?? userCreatedAt,
+        subscription_current_period_end: row.subscription_current_period_end ?? null,
+        subscription_status: row.subscription_status ?? null,
+      }) as EnrichedProfile,
+  );
+}
+/* oxlint-enable @typescript-eslint/no-unsafe-type-assertion */
+
 const ROUTE = "v2-profiles-fetch-user-profile";
 
 export const GET = createAxiomRouteHandler(
   withAuth({
     handler: async ({ data, supabase, user }) => {
       const userId = user.id;
+      const userCreatedAt = user.created_at;
 
       const ctx = getServerContext();
       if (ctx?.fields) {
@@ -43,7 +112,7 @@ export const GET = createAxiomRouteHandler(
 
       const profile = profileData?.at(0);
       if (!profile) {
-        return profileData;
+        return enrichProfiles(profileData, userCreatedAt);
       }
 
       async function syncProfilePic(avatar: string) {
@@ -116,7 +185,7 @@ export const GET = createAxiomRouteHandler(
         ctx.fields.assigned_username = Boolean(usernameResult);
       }
 
-      return usernameResult ?? picResult ?? profileData;
+      return enrichProfiles(usernameResult ?? picResult ?? profileData, userCreatedAt);
     },
     inputSchema: FetchUserProfileInputSchema,
     outputSchema: FetchUserProfileOutputSchema,

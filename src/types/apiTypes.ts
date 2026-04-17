@@ -203,9 +203,12 @@ export interface ProfilesTableTypes {
   last_synced_instagram_id: null | string;
   last_synced_twitter_id: null | string;
   onboarded_at: null | string;
+  plan: string;
   preferred_og_domains?: null | string[];
   profile_pic: string;
   provider: null | string;
+  subscription_current_period_end: null | string;
+  subscription_status: null | string;
   user_name: string;
 }
 
