@@ -193,14 +193,12 @@ function VideoPlayerInner({ isActive, mediaType, onError, src }: VideoPlayerProp
           <MediaPlayButton ref={(el) => el?.setAttribute("notooltip", "")}>
             <PlayPauseIcon />
           </MediaPlayButton>
-          <div className="mute-group flex">
-            <div className="mute-group-inner relative shrink-0">
+          <div className="mute-group">
+            <div className="mute-group-inner">
+              <MediaVolumeRange />
               <MediaMuteButton ref={(el) => el?.setAttribute("notooltip", "")}>
                 <MuteIcon />
               </MediaMuteButton>
-              <div className="vol-wrap">
-                <MediaVolumeRange />
-              </div>
             </div>
           </div>
 

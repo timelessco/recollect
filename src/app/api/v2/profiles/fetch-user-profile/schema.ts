@@ -56,10 +56,12 @@ export const FetchUserProfileOutputSchema = z.array(
       description:
         "ISO timestamp of the last plan transition. Falls back to `auth.users.created_at` when `profiles.plan_updated_at` is null — always non-null.",
     }),
-    preferred_og_domains: z
-      .array(z.string())
-      .nullable()
-      .meta({ description: "Domains with preferred Open Graph image handling" }),
+    onboarded_at: z.string().nullable().meta({
+      description: "Timestamp when the user dismissed the welcome modal; null for first-timers",
+    }),
+    preferred_og_domains: z.array(z.string()).nullable().meta({
+      description: "Domains with preferred Open Graph image handling",
+    }),
     profile_pic: z.string().nullable().meta({ description: "URL of the user's profile picture" }),
     provider: z.string().nullable().meta({ description: "OAuth authentication provider" }),
     subscription_current_period_end: z.string().nullable().meta({

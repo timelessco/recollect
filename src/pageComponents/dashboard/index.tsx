@@ -1,11 +1,14 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import type { ReactNode } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 import isNull from "lodash/isNull";
+
+import { Spinner } from "@/components/spinner";
 
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/use-fetch-bookmarks-view";
@@ -15,6 +18,7 @@ import useFetchUserProfile from "../../async/queryHooks/user/use-fetch-user-prof
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
+import { useMounted } from "../../hooks/useMounted";
 import { useSupabaseSession } from "../../store/componentStore";
 import { BOOKMARKS_KEY, DISCOVER_URL, LOGIN_URL, USER_PROFILE } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
@@ -43,10 +47,15 @@ const OnboardingModal = dynamic(
 const supabase = createClient();
 
 interface DashboardProps {
+  // Accepted so `getLayout` in pages can pass the route page as children.
+  // Dashboard renders its own main-pane tree internally based on route —
+  // `children` is intentionally not rendered.
+  children?: ReactNode;
   showOnboarding?: boolean;
 }
 
 const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
+  const isMounted = useMounted();
   const queryClient = useQueryClient();
   const router = useRouter();
   const categorySlug = getCategorySlugFromRouter(router);
@@ -165,6 +174,17 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
 
     return <NotFoundPage />;
   };
+
+  // Gate on mount so SSR output is a spinner (matches pre-PR behavior).
+  // DashboardLayout is `dynamic(..., { ssr: false })` so without this gate
+  // SSR would emit blank HTML.
+  if (!isMounted) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Spinner className="h-3 w-3 animate-spin" />
+      </div>
+    );
+  }
 
   if (isNil(session) && !isDiscoverPage) {
     return null;

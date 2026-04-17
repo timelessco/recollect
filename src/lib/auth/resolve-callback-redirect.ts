@@ -15,9 +15,12 @@ import { isNullable } from "@/utils/assertion-utils";
  * failing) are recorded in Axiom wide events via `ctx.fields` so the
  * edge cases are searchable in production without Sentry.
  *
- * This is the PRIMARY detection layer. The /discover SSR gate in
- * src/pages/[category_id].tsx is the BACKSTOP — even if this helper
- * misroutes a first-timer, the gate still catches them.
+ * This is the sole redirect layer. There is no backstop on other
+ * dashboard routes — by design, /everything and collections skip the
+ * profile read for fast navigation (see commit 58acfc53). The SSR path
+ * in src/pages/discover/index.tsx re-reads onboarded_at only to decide
+ * whether to mount the onboarding modal on /discover itself; it does
+ * not redirect first-timers who land elsewhere.
  *
  * Used by both App Router auth callback handlers: /auth/confirm
  * (magic link / email OTP) and /auth/oauth (Google / Apple sign-in).
