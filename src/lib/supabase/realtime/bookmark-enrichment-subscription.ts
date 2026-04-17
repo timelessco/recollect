@@ -59,6 +59,13 @@ export function openBookmarkEnrichmentSubscription(args: OpenArgs): void {
   if (active.has(args.bookmarkId)) {
     return;
   }
+  // Dedupe at enqueue: a second open() call for an id already in the queue
+  // would otherwise push a duplicate entry, and promotion would later open
+  // two channels for the same bookmark (overwriting the active record and
+  // orphaning the first channel + its timeout).
+  if (waiting.some((queued) => queued.bookmarkId === args.bookmarkId)) {
+    return;
+  }
   if (active.size >= MAX_CONCURRENT_CHANNELS) {
     waiting.push(args);
     breadcrumb("queued for channel slot", args.bookmarkId, {
@@ -127,6 +134,18 @@ function handleStatus(args: OpenArgs, status: string): void {
   }
 }
 
+/**
+ * Subscription lifecycle gate. Returns false once `teardown` has either set
+ * `tornDown = true` (in-flight teardown) or removed the record from `active`
+ * (teardown completed). Use before any cache mutation or terminal-state
+ * teardown scheduling that runs after an await or via an event queued before
+ * removeChannel resolved.
+ */
+function isSubscriptionAlive(bookmarkId: number): boolean {
+  const record = active.get(bookmarkId);
+  return record !== undefined && !record.tornDown;
+}
+
 async function runCatchUpFetch(args: OpenArgs): Promise<void> {
   const supabase = createClient();
   const { data, error } = await supabase
@@ -134,6 +153,12 @@ async function runCatchUpFetch(args: OpenArgs): Promise<void> {
     .select("*")
     .eq("id", args.bookmarkId)
     .maybeSingle();
+
+  // Bail if anything tore down the subscription during the network roundtrip
+  // (delete event, screenshot mutation error, sign-out, 90s timeout).
+  if (!isSubscriptionAlive(args.bookmarkId)) {
+    return;
+  }
 
   if (error) {
     Sentry.captureException(error, {
@@ -160,6 +185,13 @@ async function runCatchUpFetch(args: OpenArgs): Promise<void> {
 }
 
 function handleUpdate(args: OpenArgs, payloadNew: unknown): void {
+  // Guard against in-flight realtime events queued before removeChannel
+  // resolved — supabase-js removeChannel is async, callbacks already in the
+  // event loop can still fire after teardown was initiated.
+  if (!isSubscriptionAlive(args.bookmarkId)) {
+    return;
+  }
+
   const parsed = parseBookmarkRealtimePayload(payloadNew);
   if (!parsed) {
     Sentry.captureException(new Error("Failed to parse Realtime payload"), {
@@ -202,14 +234,23 @@ async function teardown(bookmarkId: number, reason: TeardownReason): Promise<voi
 }
 
 function promoteQueuedSubscription(): void {
-  if (waiting.length === 0 || active.size >= MAX_CONCURRENT_CHANNELS) {
+  if (active.size >= MAX_CONCURRENT_CHANNELS) {
     return;
   }
-  const next = waiting.shift();
-  if (!next) {
+  // Skip stale duplicates defensively — open() dedupes at enqueue time, but
+  // belt-and-suspenders here prevents openChannel from overwriting a live
+  // SubscriptionRecord (which would orphan the original channel + timeout).
+  while (waiting.length > 0) {
+    const next = waiting.shift();
+    if (!next) {
+      return;
+    }
+    if (active.has(next.bookmarkId)) {
+      continue;
+    }
+    openChannel(next);
     return;
   }
-  openChannel(next);
 }
 
 export async function teardownAllBookmarkEnrichmentSubscriptions(
