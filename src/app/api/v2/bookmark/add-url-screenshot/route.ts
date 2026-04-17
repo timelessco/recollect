@@ -123,9 +123,19 @@ export const POST = createAxiomRouteHandler(
       // bookmark-enrichment channel) wouldn't see the screenshot until that
       // whole batch finishes. Writing screenshot first lets the UI render it
       // live while the rest of the meta_data is still being assembled.
+      // Preserve a previously-persisted coverImage (e.g., from an earlier
+      // enrichment run picked up by the queue worker) — only fall back to the
+      // existing ogImage when no coverImage has been set yet. Without this
+      // guard, re-runs on already-enriched rows would clobber a real R2
+      // coverImage URL with the (possibly null) ogImage column value.
+      const existingCoverImage =
+        typeof existingMetaData.coverImage === "string" && existingMetaData.coverImage
+          ? existingMetaData.coverImage
+          : null;
+
       const earlyMetaData = {
         ...existingMetaData,
-        coverImage: existingBookmark.ogImage,
+        coverImage: existingCoverImage ?? existingBookmark.ogImage,
         isPageScreenshot,
         screenshot: publicURL,
       };
