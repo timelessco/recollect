@@ -54,7 +54,7 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
         if (context.res) {
           try {
             for (const { name, options, value } of cookiesToSet) {
-              context.res.setHeader("Set-Cookie", serializeCookieHeader(name, value, options));
+              context.res.appendHeader("Set-Cookie", serializeCookieHeader(name, value, options));
             }
           } catch {
             // Cookie setting may fail in certain Server Component contexts
@@ -65,35 +65,56 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (user) {
-    let showOnboarding = false;
-    const { data: profileRow, error: profileError } = await supabase
-      .from("profiles")
-      .select("onboarded_at")
-      .eq("id", user.id)
-      .maybeSingle();
+    if (user) {
+      let showOnboarding = false;
+      const { data: profileRow, error: profileError } = await supabase
+        .from("profiles")
+        .select("onboarded_at")
+        .eq("id", user.id)
+        .maybeSingle();
 
-    if (profileError) {
-      Sentry.captureException(profileError, {
-        extra: { userId: user.id },
-        tags: {
-          operation: "fetch_onboarding_flag",
-          route: "discover-ssr",
+      if (profileError) {
+        Sentry.captureException(profileError, {
+          extra: { userId: user.id },
+          tags: {
+            operation: "fetch_onboarding_flag",
+            route: "discover-ssr",
+          },
+        });
+        // Fail closed — don't show the modal if we can't read the flag.
+      } else {
+        showOnboarding = isNullable(profileRow?.onboarded_at);
+      }
+
+      return {
+        props: {
+          isAuthenticated: true,
+          showOnboarding,
         },
-      });
-      // Fail closed — don't show the modal if we can't read the flag.
-    } else {
-      showOnboarding = isNullable(profileRow?.onboarded_at);
+      };
     }
-
+  } catch (error) {
+    console.error("[discover-ssr] Authenticated SSR branch failed:", error);
+    Sentry.captureException(error, {
+      tags: {
+        operation: "fetch_onboarding_flag",
+        route: "discover-ssr",
+      },
+    });
+    // Conservative fallback: we can't distinguish a throw from supabase.auth.getUser()
+    // vs the profiles query here, so route through Dashboard rather than the guest view.
+    // Safe because DashboardLayout is ssr:false and Dashboard's useEffect re-runs
+    // supabase.auth.getUser() client-side and redirects to /login on failure — no
+    // private data SSRs. getLayout wraps this in <Dashboard showOnboarding=false>.
     return {
       props: {
         isAuthenticated: true,
-        showOnboarding,
+        showOnboarding: false,
       },
     };
   }
