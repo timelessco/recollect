@@ -54,7 +54,7 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
         if (context.res) {
           try {
             for (const { name, options, value } of cookiesToSet) {
-              context.res.setHeader("Set-Cookie", serializeCookieHeader(name, value, options));
+              context.res.appendHeader("Set-Cookie", serializeCookieHeader(name, value, options));
             }
           } catch {
             // Cookie setting may fail in certain Server Component contexts
@@ -106,6 +106,11 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
         route: "discover-ssr",
       },
     });
+    // Conservative fallback: we can't distinguish a throw from supabase.auth.getUser()
+    // vs the profiles query here, so route through Dashboard rather than the guest view.
+    // Safe because DashboardLayout is ssr:false and Dashboard's useEffect re-runs
+    // supabase.auth.getUser() client-side and redirects to /login on failure — no
+    // private data SSRs. getLayout wraps this in <Dashboard showOnboarding=false>.
     return {
       props: {
         isAuthenticated: true,
