@@ -253,10 +253,13 @@ export type Database = {
           bookmark_count: number | null;
           bookmarks_view: Json | null;
           category_order: number[] | null;
+          chrome_first_import_at: string | null;
+          chrome_historical_synced: boolean;
           display_name: string | null;
           email: string | null;
           favorite_categories: number[];
           id: string;
+          instagram_historical_synced: boolean;
           last_synced_instagram_id: string | null;
           last_synced_twitter_id: string | null;
           onboarded_at: string | null;
@@ -269,6 +272,7 @@ export type Database = {
           provider: string | null;
           subscription_current_period_end: string | null;
           subscription_status: string | null;
+          twitter_historical_synced: boolean;
           user_name: string | null;
         };
         Insert: {
@@ -277,10 +281,13 @@ export type Database = {
           bookmark_count?: number | null;
           bookmarks_view?: Json | null;
           category_order?: number[] | null;
+          chrome_first_import_at?: string | null;
+          chrome_historical_synced?: boolean;
           display_name?: string | null;
           email?: string | null;
           favorite_categories?: number[];
           id: string;
+          instagram_historical_synced?: boolean;
           last_synced_instagram_id?: string | null;
           last_synced_twitter_id?: string | null;
           onboarded_at?: string | null;
@@ -293,6 +300,7 @@ export type Database = {
           provider?: string | null;
           subscription_current_period_end?: string | null;
           subscription_status?: string | null;
+          twitter_historical_synced?: boolean;
           user_name?: string | null;
         };
         Update: {
@@ -301,10 +309,13 @@ export type Database = {
           bookmark_count?: number | null;
           bookmarks_view?: Json | null;
           category_order?: number[] | null;
+          chrome_first_import_at?: string | null;
+          chrome_historical_synced?: boolean;
           display_name?: string | null;
           email?: string | null;
           favorite_categories?: number[];
           id?: string;
+          instagram_historical_synced?: boolean;
           last_synced_instagram_id?: string | null;
           last_synced_twitter_id?: string | null;
           onboarded_at?: string | null;
@@ -317,6 +328,7 @@ export type Database = {
           provider?: string | null;
           subscription_current_period_end?: string | null;
           subscription_status?: string | null;
+          twitter_historical_synced?: boolean;
           user_name?: string | null;
         };
         Relationships: [];
