@@ -13,7 +13,7 @@ import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration
 import { useResolvePostLoginRedirect } from "@/lib/auth/use-resolve-post-login-redirect";
 import { createClient } from "@/lib/supabase/client";
 import { EVERYTHING_URL } from "@/utils/constants";
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 import { cn } from "@/utils/tailwind-merge";
 
 interface VerifyOtpFormProps {
@@ -27,6 +27,7 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
   const [isPending, startTransition] = React.useTransition();
   const extendedIsPending = usePendingWithMinDuration(isPending);
   const resolvePostLoginRedirect = useResolvePostLoginRedirect();
+  const handleClientError = useHandleClientError();
 
   const verifyOtp = (otpValue: string) => {
     if (isPending) {

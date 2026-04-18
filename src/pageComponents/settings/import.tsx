@@ -6,7 +6,7 @@ import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-mo
 
 import { useImportBookmarksMutation } from "@/async/mutationHooks/bookmarks/use-import-bookmarks-mutation";
 import { saveButtonClassName } from "@/utils/commonClassNames";
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 
 import Button from "../../components/atoms/button";
 import { Spinner } from "../../components/spinner";
@@ -54,6 +54,7 @@ export const ImportBookmarks = ({ onNavigate }: ImportBookmarksProps) => {
 
   const { importBookmarksMutation } = useImportBookmarksMutation();
   const { isPending, isSuccess } = importBookmarksMutation;
+  const handleClientError = useHandleClientError();
 
   const handleFile = async (fileToProcess: File) => {
     setSelectedFile(null);

@@ -13,7 +13,7 @@ import { AppleIcon } from "@/icons/apple-icon";
 import { GoogleIcon } from "@/icons/google-icon";
 import { createClient } from "@/lib/supabase/client";
 import { EVERYTHING_URL } from "@/utils/constants";
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 import { cn } from "@/utils/tailwind-merge";
 
 export function ContinueWithEmailLink() {
@@ -47,6 +47,7 @@ export function SignInWithGoogleForm() {
 
   const [isPending, startTransition] = React.useTransition();
   const extendedIsPending = usePendingWithMinDuration(isPending, 5000);
+  const handleClientError = useHandleClientError();
 
   const handleSocialLogin = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -101,6 +102,7 @@ export function SignInWithAppleForm() {
 
   const [isPending, startTransition] = React.useTransition();
   const extendedIsPending = usePendingWithMinDuration(isPending, 5000);
+  const handleClientError = useHandleClientError();
 
   const handleSocialLogin = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
