@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isBookmarkEnrichmentDone } from "@/lib/bookmarks/enrichment-phase";
+
 /**
  * Shape of `meta_data` fields the splice + terminal-state logic reads.
  * Unknown fields are preserved via `.catchall` so forward-compatible meta_data
@@ -64,6 +66,5 @@ export function parseBookmarkRealtimePayload(payload: unknown): BookmarkRealtime
 export function isRowTerminal(row: BookmarkRealtimeRow): boolean {
   const metaData = row.meta_data && typeof row.meta_data === "object" ? row.meta_data : null;
   const screenshot = metaData?.screenshot ?? null;
-  const ocrStatus = metaData?.ocr_status ?? null;
-  return Boolean(screenshot) && Boolean(ocrStatus);
+  return Boolean(screenshot) && isBookmarkEnrichmentDone(metaData);
 }
