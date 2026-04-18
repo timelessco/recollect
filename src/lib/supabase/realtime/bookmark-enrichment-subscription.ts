@@ -238,11 +238,25 @@ async function teardown(bookmarkId: number, reason: TeardownReason): Promise<voi
   active.delete(bookmarkId);
 
   const supabase = createClient();
-  await supabase.removeChannel(record.channel);
-
-  logEvent("torn down", bookmarkId, { reason });
-
-  promoteQueuedSubscription();
+  try {
+    await supabase.removeChannel(record.channel);
+    logEvent("torn down", bookmarkId, { reason });
+  } catch (error) {
+    // removeChannel can reject (WebSocket already closed, reconnect storm,
+    // auth-token refresh race). Without this catch the rejection unwinds
+    // through every `void teardown(...)` call site as an unhandled promise
+    // rejection and the queue drain below never runs — slot count drops but
+    // waiting[] IDs become zombies until the next clean teardown.
+    clientLogger.warn("[realtime-bookmark] removeChannel failed", {
+      bookmarkId,
+      error_message: error instanceof Error ? error.message : String(error),
+      operation: LOG_OPERATION,
+      reason,
+      user_id: record.userId,
+    });
+  } finally {
+    promoteQueuedSubscription();
+  }
 }
 
 function promoteQueuedSubscription(): void {
