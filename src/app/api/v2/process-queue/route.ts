@@ -1,3 +1,6 @@
+import { after } from "next/server";
+
+import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { getServerContext } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
@@ -28,6 +31,29 @@ export const POST = createAxiomRouteHandler(
         ctx.fields.message_id = result?.messageId ?? null;
         ctx.fields.queue_empty = !result?.messageId;
         ctx.fields.processed_count = result?.messageId ? 1 : 0;
+        ctx.fields.background_task_count = result.backgroundTasks.length;
+      }
+
+      // Dispatch enrichment/screenshot fetches as registered background work.
+      // Using after() (not bare void fetch in the worker) keeps Fluid Compute
+      // from abandoning the socket before undici finishes, which was surfacing
+      // as `TypeError: fetch failed` unhandled rejections in Sentry.
+      for (const task of result.backgroundTasks) {
+        after(async () => {
+          try {
+            await fetch(task.url, {
+              body: task.body,
+              headers: { "Content-Type": "application/json" },
+              method: "POST",
+            });
+          } catch (error) {
+            logger.warn("[v2-process-queue] after() background dispatch failed", {
+              error: error instanceof Error ? error.message : String(error),
+              message_id: result.messageId,
+              url: task.url,
+            });
+          }
+        });
       }
 
       return { message: "Queue processed successfully" };

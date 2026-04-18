@@ -16,6 +16,16 @@ interface ProcessParameters {
   queue_name: string;
 }
 
+export interface BackgroundTask {
+  body: string;
+  url: string;
+}
+
+export interface ProcessImageQueueResult {
+  backgroundTasks: BackgroundTask[];
+  messageId: number | undefined;
+}
+
 const SLEEP_SECONDS = 30;
 
 // max retries for a message
@@ -23,8 +33,9 @@ const MAX_RETRIES = 2;
 export const processImageQueue = async (
   supabase: SupabaseClient,
   parameters: ProcessParameters,
-) => {
+): Promise<ProcessImageQueueResult> => {
   const { batchSize, queue_name } = parameters;
+  const backgroundTasks: BackgroundTask[] = [];
 
   try {
     const { data: messages, error: messageError } = await supabase
@@ -148,11 +159,11 @@ export const processImageQueue = async (
         const isRaindropBookmark = message.message.meta_data.is_raindrop_bookmark;
 
         if (ogImage) {
-          // here we upload the image into R2 if it is a raindrop bookmark
-          // and generate ocr imagecaption and bulhash for both twitter and raindrop bookmarks,
-          // we are not awaiting, because we fire this api and vercel will handle the response
-
-          void fetch(`${getBaseUrl()}${NEXT_API_URL}/${V2_AI_ENRICHMENT_API}`, {
+          // Uploads image to R2 for raindrop bookmarks and runs OCR/caption/blurhash
+          // for twitter + raindrop. Caller is responsible for dispatching this task —
+          // a raw void fetch() here gets abandoned when the outer function's response
+          // is returned on Vercel Fluid Compute, producing undici unhandled rejections.
+          backgroundTasks.push({
             body: JSON.stringify({
               id,
               isInstagramBookmark,
@@ -164,14 +175,12 @@ export const processImageQueue = async (
               url,
               user_id,
             }),
-            headers: { "Content-Type": "application/json" },
-            method: "POST",
+            url: `${getBaseUrl()}${NEXT_API_URL}/${V2_AI_ENRICHMENT_API}`,
           });
         } else {
-          // here we take screenshot of the url for both twitter and raindrop bookmarks
-          // we are not awaiting, because we fire this api and vercel will handle the response
-
-          void fetch(`${getBaseUrl()}${NEXT_API_URL}/${V2_SCREENSHOT_API}`, {
+          // Screenshot path for twitter + raindrop. Same dispatch-via-caller contract
+          // as the AI enrichment branch above.
+          backgroundTasks.push({
             body: JSON.stringify({
               id,
               mediaType,
@@ -180,8 +189,7 @@ export const processImageQueue = async (
               url,
               user_id,
             }),
-            headers: { "Content-Type": "application/json" },
-            method: "POST",
+            url: `${getBaseUrl()}${NEXT_API_URL}/${V2_SCREENSHOT_API}`,
           });
         }
       } catch (error) {
@@ -189,7 +197,7 @@ export const processImageQueue = async (
       }
     }
 
-    return { messageId: messages[0]?.msg_id };
+    return { backgroundTasks, messageId: messages[0]?.msg_id };
   } catch (error) {
     console.error("[process-image-queue] Queue processing error:", error);
     throw error;
