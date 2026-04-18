@@ -1,3 +1,9 @@
+// INTENTIONAL SENTRY USAGE — do not migrate to Axiom.
+// This module's sole contract is to forward iOS share-extension errors to
+// Sentry and return the Sentry event ID to the caller (the iOS extension
+// uses the ID to correlate local and server-side reports). Axiom is a
+// different sink; swapping would break the public response contract.
+// Sweep audits that flag `@sentry/nextjs` imports should skip this file.
 import * as Sentry from "@sentry/nextjs";
 
 interface CaptureIphoneShareErrorInput {

@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/nextjs";
 import { decode } from "base64-arraybuffer";
 import uniqid from "uniqid";
 
@@ -7,6 +6,8 @@ import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { imageToText } from "@/async/ai/image-analysis";
+import { logger } from "@/lib/api-helpers/axiom";
+import { extractErrorFields } from "@/lib/api-helpers/errors";
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";
@@ -181,9 +182,10 @@ export async function uploadImageToR2(
     );
 
     if (uploadError) {
-      Sentry.captureException(new Error("R2 upload failed"), {
-        extra: { resolvedPath, uploadError },
-        tags: { operation: "r2_upload" },
+      logger.warn("r2_upload_failed", {
+        operation: "r2_upload",
+        resolved_path: resolvedPath,
+        ...extractErrorFields(uploadError),
       });
       console.error("[add-remaining-bookmark-data] R2 upload failed:", {
         resolvedPath,
@@ -310,23 +312,32 @@ export async function addRemainingBookmarkData(
 
       if (isNullable(returnedB64)) {
         console.error("Failed to download image URL, continuing without image");
-        Sentry.captureException(new Error("Failed to download image URL"), {
-          tags: { operation: "download_image_url" },
+        logger.warn("download_image_url_failed", {
+          operation: "download_image_url",
+          bookmark_id: id,
+          user_id: userId,
+          error_message: "Failed to download image URL",
         });
       } else {
         uploadedImageThatIsAUrl = await uploadImageToR2(returnedB64, userId, null);
 
         if (isNullable(uploadedImageThatIsAUrl)) {
           console.error("Failed to upload image URL to R2, continuing without image");
-          Sentry.captureException(new Error("Failed to upload image URL to R2"), {
-            tags: { operation: "upload_image_url_to_r2" },
+          logger.warn("upload_image_url_to_r2_failed", {
+            operation: "upload_image_url_to_r2",
+            bookmark_id: id,
+            user_id: userId,
+            error_message: "Failed to upload image URL to R2",
           });
         }
       }
     } catch (error) {
       console.error("Error uploading image URL to R2:", error);
-      Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
-        tags: { operation: "upload_image_url_to_r2" },
+      logger.warn("upload_image_url_to_r2_error", {
+        operation: "upload_image_url_to_r2",
+        bookmark_id: id,
+        user_id: userId,
+        ...extractErrorFields(error),
       });
       uploadedImageThatIsAUrl = null;
     }
@@ -364,16 +375,22 @@ export async function addRemainingBookmarkData(
         if (isNullable(uploadedCoverImageUrl)) {
           uploadedCoverImageUrl = currentData.ogImage;
           console.error("Failed to upload image to R2, continuing without image");
-          Sentry.captureException(new Error("Failed to upload image to R2"), {
-            tags: { operation: "upload_scrapped_image_to_r2" },
+          logger.warn("upload_scrapped_image_to_r2_failed", {
+            operation: "upload_scrapped_image_to_r2",
+            bookmark_id: id,
+            user_id: userId,
+            error_message: "Failed to upload image to R2",
           });
         }
       }
     } catch (error) {
       uploadedCoverImageUrl = currentData.ogImage;
       console.error("Error uploading scrapped image to R2:", error);
-      Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
-        tags: { operation: "upload_scrapped_image_to_r2" },
+      logger.warn("upload_scrapped_image_to_r2_error", {
+        operation: "upload_scrapped_image_to_r2",
+        bookmark_id: id,
+        user_id: userId,
+        ...extractErrorFields(error),
       });
     }
   }
@@ -438,9 +455,11 @@ export async function addRemainingBookmarkData(
         bookmarkId: id,
         error,
       });
-      Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
-        extra: { bookmarkId: id },
-        tags: { operation: "generate_blurhash" },
+      logger.warn("generate_blurhash_failed", {
+        operation: "generate_blurhash",
+        bookmark_id: id,
+        user_id: userId,
+        ...extractErrorFields(error),
       });
     }
 
@@ -503,9 +522,11 @@ export async function addRemainingBookmarkData(
         bookmarkId: id,
         error,
       });
-      Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
-        extra: { bookmarkId: id },
-        tags: { operation: "gemini_ai_processing" },
+      logger.warn("gemini_ai_processing_failed", {
+        operation: "gemini_ai_processing",
+        bookmark_id: id,
+        user_id: userId,
+        ...extractErrorFields(error),
       });
     }
   } else {
@@ -607,9 +628,12 @@ export async function addRemainingBookmarkData(
           : "revalidation failed in add-remaining-bookmark-data",
       userId,
     });
-    Sentry.captureException(error, {
-      extra: { bookmarkId: id, userId },
-      tags: { route: "add-remaining-bookmark-data" },
+    logger.warn("add_remaining_bookmark_revalidation_failed", {
+      operation: "revalidate_categories_after_enrichment",
+      route: "add-remaining-bookmark-data",
+      bookmark_id: id,
+      user_id: userId,
+      ...extractErrorFields(error),
     });
   }
 

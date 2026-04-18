@@ -3,82 +3,25 @@ paths:
   - "src/**/*.{ts,tsx}"
 ---
 
-## Sentry
+## Observability routing
 
-Error tracking and debugging patterns.
+Axiom = manual logging. Sentry = unhandled errors only (auto via `onRequestError`, error boundaries, `browserTracingIntegration`). No dual-capture.
 
-### Exception Capture
+### Sentry allowlist
 
-Always include `tags.operation` (makes errors searchable) and `userId` when available:
+`Sentry.*` ONLY in `instrumentation*.ts`, `sentry.{server,edge}.config.ts`, `app/{error,global-error}.tsx`, `pages/_error.tsx`, `lib/api-helpers/iphone-share-error-capture.ts`. Elsewhere → Axiom.
 
-```typescript
-Sentry.captureException(error, {
-  tags: { operation: "fetch_bookmark", userId },
-  extra: { bookmarkId },
-});
+### Axiom logger by context
+
+- **v2 route**: `RecollectApiError` → inner-layer `warn` (see `api-v2.md`)
+- **App Router**: `logger` from `@/lib/api-helpers/axiom` + `after(() => logger.flush())`
+- **Pages Router SSR/ISR**: same `logger`, `await logger.flush()` (`after()` throws E468)
+- **Client**: `useLogger()` from `@/lib/api-helpers/axiom-client`
+
+Normalize unknowns with `extractErrorFields(err)` from `errors.ts`. `warn` for handled (404, validation); `error` for infra (DB, network throw, unknown catch, 5xx) — base on cause.
+
+### Grep guard
+
+```sh
+rg "Sentry\." src -g '!**/instrumentation*' -g '!**/error.tsx' -g '!**/global-error.tsx' -g '!**/_error.tsx' -g '!**/sentry.*.config.ts' -g '!**/iphone-share-error-capture.ts'
 ```
-
-Anti-patterns to avoid: `Sentry.captureException(error)` (no tags); `Sentry.captureException(`Error: ${msg}`)` (string instead of an Error object).
-
-### Breadcrumbs for Cache Debugging
-
-Use `Sentry.addBreadcrumb` to track state before errors (category lowercase + hyphenated):
-
-```typescript
-// src/utils/cache-debug-helpers.ts
-Sentry.addBreadcrumb({
-  category: "optimistic-update",
-  message: "Cache miss for category",
-  level: "warning",
-  data: { bookmarkId: variables.bookmark_id, categoryId: variables.category_id },
-});
-```
-
-Use `logCacheMiss` in optimistic mutation hooks:
-
-```typescript
-import { logCacheMiss } from "@/utils/cache-debug-helpers";
-
-if (!foundItem) {
-  logCacheMiss("Optimistic Update", "Item not found in cache", { itemId: variables.id });
-  return currentData;
-}
-```
-
-### API Handler Integration (v1 only)
-
-Response helpers in `/src/lib/api-helpers/response.ts` auto-capture exceptions. For v2 error routing, see `api-v2.md`.
-
-| Helper | Sentry | Use For |
-|---|---|---|
-| `apiError` | Auto-captures with tags | System/database errors |
-| `apiWarn` | No capture | User errors (404, validation) |
-| `apiSuccess` | No capture | Success responses |
-
-```typescript
-return apiError({
-  route: ROUTE,
-  message: "Failed to fetch data",
-  error,
-  operation: "fetch_bookmarks", // becomes Sentry tag
-  userId,
-  extra: { queryParams },
-});
-```
-
-### Error Boundaries
-
-Root error boundaries capture with context:
-
-```typescript
-// src/app/error.tsx
-Sentry.captureException(error, { extra: { errorMessage: "Root error" } });
-```
-
-### Best Practices
-
-- Always tag operations (filterable in Sentry dashboard)
-- Include `userId` when available
-- Use breadcrumbs before risky operations
-- Let response helpers handle API errors (v1 only)
-- Always pass `Error` objects, never strings
