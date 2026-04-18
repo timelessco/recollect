@@ -39,12 +39,34 @@ const SENSITIVE_QUERY_KEYS = new Set([
   "token_hash",
 ]);
 
-function redactSearchParams(searchParams: URLSearchParams): Record<string, string> {
-  const result: Record<string, string> = {};
+/**
+ * Serialize query parameters to the OTel `url.query` scalar form
+ * (URL-encoded `key=value&key=value`, no leading `?`), redacting
+ * sensitive values. Single scalar replaces the prior nested object
+ * emission that registered one Axiom field per unique query key.
+ */
+function serializeRedactedQuery(searchParams: URLSearchParams): string {
+  const out = new URLSearchParams();
   for (const [key, value] of searchParams) {
-    result[key] = SENSITIVE_QUERY_KEYS.has(key) ? "<redacted>" : value;
+    out.append(key, SENSITIVE_QUERY_KEYS.has(key) ? "<redacted>" : value);
   }
-  return result;
+  return out.toString();
+}
+
+/**
+ * Extract the client IP per OTel `client.address`. Prefers the first
+ * hop of `x-forwarded-for` (closest to the client), falls back to
+ * `x-real-ip`. Returns undefined when no reliable address is available.
+ */
+function resolveClientAddress(headers: Headers): string | undefined {
+  const xff = headers.get("x-forwarded-for");
+  if (xff) {
+    const first = xff.split(",")[0]?.trim();
+    if (first) {
+      return first;
+    }
+  }
+  return headers.get("x-real-ip") ?? undefined;
 }
 
 const baseTransport = new ConsoleTransport({
@@ -130,6 +152,18 @@ export function createAxiomRouteHandler(
     };
 
     const result = await runWithServerContext(context, async () => {
+      // Shared OTel HTTP semconv v1.40 attributes emitted on both success and error paths.
+      // https://opentelemetry.io/docs/specs/semconv/http/http-spans/
+      const urlQuery = serializeRedactedQuery(request.nextUrl.searchParams);
+      const otelAttrs = {
+        "http.request.method": request.method,
+        "http.route": route,
+        "url.path": request.nextUrl.pathname,
+        ...(urlQuery ? { "url.query": urlQuery } : {}),
+        "client.address": resolveClientAddress(request.headers),
+        "user_agent.original": request.headers.get("user-agent") ?? undefined,
+      };
+
       try {
         const response = await innerHandler(request);
         const duration = performance.now() - start;
@@ -138,14 +172,12 @@ export function createAxiomRouteHandler(
         // onSuccess: log level based on HTTP status
         const { status } = response;
         const logData = {
-          route,
-          method: request.method,
-          status,
+          ...otelAttrs,
+          "http.response.status_code": status,
           duration_ms: Math.round(duration),
           request_id: ctx?.request_id,
           source: ctx?.source,
           user_id: ctx?.user_id,
-          search_params: redactSearchParams(request.nextUrl.searchParams),
           ...ctx?.fields,
         };
 
@@ -167,8 +199,7 @@ export function createAxiomRouteHandler(
 
         // onError: structured error logging to Axiom (AXIO-04)
         logger.error("Request error", {
-          route,
-          method: request.method,
+          ...otelAttrs,
           duration_ms: Math.round(duration),
           request_id: ctx?.request_id,
           source: ctx?.source,

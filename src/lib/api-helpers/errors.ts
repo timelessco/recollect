@@ -82,7 +82,7 @@ export class RecollectApiError extends Error {
       error_message: this.message,
       http_status: this.status,
       ...(this.operation ? { operation: this.operation } : {}),
-      ...(this.context ? { error_context: this.context } : {}),
+      ...(this.context ? { error_context: JSON.stringify(this.context) } : {}),
       ...causeFields,
     };
   }
