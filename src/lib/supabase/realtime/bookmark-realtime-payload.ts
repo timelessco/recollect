@@ -11,6 +11,7 @@ const MetaDataRealtimeSchema = z
     favIcon: z.string().nullable().optional(),
     img_caption: z.string().nullable().optional(),
     isPageScreenshot: z.boolean().nullable().optional(),
+    ocr_status: z.enum(["limit_reached", "no_text", "success"]).nullable().optional(),
     ogImgBlurUrl: z.string().nullable().optional(),
     screenshot: z.string().nullable().optional(),
   })
@@ -48,12 +49,21 @@ export function parseBookmarkRealtimePayload(payload: unknown): BookmarkRealtime
 
 /**
  * A row is terminal (safe to tear down the subscription) when both the
- * screenshot URL (stored on `meta_data.screenshot`) and the final enrichment
- * `ogImage` are populated. Either being null means the enrichment pipeline is
- * still running.
+ * screenshot URL (written by the t2 screenshot route) and `meta_data.ocr_status`
+ * (written only by the t3 `addRemainingBookmarkData` enrichment pass) are
+ * populated.
+ *
+ * Using `row.ogImage` here would be wrong: the t1 insert already sets `ogImage`
+ * from the scraper for any page with an `og:image` tag, so `screenshot &&
+ * ogImage` would flip true at t2 and tear the channel down before t3's real
+ * enrichment (coverImage, ogImgBlurUrl, ocr, keywords, height/width, final
+ * ogImage) ever reaches the cache. `ocr_status` is absent pre-t3 and always
+ * set to `"success" | "no_text" | "limit_reached"` post-t3, so it uniquely
+ * signals that enrichment finished.
  */
 export function isRowTerminal(row: BookmarkRealtimeRow): boolean {
-  const screenshot =
-    row.meta_data && typeof row.meta_data === "object" ? row.meta_data.screenshot : null;
-  return Boolean(screenshot) && Boolean(row.ogImage);
+  const metaData = row.meta_data && typeof row.meta_data === "object" ? row.meta_data : null;
+  const screenshot = metaData?.screenshot ?? null;
+  const ocrStatus = metaData?.ocr_status ?? null;
+  return Boolean(screenshot) && Boolean(ocrStatus);
 }
