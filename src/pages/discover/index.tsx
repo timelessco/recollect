@@ -1,12 +1,13 @@
 import type { GetServerSideProps } from "next";
 import type { ReactElement } from "react";
 
-import * as Sentry from "@sentry/nextjs";
 import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
 
 import type { SingleListData } from "../../types/apiTypes";
 import type { NextPageWithLayout } from "../_app";
 
+import { logger } from "@/lib/api-helpers/axiom-logger";
+import { extractErrorFields } from "@/lib/api-helpers/errors";
 import { isNullable } from "@/utils/assertion-utils";
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../../lib/supabase/constants";
@@ -79,13 +80,13 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
         .maybeSingle();
 
       if (profileError) {
-        Sentry.captureException(profileError, {
-          extra: { userId: user.id },
-          tags: {
-            operation: "fetch_onboarding_flag",
-            route: "discover-ssr",
-          },
+        logger.error("fetch_onboarding_flag_failed", {
+          operation: "fetch_onboarding_flag",
+          route: "discover-ssr",
+          user_id: user.id,
+          ...extractErrorFields(profileError),
         });
+        await logger.flush();
         // Fail closed — don't show the modal if we can't read the flag.
       } else {
         showOnboarding = isNullable(profileRow?.onboarded_at);
@@ -100,12 +101,12 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
     }
   } catch (error) {
     console.error("[discover-ssr] Authenticated SSR branch failed:", error);
-    Sentry.captureException(error, {
-      tags: {
-        operation: "fetch_onboarding_flag",
-        route: "discover-ssr",
-      },
+    logger.error("discover_ssr_auth_branch_failed", {
+      operation: "fetch_onboarding_flag",
+      route: "discover-ssr",
+      ...extractErrorFields(error),
     });
+    await logger.flush();
     // Conservative fallback: we can't distinguish a throw from supabase.auth.getUser()
     // vs the profiles query here, so route through Dashboard rather than the guest view.
     // Safe because DashboardLayout is ssr:false and Dashboard's useEffect re-runs
@@ -151,9 +152,12 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
 
     if (error) {
       console.error("[discover-ssr] Failed to fetch discoverable bookmarks:", error);
-      Sentry.captureException(error, {
-        tags: { route: "discover-ssr" },
+      logger.error("fetch_discoverable_bookmarks_failed", {
+        operation: "fetch_discoverable_bookmarks",
+        route: "discover-ssr",
+        ...extractErrorFields(error),
       });
+      await logger.flush();
       return {
         props: {
           discoverData: [],
@@ -179,9 +183,12 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
     };
   } catch (error) {
     console.error("[discover-ssr] Error fetching discoverable bookmarks:", error);
-    Sentry.captureException(error, {
-      tags: { route: "discover-ssr" },
+    logger.error("discover_ssr_guest_branch_failed", {
+      operation: "fetch_discoverable_bookmarks",
+      route: "discover-ssr",
+      ...extractErrorFields(error),
     });
+    await logger.flush();
     return {
       props: {
         discoverData: [],

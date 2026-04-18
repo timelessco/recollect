@@ -1,22 +1,21 @@
 /**
- * Axiom structured logging and route handler telemetry wrapper.
- *
- * Logger: dual transport (AxiomJS + Console) — graceful when AXIOM_TOKEN missing.
- * createAxiomRouteHandler: outer telemetry layer wrapping withAuth/withPublic handlers.
+ * Axiom route-handler telemetry wrapper. App Router only — uses
+ * `after()` from `next/server`. Pages Router and other non-App
+ * callers import `logger` from `./axiom-logger` instead.
  */
 
 import { after } from "next/server";
 import type { NextRequest, NextResponse } from "next/server";
 
-import { Axiom } from "@axiomhq/js";
-import { AxiomJSTransport, ConsoleTransport, Logger } from "@axiomhq/logging";
+import * as Sentry from "@sentry/nextjs";
 import ensureError from "ensure-error";
 
 import type { ServerContext } from "./server-context";
 
-import { env } from "@/env/server";
-
+import { logger } from "./axiom-logger";
 import { deriveSource, getServerContext, runWithServerContext } from "./server-context";
+
+export { logger };
 
 // ============================================================
 // Logger Setup
@@ -69,102 +68,55 @@ function resolveClientAddress(headers: Headers): string | undefined {
   return headers.get("x-real-ip") ?? undefined;
 }
 
-// W3C Trace Context v00: `00-{32 hex trace_id}-{16 hex span_id}-{2 hex flags}`.
-// https://www.w3.org/TR/trace-context/#traceparent-header
-const TRACEPARENT_V00 = /^00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}$/;
-const ZERO_TRACE_ID = "0".repeat(32);
-const ZERO_SPAN_ID = "0".repeat(16);
-
-interface TraceContext {
+interface ResolvedTraceContext {
+  parentSpanId?: string;
   spanId: string;
+  traceFlags?: 0 | 1;
   traceId: string;
 }
 
 /**
- * Parse a W3C `traceparent` header. Strict about version `00` and length
- * 55 — unknown versions and malformed inputs return null so the caller
- * restarts the trace. All-zero trace_id or span_id is explicitly invalid
- * per W3C § 3.2.2.3 and also triggers restart.
+ * Resolve the request's trace context from Sentry's propagation scope.
+ * Sentry parses the incoming `sentry-trace` / `baggage` / `traceparent`
+ * headers and synthesizes a fresh trace when absent — reading from the
+ * scope guarantees every Axiom wide event shares the same trace_id that
+ * Sentry stamps on its own issues for this request.
+ *
+ * Fields map to the OTel Logs Data Model trace fields:
+ * - `span_id` — Sentry's `propagationSpanId` (the server span id it uses
+ *   on its own events); fresh random bytes as last resort. Never falls
+ *   back to `parentSpanId` — that's the *upstream caller's* span, not
+ *   ours, and would miscorrelate.
+ * - `parent_span_id` — the incoming caller's span when present; omitted
+ *   for root spans so `isnull(parent_span_id)` queries work in Axiom.
+ * - `trace_flags` — W3C flags byte (1 = sampled, 0 = not); omitted when
+ *   no sampling decision is attached to the propagation context.
  */
-function parseTraceparent(header: string | null): TraceContext | null {
-  if (!header) {
-    return null;
+function resolveTraceContext(): ResolvedTraceContext {
+  const { parentSpanId, propagationSpanId, sampled, traceId } =
+    Sentry.getCurrentScope().getPropagationContext();
+  const resolved: ResolvedTraceContext = {
+    spanId: propagationSpanId ?? randomSpanId(),
+    traceId,
+  };
+  if (parentSpanId) {
+    resolved.parentSpanId = parentSpanId;
   }
-  const match = TRACEPARENT_V00.exec(header);
-  if (!match) {
-    return null;
+  if (sampled !== undefined) {
+    resolved.traceFlags = sampled ? 1 : 0;
   }
-  const [, traceId, spanId] = match;
-  if (!traceId || !spanId || traceId === ZERO_TRACE_ID || spanId === ZERO_SPAN_ID) {
-    return null;
-  }
-  return { traceId, spanId };
+  return resolved;
 }
 
-function toHex(bytes: Uint8Array): string {
+function randomSpanId(): string {
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
   let out = "";
   for (const byte of bytes) {
     out += byte.toString(16).padStart(2, "0");
   }
   return out;
 }
-
-/**
- * Generate a fresh W3C-compliant trace context: 16-byte trace_id and
- * 8-byte span_id as lowercase hex. Used when the incoming request has no
- * (valid) `traceparent` header. Fresh crypto-random bytes — intentionally
- * not derived from `request_id`, which is a UUID with different lifetime
- * and encoding semantics.
- */
-function synthesizeTraceContext(): TraceContext {
-  const bytes = new Uint8Array(24);
-  crypto.getRandomValues(bytes);
-  return {
-    traceId: toHex(bytes.subarray(0, 16)),
-    spanId: toHex(bytes.subarray(16, 24)),
-  };
-}
-
-const baseTransport = new ConsoleTransport({
-  prettyPrint: env.NODE_ENV === "development",
-});
-
-const extraTransports: AxiomJSTransport[] = [];
-
-// Only add Axiom transport when token is configured (graceful local dev)
-if (env.AXIOM_TOKEN) {
-  const axiomClient = new Axiom({
-    token: env.AXIOM_TOKEN,
-  });
-
-  extraTransports.push(
-    new AxiomJSTransport({
-      axiom: axiomClient,
-      dataset: env.AXIOM_DATASET,
-    }),
-  );
-}
-
-function resolveBaseUrl(): string {
-  if (process.env.VERCEL_ENV === "production") {
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  }
-  if (process.env.VERCEL_BRANCH_URL) {
-    return `https://${process.env.VERCEL_BRANCH_URL}`;
-  }
-  return "http://localhost:3000";
-}
-
-export const logger = new Logger({
-  transports: [baseTransport, ...extraTransports],
-  // process.env used intentionally — Vercel system vars, not in @t3-oss/env-nextjs
-  // (auto-injected by Vercel, absent in local dev — graceful fallback)
-  args: {
-    base_url: resolveBaseUrl(),
-    branch: process.env.VERCEL_GIT_COMMIT_REF ?? "local",
-    commit: process.env.VERCEL_GIT_COMMIT_SHA ?? "local",
-  },
-});
 
 // ============================================================
 // Axiom Route Handler (outer telemetry layer)
@@ -199,11 +151,11 @@ export function createAxiomRouteHandler(
     // process.env used intentionally — server secret, consistent with supabase/constants.ts pattern
     const source = deriveSource(authHeader, process.env.SUPABASE_SERVICE_KEY);
 
-    // Propagate W3C trace context so every Axiom wide event carries
-    // trace_id + span_id — the join key with Sentry issues (Sentry's
-    // OTel propagator reads the same header automatically).
-    const traceContext =
-      parseTraceparent(request.headers.get("traceparent")) ?? synthesizeTraceContext();
+    // Read the request's trace context from Sentry's propagation scope.
+    // Sentry owns the parsing (sentry-trace / baggage / traceparent) and
+    // the fresh-trace fallback, so Axiom's trace_id always matches the
+    // trace_id Sentry stamps on issues for this same request.
+    const traceContext = resolveTraceContext();
 
     const context: ServerContext = {
       request_id: crypto.randomUUID(),
@@ -211,8 +163,10 @@ export function createAxiomRouteHandler(
       // Set by withAuth after authentication
       user_id: null,
       fields: {
-        trace_id: traceContext.traceId,
         span_id: traceContext.spanId,
+        trace_id: traceContext.traceId,
+        ...(traceContext.parentSpanId ? { parent_span_id: traceContext.parentSpanId } : {}),
+        ...(traceContext.traceFlags !== undefined ? { trace_flags: traceContext.traceFlags } : {}),
       },
     };
 
