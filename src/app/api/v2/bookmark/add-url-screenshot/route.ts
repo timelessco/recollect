@@ -114,8 +114,15 @@ export const POST = createAxiomRouteHandler(
 
       const existingMetaData = existingBookmark.meta_data ?? {};
 
-      const updatedTitle = title?.slice(0, MAX_LENGTH) ?? existingBookmark.title;
-      const updatedDescription = description?.slice(0, MAX_LENGTH) ?? existingBookmark.description;
+      // Screenshot service can return empty strings for title/description on
+      // blocked or empty pages. `??` only catches nullish, so `""` would
+      // overwrite a real scraper value from t1. Treat empty/whitespace-only as
+      // "no update" so the t1 value wins.
+      const normalizeMeta = (value: string | null | undefined, fallback: null | string) =>
+        value && value.trim() ? value.slice(0, MAX_LENGTH) : fallback;
+
+      const updatedTitle = normalizeMeta(title, existingBookmark.title);
+      const updatedDescription = normalizeMeta(description, existingBookmark.description);
 
       // 4. Early write — land the screenshot URL in the DB as soon as the R2
       // upload is done. The subsequent additionalImages + video collection can
