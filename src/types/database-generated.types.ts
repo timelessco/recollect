@@ -449,10 +449,6 @@ export type Database = {
         Returns: undefined;
       };
       check_bookmarks_view_keyed_shape: { Args: { v: Json }; Returns: boolean };
-      color_matches_oklab: {
-        Args: { colors: Json; hint_a: number; hint_b: number; hint_l: number };
-        Returns: boolean;
-      };
       create_and_assign_tag: {
         Args: { p_bookmark_id: number; p_tag_name: string };
         Returns: {
@@ -518,6 +514,17 @@ export type Database = {
       invoke_instagram_worker: { Args: never; Returns: number };
       invoke_raindrop_worker: { Args: never; Returns: number };
       invoke_twitter_worker: { Args: never; Returns: number };
+      lch_color_score: {
+        Args: {
+          hint_a: number;
+          hint_b: number;
+          hint_l: number;
+          stored_a: number;
+          stored_b: number;
+          stored_l: number;
+        };
+        Returns: number;
+      };
       link_twitter_bookmark_category: {
         Args: {
           p_category_name: string;
@@ -670,6 +677,10 @@ export type Database = {
       };
       user_owns_bookmark: {
         Args: { p_bookmark_id: number; p_user_id: string };
+        Returns: boolean;
+      };
+      user_owns_category: {
+        Args: { p_category_id: number; p_user_id: string };
         Returns: boolean;
       };
     };
