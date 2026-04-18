@@ -150,6 +150,7 @@ export type Database = {
           icon_color: string | null;
           id: number;
           is_public: boolean;
+          updated_at: string;
           user_id: string | null;
         };
         Insert: {
@@ -161,6 +162,7 @@ export type Database = {
           icon_color?: string | null;
           id?: number;
           is_public?: boolean;
+          updated_at?: string;
           user_id?: string | null;
         };
         Update: {
@@ -172,6 +174,7 @@ export type Database = {
           icon_color?: string | null;
           id?: number;
           is_public?: boolean;
+          updated_at?: string;
           user_id?: string | null;
         };
         Relationships: [
@@ -199,6 +202,7 @@ export type Database = {
           title: string | null;
           trash: string | null;
           type: string | null;
+          updated_at: string;
           url: string | null;
           user_id: string;
         };
@@ -216,6 +220,7 @@ export type Database = {
           title?: string | null;
           trash?: string | null;
           type?: string | null;
+          updated_at?: string;
           url?: string | null;
           user_id: string;
         };
@@ -233,6 +238,7 @@ export type Database = {
           title?: string | null;
           trash?: string | null;
           type?: string | null;
+          updated_at?: string;
           url?: string | null;
           user_id?: string;
         };
@@ -253,6 +259,7 @@ export type Database = {
           bookmark_count: number | null;
           bookmarks_view: Json | null;
           category_order: number[] | null;
+          created_at: string;
           display_name: string | null;
           email: string | null;
           favorite_categories: number[];
@@ -269,6 +276,7 @@ export type Database = {
           provider: string | null;
           subscription_current_period_end: string | null;
           subscription_status: string | null;
+          updated_at: string;
           user_name: string | null;
         };
         Insert: {
@@ -277,6 +285,7 @@ export type Database = {
           bookmark_count?: number | null;
           bookmarks_view?: Json | null;
           category_order?: number[] | null;
+          created_at?: string;
           display_name?: string | null;
           email?: string | null;
           favorite_categories?: number[];
@@ -293,6 +302,7 @@ export type Database = {
           provider?: string | null;
           subscription_current_period_end?: string | null;
           subscription_status?: string | null;
+          updated_at?: string;
           user_name?: string | null;
         };
         Update: {
@@ -301,6 +311,7 @@ export type Database = {
           bookmark_count?: number | null;
           bookmarks_view?: Json | null;
           category_order?: number[] | null;
+          created_at?: string;
           display_name?: string | null;
           email?: string | null;
           favorite_categories?: number[];
@@ -317,6 +328,7 @@ export type Database = {
           provider?: string | null;
           subscription_current_period_end?: string | null;
           subscription_status?: string | null;
+          updated_at?: string;
           user_name?: string | null;
         };
         Relationships: [];
@@ -330,6 +342,7 @@ export type Database = {
           email: string | null;
           id: number;
           is_accept_pending: boolean | null;
+          updated_at: string;
           user_id: string;
         };
         Insert: {
@@ -340,6 +353,7 @@ export type Database = {
           email?: string | null;
           id?: number;
           is_accept_pending?: boolean | null;
+          updated_at?: string;
           user_id: string;
         };
         Update: {
@@ -350,6 +364,7 @@ export type Database = {
           email?: string | null;
           id?: number;
           is_accept_pending?: boolean | null;
+          updated_at?: string;
           user_id?: string;
         };
         Relationships: [
@@ -374,18 +389,21 @@ export type Database = {
           created_at: string | null;
           id: number;
           name: string | null;
+          updated_at: string;
           user_id: string | null;
         };
         Insert: {
           created_at?: string | null;
           id?: number;
           name?: string | null;
+          updated_at?: string;
           user_id?: string | null;
         };
         Update: {
           created_at?: string | null;
           id?: number;
           name?: string | null;
+          updated_at?: string;
           user_id?: string | null;
         };
         Relationships: [];
