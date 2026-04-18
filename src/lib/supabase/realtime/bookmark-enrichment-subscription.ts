@@ -222,6 +222,15 @@ export async function teardownBookmarkEnrichmentSubscription(
 async function teardown(bookmarkId: number, reason: TeardownReason): Promise<void> {
   const record = active.get(bookmarkId);
   if (!record || record.tornDown) {
+    // The id may still be sitting in waiting[] from a burst (>5 adds). Drop it
+    // so promoteQueuedSubscription() can't later open a dead channel for a
+    // bookmark whose screenshot pipeline already failed (would hold a slot
+    // for the full 90s timeout and starve later adds).
+    const queuedIndex = waiting.findIndex((queued) => queued.bookmarkId === bookmarkId);
+    if (queuedIndex !== -1) {
+      waiting.splice(queuedIndex, 1);
+      logEvent("dequeued before subscribe", bookmarkId, { reason });
+    }
     return;
   }
   record.tornDown = true;
