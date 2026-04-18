@@ -9,7 +9,7 @@ paths:
 
 - **Zustand** — store files in `/src/store`, TS interfaces, actions separated from state
 - **React Query** — key constants, custom hooks, error handling, optimistic updates
-- **Optimistic mutations** — add Sentry breadcrumbs for cache misses and state inconsistencies
+- **Optimistic mutations** — route cache misses through `logCacheMiss` (Axiom only); see `telemetry.md`
 
 ### Frontend
 

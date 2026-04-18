@@ -4,17 +4,33 @@ import { ConsoleTransport, Logger, ProxyTransport } from "@axiomhq/logging";
 import { nextJsFormatters } from "@axiomhq/nextjs/client";
 import { createUseLogger, createWebVitalsComponent } from "@axiomhq/react";
 
+import { recollectIdentityFormatter } from "./axiom-client-formatters";
+import { SampledTransport } from "./axiom-client-sampling";
+
 /**
  * Client-side Axiom Logger.
  *
- * Uses ProxyTransport to forward log events to /api/axiom — AXIOM_TOKEN stays server-only.
+ * Pipeline per emission:
+ *   call-site → nextJsFormatters → recollectIdentityFormatter
+ *             → SampledTransport → ProxyTransport → /api/axiom
+ *
+ * `recollectIdentityFormatter` injects `user_id` / `session_id` / `route`
+ * at the event root and collapses `fields.*` into one stringified
+ * `fields.payload` scalar — schema-budget guard for the 256-field ceiling.
+ *
+ * `SampledTransport` wraps `ProxyTransport` so high-volume events
+ * (`route_change`) can be sampled without touching call-sites. Errors
+ * bypass sampling.
+ *
  * autoFlush ensures reliable delivery even without navigation events.
- * ConsoleTransport provides dev visibility.
- * nextJsFormatters from /client subpath — NOT root @axiomhq/nextjs (which pulls serverContextFieldsFormatter using ALS).
+ * ConsoleTransport stays un-sampled to preserve dev visibility.
  */
 export const clientLogger = new Logger({
-  transports: [new ProxyTransport({ autoFlush: true, url: "/api/axiom" }), new ConsoleTransport()],
-  formatters: nextJsFormatters,
+  transports: [
+    new SampledTransport(new ProxyTransport({ autoFlush: true, url: "/api/axiom" })),
+    new ConsoleTransport(),
+  ],
+  formatters: [...nextJsFormatters, recollectIdentityFormatter],
 });
 
 /** Auto-flushes on route change via internal popstate/pushState/replaceState listeners */
