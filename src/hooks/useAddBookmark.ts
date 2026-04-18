@@ -24,7 +24,7 @@ export function useAddBookmark() {
             ?.edit_access === true || currentCategory?.user_id?.id === session?.user?.id
         : true;
 
-    void addBookmarkMinDataOptimisticMutation.mutateAsync({
+    addBookmarkMinDataOptimisticMutation.mutate({
       category_id: CATEGORY_ID,
       update_access: updateAccessCondition,
       url: finalUrl,

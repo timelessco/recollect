@@ -69,6 +69,62 @@ function resolveClientAddress(headers: Headers): string | undefined {
   return headers.get("x-real-ip") ?? undefined;
 }
 
+// W3C Trace Context v00: `00-{32 hex trace_id}-{16 hex span_id}-{2 hex flags}`.
+// https://www.w3.org/TR/trace-context/#traceparent-header
+const TRACEPARENT_V00 = /^00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}$/;
+const ZERO_TRACE_ID = "0".repeat(32);
+const ZERO_SPAN_ID = "0".repeat(16);
+
+interface TraceContext {
+  spanId: string;
+  traceId: string;
+}
+
+/**
+ * Parse a W3C `traceparent` header. Strict about version `00` and length
+ * 55 — unknown versions and malformed inputs return null so the caller
+ * restarts the trace. All-zero trace_id or span_id is explicitly invalid
+ * per W3C § 3.2.2.3 and also triggers restart.
+ */
+function parseTraceparent(header: string | null): TraceContext | null {
+  if (!header) {
+    return null;
+  }
+  const match = TRACEPARENT_V00.exec(header);
+  if (!match) {
+    return null;
+  }
+  const [, traceId, spanId] = match;
+  if (!traceId || !spanId || traceId === ZERO_TRACE_ID || spanId === ZERO_SPAN_ID) {
+    return null;
+  }
+  return { traceId, spanId };
+}
+
+function toHex(bytes: Uint8Array): string {
+  let out = "";
+  for (const byte of bytes) {
+    out += byte.toString(16).padStart(2, "0");
+  }
+  return out;
+}
+
+/**
+ * Generate a fresh W3C-compliant trace context: 16-byte trace_id and
+ * 8-byte span_id as lowercase hex. Used when the incoming request has no
+ * (valid) `traceparent` header. Fresh crypto-random bytes — intentionally
+ * not derived from `request_id`, which is a UUID with different lifetime
+ * and encoding semantics.
+ */
+function synthesizeTraceContext(): TraceContext {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return {
+    traceId: toHex(bytes.subarray(0, 16)),
+    spanId: toHex(bytes.subarray(16, 24)),
+  };
+}
+
 const baseTransport = new ConsoleTransport({
   prettyPrint: env.NODE_ENV === "development",
 });
@@ -143,12 +199,21 @@ export function createAxiomRouteHandler(
     // process.env used intentionally — server secret, consistent with supabase/constants.ts pattern
     const source = deriveSource(authHeader, process.env.SUPABASE_SERVICE_KEY);
 
+    // Propagate W3C trace context so every Axiom wide event carries
+    // trace_id + span_id — the join key with Sentry issues (Sentry's
+    // OTel propagator reads the same header automatically).
+    const traceContext =
+      parseTraceparent(request.headers.get("traceparent")) ?? synthesizeTraceContext();
+
     const context: ServerContext = {
       request_id: crypto.randomUUID(),
       source,
       // Set by withAuth after authentication
       user_id: null,
-      fields: {},
+      fields: {
+        trace_id: traceContext.traceId,
+        span_id: traceContext.spanId,
+      },
     };
 
     const result = await runWithServerContext(context, async () => {

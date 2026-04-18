@@ -113,7 +113,7 @@ export function useBookmarksViewUpdate() {
             );
 
             if (!isNil(existingSharedCollectionViewsData)) {
-              void updateSharedCategoriesOptimisticMutation.mutateAsync({
+              updateSharedCategoriesOptimisticMutation.mutate({
                 id: sharedCategoriesId,
                 updateData: {
                   category_views: {
@@ -157,7 +157,7 @@ export function useBookmarksViewUpdate() {
           [pageKey]: updatedPageView,
         };
 
-        void updateUserProfileOptimisticMutation.mutateAsync({
+        updateUserProfileOptimisticMutation.mutate({
           updateData: { bookmarks_view: nextKeyed },
         });
       } else {
