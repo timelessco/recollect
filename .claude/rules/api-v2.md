@@ -109,6 +109,13 @@ if (ctx?.fields) {
 - Auto-included per request: `commit` (VERCEL_GIT_COMMIT_SHA), `region` (VERCEL_REGION)
 - Flushing: `after(() => logger.flush())` — deferred, non-blocking
 
+> **ID emission convention.** Entity IDs collapse into a single JSON scalar `ids` at emit time. Handlers keep writing `ctx.fields.<entity>_id = …` — the factory partitions by suffix.
+>
+> - Keys ending in `_id` or `_ids` land inside `ids`.
+> - Observability primitives stay top-level: `request_id`, `source`, `user_id`, `trace_id`, `span_id`, `parent_span_id`, `trace_flags`.
+> - Analysts filter via `parse_json(fields["ids"]).bookmark_id` (same pattern as `error_context`, `search_params`).
+> - Counts (`*_count`), flags (`has_*`, `is_*`), outcomes (`*_failed`, `*_completed`), and input descriptors stay top-level — they're the wide-event payload.
+
 ### `after()` Patterns
 
 Fire-and-forget enrichment — ALWAYS wrap body in try/catch:

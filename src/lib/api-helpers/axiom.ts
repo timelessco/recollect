@@ -128,6 +128,59 @@ type AxiomWrappableHandler = ((request: NextRequest) => Promise<NextResponse>) &
 };
 
 /**
+ * Wide-event keys that stay top-level even though they'd otherwise match
+ * the `_id` / `_ids` suffix rule. These are observability primitives —
+ * filtered on across every dashboard, constant-cardinality, and part of
+ * the OTel Logs Data Model trace context. Everything else ending in
+ * `_id` / `_ids` collapses into the `ids` JSON scalar.
+ */
+const TOP_LEVEL_ID_KEYS = new Set([
+  "parent_span_id",
+  "request_id",
+  "source",
+  "span_id",
+  "trace_flags",
+  "trace_id",
+  "user_id",
+]);
+
+/**
+ * Partition handler-written `ctx.fields` into top-level keys and a single
+ * JSON-stringified `ids` scalar. Keeping domain entity IDs inside one
+ * scalar stops them from registering as top-level Axiom fields — the
+ * dataset has a 256-field ceiling and unbounded `<entity>_id` keys were
+ * consuming slots as the route surface grew. Analysts filter via
+ * `parse_json(fields["ids"]).<key>` (same pattern as `error_context`,
+ * `search_params`).
+ *
+ * Rules:
+ * - Allowlisted observability primitives → top-level.
+ * - Any other key ending in `_id` / `_ids` → `ids` scalar.
+ * - Everything else (counts, flags, descriptors) → top-level.
+ * - `ids` is emitted only when at least one entity-id key was present.
+ */
+function partitionFields(fields: Record<string, unknown>): {
+  idsScalar: string | undefined;
+  topLevel: Record<string, unknown>;
+} {
+  const topLevel: Record<string, unknown> = {};
+  const ids: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(fields)) {
+    if (TOP_LEVEL_ID_KEYS.has(key)) {
+      topLevel[key] = value;
+      continue;
+    }
+    if (key.endsWith("_id") || key.endsWith("_ids")) {
+      ids[key] = value;
+      continue;
+    }
+    topLevel[key] = value;
+  }
+  const idsScalar = Object.keys(ids).length > 0 ? JSON.stringify(ids) : undefined;
+  return { idsScalar, topLevel };
+}
+
+/**
  * Outer telemetry layer.
  * Wraps the inner handler with:
  * - AsyncLocalStorage context (request_id, source)
@@ -190,6 +243,7 @@ export function createAxiomRouteHandler(
 
         // onSuccess: log level based on HTTP status
         const { status } = response;
+        const { idsScalar, topLevel } = partitionFields(ctx?.fields ?? {});
         const logData = {
           ...otelAttrs,
           "http.response.status_code": status,
@@ -197,7 +251,8 @@ export function createAxiomRouteHandler(
           request_id: ctx?.request_id,
           source: ctx?.source,
           user_id: ctx?.user_id,
-          ...ctx?.fields,
+          ...topLevel,
+          ...(idsScalar ? { ids: idsScalar } : {}),
         };
 
         if (status >= 500) {
@@ -216,14 +271,16 @@ export function createAxiomRouteHandler(
         const ctx = getServerContext();
         const err = ensureError(error);
 
-        // onError: structured error logging to Axiom (AXIO-04)
+        const { idsScalar, topLevel } = partitionFields(ctx?.fields ?? {});
+        // onError: structured error logging to Axiom
         logger.error("Request error", {
           ...otelAttrs,
           duration_ms: Math.round(duration),
           request_id: ctx?.request_id,
           source: ctx?.source,
           user_id: ctx?.user_id,
-          ...ctx?.fields,
+          ...topLevel,
+          ...(idsScalar ? { ids: idsScalar } : {}),
           error_name: err.name,
           error_message: err.message,
           error_stack: err.stack,
@@ -231,7 +288,7 @@ export function createAxiomRouteHandler(
 
         after(() => logger.flush());
 
-        // Re-throw so error reaches Next.js → onRequestError → Sentry (FACT-04)
+        // Re-throw so error reaches Next.js → onRequestError → Sentry
         throw error;
       }
     });
