@@ -136,8 +136,9 @@ export const GET = createAxiomRouteHandler(
       const tagName = plainTags.length > 0 ? plainTags : undefined;
 
       setPayload(ctx, {
-        search_text: searchText || null,
-        tag_name: tagName?.at(0) ?? null,
+        has_search_text: searchText.length > 0,
+        search_text_length: searchText.length,
+        has_tag_filter: tagName !== undefined && tagName.length > 0,
         url_scope: urlScope || null,
       });
 

@@ -37,7 +37,10 @@ export const POST = createAxiomRouteHandler(
         ctx.fields.user_id = userId;
         ctx.fields.bookmark_id = data.id;
       }
-      setPayload(ctx, { url: data.url });
+      const telemetryUrl = new URL(data.url);
+      telemetryUrl.search = "";
+      telemetryUrl.hash = "";
+      setPayload(ctx, { url: telemetryUrl.toString() });
 
       // 1. Capture screenshot from external API
       const [screenshotError, screenshotResponse] = await vet(async () => {
