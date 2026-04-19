@@ -190,22 +190,24 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       const url = data?.url;
 
       // Heavy processing (media check, PDF thumbnail, screenshot) runs as
-      // fire-and-forget so it doesn't block the render cycle
+      // fire-and-forget so it doesn't block the render cycle. Loading id was
+      // set in onSuccess (before setQueryData) — see comment there.
       void (async () => {
         const isUrlOfMimeType = await checkIfUrlAnImage(url);
         if (isUrlOfMimeType) {
+          removeLoadingBookmarkId(data.id);
           return;
         }
 
         const mediaType = await getMediaType(url);
         // Audio URLs already have ogImage fallback set in add-bookmark-min-data
         if (mediaType?.includes("audio")) {
+          removeLoadingBookmarkId(data.id);
           return;
         }
 
         if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
           try {
-            addLoadingBookmarkId(data.id);
             successToast("Generating thumbnail");
             await handlePdfThumbnailAndUpload({
               fileId: data.id,
@@ -233,15 +235,24 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
           return;
         }
 
-        if (data?.id) {
-          addLoadingBookmarkId(data.id);
-        }
         addBookmarkScreenshotMutation.mutate({ id: data.id, url: data.url });
       })();
     },
     onSuccess: (apiResponse, _variables, context) => {
       if (apiResponse?.[0]) {
         const [serverBookmark] = apiResponse;
+
+        // Set loading id BEFORE swapping the temp id for the real id in cache.
+        // setQueryData triggers a React Query subscription notify which renders
+        // the card with the real id. If isLoading is still false at that
+        // render, the statusText ladder falls through to TERMINAL ("Cannot
+        // fetch image..."). The prior placement (in onSettled) was one
+        // callback too late: onSuccess + setQueryData fire first, React
+        // commits, only then onSettled runs. The image/audio branches in the
+        // IIFE below still clear it eagerly when no screenshot follow-up runs.
+        if (serverBookmark.id) {
+          addLoadingBookmarkId(serverBookmark.id);
+        }
 
         // Re-add URL for animation continuity across key change (temp → real id).
         // The remounted component consumes this via recentlyAddedUrls.delete().

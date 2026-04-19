@@ -9,6 +9,7 @@ import { logger } from "@/lib/api-helpers/axiom";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { addRemainingBookmarkData } from "@/lib/bookmarks/add-remaining-bookmark-data";
+import { isLikelyValidImageUrl, preflightImageUrl } from "@/lib/bookmarks/image-url-validation";
 import { revalidateCategoryIfPublic } from "@/lib/revalidation-helpers";
 import { isNullable } from "@/utils/assertion-utils";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "@/utils/category-auth";
@@ -270,10 +271,19 @@ export async function addBookmarkMinData({
       title: new URL(url).hostname,
     };
   } else {
+    // Shape-check the scraper's ogImage — rejects placeholder URLs like
+    // `https://undefined/...` (Next.js pages with unset metadataBase) before
+    // they enter the system.
+    const rawScrapedOgImage = ogsResult?.result?.ogImage?.at(0)?.url ?? null;
+    const sanitizedOgImage = isLikelyValidImageUrl(rawScrapedOgImage) ? rawScrapedOgImage : null;
+    if (rawScrapedOgImage && !sanitizedOgImage) {
+      setPayload(ctx, { og_image_shape_rejected: true });
+    }
+
     scrapperData = {
       description: ogsResult?.result?.ogDescription ?? null,
       favIcon: ogsResult?.result?.favicon ?? null,
-      ogImage: shouldSkipOgImage ? null : (ogsResult?.result?.ogImage?.at(0)?.url ?? null),
+      ogImage: shouldSkipOgImage ? null : sanitizedOgImage,
       title: ogsResult?.result?.ogTitle ?? null,
     };
   }
@@ -301,6 +311,22 @@ export async function addBookmarkMinData({
     if (!iframeAllowedValue) {
       setPayload(ctx, { iframe_not_allowed: true });
     }
+  }
+
+  // HEAD-preflight the scraped ogImage. Catches dead domains, 404s, and
+  // non-image content that shape-validation alone can't see. Skip for our
+  // own AUDIO_OG_IMAGE_FALLBACK_URL and for URLs we already know resolve
+  // (the bookmark URL itself when it IS the image).
+  if (
+    ogImageToBeAdded &&
+    ogImageToBeAdded !== url &&
+    ogImageToBeAdded !== AUDIO_OG_IMAGE_FALLBACK_URL
+  ) {
+    const preflighted = await preflightImageUrl(ogImageToBeAdded);
+    if (!preflighted) {
+      setPayload(ctx, { og_image_preflight_rejected: true });
+    }
+    ogImageToBeAdded = preflighted;
   }
 
   const favIcon = await getNormalisedImageUrl(scrapperData.favIcon, url);

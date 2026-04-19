@@ -7,6 +7,7 @@ import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { addRemainingBookmarkData } from "@/lib/bookmarks/add-remaining-bookmark-data";
 import { collectAdditionalImages, collectVideo } from "@/lib/bookmarks/collect-screenshot-media";
+import { isLikelyValidImageUrl } from "@/lib/bookmarks/image-url-validation";
 import { parseScreenshotResponse } from "@/lib/bookmarks/parse-screenshot-response";
 import { upload } from "@/lib/storage/media-upload";
 import { isNullable } from "@/utils/assertion-utils";
@@ -153,6 +154,12 @@ export const POST = createAxiomRouteHandler(
       }
 
       // 5. Build updated meta_data with screenshot
+      // If the scraper-returned ogImage is missing or broken (e.g. Next.js
+      // pages with unset metadataBase emit "https://undefined/..."), backfill
+      // ogImage with the captured screenshot so the client never has to
+      // render a dead URL while `after()` enrichment is still running.
+      const shouldBackfillOgImage = !isLikelyValidImageUrl(existingBookmark.ogImage);
+
       const updatedMetaData = {
         ...existingMetaData,
         additionalImages,
@@ -160,10 +167,14 @@ export const POST = createAxiomRouteHandler(
           additionalVideoResult.success && additionalVideoResult.url
             ? [additionalVideoResult.url]
             : [],
-        coverImage: existingBookmark.ogImage,
+        coverImage: shouldBackfillOgImage ? publicURL : existingBookmark.ogImage,
         isPageScreenshot,
         screenshot: publicURL,
       };
+
+      if (shouldBackfillOgImage) {
+        setPayload(ctx, { ogimage_backfilled_with_screenshot: true });
+      }
 
       // 6. Update bookmark in DB
       const { data: updateData, error: updateError } = await supabase
@@ -172,6 +183,7 @@ export const POST = createAxiomRouteHandler(
           description: updatedDescription,
           meta_data: toJson(updatedMetaData),
           title: updatedTitle,
+          ...(shouldBackfillOgImage ? { ogImage: publicURL } : {}),
         })
         .match({ id: data.id, user_id: userId })
         .select("id, ogImage, title, description, meta_data");

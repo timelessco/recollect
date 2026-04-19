@@ -6,11 +6,12 @@ import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-h
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { storeQueueError } from "@/lib/api-helpers/queue";
 import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
+import { isLikelyValidImageUrl } from "@/lib/bookmarks/image-url-validation";
 import { parseScreenshotResponse } from "@/lib/bookmarks/parse-screenshot-response";
 import { upload } from "@/lib/storage/media-upload";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";
-import { isEmptyString, isNonNullable } from "@/utils/assertion-utils";
+import { isNonNullable } from "@/utils/assertion-utils";
 import { autoAssignCollections, fetchUserCollections } from "@/utils/auto-assign-collections";
 import { MAIN_TABLE_NAME, PDF_MIME_TYPE } from "@/utils/constants";
 import { blurhashFromURL } from "@/utils/getBlurHash";
@@ -99,10 +100,12 @@ export const POST = createAxiomRouteHandler(
           .single();
 
         const existingMeta = isRecord(existing?.meta_data) ? existing.meta_data : {};
-        const existingOgImage =
-          isNonNullable(existing?.ogImage) && !isEmptyString(existing.ogImage)
-            ? existing.ogImage
-            : null;
+        // Idempotency guard: only treat the existing ogImage as "already
+        // processed" if it's a URL we could actually fetch. Malformed
+        // values like "https://undefined/..." (e.g. from a Next.js page
+        // with unset metadataBase) must not short-circuit capture, or
+        // AI/blurhash run on a dead URL.
+        const existingOgImage = isLikelyValidImageUrl(existing?.ogImage) ? existing.ogImage : null;
 
         let publicURL: null | string = existingOgImage;
         let isPageScreenshot: unknown = existingMeta.isPageScreenshot ?? false;

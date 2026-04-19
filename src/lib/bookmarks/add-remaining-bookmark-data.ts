@@ -367,13 +367,15 @@ export async function addRemainingBookmarkData(
       const returnedB64 = await downloadImageAsBase64(downloadUrl);
 
       if (isNullable(returnedB64)) {
-        uploadedCoverImageUrl = currentData.ogImage;
-        console.error("Failed to download scraper image, using original ogImage");
+        // Download failed — don't preserve the (likely dead) original URL;
+        // downstream falls back to meta_data.screenshot via the re-host pattern.
+        uploadedCoverImageUrl = null;
+        console.error("Failed to download scraper image");
       } else {
         uploadedCoverImageUrl = await uploadImageToR2(returnedB64, userId, null);
 
         if (isNullable(uploadedCoverImageUrl)) {
-          uploadedCoverImageUrl = currentData.ogImage;
+          uploadedCoverImageUrl = null;
           console.error("Failed to upload image to R2, continuing without image");
           logger.warn("upload_scrapped_image_to_r2_failed", {
             operation: "upload_scrapped_image_to_r2",
@@ -384,7 +386,7 @@ export async function addRemainingBookmarkData(
         }
       }
     } catch (error) {
-      uploadedCoverImageUrl = currentData.ogImage;
+      uploadedCoverImageUrl = null;
       console.error("Error uploading scrapped image to R2:", error);
       logger.warn("upload_scrapped_image_to_r2_error", {
         operation: "upload_scrapped_image_to_r2",
