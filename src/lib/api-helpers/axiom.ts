@@ -10,7 +10,7 @@ import type { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import ensureError from "ensure-error";
 
-import type { ServerContext } from "./server-context";
+import type { ServerContext, ServerFields } from "./server-context";
 
 import { logger } from "./axiom-logger";
 import { deriveSource, getServerContext, runWithServerContext } from "./server-context";
@@ -144,6 +144,11 @@ const TOP_LEVEL_ID_KEYS = new Set([
   "user_id",
 ]);
 
+/** Runtime guard for the `payload` branch — narrows value to a Record. */
+function isPayloadRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 /**
  * Partition handler-written `ctx.fields` into top-level keys, a single
  * JSON-stringified `ids` scalar, and a single JSON-stringified `payload`
@@ -164,7 +169,7 @@ const TOP_LEVEL_ID_KEYS = new Set([
  * - Everything else → top-level.
  * - `ids` and `payload` are emitted only when at least one key was present.
  */
-function partitionFields(fields: Record<string, unknown>): {
+function partitionFields(fields: ServerFields): {
   idsScalar: string | undefined;
   payloadScalar: string | undefined;
   topLevel: Record<string, unknown>;
@@ -174,7 +179,7 @@ function partitionFields(fields: Record<string, unknown>): {
   let payloadScalar: string | undefined;
   for (const [key, value] of Object.entries(fields)) {
     if (key === "payload") {
-      if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+      if (isPayloadRecord(value)) {
         if (Object.keys(value).length > 0) {
           payloadScalar = JSON.stringify(value);
         }

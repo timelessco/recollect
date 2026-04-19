@@ -8,9 +8,48 @@
 
 import { AsyncLocalStorage } from "node:async_hooks";
 
+/**
+ * Observability primitives the factory emits as top-level Axiom columns.
+ * Allowlisted because they power dashboards, constant-cardinality filters,
+ * and the OTel Logs Data Model trace context. Other writes must route
+ * through `payload` to avoid registering new dataset columns.
+ */
+interface ObservabilityFields {
+  parent_span_id?: string;
+  request_id?: string;
+  source?: ServerContext["source"];
+  span_id?: string;
+  trace_flags?: 0 | 1;
+  trace_id?: string;
+  user_id?: string;
+}
+
+/**
+ * Domain entity IDs. The factory auto-collapses keys matching this index
+ * signature into the `ids` JSON scalar. Matching shape — any `<entity>_id`
+ * or `<entity>_ids` — is accepted so handlers can keep naming fields
+ * naturally.
+ */
+type IdSuffixFields = Partial<Record<`${string}_id` | `${string}_ids`, unknown>>;
+
+/**
+ * Single escape hatch for non-observability, non-entity-id context. The
+ * factory JSON-stringifies this into the `fields.payload` scalar so
+ * per-handler domain keys don't consume top-level Axiom columns.
+ */
+interface PayloadField {
+  payload?: Record<string, unknown>;
+}
+
+export type ServerFields = IdSuffixFields & ObservabilityFields & PayloadField;
+
 export interface ServerContext {
-  /** Handler-contributed business context for wide events (populated during request) */
-  fields?: Record<string, unknown>;
+  /**
+   * Handler-contributed business context for wide events (populated during
+   * request). Narrowed to refuse hand-written non-observability, non-id
+   * top-level writes at compile time — use `setPayload` for anything else.
+   */
+  fields?: ServerFields;
   /** Always set — generated UUID per request */
   request_id: string;
   /**
