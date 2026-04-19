@@ -15,10 +15,8 @@ export const POST = createAxiomRouteHandler(
       if (ctx?.fields) {
         ctx.fields.user_id = user.id;
       }
-      setPayload(ctx, { retry_mode: "msg_ids" in data ? "per_message" : "all" });
-
       if ("msg_ids" in data) {
-        setPayload(ctx, { requested_count: data.msg_ids.length });
+        setPayload(ctx, { retry_mode: "per_message", requested_count: data.msg_ids.length });
 
         const { data: result, error } = await supabase.rpc("retry_raindrop_import", {
           p_msg_ids: data.msg_ids,
@@ -44,6 +42,8 @@ export const POST = createAxiomRouteHandler(
 
         return result;
       }
+
+      setPayload(ctx, { retry_mode: "all" });
 
       const { data: result, error } = await supabase.rpc("retry_all_raindrop_imports", {
         p_user_id: user.id,

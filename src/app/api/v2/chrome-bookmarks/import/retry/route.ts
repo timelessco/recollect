@@ -18,10 +18,7 @@ export const POST = createAxiomRouteHandler(
       }
 
       if ("msg_ids" in data) {
-        if (ctx?.fields) {
-          ctx.fields.msg_ids = data.msg_ids;
-        }
-        setPayload(ctx, { retry_mode: "selective" });
+        setPayload(ctx, { retry_mode: "per_message", msg_id_count: data.msg_ids.length });
 
         const { data: result, error } = await supabase.rpc("retry_chrome_bookmark_import", {
           p_msg_ids: data.msg_ids,
