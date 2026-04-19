@@ -14,7 +14,7 @@ export const POST = createAxiomRouteHandler(
       if (ctx?.fields) {
         ctx.fields.user_id = user.id;
       }
-      setPayload(ctx, { raw_domain_length: data.domain.length });
+      setPayload(ctx, { raw_domain: data.domain });
 
       const domain = normalizeDomain(data.domain);
       if (!domain) {

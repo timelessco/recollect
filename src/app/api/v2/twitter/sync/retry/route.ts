@@ -19,6 +19,9 @@ export const POST = createAxiomRouteHandler(
       });
 
       if ("msg_ids" in data) {
+        if (ctx?.fields) {
+          ctx.fields.msg_ids = data.msg_ids;
+        }
         const { data: result, error: dbError } = await supabase.rpc("retry_twitter_import", {
           p_msg_ids: data.msg_ids,
           p_user_id: user.id,

@@ -16,6 +16,9 @@ export const POST = createAxiomRouteHandler(
         ctx.fields.user_id = user.id;
       }
       if ("msg_ids" in data) {
+        if (ctx?.fields) {
+          ctx.fields.msg_ids = data.msg_ids;
+        }
         setPayload(ctx, { retry_mode: "per_message", requested_count: data.msg_ids.length });
 
         const { data: result, error } = await supabase.rpc("retry_raindrop_import", {
