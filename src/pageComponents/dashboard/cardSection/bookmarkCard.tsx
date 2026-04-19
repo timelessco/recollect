@@ -9,6 +9,7 @@ import type { BookmarkViewDataTypes, SingleListData } from "@/types/apiTypes";
 import ReadMore from "@/components/readmore";
 import useGetViewValue from "@/hooks/useGetViewValue";
 import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
+import { isBookmarkEnrichmentDone } from "@/lib/bookmarks/enrichment-phase";
 import { useSupabaseSession } from "@/store/componentStore";
 import { viewValues } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
@@ -27,13 +28,25 @@ export function getImgForPost(
   const postUrl = post?.url;
   const postOgImage = post?.ogImage;
   const postCoverImage = post?.meta_data?.coverImage;
+  // Pre-t3 (no ocr_status): the screenshot is the freshest representation
+  // so it wins over the t1 scraper OG image. Post-t3: enrichment has
+  // repopulated ogImage/coverImage so normal precedence applies.
+  const postScreenshot = post?.meta_data?.screenshot ?? undefined;
+  const enrichmentDone = isBookmarkEnrichmentDone(post?.meta_data);
+
   if (preferredDomainsSet.size === 0) {
-    return postOgImage;
+    return enrichmentDone ? postOgImage : (postScreenshot ?? postOgImage);
   }
 
   const domain = getDomain(postUrl ?? "");
   const isPreferred = domain && preferredDomainsSet.has(domain);
-  return isPreferred ? (postCoverImage ?? postOgImage) : postOgImage;
+
+  if (enrichmentDone) {
+    return isPreferred ? (postCoverImage ?? postOgImage) : postOgImage;
+  }
+  return isPreferred
+    ? (postScreenshot ?? postCoverImage ?? postOgImage)
+    : (postScreenshot ?? postOgImage);
 }
 
 export interface BookmarkCardProps {
@@ -281,6 +294,8 @@ export const BookmarkCard = memo(BookmarkCardInner, (prev, next) => {
     prev.post.trash === next.post.trash &&
     prev.post.inserted_at === next.post.inserted_at &&
     prev.post.meta_data?.ogImgBlurUrl === next.post.meta_data?.ogImgBlurUrl &&
+    prev.post.meta_data?.screenshot === next.post.meta_data?.screenshot &&
+    prev.post.meta_data?.coverImage === next.post.meta_data?.coverImage &&
     prev.post.meta_data?.height === next.post.meta_data?.height &&
     prev.post.meta_data?.width === next.post.meta_data?.width &&
     prev.post.addedTags?.length === next.post.addedTags?.length &&
