@@ -89,8 +89,9 @@ import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 
 const ctx = getServerContext();
 if (ctx?.fields) {
-  // Entity IDs BEFORE the operation — suffix-based, land in the `ids` scalar
+  // Observability primitive — allowlisted, stays top-level
   ctx.fields.user_id = userId;
+  // Entity IDs BEFORE the operation — suffix-based, land in the `ids` scalar
   ctx.fields.bookmark_id = id;
 }
 
@@ -114,7 +115,7 @@ setPayload(ctx, { profile_updated: true });
 
 > **Emission convention.** The factory's `partitionFields` collapses handler writes into two JSON scalars so per-handler domain keys don't consume top-level Axiom columns (the dev dataset has a 256-column ceiling).
 >
-> - Keys ending in `_id` or `_ids` land inside the `ids` scalar — write them directly as `ctx.fields.<entity>_id = …`.
+> - Keys ending in `_id` or `_ids` land inside the `ids` scalar — write them directly as `ctx.fields.<entity>_id = …`, except allowlisted observability primitives (e.g. `user_id`) which stay top-level.
 > - Anything passed to `setPayload(ctx, { … })` lands inside the `payload` scalar — counts (`*_count`), flags (`has_*`, `is_*`), outcomes (`*_failed`, `*_completed`), and input descriptors.
 > - Observability primitives stay top-level: `request_id`, `source`, `user_id`, `trace_id`, `span_id`, `parent_span_id`, `trace_flags`.
 > - Analysts filter via `parse_json(fields["ids"]).bookmark_id` / `parse_json(fields["payload"]).<key>` (same pattern as `error_context`, `search_params`).
