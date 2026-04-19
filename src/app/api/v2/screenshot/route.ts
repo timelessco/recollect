@@ -12,7 +12,7 @@ import { createServerServiceClient } from "@/lib/supabase/service";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";
 import { isEmptyString, isNonNullable } from "@/utils/assertion-utils";
 import { autoAssignCollections, fetchUserCollections } from "@/utils/auto-assign-collections";
-import { MAIN_TABLE_NAME, PDF_MIME_TYPE, SCREENSHOT_API } from "@/utils/constants";
+import { MAIN_TABLE_NAME, PDF_MIME_TYPE } from "@/utils/constants";
 import { blurhashFromURL } from "@/utils/getBlurHash";
 import { resolveContentType } from "@/utils/resolve-content-type";
 import { toJson } from "@/utils/type-utils";
@@ -140,7 +140,9 @@ export const POST = createAxiomRouteHandler(
             // queue-worker path silently uploaded empty R2 blobs for months before this
             // guard was added, which bubbled up as Gemini `INVALID_ARGUMENT`.
             try {
-              const response = await fetch(`${SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`);
+              const response = await fetch(
+                `${env.SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`,
+              );
               if (!response.ok) {
                 throw new Error(`Screenshot API returned ${String(response.status)}`);
               }

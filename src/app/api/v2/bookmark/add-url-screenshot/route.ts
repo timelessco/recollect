@@ -1,5 +1,6 @@
 import { after } from "next/server";
 
+import { env } from "@/env/server";
 import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
@@ -9,7 +10,7 @@ import { collectAdditionalImages, collectVideo } from "@/lib/bookmarks/collect-s
 import { parseScreenshotResponse } from "@/lib/bookmarks/parse-screenshot-response";
 import { upload } from "@/lib/storage/media-upload";
 import { isNullable } from "@/utils/assertion-utils";
-import { MAIN_TABLE_NAME, SCREENSHOT_API } from "@/utils/constants";
+import { MAIN_TABLE_NAME } from "@/utils/constants";
 import { vet } from "@/utils/try";
 import { toJson } from "@/utils/type-utils";
 
@@ -41,7 +42,7 @@ export const POST = createAxiomRouteHandler(
 
       // 1. Capture screenshot from external API
       const [screenshotError, screenshotResponse] = await vet(async () => {
-        const r = await fetch(`${SCREENSHOT_API}/try?url=${encodeURIComponent(data.url)}`, {
+        const r = await fetch(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(data.url)}`, {
           signal: AbortSignal.timeout(SCREENSHOT_TIMEOUT_MS),
         });
         if (!r.ok) {

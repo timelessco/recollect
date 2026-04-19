@@ -15,6 +15,7 @@ import type {
 import type { PostgrestError } from "@supabase/supabase-js";
 import type { VerifyErrors } from "jsonwebtoken";
 
+import { env } from "@/env/server";
 import { upload } from "@/lib/storage/media-upload";
 import { collectAdditionalImages, collectVideo } from "@/utils/helpers";
 import { vet } from "@/utils/try";
@@ -24,7 +25,6 @@ import {
   getBaseUrl,
   MAIN_TABLE_NAME,
   NEXT_API_URL,
-  SCREENSHOT_API,
 } from "../../../utils/constants";
 import { getAxiosConfigWithAuth } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
@@ -66,7 +66,7 @@ export default async function handler(
     });
 
     const [screenshotError, screenShotResponse] = await vet(() =>
-      axios.get(`${SCREENSHOT_API}/try?url=${encodeURIComponent(request.body.url)}`, {
+      axios.get(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(request.body.url)}`, {
         responseType: "json",
       }),
     );

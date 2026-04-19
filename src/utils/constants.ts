@@ -175,9 +175,6 @@ export const V2_INSTAGRAM_SYNC_API = "v2/instagram/sync";
 export const V2_TWITTER_SYNC_API = "v2/twitter/sync";
 export const V2_TWITTER_SYNC_FOLDERS_API = "v2/twitter/sync-folders";
 
-// Screenshot api
-export const SCREENSHOT_API = "https://vercel-puppeteer-screenshot-api.vercel.app";
-
 export const RAINDROP_IMPORT_API = "/raindrop/import";
 
 // urls
