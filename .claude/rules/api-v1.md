@@ -55,3 +55,7 @@ Nine factories in `/src/lib/api-helpers/create-handler.ts`:
 ### `vet` Helper
 
 Use for external APIs that throw (axios, fetch) — returns `[error, result]` tuple. Don't use for Supabase (already returns `{ data, error }`).
+
+### Object.Assign Routes Exception
+
+`get-media-type`, `get-pdf-buffer` use raw `NextResponse.json` for errors — NOT `apiError`/`apiWarn`. Per migrator Section 4, don't flag.

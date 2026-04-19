@@ -14,6 +14,7 @@ paths:
 ### Frontend
 
 - **Tailwind v4 only** (never v3)
+- **Base UI wrappers** live in `src/components/ui/recollect/` — Combobox at `combobox/`, ScrollArea at `scroll-area.tsx`. Reuse these; don't reimport raw `@base-ui/react` primitives in feature code.
 - **Compound Component Pattern** for complex UI (Combobox, Menu): export an object with subcomponents. Example from `src/components/ui/recollect/combobox/`:
 
 ```typescript
@@ -75,3 +76,11 @@ Three sidebar sections with different `CATEGORY_ID` resolution:
 - **Icons**: `/src/icons/svg/` + sprite build
 - **Config**: `siteConfig.ts`
 - **Metadata**: `metadataUtils` for consistent SEO
+
+### HTTP Client
+
+`axios` is in deps but rule is `fetch`-only — legacy, don't use for new code.
+
+### Category Multi-Select
+
+Use the `use-category-multi-select` hook (Base UI Combobox + match-sorter) for any category multi-picker UI — don't rebuild selection/filter logic.

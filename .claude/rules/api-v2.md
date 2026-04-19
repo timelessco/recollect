@@ -192,3 +192,9 @@ Queue handlers (screenshot, ai-enrichment) must be safe to re-run:
 - `SingleListData` diverges from v2 Zod output schemas — different nullability, `user_id` shape. Migrated caller hooks use `.json<SingleListData[]>()` to bypass. Retire post-migration
 - `BookmarksCountTypes` field names differ from v2 `FetchBookmarksCountOutputSchema` — `mapToBookmarksCountTypes()` bridges. Retire post-migration
 - When migrating callers to v2, always backport handler fixes (validation, auth, error handling) to the still-live v1 Pages Router route
+
+### Response Contract
+
+- v2 returns `T` on success (no envelope); errors return `{ error: string }` + HTTP status. v1 still uses `{ data, error }` envelope — don't mix.
+- `src/lib/api-helpers/response.ts` is FROZEN — never modify `apiSuccess` / `apiError` / `apiWarn`. v2 routes use `error()` / `warn()` context helpers from `create-handler-v2.ts` instead.
+- v2 URL constants in `api-v2.ts` (the ky `api` instance) have **no leading slash** — `"v2/bookmark/..."`. v1 keeps leading slashes. Both live in `constants.ts`; never inline `"v2/..."` strings at call sites (use `V2_*` constants).
