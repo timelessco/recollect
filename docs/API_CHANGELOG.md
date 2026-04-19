@@ -160,3 +160,54 @@
 
 
 
+
+## 2026-04-19 [`9a8b94f`](https://github.com/timelessco/recollect/commit/9a8b94f5ed60cca0cae3c0269c0948d086d2e760)
+
+
+
+### API Changes
+
+### POST /v2/bookmark/clear-bookmark-trash
+-  endpoint added
+
+
+### POST /v2/bookmark/delete-bookmark
+-  endpoint added
+
+
+### POST /v2/bookmark/move-bookmark-to-trash
+-  endpoint added
+
+
+### POST /v2/category/create-user-category
+-  endpoint added
+
+
+### POST /v2/category/delete-user-category
+-  endpoint added
+
+
+### POST /v2/category/update-user-category
+-  endpoint added
+
+
+### POST /v2/instagram/sync
+-  endpoint added
+
+
+### POST /v2/raindrop/import
+-  endpoint added
+
+
+### POST /v2/twitter/sync
+-  endpoint added
+
+
+### POST /v2/twitter/sync-folders
+-  endpoint added
+
+
+
+
+
+
