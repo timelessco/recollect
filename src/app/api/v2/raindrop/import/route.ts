@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { toJson } from "@/utils/type-utils";
 
@@ -25,8 +25,8 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
-        ctx.fields.bookmark_count = data.bookmarks.length;
       }
+      setPayload(ctx, { bookmark_count: data.bookmarks.length });
 
       // In-memory deduplicate: remove exact URL duplicates within the batch
       const seen = new Set<string>();
@@ -42,9 +42,7 @@ export const POST = createAxiomRouteHandler(
 
       const inMemorySkipped = data.bookmarks.length - uniqueBookmarks.length;
 
-      if (ctx?.fields) {
-        ctx.fields.in_memory_skipped = inMemorySkipped;
-      }
+      setPayload(ctx, { in_memory_skipped: inMemorySkipped });
 
       // Call enqueue_raindrop_bookmarks RPC via service role client
       // (authenticated users don't have direct queue access for security)
@@ -74,10 +72,10 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.queued = parsed.data.inserted;
-        ctx.fields.skipped = parsed.data.skipped + inMemorySkipped;
-      }
+      setPayload(ctx, {
+        queued: parsed.data.inserted,
+        skipped: parsed.data.skipped + inMemorySkipped,
+      });
 
       return {
         queued: parsed.data.inserted,

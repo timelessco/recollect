@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { toJson } from "@/utils/type-utils";
 
@@ -16,8 +16,8 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
-        ctx.fields.bookmarks_count = data.bookmarks.length;
       }
+      setPayload(ctx, { bookmarks_count: data.bookmarks.length });
 
       // In-memory deduplicate: remove exact URL duplicates within the batch
       const seen = new Set<string>();
@@ -32,9 +32,7 @@ export const POST = createAxiomRouteHandler(
 
       const inMemorySkipped = data.bookmarks.length - uniqueBookmarks.length;
 
-      if (ctx?.fields) {
-        ctx.fields.in_memory_skipped = inMemorySkipped;
-      }
+      setPayload(ctx, { in_memory_skipped: inMemorySkipped });
 
       // Call transactional RPC for synchronous dedup + insert
       const serviceClient = createServerServiceClient();
@@ -66,11 +64,11 @@ export const POST = createAxiomRouteHandler(
       const { inserted } = parsed.data;
       const skipped = parsed.data.skipped + inMemorySkipped;
 
-      if (ctx?.fields) {
-        ctx.fields.inserted_count = inserted;
-        ctx.fields.skipped_count = skipped;
-        ctx.fields.enqueue_completed = true;
-      }
+      setPayload(ctx, {
+        inserted_count: inserted,
+        skipped_count: skipped,
+        enqueue_completed: true,
+      });
 
       return { inserted, skipped };
     },

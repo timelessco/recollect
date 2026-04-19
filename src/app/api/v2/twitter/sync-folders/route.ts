@@ -3,7 +3,7 @@ import uniqid from "uniqid";
 
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { CATEGORIES_TABLE_NAME, PROFILES } from "@/utils/constants";
 
 import { V2SyncFoldersInputSchema, V2SyncFoldersOutputSchema } from "./schema";
@@ -19,8 +19,8 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
-        ctx.fields.requested_count = categoryNames.length;
       }
+      setPayload(ctx, { requested_count: categoryNames.length });
 
       // Names are already trimmed and non-empty via Zod schema.
       const { data: existingCategories, error: existingError } = await supabase
@@ -58,11 +58,11 @@ export const POST = createAxiomRouteHandler(
       );
 
       if (newCategoryNames.length === 0) {
-        if (ctx?.fields) {
-          ctx.fields.created_count = 0;
-          ctx.fields.skipped_count = categoryNames.length;
-          ctx.fields.sync_completed = true;
-        }
+        setPayload(ctx, {
+          created_count: 0,
+          skipped_count: categoryNames.length,
+          sync_completed: true,
+        });
         return { created: 0, skipped: categoryNames.length };
       }
 
@@ -137,11 +137,11 @@ export const POST = createAxiomRouteHandler(
       const created = insertedCategories?.length ?? 0;
       const skipped = categoryNames.length - created;
 
-      if (ctx?.fields) {
-        ctx.fields.created_count = created;
-        ctx.fields.skipped_count = skipped;
-        ctx.fields.sync_completed = true;
-      }
+      setPayload(ctx, {
+        created_count: created,
+        skipped_count: skipped,
+        sync_completed: true,
+      });
 
       return { created, skipped };
     },

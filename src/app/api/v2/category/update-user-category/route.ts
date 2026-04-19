@@ -5,7 +5,7 @@ import type { Database } from "@/types/database.types";
 import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
 import { isNonEmptyArray } from "@/utils/assertion-utils";
 import { CATEGORIES_TABLE_NAME, DUPLICATE_CATEGORY_NAME_ERROR, PROFILES } from "@/utils/constants";
@@ -123,15 +123,13 @@ export const POST = createAxiomRouteHandler(
           }
         }
 
-        if (ctx?.fields) {
-          ctx.fields.favorite_toggled = is_favorite;
-        }
+        setPayload(ctx, { favorite_toggled: is_favorite });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.category_updated = true;
-        ctx.fields.category_is_public = categoryData[0].is_public;
-      }
+      setPayload(ctx, {
+        category_updated: true,
+        category_is_public: categoryData[0].is_public,
+      });
 
       // Trigger on-demand revalidation for public categories. Covers:
       // - Visibility changes (public ↔ private)
@@ -183,9 +181,7 @@ export const POST = createAxiomRouteHandler(
           }
         });
 
-        if (ctx?.fields) {
-          ctx.fields.revalidation_scheduled = true;
-        }
+        setPayload(ctx, { revalidation_scheduled: true });
       }
 
       return categoryData;

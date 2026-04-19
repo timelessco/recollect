@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { deleteBookmarksByIds } from "@/lib/bookmark-helpers/delete-bookmarks";
 
 import { DeleteBookmarkInputSchema, DeleteBookmarkOutputSchema } from "./schema";
@@ -18,8 +18,8 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
-        ctx.fields.requested_count = bookmarkIds.length;
       }
+      setPayload(ctx, { requested_count: bookmarkIds.length });
 
       let totalDeleted = 0;
       let offset = 0;
@@ -50,10 +50,7 @@ export const POST = createAxiomRouteHandler(
         }
       }
 
-      if (ctx?.fields) {
-        ctx.fields.deleted_count = totalDeleted;
-        ctx.fields.bookmarks_deleted = true;
-      }
+      setPayload(ctx, { deleted_count: totalDeleted, bookmarks_deleted: true });
 
       return {
         deletedCount: totalDeleted,

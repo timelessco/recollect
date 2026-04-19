@@ -3,7 +3,7 @@ import uniqid from "uniqid";
 
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { isNonEmptyArray, isNonNullable } from "@/utils/assertion-utils";
 import { CATEGORIES_TABLE_NAME, DUPLICATE_CATEGORY_NAME_ERROR, PROFILES } from "@/utils/constants";
 
@@ -84,14 +84,10 @@ export const POST = createAxiomRouteHandler(
           });
         }
 
-        if (ctx?.fields) {
-          ctx.fields.category_order_updated = true;
-        }
+        setPayload(ctx, { category_order_updated: true });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.category_created = true;
-      }
+      setPayload(ctx, { category_created: true });
 
       return categoryData;
     },
