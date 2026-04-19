@@ -145,27 +145,46 @@ const TOP_LEVEL_ID_KEYS = new Set([
 ]);
 
 /**
- * Partition handler-written `ctx.fields` into top-level keys and a single
- * JSON-stringified `ids` scalar. Keeping domain entity IDs inside one
- * scalar stops them from registering as top-level Axiom fields — the
- * dataset has a 256-field ceiling and unbounded `<entity>_id` keys were
- * consuming slots as the route surface grew. Analysts filter via
- * `parse_json(fields["ids"]).<key>` (same pattern as `error_context`,
+ * Partition handler-written `ctx.fields` into top-level keys, a single
+ * JSON-stringified `ids` scalar, and a single JSON-stringified `payload`
+ * scalar. Collapsing domain keys into scalars stops them from registering
+ * as top-level Axiom fields — the dataset has a 256-field ceiling and
+ * unbounded per-handler keys were consuming slots as the route surface
+ * grew. Analysts filter via `parse_json(fields["ids"]).<key>` and
+ * `parse_json(fields["payload"]).<key>` (same pattern as `error_context`,
  * `search_params`).
  *
- * Rules:
+ * Rules (in evaluation order):
+ * - `payload` → single JSON scalar when the value is a non-empty object;
+ *   dropped entirely when absent / nullish / empty. Non-object values
+ *   fall through to top-level (unreachable under the typed API after the
+ *   guardrail lands, but the partitioner stays defensive).
  * - Allowlisted observability primitives → top-level.
  * - Any other key ending in `_id` / `_ids` → `ids` scalar.
- * - Everything else (counts, flags, descriptors) → top-level.
- * - `ids` is emitted only when at least one entity-id key was present.
+ * - Everything else → top-level.
+ * - `ids` and `payload` are emitted only when at least one key was present.
  */
 function partitionFields(fields: Record<string, unknown>): {
   idsScalar: string | undefined;
+  payloadScalar: string | undefined;
   topLevel: Record<string, unknown>;
 } {
   const topLevel: Record<string, unknown> = {};
   const ids: Record<string, unknown> = {};
+  let payloadScalar: string | undefined;
   for (const [key, value] of Object.entries(fields)) {
+    if (key === "payload") {
+      if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+        if (Object.keys(value).length > 0) {
+          payloadScalar = JSON.stringify(value);
+        }
+        continue;
+      }
+      if (value !== undefined && value !== null) {
+        topLevel[key] = value;
+      }
+      continue;
+    }
     if (TOP_LEVEL_ID_KEYS.has(key)) {
       topLevel[key] = value;
       continue;
@@ -177,7 +196,7 @@ function partitionFields(fields: Record<string, unknown>): {
     topLevel[key] = value;
   }
   const idsScalar = Object.keys(ids).length > 0 ? JSON.stringify(ids) : undefined;
-  return { idsScalar, topLevel };
+  return { idsScalar, payloadScalar, topLevel };
 }
 
 /**
@@ -243,7 +262,7 @@ export function createAxiomRouteHandler(
 
         // onSuccess: log level based on HTTP status
         const { status } = response;
-        const { idsScalar, topLevel } = partitionFields(ctx?.fields ?? {});
+        const { idsScalar, payloadScalar, topLevel } = partitionFields(ctx?.fields ?? {});
         const logData = {
           ...otelAttrs,
           "http.response.status_code": status,
@@ -253,6 +272,7 @@ export function createAxiomRouteHandler(
           user_id: ctx?.user_id,
           ...topLevel,
           ...(idsScalar ? { ids: idsScalar } : {}),
+          ...(payloadScalar ? { payload: payloadScalar } : {}),
         };
 
         if (status >= 500) {
@@ -271,7 +291,7 @@ export function createAxiomRouteHandler(
         const ctx = getServerContext();
         const err = ensureError(error);
 
-        const { idsScalar, topLevel } = partitionFields(ctx?.fields ?? {});
+        const { idsScalar, payloadScalar, topLevel } = partitionFields(ctx?.fields ?? {});
         // onError: structured error logging to Axiom
         logger.error("Request error", {
           ...otelAttrs,
@@ -281,6 +301,7 @@ export function createAxiomRouteHandler(
           user_id: ctx?.user_id,
           ...topLevel,
           ...(idsScalar ? { ids: idsScalar } : {}),
+          ...(payloadScalar ? { payload: payloadScalar } : {}),
           error_name: err.name,
           error_message: err.message,
           error_stack: err.stack,

@@ -46,6 +46,23 @@ export function getServerContext(): ServerContext | undefined {
 }
 
 /**
+ * Merge entries into `ctx.fields.payload` — the single JSON scalar the
+ * factory collapses non-observability, non-entity-id wide-event keys into.
+ * Callers write domain data via this helper so no handler has to spread
+ * `ctx.fields.payload` itself (typed `unknown` until the guardrail narrows
+ * it, which would otherwise fail TS2698). No-op when `ctx` or `ctx.fields`
+ * is absent (routes outside the v2 factory).
+ */
+export function setPayload(ctx: ServerContext | undefined, entries: Record<string, unknown>): void {
+  if (!ctx?.fields) {
+    return;
+  }
+  const prev = ctx.fields.payload;
+  const base = typeof prev === "object" && prev !== null && !Array.isArray(prev) ? prev : {};
+  ctx.fields.payload = { ...base, ...entries };
+}
+
+/**
  * Derive source from the authorization header value.
  * Must be called at factory entry before auth resolution.
  *
