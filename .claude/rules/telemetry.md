@@ -17,7 +17,7 @@ Axiom = manual logging. Sentry = unhandled errors only (auto via `onRequestError
 - **v2 route**: `RecollectApiError` → inner-layer `warn` (see `api-v2.md`)
 - **App Router**: `logger` from `@/lib/api-helpers/axiom` + `after(() => logger.flush())`
 - **Pages Router SSR/ISR**: same `logger`, `await logger.flush()` (`after()` throws E468)
-- **Client**: `useLogger()` from `@/lib/api-helpers/axiom-client`
+- **Client**: `clientLogger` from `@/lib/api-helpers/axiom-client`. Never `useLogger` from `@axiomhq/react` — its per-consumer path-cleanup effect calls `logger.flush()` on every unmount, and with widely-used hooks like `useHandleClientError` (transitively mounted behind every React Query wrapper) a single route change fires N-fold duplicate POSTs of the same buffered event.
 
 Normalize unknowns with `extractErrorFields(err)` from `errors.ts`. `warn` for handled (404, validation); `error` for infra (DB, network throw, unknown catch, 5xx) — base on cause.
 

@@ -26,7 +26,7 @@ import { isNullable } from "@/utils/assertion-utils";
  * (magic link / email OTP) and /auth/oauth (Google / Apple sign-in).
  *
  * **API-side only.** The frontend counterpart is the
- * `useResolvePostLoginRedirect` hook in `./use-resolve-post-login-redirect`,
+ * `resolvePostLoginRedirect` in `./use-resolve-post-login-redirect`,
  * used by the client-side OTP verify form
  * (`src/components/guest/otp-client-components.tsx`) which already has
  * the user.id from the verifyOtp response and cannot reach into the v2

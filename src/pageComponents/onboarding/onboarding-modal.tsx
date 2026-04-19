@@ -10,7 +10,7 @@ import ensureError from "ensure-error";
 import { useMarkOnboardedMutation } from "@/async/mutationHooks/user/use-mark-onboarded-mutation";
 import { Dialog } from "@/components/ui/recollect/dialog";
 import { AppleIcon } from "@/icons/apple-icon";
-import { useLogger } from "@/lib/api-helpers/axiom-client";
+import { clientLogger } from "@/lib/api-helpers/axiom-client";
 
 // `@remotion/player` touches `window` on import — load it client-side only so
 // `/onboarding` still pre-renders as a static shell.
@@ -32,7 +32,6 @@ const OPSZ_14: React.CSSProperties = { fontVariationSettings: "'opsz' 14" };
 export function OnboardingModal() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("extension");
-  const log = useLogger();
 
   // open starts false so Base UI registers data-starting-style on the first
   // false→true transition. The 1s delay lets the discover screen settle behind
@@ -61,7 +60,7 @@ export function OnboardingModal() {
         // branch). Recoverable — the SSR gate will mount the modal again
         // on next /discover visit.
         const error = ensureError(err);
-        log.warn("mark_onboarded_client_failed", {
+        clientLogger.warn("mark_onboarded_client_failed", {
           operation: "mark_onboarded_client",
           error_name: error.name,
           error_message: error.message,

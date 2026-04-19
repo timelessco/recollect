@@ -2,7 +2,7 @@
 
 import { ConsoleTransport, Logger, ProxyTransport } from "@axiomhq/logging";
 import { nextJsFormatters } from "@axiomhq/nextjs/client";
-import { createUseLogger, createWebVitalsComponent } from "@axiomhq/react";
+import { createWebVitalsComponent } from "@axiomhq/react";
 
 import { recollectIdentityFormatter } from "./axiom-client-formatters";
 import { SampledTransport } from "./axiom-client-sampling";
@@ -22,7 +22,13 @@ import { SampledTransport } from "./axiom-client-sampling";
  * (`route_change`) can be sampled without touching call-sites. Errors
  * bypass sampling.
  *
- * autoFlush ensures reliable delivery even without navigation events.
+ * autoFlush (2s debounce) batches emissions into a single POST per
+ * idle window. We deliberately do NOT export `useLogger` from
+ * `@axiomhq/react`: its path-change cleanup effect calls
+ * `logger.flush()` on every unmount, and when hundreds of React Query
+ * wrappers unmount during a route change each cleanup fires its own
+ * concurrent POST with the same buffered events — producing N-fold
+ * duplicates in the dataset. Always import `clientLogger` directly.
  *
  * ConsoleTransport is mounted only in development so end-users never see
  * telemetry events in their browser console. Next.js inlines
@@ -36,9 +42,6 @@ export const clientLogger = new Logger({
   ],
   formatters: [...nextJsFormatters, recollectIdentityFormatter],
 });
-
-/** Auto-flushes on route change via internal popstate/pushState/replaceState listeners */
-export const useLogger = createUseLogger(clientLogger);
 
 /** Fires CWV metrics (CLS, FID, LCP, INP, FCP, TTFB); flushes on visibilitychange; renders <></> */
 export const WebVitals = createWebVitalsComponent(clientLogger);
