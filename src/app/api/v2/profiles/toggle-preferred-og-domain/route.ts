@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { normalizeDomain } from "@/utils/domain";
 
 import { TogglePreferredOgDomainInputSchema, TogglePreferredOgDomainOutputSchema } from "./schema";
@@ -13,8 +13,8 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = user.id;
-        ctx.fields.raw_domain = data.domain;
       }
+      setPayload(ctx, { raw_domain: data.domain });
 
       const domain = normalizeDomain(data.domain);
       if (!domain) {
@@ -25,9 +25,7 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.normalized_domain = domain;
-      }
+      setPayload(ctx, { normalized_domain: domain });
 
       const { data: rows, error: rpcError } = await supabase.rpc("toggle_preferred_og_domain", {
         p_domain: domain,
@@ -51,10 +49,10 @@ export const POST = createAxiomRouteHandler(
 
       const preferredOgDomains = row.out_preferred_og_domains ?? [];
 
-      if (ctx?.fields) {
-        ctx.fields.preferred_domain_count = preferredOgDomains.length;
-        ctx.fields.toggled_in = preferredOgDomains.includes(domain);
-      }
+      setPayload(ctx, {
+        preferred_domain_count: preferredOgDomains.length,
+        toggled_in: preferredOgDomains.includes(domain),
+      });
 
       return {
         id: row.out_id,

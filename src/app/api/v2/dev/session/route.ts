@@ -1,7 +1,7 @@
 import { env } from "@/env/server";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 
 import { DevSessionInputSchema, DevSessionOutputSchema } from "./schema";
 
@@ -28,9 +28,7 @@ export const GET = createAxiomRouteHandler(
       const ctx = getServerContext();
 
       if (env.NODE_ENV !== "development" || env.VERCEL_ENV === "production") {
-        if (ctx?.fields) {
-          ctx.fields.environment_blocked = true;
-        }
+        setPayload(ctx, { environment_blocked: true });
         throw new RecollectApiError("not_found", {
           message: "Not found",
         });
@@ -48,8 +46,8 @@ export const GET = createAxiomRouteHandler(
 
       if (ctx?.fields) {
         ctx.fields.user_id = user.id;
-        ctx.fields.session_returned = true;
       }
+      setPayload(ctx, { session_returned: true });
 
       return {
         access_token: session.access_token,

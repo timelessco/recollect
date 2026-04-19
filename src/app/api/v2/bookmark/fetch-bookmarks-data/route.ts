@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { getBookmarkMediaCategoryPredicate } from "@/utils/bookmark-category-filters";
 import { isUserOwnerOrAnyCollaborator } from "@/utils/category-auth";
 import {
@@ -101,9 +101,11 @@ export const GET = createAxiomRouteHandler(
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
         ctx.fields.category_id = category_id;
-        ctx.fields.from = from;
-        ctx.fields.sort_by = sortValue;
       }
+      setPayload(ctx, {
+        from,
+        sort_by: sortValue,
+      });
 
       // Determine if user is in a specific numeric category (not trash/tweets/links/etc.)
       const categoryCondition = isNumericCategory(category_id);
@@ -257,9 +259,7 @@ export const GET = createAxiomRouteHandler(
         return [];
       }
 
-      if (ctx?.fields) {
-        ctx.fields.bookmark_count = bookmarkIds.length;
-      }
+      setPayload(ctx, { bookmark_count: bookmarkIds.length });
 
       // Parallel junction queries with FK joins for resolved tag/category names
       const [tagsResult, categoriesResult] = await Promise.all([

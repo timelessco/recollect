@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { MAIN_TABLE_NAME, PAGINATION_LIMIT } from "@/utils/constants";
 
@@ -34,11 +34,11 @@ export const GET = createAxiomRouteHandler(
       const { rangeEnd, rangeStart } = getRange(page);
 
       const ctx = getServerContext();
-      if (ctx?.fields) {
-        ctx.fields.page = page;
-        ctx.fields.range_start = rangeStart;
-        ctx.fields.range_end = rangeEnd;
-      }
+      setPayload(ctx, {
+        page,
+        range_start: rangeStart,
+        range_end: rangeEnd,
+      });
 
       const supabase = createServerServiceClient();
 
@@ -74,9 +74,7 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.result_count = data.length;
-      }
+      setPayload(ctx, { result_count: data.length });
 
       return data;
     },

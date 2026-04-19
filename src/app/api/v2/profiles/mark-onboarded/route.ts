@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { PROFILES } from "@/utils/constants";
 
 import { MarkOnboardedInputSchema, MarkOnboardedOutputSchema } from "./schema";
@@ -51,10 +51,10 @@ export const PATCH = createAxiomRouteHandler(
 
       if (profile.onboarded_at) {
         // Case 2 — existing timestamp wins, no DB write.
-        if (ctx?.fields) {
-          ctx.fields.first_onboarding_write = false;
-          ctx.fields.onboarded_at = profile.onboarded_at;
-        }
+        setPayload(ctx, {
+          first_onboarding_write: false,
+          onboarded_at: profile.onboarded_at,
+        });
         return {};
       }
 
@@ -79,12 +79,10 @@ export const PATCH = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.first_onboarding_write = Boolean(updated);
-        if (updated) {
-          ctx.fields.onboarded_at = onboardedAt;
-        }
-      }
+      setPayload(ctx, {
+        first_onboarding_write: Boolean(updated),
+        ...(updated ? { onboarded_at: onboardedAt } : {}),
+      });
 
       return {};
     },

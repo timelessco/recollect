@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { SHARED_CATEGORIES_TABLE_NAME } from "@/utils/constants";
 import { toJson } from "@/utils/type-utils";
 
@@ -22,8 +22,8 @@ export const PATCH = createAxiomRouteHandler(
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
         ctx.fields.shared_category_id = data.id;
-        ctx.fields.new_edit_access = data.updateData.edit_access;
       }
+      setPayload(ctx, { new_edit_access: data.updateData.edit_access });
 
       const updatePayload = {
         ...(data.updateData.edit_access !== undefined && {
@@ -50,9 +50,7 @@ export const PATCH = createAxiomRouteHandler(
       }
 
       // Outcome flag AFTER the operation
-      if (ctx?.fields) {
-        ctx.fields.role_updated = true;
-      }
+      setPayload(ctx, { role_updated: true });
 
       return updated;
     },

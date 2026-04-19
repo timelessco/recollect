@@ -2,7 +2,7 @@ import type { FetchPublicBookmarkByIdOutput } from "./schema";
 
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import {
   BOOKMARK_CATEGORIES_TABLE_NAME,
@@ -23,9 +23,11 @@ export const GET = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.bookmark_id = bookmarkId;
-        ctx.fields.category_slug = categorySlug;
-        ctx.fields.user_name = userName;
       }
+      setPayload(ctx, {
+        category_slug: categorySlug,
+        user_name: userName,
+      });
 
       // Service-role client bypasses RLS — this endpoint is intentionally public and
       // performs its own public/ownership gating below (is_public + user_name match).
@@ -122,9 +124,7 @@ export const GET = createAxiomRouteHandler(
       // Strip junction-table join artifact before returning
       const { [BOOKMARK_CATEGORIES_TABLE_NAME]: _removed, ...cleanedBookmark } = bookmarkData;
 
-      if (ctx?.fields) {
-        ctx.fields.bookmark_fetched = true;
-      }
+      setPayload(ctx, { bookmark_fetched: true });
 
       return toDbType<FetchPublicBookmarkByIdOutput>(cleanedBookmark);
     },

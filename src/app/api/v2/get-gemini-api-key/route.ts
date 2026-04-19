@@ -3,7 +3,7 @@ import CryptoJS from "crypto-js";
 import { env } from "@/env/server";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { PROFILES } from "@/utils/constants";
 
 import { GetGeminiApiKeyInputSchema, GetGeminiApiKeyOutputSchema } from "./schema";
@@ -56,9 +56,7 @@ export const GET = createAxiomRouteHandler(
         const apiKey = decryptedBytes.toString(CryptoJS.enc.Utf8);
 
         if (!apiKey) {
-          if (ctx?.fields) {
-            ctx.fields.empty_decryption = true;
-          }
+          setPayload(ctx, { empty_decryption: true });
 
           throw new RecollectApiError("service_unavailable", {
             cause: new Error("Decryption produced empty result"),
@@ -67,9 +65,7 @@ export const GET = createAxiomRouteHandler(
           });
         }
 
-        if (ctx?.fields) {
-          ctx.fields.has_api_key = true;
-        }
+        setPayload(ctx, { has_api_key: true });
 
         return { apiKey };
       } catch (error) {

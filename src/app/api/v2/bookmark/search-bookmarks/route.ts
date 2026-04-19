@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createApiClient, getApiUser } from "@/lib/supabase/api";
 import { getBookmarkMediaCategoryPredicate } from "@/utils/bookmark-category-filters";
 import { isUserOwnerOrAnyCollaborator } from "@/utils/category-auth";
@@ -115,10 +115,12 @@ export const GET = createAxiomRouteHandler(
 
       const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.is_discover = isDiscoverPage;
         ctx.fields.category_id = categoryId;
-        ctx.fields.offset = offset;
       }
+      setPayload(ctx, {
+        is_discover: isDiscoverPage,
+        offset,
+      });
 
       // Parse search modifiers: @domain.com site scope, then #-tokens (plain tags + color hints)
       const matchedSiteScope = search.match(GET_SITE_SCOPE_PATTERN);
@@ -133,11 +135,11 @@ export const GET = createAxiomRouteHandler(
       } = parseSearchTokens(searchWithoutSiteScope);
       const tagName = plainTags.length > 0 ? plainTags : undefined;
 
-      if (ctx?.fields) {
-        ctx.fields.search_text = searchText || null;
-        ctx.fields.tag_name = tagName?.at(0) ?? null;
-        ctx.fields.url_scope = urlScope || null;
-      }
+      setPayload(ctx, {
+        search_text: searchText || null,
+        tag_name: tagName?.at(0) ?? null,
+        url_scope: urlScope || null,
+      });
 
       // Determine category_scope for junction table filtering
       // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
@@ -219,10 +221,10 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.results_count = data?.length ?? 0;
-        ctx.fields.has_tag_filter = tagName !== undefined && tagName.length > 0;
-      }
+      setPayload(ctx, {
+        results_count: data?.length ?? 0,
+        has_tag_filter: tagName !== undefined && tagName.length > 0,
+      });
 
       // Map RPC snake_case fields to camelCase (Pitfall 7)
       // Widen to Record to handle overloaded RPC return union — output schema validates at runtime

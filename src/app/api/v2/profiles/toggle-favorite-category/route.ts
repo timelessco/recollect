@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 
 import { ToggleFavoriteCategoryInputSchema, ToggleFavoriteCategoryOutputSchema } from "./schema";
 
@@ -35,10 +35,10 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.favorite_count = row.out_favorite_categories.length;
-        ctx.fields.toggled_in = row.out_favorite_categories.includes(data.category_id);
-      }
+      setPayload(ctx, {
+        favorite_count: row.out_favorite_categories.length,
+        toggled_in: row.out_favorite_categories.includes(data.category_id),
+      });
 
       return {
         favorite_categories: row.out_favorite_categories,

@@ -3,7 +3,7 @@ import { after } from "next/server";
 import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { addRemainingBookmarkData } from "@/lib/bookmarks/add-remaining-bookmark-data";
 import { collectAdditionalImages, collectVideo } from "@/lib/bookmarks/collect-screenshot-media";
 import { parseScreenshotResponse } from "@/lib/bookmarks/parse-screenshot-response";
@@ -36,8 +36,8 @@ export const POST = createAxiomRouteHandler(
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
         ctx.fields.bookmark_id = data.id;
-        ctx.fields.url = data.url;
       }
+      setPayload(ctx, { url: data.url });
 
       // 1. Capture screenshot from external API
       const [screenshotError, screenshotResponse] = await vet(async () => {
@@ -53,9 +53,7 @@ export const POST = createAxiomRouteHandler(
 
       // Path A — Screenshot FAILED: fire enrichment anyway, then return error
       if (screenshotError) {
-        if (ctx?.fields) {
-          ctx.fields.screenshot_failed = true;
-        }
+        setPayload(ctx, { screenshot_failed: true });
 
         // Register after() BEFORE throwing — enrichment still runs on screenshot failure
         after(async () => {
@@ -132,8 +130,8 @@ export const POST = createAxiomRouteHandler(
       const additionalImages =
         additionalImagesSettled.status === "fulfilled" ? additionalImagesSettled.value : [];
 
-      if (additionalImagesSettled.status === "rejected" && ctx?.fields) {
-        ctx.fields.additional_images_failed = true;
+      if (additionalImagesSettled.status === "rejected") {
+        setPayload(ctx, { additional_images_failed: true });
       }
 
       const additionalVideoResult =
@@ -145,12 +143,12 @@ export const POST = createAxiomRouteHandler(
               success: false as const,
             };
 
-      if (additionalVideoSettled.status === "rejected" && ctx?.fields) {
-        ctx.fields.additional_video_failed = true;
+      if (additionalVideoSettled.status === "rejected") {
+        setPayload(ctx, { additional_video_failed: true });
       }
 
-      if (!additionalVideoResult.success && ctx?.fields) {
-        ctx.fields.video_collection_error = additionalVideoResult.error;
+      if (!additionalVideoResult.success) {
+        setPayload(ctx, { video_collection_error: additionalVideoResult.error });
       }
 
       // 5. Build updated meta_data with screenshot
@@ -193,9 +191,7 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.has_screenshot = true;
-      }
+      setPayload(ctx, { has_screenshot: true });
 
       // 7. Fire remaining enrichment in background
       after(async () => {

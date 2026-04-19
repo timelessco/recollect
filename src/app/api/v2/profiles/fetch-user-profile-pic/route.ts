@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { PROFILES } from "@/utils/constants";
 
 import { FetchUserProfilePicInputSchema, FetchUserProfilePicOutputSchema } from "./schema";
@@ -30,9 +30,9 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.has_profile_pic = result.length > 0 && result[0].profile_pic !== null;
-      }
+      setPayload(ctx, {
+        has_profile_pic: result.length > 0 && result[0].profile_pic !== null,
+      });
 
       return result;
     },

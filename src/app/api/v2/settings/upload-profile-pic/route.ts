@@ -5,7 +5,7 @@ import slugify from "slugify";
 import { deleteProfilePic } from "@/app/api/v2/profiles/remove-profile-pic/delete-logic";
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createApiClient, getApiUser } from "@/lib/supabase/api";
 import {
   FILE_NAME_PARSING_PATTERN,
@@ -64,11 +64,11 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.file_name = file.name;
-        ctx.fields.file_size = file.size;
-        ctx.fields.file_type = file.type;
-      }
+      setPayload(ctx, {
+        file_name: file.name,
+        file_size: file.size,
+        file_type: file.type,
+      });
 
       // Direct binary — no base64 round-trip (v1 did arrayBuffer → base64 → decode → Uint8Array)
       const arrayBuffer = await file.arrayBuffer();
@@ -119,9 +119,7 @@ export const POST = createAxiomRouteHandler(
       }
 
       // AFTER operation — outcome
-      if (ctx?.fields) {
-        ctx.fields.profile_pic_uploaded = true;
-      }
+      setPayload(ctx, { profile_pic_uploaded: true });
 
       return NextResponse.json({ success: true });
     },

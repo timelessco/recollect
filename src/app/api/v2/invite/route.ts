@@ -5,7 +5,7 @@ import { decode } from "jsonwebtoken";
 
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { isNullable } from "@/utils/assertion-utils";
 import { SHARED_CATEGORIES_TABLE_NAME } from "@/utils/constants";
@@ -18,9 +18,7 @@ export const GET = createAxiomRouteHandler(
   withPublic({
     handler: async ({ input }) => {
       const ctx = getServerContext();
-      if (ctx?.fields) {
-        ctx.fields.invite_token_present = true;
-      }
+      setPayload(ctx, { invite_token_present: true });
 
       // Service client bypasses RLS — required for invite processing regardless of user auth
       const supabase = createServerServiceClient();
@@ -105,9 +103,7 @@ export const GET = createAxiomRouteHandler(
       }
 
       // Outcome flag AFTER the operation
-      if (ctx?.fields) {
-        ctx.fields.invite_accepted = true;
-      }
+      setPayload(ctx, { invite_accepted: true });
 
       // Redirect to /everything on success — pin 302 explicitly
       const headersList = await headers();
