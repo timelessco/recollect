@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { resolveCallbackRedirect } from "@/lib/auth/resolve-callback-redirect";
 import { createServerClient } from "@/lib/supabase/server";
 import { getErrorMessage } from "@/utils/error-utils/error-message";
@@ -38,18 +38,18 @@ export const GET = createAxiomRouteHandler(
         const rawNext = searchParams.get("next");
         const next = rawNext?.startsWith("/") ? rawNext : "/";
 
-        if (ctx?.fields) {
-          ctx.fields.has_code = Boolean(code);
-          ctx.fields.has_next = Boolean(rawNext);
-        }
+        setPayload(ctx, {
+          has_code: Boolean(code),
+          has_next: Boolean(rawNext),
+        });
 
         if (!code) {
-          if (ctx?.fields) {
-            ctx.fields.error_code = "bad_request";
-            ctx.fields.error_message = "No code";
-            ctx.fields.http_status = 400;
-            ctx.fields.operation = "exchange_code_for_session";
-          }
+          setPayload(ctx, {
+            error_code: "bad_request",
+            error_message: "No code",
+            http_status: 400,
+            operation: "exchange_code_for_session",
+          });
           return errorRedirect(request, "No code");
         }
 
@@ -58,19 +58,17 @@ export const GET = createAxiomRouteHandler(
 
         if (exchangeError) {
           const message = getErrorMessage(exchangeError);
-          if (ctx?.fields) {
-            ctx.fields.error_code = "unauthorized";
-            ctx.fields.error_message = message;
-            ctx.fields.http_status = 401;
-            ctx.fields.operation = "exchange_code_for_session";
-            ctx.fields.exchange_code_completed = false;
-          }
+          setPayload(ctx, {
+            error_code: "unauthorized",
+            error_message: message,
+            http_status: 401,
+            operation: "exchange_code_for_session",
+            exchange_code_completed: false,
+          });
           return errorRedirect(request, message);
         }
 
-        if (ctx?.fields) {
-          ctx.fields.exchange_code_completed = true;
-        }
+        setPayload(ctx, { exchange_code_completed: true });
 
         // Route first-time users to /discover so the welcome modal mounts
         // via [category_id].tsx's SSR gate. Helper fetches the fresh user,
@@ -78,21 +76,19 @@ export const GET = createAxiomRouteHandler(
         // that edge case in Axiom wide events.
         const destination = await resolveCallbackRedirect(supabase, next);
 
-        if (ctx?.fields) {
-          ctx.fields.first_time_user_redirect = destination !== next;
-        }
+        setPayload(ctx, { first_time_user_redirect: destination !== next });
 
         return successRedirect(request, destination);
       } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
-        if (ctx?.fields) {
-          ctx.fields.error_code = "internal_error";
-          ctx.fields.error_name = err.name;
-          ctx.fields.error_message = err.message;
-          ctx.fields.error_stack = err.stack;
-          ctx.fields.http_status = 500;
-          ctx.fields.operation = "exchange_code_for_session";
-        }
+        setPayload(ctx, {
+          error_code: "internal_error",
+          error_name: err.name,
+          error_message: err.message,
+          error_stack: err.stack,
+          http_status: 500,
+          operation: "exchange_code_for_session",
+        });
         return errorRedirect(request, "An unexpected error occurred");
       }
     },

@@ -10,7 +10,7 @@ import type { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import ensureError from "ensure-error";
 
-import type { ServerContext } from "./server-context";
+import type { ServerContext, ServerFields } from "./server-context";
 
 import { logger } from "./axiom-logger";
 import { deriveSource, getServerContext, runWithServerContext } from "./server-context";
@@ -144,28 +144,74 @@ const TOP_LEVEL_ID_KEYS = new Set([
   "user_id",
 ]);
 
+/** Runtime guard for the `payload` branch — narrows value to a Record. */
+function isPayloadRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 /**
- * Partition handler-written `ctx.fields` into top-level keys and a single
- * JSON-stringified `ids` scalar. Keeping domain entity IDs inside one
- * scalar stops them from registering as top-level Axiom fields — the
- * dataset has a 256-field ceiling and unbounded `<entity>_id` keys were
- * consuming slots as the route surface grew. Analysts filter via
- * `parse_json(fields["ids"]).<key>` (same pattern as `error_context`,
+ * Stringify a record into a single Axiom scalar, defensively. Drops keys whose
+ * value is `undefined` first — `JSON.stringify({ k: undefined })` would otherwise
+ * emit `"{}"`, masquerading as a real payload — and returns `undefined` when
+ * nothing meaningful is left. Wraps `JSON.stringify` in try/catch because BigInt
+ * and circular references throw, and a thrown serializer in the error path
+ * (line ~299) would swallow the original request error before it ever reaches
+ * Axiom or Sentry.
+ */
+function toJsonScalar(record: Record<string, unknown>): string | undefined {
+  const scalarInput = Object.fromEntries(
+    Object.entries(record).filter(([, value]) => value !== undefined),
+  );
+  if (Object.keys(scalarInput).length === 0) {
+    return undefined;
+  }
+  try {
+    const scalar = JSON.stringify(scalarInput);
+    return scalar === "{}" ? undefined : scalar;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Partition handler-written `ctx.fields` into top-level keys, a single
+ * JSON-stringified `ids` scalar, and a single JSON-stringified `payload`
+ * scalar. Collapsing domain keys into scalars stops them from registering
+ * as top-level Axiom fields — the dataset has a 256-field ceiling and
+ * unbounded per-handler keys were consuming slots as the route surface
+ * grew. Analysts filter via `parse_json(fields["ids"]).<key>` and
+ * `parse_json(fields["payload"]).<key>` (same pattern as `error_context`,
  * `search_params`).
  *
- * Rules:
+ * Rules (in evaluation order):
+ * - `payload` → single JSON scalar when the value is a non-empty object;
+ *   dropped entirely when absent / nullish / empty. Non-object values
+ *   fall through to top-level (unreachable under the typed API after the
+ *   guardrail lands, but the partitioner stays defensive).
  * - Allowlisted observability primitives → top-level.
  * - Any other key ending in `_id` / `_ids` → `ids` scalar.
- * - Everything else (counts, flags, descriptors) → top-level.
- * - `ids` is emitted only when at least one entity-id key was present.
+ * - Everything else → top-level.
+ * - `ids` and `payload` are emitted only when at least one key was present.
  */
-function partitionFields(fields: Record<string, unknown>): {
+function partitionFields(fields: ServerFields): {
   idsScalar: string | undefined;
+  payloadScalar: string | undefined;
   topLevel: Record<string, unknown>;
 } {
   const topLevel: Record<string, unknown> = {};
   const ids: Record<string, unknown> = {};
+  let payloadScalar: string | undefined;
   for (const [key, value] of Object.entries(fields)) {
+    if (key === "payload") {
+      if (isPayloadRecord(value)) {
+        payloadScalar = toJsonScalar(value);
+        continue;
+      }
+      if (value !== undefined && value !== null) {
+        topLevel[key] = value;
+      }
+      continue;
+    }
     if (TOP_LEVEL_ID_KEYS.has(key)) {
       topLevel[key] = value;
       continue;
@@ -176,8 +222,8 @@ function partitionFields(fields: Record<string, unknown>): {
     }
     topLevel[key] = value;
   }
-  const idsScalar = Object.keys(ids).length > 0 ? JSON.stringify(ids) : undefined;
-  return { idsScalar, topLevel };
+  const idsScalar = toJsonScalar(ids);
+  return { idsScalar, payloadScalar, topLevel };
 }
 
 /**
@@ -243,7 +289,7 @@ export function createAxiomRouteHandler(
 
         // onSuccess: log level based on HTTP status
         const { status } = response;
-        const { idsScalar, topLevel } = partitionFields(ctx?.fields ?? {});
+        const { idsScalar, payloadScalar, topLevel } = partitionFields(ctx?.fields ?? {});
         const logData = {
           ...otelAttrs,
           "http.response.status_code": status,
@@ -253,6 +299,7 @@ export function createAxiomRouteHandler(
           user_id: ctx?.user_id,
           ...topLevel,
           ...(idsScalar ? { ids: idsScalar } : {}),
+          ...(payloadScalar ? { payload: payloadScalar } : {}),
         };
 
         if (status >= 500) {
@@ -271,7 +318,7 @@ export function createAxiomRouteHandler(
         const ctx = getServerContext();
         const err = ensureError(error);
 
-        const { idsScalar, topLevel } = partitionFields(ctx?.fields ?? {});
+        const { idsScalar, payloadScalar, topLevel } = partitionFields(ctx?.fields ?? {});
         // onError: structured error logging to Axiom
         logger.error("Request error", {
           ...otelAttrs,
@@ -281,6 +328,7 @@ export function createAxiomRouteHandler(
           user_id: ctx?.user_id,
           ...topLevel,
           ...(idsScalar ? { ids: idsScalar } : {}),
+          ...(payloadScalar ? { payload: payloadScalar } : {}),
           error_name: err.name,
           error_message: err.message,
           error_stack: err.stack,

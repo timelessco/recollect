@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
 
 import {
@@ -20,8 +20,8 @@ export const POST = createAxiomRouteHandler(
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
         ctx.fields.bookmark_id = bookmarkId;
-        ctx.fields.make_discoverable = makeDiscoverable;
       }
+      setPayload(ctx, { make_discoverable: makeDiscoverable });
 
       // Atomic match prevents TOCTOU between ownership check and update.
       // trash IS NULL is enforced only when enabling — removing discoverability
@@ -60,10 +60,10 @@ export const POST = createAxiomRouteHandler(
 
       const [updatedRow] = rows;
 
-      if (ctx?.fields) {
-        ctx.fields.toggled = true;
-        ctx.fields.now_discoverable = updatedRow.make_discoverable !== null;
-      }
+      setPayload(ctx, {
+        toggled: true,
+        now_discoverable: updatedRow.make_discoverable !== null,
+      });
 
       return {
         id: updatedRow.id,

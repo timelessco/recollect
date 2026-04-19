@@ -2,7 +2,7 @@ import { after } from "next/server";
 
 import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { processImageQueue } from "@/utils/worker";
 
@@ -17,9 +17,7 @@ export const POST = createAxiomRouteHandler(
 
       // BEFORE operation — input context
       const ctx = getServerContext();
-      if (ctx?.fields) {
-        ctx.fields.queue_name = "ai-embeddings";
-      }
+      setPayload(ctx, { queue_name: "ai-embeddings" });
 
       const result = await processImageQueue(supabase, {
         batchSize: 1,
@@ -29,10 +27,12 @@ export const POST = createAxiomRouteHandler(
       // AFTER operation — outcome
       if (ctx?.fields) {
         ctx.fields.message_id = result?.messageId ?? null;
-        ctx.fields.queue_empty = !result?.messageId;
-        ctx.fields.processed_count = result?.messageId ? 1 : 0;
-        ctx.fields.background_task_count = result.backgroundTasks.length;
       }
+      setPayload(ctx, {
+        queue_empty: !result?.messageId,
+        processed_count: result?.messageId ? 1 : 0,
+        background_task_count: result.backgroundTasks.length,
+      });
 
       // Dispatch enrichment/screenshot fetches as registered background work.
       // Using after() (not bare void fetch in the worker) keeps Fluid Compute

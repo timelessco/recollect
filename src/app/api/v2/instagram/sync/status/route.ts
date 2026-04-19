@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 
 import { InstagramSyncStatusInputSchema, InstagramSyncStatusOutputSchema } from "./schema";
 
@@ -28,10 +28,10 @@ export const GET = createAxiomRouteHandler(
 
       const parsed = InstagramSyncStatusOutputSchema.parse(data);
 
-      if (ctx?.fields) {
-        ctx.fields.pending_count = parsed.pending;
-        ctx.fields.archived_count = parsed.archived;
-      }
+      setPayload(ctx, {
+        pending_count: parsed.pending,
+        archived_count: parsed.archived,
+      });
 
       return parsed;
     },

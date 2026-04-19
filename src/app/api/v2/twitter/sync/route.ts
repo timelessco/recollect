@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { toJson } from "@/utils/type-utils";
 
@@ -16,8 +16,8 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
-        ctx.fields.bookmarks_count = data.bookmarks.length;
       }
+      setPayload(ctx, { bookmarks_count: data.bookmarks.length });
 
       // Call transactional RPC for synchronous dedup + insert
       const serviceClient = createServerServiceClient();
@@ -46,11 +46,11 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.inserted_count = parsed.data.inserted;
-        ctx.fields.skipped_count = parsed.data.skipped;
-        ctx.fields.enqueue_completed = true;
-      }
+      setPayload(ctx, {
+        inserted_count: parsed.data.inserted,
+        skipped_count: parsed.data.skipped,
+        enqueue_completed: true,
+      });
 
       return parsed.data;
     },

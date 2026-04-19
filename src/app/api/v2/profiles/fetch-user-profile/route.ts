@@ -2,7 +2,7 @@ import uniqid from "uniqid";
 
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { GET_NAME_FROM_EMAIL_PATTERN, PROFILES } from "@/utils/constants";
 
 import { FetchUserProfileInputSchema, FetchUserProfileOutputSchema } from "./schema";
@@ -111,10 +111,10 @@ export const GET = createAxiomRouteHandler(
       const usernameResult =
         profile.user_name === null && profile.email ? await assignUsername(profile.email) : null;
 
-      if (ctx?.fields) {
-        ctx.fields.synced_profile_pic = Boolean(picResult);
-        ctx.fields.assigned_username = Boolean(usernameResult);
-      }
+      setPayload(ctx, {
+        synced_profile_pic: Boolean(picResult),
+        assigned_username: Boolean(usernameResult),
+      });
 
       return usernameResult ?? picResult ?? profileData;
     },

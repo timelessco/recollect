@@ -3,7 +3,7 @@ import { after } from "next/server";
 import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import { BOOKMARK_CATEGORIES_TABLE_NAME, MAIN_TABLE_NAME } from "@/utils/constants";
 
@@ -21,9 +21,8 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
-        ctx.fields.bookmark_ids_count = bookmarkIds.length;
-        ctx.fields.is_trash = isTrash;
       }
+      setPayload(ctx, { bookmark_ids_count: bookmarkIds.length, is_trash: isTrash });
 
       const trashValue = isTrash ? new Date().toISOString() : null;
 
@@ -44,17 +43,14 @@ export const POST = createAxiomRouteHandler(
       }
 
       if (!updatedBookmarks || updatedBookmarks.length === 0) {
-        if (ctx?.fields) {
-          ctx.fields.updated_count = 0;
-          ctx.fields.no_bookmarks_updated = true;
-        }
+        setPayload(ctx, { updated_count: 0, no_bookmarks_updated: true });
         return [];
       }
 
-      if (ctx?.fields) {
-        ctx.fields.updated_count = updatedBookmarks.length;
-        ctx.fields.bookmarks_trashed = isTrash;
-      }
+      setPayload(ctx, {
+        updated_count: updatedBookmarks.length,
+        bookmarks_trashed: isTrash,
+      });
 
       // Look up affected categories pre-response so we can fan out revalidation
       // inside after(). The v1 route also queried this pre-response. Use the IDs
@@ -66,17 +62,17 @@ export const POST = createAxiomRouteHandler(
         .select("category_id")
         .in("bookmark_id", updatedBookmarkIds);
 
-      if (associationsError && ctx?.fields) {
-        ctx.fields.category_associations_fetch_error = associationsError.message;
+      if (associationsError) {
+        setPayload(ctx, { category_associations_fetch_error: associationsError.message });
       }
 
       if (categoryAssociations && categoryAssociations.length > 0) {
         const categoryIds = [...new Set(categoryAssociations.map((assoc) => assoc.category_id))];
 
-        if (ctx?.fields) {
-          ctx.fields.revalidation_category_count = categoryIds.length;
-          ctx.fields.revalidation_queued = true;
-        }
+        setPayload(ctx, {
+          revalidation_category_count: categoryIds.length,
+          revalidation_queued: true,
+        });
 
         // Closure-capture values — ALS is gone inside after()
         after(async () => {

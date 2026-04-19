@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 
 import { TwitterSyncStatusInputSchema, TwitterSyncStatusOutputSchema } from "./schema";
 
@@ -26,9 +26,7 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.sync_status_fetched = true;
-      }
+      setPayload(ctx, { sync_status_fetched: true });
 
       return data;
     },

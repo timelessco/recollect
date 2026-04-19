@@ -5,7 +5,7 @@ import { env } from "@/env/server";
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { storeQueueError } from "@/lib/api-helpers/queue";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { parseScreenshotResponse } from "@/lib/bookmarks/parse-screenshot-response";
 import { upload } from "@/lib/storage/media-upload";
 import { createServerServiceClient } from "@/lib/supabase/service";
@@ -74,12 +74,14 @@ export const POST = createAxiomRouteHandler(
 
       if (ctx?.fields) {
         ctx.fields.user_id = user_id;
-        ctx.fields.queue_name = queue_name;
         ctx.fields.msg_id = message.msg_id;
         ctx.fields.bookmark_id = id;
-        ctx.fields.url = url;
-        ctx.fields.media_type = mediaType;
       }
+      setPayload(ctx, {
+        queue_name,
+        url,
+        media_type: mediaType,
+      });
 
       try {
         // Fetch current bookmark state — used for idempotency + AI context in one round trip.
@@ -190,8 +192,8 @@ export const POST = createAxiomRouteHandler(
           }
         }
 
-        if (screenshotSkipped && ctx?.fields) {
-          ctx.fields.screenshot_skipped = true;
+        if (screenshotSkipped) {
+          setPayload(ctx, { screenshot_skipped: true });
         }
 
         const ogImage = publicURL ?? "";
@@ -239,9 +241,7 @@ export const POST = createAxiomRouteHandler(
           newMeta.ocr = imageToTextResult.ocr_text;
           newMeta.ocr_status = imageToTextResult.ocr_text ? "success" : "no_text";
         } else {
-          if (ctx?.fields) {
-            ctx.fields.image_to_text_empty = true;
-          }
+          setPayload(ctx, { image_to_text_empty: true });
           newMeta.ocr = null;
           newMeta.ocr_status = "no_text";
         }
@@ -254,8 +254,8 @@ export const POST = createAxiomRouteHandler(
             ogImgBlurUrl: encoded,
             width,
           });
-        } else if (ctx?.fields) {
-          ctx.fields.blurhash_empty = true;
+        } else {
+          setPayload(ctx, { blurhash_empty: true });
         }
 
         // Update metadata in DB. A Supabase `{error}` here is otherwise silent — the outer
@@ -297,8 +297,8 @@ export const POST = createAxiomRouteHandler(
           queue_name,
         });
 
-        if (deleteError && ctx?.fields) {
-          ctx.fields.queue_delete_error = deleteError.message;
+        if (deleteError) {
+          setPayload(ctx, { queue_delete_error: deleteError.message });
         }
 
         return NextResponse.json({ message: "Screenshot captured and uploaded successfully" });

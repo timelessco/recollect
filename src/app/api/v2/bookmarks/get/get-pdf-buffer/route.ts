@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { PDF_MIME_TYPE } from "@/utils/constants";
 
 import { GetPdfBufferInputSchema, GetPdfBufferOutputSchema } from "./schema";
@@ -13,9 +13,7 @@ export const GET = createAxiomRouteHandler(
   withPublic({
     handler: async ({ input }) => {
       const ctx = getServerContext();
-      if (ctx?.fields) {
-        ctx.fields.pdf_url = input.url;
-      }
+      setPayload(ctx, { pdf_url: input.url });
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
@@ -38,11 +36,11 @@ export const GET = createAxiomRouteHandler(
         const buffer = await result.arrayBuffer();
 
         // Outcome flags AFTER the fetch
-        if (ctx?.fields) {
-          ctx.fields.pdf_fetched = true;
-          ctx.fields.content_type = result.headers.get("content-type");
-          ctx.fields.pdf_size_bytes = buffer.byteLength;
-        }
+        setPayload(ctx, {
+          pdf_fetched: true,
+          content_type: result.headers.get("content-type"),
+          pdf_size_bytes: buffer.byteLength,
+        });
 
         return new NextResponse(buffer, {
           headers: { "Content-Type": PDF_MIME_TYPE },

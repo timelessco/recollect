@@ -3,7 +3,7 @@ import { after } from "next/server";
 import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { sendCollectionDeletedNotification } from "@/lib/email/send-collection-deleted-notification";
 import { revalidatePublicCategoryPage } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
@@ -30,8 +30,8 @@ export const POST = createAxiomRouteHandler(
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
         ctx.fields.category_id = categoryId;
-        ctx.fields.keep_bookmarks = keepBookmarks;
       }
+      setPayload(ctx, { keep_bookmarks: keepBookmarks });
 
       // Verify the user owns the category
       const { data: categoryData, error: categoryDataError } = await supabase
@@ -81,8 +81,8 @@ export const POST = createAxiomRouteHandler(
         .eq("category_id", categoryId)
         .eq("is_accept_pending", false);
 
-      if (collaboratorsError && ctx?.fields) {
-        ctx.fields.collaborator_fetch_error = collaboratorsError.message;
+      if (collaboratorsError) {
+        setPayload(ctx, { collaborator_fetch_error: collaboratorsError.message });
       }
 
       const collaboratorEmails: string[] = (collaborators ?? [])
@@ -103,9 +103,7 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.shared_categories_deleted = true;
-      }
+      setPayload(ctx, { shared_categories_deleted: true });
 
       // Get all bookmark IDs in this category with their owners
       const { data: categoryBookmarks, error: categoryBookmarksError } = await serviceClient
@@ -171,9 +169,7 @@ export const POST = createAxiomRouteHandler(
               });
             }
 
-            if (ctx?.fields) {
-              ctx.fields.orphaned_bookmarks_reassigned = orphanedBookmarks.length;
-            }
+            setPayload(ctx, { orphaned_bookmarks_reassigned: orphanedBookmarks.length });
           }
         } else {
           // Trash owner's bookmarks, collaborators just lose the reference
@@ -198,9 +194,7 @@ export const POST = createAxiomRouteHandler(
               });
             }
 
-            if (ctx?.fields) {
-              ctx.fields.bookmarks_trashed = ownerBookmarkIds.length;
-            }
+            setPayload(ctx, { bookmarks_trashed: ownerBookmarkIds.length });
           }
         }
       }
@@ -219,9 +213,7 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.junction_entries_deleted = true;
-      }
+      setPayload(ctx, { junction_entries_deleted: true });
 
       // Delete the category
       const { data: deletedCategory, error: deleteError } = await serviceClient
@@ -279,9 +271,7 @@ export const POST = createAxiomRouteHandler(
           });
         }
 
-        if (ctx?.fields) {
-          ctx.fields.category_order_updated = true;
-        }
+        setPayload(ctx, { category_order_updated: true });
       }
 
       // Clean up favorite_categories for ALL users who favorited this category
@@ -291,14 +281,14 @@ export const POST = createAxiomRouteHandler(
         { p_category_id: deletedCategory[0].id },
       );
 
-      if (favoritesCleanupError && ctx?.fields) {
-        ctx.fields.favorites_cleanup_error = favoritesCleanupError.message;
-        ctx.fields.favorites_cleanup_code = favoritesCleanupError.code;
+      if (favoritesCleanupError) {
+        setPayload(ctx, {
+          favorites_cleanup_error: favoritesCleanupError.message,
+          favorites_cleanup_code: favoritesCleanupError.code,
+        });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.category_deleted = true;
-      }
+      setPayload(ctx, { category_deleted: true });
 
       // Revalidate public category page if it was public — run after the
       // response so the profile lookup and revalidation fetch don't block the
@@ -341,9 +331,7 @@ export const POST = createAxiomRouteHandler(
           }
         });
 
-        if (ctx?.fields) {
-          ctx.fields.revalidation_scheduled = true;
-        }
+        setPayload(ctx, { revalidation_scheduled: true });
       }
 
       // Notify collaborators about the deletion — run after response is sent
@@ -382,9 +370,7 @@ export const POST = createAxiomRouteHandler(
           }
         });
 
-        if (ctx?.fields) {
-          ctx.fields.collaborator_notification_queued = collaboratorEmails.length;
-        }
+        setPayload(ctx, { collaborator_notification_queued: collaboratorEmails.length });
       }
 
       return deletedCategory;

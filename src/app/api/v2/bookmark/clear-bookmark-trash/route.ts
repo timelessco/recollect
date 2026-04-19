@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { deleteBookmarksByIds } from "@/lib/bookmark-helpers/delete-bookmarks";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
 
@@ -34,15 +34,10 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.trash_count = trashCount ?? 0;
-      }
+      setPayload(ctx, { trash_count: trashCount ?? 0 });
 
       if (!trashCount || trashCount === 0) {
-        if (ctx?.fields) {
-          ctx.fields.deleted_count = 0;
-          ctx.fields.empty_trash = true;
-        }
+        setPayload(ctx, { deleted_count: 0, empty_trash: true });
 
         return {
           deletedCount: 0,
@@ -96,10 +91,7 @@ export const POST = createAxiomRouteHandler(
         }
       }
 
-      if (ctx?.fields) {
-        ctx.fields.deleted_count = totalDeleted;
-        ctx.fields.trash_cleared = true;
-      }
+      setPayload(ctx, { deleted_count: totalDeleted, trash_cleared: true });
 
       return {
         deletedCount: totalDeleted,

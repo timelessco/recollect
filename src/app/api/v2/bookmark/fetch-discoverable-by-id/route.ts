@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import {
   BOOKMARK_CATEGORIES_TABLE_NAME,
@@ -131,11 +131,11 @@ export const GET = createAxiomRouteHandler(
             id: item.category_id?.id ?? 0,
           })) ?? [];
 
-      if (ctx?.fields) {
-        ctx.fields.tag_count = addedTags.length;
-        ctx.fields.category_count = addedCategories.length;
-        ctx.fields.fetched = true;
-      }
+      setPayload(ctx, {
+        tag_count: addedTags.length,
+        category_count: addedCategories.length,
+        fetched: true,
+      });
 
       return {
         ...bookmarkData,

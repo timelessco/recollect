@@ -3,7 +3,7 @@ import type { PdfThumbnailOutput } from "./schema";
 import { env } from "@/env/server";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 
 import { PdfThumbnailInputSchema, PdfThumbnailOutputSchema } from "./schema";
 
@@ -17,8 +17,8 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = user.id;
-        ctx.fields.pdf_url = sanitizedUrl;
       }
+      setPayload(ctx, { pdf_url: sanitizedUrl });
 
       const pdfApiUrl = env.PDF_URL_SCREENSHOT_API;
       const pdfApiKey = env.PDF_SECRET_KEY;
@@ -80,9 +80,7 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.thumbnail_generated = true;
-      }
+      setPayload(ctx, { thumbnail_generated: true });
 
       const result: PdfThumbnailOutput = { publicUrl };
       return result;
