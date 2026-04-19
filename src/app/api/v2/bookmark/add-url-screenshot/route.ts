@@ -19,7 +19,7 @@ import { AddUrlScreenshotInputSchema, AddUrlScreenshotOutputSchema } from "./sch
 
 const ROUTE = "v2-bookmark-add-url-screenshot";
 const MAX_LENGTH = 1300;
-const SCREENSHOT_TIMEOUT_MS = 30_000;
+const SCREENSHOT_TIMEOUT_MS = 60_000;
 
 /** Shape of the bookmark row fetched for screenshot enrichment */
 interface BookmarkScreenshotFetchRow {
