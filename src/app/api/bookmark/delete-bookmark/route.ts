@@ -7,6 +7,9 @@ import { DeleteBookmarkInputSchema, DeleteBookmarkOutputSchema } from "./schema"
 const ROUTE = "delete-bookmark";
 const BATCH_SIZE = 1000;
 
+/**
+ * @deprecated Use /api/v2/bookmark/delete-bookmark instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     const { deleteData } = data;

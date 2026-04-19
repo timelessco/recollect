@@ -23,12 +23,16 @@ import { SampledTransport } from "./axiom-client-sampling";
  * bypass sampling.
  *
  * autoFlush ensures reliable delivery even without navigation events.
- * ConsoleTransport stays un-sampled to preserve dev visibility.
+ *
+ * ConsoleTransport is mounted only in development so end-users never see
+ * telemetry events in their browser console. Next.js inlines
+ * `process.env.NODE_ENV` at build time, so the transport (and its import)
+ * tree-shakes out of production bundles.
  */
 export const clientLogger = new Logger({
   transports: [
     new SampledTransport(new ProxyTransport({ autoFlush: true, url: "/api/axiom" })),
-    new ConsoleTransport(),
+    ...(process.env.NODE_ENV === "development" ? [new ConsoleTransport()] : []),
   ],
   formatters: [...nextJsFormatters, recollectIdentityFormatter],
 });

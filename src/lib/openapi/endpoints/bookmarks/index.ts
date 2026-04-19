@@ -12,6 +12,8 @@ export { v2AddRemainingBookmarkDataSupplement } from "./v2-add-remaining-bookmar
 export { v2AddUrlScreenshotSupplement } from "./v2-add-url-screenshot";
 export { v2BookmarksInsertSupplement } from "./v2-bookmarks-insert";
 export { v2CheckUrlSupplement } from "./v2-check-url";
+export { v2ClearBookmarkTrashSupplement } from "./v2-clear-bookmark-trash";
+export { v2DeleteBookmarkSupplement } from "./v2-delete-bookmark";
 export { v2FetchBookmarksCountSupplement } from "./v2-fetch-bookmarks-count";
 export { v2FetchBookmarksDataSupplement } from "./v2-fetch-bookmarks-data";
 export { v2FetchBookmarksDiscoverableSupplement } from "./v2-fetch-bookmarks-discoverable";
@@ -21,6 +23,7 @@ export { v2FetchDiscoverableByIdSupplement } from "./v2-fetch-discoverable-by-id
 export { v2FetchPublicBookmarkByIdSupplement } from "./v2-fetch-public-bookmark-by-id";
 export { v2GetMediaTypeSupplement } from "./v2-get-media-type";
 export { v2GetPdfBufferSupplement } from "./v2-get-pdf-buffer";
+export { v2MoveBookmarkToTrashSupplement } from "./v2-move-bookmark-to-trash";
 export { v2SearchBookmarksSupplement } from "./v2-search-bookmarks";
 export { v2ToggleDiscoverableOnBookmarkSupplement } from "./v2-toggle-discoverable-on-bookmark";
 export { v2UploadFileSupplement } from "./v2-upload-file";

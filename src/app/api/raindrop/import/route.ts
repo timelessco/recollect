@@ -7,6 +7,9 @@ import { RaindropImportInputSchema, RaindropImportOutputSchema } from "./schema"
 
 const ROUTE = "raindrop-import";
 
+/**
+ * @deprecated Use /api/v2/raindrop/import instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, user }) => {
     const userId = user.id;
