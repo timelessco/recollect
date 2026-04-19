@@ -150,6 +150,30 @@ function isPayloadRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
+ * Stringify a record into a single Axiom scalar, defensively. Drops keys whose
+ * value is `undefined` first — `JSON.stringify({ k: undefined })` would otherwise
+ * emit `"{}"`, masquerading as a real payload — and returns `undefined` when
+ * nothing meaningful is left. Wraps `JSON.stringify` in try/catch because BigInt
+ * and circular references throw, and a thrown serializer in the error path
+ * (line ~299) would swallow the original request error before it ever reaches
+ * Axiom or Sentry.
+ */
+function toJsonScalar(record: Record<string, unknown>): string | undefined {
+  const scalarInput = Object.fromEntries(
+    Object.entries(record).filter(([, value]) => value !== undefined),
+  );
+  if (Object.keys(scalarInput).length === 0) {
+    return undefined;
+  }
+  try {
+    const scalar = JSON.stringify(scalarInput);
+    return scalar === "{}" ? undefined : scalar;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Partition handler-written `ctx.fields` into top-level keys, a single
  * JSON-stringified `ids` scalar, and a single JSON-stringified `payload`
  * scalar. Collapsing domain keys into scalars stops them from registering
@@ -180,9 +204,7 @@ function partitionFields(fields: ServerFields): {
   for (const [key, value] of Object.entries(fields)) {
     if (key === "payload") {
       if (isPayloadRecord(value)) {
-        if (Object.keys(value).length > 0) {
-          payloadScalar = JSON.stringify(value);
-        }
+        payloadScalar = toJsonScalar(value);
         continue;
       }
       if (value !== undefined && value !== null) {
@@ -200,7 +222,7 @@ function partitionFields(fields: ServerFields): {
     }
     topLevel[key] = value;
   }
-  const idsScalar = Object.keys(ids).length > 0 ? JSON.stringify(ids) : undefined;
+  const idsScalar = toJsonScalar(ids);
   return { idsScalar, payloadScalar, topLevel };
 }
 
