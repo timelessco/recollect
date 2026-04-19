@@ -4,15 +4,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
 
 import type {
-  UpdateCategoryPayload,
-  UpdateCategoryResponse,
-} from "@/app/api/category/update-user-category/schema";
+  UpdateUserCategoryInput,
+  UpdateUserCategoryOutput,
+} from "@/app/api/v2/category/update-user-category/schema";
 import type { CategoriesData } from "@/types/apiTypes";
 
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
-import { postApi } from "@/lib/api-helpers/api";
+import { api } from "@/lib/api-helpers/api-v2";
 import { useSupabaseSession } from "@/store/componentStore";
-import { CATEGORIES_KEY, UPDATE_USER_CATEGORIES_API } from "@/utils/constants";
+import { CATEGORIES_KEY, V2_UPDATE_USER_CATEGORY_API } from "@/utils/constants";
 
 export function useUpdateCategoryOptimisticMutation() {
   const session = useSupabaseSession((state) => state.session);
@@ -21,14 +21,14 @@ export function useUpdateCategoryOptimisticMutation() {
   const queryKey = [CATEGORIES_KEY, session?.user?.id] as const;
 
   const updateCategoryOptimisticMutation = useReactQueryOptimisticMutation<
-    UpdateCategoryResponse,
+    UpdateUserCategoryOutput,
     Error,
-    UpdateCategoryPayload,
+    UpdateUserCategoryInput,
     typeof queryKey,
-    { data: CategoriesData[] } | undefined
+    CategoriesData[] | undefined
   >({
     mutationFn: (payload) =>
-      postApi<UpdateCategoryResponse>(`/api${UPDATE_USER_CATEGORIES_API}`, payload),
+      api.post(V2_UPDATE_USER_CATEGORY_API, { json: payload }).json<UpdateUserCategoryOutput>(),
     onSettled: (_data, error) => {
       if (error) {
         return;
@@ -41,12 +41,12 @@ export function useUpdateCategoryOptimisticMutation() {
     queryKey,
     showSuccessToast: false,
     updater: (currentData, variables) => {
-      if (!currentData?.data) {
+      if (!currentData) {
         return currentData;
       }
 
       return produce(currentData, (draft) => {
-        const category = draft.data.find((item) => item.id === variables.category_id);
+        const category = draft.find((item) => item.id === variables.category_id);
         if (!category) {
           return;
         }

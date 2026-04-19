@@ -8,6 +8,9 @@ import { ClearBookmarkTrashInputSchema, ClearBookmarkTrashOutputSchema } from ".
 const ROUTE = "clear-bookmark-trash";
 const BATCH_SIZE = 1000;
 
+/**
+ * @deprecated Use /api/v2/bookmark/clear-bookmark-trash instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ route, supabase, user }) => {
     const userId = user.id;

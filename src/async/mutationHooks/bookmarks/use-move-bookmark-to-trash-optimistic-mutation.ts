@@ -1,17 +1,18 @@
 import { produce } from "immer";
 
+import type { MoveBookmarkToTrashOutput } from "@/app/api/v2/bookmark/move-bookmark-to-trash/schema";
 import type { MoveBookmarkToTrashApiPayload, PaginatedBookmarks } from "@/types/apiTypes";
 
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
+import { api } from "@/lib/api-helpers/api-v2";
 import {
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
   TRASH_URL,
   UNCATEGORIZED_URL,
+  V2_MOVE_BOOKMARK_TO_TRASH_API,
 } from "@/utils/constants";
-
-import { moveBookmarkToTrash } from "../../supabaseCrudHelpers";
 
 /**
  * Mutation hook for moving bookmarks to/from trash with optimistic updates.
@@ -24,7 +25,7 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
   const { queryClient, queryKey, searchQueryKey, session, sortBy } = useBookmarkMutationContext();
 
   const moveBookmarkToTrashOptimisticMutation = useReactQueryOptimisticMutation<
-    unknown,
+    MoveBookmarkToTrashOutput,
     Error,
     MoveBookmarkToTrashApiPayload,
     typeof queryKey,
@@ -73,7 +74,15 @@ export const useMoveBookmarkToTrashOptimisticMutation = () => {
         },
       },
     ],
-    mutationFn: moveBookmarkToTrash,
+    mutationFn: ({ data, isTrash }) => {
+      // Send only bookmark IDs — full SingleListData is optimistic-update-only, server doesn't need it
+      const minimalData = data.map((bookmark) => ({ id: bookmark.id }));
+      return api
+        .post(V2_MOVE_BOOKMARK_TO_TRASH_API, {
+          json: { data: minimalData, isTrash },
+        })
+        .json<MoveBookmarkToTrashOutput>();
+    },
     // Minimal invalidation - only what wasn't optimistically updated
     onSettled: (_data, error, variables) => {
       if (error) {

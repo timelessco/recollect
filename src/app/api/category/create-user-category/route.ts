@@ -10,6 +10,9 @@ import { CreateCategoryPayloadSchema, CreateCategoryResponseSchema } from "./sch
 
 const ROUTE = "create-user-category";
 
+/**
+ * @deprecated Use /api/v2/category/create-user-category instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     const { category_order: categoryOrder, icon, icon_color, name } = data;
