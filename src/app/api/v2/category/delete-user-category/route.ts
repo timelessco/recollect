@@ -186,6 +186,7 @@ export const POST = createAxiomRouteHandler(
               .from(MAIN_TABLE_NAME)
               .update({ trash: new Date().toISOString() })
               .in("id", ownerBookmarkIds)
+              .eq("user_id", userId)
               .is("trash", null);
 
             if (trashError) {
@@ -299,30 +300,49 @@ export const POST = createAxiomRouteHandler(
         ctx.fields.category_deleted = true;
       }
 
-      // Revalidate public category page if it was public — fire and forget
+      // Revalidate public category page if it was public — run after the
+      // response so the profile lookup and revalidation fetch don't block the
+      // delete, and so any rejection is caught instead of floating.
       if (categoryData.is_public) {
-        const { data: profileUserData, error: profileError } = await supabase
-          .from(PROFILES)
-          .select("user_name")
-          .eq("id", userId)
-          .single();
+        const categorySlug = categoryData.category_slug;
+        after(async () => {
+          try {
+            const { data: profileUserData, error: profileError } = await supabase
+              .from(PROFILES)
+              .select("user_name")
+              .eq("id", userId)
+              .single();
 
-        if (profileError && ctx?.fields) {
-          ctx.fields.revalidation_profile_fetch_error = profileError.message;
-        }
+            if (profileError) {
+              logger.warn("[v2-category-delete-user-category] revalidation profile fetch failed", {
+                category_id: categoryId,
+                error_message: profileError.message,
+                user_id: userId,
+              });
+              return;
+            }
 
-        const userName = profileUserData?.user_name;
-        if (userName) {
-          if (ctx?.fields) {
-            ctx.fields.revalidation_triggered = true;
+            const userName = profileUserData?.user_name;
+            if (!userName) {
+              return;
+            }
+
+            await revalidatePublicCategoryPage(userName, categorySlug, {
+              categoryId,
+              operation: "delete_category",
+              userId,
+            });
+          } catch (error) {
+            logger.warn("[v2-category-delete-user-category] after() revalidation failed", {
+              category_id: categoryId,
+              error_message: error instanceof Error ? error.message : String(error),
+              user_id: userId,
+            });
           }
+        });
 
-          // Fire and forget — don't block the API response
-          void revalidatePublicCategoryPage(userName, categoryData.category_slug, {
-            categoryId,
-            operation: "delete_category",
-            userId,
-          });
+        if (ctx?.fields) {
+          ctx.fields.revalidation_scheduled = true;
         }
       }
 

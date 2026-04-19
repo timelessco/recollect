@@ -46,7 +46,7 @@ export function useUpdateCategoryOptimisticMutation() {
       }
 
       return produce(currentData, (draft) => {
-        const category = draft.find((item) => item.id === variables.category_id);
+        const category = draft.find((item) => String(item.id) === String(variables.category_id));
         if (!category) {
           return;
         }

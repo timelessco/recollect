@@ -7,6 +7,7 @@ import { bearerAuth } from "@/lib/openapi/registry";
 
 export const v2CreateUserCategorySupplement = {
   additionalResponses: {
+    400: { description: "Validation error — request body failed Zod validation" },
     401: { description: "Not authenticated" },
     409: {
       description:

@@ -57,11 +57,14 @@ export const POST = createAxiomRouteHandler(
       }
 
       // Look up affected categories pre-response so we can fan out revalidation
-      // inside after(). The v1 route also queried this pre-response.
+      // inside after(). The v1 route also queried this pre-response. Use the IDs
+      // the authorized update actually touched — the request's bookmarkIds may
+      // contain foreign bookmarks the user does not own.
+      const updatedBookmarkIds = updatedBookmarks.map((bookmark) => bookmark.id);
       const { data: categoryAssociations, error: associationsError } = await supabase
         .from(BOOKMARK_CATEGORIES_TABLE_NAME)
         .select("category_id")
-        .in("bookmark_id", bookmarkIds);
+        .in("bookmark_id", updatedBookmarkIds);
 
       if (associationsError && ctx?.fields) {
         ctx.fields.category_associations_fetch_error = associationsError.message;
