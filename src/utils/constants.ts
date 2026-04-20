@@ -176,6 +176,7 @@ export const V2_TWITTER_SYNC_API = "v2/twitter/sync";
 export const V2_TWITTER_SYNC_FOLDERS_API = "v2/twitter/sync-folders";
 export const V2_ADD_CATEGORY_TO_BOOKMARK_API = "v2/category/add-category-to-bookmark";
 export const V2_ADD_CATEGORY_TO_BOOKMARKS_API = "v2/category/add-category-to-bookmarks";
+export const V2_REMOVE_CATEGORY_FROM_BOOKMARK_API = "v2/category/remove-category-from-bookmark";
 
 export const RAINDROP_IMPORT_API = "/raindrop/import";
 
