@@ -181,6 +181,7 @@ export const V2_SET_BOOKMARK_CATEGORIES_API = "v2/category/set-bookmark-categori
 export const V2_ADD_TAG_TO_BOOKMARK_API = "v2/tags/add-tag-to-bookmark";
 export const V2_REMOVE_TAG_FROM_BOOKMARK_API = "v2/tags/remove-tag-from-bookmark";
 export const V2_CREATE_AND_ASSIGN_TAG_API = "v2/tags/create-and-assign-tag";
+export const V2_TWITTER_SYNC_FOLDER_BOOKMARKS_API = "v2/twitter/sync-folder-bookmarks";
 
 export const RAINDROP_IMPORT_API = "/raindrop/import";
 
