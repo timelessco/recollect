@@ -3,7 +3,7 @@ import CryptoJS from "crypto-js";
 import { env } from "@/env/server";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { PROFILES } from "@/utils/constants";
 
 import { ApiKeyInputSchema, ApiKeyOutputSchema } from "./schema";
@@ -57,9 +57,7 @@ export const PUT = createAxiomRouteHandler(
       }
 
       // Outcome flag AFTER the operation
-      if (ctx?.fields) {
-        ctx.fields.key_upserted = true;
-      }
+      setPayload(ctx, { key_upserted: true });
 
       return { success: true };
     },

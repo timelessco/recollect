@@ -8,7 +8,7 @@ import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/use-fetch-p
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/use-search-bookmarks";
 import { useMiscellaneousStore } from "@/store/componentStore";
 import { DISCOVER_URL, isPublicPath, PAGINATION_LIMIT } from "@/utils/constants";
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 import { getCategorySlugFromRouter } from "@/utils/url";
 
 interface UseLightboxPrefetchParams {
@@ -42,6 +42,8 @@ export function useLightboxPrefetch({
     useFetchDiscoverBookmarks({
       enabled: fetchesEnabled && isDiscoverPage,
     });
+
+  const handleClientError = useHandleClientError();
 
   // Determine if we're currently searching
   const searchText = useMiscellaneousStore((state) => state.searchText);
@@ -94,5 +96,6 @@ export function useLightboxPrefetch({
     fetchNextDiscoverPage,
     shouldFetchMore,
     hasMoreData,
+    handleClientError,
   ]);
 }

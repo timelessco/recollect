@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/lib/api-helpers/api-v2";
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 
 import { API_KEY_CHECK_KEY, V2_SAVE_API_KEY_API } from "../../../utils/constants";
 import { successToast } from "../../../utils/toastMessages";
@@ -12,6 +12,7 @@ interface SaveApiKeyParameters {
 
 export const useApiKeyMutation = () => {
   const queryClient = useQueryClient();
+  const handleClientError = useHandleClientError();
 
   return useMutation({
     mutationFn: ({ apikey }: SaveApiKeyParameters) =>

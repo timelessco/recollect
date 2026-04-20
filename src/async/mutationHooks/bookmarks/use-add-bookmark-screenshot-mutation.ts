@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { AddBookmarkScreenshotPayloadTypes, SingleListData } from "../../../types/apiTypes";
+import type {
+  AddBookmarkScreenshotPayloadTypes,
+  PaginatedBookmarks,
+  SingleListData,
+} from "../../../types/apiTypes";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
@@ -36,10 +40,53 @@ export default function useAddBookmarkScreenshotMutation() {
       }
     },
     onSettled: (response) => {
-      if (response?.[0]?.id) {
-        removeLoadingBookmarkId(response[0].id);
+      if (response?.[0]) {
+        const [updated] = response;
+
+        // Inject the screenshot response into the paginated cache
+        // synchronously, in the SAME callback as removeLoadingBookmarkId.
+        // React batches the two updates into a single render — the card
+        // never sees (img=null && isLoading=false) and so never falls
+        // through the statusText ladder to TERMINAL.
+        //
+        // The prior approach (`await invalidateQueries` then
+        // removeLoadingBookmarkId) looked correct on paper, but in
+        // practice the cache notify and the Zustand store update
+        // committed in two separate React renders — the first render
+        // landed (img=null, isLoading=false) and produced the exit-side
+        // "Cannot fetch image..." flash. Synchronous injection
+        // eliminates that race. The screenshot response is the source
+        // of truth for ogImage at this point: the route handler just
+        // backfilled it from the captured screenshot (when the scraped
+        // ogImage was missing or malformed) and returned the updated
+        // row. A background refetch (below) still picks up later
+        // addRemainingBookmarkData() enrichments (img_caption, ocr,
+        // blurhash, additional cover images).
+        queryClient.setQueryData<PaginatedBookmarks>(
+          [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
+          (old) => {
+            if (!old) {
+              return old;
+            }
+            return {
+              ...old,
+              pages: old.pages.map((page) =>
+                page.map((bookmark) =>
+                  bookmark.id === updated.id ? { ...bookmark, ...updated } : bookmark,
+                ),
+              ),
+            } as PaginatedBookmarks;
+          },
+        );
+
+        removeLoadingBookmarkId(updated.id);
       }
 
+      // Background refetch picks up addRemainingBookmarkData() enrichments
+      // (img_caption, ocr, blurhash, additionalImages, additionalVideos).
+      // Fire-and-forget — does not block the loading-state transition,
+      // because the cache already has a valid ogImage from the
+      // setQueryData above.
       void queryClient.invalidateQueries({
         queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
       });

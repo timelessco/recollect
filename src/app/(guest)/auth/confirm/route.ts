@@ -6,7 +6,7 @@ import { z } from "zod";
 import type { EmailOtpType } from "@supabase/supabase-js";
 
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { resolveCallbackRedirect } from "@/lib/auth/resolve-callback-redirect";
 import { createServerClient } from "@/lib/supabase/server";
 import { getErrorMessage } from "@/utils/error-utils/error-message";
@@ -60,22 +60,20 @@ export const GET = createAxiomRouteHandler(
           rawType !== null && isEmailOtpType(rawType) ? rawType : null;
         const next = rawNext?.startsWith("/") ? rawNext : "/";
 
-        if (ctx?.fields) {
-          ctx.fields.has_token_hash = Boolean(tokenHash);
-          ctx.fields.has_type = Boolean(rawType);
-          ctx.fields.has_next = Boolean(rawNext);
-          if (type !== null) {
-            ctx.fields.otp_type = type;
-          }
-        }
+        setPayload(ctx, {
+          has_token_hash: Boolean(tokenHash),
+          has_type: Boolean(rawType),
+          has_next: Boolean(rawNext),
+          ...(type !== null ? { otp_type: type } : {}),
+        });
 
         if (!tokenHash || !type) {
-          if (ctx?.fields) {
-            ctx.fields.error_code = "bad_request";
-            ctx.fields.error_message = "No token hash or type";
-            ctx.fields.http_status = 400;
-            ctx.fields.operation = "verify_otp";
-          }
+          setPayload(ctx, {
+            error_code: "bad_request",
+            error_message: "No token hash or type",
+            http_status: 400,
+            operation: "verify_otp",
+          });
           return errorRedirect(request, "No token hash or type");
         }
 
@@ -87,19 +85,17 @@ export const GET = createAxiomRouteHandler(
 
         if (verifyError) {
           const message = getErrorMessage(verifyError);
-          if (ctx?.fields) {
-            ctx.fields.error_code = "unauthorized";
-            ctx.fields.error_message = message;
-            ctx.fields.http_status = 401;
-            ctx.fields.operation = "verify_otp";
-            ctx.fields.verify_otp_completed = false;
-          }
+          setPayload(ctx, {
+            error_code: "unauthorized",
+            error_message: message,
+            http_status: 401,
+            operation: "verify_otp",
+            verify_otp_completed: false,
+          });
           return errorRedirect(request, message);
         }
 
-        if (ctx?.fields) {
-          ctx.fields.verify_otp_completed = true;
-        }
+        setPayload(ctx, { verify_otp_completed: true });
 
         // Route first-time users to /discover so the welcome modal mounts
         // via [category_id].tsx's SSR gate. Helper fetches the fresh user,
@@ -107,21 +103,19 @@ export const GET = createAxiomRouteHandler(
         // that edge case in Axiom wide events.
         const destination = await resolveCallbackRedirect(supabase, next);
 
-        if (ctx?.fields) {
-          ctx.fields.first_time_user_redirect = destination !== next;
-        }
+        setPayload(ctx, { first_time_user_redirect: destination !== next });
 
         return successRedirect(request, destination);
       } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
-        if (ctx?.fields) {
-          ctx.fields.error_code = "internal_error";
-          ctx.fields.error_name = err.name;
-          ctx.fields.error_message = err.message;
-          ctx.fields.error_stack = err.stack;
-          ctx.fields.http_status = 500;
-          ctx.fields.operation = "verify_otp";
-        }
+        setPayload(ctx, {
+          error_code: "internal_error",
+          error_name: err.name,
+          error_message: err.message,
+          error_stack: err.stack,
+          http_status: 500,
+          operation: "verify_otp",
+        });
         return errorRedirect(request, "An unexpected error occurred");
       }
     },

@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 
 import {
   ChromeBookmarkImportRetryInputSchema as RetryInputSchema,
@@ -19,9 +19,9 @@ export const POST = createAxiomRouteHandler(
 
       if ("msg_ids" in data) {
         if (ctx?.fields) {
-          ctx.fields.retry_mode = "selective";
           ctx.fields.msg_ids = data.msg_ids;
         }
+        setPayload(ctx, { retry_mode: "per_message", msg_id_count: data.msg_ids.length });
 
         const { data: result, error } = await supabase.rpc("retry_chrome_bookmark_import", {
           p_msg_ids: data.msg_ids,
@@ -36,16 +36,12 @@ export const POST = createAxiomRouteHandler(
           });
         }
 
-        if (ctx?.fields) {
-          ctx.fields.retried_count = result;
-        }
+        setPayload(ctx, { retried_count: result });
 
         return result;
       }
 
-      if (ctx?.fields) {
-        ctx.fields.retry_mode = "all";
-      }
+      setPayload(ctx, { retry_mode: "all" });
 
       const { data: result, error } = await supabase.rpc("retry_all_chrome_bookmark_imports", {
         p_user_id: user.id,
@@ -59,9 +55,7 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.retried_count = result;
-      }
+      setPayload(ctx, { retried_count: result });
 
       return result;
     },

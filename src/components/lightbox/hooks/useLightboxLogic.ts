@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { SingleListData } from "../../../types/apiTypes";
 import type { CustomSlide } from "../LightboxUtils";
 
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 
 import { usePageContext } from "../../../hooks/use-page-context";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
@@ -122,6 +122,7 @@ export const useLightboxNavigation = ({
   const isCollectionChanged = useMiscellaneousStore((state) => state.isCollectionChanged);
   const setIsCollectionChanged = useMiscellaneousStore((state) => state.setIsCollectionChanged);
   const router = useRouter();
+  const handleClientError = useHandleClientError();
 
   const { isDiscoverPage, isPublicPage } = usePageContext();
 
@@ -158,7 +159,7 @@ export const useLightboxNavigation = ({
         setIsCollectionChanged(false);
       }
     },
-    [bookmarks, queryClient, session?.user?.id, setIsCollectionChanged],
+    [bookmarks, queryClient, session?.user?.id, setIsCollectionChanged, handleClientError],
   );
 
   /**

@@ -1,5 +1,5 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { uploadFileRemainingData } from "@/lib/files/upload-file-remaining-data";
 
 import { UploadFileRemainingDataInputSchema, UploadFileRemainingDataOutputSchema } from "./schema";
@@ -14,8 +14,8 @@ export const POST = createAxiomRouteHandler(
       if (ctx?.fields) {
         ctx.fields.user_id = user.id;
         ctx.fields.bookmark_id = data.id;
-        ctx.fields.media_type = data.mediaType;
       }
+      setPayload(ctx, { media_type: data.mediaType });
 
       await uploadFileRemainingData({
         id: data.id,
@@ -26,9 +26,7 @@ export const POST = createAxiomRouteHandler(
       });
 
       // AFTER operation — outcome
-      if (ctx?.fields) {
-        ctx.fields.enrichment_completed = true;
-      }
+      setPayload(ctx, { enrichment_completed: true });
 
       return { status: "completed" };
     },

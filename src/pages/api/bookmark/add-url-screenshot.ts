@@ -15,6 +15,8 @@ import type {
 import type { PostgrestError } from "@supabase/supabase-js";
 import type { VerifyErrors } from "jsonwebtoken";
 
+import { env } from "@/env/server";
+import { isLikelyValidImageUrl } from "@/lib/bookmarks/image-url-validation";
 import { upload } from "@/lib/storage/media-upload";
 import { collectAdditionalImages, collectVideo } from "@/utils/helpers";
 import { vet } from "@/utils/try";
@@ -24,7 +26,6 @@ import {
   getBaseUrl,
   MAIN_TABLE_NAME,
   NEXT_API_URL,
-  SCREENSHOT_API,
 } from "../../../utils/constants";
 import { getAxiosConfigWithAuth } from "../../../utils/helpers";
 import { apiSupabaseClient } from "../../../utils/supabaseServerClient";
@@ -66,7 +67,7 @@ export default async function handler(
     });
 
     const [screenshotError, screenShotResponse] = await vet(() =>
-      axios.get(`${SCREENSHOT_API}/try?url=${encodeURIComponent(request.body.url)}`, {
+      axios.get(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(request.body.url)}`, {
         responseType: "json",
       }),
     );
@@ -222,6 +223,12 @@ export default async function handler(
       });
     }
 
+    // If the scraper-returned ogImage is missing or broken (e.g. Next.js
+    // pages with unset metadataBase emit "https://undefined/..."), backfill
+    // ogImage with the captured screenshot so the client never renders a
+    // dead URL while the remaining-data pipeline is still running.
+    const shouldBackfillOgImage = !isLikelyValidImageUrl(existingBookmarkData?.ogImage);
+
     // Add screenshot URL to meta_data
     const updatedMetaData = {
       ...existingMetaData,
@@ -230,7 +237,7 @@ export default async function handler(
         additionalVideoResult.success && additionalVideoResult.url
           ? [additionalVideoResult.url]
           : [],
-      coverImage: existingBookmarkData?.ogImage,
+      coverImage: shouldBackfillOgImage ? publicURL : existingBookmarkData?.ogImage,
       isPageScreenshot,
       screenshot: publicURL,
     };
@@ -248,6 +255,7 @@ export default async function handler(
         description: updatedDescription,
         meta_data: updatedMetaData,
         title: updatedTitle,
+        ...(shouldBackfillOgImage ? { ogImage: publicURL } : {}),
       })
       .match({ id: request.body.id, user_id: userId })
       .select();

@@ -18,7 +18,7 @@
     },
     "Sentry": {
       "type": "http",
-      "url": "https://mcp.sentry.dev/mcp/timeless-dev/recollect-web"
+      "url": "https://mcp.sentry.dev/mcp/timeless-dev"
     }
   }
 }

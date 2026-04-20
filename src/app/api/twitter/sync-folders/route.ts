@@ -9,6 +9,9 @@ import { SyncFoldersInputSchema, SyncFoldersOutputSchema } from "./schema";
 
 const ROUTE = "twitter-sync-folders";
 
+/**
+ * @deprecated Use /api/v2/twitter/sync-folders instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     const userId = user.id;

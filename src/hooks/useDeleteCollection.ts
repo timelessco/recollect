@@ -39,19 +39,31 @@ export const useDeleteCollection = () => {
         await router.push(`/${EVERYTHING_URL}`);
       }
 
-      // oxlint-disable-next-line no-unsafe-assignment -- mutationApiCall returns Promise<any>
-      const response: { response?: { data?: { error?: string }; status?: number } } | undefined =
-        await mutationApiCall(
-          deleteCategoryOptimisticMutation.mutateAsync({
-            category_id: categoryId,
-            keep_bookmarks: keepBookmarks,
-          }),
-        );
+      const restoreRoute = async () => {
+        if (current && currentCategory?.category_slug) {
+          await router.push(`/${currentCategory.category_slug}`);
+        }
+      };
 
-      // Check if mutation failed (error in response)
-      // The API returns errors in response.response.data.error
-      if (response?.response?.data?.error && current && currentCategory?.category_slug) {
-        await router.push(`/${currentCategory.category_slug}`);
+      try {
+        // oxlint-disable-next-line no-unsafe-assignment -- mutationApiCall returns Promise<any>
+        const response: { response?: { data?: { error?: string }; status?: number } } | undefined =
+          await mutationApiCall(
+            deleteCategoryOptimisticMutation.mutateAsync({
+              category_id: categoryId,
+              keep_bookmarks: keepBookmarks,
+            }),
+          );
+
+        // v1 Axios-style callers still surface errors on a resolved value.
+        if (response?.response?.data?.error) {
+          await restoreRoute();
+        }
+      } catch {
+        // ky (v2 api client) rejects on 4xx/5xx. The hook's onError has already
+        // rolled back the cache; we just need to restore the route and toast.
+        errorToast("Failed to delete collection");
+        await restoreRoute();
       }
     },
     [allCategories, deleteCategoryOptimisticMutation, router, session],

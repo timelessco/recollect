@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { CategoriesData } from "../../../types/apiTypes";
+import type { CategoriesData, DeleteUserCategoryApiPayload } from "../../../types/apiTypes";
+import type { DeleteUserCategoryOutput } from "@/app/api/v2/category/delete-user-category/schema";
+
+import { api } from "@/lib/api-helpers/api-v2";
 
 import { useSupabaseSession } from "../../../store/componentStore";
 import {
@@ -8,8 +11,8 @@ import {
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
   USER_PROFILE,
+  V2_DELETE_USER_CATEGORY_API,
 } from "../../../utils/constants";
-import { deleteUserCategory } from "../../supabaseCrudHelpers";
 
 // deletes a category optimistically
 export default function useDeleteCategoryOptimisticMutation() {
@@ -17,7 +20,8 @@ export default function useDeleteCategoryOptimisticMutation() {
   const queryClient = useQueryClient();
 
   const deleteCategoryOptimisticMutation = useMutation({
-    mutationFn: deleteUserCategory,
+    mutationFn: (payload: DeleteUserCategoryApiPayload) =>
+      api.post(V2_DELETE_USER_CATEGORY_API, { json: payload }).json<DeleteUserCategoryOutput>(),
     onMutate: async (data) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({

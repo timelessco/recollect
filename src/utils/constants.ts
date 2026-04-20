@@ -164,9 +164,16 @@ export const V2_FETCH_PUBLIC_BOOKMARK_BY_ID_API = "v2/bookmark/fetch-public-book
 export const V2_CHECK_URL_API = "v2/bookmarks/check-url";
 export const V2_PDF_THUMBNAIL_API = "v2/pdf-thumbnail";
 export const V2_DEV_SESSION_API = "v2/dev/session";
-
-// Screenshot api
-export const SCREENSHOT_API = "https://vercel-puppeteer-screenshot-api.vercel.app";
+export const V2_RAINDROP_IMPORT_API = "v2/raindrop/import";
+export const V2_CLEAR_BOOKMARK_TRASH_API = "v2/bookmark/clear-bookmark-trash";
+export const V2_DELETE_BOOKMARK_DATA_API = "v2/bookmark/delete-bookmark";
+export const V2_MOVE_BOOKMARK_TO_TRASH_API = "v2/bookmark/move-bookmark-to-trash";
+export const V2_CREATE_USER_CATEGORY_API = "v2/category/create-user-category";
+export const V2_DELETE_USER_CATEGORY_API = "v2/category/delete-user-category";
+export const V2_UPDATE_USER_CATEGORY_API = "v2/category/update-user-category";
+export const V2_INSTAGRAM_SYNC_API = "v2/instagram/sync";
+export const V2_TWITTER_SYNC_API = "v2/twitter/sync";
+export const V2_TWITTER_SYNC_FOLDERS_API = "v2/twitter/sync-folders";
 
 export const RAINDROP_IMPORT_API = "/raindrop/import";
 

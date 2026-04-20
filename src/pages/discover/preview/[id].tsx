@@ -4,11 +4,13 @@ import type { GetStaticPaths, GetStaticProps } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
-import * as Sentry from "@sentry/nextjs";
 import { format } from "date-fns";
 import { z } from "zod";
 
 import type { SingleListData } from "../../../types/apiTypes";
+
+import { logger } from "@/lib/api-helpers/axiom-logger";
+import { extractErrorFields } from "@/lib/api-helpers/errors";
 
 import { CustomLightBox } from "../../../components/lightbox/LightBox";
 import {
@@ -111,17 +113,17 @@ export const getStaticProps: GetStaticProps<DiscoverPreviewProps> = async (conte
         status: response.status,
         statusText: response.statusText,
       });
-      Sentry.captureException(new Error(`HTTP ${response.status}: ${response.statusText}`), {
-        extra: {
-          bookmarkId,
-          status: response.status,
-          statusText: response.statusText,
-        },
-        tags: {
-          context: "incremental_static_regeneration",
-          operation: "fetch_discoverable_bookmark",
-        },
+      const severity = response.status >= 500 ? "error" : "warn";
+      logger[severity]("fetch_discoverable_bookmark_failed", {
+        operation: "fetch_discoverable_bookmark",
+        route: ROUTE,
+        context: "incremental_static_regeneration",
+        bookmark_id: bookmarkId,
+        "http.response.status_code": response.status,
+        "http.response.status_text": response.statusText,
+        error_message: `HTTP ${response.status}: ${response.statusText}`,
       });
+      await logger.flush();
       return { notFound: true };
     }
 
@@ -140,13 +142,14 @@ export const getStaticProps: GetStaticProps<DiscoverPreviewProps> = async (conte
       bookmarkId,
       error,
     });
-    Sentry.captureException(error, {
-      extra: { bookmarkId },
-      tags: {
-        context: "incremental_static_regeneration",
-        operation: "fetch_discoverable_bookmark",
-      },
+    logger.error("fetch_discoverable_bookmark_error", {
+      operation: "fetch_discoverable_bookmark",
+      route: ROUTE,
+      context: "incremental_static_regeneration",
+      bookmark_id: bookmarkId,
+      ...extractErrorFields(error),
     });
+    await logger.flush();
     return { notFound: true };
   }
 };

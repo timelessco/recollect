@@ -7,8 +7,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/api-helpers/axiom";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { addRemainingBookmarkData } from "@/lib/bookmarks/add-remaining-bookmark-data";
+import { isLikelyValidImageUrl, preflightImageUrl } from "@/lib/bookmarks/image-url-validation";
 import { revalidateCategoryIfPublic } from "@/lib/revalidation-helpers";
 import { isNullable } from "@/utils/assertion-utils";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "@/utils/category-auth";
@@ -53,11 +54,10 @@ async function getMediaType(url: string): Promise<null | string> {
     );
 
     if (!response.ok) {
-      const ctx = getServerContext();
-      if (ctx?.fields) {
-        ctx.fields.media_type_error = "upstream_not_ok";
-        ctx.fields.media_type_status = response.status;
-      }
+      setPayload(getServerContext(), {
+        media_type_error: "upstream_not_ok",
+        media_type_status: response.status,
+      });
       return null;
     }
 
@@ -69,10 +69,9 @@ async function getMediaType(url: string): Promise<null | string> {
 
     return null;
   } catch (error) {
-    const ctx = getServerContext();
-    if (ctx?.fields) {
-      ctx.fields.media_type_error = error instanceof Error ? error.message : String(error);
-    }
+    setPayload(getServerContext(), {
+      media_type_error: error instanceof Error ? error.message : String(error),
+    });
     return null;
   }
 }
@@ -117,10 +116,9 @@ async function getNormalisedImageUrl(imageUrl: null | string, url: string): Prom
 
     return response.url;
   } catch (error) {
-    const ctx = getServerContext();
-    if (ctx?.fields) {
-      ctx.fields.favicon_error = error instanceof Error ? error.message : String(error);
-    }
+    setPayload(getServerContext(), {
+      favicon_error: error instanceof Error ? error.message : String(error),
+    });
     return null;
   }
 }
@@ -210,9 +208,9 @@ export async function addBookmarkMinData({
   const ctx = getServerContext();
   if (ctx?.fields) {
     ctx.fields.user_id = userId;
-    ctx.fields.url = url;
     ctx.fields.category_id = categoryId;
   }
+  setPayload(ctx, { url });
 
   if (!updateAccess) {
     throw new RecollectApiError("forbidden", {
@@ -265,9 +263,7 @@ export async function addBookmarkMinData({
   );
 
   if (scrapperError) {
-    if (ctx?.fields) {
-      ctx.fields.scraper_failed = true;
-    }
+    setPayload(ctx, { scraper_failed: true });
     scrapperData = {
       description: null,
       favIcon: null,
@@ -275,10 +271,19 @@ export async function addBookmarkMinData({
       title: new URL(url).hostname,
     };
   } else {
+    // Shape-check the scraper's ogImage — rejects placeholder URLs like
+    // `https://undefined/...` (Next.js pages with unset metadataBase) before
+    // they enter the system.
+    const rawScrapedOgImage = ogsResult?.result?.ogImage?.at(0)?.url ?? null;
+    const sanitizedOgImage = isLikelyValidImageUrl(rawScrapedOgImage) ? rawScrapedOgImage : null;
+    if (rawScrapedOgImage && !sanitizedOgImage) {
+      setPayload(ctx, { og_image_shape_rejected: true });
+    }
+
     scrapperData = {
       description: ogsResult?.result?.ogDescription ?? null,
       favIcon: ogsResult?.result?.favicon ?? null,
-      ogImage: shouldSkipOgImage ? null : (ogsResult?.result?.ogImage?.at(0)?.url ?? null),
+      ogImage: shouldSkipOgImage ? null : sanitizedOgImage,
       title: ogsResult?.result?.ogTitle ?? null,
     };
   }
@@ -288,9 +293,7 @@ export async function addBookmarkMinData({
   const isUrlOfMimeType = isAcceptedMimeType(mediaType);
   const isUrlAnImage = mediaType?.startsWith(IMAGE_MIME_PREFIX) ?? false;
 
-  if (ctx?.fields) {
-    ctx.fields.is_media_url = isUrlOfMimeType;
-  }
+  setPayload(ctx, { is_media_url: isUrlOfMimeType });
 
   // Determine ogImage
   let ogImageToBeAdded: null | string = null;
@@ -305,9 +308,25 @@ export async function addBookmarkMinData({
   } else {
     ogImageToBeAdded = scrapperData.ogImage;
     iframeAllowedValue = isOgImagePreferred ? false : await canEmbedInIframe(url);
-    if (!iframeAllowedValue && ctx?.fields) {
-      ctx.fields.iframe_not_allowed = true;
+    if (!iframeAllowedValue) {
+      setPayload(ctx, { iframe_not_allowed: true });
     }
+  }
+
+  // HEAD-preflight the scraped ogImage. Catches dead domains, 404s, and
+  // non-image content that shape-validation alone can't see. Skip for our
+  // own AUDIO_OG_IMAGE_FALLBACK_URL and for URLs we already know resolve
+  // (the bookmark URL itself when it IS the image).
+  if (
+    ogImageToBeAdded &&
+    ogImageToBeAdded !== url &&
+    ogImageToBeAdded !== AUDIO_OG_IMAGE_FALLBACK_URL
+  ) {
+    const preflighted = await preflightImageUrl(ogImageToBeAdded);
+    if (!preflighted) {
+      setPayload(ctx, { og_image_preflight_rejected: true });
+    }
+    ogImageToBeAdded = preflighted;
   }
 
   const favIcon = await getNormalisedImageUrl(scrapperData.favIcon, url);
@@ -352,8 +371,8 @@ export async function addBookmarkMinData({
 
   if (ctx?.fields) {
     ctx.fields.bookmark_id = insertedBookmark.id;
-    ctx.fields.has_og_image = ogImageToBeAdded !== null;
   }
+  setPayload(ctx, { has_og_image: ogImageToBeAdded !== null });
 
   // Insert junction table entry
   const { error: junctionError } = await supabase.from(BOOKMARK_CATEGORIES_TABLE_NAME).insert({
@@ -362,10 +381,9 @@ export async function addBookmarkMinData({
     user_id: userId,
   });
 
-  if (junctionError && ctx?.fields) {
+  if (junctionError) {
     // Non-blocking: don't fail the request, log via wide event
-    ctx.fields.junction_error = true;
-    ctx.fields.junction_error_code = junctionError.code;
+    setPayload(ctx, { junction_error: true, junction_error_code: junctionError.code });
   }
 
   // Revalidate if public category

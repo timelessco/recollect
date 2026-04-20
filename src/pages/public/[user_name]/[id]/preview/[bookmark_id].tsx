@@ -4,11 +4,13 @@ import type { GetStaticPaths, GetStaticProps } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
-import * as Sentry from "@sentry/nextjs";
 import { format } from "date-fns";
 import { z } from "zod";
 
 import type { SingleListData } from "../../../../../types/apiTypes";
+
+import { logger } from "@/lib/api-helpers/axiom-logger";
+import { extractErrorFields } from "@/lib/api-helpers/errors";
 
 import { CustomLightBox } from "../../../../../components/lightbox/LightBox";
 import { getBaseUrl, V2_FETCH_PUBLIC_BOOKMARK_BY_ID_API } from "../../../../../utils/constants";
@@ -128,19 +130,19 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (context
         statusText: response.statusText,
         user_name,
       });
-      Sentry.captureException(new Error(`HTTP ${response.status}: ${response.statusText}`), {
-        extra: {
-          bookmark_id,
-          categorySlug,
-          status: response.status,
-          statusText: response.statusText,
-          user_name,
-        },
-        tags: {
-          context: "incremental_static_regeneration",
-          operation: "fetch_public_bookmark",
-        },
+      const severity = response.status >= 500 ? "error" : "warn";
+      logger[severity]("fetch_public_bookmark_failed", {
+        operation: "fetch_public_bookmark",
+        route: ROUTE,
+        context: "incremental_static_regeneration",
+        bookmark_id,
+        category_slug: categorySlug,
+        user_name,
+        "http.response.status_code": response.status,
+        "http.response.status_text": response.statusText,
+        error_message: `HTTP ${response.status}: ${response.statusText}`,
       });
+      await logger.flush();
       return { notFound: true };
     }
 
@@ -170,13 +172,16 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (context
       error,
       user_name,
     });
-    Sentry.captureException(error, {
-      extra: { bookmark_id, categorySlug, user_name },
-      tags: {
-        context: "incremental_static_regeneration",
-        operation: "fetch_public_bookmark",
-      },
+    logger.error("fetch_public_bookmark_error", {
+      operation: "fetch_public_bookmark",
+      route: ROUTE,
+      context: "incremental_static_regeneration",
+      bookmark_id,
+      category_slug: categorySlug,
+      user_name,
+      ...extractErrorFields(error),
     });
+    await logger.flush();
     return { notFound: true };
   }
 };

@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { captureIphoneShareError } from "@/lib/api-helpers/iphone-share-error-capture";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 
 import { IphoneShareErrorInputSchema, IphoneShareErrorOutputSchema } from "./schema";
 
@@ -15,13 +15,15 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
-        ctx.fields.device_model = deviceInfo?.model;
-        ctx.fields.os_version = deviceInfo?.osVersion;
-        ctx.fields.app_version = deviceInfo?.appVersion;
-        ctx.fields.action = context?.action;
-        ctx.fields.screen = context?.screen;
-        ctx.fields.has_stack_trace = Boolean(stackTrace);
       }
+      setPayload(ctx, {
+        device_model: deviceInfo?.model,
+        os_version: deviceInfo?.osVersion,
+        app_version: deviceInfo?.appVersion,
+        action: context?.action,
+        screen: context?.screen,
+        has_stack_trace: Boolean(stackTrace),
+      });
 
       const sentryEventId = captureIphoneShareError({
         context,
@@ -33,8 +35,8 @@ export const POST = createAxiomRouteHandler(
 
       if (ctx?.fields) {
         ctx.fields.sentry_event_id = sentryEventId;
-        ctx.fields.captured = true;
       }
+      setPayload(ctx, { captured: true });
 
       return { sentryEventId };
     },

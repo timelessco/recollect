@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { BOOKMARK_CATEGORIES_TABLE_NAME, bookmarkType, MAIN_TABLE_NAME } from "@/utils/constants";
 
@@ -18,8 +18,8 @@ export const POST = createAxiomRouteHandler(
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
         ctx.fields.source_bookmark_id = data.source_bookmark_id;
-        ctx.fields.category_ids_count = data.category_ids.length;
       }
+      setPayload(ctx, { category_ids_count: data.category_ids.length });
 
       // Fetch source bookmark via service client (RLS bypass — another user's bookmark)
       const serviceClient = createServerServiceClient();
@@ -82,8 +82,8 @@ export const POST = createAxiomRouteHandler(
 
       if (ctx?.fields) {
         ctx.fields.bookmark_id = insertedBookmark.id;
-        ctx.fields.bookmark_saved = true;
       }
+      setPayload(ctx, { bookmark_saved: true });
 
       // Insert junction table entries for each selected collection
       const junctionRows = data.category_ids.map((categoryId) => ({
@@ -96,9 +96,11 @@ export const POST = createAxiomRouteHandler(
         .from(BOOKMARK_CATEGORIES_TABLE_NAME)
         .insert(junctionRows);
 
-      if (junctionError && ctx?.fields) {
-        ctx.fields.junction_error = true;
-        ctx.fields.junction_error_code = junctionError.code;
+      if (junctionError) {
+        setPayload(ctx, {
+          junction_error: true,
+          junction_error_code: junctionError.code,
+        });
       }
 
       return insertedData;

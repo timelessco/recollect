@@ -6,6 +6,7 @@ import type { CollectionItemTypes } from "./singleListItemComponent";
 import { useUpdateFavoriteOrderMutation } from "@/async/mutationHooks/user/use-update-favorite-order-mutation";
 import useFetchUserProfile from "@/async/queryHooks/user/use-fetch-user-profile";
 import { Collapsible } from "@/components/ui/recollect/collapsible";
+import { bucketHref, emitClientEvent } from "@/lib/api-helpers/axiom-client-events";
 import { useMiscellaneousStore } from "@/store/componentStore";
 import { mutationApiCall } from "@/utils/apiHelpers";
 
@@ -126,6 +127,12 @@ function FavoriteCollectionItem(props: FavoriteCollectionItemProps) {
       extendedClassname="py-[6px]"
       item={item}
       listNameId="favorite-collection-name"
+      onNavigate={() => {
+        emitClientEvent("category_switch", {
+          source: "sidebar_favorite",
+          to_bucket: bucketHref(item.href ?? ""),
+        });
+      }}
       showDropdown
       showSpinner={
         addCategoryToBookmarkOptimisticMutation.isPending &&
