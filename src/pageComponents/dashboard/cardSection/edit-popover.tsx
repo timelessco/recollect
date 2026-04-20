@@ -42,12 +42,18 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
   const isOwner = userId && postUserId === userId;
   const { isDiscoverPage } = usePageContext();
   const queryClient = useQueryClient();
+  const [isOpen, setIsOpen] = useState(false);
 
   // Discover bookmarks are fetched without relations; pull the discoverable
   // bookmark by id (server runs BOOKMARK_CATEGORIES + BOOKMARK_TAGS junction
-  // queries) so we can source chip state for the popover.
+  // queries) so we can source chip state for the popover. Gate on `isOpen`
+  // so the fetch only fires when the user actually opens the popover —
+  // without this gate, every owned card on /discover fires its own request
+  // on mount, saturating the browser connection pool and queuing the
+  // /_next/data/.../discover.json navigation fetch behind N parallel
+  // per-bookmark requests.
   const { bookmark: discoverableBookmark } = useFetchDiscoverableBookmarkById(post.id, {
-    enabled: Boolean(isOwner) && isDiscoverPage,
+    enabled: Boolean(isOwner) && isDiscoverPage && isOpen,
   });
 
   // Need the full all-categories / all-tags lists so we can resolve the
@@ -163,7 +169,7 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
   }
 
   return (
-    <EditPopoverShell>
+    <EditPopoverShell onOpenChange={setIsOpen}>
       <div className="mb-2 w-[231px]">
         <div className="w-full">
           <div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
