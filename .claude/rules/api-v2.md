@@ -113,12 +113,14 @@ setPayload(ctx, { profile_updated: true });
 - Auto-included per request: `commit` (VERCEL_GIT_COMMIT_SHA), `region` (VERCEL_REGION)
 - Flushing: `after(() => logger.flush())` — deferred, non-blocking
 
-> **Emission convention.** The factory's `partitionFields` collapses handler writes into two JSON scalars so per-handler domain keys don't consume top-level Axiom columns (the dev dataset has a 256-column ceiling).
+> **Emission convention.** The factory's `partitionFields` collapses handler writes into two JSON scalars so per-handler domain keys don't consume top-level Axiom columns (datasets are capped at 256 columns; prior breach on the legacy `recollect` dataset triggered a fork to `recollect-web-dev` / `recollect-web-prod`).
 >
 > - Keys ending in `_id` or `_ids` land inside the `ids` scalar — write them directly as `ctx.fields.<entity>_id = …`, except allowlisted observability primitives (e.g. `user_id`) which stay top-level.
 > - Anything passed to `setPayload(ctx, { … })` lands inside the `payload` scalar — counts (`*_count`), flags (`has_*`, `is_*`), outcomes (`*_failed`, `*_completed`), and input descriptors.
 > - Observability primitives stay top-level: `request_id`, `source`, `user_id`, `trace_id`, `span_id`, `parent_span_id`, `trace_flags`.
 > - Analysts filter via `parse_json(fields["ids"]).bookmark_id` / `parse_json(fields["payload"]).<key>` (same pattern as `error_context`, `search_params`).
+
+> **Known bypass paths** (not covered by the narrow): direct `logger.warn/error` calls inside `after()` blocks, enrichment helpers in `src/lib/bookmarks/`, Pages Router SSR routes, and `proxy.ts` pass fields straight to the logger, bypassing `partitionFields`. Any new top-level key name in those paths registers a new Axiom column. Keep payloads to known field names; prefer `setPayload` where ALS is available.
 
 ### `after()` Patterns
 

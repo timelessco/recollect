@@ -14,10 +14,10 @@ Axiom = manual logging. Sentry = unhandled errors only (auto via `onRequestError
 
 ### Axiom logger by context
 
-- **v2 route**: `RecollectApiError` → inner-layer `warn` (see `api-v2.md`)
+- **v2 route**: `RecollectApiError` → inner-layer `warn` (see `api-v2.md`). Business context flows through `setPayload(ctx, { … })` from `@/lib/api-helpers/server-context` — never write `ctx.fields.<count/flag/outcome>` directly; `ServerContext.fields` is narrowed at compile time to reject non-observability, non-`_id`-suffix writes. See `api-v2.md § Wide Events` for the three-branch partition contract.
 - **App Router**: `logger` from `@/lib/api-helpers/axiom` + `after(() => logger.flush())`
 - **Pages Router SSR/ISR**: same `logger`, `await logger.flush()` (`after()` throws E468)
-- **Client**: `clientLogger` from `@/lib/api-helpers/axiom-client`. Never `useLogger` from `@axiomhq/react` — its per-consumer path-cleanup effect calls `logger.flush()` on every unmount, and with widely-used hooks like `useHandleClientError` (transitively mounted behind every React Query wrapper) a single route change fires N-fold duplicate POSTs of the same buffered event.
+- **Client**: `clientLogger` from `@/lib/api-helpers/axiom-client`. Never `useLogger` from `@axiomhq/react` — its per-consumer path-cleanup effect calls `logger.flush()` on every unmount, and with widely-used hooks like `useHandleClientError` (transitively mounted behind every React Query wrapper) a single route change fires N-fold duplicate POSTs of the same buffered event. `ConsoleTransport` is gated behind `process.env.NODE_ENV === "development"` — Next.js inlines this at build time so the transport tree-shakes out of preview and production bundles. Never mount it unconditionally.
 
 Normalize unknowns with `extractErrorFields(err)` from `errors.ts`. `warn` for handled (404, validation); `error` for infra (DB, network throw, unknown catch, 5xx) — base on cause.
 
@@ -38,7 +38,7 @@ Default when unsure: if the event describes *what the user did*, Axiom only; if 
 
 ### Top-level field allowlist
 
-Axiom dev dataset is near its 256-column ceiling. Client emissions MUST collapse to this shape:
+Axiom datasets (`recollect-web-dev`, `recollect-web-prod`) have a 256-column ceiling — the legacy `recollect` dataset breached it (258/256) and was retired. Client emissions MUST collapse to this shape:
 
 ```
 {
