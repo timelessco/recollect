@@ -21,7 +21,10 @@ function mergeEnrichmentFields(existing: SingleListData, row: BookmarkRealtimeRo
 
   return {
     ...existing,
-    description: typeof row.description === "string" ? row.description : existing.description,
+    description:
+      typeof row.description === "string" && row.description
+        ? row.description
+        : existing.description,
     meta_data: nextMetaData,
     ogImage: typeof row.ogImage === "string" && row.ogImage ? row.ogImage : existing.ogImage,
     title: typeof row.title === "string" && row.title ? row.title : existing.title,

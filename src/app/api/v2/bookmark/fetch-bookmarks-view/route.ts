@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { CATEGORIES_TABLE_NAME } from "@/utils/constants";
 
 import { FetchBookmarksViewInputSchema, FetchBookmarksViewOutputSchema } from "./schema";
@@ -33,9 +33,7 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.bookmarks_returned = viewData?.length ?? 0;
-      }
+      setPayload(ctx, { bookmarks_returned: viewData?.length ?? 0 });
 
       return viewData;
     },

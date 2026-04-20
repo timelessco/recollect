@@ -11,6 +11,7 @@ import { useAddBookmark } from "@/hooks/useAddBookmark";
 import { useFileUploadDrop } from "@/hooks/useFileUploadDrop";
 import { AddBookmarkInputIcon } from "@/icons/miscellaneousIcons/add-bookmark-input-icon";
 import { PlusIcon } from "@/icons/plus-icon";
+import { emitClientEvent } from "@/lib/api-helpers/axiom-client-events";
 import { grayInputClassName } from "@/utils/commonClassNames";
 import { URL_PATTERN } from "@/utils/constants";
 
@@ -23,6 +24,7 @@ const AddBookmarkDropdown = () => {
     const down = (event: KeyboardEvent) => {
       if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
+        emitClientEvent("bookmark_add_click", { source: "cmdk" });
         setOpen(true);
       }
     };
@@ -37,6 +39,9 @@ const AddBookmarkDropdown = () => {
     <Popover.Root onOpenChange={setOpen} open={open}>
       <Popover.Trigger
         className="flex items-center rounded-full bg-gray-950 p-[7px] text-white outline-hidden filter-[drop-shadow(0_3px_6px_rgba(0,0,0,0.07))_drop-shadow(0_11px_11px_rgba(0,0,0,0.06))] hover:bg-gray-800"
+        onClick={() => {
+          emitClientEvent("bookmark_add_click", { source: "toolbar" });
+        }}
         title="create"
       >
         <PlusIcon className="size-4 text-gray-0" />

@@ -5,7 +5,7 @@ import type { SubmitHandler } from "react-hook-form";
 import { useFetchCheckApiKey } from "@/async/queryHooks/ai/api-key/use-fetch-check-gemini-api-key";
 import { ShowEyeIcon } from "@/icons/show-eye-icon";
 import { SlashedEyeIcon } from "@/icons/slashed-eye-icon";
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 
 import { useApiKeyMutation } from "../../async/mutationHooks/user/use-api-key-user-mutation";
 import { useDeleteApiKeyMutation } from "../../async/mutationHooks/user/use-delete-api-key-mutation";
@@ -74,6 +74,7 @@ export const AiFeatures = () => {
   const { isPending: isSaving, mutate: saveApiKey } = useApiKeyMutation();
   const { isPending: isDeleting, mutate: deleteApiKey } = useDeleteApiKeyMutation();
   const { refetch: fetchApiKey } = useFetchGetApiKey();
+  const handleClientError = useHandleClientError();
 
   const handleEyeClick = async () => {
     try {

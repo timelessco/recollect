@@ -8,7 +8,7 @@ import { Collapsible } from "@/components/ui/recollect/collapsible";
 import { Menu } from "@/components/ui/recollect/menu";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { MAX_TAG_COLLECTION_NAME_LENGTH, MIN_TAG_COLLECTION_NAME_LENGTH } from "@/utils/constants";
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
@@ -114,6 +114,7 @@ interface AddCategoryInputProps {
 function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
   const { userProfileData } = useFetchUserProfile();
   const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
+  const handleClientError = useHandleClientError();
 
   const handleAddNewCategory = (newCategoryName: string) => {
     const result = tagCategoryNameSchema.safeParse(newCategoryName);

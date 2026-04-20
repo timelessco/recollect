@@ -17,3 +17,5 @@ paths:
 - Supabase FK joins (`.select("fk_col(col1, col2)")`) return `null` when no match OR when scoped RLS hides the joined row. Type as `T | null`, extract a module-scope type-predicate helper, `.filter(hasFk)` before `.map()`. `?.` chains at the dereference site silently leak `undefined` into the payload
 - Normalizing hidden-FK fields with `?? ""` prevents crashes but produces silently-wrong values downstream (`host//slug`, duplicate React keys, empty identity checks). Guard in the consumer before using as URL/key/identifier
 - When using Supabase `.like()`/`.ilike()` with user-derived strings, escape `%` and `_` wildcards before the query
+- `category_id: 0` = Uncategorized (auto-managed virtual category) — keep `.min(0)` in schemas, not `.min(1)`
+- Supabase type boundaries: use `toJson()` / `toDbType()` helpers from `src/utils/type-utils.ts` — never inline `as unknown as Json` at call sites

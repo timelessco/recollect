@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { normalizeUrl } from "@/utils/url-normalize";
 
 import { CheckUrlInputSchema, CheckUrlOutputSchema } from "./schema";
@@ -18,10 +18,10 @@ export const GET = createAxiomRouteHandler(
       const normalized = normalizeUrl(data.url);
 
       if (!normalized) {
-        if (ctx?.fields) {
-          ctx.fields.url_normalized = false;
-          ctx.fields.exists = false;
-        }
+        setPayload(ctx, {
+          url_normalized: false,
+          exists: false,
+        });
         return { exists: false as const };
       }
 
@@ -45,23 +45,19 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.candidate_count = candidates.length;
-      }
+      setPayload(ctx, { candidate_count: candidates.length });
 
       const match = candidates.find((row) => normalizeUrl(row.url) === normalized);
 
       if (match) {
         if (ctx?.fields) {
-          ctx.fields.exists = true;
           ctx.fields.bookmark_id = String(match.id);
         }
+        setPayload(ctx, { exists: true });
         return { bookmarkId: String(match.id), exists: true as const };
       }
 
-      if (ctx?.fields) {
-        ctx.fields.exists = false;
-      }
+      setPayload(ctx, { exists: false });
       return { exists: false as const };
     },
     inputSchema: CheckUrlInputSchema,

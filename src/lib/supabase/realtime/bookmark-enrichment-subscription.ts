@@ -1,8 +1,7 @@
-import * as Sentry from "@sentry/nextjs";
-
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { QueryClient } from "@tanstack/react-query";
 
+import { clientLogger } from "@/lib/api-helpers/axiom-client";
 import { createClient } from "@/lib/supabase/client";
 
 import { isRowTerminal, parseBookmarkRealtimePayload } from "./bookmark-realtime-payload";
@@ -34,8 +33,7 @@ interface SubscriptionRecord {
 
 const MAX_CONCURRENT_CHANNELS = 5;
 const TIMEOUT_MS = 90_000;
-const SENTRY_CATEGORY = "realtime-bookmark";
-const SENTRY_OPERATION = "realtime_bookmark_subscribe";
+const LOG_OPERATION = "realtime_bookmark_subscribe";
 
 const active = new Map<number, SubscriptionRecord>();
 const waiting: OpenArgs[] = [];
@@ -72,12 +70,11 @@ export function isBookmarkEnrichmentActive(bookmarkId: number): boolean {
   return waiting.some((queued) => queued.bookmarkId === bookmarkId);
 }
 
-function breadcrumb(message: string, bookmarkId: number, extra?: Record<string, unknown>): void {
-  Sentry.addBreadcrumb({
-    category: SENTRY_CATEGORY,
-    data: { bookmarkId, ...extra },
-    level: "info",
-    message,
+function logEvent(message: string, bookmarkId: number, extra?: Record<string, unknown>): void {
+  clientLogger.info(`[realtime-bookmark] ${message}`, {
+    bookmarkId,
+    operation: LOG_OPERATION,
+    ...extra,
   });
 }
 
@@ -103,7 +100,7 @@ export function openBookmarkEnrichmentSubscription(args: OpenArgs): void {
   }
   if (active.size >= MAX_CONCURRENT_CHANNELS) {
     waiting.push(args);
-    breadcrumb("queued for channel slot", args.bookmarkId, {
+    logEvent("queued for channel slot", args.bookmarkId, {
       activeCount: active.size,
       waitingCount: waiting.length,
     });
@@ -151,21 +148,23 @@ function openChannel(args: OpenArgs): void {
     userId: args.userId,
   });
 
-  breadcrumb("opened", args.bookmarkId, { activeCount: active.size });
+  logEvent("opened", args.bookmarkId, { activeCount: active.size });
   notifyListeners();
 }
 
 function handleStatus(args: OpenArgs, status: string): void {
-  breadcrumb(`status: ${status}`, args.bookmarkId);
+  logEvent(`status: ${status}`, args.bookmarkId);
 
   if (status === "SUBSCRIBED") {
     void runCatchUpFetch(args);
     return;
   }
   if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-    Sentry.captureException(new Error(`Realtime channel status: ${status}`), {
-      tags: { operation: SENTRY_OPERATION, userId: args.userId },
-      extra: { bookmarkId: args.bookmarkId, status },
+    clientLogger.error("[realtime-bookmark] channel error", {
+      bookmarkId: args.bookmarkId,
+      operation: LOG_OPERATION,
+      status,
+      user_id: args.userId,
     });
     void teardown(args.bookmarkId, "channel_error");
   }
@@ -198,9 +197,12 @@ async function runCatchUpFetch(args: OpenArgs): Promise<void> {
   }
 
   if (error) {
-    Sentry.captureException(error, {
-      tags: { operation: SENTRY_OPERATION, userId: args.userId },
-      extra: { bookmarkId: args.bookmarkId, phase: "catch_up_fetch" },
+    clientLogger.error("[realtime-bookmark] catch-up fetch failed", {
+      bookmarkId: args.bookmarkId,
+      error_message: error.message,
+      operation: LOG_OPERATION,
+      phase: "catch_up_fetch",
+      user_id: args.userId,
     });
     return;
   }
@@ -214,7 +216,7 @@ async function runCatchUpFetch(args: OpenArgs): Promise<void> {
   }
 
   spliceBookmarkAcrossCaches(args.queryClient, args.userId, parsed);
-  breadcrumb("catch-up applied", args.bookmarkId);
+  logEvent("catch-up applied", args.bookmarkId);
 
   if (isRowTerminal(parsed)) {
     void teardown(args.bookmarkId, "terminal");
@@ -231,15 +233,16 @@ function handleUpdate(args: OpenArgs, payloadNew: unknown): void {
 
   const parsed = parseBookmarkRealtimePayload(payloadNew);
   if (!parsed) {
-    Sentry.captureException(new Error("Failed to parse Realtime payload"), {
-      tags: { operation: SENTRY_OPERATION, userId: args.userId },
-      extra: { bookmarkId: args.bookmarkId },
+    clientLogger.warn("[realtime-bookmark] payload parse failed", {
+      bookmarkId: args.bookmarkId,
+      operation: LOG_OPERATION,
+      user_id: args.userId,
     });
     return;
   }
 
   const updated = spliceBookmarkAcrossCaches(args.queryClient, args.userId, parsed);
-  breadcrumb("event applied", args.bookmarkId, { cachesUpdated: updated });
+  logEvent("event applied", args.bookmarkId, { cachesUpdated: updated });
 
   if (isRowTerminal(parsed)) {
     void teardown(args.bookmarkId, "terminal");
@@ -256,6 +259,15 @@ export async function teardownBookmarkEnrichmentSubscription(
 async function teardown(bookmarkId: number, reason: TeardownReason): Promise<void> {
   const record = active.get(bookmarkId);
   if (!record || record.tornDown) {
+    // The id may still be sitting in waiting[] from a burst (>5 adds). Drop it
+    // so promoteQueuedSubscription() can't later open a dead channel for a
+    // bookmark whose screenshot pipeline already failed (would hold a slot
+    // for the full 90s timeout and starve later adds).
+    const queuedIndex = waiting.findIndex((queued) => queued.bookmarkId === bookmarkId);
+    if (queuedIndex !== -1) {
+      waiting.splice(queuedIndex, 1);
+      logEvent("dequeued before subscribe", bookmarkId, { reason });
+    }
     return;
   }
   record.tornDown = true;
@@ -264,11 +276,25 @@ async function teardown(bookmarkId: number, reason: TeardownReason): Promise<voi
   notifyListeners();
 
   const supabase = createClient();
-  await supabase.removeChannel(record.channel);
-
-  breadcrumb("torn down", bookmarkId, { reason });
-
-  promoteQueuedSubscription();
+  try {
+    await supabase.removeChannel(record.channel);
+    logEvent("torn down", bookmarkId, { reason });
+  } catch (error) {
+    // removeChannel can reject (WebSocket already closed, reconnect storm,
+    // auth-token refresh race). Without this catch the rejection unwinds
+    // through every `void teardown(...)` call site as an unhandled promise
+    // rejection and the queue drain below never runs — slot count drops but
+    // waiting[] IDs become zombies until the next clean teardown.
+    clientLogger.warn("[realtime-bookmark] removeChannel failed", {
+      bookmarkId,
+      error_message: error instanceof Error ? error.message : String(error),
+      operation: LOG_OPERATION,
+      reason,
+      user_id: record.userId,
+    });
+  } finally {
+    promoteQueuedSubscription();
+  }
 }
 
 function promoteQueuedSubscription(): void {

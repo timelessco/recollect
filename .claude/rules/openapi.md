@@ -73,3 +73,9 @@ All handler factories expose `.config` for the scanner.
 
 - `[{ [bearerAuth.name]: [] }, {}]` — empty `{}` means cookie auth also accepted (intentional)
 - Public endpoints must include `security: []` to prevent inheriting global security
+
+### Schema Authoring
+
+- `z.meta({ description })` is required on every schema field — flows into the OpenAPI spec and the Scalar UI. A field without `.meta()` renders blank in `/api-docs`.
+- Tag names are capitalized: `"Bookmarks"`, `"Categories"`, `"iPhone"` — match existing tags rather than introducing a lowercased variant.
+- v2 supplement examples use **bare response shapes** (`{ field: value }`), not the v1 envelope (`{ data: ..., error: ... }`).

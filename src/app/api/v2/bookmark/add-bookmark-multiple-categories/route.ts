@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { addBookmarkMinData } from "@/lib/bookmarks/add-bookmark-min-data";
 import { revalidateCategoryIfPublic } from "@/lib/revalidation-helpers";
 import { checkIfUserIsCategoryOwnerOrCollaborator } from "@/utils/category-auth";
@@ -22,9 +22,9 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
-        ctx.fields.url = data.url;
         ctx.fields.category_ids = data.category_ids;
       }
+      setPayload(ctx, { url: data.url });
 
       // Validate access for all non-zero categories upfront (fail fast before bookmark creation)
       const nonZeroCategoryIds = data.category_ids.filter((id) => id !== 0);
@@ -77,9 +77,11 @@ export const POST = createAxiomRouteHandler(
           .from(BOOKMARK_CATEGORIES_TABLE_NAME)
           .insert(junctionRows);
 
-        if (junctionError && ctx?.fields) {
-          ctx.fields.remaining_junction_error = true;
-          ctx.fields.remaining_junction_error_code = junctionError.code;
+        if (junctionError) {
+          setPayload(ctx, {
+            remaining_junction_error: true,
+            remaining_junction_error_code: junctionError.code,
+          });
         }
 
         // Revalidate remaining non-zero categories

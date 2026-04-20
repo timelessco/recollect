@@ -212,14 +212,14 @@ export default async function handler(
       const returnedB64 = Buffer.from(image?.data).toString("base64");
       uploadedCoverImageUrl = await upload(returnedB64, userId, null);
 
-      // If upload failed, log but don't fail the entire request
+      // If upload failed, don't preserve the (likely dead) original URL;
+      // downstream falls back to meta_data.screenshot via the re-host pattern.
       if (uploadedCoverImageUrl === null) {
-        uploadedCoverImageUrl = currentData?.ogImage;
         console.error("Failed to upload image to R2, continuing without image");
         Sentry.captureException("Failed to upload image to R2");
       }
     } catch (error) {
-      uploadedCoverImageUrl = currentData?.ogImage;
+      uploadedCoverImageUrl = null;
       console.error("Error uploading scrapped image to R2:", error);
       Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
         tags: { operation: "upload_scrapped_image_to_r2" },

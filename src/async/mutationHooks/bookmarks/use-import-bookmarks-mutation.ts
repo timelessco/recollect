@@ -1,14 +1,14 @@
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useReactQueryMutation } from "@/hooks/use-react-query-mutation";
-import { postApi } from "@/lib/api-helpers/api";
+import { api } from "@/lib/api-helpers/api-v2";
 import { useSupabaseSession } from "@/store/componentStore";
 import {
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
   IMPORT_BOOKMARKS_MUTATION_KEY,
-  RAINDROP_IMPORT_API,
+  V2_RAINDROP_IMPORT_API,
 } from "@/utils/constants";
 import { handleSuccess } from "@/utils/error-utils/client";
 
@@ -40,7 +40,7 @@ export function useImportBookmarksMutation() {
     ImportBookmarksRequest
   >({
     mutationFn: (payload) =>
-      postApi<ImportBookmarksResponse>(`/api${RAINDROP_IMPORT_API}`, payload),
+      api.post(V2_RAINDROP_IMPORT_API, { json: payload }).json<ImportBookmarksResponse>(),
     mutationKey: [IMPORT_BOOKMARKS_MUTATION_KEY],
     onSettled: (data, error) => {
       if (error) {

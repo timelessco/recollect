@@ -2,11 +2,12 @@ import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { useRouter } from "next/router";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-import * as Sentry from "@sentry/nextjs";
 import { isEmpty } from "lodash";
 
 import type { GetPublicCategoryBookmarksApiResponseType } from "../../../types/apiTypes";
 
+import { logger } from "@/lib/api-helpers/axiom-logger";
+import { extractErrorFields } from "@/lib/api-helpers/errors";
 import {
   BLACK_COLOR,
   getBaseUrl,
@@ -116,18 +117,18 @@ export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (co
           userName,
         },
       );
-      Sentry.captureException(new Error(`HTTP ${response.status}: ${response.statusText}`), {
-        extra: {
-          categorySlug,
-          status: response.status,
-          statusText: response.statusText,
-          userName,
-        },
-        tags: {
-          context: "static_generation",
-          operation: "fetch_public_category",
-        },
+      const severity = response.status >= 500 ? "error" : "warn";
+      logger[severity]("fetch_public_category_failed", {
+        operation: "fetch_public_category",
+        route: ROUTE,
+        context: "static_generation",
+        category_slug: categorySlug,
+        user_name: userName,
+        "http.response.status_code": response.status,
+        "http.response.status_text": response.statusText,
+        error_message: `HTTP ${response.status}: ${response.statusText}`,
       });
+      await logger.flush();
       return { notFound: true };
     }
 
@@ -146,19 +147,21 @@ export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (co
       props: data,
     };
   } catch (error) {
-    // Network failures, API errors are system errors (5xx) - console.error + Sentry
+    // Network failures / unexpected exceptions during ISR build — log to Axiom
     console.error(`[${ROUTE}] Failed to fetch public category bookmarks`, {
       categorySlug,
       error,
       userName,
     });
-    Sentry.captureException(error, {
-      extra: { categorySlug, userName },
-      tags: {
-        context: "static_generation",
-        operation: "fetch_public_category",
-      },
+    logger.error("fetch_public_category_error", {
+      operation: "fetch_public_category",
+      route: ROUTE,
+      context: "static_generation",
+      category_slug: categorySlug,
+      user_name: userName,
+      ...extractErrorFields(error),
     });
+    await logger.flush();
     return { notFound: true };
   }
 };

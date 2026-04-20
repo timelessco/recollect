@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { R2_MAIN_BUCKET_NAME } from "@/utils/constants";
 import { storageHelpers } from "@/utils/storageClient";
 
@@ -16,8 +16,8 @@ export const GET = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = user.id;
-        ctx.fields.file_path = filePath;
       }
+      setPayload(ctx, { file_path: filePath });
 
       const result = await storageHelpers.createSignedUploadUrl(
         R2_MAIN_BUCKET_NAME,

@@ -1,7 +1,7 @@
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { isNullable } from "@/utils/assertion-utils";
 
 /**
@@ -26,7 +26,7 @@ import { isNullable } from "@/utils/assertion-utils";
  * (magic link / email OTP) and /auth/oauth (Google / Apple sign-in).
  *
  * **API-side only.** The frontend counterpart is the
- * `useResolvePostLoginRedirect` hook in `./use-resolve-post-login-redirect`,
+ * `resolvePostLoginRedirect` in `./use-resolve-post-login-redirect`,
  * used by the client-side OTP verify form
  * (`src/components/guest/otp-client-components.tsx`) which already has
  * the user.id from the verifyOtp response and cannot reach into the v2
@@ -47,12 +47,10 @@ export async function resolveCallbackRedirect(
   const user = getUserData?.user;
 
   if (getUserError || !user?.id) {
-    if (ctx?.fields) {
-      ctx.fields.get_user_after_callback_failed = true;
-      if (getUserError) {
-        ctx.fields.get_user_error_message = getUserError.message;
-      }
-    }
+    setPayload(ctx, {
+      get_user_after_callback_failed: true,
+      ...(getUserError ? { get_user_error_message: getUserError.message } : {}),
+    });
     return nextPath;
   }
 
@@ -63,9 +61,7 @@ export async function resolveCallbackRedirect(
     .maybeSingle();
 
   if (profileError) {
-    if (ctx?.fields) {
-      ctx.fields.resolve_callback_redirect_error = profileError.message;
-    }
+    setPayload(ctx, { resolve_callback_redirect_error: profileError.message });
     return nextPath;
   }
 

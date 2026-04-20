@@ -5,7 +5,7 @@ import slugify from "slugify";
 import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { uploadFileRemainingData } from "@/lib/files/upload-file-remaining-data";
 import { isNullable } from "@/utils/assertion-utils";
 import {
@@ -70,10 +70,9 @@ async function processVideoThumbnail(props: {
     try {
       imgData = await blurhashFromURL(thumbnailUrl.publicUrl);
     } catch (error) {
-      const ctx = getServerContext();
-      if (ctx?.fields) {
-        ctx.fields.blurhash_error = error instanceof Error ? error.message : String(error);
-      }
+      setPayload(getServerContext(), {
+        blurhash_error: error instanceof Error ? error.message : String(error),
+      });
       imgData = {};
     }
   }
@@ -144,9 +143,11 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
-        ctx.fields.file_type = fileType;
-        ctx.fields.operation = "test_upload";
       }
+      setPayload(ctx, {
+        file_type: fileType,
+        operation: "test_upload",
+      });
 
       // Determine numeric category ID (0 = Uncategorized)
       let categoryIdLogic = 0;
@@ -296,13 +297,18 @@ export const POST = createAxiomRouteHandler(
         user_id: userId,
       });
 
-      if (junctionError && ctx?.fields) {
-        ctx.fields.junction_error = true;
-        ctx.fields.junction_error_code = junctionError.code;
+      if (junctionError) {
+        setPayload(ctx, {
+          junction_error: true,
+          junction_error_code: junctionError.code,
+        });
       }
 
-      // Fire remaining-data processing for non-video files
-      if (!isVideo && databaseData.length > 0) {
+      // Fire remaining-data processing for non-video files. The empty-databaseData
+      // branch is unreachable here — line 282 already throws when the insert
+      // returned no rows — so a "remaining_upload_empty" telemetry flag would
+      // never fire. If that signal becomes useful, set it before the throw.
+      if (!isVideo) {
         after(async () => {
           try {
             await uploadFileRemainingData({
@@ -320,8 +326,6 @@ export const POST = createAxiomRouteHandler(
             });
           }
         });
-      } else if (!isVideo && ctx?.fields) {
-        ctx.fields.remaining_upload_empty = true;
       }
 
       return databaseData;

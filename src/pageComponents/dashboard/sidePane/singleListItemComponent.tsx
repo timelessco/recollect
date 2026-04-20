@@ -31,6 +31,8 @@ export interface listPropsTypes {
   item: CollectionItemTypes;
   listNameId?: string;
   onClick?: () => void;
+  /** Fires right before Next.js navigation — used to emit `category_switch`. */
+  onNavigate?: () => void;
   responsiveIcon?: boolean;
   showDropdown?: boolean;
   showIconDropdown?: boolean;
@@ -44,6 +46,7 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
     item,
     listNameId = "",
     onClick = () => null,
+    onNavigate,
     responsiveIcon = false,
     showDropdown = false,
     showIconDropdown = true,
@@ -130,7 +133,13 @@ const SingleListItemComponent = (listProps: listPropsTypes) => {
 
   if (isLink) {
     return (
-      <Link className={contentWrapperClassNames} draggable={false} href={item?.href} passHref>
+      <Link
+        className={contentWrapperClassNames}
+        draggable={false}
+        href={item?.href}
+        onClick={onNavigate}
+        passHref
+      >
         {renderContent()}
       </Link>
     );

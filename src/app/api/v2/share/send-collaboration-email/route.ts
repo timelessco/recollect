@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { sendInviteEmail } from "@/lib/email/send-invite-email";
 import { CATEGORIES_TABLE_NAME, SHARED_CATEGORIES_TABLE_NAME } from "@/utils/constants";
 
@@ -19,9 +19,9 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = user.id;
-        ctx.fields.has_collaboration_email = Boolean(emailAddress);
         ctx.fields.category_id = input.category_id;
       }
+      setPayload(ctx, { has_collaboration_email: Boolean(emailAddress) });
 
       // Check for existing share (retry-safe: duplicate returns 409)
       const { data: existingRow, error: checkError } = await supabase
@@ -103,9 +103,7 @@ export const POST = createAxiomRouteHandler(
       }
 
       // Outcome flags AFTER operations
-      if (ctx?.fields) {
-        ctx.fields.collaboration_sent = true;
-      }
+      setPayload(ctx, { collaboration_sent: true });
 
       return { url: inviteUrl };
     },

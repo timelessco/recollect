@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createAxiomRouteHandler, withSecret } from "@/lib/api-helpers/create-handler-v2";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 
 import { RevalidateInputSchema, RevalidateOutputSchema } from "./schema";
 
@@ -11,15 +11,11 @@ export const POST = createAxiomRouteHandler(
   withSecret({
     handler: ({ input }) => {
       const ctx = getServerContext();
-      if (ctx?.fields) {
-        ctx.fields.revalidated_path = input.path;
-      }
+      setPayload(ctx, { revalidated_path: input.path });
 
       revalidatePath(input.path);
 
-      if (ctx?.fields) {
-        ctx.fields.revalidated = true;
-      }
+      setPayload(ctx, { revalidated: true });
 
       return { revalidated: true };
     },

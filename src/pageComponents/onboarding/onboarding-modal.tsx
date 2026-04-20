@@ -5,11 +5,12 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 
 import { useTimeoutEffect } from "@react-hookz/web";
-import * as Sentry from "@sentry/nextjs";
+import ensureError from "ensure-error";
 
 import { useMarkOnboardedMutation } from "@/async/mutationHooks/user/use-mark-onboarded-mutation";
 import { Dialog } from "@/components/ui/recollect/dialog";
 import { AppleIcon } from "@/icons/apple-icon";
+import { clientLogger } from "@/lib/api-helpers/axiom-client";
 
 // `@remotion/player` touches `window` on import — load it client-side only so
 // `/onboarding` still pre-renders as a static shell.
@@ -54,20 +55,15 @@ export function OnboardingModal() {
     hasMarkedRef.current = true;
     markOnboardingComplete.mutate(undefined, {
       onError: (err) => {
-        // Breadcrumb stays for trail context if a downstream error captures.
-        Sentry.addBreadcrumb({
-          category: "onboarding",
-          message: "Failed to record onboarding completion from client",
-          level: "warning",
-          data: { error: String(err) },
-        });
-        // Independently track the failure as a warning-level event so we
-        // notice silent regressions (like the empty-body 400 we shipped
-        // earlier in this branch). Recoverable — the SSR gate will mount
-        // the modal again on next /discover visit.
-        Sentry.captureException(err, {
-          level: "warning",
-          tags: { operation: "mark_onboarded_client" },
+        // Track the failure as a warning-level event so we notice silent
+        // regressions (like the empty-body 400 we shipped earlier in this
+        // branch). Recoverable — the SSR gate will mount the modal again
+        // on next /discover visit.
+        const error = ensureError(err);
+        clientLogger.warn("mark_onboarded_client_failed", {
+          operation: "mark_onboarded_client",
+          error_name: error.name,
+          error_message: error.message,
         });
       },
     });

@@ -9,6 +9,7 @@ import type { BookmarkViewDataTypes, SingleListData } from "@/types/apiTypes";
 import ReadMore from "@/components/readmore";
 import useGetViewValue from "@/hooks/useGetViewValue";
 import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
+import { isBookmarkEnrichmentDone } from "@/lib/bookmarks/enrichment-phase";
 import { useSupabaseSession } from "@/store/componentStore";
 import { viewValues } from "@/utils/constants";
 import { getDomain } from "@/utils/domain";
@@ -27,19 +28,25 @@ export function getImgForPost(
   const postUrl = post?.url;
   const postOgImage = post?.ogImage;
   const postCoverImage = post?.meta_data?.coverImage;
-  // Show the captured screenshot (set by the screenshot route) between the
-  // t2 capture and t3 AI-enrichment writes. Once `ogImage` is populated by
-  // enrichment, it wins.
+  // Pre-t3 (no ocr_status): the screenshot is the freshest representation
+  // so it wins over the t1 scraper OG image. Post-t3: enrichment has
+  // repopulated ogImage/coverImage so normal precedence applies.
   const postScreenshot = post?.meta_data?.screenshot ?? undefined;
+  const enrichmentDone = isBookmarkEnrichmentDone(post?.meta_data);
+
   if (preferredDomainsSet.size === 0) {
-    return postOgImage ?? postScreenshot;
+    return enrichmentDone ? postOgImage : (postScreenshot ?? postOgImage);
   }
 
   const domain = getDomain(postUrl ?? "");
   const isPreferred = domain && preferredDomainsSet.has(domain);
+
+  if (enrichmentDone) {
+    return isPreferred ? (postCoverImage ?? postOgImage) : postOgImage;
+  }
   return isPreferred
-    ? (postCoverImage ?? postOgImage ?? postScreenshot)
-    : (postOgImage ?? postScreenshot);
+    ? (postScreenshot ?? postCoverImage ?? postOgImage)
+    : (postScreenshot ?? postOgImage);
 }
 
 export interface BookmarkCardProps {

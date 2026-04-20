@@ -1,15 +1,17 @@
 import { after } from "next/server";
 
+import { env } from "@/env/server";
 import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { addRemainingBookmarkData } from "@/lib/bookmarks/add-remaining-bookmark-data";
 import { collectAdditionalImages, collectVideo } from "@/lib/bookmarks/collect-screenshot-media";
+import { isLikelyValidImageUrl } from "@/lib/bookmarks/image-url-validation";
 import { parseScreenshotResponse } from "@/lib/bookmarks/parse-screenshot-response";
 import { upload } from "@/lib/storage/media-upload";
 import { isNullable } from "@/utils/assertion-utils";
-import { MAIN_TABLE_NAME, SCREENSHOT_API } from "@/utils/constants";
+import { MAIN_TABLE_NAME } from "@/utils/constants";
 import { vet } from "@/utils/try";
 import { toJson } from "@/utils/type-utils";
 
@@ -17,7 +19,7 @@ import { AddUrlScreenshotInputSchema, AddUrlScreenshotOutputSchema } from "./sch
 
 const ROUTE = "v2-bookmark-add-url-screenshot";
 const MAX_LENGTH = 1300;
-const SCREENSHOT_TIMEOUT_MS = 30_000;
+const SCREENSHOT_TIMEOUT_MS = 60_000;
 
 /** Shape of the bookmark row fetched for screenshot enrichment */
 interface BookmarkScreenshotFetchRow {
@@ -36,12 +38,12 @@ export const POST = createAxiomRouteHandler(
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
         ctx.fields.bookmark_id = data.id;
-        ctx.fields.url = data.url;
       }
+      setPayload(ctx, { url: data.url });
 
       // 1. Capture screenshot from external API
       const [screenshotError, screenshotResponse] = await vet(async () => {
-        const r = await fetch(`${SCREENSHOT_API}/try?url=${encodeURIComponent(data.url)}`, {
+        const r = await fetch(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(data.url)}`, {
           signal: AbortSignal.timeout(SCREENSHOT_TIMEOUT_MS),
         });
         if (!r.ok) {
@@ -53,9 +55,7 @@ export const POST = createAxiomRouteHandler(
 
       // Path A — Screenshot FAILED: fire enrichment anyway, then return error
       if (screenshotError) {
-        if (ctx?.fields) {
-          ctx.fields.screenshot_failed = true;
-        }
+        setPayload(ctx, { screenshot_failed: true });
 
         // Register after() BEFORE throwing — enrichment still runs on screenshot failure
         after(async () => {
@@ -114,8 +114,17 @@ export const POST = createAxiomRouteHandler(
 
       const existingMetaData = existingBookmark.meta_data ?? {};
 
-      const updatedTitle = title?.slice(0, MAX_LENGTH) ?? existingBookmark.title;
-      const updatedDescription = description?.slice(0, MAX_LENGTH) ?? existingBookmark.description;
+      // Screenshot service can return empty strings for title/description on
+      // blocked or empty pages. `??` only catches nullish, so `""` would
+      // overwrite a real scraper value from t1. Treat empty/whitespace-only as
+      // "no update" so the t1 value wins.
+      const normalizeMeta = (value: string | null | undefined, fallback: null | string) => {
+        const trimmed = value?.trim();
+        return trimmed ? trimmed.slice(0, MAX_LENGTH) : fallback;
+      };
+
+      const updatedTitle = normalizeMeta(title, existingBookmark.title);
+      const updatedDescription = normalizeMeta(description, existingBookmark.description);
 
       // 4. Early write — land the screenshot URL in the DB as soon as the R2
       // upload is done. The subsequent additionalImages + video collection can
@@ -128,17 +137,28 @@ export const POST = createAxiomRouteHandler(
       // existing ogImage when no coverImage has been set yet. Without this
       // guard, re-runs on already-enriched rows would clobber a real R2
       // coverImage URL with the (possibly null) ogImage column value.
+      // If the scraper-returned ogImage is missing or broken (e.g. Next.js
+      // pages with unset metadataBase emit "https://undefined/..."), backfill
+      // ogImage with the captured screenshot so the client never has to
+      // render a dead URL while `after()` enrichment is still running.
       const existingCoverImage =
         typeof existingMetaData.coverImage === "string" && existingMetaData.coverImage
           ? existingMetaData.coverImage
           : null;
 
+      const shouldBackfillOgImage = !isLikelyValidImageUrl(existingBookmark.ogImage);
+
       const earlyMetaData = {
         ...existingMetaData,
-        coverImage: existingCoverImage ?? existingBookmark.ogImage,
+        coverImage:
+          existingCoverImage ?? (shouldBackfillOgImage ? publicURL : existingBookmark.ogImage),
         isPageScreenshot,
         screenshot: publicURL,
       };
+
+      if (shouldBackfillOgImage) {
+        setPayload(ctx, { ogimage_backfilled_with_screenshot: true });
+      }
 
       const { error: earlyUpdateError } = await supabase
         .from(MAIN_TABLE_NAME)
@@ -146,6 +166,7 @@ export const POST = createAxiomRouteHandler(
           description: updatedDescription,
           meta_data: toJson(earlyMetaData),
           title: updatedTitle,
+          ...(shouldBackfillOgImage ? { ogImage: publicURL } : {}),
         })
         .match({ id: data.id, user_id: userId });
 
@@ -157,9 +178,7 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.has_screenshot = true;
-      }
+      setPayload(ctx, { has_screenshot: true });
 
       // 5. Collect additional images + video in parallel
       const [additionalImagesSettled, additionalVideoSettled] = await Promise.allSettled([
@@ -176,8 +195,8 @@ export const POST = createAxiomRouteHandler(
       const additionalImages =
         additionalImagesSettled.status === "fulfilled" ? additionalImagesSettled.value : [];
 
-      if (additionalImagesSettled.status === "rejected" && ctx?.fields) {
-        ctx.fields.additional_images_failed = true;
+      if (additionalImagesSettled.status === "rejected") {
+        setPayload(ctx, { additional_images_failed: true });
       }
 
       const additionalVideoResult =
@@ -189,12 +208,12 @@ export const POST = createAxiomRouteHandler(
               success: false as const,
             };
 
-      if (additionalVideoSettled.status === "rejected" && ctx?.fields) {
-        ctx.fields.additional_video_failed = true;
+      if (additionalVideoSettled.status === "rejected") {
+        setPayload(ctx, { additional_video_failed: true });
       }
 
-      if (!additionalVideoResult.success && ctx?.fields) {
-        ctx.fields.video_collection_error = additionalVideoResult.error;
+      if (!additionalVideoResult.success) {
+        setPayload(ctx, { video_collection_error: additionalVideoResult.error });
       }
 
       // 6. Final write — merge additionalImages + additionalVideos on top of

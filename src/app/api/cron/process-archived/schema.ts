@@ -15,7 +15,7 @@ export const ProcessArchivedInputSchema = z.union([
     msg_ids: z
       .array(z.int().meta({ description: "Queue message ID" }))
       .min(1)
-      .max(100)
+      .max(500)
       .meta({ description: "Specific queue message IDs to retry" }),
   }),
 ]);

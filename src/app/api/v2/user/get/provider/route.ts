@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { PROFILES } from "@/utils/constants";
 
@@ -15,9 +15,7 @@ export const GET = createAxiomRouteHandler(
 
       // Input context BEFORE the operation (PII fix D-09: boolean signal, not raw email)
       const ctx = getServerContext();
-      if (ctx?.fields) {
-        ctx.fields.has_email = Boolean(email);
-      }
+      setPayload(ctx, { has_email: Boolean(email) });
 
       const supabase = createServerServiceClient();
 
@@ -34,10 +32,10 @@ export const GET = createAxiomRouteHandler(
       const provider = data?.at(0)?.provider ?? null;
 
       // Outcome AFTER the operation
-      if (ctx?.fields) {
-        ctx.fields.provider = provider;
-        ctx.fields.profile_found = data.length > 0;
-      }
+      setPayload(ctx, {
+        provider,
+        profile_found: data.length > 0,
+      });
 
       return { provider };
     },

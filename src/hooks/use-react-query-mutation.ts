@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 
 import type { MutationKey, QueryKey, UseMutationOptions } from "@tanstack/react-query";
 
-import { handleClientError, handleSuccess } from "@/utils/error-utils/client";
+import { handleSuccess, useHandleClientError } from "@/utils/error-utils/client";
 
 // ============================================================================
 // Optimistic Status Tracking
@@ -183,6 +183,8 @@ export function useReactQueryMutation<
     ...restOptions
   } = options;
   void _guardConcurrentInvalidation;
+
+  const handleClientError = useHandleClientError();
 
   // Build retry options from config
   const retryOptions = retryConfig

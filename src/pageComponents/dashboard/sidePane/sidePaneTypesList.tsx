@@ -6,6 +6,7 @@ import { Collapsible } from "@/components/ui/recollect/collapsible";
 
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
 import DownArrowGray from "../../../icons/downArrowGray";
+import { bucketHref, emitClientEvent } from "../../../lib/api-helpers/axiom-client-events";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { optionsMenuListArray } from "../../../utils/commonData";
 import { BOOKMARKS_COUNT_KEY, menuListItemName } from "../../../utils/constants";
@@ -52,6 +53,12 @@ const SidePaneTypesList = () => {
                 extendedClassname="py-[6px]"
                 item={item}
                 key={item.id}
+                onNavigate={() => {
+                  emitClientEvent("category_switch", {
+                    source: "sidebar_type",
+                    to_bucket: bucketHref(item.href ?? ""),
+                  });
+                }}
                 showIconDropdown={false}
               />
             ))}

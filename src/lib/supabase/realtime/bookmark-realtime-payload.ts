@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isBookmarkEnrichmentDone } from "@/lib/bookmarks/enrichment-phase";
+
 /**
  * Shape of `meta_data` fields the splice + terminal-state logic reads.
  * Unknown fields are preserved via `.catchall` so forward-compatible meta_data
@@ -11,6 +13,7 @@ const MetaDataRealtimeSchema = z
     favIcon: z.string().nullable().optional(),
     img_caption: z.string().nullable().optional(),
     isPageScreenshot: z.boolean().nullable().optional(),
+    ocr_status: z.enum(["limit_reached", "no_text", "success"]).nullable().optional(),
     ogImgBlurUrl: z.string().nullable().optional(),
     screenshot: z.string().nullable().optional(),
   })
@@ -48,22 +51,29 @@ export function parseBookmarkRealtimePayload(payload: unknown): BookmarkRealtime
 
 /**
  * A row is terminal (safe to tear down the subscription) when the enrichment
- * pipeline for its media type has finished writing.
+ * pipeline for its media type has finished writing. `ocr_status` is the
+ * canonical "t3 enrichment ran" signal — absent pre-t3 and always set to
+ * `"success" | "no_text" | "limit_reached"` post-t3. Gating on it (rather than
+ * `ogImage`) avoids tearing down before t3's full enrichment (coverImage,
+ * ogImgBlurUrl, ocr, keywords, final ogImage) reaches the cache — t1 already
+ * sets `ogImage` from the scraper for any page with an `og:image` tag, so
+ * `screenshot && ogImage` would flip true at t2.
  *
  * - PDF (`meta_data.mediaType === "application/pdf"`): the PDF flow writes
  *   `ogImage` to the thumbnail URL via `uploadFileRemainingData` and never
- *   touches `meta_data.screenshot`, so terminal = `ogImage` populated.
+ *   touches `meta_data.screenshot`; `uploadFileRemainingData` also sets
+ *   `ocr_status`, so terminal = `ogImage` + `ocr_status`.
  * - Regular URL: the screenshot route writes `meta_data.screenshot` (t2) and
- *   `after()` enrichment writes the final `ogImage` (t3); terminal = both.
+ *   `addRemainingBookmarkData` writes `ocr_status` (t3); terminal = both.
  */
 export function isRowTerminal(row: BookmarkRealtimeRow): boolean {
-  const meta = row.meta_data && typeof row.meta_data === "object" ? row.meta_data : null;
-  const mediaType = typeof meta?.mediaType === "string" ? meta.mediaType : null;
+  const metaData = row.meta_data && typeof row.meta_data === "object" ? row.meta_data : null;
+  const mediaType = typeof metaData?.mediaType === "string" ? metaData.mediaType : null;
 
   if (mediaType === "application/pdf") {
-    return Boolean(row.ogImage);
+    return Boolean(row.ogImage) && isBookmarkEnrichmentDone(metaData);
   }
 
-  const screenshot = meta?.screenshot ?? null;
-  return Boolean(screenshot) && Boolean(row.ogImage);
+  const screenshot = metaData?.screenshot ?? null;
+  return Boolean(screenshot) && isBookmarkEnrichmentDone(metaData);
 }

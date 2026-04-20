@@ -2,7 +2,7 @@ import slugify from "slugify";
 
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { PROFILES } from "@/utils/constants";
 
 import { UpdateUsernameInputSchema, UpdateUsernameOutputSchema } from "./schema";
@@ -18,8 +18,8 @@ export const PATCH = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
-        ctx.fields.username_length = username.length;
       }
+      setPayload(ctx, { username_length: username.length });
 
       const { data: checkData, error: checkError } = await supabase
         .from(PROFILES)
@@ -54,9 +54,7 @@ export const PATCH = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.username_updated = true;
-      }
+      setPayload(ctx, { username_updated: true });
 
       return updateData;
     },

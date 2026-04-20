@@ -121,7 +121,7 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
   const { userProfileData } = useFetchUserProfile();
 
   const { updateUserProfileOptimisticMutation } = useUpdateUserProfileOptimisticMutation();
-  const updateUserProfileMutateAsync = updateUserProfileOptimisticMutation.mutateAsync;
+  const updateUserProfileMutate = updateUserProfileOptimisticMutation.mutate;
 
   // if the user email as been changed then this updates the email in the profiles table
   useEffect(() => {
@@ -131,20 +131,20 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
       session?.user?.email !== userProfileData?.[0]?.email &&
       userProfileData?.[0]?.email
     ) {
-      void updateUserProfileMutateAsync({
+      updateUserProfileMutate({
         updateData: { email: session?.user?.email },
       });
     }
-  }, [session?.user?.email, updateUserProfileMutateAsync, userProfileData]);
+  }, [session?.user?.email, updateUserProfileMutate, userProfileData]);
 
   // this updates the provider in the profiles table if its not present
   useEffect(() => {
     if (!userProfileData?.[0]?.provider && session?.user?.app_metadata?.provider) {
-      void updateUserProfileMutateAsync({
+      updateUserProfileMutate({
         updateData: { provider: session?.user?.app_metadata?.provider },
       });
     }
-  }, [session?.user?.app_metadata?.provider, updateUserProfileMutateAsync, userProfileData]);
+  }, [session?.user?.app_metadata?.provider, updateUserProfileMutate, userProfileData]);
 
   const isDiscoverPage = categorySlug === DISCOVER_URL;
 

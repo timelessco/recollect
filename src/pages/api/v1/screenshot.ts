@@ -16,7 +16,7 @@ import { resolveContentType } from "@/utils/resolve-content-type";
 
 import { imageToText } from "../../../async/ai/image-analysis";
 import { fetchAiToggles } from "../../../utils/ai-feature-toggles";
-import { MAIN_TABLE_NAME, PDF_MIME_TYPE, SCREENSHOT_API } from "../../../utils/constants";
+import { MAIN_TABLE_NAME, PDF_MIME_TYPE } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { createServiceClient } from "../../../utils/supabaseClient";
 
@@ -96,7 +96,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
       console.log("######################## Screenshot Loading ########################");
       try {
         const { data: screenshotData } = await axios.get(
-          `${SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`,
+          `${env.SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`,
           { responseType: "json" },
         );
 

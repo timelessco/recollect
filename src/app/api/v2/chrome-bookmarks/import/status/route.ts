@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 
 import { ChromeBookmarkImportStatusOutputSchema } from "./schema";
 
@@ -32,10 +32,10 @@ export const GET = createAxiomRouteHandler(
 
       const parsed = ChromeBookmarkImportStatusOutputSchema.parse(data);
 
-      if (ctx?.fields) {
-        ctx.fields.pending = parsed.pending;
-        ctx.fields.archived = parsed.archived;
-      }
+      setPayload(ctx, {
+        pending: parsed.pending,
+        archived: parsed.archived,
+      });
 
       return parsed;
     },
