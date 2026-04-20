@@ -9,6 +9,7 @@ import type {
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { api } from "../../../lib/api-helpers/api-v2";
+import { teardownBookmarkEnrichmentSubscription } from "../../../lib/supabase/realtime/bookmark-enrichment-subscription";
 import { useLoadersStore, useSupabaseSession } from "../../../store/componentStore";
 import { BOOKMARKS_KEY, V2_ADD_URL_SCREENSHOT_API } from "../../../utils/constants";
 import { errorToast } from "../../../utils/toastMessages";
@@ -35,6 +36,7 @@ export default function useAddBookmarkScreenshotMutation() {
       errorToast(`Screenshot error: ${error.message}`);
       if (variables.id) {
         removeLoadingBookmarkId(variables.id);
+        void teardownBookmarkEnrichmentSubscription(variables.id, "screenshot_failed");
       }
     },
     onSettled: (response) => {
