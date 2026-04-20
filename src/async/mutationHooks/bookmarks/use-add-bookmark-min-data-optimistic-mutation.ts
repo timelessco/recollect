@@ -203,49 +203,58 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       // alive for PDF (DB write happens inside handlePdfThumbnailAndUpload)
       // and the regular screenshot path.
       void (async () => {
-        const isUrlOfMimeType = await checkIfUrlAnImage(url);
-        if (isUrlOfMimeType) {
-          void teardownBookmarkEnrichmentSubscription(data.id, "not_applicable");
-          return;
-        }
+        try {
+          const isUrlOfMimeType = await checkIfUrlAnImage(url);
+          if (isUrlOfMimeType) {
+            void teardownBookmarkEnrichmentSubscription(data.id, "not_applicable");
+            return;
+          }
 
-        const mediaType = await getMediaType(url);
-        // Audio URLs already have ogImage fallback set in add-bookmark-min-data
-        if (mediaType?.includes("audio")) {
-          void teardownBookmarkEnrichmentSubscription(data.id, "not_applicable");
-          return;
-        }
+          const mediaType = await getMediaType(url);
+          // Audio URLs already have ogImage fallback set in add-bookmark-min-data
+          if (mediaType?.includes("audio")) {
+            void teardownBookmarkEnrichmentSubscription(data.id, "not_applicable");
+            return;
+          }
 
-        if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
-          try {
-            successToast("Generating thumbnail");
-            await handlePdfThumbnailAndUpload({
-              fileId: data.id,
-              fileUrl: data.url,
-              sessionUserId: session?.user?.id,
-            });
-          } catch {
+          if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
             try {
-              errorToast("retry thumbnail generation");
+              successToast("Generating thumbnail");
               await handlePdfThumbnailAndUpload({
                 fileId: data.id,
                 fileUrl: data.url,
                 sessionUserId: session?.user?.id,
               });
-            } catch (retryError) {
-              console.error("PDF thumbnail upload failed after retry:", retryError);
-              errorToast("thumbnail generation failed");
-              void teardownBookmarkEnrichmentSubscription(data.id, "screenshot_failed");
+            } catch {
+              try {
+                errorToast("retry thumbnail generation");
+                await handlePdfThumbnailAndUpload({
+                  fileId: data.id,
+                  fileUrl: data.url,
+                  sessionUserId: session?.user?.id,
+                });
+              } catch (retryError) {
+                console.error("PDF thumbnail upload failed after retry:", retryError);
+                errorToast("thumbnail generation failed");
+                void teardownBookmarkEnrichmentSubscription(data.id, "screenshot_failed");
+              }
+            } finally {
+              void queryClient.invalidateQueries({
+                queryKey: [BOOKMARKS_KEY, session?.user?.id],
+              });
             }
-          } finally {
-            void queryClient.invalidateQueries({
-              queryKey: [BOOKMARKS_KEY, session?.user?.id],
-            });
+            return;
           }
-          return;
-        }
 
-        addBookmarkScreenshotMutation.mutate({ id: data.id, url: data.url });
+          addBookmarkScreenshotMutation.mutate({ id: data.id, url: data.url });
+        } catch (pipelineError) {
+          // Guarantee teardown on any unexpected throw from the media-type
+          // probe, toast calls, or mutation.mutate — without this the
+          // subscription opened in onSuccess would dangle until the 90s
+          // timeout, keeping the card stuck on "Getting screenshot".
+          console.error("add-bookmark post-success pipeline failed:", pipelineError);
+          void teardownBookmarkEnrichmentSubscription(data.id, "screenshot_failed");
+        }
       })();
     },
     onSuccess: (apiResponse, _variables, context) => {
