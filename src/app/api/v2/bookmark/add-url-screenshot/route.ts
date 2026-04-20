@@ -118,8 +118,10 @@ export const POST = createAxiomRouteHandler(
       // blocked or empty pages. `??` only catches nullish, so `""` would
       // overwrite a real scraper value from t1. Treat empty/whitespace-only as
       // "no update" so the t1 value wins.
-      const normalizeMeta = (value: string | null | undefined, fallback: null | string) =>
-        value && value.trim() ? value.slice(0, MAX_LENGTH) : fallback;
+      const normalizeMeta = (value: string | null | undefined, fallback: null | string) => {
+        const trimmed = value?.trim();
+        return trimmed ? trimmed.slice(0, MAX_LENGTH) : fallback;
+      };
 
       const updatedTitle = normalizeMeta(title, existingBookmark.title);
       const updatedDescription = normalizeMeta(description, existingBookmark.description);
