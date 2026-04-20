@@ -51,10 +51,9 @@ interface DashboardProps {
   // Dashboard renders its own main-pane tree internally based on route —
   // `children` is intentionally not rendered.
   children?: ReactNode;
-  showOnboarding?: boolean;
 }
 
-const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
+const Dashboard = (_props: DashboardProps) => {
   const isMounted = useMounted();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -147,6 +146,9 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
   }, [session?.user?.app_metadata?.provider, updateUserProfileMutate, userProfileData]);
 
   const isDiscoverPage = categorySlug === DISCOVER_URL;
+  // Strict `=== null` (not `isNullable`) so the modal stays hidden while the
+  // profile query is in flight — `undefined` means loading, `null` means loaded-but-not-onboarded.
+  const showOnboarding = isDiscoverPage && userProfileData?.[0]?.onboarded_at === null;
 
   const renderMainPaneContent = () => {
     if (!isInNotFoundPage) {

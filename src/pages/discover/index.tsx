@@ -8,7 +8,6 @@ import type { NextPageWithLayout } from "../_app";
 
 import { logger } from "@/lib/api-helpers/axiom-logger";
 import { extractErrorFields } from "@/lib/api-helpers/errors";
-import { isNullable } from "@/utils/assertion-utils";
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../../lib/supabase/constants";
 import Dashboard from "../../pageComponents/dashboard";
@@ -18,7 +17,6 @@ import { MAIN_TABLE_NAME, PAGINATION_LIMIT } from "../../utils/constants";
 interface DiscoverPageProps {
   discoverData?: SingleListData[];
   isAuthenticated: boolean;
-  showOnboarding: boolean;
 }
 
 const Discover: NextPageWithLayout<DiscoverPageProps> = ({ discoverData, isAuthenticated }) => {
@@ -37,7 +35,7 @@ Discover.getLayout = (page: ReactElement, pageProps: DiscoverPageProps) => {
   if (!pageProps.isAuthenticated) {
     return page;
   }
-  return <Dashboard showOnboarding={pageProps.showOnboarding}>{page}</Dashboard>;
+  return <Dashboard>{page}</Dashboard>;
 };
 
 export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (context) => {
@@ -72,50 +70,29 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
     } = await supabase.auth.getUser();
 
     if (user) {
-      let showOnboarding = false;
-      const { data: profileRow, error: profileError } = await supabase
-        .from("profiles")
-        .select("onboarded_at")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (profileError) {
-        logger.error("fetch_onboarding_flag_failed", {
-          operation: "fetch_onboarding_flag",
-          route: "discover-ssr",
-          user_id: user.id,
-          ...extractErrorFields(profileError),
-        });
-        await logger.flush();
-        // Fail closed — don't show the modal if we can't read the flag.
-      } else {
-        showOnboarding = isNullable(profileRow?.onboarded_at);
-      }
-
+      // Onboarding flag is read client-side via `useFetchUserProfile` — keeps GSSP
+      // off the critical path on every dashboard navigation.
       return {
         props: {
           isAuthenticated: true,
-          showOnboarding,
         },
       };
     }
   } catch (error) {
     console.error("[discover-ssr] Authenticated SSR branch failed:", error);
     logger.error("discover_ssr_auth_branch_failed", {
-      operation: "fetch_onboarding_flag",
+      operation: "discover_ssr_auth_branch",
       route: "discover-ssr",
       ...extractErrorFields(error),
     });
     await logger.flush();
-    // Conservative fallback: we can't distinguish a throw from supabase.auth.getUser()
-    // vs the profiles query here, so route through Dashboard rather than the guest view.
+    // Conservative fallback: route through Dashboard rather than the guest view.
     // Safe because DashboardLayout is ssr:false and Dashboard's useEffect re-runs
     // supabase.auth.getUser() client-side and redirects to /login on failure — no
-    // private data SSRs. getLayout wraps this in <Dashboard showOnboarding=false>.
+    // private data SSRs.
     return {
       props: {
         isAuthenticated: true,
-        showOnboarding: false,
       },
     };
   }
@@ -162,7 +139,6 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
         props: {
           discoverData: [],
           isAuthenticated: false,
-          showOnboarding: false,
         },
       };
     }
@@ -178,7 +154,6 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
       props: {
         discoverData,
         isAuthenticated: false,
-        showOnboarding: false,
       },
     };
   } catch (error) {
@@ -193,7 +168,6 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
       props: {
         discoverData: [],
         isAuthenticated: false,
-        showOnboarding: false,
       },
     };
   }
