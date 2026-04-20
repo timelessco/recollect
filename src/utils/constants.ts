@@ -183,6 +183,7 @@ export const V2_REMOVE_TAG_FROM_BOOKMARK_API = "v2/tags/remove-tag-from-bookmark
 export const V2_CREATE_AND_ASSIGN_TAG_API = "v2/tags/create-and-assign-tag";
 export const V2_TWITTER_SYNC_FOLDER_BOOKMARKS_API = "v2/twitter/sync-folder-bookmarks";
 export const V2_CRON_CLEAR_TRASH_API = "v2/cron/clear-trash";
+export const V2_CRON_PROCESS_ARCHIVED_API = "v2/cron/process-archived";
 
 export const RAINDROP_IMPORT_API = "/raindrop/import";
 
