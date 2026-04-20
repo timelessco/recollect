@@ -23,8 +23,8 @@ export function useRemoveTagFromBookmarkOptimisticMutation() {
     typeof queryKey,
     PaginatedBookmarks
   >({
-    mutationFn: async (payload) =>
-       api
+    mutationFn: (payload) =>
+      api
         .post(V2_REMOVE_TAG_FROM_BOOKMARK_API, { json: payload })
         .json<RemoveTagFromBookmarkOutput>(),
     onSettled: (_data, error) => {
