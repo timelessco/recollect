@@ -65,13 +65,12 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
   });
 
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // `getClaims()` validates the JWT locally — no Supabase round-trip. Sufficient
+    // for deciding guest-vs-authed SSR; `Dashboard` still runs `getUser()` client-side
+    // to catch deleted-user JWTs, so a stale JWT can't leak private data.
+    const { data } = await supabase.auth.getClaims();
 
-    if (user) {
-      // Onboarding flag is read client-side via `useFetchUserProfile` — keeps GSSP
-      // off the critical path on every dashboard navigation.
+    if (data?.claims) {
       return {
         props: {
           isAuthenticated: true,
