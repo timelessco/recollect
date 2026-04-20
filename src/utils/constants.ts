@@ -174,6 +174,7 @@ export const V2_UPDATE_USER_CATEGORY_API = "v2/category/update-user-category";
 export const V2_INSTAGRAM_SYNC_API = "v2/instagram/sync";
 export const V2_TWITTER_SYNC_API = "v2/twitter/sync";
 export const V2_TWITTER_SYNC_FOLDERS_API = "v2/twitter/sync-folders";
+export const V2_ADD_CATEGORY_TO_BOOKMARK_API = "v2/category/add-category-to-bookmark";
 
 export const RAINDROP_IMPORT_API = "/raindrop/import";
 

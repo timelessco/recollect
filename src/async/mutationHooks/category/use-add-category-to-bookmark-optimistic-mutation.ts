@@ -1,21 +1,21 @@
 import { produce } from "immer";
 
 import type {
-  AddCategoryToBookmarkPayload,
-  AddCategoryToBookmarkResponse,
-} from "@/app/api/category/add-category-to-bookmark/schema";
+  AddCategoryToBookmarkInput,
+  AddCategoryToBookmarkOutput,
+} from "@/app/api/v2/category/add-category-to-bookmark/schema";
 import type { CategoriesData, PaginatedBookmarks } from "@/types/apiTypes";
 
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
-import { postApi } from "@/lib/api-helpers/api";
+import { api } from "@/lib/api-helpers/api-v2";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
-  ADD_CATEGORY_TO_BOOKMARK_API,
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
   UNCATEGORIZED_CATEGORY_ID,
+  V2_ADD_CATEGORY_TO_BOOKMARK_API,
 } from "@/utils/constants";
 import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
 
@@ -34,9 +34,9 @@ export function useAddCategoryToBookmarkOptimisticMutation({
   const { queryClient, queryKey, searchQueryKey, session } = useBookmarkMutationContext();
 
   const addCategoryToBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
-    AddCategoryToBookmarkResponse,
+    AddCategoryToBookmarkOutput,
     Error,
-    AddCategoryToBookmarkPayload,
+    AddCategoryToBookmarkInput,
     typeof queryKey,
     PaginatedBookmarks
   >({
@@ -90,7 +90,9 @@ export function useAddCategoryToBookmarkOptimisticMutation({
       },
     ],
     mutationFn: (payload) =>
-      postApi<AddCategoryToBookmarkResponse>(`/api${ADD_CATEGORY_TO_BOOKMARK_API}`, payload),
+      api
+        .post(V2_ADD_CATEGORY_TO_BOOKMARK_API, { json: payload })
+        .json<AddCategoryToBookmarkOutput>(),
     onSettled: (_data, error) => {
       if (error) {
         return;
