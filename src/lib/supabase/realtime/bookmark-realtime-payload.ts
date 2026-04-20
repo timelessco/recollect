@@ -13,6 +13,7 @@ const MetaDataRealtimeSchema = z
     favIcon: z.string().nullable().optional(),
     img_caption: z.string().nullable().optional(),
     isPageScreenshot: z.boolean().nullable().optional(),
+    mediaType: z.string().nullable().optional(),
     ocr_status: z.enum(["limit_reached", "no_text", "success"]).nullable().optional(),
     ogImgBlurUrl: z.string().nullable().optional(),
     screenshot: z.string().nullable().optional(),
@@ -68,9 +69,8 @@ export function parseBookmarkRealtimePayload(payload: unknown): BookmarkRealtime
  */
 export function isRowTerminal(row: BookmarkRealtimeRow): boolean {
   const metaData = row.meta_data && typeof row.meta_data === "object" ? row.meta_data : null;
-  const mediaType = typeof metaData?.mediaType === "string" ? metaData.mediaType : null;
 
-  if (mediaType === "application/pdf") {
+  if (metaData?.mediaType === "application/pdf") {
     return Boolean(row.ogImage) && isBookmarkEnrichmentDone(metaData);
   }
 
