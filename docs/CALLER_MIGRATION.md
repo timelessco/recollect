@@ -4,7 +4,7 @@ Track migration of all API callers from old patterns to v2 (ky client + v2 URLs)
 
 **Legend:**
 
-- **Status**: ` ` = not started, `~` = in progress, `x` = done
+- **Status**: ` ` = not started, `~` = in progress, `x` = done, `n/a` = intentional (no migration planned)
 - **Repo**: `web` = this repo has callers, `ext` = external only (Chrome ext, iOS, cron), `s2s` = server-to-server internal
 - **URL Change**: whether the caller needs a URL path change (Pages Router → v2) or just a client change (postApi → ky)
 
@@ -22,10 +22,10 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 | 1   | x      | `/api/bookmark/add-bookmark-min-data`       | `/api/v2/bookmark/add-bookmark-min-data`       | web  | `ADD_BOOKMARK_MIN_DATA`      | supabaseCrudHelpers → useAddBookmarkMinDataOptimisticMutation         |
 | 2   |        | `/api/bookmark/add-remaining-bookmark-data` | `/api/v2/bookmark/add-remaining-bookmark-data` | s2s  | `ADD_REMAINING_BOOKMARK_API` | Pages Router handler only (add-bookmark-min-data, add-url-screenshot) |
 | 3   | x      | `/api/bookmark/add-url-screenshot`          | `/api/v2/bookmark/add-url-screenshot`          | web  | `ADD_URL_SCREENSHOT_API`     | supabaseCrudHelpers → useAddBookmarkScreenshotMutation                |
-| 4   |        | `/api/bookmark/fetch-bookmarks-count`       | `/api/v2/bookmark/fetch-bookmarks-count`       | web  | `FETCH_BOOKMARKS_COUNT`      | supabaseCrudHelpers → useFetchBookmarksCount                          |
-| 5   |        | `/api/bookmark/fetch-bookmarks-data`        | `/api/v2/bookmark/fetch-bookmarks-data`        | web  | `FETCH_BOOKMARKS_DATA_API`   | supabaseCrudHelpers → useFetchPaginatedBookmarks                      |
+| 4   | x      | `/api/bookmark/fetch-bookmarks-count`       | `/api/v2/bookmark/fetch-bookmarks-count`       | web  | `FETCH_BOOKMARKS_COUNT`      | supabaseCrudHelpers → useFetchBookmarksCount                          |
+| 5   | x      | `/api/bookmark/fetch-bookmarks-data`        | `/api/v2/bookmark/fetch-bookmarks-data`        | web  | `FETCH_BOOKMARKS_DATA_API`   | supabaseCrudHelpers → useFetchPaginatedBookmarks                      |
 | 6   | x      | `/api/bookmark/fetch-bookmarks-view`        | `/api/v2/bookmark/fetch-bookmarks-view`        | web  | `FETCH_BOOKMARKS_VIEW`       | supabaseCrudHelpers → useFetchBookmarksView                           |
-| 7   |        | `/api/bookmark/search-bookmarks`            | `/api/v2/bookmark/search-bookmarks`            | web  | `SEARCH_BOOKMARKS`           | supabaseCrudHelpers → useSearchBookmarks                              |
+| 7   | x      | `/api/bookmark/search-bookmarks`            | `/api/v2/bookmark/search-bookmarks`            | web  | `SEARCH_BOOKMARKS`           | supabaseCrudHelpers → useSearchBookmarks                              |
 
 ### Bookmark (v1-prefixed)
 
@@ -103,76 +103,112 @@ Callers need both URL change (→ v2 path) AND client change (→ ky).
 
 ---
 
-## App Router Routes (non-v2)
+## App Router Routes (non-v2 ↔ v2)
 
-Routes already in App Router (`src/app/api/`) but NOT under `/v2/`.
-These don't have v2 equivalents — they were built directly in App Router.
-Callers need client change only (postApi/axios → ky), NO URL change.
+Routes born in App Router (`src/app/api/<path>/route.ts`) that now have v2 twins (`src/app/api/v2/<path>/route.ts`).
+Every non-v2 App Router route has a v2 twin except `/api/axiom` (#81, telemetry plumbing — permanent v1, no v2 planned).
+Where the caller has migrated to the `V2_*` constant, status is `x`. Rows for routes still only consumed by iOS / Chrome extension / Vercel cron stay blank — no web migration to do.
 
 ### Bookmark (non-v2)
 
-| #   | Status | Path                                            | Repo | Constant                                | Caller                                                               |
-| --- | ------ | ----------------------------------------------- | ---- | --------------------------------------- | -------------------------------------------------------------------- |
-| 43  |        | `/api/bookmark/delete-bookmark`                 | web  | `DELETE_BOOKMARK_DATA_API`              | supabaseCrudHelpers → useDeleteBookmarksOptimisticMutation           |
-| 44  |        | `/api/bookmark/move-bookmark-to-trash`          | web  | `MOVE_BOOKMARK_TO_TRASH_API`            | supabaseCrudHelpers → use-move-bookmark-to-trash-optimistic-mutation |
-| 45  |        | `/api/bookmark/clear-bookmark-trash`            | web  | `CLEAR_BOOKMARK_TRASH_API`              | supabaseCrudHelpers → useClearBookmarksInTrashMutation               |
-| 46  |        | `/api/bookmark/toggle-discoverable-on-bookmark` | web  | `TOGGLE_BOOKMARK_DISCOVERABLE_API`      | use-toggle-discoverable-optimistic-mutation                          |
-| 47  |        | `/api/bookmark/fetch-bookmarks-discoverable`    | web  | `FETCH_BOOKMARKS_DISCOVERABLE_API`      | use-fetch-discover-bookmarks                                         |
-| 48  |        | `/api/bookmark/fetch-discoverable-by-id`        | web  | `FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API` | use-fetch-discoverable-bookmark-by-id + SSR discover/preview/[id]    |
-| 49  |        | `/api/bookmark/fetch-public-bookmark-by-id`     | web  | `FETCH_PUBLIC_BOOKMARK_BY_ID_API`       | SSR public/[user_name]/[id]/preview/[bookmark_id]                    |
+| #   | Status | Old Path                                        | v2 Path                                            | Repo | Constant                                   | Caller                                                            |
+| --- | ------ | ----------------------------------------------- | -------------------------------------------------- | ---- | ------------------------------------------ | ----------------------------------------------------------------- |
+| 43  | x      | `/api/bookmark/delete-bookmark`                 | `/api/v2/bookmark/delete-bookmark`                 | web  | `V2_DELETE_BOOKMARK_DATA_API`              | useDeleteBookmarksOptimisticMutation                              |
+| 44  | x      | `/api/bookmark/move-bookmark-to-trash`          | `/api/v2/bookmark/move-bookmark-to-trash`          | web  | `V2_MOVE_BOOKMARK_TO_TRASH_API`            | use-move-bookmark-to-trash-optimistic-mutation                    |
+| 45  | x      | `/api/bookmark/clear-bookmark-trash`            | `/api/v2/bookmark/clear-bookmark-trash`            | web  | `V2_CLEAR_BOOKMARK_TRASH_API`              | useClearBookmarksInTrashMutation                                  |
+| 46  | x      | `/api/bookmark/toggle-discoverable-on-bookmark` | `/api/v2/bookmark/toggle-discoverable-on-bookmark` | web  | `V2_TOGGLE_BOOKMARK_DISCOVERABLE_API`      | use-toggle-discoverable-optimistic-mutation                       |
+| 47  | x      | `/api/bookmark/fetch-bookmarks-discoverable`    | `/api/v2/bookmark/fetch-bookmarks-discoverable`    | web  | `V2_FETCH_BOOKMARKS_DISCOVERABLE_API`      | use-fetch-discover-bookmarks                                      |
+| 48  | x      | `/api/bookmark/fetch-discoverable-by-id`        | `/api/v2/bookmark/fetch-discoverable-by-id`        | web  | `V2_FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API` | use-fetch-discoverable-bookmark-by-id + SSR discover/preview/[id] |
+| 49  | x      | `/api/bookmark/fetch-public-bookmark-by-id`     | `/api/v2/bookmark/fetch-public-bookmark-by-id`     | ext  | `V2_FETCH_PUBLIC_BOOKMARK_BY_ID_API`       | SSR public/[user_name]/[id]/preview/[bookmark_id]                 |
 
 ### Category (non-v2)
 
-| #   | Status | Path                                          | Repo | Constant                            | Caller                                                    |
-| --- | ------ | --------------------------------------------- | ---- | ----------------------------------- | --------------------------------------------------------- |
-| 50  |        | `/api/category/create-user-category`          | web  | `CREATE_USER_CATEGORIES_API`        | use-add-category-optimistic-mutation                      |
-| 51  |        | `/api/category/delete-user-category`          | web  | `DELETE_USER_CATEGORIES_API`        | supabaseCrudHelpers → useDeleteCategoryOptimisticMutation |
-| 52  |        | `/api/category/update-user-category`          | web  | `UPDATE_USER_CATEGORIES_API`        | use-update-category-optimistic-mutation                   |
-| 53  |        | `/api/category/set-bookmark-categories`       | web  | `SET_BOOKMARK_CATEGORIES_API`       | use-set-bookmark-categories-optimistic-mutation           |
-| 54  |        | `/api/category/add-category-to-bookmark`      | web  | `ADD_CATEGORY_TO_BOOKMARK_API`      | use-add-category-to-bookmark-optimistic-mutation          |
-| 55  |        | `/api/category/add-category-to-bookmarks`     | web  | `ADD_CATEGORY_TO_BOOKMARKS_API`     | use-add-category-to-bookmarks-optimistic-mutation         |
-| 56  |        | `/api/category/remove-category-from-bookmark` | web  | `REMOVE_CATEGORY_FROM_BOOKMARK_API` | use-remove-category-from-bookmark-optimistic-mutation     |
+| #   | Status | Old Path                                      | v2 Path                                          | Repo | Constant                               | Caller                                                |
+| --- | ------ | --------------------------------------------- | ------------------------------------------------ | ---- | -------------------------------------- | ----------------------------------------------------- |
+| 50  | x      | `/api/category/create-user-category`          | `/api/v2/category/create-user-category`          | web  | `V2_CREATE_USER_CATEGORY_API`          | use-add-category-optimistic-mutation                  |
+| 51  | x      | `/api/category/delete-user-category`          | `/api/v2/category/delete-user-category`          | web  | `V2_DELETE_USER_CATEGORY_API`          | useDeleteCategoryOptimisticMutation                   |
+| 52  | x      | `/api/category/update-user-category`          | `/api/v2/category/update-user-category`          | web  | `V2_UPDATE_USER_CATEGORY_API`          | use-update-category-optimistic-mutation               |
+| 53  | x      | `/api/category/set-bookmark-categories`       | `/api/v2/category/set-bookmark-categories`       | web  | `V2_SET_BOOKMARK_CATEGORIES_API`       | use-set-bookmark-categories-optimistic-mutation       |
+| 54  | x      | `/api/category/add-category-to-bookmark`      | `/api/v2/category/add-category-to-bookmark`      | web  | `V2_ADD_CATEGORY_TO_BOOKMARK_API`      | use-add-category-to-bookmark-optimistic-mutation      |
+| 55  | x      | `/api/category/add-category-to-bookmarks`     | `/api/v2/category/add-category-to-bookmarks`     | web  | `V2_ADD_CATEGORY_TO_BOOKMARKS_API`     | use-add-category-to-bookmarks-optimistic-mutation     |
+| 56  | x      | `/api/category/remove-category-from-bookmark` | `/api/v2/category/remove-category-from-bookmark` | web  | `V2_REMOVE_CATEGORY_FROM_BOOKMARK_API` | use-remove-category-from-bookmark-optimistic-mutation |
 
 ### Tags (non-v2)
 
-| #   | Status | Path                                 | Repo | Constant                       | Caller                                           |
-| --- | ------ | ------------------------------------ | ---- | ------------------------------ | ------------------------------------------------ |
-| 57  |        | `/api/tags/add-tag-to-bookmark`      | web  | `ADD_TAG_TO_BOOKMARK_API`      | use-add-tag-to-bookmark-optimistic-mutation      |
-| 58  |        | `/api/tags/remove-tag-from-bookmark` | web  | `REMOVE_TAG_FROM_BOOKMARK_API` | use-remove-tag-from-bookmark-optimistic-mutation |
-| 59  |        | `/api/tags/create-and-assign-tag`    | web  | `CREATE_AND_ASSIGN_TAG_API`    | use-create-and-assign-tag-optimistic-mutation    |
+| #   | Status | Old Path                             | v2 Path                                 | Repo | Constant                          | Caller                                           |
+| --- | ------ | ------------------------------------ | --------------------------------------- | ---- | --------------------------------- | ------------------------------------------------ |
+| 57  | x      | `/api/tags/add-tag-to-bookmark`      | `/api/v2/tags/add-tag-to-bookmark`      | web  | `V2_ADD_TAG_TO_BOOKMARK_API`      | use-add-tag-to-bookmark-optimistic-mutation      |
+| 58  | x      | `/api/tags/remove-tag-from-bookmark` | `/api/v2/tags/remove-tag-from-bookmark` | web  | `V2_REMOVE_TAG_FROM_BOOKMARK_API` | use-remove-tag-from-bookmark-optimistic-mutation |
+| 59  | x      | `/api/tags/create-and-assign-tag`    | `/api/v2/tags/create-and-assign-tag`    | web  | `V2_CREATE_AND_ASSIGN_TAG_API`    | use-create-and-assign-tag-optimistic-mutation    |
 
 ### Profiles (non-v2)
 
-| #   | Status | Path                                       | Repo | Constant                         | Caller                                             |
-| --- | ------ | ------------------------------------------ | ---- | -------------------------------- | -------------------------------------------------- |
-| 60  |        | `/api/profiles/toggle-preferred-og-domain` | web  | `TOGGLE_PREFERRED_OG_DOMAIN_API` | use-toggle-preferred-og-domain-optimistic-mutation |
-| 61  |        | `/api/profiles/toggle-favorite-category`   | web  | `TOGGLE_FAVORITE_CATEGORY_API`   | use-toggle-favorite-category-optimistic-mutation   |
+| #   | Status | Old Path                                   | v2 Path                                       | Repo | Constant                            | Caller                                             |
+| --- | ------ | ------------------------------------------ | --------------------------------------------- | ---- | ----------------------------------- | -------------------------------------------------- |
+| 60  | x      | `/api/profiles/toggle-preferred-og-domain` | `/api/v2/profiles/toggle-preferred-og-domain` | web  | `V2_TOGGLE_PREFERRED_OG_DOMAIN_API` | use-toggle-preferred-og-domain-optimistic-mutation |
+| 61  | x      | `/api/profiles/toggle-favorite-category`   | `/api/v2/profiles/toggle-favorite-category`   | web  | `V2_TOGGLE_FAVORITE_CATEGORY_API`   | use-toggle-favorite-category-optimistic-mutation   |
 
-### Other (non-v2 App Router, no frontend callers in scope)
+### Import / Sync / Cron (non-v2)
 
-| #   | Status | Path                       | Repo | Notes                                                 |
-| --- | ------ | -------------------------- | ---- | ----------------------------------------------------- |
-| 62  |        | `/api/raindrop/import`     | web  | `RAINDROP_IMPORT_API` → use-import-bookmarks-mutation |
-| 63  |        | `/api/bookmarks/check-url` | web  | Needs investigation                                   |
-| —   |        | `/api/axiom`               | web  | Telemetry proxy — no migration needed                 |
-| —   |        | `/api/cron/*`              | ext  | Vercel cron triggers                                  |
-| —   |        | `/api/instagram/*`         | web  | Instagram sync routes                                 |
-| —   |        | `/api/twitter/*`           | web  | Twitter sync routes                                   |
-| —   |        | `/api/pdf-thumbnail`       | web  | PDF thumbnail generator                               |
-| —   |        | `/api/iphone-share-error`  | ext  | iOS error reporting                                   |
-| —   |        | `/api/dev/session`         | —    | Dev-only route                                        |
+| #   | Status | Old Path                             | v2 Path                                 | Repo | Constant                               | Caller                           |
+| --- | ------ | ------------------------------------ | --------------------------------------- | ---- | -------------------------------------- | -------------------------------- |
+| 62  | x      | `/api/raindrop/import`               | `/api/v2/raindrop/import`               | web  | `V2_RAINDROP_IMPORT_API`               | use-import-bookmarks-mutation    |
+| 63  | x      | `/api/bookmarks/check-url`           | `/api/v2/bookmarks/check-url`           | ext  | `V2_CHECK_URL_API`                     | iOS / Chrome ext (no web caller) |
+| 64  |        | `/api/raindrop/import/retry`         | `/api/v2/raindrop/import/retry`         | ext  | `V2_RAINDROP_IMPORT_RETRY_API`         | ext-only (iOS / Chrome ext)      |
+| 65  |        | `/api/raindrop/import/status`        | `/api/v2/raindrop/import/status`        | ext  | `V2_RAINDROP_IMPORT_STATUS_API`        | ext-only (iOS / Chrome ext)      |
+| 66  |        | `/api/instagram/sync`                | `/api/v2/instagram/sync`                | ext  | `V2_INSTAGRAM_SYNC_API`                | ext-only (iOS)                   |
+| 67  |        | `/api/instagram/sync/retry`          | `/api/v2/instagram/sync/retry`          | ext  | `V2_INSTAGRAM_SYNC_RETRY_API`          | ext-only (iOS / Chrome ext)      |
+| 68  |        | `/api/instagram/sync/status`         | `/api/v2/instagram/sync/status`         | ext  | `V2_INSTAGRAM_SYNC_STATUS_API`         | ext-only (iOS / Chrome ext)      |
+| 69  |        | `/api/instagram/last-synced-id`      | `/api/v2/instagram/last-synced-id`      | ext  | `V2_INSTAGRAM_LAST_SYNCED_ID_API`      | ext-only (iOS / Chrome ext)      |
+| 70  |        | `/api/twitter/sync`                  | `/api/v2/twitter/sync`                  | ext  | `V2_TWITTER_SYNC_API`                  | ext-only (iOS)                   |
+| 71  |        | `/api/twitter/sync/retry`            | `/api/v2/twitter/sync/retry`            | ext  | `V2_TWITTER_SYNC_RETRY_API`            | ext-only (iOS / Chrome ext)      |
+| 72  |        | `/api/twitter/sync/status`           | `/api/v2/twitter/sync/status`           | ext  | `V2_TWITTER_SYNC_STATUS_API`           | ext-only (iOS / Chrome ext)      |
+| 73  |        | `/api/twitter/sync-folders`          | `/api/v2/twitter/sync-folders`          | ext  | `V2_TWITTER_SYNC_FOLDERS_API`          | ext-only (iOS / Chrome ext)      |
+| 74  |        | `/api/twitter/sync-folder-bookmarks` | `/api/v2/twitter/sync-folder-bookmarks` | ext  | `V2_TWITTER_SYNC_FOLDER_BOOKMARKS_API` | ext-only (iOS / Chrome ext)      |
+| 75  |        | `/api/twitter/last-synced-id`        | `/api/v2/twitter/last-synced-id`        | ext  | `V2_TWITTER_LAST_SYNCED_ID_API`        | ext-only (iOS / Chrome ext)      |
+| 76  |        | `/api/cron/clear-trash`              | `/api/v2/cron/clear-trash`              | ext  | `V2_CRON_CLEAR_TRASH_API`              | Vercel cron                      |
+| 77  |        | `/api/cron/process-archived`         | `/api/v2/cron/process-archived`         | ext  | `V2_CRON_PROCESS_ARCHIVED_API`         | Vercel cron                      |
+
+### Misc (non-v2)
+
+| #   | Status | Old Path                  | v2 Path                      | Repo | Constant                    | Caller                                                              |
+| --- | ------ | ------------------------- | ---------------------------- | ---- | --------------------------- | ------------------------------------------------------------------- |
+| 78  |        | `/api/iphone-share-error` | `/api/v2/iphone-share-error` | ext  | `V2_IPHONE_SHARE_ERROR_API` | ext-only (iOS)                                                      |
+| 79  |        | `/api/pdf-thumbnail`      | `/api/v2/pdf-thumbnail`      | ext  | `V2_PDF_THUMBNAIL_API`      | ext-only (iOS / Chrome ext)                                         |
+| 80  |        | `/api/dev/session`        | `/api/v2/dev/session`        | ext  | `V2_DEV_SESSION_API`        | ext-only (local-dev convenience)                                    |
+| 81  | n/a    | `/api/axiom`              | — _(permanent v1)_           | web  | —                           | axiom-client.ts ProxyTransport (telemetry plumbing — no v2 planned) |
+
+---
+
+## v2-only Routes (no old twin)
+
+Routes built directly under `/api/v2/` with no non-v2 counterpart. These are tracked here because the "v2 family" is what external consumers (Chrome ext, iOS, web) target.
+
+| #   | Status | v2 Path                                             | Repo | Constant                    | Caller                                                                          |
+| --- | ------ | --------------------------------------------------- | ---- | --------------------------- | ------------------------------------------------------------------------------- |
+| 82  |        | `/api/v2/bookmark/add-bookmark-multiple-categories` | ext  | —                           | ext-only (iOS / Chrome ext — bulk categorization at insert time)                |
+| 83  | x      | `/api/v2/bookmark/save-from-discover`               | web  | `V2_SAVE_FROM_DISCOVER_API` | use-save-from-discover-mutation (Discover → user's collection via edit-popover) |
+| 84  |        | `/api/v2/chrome-bookmarks/import`                   | ext  | —                           | ext-only (Chrome extension — batch import from browser bookmarks)               |
+| 85  |        | `/api/v2/chrome-bookmarks/import/retry`             | ext  | —                           | ext-only (Chrome extension)                                                     |
+| 86  |        | `/api/v2/chrome-bookmarks/import/status`            | ext  | —                           | ext-only (Chrome extension)                                                     |
+| 87  | x      | `/api/v2/profiles/mark-onboarded`                   | web  | `V2_MARK_ONBOARDED_API`     | use-mark-onboarded-mutation (onboarding-modal)                                  |
 
 ---
 
 ## Summary
 
-| Category                                | Total  | Web Repo | External | Done   |
-| --------------------------------------- | ------ | -------- | -------- | ------ |
-| Pages Router → v2 (URL + client change) | 41     | 30       | 11       | 29     |
-| App Router non-v2 (client change only)  | 21     | 19       | 2        | 0      |
-| **Total**                               | **62** | **49**   | **13**   | **29** |
+| Category               | Total  | Web Repo | External | Done   |
+| ---------------------- | ------ | -------- | -------- | ------ |
+| Pages Router → v2      | 41     | 30       | 11       | 32     |
+| App Router non-v2 ↔ v2 | 39     | 20       | 19       | 21     |
+| v2-only (no old twin)  | 6      | 2        | 4        | 2      |
+| **Total**              | **86** | **52**   | **34**   | **55** |
+
+**All web callers migrated to v2.** Every old route has a v2 twin except `/api/axiom` (permanent v1 — telemetry plumbing).
+
+**Permanent v1:** 1 route — `#81 /api/axiom`. Telemetry proxy; no v2 planned.
 
 ---
 
 _Created: 2026-03-30_
-_Last updated: 2026-04-13_
+_Last updated: 2026-04-21_
