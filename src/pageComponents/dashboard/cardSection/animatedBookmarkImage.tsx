@@ -206,18 +206,20 @@ export const LoaderImgPlaceholder = ({
         loader={(source) => source.src}
         src={loaderGif}
       />
-      {statusText && cardTypeCondition !== viewValues.list && (
+      {cardTypeCondition !== viewValues.list && (
         <AnimatePresence mode="wait">
-          <motion.p
-            animate={{ opacity: 1 }}
-            className="text-sm text-gray-900"
-            exit={{ opacity: 0 }}
-            initial={{ opacity: 0 }}
-            key={statusText}
-            transition={{ duration: 0.15 }}
-          >
-            {statusText}
-          </motion.p>
+          {statusText ? (
+            <motion.p
+              animate={{ opacity: 1 }}
+              className="text-sm text-gray-900"
+              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }}
+              key={statusText}
+              transition={{ duration: 0.15 }}
+            >
+              {statusText}
+            </motion.p>
+          ) : null}
         </AnimatePresence>
       )}
     </div>
