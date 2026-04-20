@@ -1,14 +1,14 @@
 import type {
-  AddTagToBookmarkPayload,
-  AddTagToBookmarkResponse,
-} from "@/app/api/tags/add-tag-to-bookmark/schema";
+  AddTagToBookmarkInput,
+  AddTagToBookmarkOutput,
+} from "@/app/api/v2/tags/add-tag-to-bookmark/schema";
 import type { PaginatedBookmarks, UserTagsData } from "@/types/apiTypes";
 
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
-import { postApi } from "@/lib/api-helpers/api";
+import { api } from "@/lib/api-helpers/api-v2";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
-import { ADD_TAG_TO_BOOKMARK_API, BOOKMARKS_KEY, USER_TAGS_KEY } from "@/utils/constants";
+import { BOOKMARKS_KEY, USER_TAGS_KEY, V2_ADD_TAG_TO_BOOKMARK_API } from "@/utils/constants";
 import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
 
 /**
@@ -19,14 +19,14 @@ export function useAddTagToBookmarkOptimisticMutation() {
   const { queryClient, queryKey, searchQueryKey, session } = useBookmarkMutationContext();
 
   const addTagToBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
-    AddTagToBookmarkResponse,
+    AddTagToBookmarkOutput,
     Error,
-    AddTagToBookmarkPayload,
+    AddTagToBookmarkInput,
     typeof queryKey,
     PaginatedBookmarks
   >({
     mutationFn: (payload) =>
-      postApi<AddTagToBookmarkResponse>(`/api${ADD_TAG_TO_BOOKMARK_API}`, payload),
+      api.post(V2_ADD_TAG_TO_BOOKMARK_API, { json: payload }).json<AddTagToBookmarkOutput>(),
     onSettled: (_data, error) => {
       if (error) {
         return;

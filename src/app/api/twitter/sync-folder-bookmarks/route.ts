@@ -8,6 +8,9 @@ import { SyncFolderBookmarksInputSchema, SyncFolderBookmarksOutputSchema } from 
 
 const ROUTE = "twitter-sync-folder-bookmarks";
 
+/**
+ * @deprecated Use /api/v2/twitter/sync-folder-bookmarks instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, user }) => {
     const userId = user.id;

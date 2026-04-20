@@ -13,6 +13,9 @@ import { SetBookmarkCategoriesPayloadSchema, SetBookmarkCategoriesResponseSchema
 
 const ROUTE = "set-bookmark-categories";
 
+/**
+ * @deprecated Use /api/v2/category/set-bookmark-categories instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     const { bookmark_id: bookmarkId, category_ids: categoryIds } = data;

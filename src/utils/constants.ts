@@ -174,6 +174,16 @@ export const V2_UPDATE_USER_CATEGORY_API = "v2/category/update-user-category";
 export const V2_INSTAGRAM_SYNC_API = "v2/instagram/sync";
 export const V2_TWITTER_SYNC_API = "v2/twitter/sync";
 export const V2_TWITTER_SYNC_FOLDERS_API = "v2/twitter/sync-folders";
+export const V2_ADD_CATEGORY_TO_BOOKMARK_API = "v2/category/add-category-to-bookmark";
+export const V2_ADD_CATEGORY_TO_BOOKMARKS_API = "v2/category/add-category-to-bookmarks";
+export const V2_REMOVE_CATEGORY_FROM_BOOKMARK_API = "v2/category/remove-category-from-bookmark";
+export const V2_SET_BOOKMARK_CATEGORIES_API = "v2/category/set-bookmark-categories";
+export const V2_ADD_TAG_TO_BOOKMARK_API = "v2/tags/add-tag-to-bookmark";
+export const V2_REMOVE_TAG_FROM_BOOKMARK_API = "v2/tags/remove-tag-from-bookmark";
+export const V2_CREATE_AND_ASSIGN_TAG_API = "v2/tags/create-and-assign-tag";
+export const V2_TWITTER_SYNC_FOLDER_BOOKMARKS_API = "v2/twitter/sync-folder-bookmarks";
+export const V2_CRON_CLEAR_TRASH_API = "v2/cron/clear-trash";
+export const V2_CRON_PROCESS_ARCHIVED_API = "v2/cron/process-archived";
 
 export const RAINDROP_IMPORT_API = "/raindrop/import";
 
