@@ -9,7 +9,8 @@ export const V2SyncFolderBookmarksInputSchema = z.object({
             "Target collection name — must exactly match an existing folder created via sync-folders.",
         }),
         url: z.url().meta({
-          description: "Tweet URL (twitter.com or x.com) previously enqueued via sync.",
+          description:
+            "Bookmark URL previously enqueued via sync — any well-formed absolute URL is accepted; hostname is not constrained here.",
         }),
       }),
     )

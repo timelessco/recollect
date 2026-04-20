@@ -59,6 +59,8 @@ export const POST = createAxiomRouteHandler(
           byUser.set(item.user_id, ids);
         }
 
+        let iterationDeleted = 0;
+
         for (const [userId, bookmarkIds] of byUser) {
           const result = await deleteBookmarksByIds(supabase, bookmarkIds, userId, route);
 
@@ -67,10 +69,18 @@ export const POST = createAxiomRouteHandler(
             continue;
           }
 
-          totalDeleted += result.deletedCount;
+          iterationDeleted += result.deletedCount;
         }
 
+        totalDeleted += iterationDeleted;
         batchCount += 1;
+
+        // Every per-user delete failed on a full batch — the same rows will
+        // refetch next iteration, so bail out instead of spinning forever.
+        if (iterationDeleted === 0) {
+          setPayload(ctx, { aborted_reason: "no_rows_deleted_in_iteration" });
+          break;
+        }
 
         if (oldTrash.length < BATCH_SIZE) {
           break;

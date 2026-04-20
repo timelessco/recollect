@@ -209,7 +209,7 @@ Which consumer is hitting how many endpoints:
 
 | Consumer | Rows | Notes                                                                                                             |
 | -------- | ---- | ----------------------------------------------------------------------------------------------------------------- |
-| web      | 55   | All web-caller rows; rows with `x` status are migrated to ky + `V2_*` constant                                    |
+| web      | 53   | All web-caller rows; rows with `x` status are migrated to ky + `V2_*` constant                                    |
 | ios      | 22   | recollect-swiftui; most hit non-versioned paths — base URL determines v1 vs v2 at runtime                         |
 | ext      | 16   | recollect-extension; mix of v1/v2/non-versioned paths — ext has NOT fully migrated                                |
 | app      | 22   | recollect-app (Expo RN); non-versioned or explicit v1 — app has NOT migrated to v2                                |

@@ -128,10 +128,18 @@ export const POST = createAxiomRouteHandler(
       }
 
       // 3. Get old categories before replacement (for revalidation).
-      const { data: oldCategories } = await supabase
+      // Non-blocking: a failure here means stale ISR cache on orphaned
+      // public categories, not a broken mutation — surface via wide event.
+      const { data: oldCategories, error: oldCategoriesError } = await supabase
         .from(BOOKMARK_CATEGORIES_TABLE_NAME)
         .select("category_id")
         .eq("bookmark_id", bookmarkId);
+
+      if (oldCategoriesError) {
+        setPayload(ctx, {
+          old_categories_fetch_error: oldCategoriesError.message,
+        });
+      }
 
       const oldCategoryIds = oldCategories?.map((cat) => cat.category_id) ?? [];
 

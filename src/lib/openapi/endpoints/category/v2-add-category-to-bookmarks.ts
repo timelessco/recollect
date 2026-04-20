@@ -7,6 +7,9 @@ import { bearerAuth } from "@/lib/openapi/registry";
 
 export const v2AddCategoryToBookmarksSupplement = {
   additionalResponses: {
+    400: {
+      description: "Missing or invalid `bookmark_ids` / `category_id`, or schema violation",
+    },
     401: { description: "Not authenticated" },
     403: { description: "Bookmarks not owned or no edit access to category" },
     404: { description: "Category not found" },
@@ -18,5 +21,5 @@ export const v2AddCategoryToBookmarksSupplement = {
   path: "/v2/category/add-category-to-bookmarks",
   security: [{ [bearerAuth.name]: [] }, {}],
   summary: "Assign a category to multiple bookmarks",
-  tags: ["Bookmarks"],
+  tags: ["Categories"],
 } satisfies EndpointSupplement;
