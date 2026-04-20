@@ -40,27 +40,45 @@ interface EditPopoverProps {
 export const EditPopover = ({ post, userId }: EditPopoverProps) => {
   const postUserId = typeof post?.user_id === "object" ? post?.user_id?.id : post?.user_id;
   const isOwner = userId && postUserId === userId;
+
+  // Non-owners see nothing
+  if (!isOwner) {
+    return null;
+  }
+
+  // Base UI unmounts Portal children when the popover is closed, so
+  // <EditPopoverContent> does not mount (and its hooks do not run) until the
+  // user opens the popover. Without this split, every owned card on /discover
+  // would fire its own useFetchDiscoverableBookmarkById request on mount,
+  // saturating the browser connection pool and queuing the
+  // /_next/data/.../discover.json navigation fetch behind N parallel requests.
+  return (
+    <EditPopoverShell>
+      <EditPopoverContent post={post} userId={userId} />
+    </EditPopoverShell>
+  );
+};
+
+interface EditPopoverContentProps {
+  post: SingleListData;
+  userId: string;
+}
+
+const EditPopoverContent = ({ post, userId }: EditPopoverContentProps) => {
   const { isDiscoverPage } = usePageContext();
   const queryClient = useQueryClient();
-  const [isOpen, setIsOpen] = useState(false);
 
   // Discover bookmarks are fetched without relations; pull the discoverable
   // bookmark by id (server runs BOOKMARK_CATEGORIES + BOOKMARK_TAGS junction
-  // queries) so we can source chip state for the popover. Gate on `isOpen`
-  // so the fetch only fires when the user actually opens the popover —
-  // without this gate, every owned card on /discover fires its own request
-  // on mount, saturating the browser connection pool and queuing the
-  // /_next/data/.../discover.json navigation fetch behind N parallel
-  // per-bookmark requests.
-  const { bookmark: discoverableBookmark } = useFetchDiscoverableBookmarkById(post.id, {
-    enabled: Boolean(isOwner) && isDiscoverPage && isOpen,
-  });
+  // queries) so we can source chip state for the popover.
+  const { bookmark: discoverableBookmark, isLoading: isDiscoverableLoading } =
+    useFetchDiscoverableBookmarkById(post.id, {
+      enabled: isDiscoverPage,
+    });
 
   // Need the full all-categories / all-tags lists so we can resolve the
   // discoverable response to the SAME object references the dropdowns use as
   // their items — Base UI's selection (and the tick) match by reference, not id.
-  // These already mount inside the multi-selects; calling here just lets us
-  // resolve discoverable ids → item references with the same data.
   const { allCategories } = useFetchCategories();
   const { userTags } = useFetchUserTags();
 
@@ -163,13 +181,17 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
     [createAndAssignTagOptimisticMutation, post.id, invalidateDiscoverableBookmark],
   );
 
-  // Non-owners see nothing
-  if (!isOwner) {
-    return null;
-  }
+  const domain = getDomain(post.url);
+  // Don't render switch for domains that are already skipped for OG images
+  const showOgPreference = domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain);
+
+  // On /discover the chip selection comes from a server fetch, not the
+  // dashboard cache — render skeletons while that request is in flight so the
+  // chips don't flash empty before populating.
+  const showDiscoverSkeleton = isDiscoverPage && isDiscoverableLoading;
 
   return (
-    <EditPopoverShell onOpenChange={setIsOpen}>
+    <>
       <div className="mb-2 w-[231px]">
         <div className="w-full">
           <div className="mx-1 my-1.5 block text-xs leading-[115%] font-450 tracking-[0.24px] text-gray-600 max-sm:mt-px max-sm:pt-2">
@@ -177,12 +199,16 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
           </div>
 
           <div className="w-full">
-            <CategoryMultiSelect
-              bookmarkId={post.id}
-              onAdd={isDiscoverPage ? handleDiscoverAddCategory : undefined}
-              onRemove={isDiscoverPage ? handleDiscoverRemoveCategory : undefined}
-              selectedItems={discoverSelectedCategories}
-            />
+            {showDiscoverSkeleton ? (
+              <div className="h-8 w-full animate-pulse rounded-lg bg-gray-100" />
+            ) : (
+              <CategoryMultiSelect
+                bookmarkId={post.id}
+                onAdd={isDiscoverPage ? handleDiscoverAddCategory : undefined}
+                onRemove={isDiscoverPage ? handleDiscoverRemoveCategory : undefined}
+                selectedItems={discoverSelectedCategories}
+              />
+            )}
           </div>
         </div>
         <div className="w-full">
@@ -191,35 +217,35 @@ export const EditPopover = ({ post, userId }: EditPopoverProps) => {
           </div>
 
           <div className="w-full">
-            <TagMultiSelect
-              bookmarkId={post.id}
-              onAdd={isDiscoverPage ? handleDiscoverAddTag : undefined}
-              onCreate={isDiscoverPage ? handleDiscoverCreateTag : undefined}
-              onRemove={isDiscoverPage ? handleDiscoverRemoveTag : undefined}
-              selectedItems={discoverSelectedTags}
-            />
+            {showDiscoverSkeleton ? (
+              <div className="h-8 w-full animate-pulse rounded-lg bg-gray-100" />
+            ) : (
+              <TagMultiSelect
+                bookmarkId={post.id}
+                onAdd={isDiscoverPage ? handleDiscoverAddTag : undefined}
+                onCreate={isDiscoverPage ? handleDiscoverCreateTag : undefined}
+                onRemove={isDiscoverPage ? handleDiscoverRemoveTag : undefined}
+                selectedItems={discoverSelectedTags}
+              />
+            )}
           </div>
         </div>
       </div>
       <div className="w-full">
         <DiscoverSwitch bookmarkId={post.id} isDiscoverable={post.make_discoverable !== null} />
       </div>
-      {(() => {
-        const domain = getDomain(post.url);
-        // Don't render switch for domains that are already skipped for OG images
-        return domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain) ? (
-          <>
-            <div className="px-2.5 py-1">
-              <div className="h-px bg-gray-200" />
-            </div>
+      {showOgPreference ? (
+        <>
+          <div className="px-2.5 py-1">
+            <div className="h-px bg-gray-200" />
+          </div>
 
-            <div className="w-full">
-              <OgPreferenceSwitch bookmarkUrl={post.url} userId={userId} />
-            </div>
-          </>
-        ) : null;
-      })()}
-    </EditPopoverShell>
+          <div className="w-full">
+            <OgPreferenceSwitch bookmarkUrl={post.url} userId={userId} />
+          </div>
+        </>
+      ) : null}
+    </>
   );
 };
 
