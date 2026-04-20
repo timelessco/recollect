@@ -267,6 +267,7 @@ async function teardown(bookmarkId: number, reason: TeardownReason): Promise<voi
     if (queuedIndex !== -1) {
       waiting.splice(queuedIndex, 1);
       logEvent("dequeued before subscribe", bookmarkId, { reason });
+      notifyListeners();
     }
     return;
   }
@@ -321,6 +322,10 @@ export async function teardownAllBookmarkEnrichmentSubscriptions(
   reason: TeardownReason = "auth_error",
 ): Promise<void> {
   const ids = [...active.keys()];
+  const hadWaiting = waiting.length > 0;
   waiting.length = 0;
+  if (hadWaiting) {
+    notifyListeners();
+  }
   await Promise.all(ids.map((id) => teardown(id, reason)));
 }
