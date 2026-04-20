@@ -179,6 +179,7 @@ export const V2_ADD_CATEGORY_TO_BOOKMARKS_API = "v2/category/add-category-to-boo
 export const V2_REMOVE_CATEGORY_FROM_BOOKMARK_API = "v2/category/remove-category-from-bookmark";
 export const V2_SET_BOOKMARK_CATEGORIES_API = "v2/category/set-bookmark-categories";
 export const V2_ADD_TAG_TO_BOOKMARK_API = "v2/tags/add-tag-to-bookmark";
+export const V2_REMOVE_TAG_FROM_BOOKMARK_API = "v2/tags/remove-tag-from-bookmark";
 
 export const RAINDROP_IMPORT_API = "/raindrop/import";
 

@@ -7,6 +7,9 @@ import { RemoveTagFromBookmarkPayloadSchema, RemoveTagFromBookmarkResponseSchema
 
 const ROUTE = "remove-tag-from-bookmark";
 
+/**
+ * @deprecated Use /api/v2/tags/remove-tag-from-bookmark instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     const { bookmarkId, tagId } = data;
