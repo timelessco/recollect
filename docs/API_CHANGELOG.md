@@ -211,3 +211,54 @@
 
 
 
+
+## 2026-04-20 [`8453023`](https://github.com/timelessco/recollect/commit/8453023f0b0a54498e73b15876bb2cb500dcf766)
+
+
+
+### API Changes
+
+### POST /v2/category/add-category-to-bookmark
+-  endpoint added
+
+
+### POST /v2/category/add-category-to-bookmarks
+-  endpoint added
+
+
+### POST /v2/category/remove-category-from-bookmark
+-  endpoint added
+
+
+### POST /v2/category/set-bookmark-categories
+-  endpoint added
+
+
+### POST /v2/cron/clear-trash
+-  endpoint added
+
+
+### POST /v2/cron/process-archived
+-  endpoint added
+
+
+### POST /v2/tags/add-tag-to-bookmark
+-  endpoint added
+
+
+### POST /v2/tags/create-and-assign-tag
+-  endpoint added
+
+
+### POST /v2/tags/remove-tag-from-bookmark
+-  endpoint added
+
+
+### POST /v2/twitter/sync-folder-bookmarks
+-  endpoint added
+
+
+
+
+
+
