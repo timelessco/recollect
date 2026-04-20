@@ -8,7 +8,10 @@ import type {
 } from "../../../types/apiTypes";
 
 import { api } from "@/lib/api-helpers/api-v2";
-import { openBookmarkEnrichmentSubscription } from "@/lib/supabase/realtime/bookmark-enrichment-subscription";
+import {
+  openBookmarkEnrichmentSubscription,
+  teardownBookmarkEnrichmentSubscription,
+} from "@/lib/supabase/realtime/bookmark-enrichment-subscription";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
@@ -44,7 +47,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
   // We'll initialize the mutation with a default value and update it when we have the actual ID
   const { addBookmarkScreenshotMutation } = useAddBookmarkScreenshotMutation();
   const { sortBy } = useGetSortBy();
-  const { addLoadingBookmarkId, removeLoadingBookmarkId, setIsBookmarkAdding } = useLoadersStore();
+  const { setIsBookmarkAdding } = useLoadersStore();
 
   const addBookmarkMinDataOptimisticMutation = useMutation<
     SingleListData[],
@@ -191,79 +194,72 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
       const url = data?.url;
 
       // Heavy processing (media check, PDF thumbnail, screenshot) runs as
-      // fire-and-forget so it doesn't block the render cycle. Loading id was
-      // set in onSuccess (before setQueryData) — see comment there.
+      // fire-and-forget so it doesn't block the render cycle.
+      //
+      // The enrichment subscription was opened in onSuccess (right after the
+      // temp → real ID swap) so the loading state is live for the full
+      // pipeline. Here we tear it down on paths that don't feed the
+      // screenshot/enrichment flow (plain image / audio URLs) and leave it
+      // alive for PDF (DB write happens inside handlePdfThumbnailAndUpload)
+      // and the regular screenshot path.
       void (async () => {
-        const isUrlOfMimeType = await checkIfUrlAnImage(url);
-        if (isUrlOfMimeType) {
-          removeLoadingBookmarkId(data.id);
-          return;
-        }
+        try {
+          const isUrlOfMimeType = await checkIfUrlAnImage(url);
+          if (isUrlOfMimeType) {
+            void teardownBookmarkEnrichmentSubscription(data.id, "not_applicable");
+            return;
+          }
 
-        const mediaType = await getMediaType(url);
-        // Audio URLs already have ogImage fallback set in add-bookmark-min-data
-        if (mediaType?.includes("audio")) {
-          removeLoadingBookmarkId(data.id);
-          return;
-        }
+          const mediaType = await getMediaType(url);
+          // Audio URLs already have ogImage fallback set in add-bookmark-min-data
+          if (mediaType?.includes("audio")) {
+            void teardownBookmarkEnrichmentSubscription(data.id, "not_applicable");
+            return;
+          }
 
-        if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
-          try {
-            successToast("Generating thumbnail");
-            await handlePdfThumbnailAndUpload({
-              fileId: data.id,
-              fileUrl: data.url,
-              sessionUserId: session?.user?.id,
-            });
-          } catch {
+          if (mediaType === PDF_MIME_TYPE || URL_PDF_CHECK_PATTERN.test(url)) {
             try {
-              errorToast("retry thumbnail generation");
+              successToast("Generating thumbnail");
               await handlePdfThumbnailAndUpload({
                 fileId: data.id,
                 fileUrl: data.url,
                 sessionUserId: session?.user?.id,
               });
-            } catch (retryError) {
-              console.error("PDF thumbnail upload failed after retry:", retryError);
-              errorToast("thumbnail generation failed");
+            } catch {
+              try {
+                errorToast("retry thumbnail generation");
+                await handlePdfThumbnailAndUpload({
+                  fileId: data.id,
+                  fileUrl: data.url,
+                  sessionUserId: session?.user?.id,
+                });
+              } catch (retryError) {
+                console.error("PDF thumbnail upload failed after retry:", retryError);
+                errorToast("thumbnail generation failed");
+                void teardownBookmarkEnrichmentSubscription(data.id, "screenshot_failed");
+              }
+            } finally {
+              void queryClient.invalidateQueries({
+                queryKey: [BOOKMARKS_KEY, session?.user?.id],
+              });
             }
-          } finally {
-            void queryClient.invalidateQueries({
-              queryKey: [BOOKMARKS_KEY, session?.user?.id],
-            });
-            removeLoadingBookmarkId(data.id);
+            return;
           }
-          return;
-        }
 
-        if (data?.id) {
-          addLoadingBookmarkId(data.id);
-          if (session?.user?.id) {
-            openBookmarkEnrichmentSubscription({
-              bookmarkId: data.id,
-              queryClient,
-              userId: session.user.id,
-            });
-          }
+          addBookmarkScreenshotMutation.mutate({ id: data.id, url: data.url });
+        } catch (pipelineError) {
+          // Guarantee teardown on any unexpected throw from the media-type
+          // probe, toast calls, or mutation.mutate — without this the
+          // subscription opened in onSuccess would dangle until the 90s
+          // timeout, keeping the card stuck on "Getting screenshot".
+          console.error("add-bookmark post-success pipeline failed:", pipelineError);
+          void teardownBookmarkEnrichmentSubscription(data.id, "screenshot_failed");
         }
-        addBookmarkScreenshotMutation.mutate({ id: data.id, url: data.url });
       })();
     },
     onSuccess: (apiResponse, _variables, context) => {
       if (apiResponse?.[0]) {
         const [serverBookmark] = apiResponse;
-
-        // Set loading id BEFORE swapping the temp id for the real id in cache.
-        // setQueryData triggers a React Query subscription notify which renders
-        // the card with the real id. If isLoading is still false at that
-        // render, the statusText ladder falls through to TERMINAL ("Cannot
-        // fetch image..."). The prior placement (in onSettled) was one
-        // callback too late: onSuccess + setQueryData fire first, React
-        // commits, only then onSettled runs. The image/audio branches in the
-        // IIFE below still clear it eagerly when no screenshot follow-up runs.
-        if (serverBookmark.id) {
-          addLoadingBookmarkId(serverBookmark.id);
-        }
 
         // Re-add URL for animation continuity across key change (temp → real id).
         // The remounted component consumes this via recentlyAddedUrls.delete().
@@ -295,6 +291,20 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
             } as PaginatedBookmarks;
           },
         );
+
+        // Open the enrichment subscription as soon as the real id is known.
+        // The onSettled IIFE tears it down on paths that don't feed the
+        // pipeline (image/audio URLs) once the async media type check
+        // resolves. Opening here (instead of after the media check) closes
+        // the ~200–1000ms gap where the card would otherwise show no
+        // loading indicator while we probe the URL's content type.
+        if (session?.user?.id) {
+          openBookmarkEnrichmentSubscription({
+            bookmarkId: serverBookmark.id,
+            queryClient,
+            userId: session.user.id,
+          });
+        }
       }
 
       if (

@@ -13,6 +13,7 @@ const MetaDataRealtimeSchema = z
     favIcon: z.string().nullable().optional(),
     img_caption: z.string().nullable().optional(),
     isPageScreenshot: z.boolean().nullable().optional(),
+    mediaType: z.string().nullable().optional(),
     ocr_status: z.enum(["limit_reached", "no_text", "success"]).nullable().optional(),
     ogImgBlurUrl: z.string().nullable().optional(),
     screenshot: z.string().nullable().optional(),
@@ -50,21 +51,29 @@ export function parseBookmarkRealtimePayload(payload: unknown): BookmarkRealtime
 }
 
 /**
- * A row is terminal (safe to tear down the subscription) when both the
- * screenshot URL (written by the t2 screenshot route) and `meta_data.ocr_status`
- * (written only by the t3 `addRemainingBookmarkData` enrichment pass) are
- * populated.
+ * A row is terminal (safe to tear down the subscription) when the enrichment
+ * pipeline for its media type has finished writing. `ocr_status` is the
+ * canonical "t3 enrichment ran" signal — absent pre-t3 and always set to
+ * `"success" | "no_text" | "limit_reached"` post-t3. Gating on it (rather than
+ * `ogImage`) avoids tearing down before t3's full enrichment (coverImage,
+ * ogImgBlurUrl, ocr, keywords, final ogImage) reaches the cache — t1 already
+ * sets `ogImage` from the scraper for any page with an `og:image` tag, so
+ * `screenshot && ogImage` would flip true at t2.
  *
- * Using `row.ogImage` here would be wrong: the t1 insert already sets `ogImage`
- * from the scraper for any page with an `og:image` tag, so `screenshot &&
- * ogImage` would flip true at t2 and tear the channel down before t3's real
- * enrichment (coverImage, ogImgBlurUrl, ocr, keywords, height/width, final
- * ogImage) ever reaches the cache. `ocr_status` is absent pre-t3 and always
- * set to `"success" | "no_text" | "limit_reached"` post-t3, so it uniquely
- * signals that enrichment finished.
+ * - PDF (`meta_data.mediaType === "application/pdf"`): the PDF flow writes
+ *   `ogImage` to the thumbnail URL via `uploadFileRemainingData` and never
+ *   touches `meta_data.screenshot`; `uploadFileRemainingData` also sets
+ *   `ocr_status`, so terminal = `ogImage` + `ocr_status`.
+ * - Regular URL: the screenshot route writes `meta_data.screenshot` (t2) and
+ *   `addRemainingBookmarkData` writes `ocr_status` (t3); terminal = both.
  */
 export function isRowTerminal(row: BookmarkRealtimeRow): boolean {
   const metaData = row.meta_data && typeof row.meta_data === "object" ? row.meta_data : null;
+
+  if (metaData?.mediaType === "application/pdf") {
+    return Boolean(row.ogImage) && isBookmarkEnrichmentDone(metaData);
+  }
+
   const screenshot = metaData?.screenshot ?? null;
   return Boolean(screenshot) && isBookmarkEnrichmentDone(metaData);
 }
