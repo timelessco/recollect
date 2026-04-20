@@ -185,10 +185,13 @@ const EditPopoverContent = ({ post, userId }: EditPopoverContentProps) => {
   // Don't render switch for domains that are already skipped for OG images
   const showOgPreference = domain && !SKIP_OG_IMAGE_DOMAINS.includes(domain);
 
-  // On /discover the chip selection comes from a server fetch, not the
-  // dashboard cache — render skeletons while that request is in flight so the
-  // chips don't flash empty before populating.
-  const showDiscoverSkeleton = isDiscoverPage && isDiscoverableLoading;
+  // On /discover the chip selection is resolved by looking discoverable ids
+  // up in `allCategories` / `userTags`. If either reference list isn't
+  // populated yet, the lookups miss and selectedItems collapses to [] — the
+  // same empty-flash the skeleton is meant to hide. Keep the skeleton up
+  // until the discoverable fetch AND both reference lists are ready.
+  const showDiscoverSkeleton =
+    isDiscoverPage && (isDiscoverableLoading || !allCategories || !userTags);
 
   return (
     <>
