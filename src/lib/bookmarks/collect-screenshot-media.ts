@@ -5,6 +5,8 @@
  * (forbidden in App Router). These functions only depend on server-safe modules.
  */
 
+import ky, { HTTPError } from "ky";
+
 import { logger } from "@/lib/api-helpers/axiom";
 import { extractErrorFields } from "@/lib/api-helpers/errors";
 import { upload, uploadVideo } from "@/lib/storage/media-upload";
@@ -155,20 +157,18 @@ export async function collectVideo(args: CollectVideoArgs): Promise<CollectVideo
 
     // Fetch with timeout
     const [downloadError, videoResponse] = await vet(() =>
-      fetch(videoUrl, {
-        method: "GET",
-        signal: AbortSignal.timeout(VIDEO_DOWNLOAD_TIMEOUT_MS),
-      }),
+      ky.get(videoUrl, { retry: 0, signal: AbortSignal.timeout(VIDEO_DOWNLOAD_TIMEOUT_MS) }),
     );
 
-    if (downloadError || !videoResponse?.ok) {
+    if (downloadError || !videoResponse) {
       const errorMessage = downloadError instanceof Error ? downloadError.message : "Unknown error";
       const errorType = getErrorTypeFromAbortSignal(downloadError);
+      const status = downloadError instanceof HTTPError ? downloadError.response.status : undefined;
 
       console.warn("[collectVideo] Video download failed:", {
         error: errorMessage,
         errorType,
-        status: videoResponse?.status,
+        status,
         userId,
         videoUrl,
       });

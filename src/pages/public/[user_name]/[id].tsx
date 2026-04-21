@@ -2,6 +2,7 @@ import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { useRouter } from "next/router";
 import InfiniteScroll from "react-infinite-scroll-component";
 
+import ky, { HTTPError } from "ky";
 import { isEmpty } from "lodash";
 
 import type { GetPublicCategoryBookmarksApiResponseType } from "../../../types/apiTypes";
@@ -103,37 +104,11 @@ export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (co
 
   try {
     // Fetch the first full page for SEO and initial render
-    const response = await fetch(
-      `${getBaseUrl()}/api/${V2_FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${categorySlug}&user_name=${userName}&page=0`,
-    );
-
-    if (!response.ok) {
-      console.error(
-        `[${ROUTE}] Failed to fetch public category bookmarks: HTTP ${response.status}`,
-        {
-          categorySlug,
-          status: response.status,
-          statusText: response.statusText,
-          userName,
-        },
-      );
-      const severity = response.status >= 500 ? "error" : "warn";
-      logger[severity]("fetch_public_category_failed", {
-        operation: "fetch_public_category",
-        route: ROUTE,
-        context: "static_generation",
-        category_slug: categorySlug,
-        user_name: userName,
-        "http.response.status_code": response.status,
-        "http.response.status_text": response.statusText,
-        error_message: `HTTP ${response.status}: ${response.statusText}`,
-      });
-      await logger.flush();
-      return { notFound: true };
-    }
-
-    // oxlint-disable-next-line no-unsafe-type-assertion -- response.json() types as unknown in oxlint
-    const data = (await response.json()) as GetPublicCategoryBookmarksApiResponseType;
+    const data = await ky
+      .get(`${getBaseUrl()}/api/${V2_FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}`, {
+        searchParams: { category_slug: categorySlug, user_name: userName, page: 0 },
+      })
+      .json<GetPublicCategoryBookmarksApiResponseType>();
 
     if (!data?.isPublic) {
       console.warn(`[${ROUTE}] Category is not public`, {
@@ -147,6 +122,29 @@ export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (co
       props: data,
     };
   } catch (error) {
+    if (error instanceof HTTPError) {
+      const { status, statusText } = error.response;
+      console.error(`[${ROUTE}] Failed to fetch public category bookmarks: HTTP ${status}`, {
+        categorySlug,
+        status,
+        statusText,
+        userName,
+      });
+      const severity = status >= 500 ? "error" : "warn";
+      logger[severity]("fetch_public_category_failed", {
+        operation: "fetch_public_category",
+        route: ROUTE,
+        context: "static_generation",
+        category_slug: categorySlug,
+        user_name: userName,
+        "http.response.status_code": status,
+        "http.response.status_text": statusText,
+        error_message: `HTTP ${status}: ${statusText}`,
+      });
+      await logger.flush();
+      return { notFound: true };
+    }
+
     // Network failures / unexpected exceptions during ISR build — log to Axiom
     console.error(`[${ROUTE}] Failed to fetch public category bookmarks`, {
       categorySlug,

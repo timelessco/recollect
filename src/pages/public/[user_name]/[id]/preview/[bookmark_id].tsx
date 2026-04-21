@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { format } from "date-fns";
+import ky, { HTTPError } from "ky";
 import { z } from "zod";
 
 import type { SingleListData } from "../../../../../types/apiTypes";
@@ -14,7 +15,6 @@ import { extractErrorFields } from "@/lib/api-helpers/errors";
 
 import { CustomLightBox } from "../../../../../components/lightbox/LightBox";
 import { getBaseUrl, V2_FETCH_PUBLIC_BOOKMARK_BY_ID_API } from "../../../../../utils/constants";
-import { HttpStatus } from "../../../../../utils/error-utils/common";
 import { buildPublicCategoryUrl } from "../../../../../utils/url-builders";
 
 const PublicPreviewParamsSchema = z.object({
@@ -109,46 +109,11 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (context
   const { bookmark_id, id: categorySlug, user_name } = validation.data;
 
   try {
-    const response = await fetch(
-      `${getBaseUrl()}/api/${V2_FETCH_PUBLIC_BOOKMARK_BY_ID_API}?bookmark_id=${bookmark_id}&user_name=${user_name}&category_slug=${categorySlug}`,
-    );
-
-    if (response.status === HttpStatus.NOT_FOUND) {
-      console.warn(`[${ROUTE}] Bookmark not found`, {
-        bookmark_id,
-        categorySlug,
-        user_name,
-      });
-      return { notFound: true };
-    }
-
-    if (!response.ok) {
-      console.error(`[${ROUTE}] Failed to fetch public bookmark: HTTP ${response.status}`, {
-        bookmark_id,
-        categorySlug,
-        status: response.status,
-        statusText: response.statusText,
-        user_name,
-      });
-      const severity = response.status >= 500 ? "error" : "warn";
-      logger[severity]("fetch_public_bookmark_failed", {
-        operation: "fetch_public_bookmark",
-        route: ROUTE,
-        context: "incremental_static_regeneration",
-        bookmark_id,
-        category_slug: categorySlug,
-        user_name,
-        "http.response.status_code": response.status,
-        "http.response.status_text": response.statusText,
-        error_message: `HTTP ${response.status}: ${response.statusText}`,
-      });
-      await logger.flush();
-      return { notFound: true };
-    }
-
-    // v2 returns the bookmark row directly; errors surface via non-2xx HTTP status above.
-    // oxlint-disable-next-line no-unsafe-type-assertion -- response.json() types as unknown in oxlint
-    const bookmark = (await response.json()) as null | SingleListData;
+    const bookmark = await ky
+      .get(`${getBaseUrl()}/api/${V2_FETCH_PUBLIC_BOOKMARK_BY_ID_API}`, {
+        searchParams: { bookmark_id, user_name, category_slug: categorySlug },
+      })
+      .json<null | SingleListData>();
 
     if (!bookmark) {
       console.warn(`[${ROUTE}] Bookmark data not found`, {
@@ -166,6 +131,41 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (context
       revalidate: 1800,
     };
   } catch (error) {
+    if (error instanceof HTTPError) {
+      const { status, statusText } = error.response;
+
+      if (status === 404) {
+        console.warn(`[${ROUTE}] Bookmark not found`, {
+          bookmark_id,
+          categorySlug,
+          user_name,
+        });
+        return { notFound: true };
+      }
+
+      console.error(`[${ROUTE}] Failed to fetch public bookmark: HTTP ${status}`, {
+        bookmark_id,
+        categorySlug,
+        status,
+        statusText,
+        user_name,
+      });
+      const severity = status >= 500 ? "error" : "warn";
+      logger[severity]("fetch_public_bookmark_failed", {
+        operation: "fetch_public_bookmark",
+        route: ROUTE,
+        context: "incremental_static_regeneration",
+        bookmark_id,
+        category_slug: categorySlug,
+        user_name,
+        "http.response.status_code": status,
+        "http.response.status_text": statusText,
+        error_message: `HTTP ${status}: ${statusText}`,
+      });
+      await logger.flush();
+      return { notFound: true };
+    }
+
     console.error(`[${ROUTE}] Unexpected error fetching public bookmark`, {
       bookmark_id,
       categorySlug,

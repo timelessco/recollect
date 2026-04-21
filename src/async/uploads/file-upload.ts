@@ -31,7 +31,7 @@ export const fileUpload = (
       );
 
       if (uploadFileLimit(acceptedFiles[index]?.size)) {
-        errorToast("File size is larger than 10mb", "fileSizeError");
+        errorToast("File size is larger than 10MB", "fileSizeError");
         continue;
       }
 

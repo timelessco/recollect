@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import ky from "ky";
+
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { storeQueueError } from "@/lib/api-helpers/queue";
@@ -155,17 +157,14 @@ export const POST = createAxiomRouteHandler(
       if (isRaindropBookmark || isInstagramBookmark) {
         const platform = isRaindropBookmark ? "raindrop" : "instagram";
         try {
-          const imageResponse = await fetch(ogImage, {
+          const imageResponse = await ky.get(ogImage, {
             headers: {
               Accept: "image/*,*/*;q=0.8",
               "User-Agent": "Mozilla/5.0",
             },
+            retry: 0,
             signal: AbortSignal.timeout(IMAGE_DOWNLOAD_TIMEOUT_MS),
           });
-
-          if (!imageResponse.ok) {
-            throw new Error(`HTTP error! status: ${imageResponse.status}`);
-          }
 
           const arrayBuffer = await imageResponse.arrayBuffer();
           const returnedB64 = Buffer.from(arrayBuffer).toString("base64");

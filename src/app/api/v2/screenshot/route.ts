@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import ky from "ky";
+
 import { imageToText } from "@/async/ai/image-analysis";
 import { env } from "@/env/server";
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
@@ -116,19 +118,13 @@ export const POST = createAxiomRouteHandler(
           if (mediaType === PDF_MIME_TYPE) {
             // PDF screenshot via external API
             try {
-              const response = await fetch(env.PDF_URL_SCREENSHOT_API, {
-                body: JSON.stringify({ url, userId: user_id }),
-                headers: {
-                  Authorization: `Bearer ${env.PDF_SECRET_KEY}`,
-                  "Content-Type": "application/json",
-                },
-                method: "POST",
-              });
-              if (!response.ok) {
-                throw new Error(`PDF screenshot API returned ${String(response.status)}`);
-              }
-
-              const pdfResult: unknown = await response.json();
+              const pdfResult = await ky
+                .post(env.PDF_URL_SCREENSHOT_API, {
+                  json: { url, userId: user_id },
+                  headers: { Authorization: `Bearer ${env.PDF_SECRET_KEY}` },
+                  timeout: false,
+                })
+                .json<unknown>();
               publicURL =
                 isRecord(pdfResult) && typeof pdfResult.publicUrl === "string"
                   ? pdfResult.publicUrl
@@ -143,14 +139,12 @@ export const POST = createAxiomRouteHandler(
             // queue-worker path silently uploaded empty R2 blobs for months before this
             // guard was added, which bubbled up as Gemini `INVALID_ARGUMENT`.
             try {
-              const response = await fetch(
-                `${env.SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`,
-              );
-              if (!response.ok) {
-                throw new Error(`Screenshot API returned ${String(response.status)}`);
-              }
-
-              const screenshotData: unknown = await response.json();
+              const screenshotData = await ky
+                .get(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`, {
+                  retry: 0,
+                  timeout: false,
+                })
+                .json<unknown>();
               const { metaData: responseMeta, screenshotBuffer } =
                 parseScreenshotResponse(screenshotData);
 

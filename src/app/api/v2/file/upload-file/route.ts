@@ -1,5 +1,6 @@
 import { after } from "next/server";
 
+import ky, { HTTPError } from "ky";
 import slugify from "slugify";
 
 import type { StructuredKeywords, UserCollection } from "@/async/ai/schemas/image-analysis-schema";
@@ -26,6 +27,7 @@ import {
   NEXT_API_URL,
   PDF_MIME_TYPE,
   STORAGE_FILES_PATH,
+  V2_GET_MEDIA_TYPE_API,
 } from "@/utils/constants";
 import { blurhashFromURL } from "@/utils/getBlurHash";
 import { normalizeUploadedMimeType } from "@/utils/mime";
@@ -46,21 +48,13 @@ function parseUploadFileName(name: string): string {
 
 async function getMediaType(url: string): Promise<null | string> {
   try {
-    const encodedUrl = encodeURIComponent(url);
-    const response = await fetch(
-      `${getBaseUrl()}${NEXT_API_URL}/v2/bookmarks/get/get-media-type?url=${encodedUrl}`,
-      { method: "GET" },
-    );
+    const json = await ky
+      .get(`${getBaseUrl()}${NEXT_API_URL}/${V2_GET_MEDIA_TYPE_API}`, {
+        retry: 0,
+        searchParams: { url },
+      })
+      .json<unknown>();
 
-    if (!response.ok) {
-      setPayload(getServerContext(), {
-        media_type_error: "upstream_not_ok",
-        media_type_status: response.status,
-      });
-      return null;
-    }
-
-    const json: unknown = await response.json();
     if (json !== null && json !== undefined && typeof json === "object" && "mediaType" in json) {
       const { mediaType } = json;
       return typeof mediaType === "string" ? mediaType : null;
@@ -68,9 +62,17 @@ async function getMediaType(url: string): Promise<null | string> {
 
     return null;
   } catch (error) {
-    setPayload(getServerContext(), {
-      media_type_error: error instanceof Error ? error.message : String(error),
-    });
+    const ctx = getServerContext();
+    if (error instanceof HTTPError) {
+      setPayload(ctx, {
+        media_type_error: "upstream_not_ok",
+        media_type_status: error.response.status,
+      });
+    } else {
+      setPayload(ctx, {
+        media_type_error: error instanceof Error ? error.message : String(error),
+      });
+    }
     return null;
   }
 }
