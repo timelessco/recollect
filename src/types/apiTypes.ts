@@ -202,6 +202,7 @@ export interface ProfilesTableTypes {
   id: string;
   last_synced_instagram_id: null | string;
   last_synced_twitter_id: null | string;
+  onboarded_at: null | string;
   preferred_og_domains?: null | string[];
   profile_pic: string;
   provider: null | string;
@@ -226,12 +227,14 @@ export interface ProfilesTableForPayloadTypes {
 
 export type BookmarksWithTagsWithTagForginKeys = {
   bookmark_id: number;
-  tag_id: { id: number; name: string };
+  // FK side is nullable: scoped RLS hides the joined row when the caller can't read it.
+  tag_id: null | { id: number; name: string };
 }[];
 
 export type BookmarksWithCategoriesWithCategoryForeignKeys = {
   bookmark_id: number;
-  category_id: {
+  // FK side is nullable: scoped RLS hides the joined row when the caller can't read it.
+  category_id: null | {
     category_name: string;
     category_slug: string;
     icon: null | string;

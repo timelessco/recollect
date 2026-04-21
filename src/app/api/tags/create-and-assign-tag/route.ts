@@ -6,6 +6,9 @@ import { CreateAndAssignTagPayloadSchema, CreateAndAssignTagResponseSchema } fro
 
 const ROUTE = "create-and-assign-tag";
 
+/**
+ * @deprecated Use /api/v2/tags/create-and-assign-tag instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     const { bookmarkId, name } = data;

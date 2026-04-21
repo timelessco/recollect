@@ -9,6 +9,9 @@ const ROUTE = "twitter-sync-status";
 
 const StatusInputSchema = z.object({});
 
+/**
+ * @deprecated Use /api/v2/twitter/sync/status instead. Retained for iOS and extension clients.
+ */
 export const GET = createGetApiHandlerWithAuth({
   handler: async ({ route, supabase, user }) => {
     const { data, error } = await supabase.rpc("get_twitter_sync_status", {

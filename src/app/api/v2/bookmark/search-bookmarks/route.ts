@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createApiClient, getApiUser } from "@/lib/supabase/api";
 import { getBookmarkMediaCategoryPredicate } from "@/utils/bookmark-category-filters";
 import { isUserOwnerOrAnyCollaborator } from "@/utils/category-auth";
@@ -51,16 +51,36 @@ function isUserCollection(categoryId: string): boolean {
   return categoryId !== "null" && categoryId !== "" && !SPECIAL_CATEGORY_URLS.has(categoryId);
 }
 
+/**
+ * Two audiences, one URL. The search bar lives on public discover pages
+ * (no user) AND user collections (require identity for ownership +
+ * collaborator scoping).
+ *
+ * Why not two routes: would duplicate the shared RPC + token-parsing
+ * pipeline (color hints, type hints, site scope, media-category predicates).
+ * Why not `withAuth`: would 401 logged-out discover-page searches.
+ * Why not `createServerServiceClient()`: would strip the `user.id` /
+ * `user.email` the authed branch needs for `user_id` filtering and
+ * `isUserOwnerOrAnyCollaborator` checks.
+ *
+ * So: `withPublic` + branch on `category_id === DISCOVER_URL`. Discover is
+ * fully anon. Every other branch calls `getApiUser()` and fails closed with
+ * `unauthorized` if no session is present.
+ *
+ * Spoof safety: `category_id` is caller-provided, but `DISCOVER_URL` matches
+ * only the `make_discoverable IS NOT NULL` filter path below. Setting
+ * `category_id=discover` reaches public data only — no per-user rows are
+ * reachable through the discover branch.
+ *
+ * See pitfall #34 in .claude/agents/references/api-migration-pitfalls.md for
+ * when this conditional-auth pattern is justified vs. when to prefer
+ * `withAuth` or a service client outright.
+ */
 export const GET = createAxiomRouteHandler(
   withPublic({
     handler: async ({ input }) => {
       const { category_id: categoryId, offset, search } = input;
 
-      // Auth derivation: isDiscoverPage = (categoryId === DISCOVER_URL).
-      // categoryId is a client-provided query param, but the comparison is against
-      // the well-known constant "discover". An attacker setting category_id=discover
-      // only triggers the public-bookmarks code path (no private data exposed).
-      // Non-discover paths require valid user auth — failure throws RecollectApiError("unauthorized").
       const isDiscoverPage = categoryId === DISCOVER_URL;
 
       let supabase;
@@ -95,10 +115,12 @@ export const GET = createAxiomRouteHandler(
 
       const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.is_discover = isDiscoverPage;
         ctx.fields.category_id = categoryId;
-        ctx.fields.offset = offset;
       }
+      setPayload(ctx, {
+        is_discover: isDiscoverPage,
+        offset,
+      });
 
       // Parse search modifiers: @domain.com site scope, then #-tokens (plain tags + color hints)
       const matchedSiteScope = search.match(GET_SITE_SCOPE_PATTERN);
@@ -113,11 +135,12 @@ export const GET = createAxiomRouteHandler(
       } = parseSearchTokens(searchWithoutSiteScope);
       const tagName = plainTags.length > 0 ? plainTags : undefined;
 
-      if (ctx?.fields) {
-        ctx.fields.search_text = searchText || null;
-        ctx.fields.tag_name = tagName?.at(0) ?? null;
-        ctx.fields.url_scope = urlScope || null;
-      }
+      setPayload(ctx, {
+        has_search_text: searchText.length > 0,
+        search_text_length: searchText.length,
+        has_tag_filter: tagName !== undefined && tagName.length > 0,
+        url_scope: urlScope || null,
+      });
 
       // Determine category_scope for junction table filtering
       // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
@@ -199,10 +222,10 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.results_count = data?.length ?? 0;
-        ctx.fields.has_tag_filter = tagName !== undefined && tagName.length > 0;
-      }
+      setPayload(ctx, {
+        results_count: data?.length ?? 0,
+        has_tag_filter: tagName !== undefined && tagName.length > 0,
+      });
 
       // Map RPC snake_case fields to camelCase (Pitfall 7)
       // Widen to Record to handle overloaded RPC return union — output schema validates at runtime

@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { isNonNullable } from "@/utils/assertion-utils";
 import {
@@ -73,8 +73,8 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
-        ctx.fields.operation = "delete_user";
       }
+      setPayload(ctx, { operation: "delete_user" });
 
       // Step 1: Delete bookmark_tags (junction — must delete before bookmarks)
       const { error: bookmarkTagsError } = await supabase
@@ -220,9 +220,7 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.user_deleted = true;
-      }
+      setPayload(ctx, { user_deleted: true });
 
       return { user: null };
     },

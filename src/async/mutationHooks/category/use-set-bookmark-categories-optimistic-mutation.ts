@@ -1,21 +1,21 @@
 import { produce } from "immer";
 
 import type {
-  SetBookmarkCategoriesPayload,
-  SetBookmarkCategoriesResponse,
-} from "@/app/api/category/set-bookmark-categories/schema";
+  SetBookmarkCategoriesInput,
+  SetBookmarkCategoriesOutput,
+} from "@/app/api/v2/category/set-bookmark-categories/schema";
 import type { CategoriesData, PaginatedBookmarks } from "@/types/apiTypes";
 
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
-import { postApi } from "@/lib/api-helpers/api";
+import { api } from "@/lib/api-helpers/api-v2";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
-  SET_BOOKMARK_CATEGORIES_API,
   UNCATEGORIZED_CATEGORY_ID,
+  V2_SET_BOOKMARK_CATEGORIES_API,
 } from "@/utils/constants";
 
 interface SetBookmarkCategoriesMutationOptions {
@@ -35,14 +35,16 @@ export function useSetBookmarkCategoriesOptimisticMutation({
     useBookmarkMutationContext();
 
   const setBookmarkCategoriesOptimisticMutation = useReactQueryOptimisticMutation<
-    SetBookmarkCategoriesResponse,
+    SetBookmarkCategoriesOutput,
     Error,
-    SetBookmarkCategoriesPayload,
+    SetBookmarkCategoriesInput,
     typeof queryKey,
     PaginatedBookmarks
   >({
     mutationFn: (payload) =>
-      postApi<SetBookmarkCategoriesResponse>(`/api${SET_BOOKMARK_CATEGORIES_API}`, payload),
+      api
+        .post(V2_SET_BOOKMARK_CATEGORIES_API, { json: payload })
+        .json<SetBookmarkCategoriesOutput>(),
     onSettled: (_data, error) => {
       if (error) {
         return;

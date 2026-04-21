@@ -14,6 +14,9 @@ export type ToggleFavoriteCategoryPayload = z.infer<typeof ToggleFavoriteCategor
 
 export type ToggleFavoriteCategoryResponse = z.infer<typeof ToggleFavoriteCategoryResponseSchema>;
 
+/**
+ * @deprecated Use /api/v2/profiles/toggle-favorite-category instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     const { category_id } = data;

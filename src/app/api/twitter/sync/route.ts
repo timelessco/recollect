@@ -7,6 +7,9 @@ import { TwitterSyncInputSchema, TwitterSyncOutputSchema } from "./schema";
 
 const ROUTE = "twitter-sync";
 
+/**
+ * @deprecated Use /api/v2/twitter/sync instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, user }) => {
     const userId = user.id;

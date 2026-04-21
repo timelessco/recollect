@@ -88,7 +88,6 @@ const MetadataSchema = z.object({
 });
 
 const DiscoverableBookmarkRowSchema = z.object({
-  category_id: z.number().meta({ description: "Primary category ID for this bookmark" }),
   description: z.string().nullable().meta({ description: "Page or OG description" }),
   id: z.number().meta({ description: "Bookmark ID" }),
   inserted_at: z.string().meta({ description: "ISO timestamp when bookmark was created" }),
@@ -108,6 +107,7 @@ const DiscoverableBookmarkRowSchema = z.object({
     .meta({ description: "ISO timestamp when trashed, null if not trashed" }),
   type: z.string().nullable().meta({ description: "Content type" }),
   url: z.string().nullable().meta({ description: "Bookmarked URL" }),
+  user_id: z.string().meta({ description: "UUID of the bookmark owner" }),
 });
 
 export const FetchDiscoverBookmarksResponseSchema = z.array(DiscoverableBookmarkRowSchema);

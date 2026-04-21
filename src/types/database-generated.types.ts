@@ -150,7 +150,7 @@ export type Database = {
           icon_color: string | null;
           id: number;
           is_public: boolean;
-          order_index: number | null;
+          updated_at: string;
           user_id: string | null;
         };
         Insert: {
@@ -162,7 +162,7 @@ export type Database = {
           icon_color?: string | null;
           id?: number;
           is_public?: boolean;
-          order_index?: number | null;
+          updated_at?: string;
           user_id?: string | null;
         };
         Update: {
@@ -174,7 +174,7 @@ export type Database = {
           icon_color?: string | null;
           id?: number;
           is_public?: boolean;
-          order_index?: number | null;
+          updated_at?: string;
           user_id?: string | null;
         };
         Relationships: [
@@ -189,7 +189,6 @@ export type Database = {
       };
       everything: {
         Row: {
-          category_id: number;
           description: string | null;
           enriched_at: string | null;
           enrichment_status: string | null;
@@ -203,11 +202,11 @@ export type Database = {
           title: string | null;
           trash: string | null;
           type: string | null;
+          updated_at: string;
           url: string | null;
           user_id: string;
         };
         Insert: {
-          category_id?: number;
           description?: string | null;
           enriched_at?: string | null;
           enrichment_status?: string | null;
@@ -221,11 +220,11 @@ export type Database = {
           title?: string | null;
           trash?: string | null;
           type?: string | null;
+          updated_at?: string;
           url?: string | null;
           user_id: string;
         };
         Update: {
-          category_id?: number;
           description?: string | null;
           enriched_at?: string | null;
           enrichment_status?: string | null;
@@ -239,6 +238,7 @@ export type Database = {
           title?: string | null;
           trash?: string | null;
           type?: string | null;
+          updated_at?: string;
           url?: string | null;
           user_id?: string;
         };
@@ -259,6 +259,7 @@ export type Database = {
           bookmark_count: number | null;
           bookmarks_view: Json | null;
           category_order: number[] | null;
+          created_at: string;
           display_name: string | null;
           email: string | null;
           favorite_categories: number[];
@@ -275,6 +276,7 @@ export type Database = {
           provider: string | null;
           subscription_current_period_end: string | null;
           subscription_status: string | null;
+          updated_at: string;
           user_name: string | null;
         };
         Insert: {
@@ -283,6 +285,7 @@ export type Database = {
           bookmark_count?: number | null;
           bookmarks_view?: Json | null;
           category_order?: number[] | null;
+          created_at?: string;
           display_name?: string | null;
           email?: string | null;
           favorite_categories?: number[];
@@ -299,6 +302,7 @@ export type Database = {
           provider?: string | null;
           subscription_current_period_end?: string | null;
           subscription_status?: string | null;
+          updated_at?: string;
           user_name?: string | null;
         };
         Update: {
@@ -307,6 +311,7 @@ export type Database = {
           bookmark_count?: number | null;
           bookmarks_view?: Json | null;
           category_order?: number[] | null;
+          created_at?: string;
           display_name?: string | null;
           email?: string | null;
           favorite_categories?: number[];
@@ -323,6 +328,7 @@ export type Database = {
           provider?: string | null;
           subscription_current_period_end?: string | null;
           subscription_status?: string | null;
+          updated_at?: string;
           user_name?: string | null;
         };
         Relationships: [];
@@ -336,6 +342,7 @@ export type Database = {
           email: string | null;
           id: number;
           is_accept_pending: boolean | null;
+          updated_at: string;
           user_id: string;
         };
         Insert: {
@@ -346,6 +353,7 @@ export type Database = {
           email?: string | null;
           id?: number;
           is_accept_pending?: boolean | null;
+          updated_at?: string;
           user_id: string;
         };
         Update: {
@@ -356,6 +364,7 @@ export type Database = {
           email?: string | null;
           id?: number;
           is_accept_pending?: boolean | null;
+          updated_at?: string;
           user_id?: string;
         };
         Relationships: [
@@ -380,18 +389,21 @@ export type Database = {
           created_at: string | null;
           id: number;
           name: string | null;
+          updated_at: string;
           user_id: string | null;
         };
         Insert: {
           created_at?: string | null;
           id?: number;
           name?: string | null;
+          updated_at?: string;
           user_id?: string | null;
         };
         Update: {
           created_at?: string | null;
           id?: number;
           name?: string | null;
+          updated_at?: string;
           user_id?: string | null;
         };
         Relationships: [];
@@ -455,10 +467,6 @@ export type Database = {
         Returns: undefined;
       };
       check_bookmarks_view_keyed_shape: { Args: { v: Json }; Returns: boolean };
-      color_matches_oklab: {
-        Args: { colors: Json; hint_a: number; hint_b: number; hint_l: number };
-        Returns: boolean;
-      };
       create_and_assign_tag: {
         Args: { p_bookmark_id: number; p_tag_name: string };
         Returns: {
@@ -524,6 +532,17 @@ export type Database = {
       invoke_instagram_worker: { Args: never; Returns: number };
       invoke_raindrop_worker: { Args: never; Returns: number };
       invoke_twitter_worker: { Args: never; Returns: number };
+      lch_color_score: {
+        Args: {
+          hint_a: number;
+          hint_b: number;
+          hint_l: number;
+          stored_a: number;
+          stored_b: number;
+          stored_l: number;
+        };
+        Returns: number;
+      };
       link_twitter_bookmark_category: {
         Args: {
           p_category_name: string;
@@ -613,70 +632,6 @@ export type Database = {
         Args: { p_msg_ids: number[]; p_user_id: string };
         Returns: Json;
       };
-      search_bookmarks: {
-        Args: { search_text: string };
-        Returns: {
-          category_id: number;
-          description: string;
-          id: number;
-          inserted_at: string;
-          meta_data: Json;
-          ogimage: string;
-          screenshot: string;
-          sort_index: string;
-          title: string;
-          trash: boolean;
-          type: string;
-          url: string;
-          user_id: string;
-        }[];
-      };
-      search_bookmarks_debug: {
-        Args: { search_text: string };
-        Returns: {
-          caption: string;
-          has_meta: boolean;
-          id: number;
-          title: string;
-        }[];
-      };
-      search_bookmarks_debugging:
-        | {
-            Args: { search_text: string };
-            Returns: {
-              category_id: number;
-              description: string;
-              id: number;
-              inserted_at: string;
-              meta_data: Json;
-              ogimage: string;
-              screenshot: string;
-              sort_index: string;
-              title: string;
-              trash: boolean;
-              type: string;
-              url: string;
-              user_id: string;
-            }[];
-          }
-        | {
-            Args: { search_text: string; url_scope: string };
-            Returns: {
-              category_id: number;
-              description: string;
-              id: number;
-              inserted_at: string;
-              meta_data: Json;
-              ogimage: string;
-              screenshot: string;
-              sort_index: string;
-              title: string;
-              trash: boolean;
-              type: string;
-              url: string;
-              user_id: string;
-            }[];
-          };
       search_bookmarks_url_tag_scope: {
         Args: {
           category_scope?: number;
@@ -740,6 +695,10 @@ export type Database = {
       };
       user_owns_bookmark: {
         Args: { p_bookmark_id: number; p_user_id: string };
+        Returns: boolean;
+      };
+      user_owns_category: {
+        Args: { p_category_id: number; p_user_id: string };
         Returns: boolean;
       };
     };

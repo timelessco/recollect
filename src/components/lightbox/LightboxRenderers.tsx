@@ -220,8 +220,9 @@ export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
     const placeholderHeight = bookmark?.meta_data?.height ?? 800;
     const placeholderWidth = bookmark?.meta_data?.width ?? 1200;
 
-    // Check if this is a screenshot URL (may need special scaling)
-    const is2xScreenshot = bookmark?.meta_data?.isPageScreenshot;
+    // Strict === true guard: legacy rows persisted `{}` as a no-value sentinel, which is
+    // truthy in JS and would falsely trigger 50% page-screenshot scaling on regular images.
+    const is2xScreenshot = bookmark?.meta_data?.isPageScreenshot === true;
 
     // Apply 50% scaling to screenshots to make them more manageable
     const scaledWidth = is2xScreenshot ? placeholderWidth * 0.5 : placeholderWidth;

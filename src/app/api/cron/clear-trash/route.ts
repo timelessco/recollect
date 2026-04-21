@@ -12,6 +12,9 @@ const ROUTE = "cron/clear-trash";
 const BATCH_SIZE = 1000;
 const TRASH_RETENTION_DAYS = 30;
 
+/**
+ * @deprecated Use /api/v2/cron/clear-trash instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithSecret({
   handler: async ({ route }) => {
     const supabase = createServerServiceClient();

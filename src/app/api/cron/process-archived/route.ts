@@ -14,6 +14,9 @@ const RpcResultSchema = z.object({
   requeued: z.int(),
 });
 
+/**
+ * @deprecated Use /api/v2/cron/process-archived instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithSecret({
   handler: async ({ input, route }) => {
     const supabase = createServerServiceClient();

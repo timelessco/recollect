@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { BOOKMARK_CATEGORIES_TABLE_NAME, MAIN_TABLE_NAME } from "@/utils/constants";
 
 import { FetchByIdInputSchema, FetchByIdOutputSchema } from "./schema";
@@ -33,9 +33,7 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.found = bookmarks.length > 0;
-      }
+      setPayload(ctx, { found: bookmarks.length > 0 });
 
       const { data: categoriesData, error: categoriesError } = await supabase
         .from(BOOKMARK_CATEGORIES_TABLE_NAME)
@@ -61,9 +59,7 @@ export const GET = createAxiomRouteHandler(
           id: item.category_id.id,
         }));
 
-      if (ctx?.fields) {
-        ctx.fields.categories_count = addedCategories.length;
-      }
+      setPayload(ctx, { categories_count: addedCategories.length });
 
       return bookmarks.map((bookmark) => ({
         ...bookmark,

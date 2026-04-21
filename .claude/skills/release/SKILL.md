@@ -159,4 +159,4 @@ pnpm release:cleanup
 - **`GITHUB_TOKEN` required** for local `pnpm release` — the changelog writer fetches commit author data from GitHub API
 - **Don't push to dev after merge** — wait for CI backmerge to complete, or you'll create divergence
 - **Don't run `pnpm release:cleanup` after CI success** — CI already handles backmerge + branch deletion; running it manually creates empty merge commits
-- **API changelog** — `release-pr.sh` posts `docs/API_CHANGELOG.md` as a PR comment (if non-empty); the backmerge step clears the file automatically
+- **API changelog** — `scripts/release/release-pr.js` posts `docs/API_CHANGELOG.md` as a PR comment (if non-empty); the backmerge step clears the file automatically

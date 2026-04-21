@@ -15,6 +15,7 @@ export const env = createEnv({
     PDF_URL_SCREENSHOT_API: z.string(),
     RESEND_KEY: z.string().optional(),
     REVALIDATE_SECRET_TOKEN: z.string(),
+    SCREENSHOT_API: z.url(),
     SUPABASE_SERVICE_KEY: z.string(),
     UMAMI_ID: z.string().optional(),
     UMAMI_SRC: z.string().optional(),

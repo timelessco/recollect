@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { QueryKey, UseQueryOptions } from "@tanstack/react-query";
 
-import { handleClientError, handleSuccess } from "@/utils/error-utils/client";
+import { handleSuccess, useHandleClientError } from "@/utils/error-utils/client";
 
 /**
  * Extended query options with UI handling flags.
@@ -69,6 +69,7 @@ export function useReactQuery<
   } = options;
 
   const queryResult = useQuery(restOptions);
+  const handleClientError = useHandleClientError();
 
   // Track whether callbacks have been invoked for current query
   const hasHandledSuccessRef = useRef(false);
@@ -109,7 +110,7 @@ export function useReactQuery<
 
       onError?.(queryResult.error);
     }
-  }, [queryResult.isError, queryResult.error, skipErrorHandling, onError]);
+  }, [queryResult.isError, queryResult.error, skipErrorHandling, onError, handleClientError]);
 
   return queryResult;
 }

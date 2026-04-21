@@ -1,20 +1,25 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import type { ReactNode } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 import isNull from "lodash/isNull";
 
+import { Spinner } from "@/components/spinner";
+
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/use-fetch-bookmarks-view";
 import useFetchCategories from "../../async/queryHooks/category/use-fetch-categories";
 import useFetchSharedCategories from "../../async/queryHooks/share/use-fetch-shared-categories";
 import useFetchUserProfile from "../../async/queryHooks/user/use-fetch-user-profile";
+import { useSignOutRealtimeTeardown } from "../../hooks/use-sign-out-realtime-teardown";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
+import { useMounted } from "../../hooks/useMounted";
 import { useSupabaseSession } from "../../store/componentStore";
 import { BOOKMARKS_KEY, DISCOVER_URL, LOGIN_URL } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
@@ -42,16 +47,23 @@ const OnboardingModal = dynamic(
 const supabase = createClient();
 
 interface DashboardProps {
+  // Accepted so `getLayout` in pages can pass the route page as children.
+  // Dashboard renders its own main-pane tree internally based on route —
+  // `children` is intentionally not rendered.
+  children?: ReactNode;
   showOnboarding?: boolean;
 }
 
 const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
+  const isMounted = useMounted();
   const queryClient = useQueryClient();
   const router = useRouter();
   const categorySlug = getCategorySlugFromRouter(router);
 
   const setSession = useSupabaseSession((state) => state.setSession);
   const session = useSupabaseSession((state) => state.session);
+
+  useSignOutRealtimeTeardown();
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -109,7 +121,7 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
   const { userProfileData } = useFetchUserProfile();
 
   const { updateUserProfileOptimisticMutation } = useUpdateUserProfileOptimisticMutation();
-  const updateUserProfileMutateAsync = updateUserProfileOptimisticMutation.mutateAsync;
+  const updateUserProfileMutate = updateUserProfileOptimisticMutation.mutate;
 
   // if the user email as been changed then this updates the email in the profiles table
   useEffect(() => {
@@ -119,20 +131,20 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
       session?.user?.email !== userProfileData?.[0]?.email &&
       userProfileData?.[0]?.email
     ) {
-      void updateUserProfileMutateAsync({
+      updateUserProfileMutate({
         updateData: { email: session?.user?.email },
       });
     }
-  }, [session?.user?.email, updateUserProfileMutateAsync, userProfileData]);
+  }, [session?.user?.email, updateUserProfileMutate, userProfileData]);
 
   // this updates the provider in the profiles table if its not present
   useEffect(() => {
     if (!userProfileData?.[0]?.provider && session?.user?.app_metadata?.provider) {
-      void updateUserProfileMutateAsync({
+      updateUserProfileMutate({
         updateData: { provider: session?.user?.app_metadata?.provider },
       });
     }
-  }, [session?.user?.app_metadata?.provider, updateUserProfileMutateAsync, userProfileData]);
+  }, [session?.user?.app_metadata?.provider, updateUserProfileMutate, userProfileData]);
 
   const isDiscoverPage = categorySlug === DISCOVER_URL;
 
@@ -149,6 +161,17 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
 
     return <NotFoundPage />;
   };
+
+  // Gate on mount so SSR output is a spinner (matches pre-PR behavior).
+  // DashboardLayout is `dynamic(..., { ssr: false })` so without this gate
+  // SSR would emit blank HTML.
+  if (!isMounted) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Spinner className="h-3 w-3 animate-spin" />
+      </div>
+    );
+  }
 
   if (isNil(session) && !isDiscoverPage) {
     return null;

@@ -1,5 +1,6 @@
 import { after } from "next/server";
 
+import ky, { HTTPError } from "ky";
 import slugify from "slugify";
 
 import type { StructuredKeywords, UserCollection } from "@/async/ai/schemas/image-analysis-schema";
@@ -11,7 +12,7 @@ import { imageToText } from "@/async/ai/image-analysis";
 import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { uploadFileRemainingData } from "@/lib/files/upload-file-remaining-data";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";
 import { isNullable } from "@/utils/assertion-utils";
@@ -26,6 +27,7 @@ import {
   NEXT_API_URL,
   PDF_MIME_TYPE,
   STORAGE_FILES_PATH,
+  V2_GET_MEDIA_TYPE_API,
 } from "@/utils/constants";
 import { blurhashFromURL } from "@/utils/getBlurHash";
 import { normalizeUploadedMimeType } from "@/utils/mime";
@@ -46,22 +48,13 @@ function parseUploadFileName(name: string): string {
 
 async function getMediaType(url: string): Promise<null | string> {
   try {
-    const encodedUrl = encodeURIComponent(url);
-    const response = await fetch(
-      `${getBaseUrl()}${NEXT_API_URL}/v2/bookmarks/get/get-media-type?url=${encodedUrl}`,
-      { method: "GET" },
-    );
+    const json = await ky
+      .get(`${getBaseUrl()}${NEXT_API_URL}/${V2_GET_MEDIA_TYPE_API}`, {
+        retry: 0,
+        searchParams: { url },
+      })
+      .json<unknown>();
 
-    if (!response.ok) {
-      const ctx = getServerContext();
-      if (ctx?.fields) {
-        ctx.fields.media_type_error = "upstream_not_ok";
-        ctx.fields.media_type_status = response.status;
-      }
-      return null;
-    }
-
-    const json: unknown = await response.json();
     if (json !== null && json !== undefined && typeof json === "object" && "mediaType" in json) {
       const { mediaType } = json;
       return typeof mediaType === "string" ? mediaType : null;
@@ -70,8 +63,15 @@ async function getMediaType(url: string): Promise<null | string> {
     return null;
   } catch (error) {
     const ctx = getServerContext();
-    if (ctx?.fields) {
-      ctx.fields.media_type_error = error instanceof Error ? error.message : String(error);
+    if (error instanceof HTTPError) {
+      setPayload(ctx, {
+        media_type_error: "upstream_not_ok",
+        media_type_status: error.response.status,
+      });
+    } else {
+      setPayload(ctx, {
+        media_type_error: error instanceof Error ? error.message : String(error),
+      });
     }
     return null;
   }
@@ -98,8 +98,8 @@ async function processVideo(
   // on legitimate videos. The bookmark still gets created with a null ogImage,
   // and the rendering layer falls back to the type-icon placeholder.
   const ctx = getServerContext();
-  if (!thumbnailPath && ctx?.fields) {
-    ctx.fields.video_thumbnail_missing = true;
+  if (!thumbnailPath) {
+    setPayload(ctx, { video_thumbnail_missing: true });
   }
 
   const { data: thumbnailUrl } = thumbnailPath
@@ -118,9 +118,9 @@ async function processVideo(
     try {
       imgData = await blurhashFromURL(thumbnailUrl.publicUrl);
     } catch (error) {
-      if (ctx?.fields) {
-        ctx.fields.blurhash_error = error instanceof Error ? error.message : String(error);
-      }
+      setPayload(ctx, {
+        blurhash_error: error instanceof Error ? error.message : String(error),
+      });
       imgData = {};
     }
 
@@ -139,9 +139,9 @@ async function processVideo(
       ocrData = imageToTextResult?.ocr_text ?? null;
       ocrStatus = imageToTextResult?.ocr_text ? "success" : "no_text";
     } catch (error) {
-      if (ctx?.fields) {
-        ctx.fields.image_caption_error = error instanceof Error ? error.message : String(error);
-      }
+      setPayload(ctx, {
+        image_caption_error: error instanceof Error ? error.message : String(error),
+      });
       imageCaption = null;
     }
   }
@@ -193,10 +193,9 @@ export const POST = createAxiomRouteHandler(
       // appear in the Axiom wide event even if after() throws).
       const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.file_name = fileName;
-        ctx.fields.file_type = fileType;
         ctx.fields.category_id = data.category_id;
       }
+      setPayload(ctx, { file_name: fileName, file_type: fileType });
 
       const uploadPath = parseUploadFileName(data.uploadFileNamePath);
       const storagePath = `${STORAGE_FILES_PATH}/${userId}/${uploadPath}`;
@@ -297,7 +296,7 @@ export const POST = createAxiomRouteHandler(
         .from(MAIN_TABLE_NAME)
         .insert([
           {
-            description: typeof metaData.img_caption === "string" ? metaData.img_caption : "",
+            description: typeof metaData.img_caption === "string" ? metaData.img_caption : null,
             meta_data: toJson(metaData),
             ogImage,
             title: fileName,
@@ -337,9 +336,11 @@ export const POST = createAxiomRouteHandler(
       });
 
       // Non-blocking — bookmark was created, junction failure is degraded but not fatal
-      if (junctionError && ctx?.fields) {
-        ctx.fields.junction_error = junctionError.message;
-        ctx.fields.junction_error_code = junctionError.code;
+      if (junctionError) {
+        setPayload(ctx, {
+          junction_error: junctionError.message,
+          junction_error_code: junctionError.code,
+        });
       }
 
       // PDF: return early, no enrichment

@@ -16,6 +16,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
   const response = await api.get(V2_GET_PDF_BUFFER_API, {
+    retry: 0,
     searchParams: { url: file },
   });
 

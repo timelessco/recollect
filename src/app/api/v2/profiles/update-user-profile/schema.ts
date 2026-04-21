@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { DISPLAY_NAME_CHECK_PATTERN } from "@/utils/constants";
+
 const UpdateDataSchema = z
   .object({
     ai_features_toggle: z
@@ -13,7 +15,15 @@ const UpdateDataSchema = z
       .nullable()
       .optional()
       .meta({ description: "Updated ordered array of category IDs" }),
-    display_name: z.string().nullable().optional().meta({ description: "Updated display name" }),
+    display_name: z
+      .string()
+      .trim()
+      .min(1)
+      .max(100)
+      .regex(DISPLAY_NAME_CHECK_PATTERN, "Display name should not contain special characters")
+      .nullable()
+      .optional()
+      .meta({ description: "Updated display name" }),
     email: z.string().nullable().optional().meta({ description: "Updated email address" }),
     favorite_categories: z
       .array(z.int())

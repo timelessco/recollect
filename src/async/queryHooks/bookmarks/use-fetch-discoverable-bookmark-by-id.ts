@@ -2,12 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { SingleListData } from "@/types/apiTypes";
 
-import { getApi } from "@/lib/api-helpers/api";
+import { api } from "@/lib/api-helpers/api-v2";
 import {
   BOOKMARKS_KEY,
   DISCOVER_URL,
-  FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API,
-  NEXT_API_URL,
+  V2_FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API,
 } from "@/utils/constants";
 
 export const useFetchDiscoverableBookmarkById = (
@@ -21,9 +20,11 @@ export const useFetchDiscoverableBookmarkById = (
   } = useQuery({
     enabled: options?.enabled ?? Boolean(id),
     queryFn: async () => {
-      const data = await getApi<SingleListData>(
-        `${NEXT_API_URL}${FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API}?id=${id}`,
-      );
+      const data = await api
+        .get(V2_FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API, {
+          searchParams: { id: String(id) },
+        })
+        .json<SingleListData>();
       return data;
     },
     queryKey: [BOOKMARKS_KEY, DISCOVER_URL, id],

@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { isNonNullable } from "@/utils/assertion-utils";
 import { PROFILES, SHARED_CATEGORIES_TABLE_NAME } from "@/utils/constants";
 
@@ -41,8 +41,8 @@ export const GET = createAxiomRouteHandler(
       const { data: categoriesData, error: categoriesError } = categoriesResult;
       const { data: userProfile, error: profileError } = profileResult;
 
-      if (profileError && ctx?.fields) {
-        ctx.fields.profile_fetch_failed = true;
+      if (profileError) {
+        setPayload(ctx, { profile_fetch_failed: true });
       }
 
       if (categoriesError) {
@@ -70,9 +70,9 @@ export const GET = createAxiomRouteHandler(
           email
         `);
 
-      if (sharedCategoryError && ctx?.fields) {
+      if (sharedCategoryError) {
         // Don't throw here as shared categories are not critical
-        ctx.fields.shared_category_fetch_failed = true;
+        setPayload(ctx, { shared_category_fetch_failed: true });
       }
 
       // Query 4: Fetch categories where user is an accepted collaborator (pending excluded)
@@ -129,10 +129,10 @@ export const GET = createAxiomRouteHandler(
       // Merge own + collab categories
       const mergedCategories = [...userCategories, ...flattenedCollabCategories];
 
-      if (ctx?.fields) {
-        ctx.fields.category_count = mergedCategories.length;
-        ctx.fields.shared_categories_count = flattenedCollabCategories.length;
-      }
+      setPayload(ctx, {
+        category_count: mergedCategories.length,
+        shared_categories_count: flattenedCollabCategories.length,
+      });
 
       // For each category, build collabData array and compute is_favorite
       const categoriesWithCollabData = mergedCategories.map((item) => {
@@ -202,9 +202,7 @@ export const GET = createAxiomRouteHandler(
         return true;
       });
 
-      if (ctx?.fields) {
-        ctx.fields.returned_count = filteredCategories.length;
-      }
+      setPayload(ctx, { returned_count: filteredCategories.length });
 
       return filteredCategories;
     },

@@ -9,6 +9,9 @@ import { PdfThumbnailInputSchema, PdfThumbnailOutputSchema } from "./schema";
 
 const ROUTE = "pdf-thumbnail";
 
+/**
+ * @deprecated Use /api/v2/pdf-thumbnail instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, user }) => {
     const [sanitizedUrl] = data.url.split("?");

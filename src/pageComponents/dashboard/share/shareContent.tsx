@@ -20,6 +20,7 @@ import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import { CopyIcon } from "../../../icons/copy-icon";
 import { GlobeIcon } from "../../../icons/globe-icon";
 import { DefaultUserIcon } from "../../../icons/user/defaultUserIcon";
+import { emitClientEvent, hashCollectionId } from "../../../lib/api-helpers/axiom-client-events";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import { EMAIL_CHECK_PATTERN } from "../../../utils/constants";
@@ -285,12 +286,20 @@ const ShareContent = (props: ShareContentProps) => {
               if (currentCategory?.is_public) {
                 void navigator.clipboard.writeText(publicUrl);
                 setLinkCopied(true);
+                emitClientEvent("share_link_copy", {
+                  collection_id_hash: hashCollectionId(currentCategory.id),
+                  source: "click",
+                });
               }
             }}
             onKeyDown={(event) => {
               if ((event.key === "Enter" || event.key === " ") && currentCategory?.is_public) {
                 void navigator.clipboard.writeText(publicUrl);
                 setLinkCopied(true);
+                emitClientEvent("share_link_copy", {
+                  collection_id_hash: hashCollectionId(currentCategory.id),
+                  source: "keyboard",
+                });
               }
             }}
             tabIndex={currentCategory?.is_public ? 0 : -1}

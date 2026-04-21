@@ -1,5 +1,5 @@
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { sendInviteEmail } from "@/lib/email/send-invite-email";
 
 import { SendEmailInputSchema, SendEmailOutputSchema } from "./schema";
@@ -13,9 +13,7 @@ export const POST = createAxiomRouteHandler(
   withPublic({
     handler: async ({ input }) => {
       const ctx = getServerContext();
-      if (ctx?.fields) {
-        ctx.fields.recipient_count = 1;
-      }
+      setPayload(ctx, { recipient_count: 1 });
 
       const result = await sendInviteEmail({
         categoryName: input.category_name,
@@ -24,9 +22,7 @@ export const POST = createAxiomRouteHandler(
         recipientEmail: input.emailList,
       });
 
-      if (ctx?.fields) {
-        ctx.fields.email_sent = true;
-      }
+      setPayload(ctx, { email_sent: true });
 
       return { id: result.id };
     },

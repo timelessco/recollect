@@ -85,29 +85,42 @@ Error codes:
 ### Wide Events (Observability)
 
 ```typescript
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 
 const ctx = getServerContext();
 if (ctx?.fields) {
-  // Entity IDs + input context BEFORE the operation
+  // Observability primitive — allowlisted, stays top-level
   ctx.fields.user_id = userId;
+  // Entity IDs BEFORE the operation — suffix-based, land in the `ids` scalar
   ctx.fields.bookmark_id = id;
 }
 
+// Input descriptors / counts / flags / outcomes — everything else routes
+// through `setPayload`, which merges into the `payload` scalar. The helper
+// is a no-op when `ctx` or `ctx.fields` is absent.
+setPayload(ctx, { bookmark_count: bookmarks.length });
+
 // ... do work ...
 
-if (ctx?.fields) {
-  // Outcome flags AFTER the operation
-  ctx.fields.profile_updated = true;
-}
+setPayload(ctx, { profile_updated: true });
 ```
 
+- `ServerContext.fields` is narrowed to a three-branch union: observability primitives (top-level), `_id`/`_ids` suffix keys (collapse into `ids`), and optional `payload: Record<string, unknown>` (collapses into `payload`). A hand-written top-level write that isn't in the observability allowlist or suffix-shaped is a `tsc` error — route it through `setPayload` instead.
 - No `console.log`/`console.warn`/`console.error` in handler body
-- No direct `logger.info()` calls — business context flows via `ctx.fields` only
+- No direct `logger.info()` calls in the handler body — business context flows via `ctx.fields` + `setPayload` only. Direct `logger.warn/error` is only sanctioned inside `after()` (see pitfall #23 — ALS is gone there).
 - `ctx.user_id` is auto-set by `withAuth`; handlers additionally set `ctx.fields.user_id` for explicit wide-event inclusion
-- Non-blocking errors: log to `ctx.fields` (e.g., `junction_error`, `queue_delete_error`) instead of throwing
+- Non-blocking errors: `setPayload(ctx, { junction_error: err.message, junction_error_code: err.code })` instead of throwing
 - Auto-included per request: `commit` (VERCEL_GIT_COMMIT_SHA), `region` (VERCEL_REGION)
 - Flushing: `after(() => logger.flush())` — deferred, non-blocking
+
+> **Emission convention.** The factory's `partitionFields` collapses handler writes into two JSON scalars so per-handler domain keys don't consume top-level Axiom columns (datasets are capped at 256 columns; prior breach on the legacy `recollect` dataset triggered a fork to `recollect-web-dev` / `recollect-web-prod`).
+>
+> - Keys ending in `_id` or `_ids` land inside the `ids` scalar — write them directly as `ctx.fields.<entity>_id = …`, except allowlisted observability primitives (e.g. `user_id`) which stay top-level.
+> - Anything passed to `setPayload(ctx, { … })` lands inside the `payload` scalar — counts (`*_count`), flags (`has_*`, `is_*`), outcomes (`*_failed`, `*_completed`), and input descriptors.
+> - Observability primitives stay top-level: `request_id`, `source`, `user_id`, `trace_id`, `span_id`, `parent_span_id`, `trace_flags`.
+> - Analysts filter via `parse_json(fields["ids"]).bookmark_id` / `parse_json(fields["payload"]).<key>` (same pattern as `error_context`, `search_params`).
+
+> **Known bypass paths** (not covered by the narrow): direct `logger.warn/error` calls inside `after()` blocks, enrichment helpers in `src/lib/bookmarks/`, Pages Router SSR routes, and `proxy.ts` pass fields straight to the logger, bypassing `partitionFields`. Any new top-level key name in those paths registers a new Axiom column. Keep payloads to known field names; prefer `setPayload` where ALS is available.
 
 ### `after()` Patterns
 
@@ -147,7 +160,7 @@ after(async () => {
 
 ### Helper Functions
 
-- **Inline helpers** (server-safe, avoid client module imports): return `null` on failure, log to `ctx.fields`
+- **Inline helpers** (server-safe, avoid client module imports): return `null` on failure, call `setPayload(getServerContext(), { <op>_error: err.message })` for non-blocking error context
 - **Imported helpers**: throw `RecollectApiError` directly — propagates to inner-layer catch
 - **Closures inside handler**: capture `supabase`/`userId` from enclosing scope
 
@@ -159,13 +172,25 @@ after(async () => {
 - On success: `supabase.schema("pgmq_public").rpc("delete", ...)` — delete errors are non-throwing (`ctx.fields` only)
 - Partial failure: keep message, annotate with `update_queue_message_error` RPC
 
+### Queue Consumer Idempotency Contract
+
+Queue handlers (screenshot, ai-enrichment) must be safe to re-run:
+
+- Upfront SELECT persisted fields; short-circuit capture/upload/DB-write if already set. Flag the skip path via `setPayload(ctx, { <op>_skipped: true })` so Axiom distinguishes fresh runs from replays
+- External-response parsing: use shared extractors that throw on unrecognized shape (`src/lib/bookmarks/parse-screenshot-response.ts` is the reference). Guard `byteLength === 0` before persisting — `response.ok` is not sufficient; R2 stores 0-byte uploads and returns `ETag = d41d8cd98f00b204e9800998ecf8427e` (MD5 of empty)
+- Enrichment (AI / blurhash / downstream fetch) MUST throw on failure — never silent try/catch. Silent-swallow converts a retryable 503 into a 200 that deletes the pgmq message forever. The archive + replay pipeline is the designed recovery path; don't bypass it
+- Idempotency + stale data trap: a non-null persisted URL is not proof the underlying bytes are valid. When recovering from a prior data-corruption bug, NULL the persisted field in `everything` BEFORE replaying via `retry_ai_embeddings_archive` — otherwise the short-circuit re-feeds corrupt bytes to the next layer and `is_final_retry=true` permanently deletes the message
+- Full debug playbook (Axiom vs Sentry, archive state SQL, replay recipes, env var gotchas): `~/.claude/projects/-Users-navin-Developer-recollect/memory/reference_queue_route_debugging.md`
+
 ### Auth Patterns
 
 - `withAuth`: auto-handles auth, handler gets `{ data, supabase, user }`
-- `withRawBody` with `auth: "required"`: metadata only for OpenAPI scanner — manual `createApiClient()` + `getApiUser()` + `RecollectApiError("unauthorized")` in handler body, manually set `ctx.user_id`
-- `withPublic` with conditional auth: manual `createApiClient()`, set `alsCtx.user_id` manually
 - `withSecret`: timing-safe bearer token via `secretEnvVar` config
-- `createServerServiceClient()` (synchronous, don't `await`): for RLS-bypass operations (queue workers, admin deletes, public data)
+- `withRawBody` with `auth: "required"`: metadata only for OpenAPI scanner — manual `createApiClient()` + `getApiUser()` + `RecollectApiError("unauthorized")` in handler body, manually set `ctx.user_id`
+- **`withPublic` defaults to `createServerServiceClient()`** (synchronous, don't `await`) + explicit handler-side gating. Use for public-data reads (cross-user public shares, discover feed, public category bookmarks), pre-login lookups (provider check), invite flows, queue workers, and any route touching a table without a matching anon RLS policy. RLS coverage in this codebase is incomplete (`categories` and `bookmark_tags` have no anon policies; `everything.anon_discover_access` references the pre-migration boolean `trash` column) — do not lean on it for public reads.
+- **`withPublic` + `createApiClient()` + conditional `getApiUser()`** (anon client with optional auth): only when one URL serves two audiences via a request-time discriminator. Canonical example: `search-bookmarks` (discover branch is anon, every other branch requires auth for `user_id` scoping and collaborator checks). See pitfall #34 for the safety checklist.
+
+> Pitfall #28 (always preserve v1's `createApiClient()` call when migrating to `withPublic`) is **superseded** — the factory choice still maps from v1, but the client choice now defaults to service-role.
 
 ### Gotchas
 
@@ -173,3 +198,9 @@ after(async () => {
 - `SingleListData` diverges from v2 Zod output schemas — different nullability, `user_id` shape. Migrated caller hooks use `.json<SingleListData[]>()` to bypass. Retire post-migration
 - `BookmarksCountTypes` field names differ from v2 `FetchBookmarksCountOutputSchema` — `mapToBookmarksCountTypes()` bridges. Retire post-migration
 - When migrating callers to v2, always backport handler fixes (validation, auth, error handling) to the still-live v1 Pages Router route
+
+### Response Contract
+
+- v2 returns `T` on success (no envelope); errors return `{ error: string }` + HTTP status. v1 still uses `{ data, error }` envelope — don't mix.
+- `src/lib/api-helpers/response.ts` is FROZEN — never modify `apiSuccess` / `apiError` / `apiWarn`. v2 routes use `error()` / `warn()` context helpers from `create-handler-v2.ts` instead.
+- v2 URL constants in `api-v2.ts` (the ky `api` instance) have **no leading slash** — `"v2/bookmark/..."`. v1 keeps leading slashes. Both live in `constants.ts`; never inline `"v2/..."` strings at call sites (use `V2_*` constants).

@@ -17,6 +17,7 @@ const ROUTE = "dev/session";
  * 1. Visit http://localhost:3000/api/dev/session in browser
  * 2. Copy the `access_token` from the JSON response
  * 3. Use in CLI: curl -H "Authorization: Bearer <token>" ...
+ * @deprecated Use /api/v2/dev/session instead. Retained for iOS and extension clients.
  * @returns {object} { access_token, expires_at, user_email }
  */
 export const GET = createGetApiHandlerWithAuth({

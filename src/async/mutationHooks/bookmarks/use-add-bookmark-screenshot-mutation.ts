@@ -5,7 +5,8 @@ import type { AddBookmarkScreenshotPayloadTypes, SingleListData } from "../../..
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { api } from "../../../lib/api-helpers/api-v2";
-import { useLoadersStore, useSupabaseSession } from "../../../store/componentStore";
+import { teardownBookmarkEnrichmentSubscription } from "../../../lib/supabase/realtime/bookmark-enrichment-subscription";
+import { useSupabaseSession } from "../../../store/componentStore";
 import { BOOKMARKS_KEY, V2_ADD_URL_SCREENSHOT_API } from "../../../utils/constants";
 import { errorToast } from "../../../utils/toastMessages";
 
@@ -16,8 +17,6 @@ export default function useAddBookmarkScreenshotMutation() {
   const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
   const session = useSupabaseSession((state) => state.session);
   const { sortBy } = useGetSortBy();
-  const { removeLoadingBookmarkId } = useLoadersStore();
-
   const addBookmarkScreenshotMutation = useMutation({
     mutationFn: (payload: AddBookmarkScreenshotPayloadTypes) =>
       // ky default timeout is 10s, but the server-side screenshot capture has a
@@ -30,14 +29,10 @@ export default function useAddBookmarkScreenshotMutation() {
     onError: (error, variables) => {
       errorToast(`Screenshot error: ${error.message}`);
       if (variables.id) {
-        removeLoadingBookmarkId(variables.id);
+        void teardownBookmarkEnrichmentSubscription(variables.id, "screenshot_failed");
       }
     },
-    onSettled: (response) => {
-      if (response?.[0]?.id) {
-        removeLoadingBookmarkId(response[0].id);
-      }
-
+    onSettled: () => {
       void queryClient.invalidateQueries({
         queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
       });

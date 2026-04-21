@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { getBookmarkMediaCategoryPredicate } from "@/utils/bookmark-category-filters";
 import { isUserOwnerOrAnyCollaborator } from "@/utils/category-auth";
 import {
@@ -29,7 +29,6 @@ const ROUTE = "v2-bookmark-fetch-bookmarks-data";
 // Supabase type inference fails on dynamic select strings and FK join syntax.
 // These interfaces match the actual runtime shapes for .overrideTypes<T>() usage.
 interface BookmarkRow {
-  category_id: number;
   description: string | null;
   enriched_at: string | null;
   enrichment_status: string | null;
@@ -49,7 +48,7 @@ interface BookmarkRow {
 
 interface TagJoinRow {
   bookmark_id: number;
-  tag_id: { id: number; name: string | null };
+  tag_id: { id: number; name: string | null } | null;
 }
 
 interface CategoryJoinRow {
@@ -60,8 +59,17 @@ interface CategoryJoinRow {
     icon: string | null;
     icon_color: string | null;
     id: number;
-  };
+  } | null;
 }
+
+const hasTag = (
+  row: TagJoinRow,
+): row is TagJoinRow & { tag_id: NonNullable<TagJoinRow["tag_id"]> } => row.tag_id !== null;
+
+const hasCategory = (
+  row: CategoryJoinRow,
+): row is CategoryJoinRow & { category_id: NonNullable<CategoryJoinRow["category_id"]> } =>
+  row.category_id !== null;
 
 /**
  * Checks if category_id represents a specific numeric category (not a special view
@@ -93,9 +101,11 @@ export const GET = createAxiomRouteHandler(
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
         ctx.fields.category_id = category_id;
-        ctx.fields.from = from;
-        ctx.fields.sort_by = sortValue;
       }
+      setPayload(ctx, {
+        from,
+        sort_by: sortValue,
+      });
 
       // Determine if user is in a specific numeric category (not trash/tweets/links/etc.)
       const categoryCondition = isNumericCategory(category_id);
@@ -249,9 +259,7 @@ export const GET = createAxiomRouteHandler(
         return [];
       }
 
-      if (ctx?.fields) {
-        ctx.fields.bookmark_count = bookmarkIds.length;
-      }
+      setPayload(ctx, { bookmark_count: bookmarkIds.length });
 
       // Parallel junction queries with FK joins for resolved tag/category names
       const [tagsResult, categoriesResult] = await Promise.all([
@@ -271,12 +279,15 @@ export const GET = createAxiomRouteHandler(
       const { data: bookmarksWithTags } = tagsResult;
       const { data: bookmarksWithCategories } = categoriesResult;
 
-      // Stitch tags and categories onto each bookmark
+      // Stitch tags and categories from the junction tables onto each bookmark.
+      // FK joins return null rows when the related row is missing — filter before mapping.
       const finalData = bookmarkData.map((item) => {
-        const matchedTags = bookmarksWithTags?.filter((tagItem) => tagItem.bookmark_id === item.id);
-        const matchedCategories = bookmarksWithCategories?.filter(
-          (catItem) => catItem.bookmark_id === item.id,
-        );
+        const matchedTags = bookmarksWithTags
+          ?.filter((tagItem) => tagItem.bookmark_id === item.id)
+          .filter(hasTag);
+        const matchedCategories = bookmarksWithCategories
+          ?.filter((catItem) => catItem.bookmark_id === item.id)
+          .filter(hasCategory);
 
         return {
           ...item,

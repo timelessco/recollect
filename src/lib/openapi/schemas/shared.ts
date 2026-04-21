@@ -69,7 +69,6 @@ export const CategoryRowSchema = registry.register(
     icon_color: z.string().nullable().meta({ description: "Icon color hex code" }),
     id: z.int().meta({ description: "Category ID" }),
     is_public: z.boolean().meta({ description: "Whether collection is publicly visible" }),
-    order_index: z.int().nullable().meta({ description: "Sort order position" }),
     user_id: z.string().nullable().meta({ description: "Owner user ID" }),
   }),
 );

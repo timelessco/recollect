@@ -10,4 +10,4 @@ import type { KyInstance } from "ky";
  * External APIs (untrusted responses): use ky directly with Standard Schema validation —
  * `ky(url).json(zodSchema)` — ky v2 validates natively via Zod 4's Standard Schema support.
  */
-export const api: KyInstance = ky.create({ prefix: "/api" });
+export const api: KyInstance = ky.create({ prefix: "/api", timeout: 30_000 });

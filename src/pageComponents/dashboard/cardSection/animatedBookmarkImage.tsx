@@ -18,7 +18,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/utils/tailwind-merge";
 
 import loaderGif from "../../../../public/loader-gif.gif";
-import { useLoadersStore } from "../../../store/componentStore";
+import { useBookmarkEnrichmentActive } from "../../../hooks/use-bookmark-enrichment-active";
 import { defaultBlur, viewValues } from "../../../utils/constants";
 
 /**
@@ -181,7 +181,7 @@ export const LoaderImgPlaceholder = ({
   id: number;
   isPreloading?: boolean;
 }) => {
-  const isLoading = useLoadersStore((s) => s.loadingBookmarkIds.has(id));
+  const isLoading = useBookmarkEnrichmentActive(id);
 
   const loaderClassName = cn({
     "flex aspect-[1.8] w-full flex-col items-center justify-center gap-2 rounded-lg bg-gray-100 text-center duration-150 group-hover:rounded-b-none":
@@ -192,20 +192,11 @@ export const LoaderImgPlaceholder = ({
       cardTypeCondition === viewValues.list,
   });
 
-  const statusText = (() => {
-    // Image is being preloaded by AnimatedBookmarkImage — keep showing "Fetching data..."
-    // so the text doesn't flash to "Cannot fetch image" during the preload window
-    if (isPreloading) {
-      return "Fetching data...";
-    }
-    if (isLoading) {
-      return "Taking screenshot....";
-    }
-    if (id < 0) {
-      return "Fetching data...";
-    }
-    return "Cannot fetch image for this bookmark";
-  })();
+  // Two states only:
+  //   - Image is on its way (optimistic insert, server pipeline running, or
+  //     preloading crossfade): "Getting screenshot"
+  //   - Pipeline done and still no image (terminal failure): no text
+  const statusText = isPreloading || isLoading || id < 0 ? "Getting screenshot" : null;
 
   return (
     <div className={loaderClassName}>
@@ -215,18 +206,20 @@ export const LoaderImgPlaceholder = ({
         loader={(source) => source.src}
         src={loaderGif}
       />
-      {!(cardTypeCondition === viewValues.list) && (
+      {cardTypeCondition !== viewValues.list && (
         <AnimatePresence mode="wait">
-          <motion.p
-            animate={{ opacity: 1 }}
-            className="text-sm text-gray-900"
-            exit={{ opacity: 0 }}
-            initial={{ opacity: 0 }}
-            key={statusText}
-            transition={{ duration: 0.15 }}
-          >
-            {statusText}
-          </motion.p>
+          {statusText ? (
+            <motion.p
+              animate={{ opacity: 1 }}
+              className="text-sm text-gray-900"
+              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }}
+              key={statusText}
+              transition={{ duration: 0.15 }}
+            >
+              {statusText}
+            </motion.p>
+          ) : null}
         </AnimatePresence>
       )}
     </div>

@@ -17,6 +17,9 @@ import {
 
 const ROUTE = "fetch-public-bookmark-by-id";
 
+/**
+ * @deprecated Use /api/v2/bookmark/fetch-public-bookmark-by-id instead. Retained for iOS and extension clients.
+ */
 export const GET = createGetApiHandler({
   handler: async ({ input, route }) => {
     const { bookmark_id: bookmarkId, category_slug: categorySlug, user_name: userName } = input;

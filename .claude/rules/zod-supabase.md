@@ -14,5 +14,8 @@ paths:
 - Integer DB columns (`id`, `category_id`) must use `z.int()` in output schemas, not `z.number()`
 - Email input fields must use `z.email()`, not bare `z.string()`
 - When porting v1 null-coalescing (`value ?? ""`), verify v1 actually uses `??` — don't add fallbacks that change behavior
-- Supabase FK joins (`.select("fk_col(col1, col2)")`) return `null` when no match — `.filter()` before `.map()`. Prefer strict types, avoid unwanted optional `?.` checks
+- Supabase FK joins (`.select("fk_col(col1, col2)")`) return `null` when no match OR when scoped RLS hides the joined row. Type as `T | null`, extract a module-scope type-predicate helper, `.filter(hasFk)` before `.map()`. `?.` chains at the dereference site silently leak `undefined` into the payload
+- Normalizing hidden-FK fields with `?? ""` prevents crashes but produces silently-wrong values downstream (`host//slug`, duplicate React keys, empty identity checks). Guard in the consumer before using as URL/key/identifier
 - When using Supabase `.like()`/`.ilike()` with user-derived strings, escape `%` and `_` wildcards before the query
+- `category_id: 0` = Uncategorized (auto-managed virtual category) — keep `.min(0)` in schemas, not `.min(1)`
+- Supabase type boundaries: use `toJson()` / `toDbType()` helpers from `src/utils/type-utils.ts` — never inline `as unknown as Json` at call sites

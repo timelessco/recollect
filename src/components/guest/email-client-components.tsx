@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/recollect/button";
 import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
 import { createClient } from "@/lib/supabase/client";
 import { EVERYTHING_URL, OTP_URL } from "@/utils/constants";
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 import { cn } from "@/utils/tailwind-merge";
 
 const emailSchema = z.object({
@@ -25,6 +25,7 @@ export function EmailToOtpForm() {
   const [isPending, startTransition] = React.useTransition();
   const extendedIsPending = usePendingWithMinDuration(isPending);
   const [errors, setErrors] = React.useState<Record<string, string[]>>({});
+  const handleClientError = useHandleClientError();
 
   const handleFormSubmit = (formValues: Form.Values) => {
     const result = emailSchema.safeParse(formValues);

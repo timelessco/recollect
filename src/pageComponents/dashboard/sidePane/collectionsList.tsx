@@ -17,6 +17,7 @@ import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHoo
 import useFetchCategories from "../../../async/queryHooks/category/use-fetch-categories";
 import useFetchUserProfile from "../../../async/queryHooks/user/use-fetch-user-profile";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
+import { bucketHref, emitClientEvent } from "../../../lib/api-helpers/axiom-client-events";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import {
@@ -222,6 +223,12 @@ const CollectionsList = () => {
                 extendedClassname="py-[6px]"
                 item={item}
                 listNameId="collection-name"
+                onNavigate={() => {
+                  emitClientEvent("category_switch", {
+                    source: "sidebar_collection",
+                    to_bucket: bucketHref(item?.href ?? ""),
+                  });
+                }}
                 showDropdown
                 showSpinner={
                   addCategoryToBookmarkOptimisticMutation.isPending &&

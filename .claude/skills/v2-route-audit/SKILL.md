@@ -56,21 +56,35 @@ Entity ID fields: `user_id`, `bookmark_id`, `category_id`, `tag_id`, `shared_cat
 
 ### Check 3: Outcome flags AFTER operations
 
-Look for `ctx.fields.*` assignments that reflect results: booleans (`*_completed`, `*_deleted`,
-`*_updated`, `*_sent`, `*_failed`, `found`), counts (`*_count`, `processed_count`,
-`bookmarks_returned`), or detail fields (`content_type`, `provider`).
+Look for `setPayload(ctx, { … })` calls (or direct `ctx.fields.*` writes for the narrow cases where
+that's legal) that reflect results: booleans (`*_completed`, `*_deleted`, `*_updated`, `*_sent`,
+`*_failed`, `found`), counts (`*_count`, `processed_count`, `bookmarks_returned`), or detail
+fields (`content_type`, `provider`).
 
-- PASS: at least one outcome field set after a DB/API operation
+Post-`refactor-axiom-fields-foundation`, `ServerContext.fields` is narrowed: outcome flags and
+counts MUST route through `setPayload` (they land in the `payload` scalar). Direct
+`ctx.fields.operation_completed = true` is a `tsc` error. Only `_id`/`_ids` suffix keys and the
+observability allowlist (`user_id`, `request_id`, `trace_id`, `span_id`, `parent_span_id`,
+`trace_flags`, `source`) stay top-level.
+
+- PASS: at least one outcome field (via `setPayload` or a legal direct write) set after a DB/API operation
 - FAIL: no outcome fields at all
 - WARN: mutation route with only entity IDs (no outcome flag). GET routes may legitimately
   have minimal outcomes (just a count) -- don't FAIL for this
 
-### Check 4: Minimum 2 `ctx.fields` assignments
+### Check 4: Minimum 2 field writes (`ctx.fields` + `setPayload`)
 
-Count distinct `ctx.fields.FIELDNAME` assignments (not counting duplicates in different branches).
+Count distinct field writes. Each of the following is one write:
 
-- PASS: 2 or more
+- a `ctx.fields.FIELDNAME = …` assignment (allowed only for observability primitives and `_id`/`_ids` suffix keys)
+- a `setPayload(ctx, { … })` call (the entire call counts as one write regardless of how many keys are inside the object)
+
+Don't count duplicates across branches.
+
+- PASS: 2 or more distinct writes
 - FAIL: fewer than 2 -- minimum viable observability requires entity context + one outcome
+
+Note: post-narrow, a well-written route typically has one `_id`-suffix write (e.g. `ctx.fields.bookmark_id = …`) plus one `setPayload` call — that's a PASS. Do NOT require multiple distinct `ctx.fields.FIELDNAME` assignments.
 
 ### Check 5: No PII in `ctx.fields`
 
@@ -85,14 +99,14 @@ Scan for exact patterns (avoid false positives on `has_email`, `username_length`
 - `ctx.fields.refresh_token`
 - `ctx.fields.api_key =` (not `has_api_key`)
 
-PII replacements:
+PII replacements — emit via `setPayload(ctx, { … })` (lands in the `payload` scalar, not top-level):
 | Raw PII | Safe alternative |
 |---------|------------------|
-| `email` | `has_email = Boolean(email)` |
-| `username` | `username_length = username.length` |
-| `recipient_email` | `recipient_count = emailList.length` |
-| `collaboration_email` | `has_collaboration_email = Boolean(addr)` |
-| `api_key` | `has_api_key = Boolean(apiKey)` |
+| `email` | `setPayload(ctx, { has_email: Boolean(email) })` |
+| `username` | `setPayload(ctx, { username_length: username.length })` |
+| `recipient_email` | `setPayload(ctx, { recipient_count: emailList.length })` |
+| `collaboration_email` | `setPayload(ctx, { has_collaboration_email: Boolean(addr) })` |
+| `api_key` | `setPayload(ctx, { has_api_key: Boolean(apiKey) })` |
 
 - PASS: no raw PII fields found
 - FAIL: any raw PII field found
@@ -197,26 +211,25 @@ Fix templates:
 
 **Missing import:**
 ```typescript
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 ```
 
 **Missing entity IDs (add right after destructuring input/auth, before first DB call):**
 ```typescript
 const ctx = getServerContext();
 if (ctx?.fields) {
-  ctx.fields.user_id = userId;
-  // add relevant entity IDs for this route
+  ctx.fields.user_id = userId;            // observability primitive (top-level)
+  // add relevant `<entity>_id` / `<entity>_ids` keys — land in the `ids` scalar
 }
 ```
 
 **Missing outcome flags (add after the main DB operation's success path):**
 ```typescript
-if (ctx?.fields) {
-  ctx.fields.operation_completed = true;
-}
+setPayload(ctx, { operation_completed: true, processed_count: results.length });
 ```
+Direct `ctx.fields.operation_completed = true` is a `tsc` error — `ServerContext.fields` is narrowed to the observability allowlist + `_id`/`_ids` suffix keys + `payload`. Route everything else through `setPayload` (lands in the `payload` scalar).
 
-**PII violation:** Replace raw field with boolean signal (see Check 5 table).
+**PII violation:** Replace raw field with boolean signal via `setPayload` (see Check 5 table).
 
 **Console calls:** Delete or convert to `ctx.fields` assignment.
 

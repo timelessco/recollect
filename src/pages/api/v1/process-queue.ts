@@ -1,7 +1,32 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
+import type { BackgroundTask } from "../../../utils/worker";
+
 import { createServiceClient } from "../../../utils/supabaseClient";
 import { processImageQueue } from "../../../utils/worker";
+
+// Pages Router has no after() — background fetches dispatched here still get
+// orphaned on Vercel Fluid Compute once the handler's response returns. The
+// try/catch inside dispatchBackgroundTask suppresses the unhandled-rejection
+// noise this used to produce in Sentry (undici "fetch failed"), but does not
+// fix the underlying orphaning. The v2 route at src/app/api/v2/process-queue
+// uses after() and is the correct home; point the pg_cron schedule there and
+// retire this file.
+const dispatchBackgroundTask = async (task: BackgroundTask, messageId: number | undefined) => {
+  try {
+    await fetch(task.url, {
+      body: task.body,
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    });
+  } catch (error) {
+    console.error(
+      "[v1-process-queue] background dispatch failed",
+      { msg_id: messageId, url: task.url },
+      error,
+    );
+  }
+};
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
   if (request.method !== "POST") {
@@ -16,6 +41,10 @@ export default async function handler(request: NextApiRequest, response: NextApi
       batchSize: 1,
       queue_name: "ai-embeddings",
     });
+
+    for (const task of result.backgroundTasks) {
+      void dispatchBackgroundTask(task, result.messageId);
+    }
 
     console.log(
       !result?.messageId
