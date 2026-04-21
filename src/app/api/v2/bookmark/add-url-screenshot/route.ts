@@ -47,6 +47,7 @@ export const POST = createAxiomRouteHandler(
       const [screenshotError, screenshotResponse] = await vet(async () => {
         const json = await ky
           .get(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(data.url)}`, {
+            retry: 0,
             timeout: SCREENSHOT_TIMEOUT_MS,
           })
           .json<unknown>();

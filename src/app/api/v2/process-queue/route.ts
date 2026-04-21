@@ -46,6 +46,7 @@ export const POST = createAxiomRouteHandler(
             await ky.post(task.url, {
               body: task.body,
               headers: { "Content-Type": "application/json" },
+              timeout: false,
             });
           } catch (error) {
             logger.warn("[v2-process-queue] after() background dispatch failed", {

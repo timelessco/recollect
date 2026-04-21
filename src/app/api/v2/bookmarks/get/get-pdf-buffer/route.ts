@@ -18,7 +18,7 @@ export const GET = createAxiomRouteHandler(
       setPayload(ctx, { pdf_url: input.url });
 
       try {
-        const result = await ky.get(input.url, { timeout: 30_000 });
+        const result = await ky.get(input.url, { retry: 0, timeout: 30_000 });
 
         const buffer = await result.arrayBuffer();
 

@@ -50,6 +50,7 @@ async function getMediaType(url: string): Promise<null | string> {
   try {
     const json = await ky
       .get(`${getBaseUrl()}${NEXT_API_URL}/${V2_GET_MEDIA_TYPE_API}`, {
+        retry: 0,
         searchParams: { url },
       })
       .json<unknown>();

@@ -122,6 +122,7 @@ export const POST = createAxiomRouteHandler(
                 .post(env.PDF_URL_SCREENSHOT_API, {
                   json: { url, userId: user_id },
                   headers: { Authorization: `Bearer ${env.PDF_SECRET_KEY}` },
+                  timeout: false,
                 })
                 .json<unknown>();
               publicURL =
@@ -139,7 +140,9 @@ export const POST = createAxiomRouteHandler(
             // guard was added, which bubbled up as Gemini `INVALID_ARGUMENT`.
             try {
               const screenshotData = await ky
-                .get(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`)
+                .get(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`, {
+                  timeout: false,
+                })
                 .json<unknown>();
               const { metaData: responseMeta, screenshotBuffer } =
                 parseScreenshotResponse(screenshotData);

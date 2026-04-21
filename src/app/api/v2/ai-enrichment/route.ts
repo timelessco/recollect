@@ -162,6 +162,7 @@ export const POST = createAxiomRouteHandler(
               Accept: "image/*,*/*;q=0.8",
               "User-Agent": "Mozilla/5.0",
             },
+            retry: 0,
             timeout: IMAGE_DOWNLOAD_TIMEOUT_MS,
           });
 

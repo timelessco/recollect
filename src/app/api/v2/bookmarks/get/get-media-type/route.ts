@@ -33,6 +33,7 @@ export const GET = createAxiomRouteHandler(
       try {
         const response = await ky.head(url, {
           headers: { "User-Agent": USER_AGENT },
+          retry: 0,
           timeout: 5000,
         });
 

@@ -39,6 +39,7 @@ export const POST = createAxiomRouteHandler(
           .post(pdfApiUrl, {
             json: { url: data.url, userId: user.id },
             headers: { Authorization: `Bearer ${pdfApiKey}` },
+            timeout: false,
           })
           .json<unknown>();
       } catch (error) {
