@@ -1,5 +1,7 @@
 import { after } from "next/server";
 
+import ky from "ky";
+
 import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
@@ -41,10 +43,9 @@ export const POST = createAxiomRouteHandler(
       for (const task of result.backgroundTasks) {
         after(async () => {
           try {
-            await fetch(task.url, {
+            await ky.post(task.url, {
               body: task.body,
               headers: { "Content-Type": "application/json" },
-              method: "POST",
             });
           } catch (error) {
             logger.warn("[v2-process-queue] after() background dispatch failed", {

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import ky, { HTTPError } from "ky";
+
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 
@@ -29,22 +31,10 @@ export const GET = createAxiomRouteHandler(
       // without CORS headers — breaking cross-origin error handling for browser callers.
       // Observability is maintained via ctx.fields (error_type, upstream_status, fetch_error).
       try {
-        const response = await fetch(url, {
+        const response = await ky.head(url, {
           headers: { "User-Agent": USER_AGENT },
-          method: "HEAD",
-          signal: AbortSignal.timeout(5000),
+          timeout: 5000,
         });
-
-        if (!response.ok) {
-          setPayload(ctx, {
-            error_type: "upstream_error",
-            upstream_status: response.status,
-          });
-          return NextResponse.json(
-            { error: "Failed to check media type", mediaType: null, success: false },
-            { headers: CORS_HEADERS },
-          );
-        }
 
         const mediaType = response.headers.get("content-type");
 
@@ -53,10 +43,17 @@ export const GET = createAxiomRouteHandler(
           { headers: CORS_HEADERS },
         );
       } catch (error) {
-        setPayload(ctx, {
-          error_type: "fetch_exception",
-          fetch_error: error instanceof Error ? error.message : String(error),
-        });
+        if (error instanceof HTTPError) {
+          setPayload(ctx, {
+            error_type: "upstream_error",
+            upstream_status: error.response.status,
+          });
+        } else {
+          setPayload(ctx, {
+            error_type: "fetch_exception",
+            fetch_error: error instanceof Error ? error.message : String(error),
+          });
+        }
         return NextResponse.json(
           { error: "Failed to check media type", mediaType: null, success: false },
           { headers: CORS_HEADERS },

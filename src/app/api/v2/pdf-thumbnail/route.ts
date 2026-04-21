@@ -1,3 +1,5 @@
+import ky, { HTTPError } from "ky";
+
 import type { PdfThumbnailOutput } from "./schema";
 
 import { env } from "@/env/server";
@@ -31,17 +33,23 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      let response: Response;
+      let raw: unknown;
       try {
-        response = await fetch(pdfApiUrl, {
-          body: JSON.stringify({ url: data.url, userId: user.id }),
-          headers: {
-            Authorization: `Bearer ${pdfApiKey}`,
-            "Content-Type": "application/json",
-          },
-          method: "POST",
-        });
+        raw = await ky
+          .post(pdfApiUrl, {
+            json: { url: data.url, userId: user.id },
+            headers: { Authorization: `Bearer ${pdfApiKey}` },
+          })
+          .json<unknown>();
       } catch (error) {
+        if (error instanceof HTTPError) {
+          throw new RecollectApiError("service_unavailable", {
+            cause: new Error(`PDF service responded with ${String(error.response.status)}`),
+            context: { status: error.response.status, url: sanitizedUrl },
+            message: "PDF Thumbnail service failed",
+            operation: "pdf_thumbnail_fetch",
+          });
+        }
         throw new RecollectApiError("service_unavailable", {
           cause: error instanceof Error ? error : new Error(String(error)),
           context: { url: sanitizedUrl },
@@ -49,17 +57,6 @@ export const POST = createAxiomRouteHandler(
           operation: "pdf_thumbnail_network",
         });
       }
-
-      if (!response.ok) {
-        throw new RecollectApiError("service_unavailable", {
-          cause: new Error(`PDF service responded with ${String(response.status)}`),
-          context: { status: response.status, url: sanitizedUrl },
-          message: "PDF Thumbnail service failed",
-          operation: "pdf_thumbnail_fetch",
-        });
-      }
-
-      const raw: unknown = await response.json();
       // `String(raw.publicUrl)` used to coerce `undefined` → `"undefined"` and `null` →
       // `"null"`, persisting those as live URLs. Require a real string before returning.
       const publicUrl =

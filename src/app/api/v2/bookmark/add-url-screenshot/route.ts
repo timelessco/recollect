@@ -1,5 +1,7 @@
 import { after } from "next/server";
 
+import ky from "ky";
+
 import { env } from "@/env/server";
 import { logger } from "@/lib/api-helpers/axiom";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
@@ -43,13 +45,11 @@ export const POST = createAxiomRouteHandler(
 
       // 1. Capture screenshot from external API
       const [screenshotError, screenshotResponse] = await vet(async () => {
-        const r = await fetch(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(data.url)}`, {
-          signal: AbortSignal.timeout(SCREENSHOT_TIMEOUT_MS),
-        });
-        if (!r.ok) {
-          throw new Error(`Screenshot API returned ${String(r.status)}`);
-        }
-        const json: unknown = await r.json();
+        const json = await ky
+          .get(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(data.url)}`, {
+            timeout: SCREENSHOT_TIMEOUT_MS,
+          })
+          .json<unknown>();
         return parseScreenshotResponse(json);
       });
 
