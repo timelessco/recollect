@@ -28,20 +28,12 @@ export const useFetchDiscoverBookmarks = (options: UseFetchDiscoverBookmarksProp
     isLoading,
   } = useInfiniteQuery({
     enabled,
-    queryFn: async ({ pageParam }) => {
-      const t0 = performance.now();
-      console.log(`[nav-perf] discover queryFn START`, t0.toFixed(0), { page: pageParam });
-      const data = await api
+    queryFn: ({ pageParam }) =>
+      api
         .get(V2_FETCH_BOOKMARKS_DISCOVERABLE_API, {
           searchParams: { page: pageParam },
         })
-        .json<SingleListData[]>();
-      console.log(`[nav-perf] discover queryFn END`, performance.now().toFixed(0), {
-        dtMs: (performance.now() - t0).toFixed(0),
-        count: data.length,
-      });
-      return data;
-    },
+        .json<SingleListData[]>(),
     initialPageParam: 0,
     getNextPageParam: (lastPage, pages) => {
       const lastPageLength = lastPage?.length ?? 0;

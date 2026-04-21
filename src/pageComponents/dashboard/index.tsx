@@ -53,19 +53,6 @@ interface DashboardProps {
   children?: ReactNode;
 }
 
-const navLog = (label: string, extra?: Record<string, unknown>) => {
-  if (typeof window === "undefined") {
-    return;
-  }
-  const g = globalThis as typeof globalThis & {
-    __navPerf?: Record<string, unknown>[];
-  };
-  const t = performance.now();
-  g.__navPerf ??= [];
-  g.__navPerf.push({ label, t: Number(t.toFixed(0)), ...extra });
-  console.log(`[nav-perf] ${label}`, t.toFixed(0), extra ?? "");
-};
-
 const Dashboard = (_props: DashboardProps) => {
   const isMounted = useMounted();
   const queryClient = useQueryClient();
@@ -75,23 +62,11 @@ const Dashboard = (_props: DashboardProps) => {
   const setSession = useSupabaseSession((state) => state.setSession);
   const session = useSupabaseSession((state) => state.session);
 
-  navLog(`Dashboard render`, { categorySlug, isMounted, hasSession: Boolean(session?.user?.id) });
-
-  // Track isMounted flip
-  useEffect(() => {
-    if (isMounted) {
-      navLog(`Dashboard isMounted -> true`);
-    }
-  }, [isMounted]);
-
   useSignOutRealtimeTeardown();
 
   useEffect(() => {
     const fetchSession = async () => {
-      const t0 = performance.now();
-      navLog(`fetchSession START`, { categorySlug });
       const { data, error } = await supabase.auth.getUser();
-      navLog(`fetchSession END`, { dtMs: Number((performance.now() - t0).toFixed(0)) });
 
       // If there's an auth error or no user (expired session), redirect to login
       // Skip redirect for discover page (public access allowed)
@@ -143,12 +118,6 @@ const Dashboard = (_props: DashboardProps) => {
   useFetchSharedCategories();
 
   const { userProfileData } = useFetchUserProfile();
-
-  navLog(`Dashboard fetch hook snapshot`, {
-    isLoadingCategories,
-    isFetchingCategories,
-    hasUserProfile: Boolean(userProfileData?.[0]?.id),
-  });
 
   const { updateUserProfileOptimisticMutation } = useUpdateUserProfileOptimisticMutation();
   const updateUserProfileMutate = updateUserProfileOptimisticMutation.mutate;

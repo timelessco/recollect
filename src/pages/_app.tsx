@@ -76,52 +76,6 @@ const MyApp = ({
     };
   }, []);
 
-  // [nav-perf] DEBUG INSTRUMENTATION — REMOVE BEFORE MERGE
-  useEffect(() => {
-    const g = globalThis as typeof globalThis & {
-      __navPerf?: Record<string, unknown>[];
-    };
-    const log = (label: string, extra?: Record<string, unknown>) => {
-      const t = performance.now();
-      g.__navPerf ??= [];
-      g.__navPerf.push({ label, t: Number(t.toFixed(0)), ...extra });
-      console.log(`[nav-perf] ${label}`, t.toFixed(0), extra ?? "");
-    };
-    const nav = performance.getEntriesByType("navigation")[0] as
-      | PerformanceNavigationTiming
-      | undefined;
-    if (nav) {
-      log("pageLoad (NavigationTiming)", {
-        domContentLoadedMs: Number(nav.domContentLoadedEventEnd.toFixed(0)),
-        loadEventEndMs: Number(nav.loadEventEnd.toFixed(0)),
-        responseEndMs: Number(nav.responseEnd.toFixed(0)),
-        type: nav.type,
-      });
-    }
-    const onBeforeHistory = (url: string) => {
-      log(`beforeHistoryChange -> ${url}`);
-    };
-    const onStart = (url: string) => {
-      log(`routeChangeStart -> ${url}`);
-    };
-    const onComplete = (url: string) => {
-      log(`routeChangeComplete -> ${url}`);
-    };
-    const onError = (err: Error, url: string) => {
-      log(`routeChangeError -> ${url}`, { err: String(err) });
-    };
-    Router.events.on("beforeHistoryChange", onBeforeHistory);
-    Router.events.on("routeChangeStart", onStart);
-    Router.events.on("routeChangeComplete", onComplete);
-    Router.events.on("routeChangeError", onError);
-    return () => {
-      Router.events.off("beforeHistoryChange", onBeforeHistory);
-      Router.events.off("routeChangeStart", onStart);
-      Router.events.off("routeChangeComplete", onComplete);
-      Router.events.off("routeChangeError", onError);
-    };
-  }, []);
-
   return (
     <ThemeProvider attribute="class">
       <QueryClientProvider client={queryClient}>

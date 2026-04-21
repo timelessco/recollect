@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import { useMediaQuery } from "@react-hookz/web";
@@ -16,18 +16,7 @@ import { useLoadersStore, useMiscellaneousStore } from "../../store/componentSto
 import { viewValues } from "../../utils/constants";
 import { BookmarksSkeletonLoader } from "./cardSection/bookmarksSkeleton";
 
-const CardSection = dynamic(
-  async () => {
-    const t0 = typeof performance !== "undefined" ? performance.now() : 0;
-    console.log(`[nav-perf] CardSection dynamic START`, t0.toFixed(0));
-    const m = await import("./cardSection");
-    console.log(`[nav-perf] CardSection dynamic END`, performance.now().toFixed(0), {
-      dtMs: (performance.now() - t0).toFixed(0),
-    });
-    return m;
-  },
-  { ssr: false },
-);
+const CardSection = dynamic(() => import("./cardSection"), { ssr: false });
 
 interface SearchProps {
   data: SingleListData[];
@@ -69,14 +58,7 @@ interface DiscoverBookmarkCardsProps {
 }
 
 export const DiscoverBookmarkCards = ({ isDiscoverPage }: DiscoverBookmarkCardsProps) => {
-  console.log(`[nav-perf] DiscoverBookmarkCards render`, performance.now().toFixed(0), {
-    isDiscoverPage,
-  });
   const infiniteScrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    console.log(`[nav-perf] DiscoverBookmarkCards mounted`, performance.now().toFixed(0));
-  }, []);
 
   // Search functionality
   const searchText = useMiscellaneousStore((state) => state.searchText);
