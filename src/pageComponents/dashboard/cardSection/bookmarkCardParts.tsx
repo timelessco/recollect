@@ -7,7 +7,7 @@ import type { SingleListData } from "@/types/apiTypes";
 import { CategoryBadges } from "@/components/categoryBadges";
 import { GetBookmarkIcon } from "@/components/get-bookmark-icon";
 import { DefaultUserIcon } from "@/icons/user/defaultUserIcon";
-import { EVERYTHING_URL, IMAGE_TYPE_PREFIX, SIMILAR_URL } from "@/utils/constants";
+import { EVERYTHING_URL, IMAGE_TYPE_PREFIX } from "@/utils/constants";
 import { cn } from "@/utils/tailwind-merge";
 
 export function BookmarkAvatar({
@@ -89,10 +89,7 @@ export function BookmarkCategoryBadge({
   categorySlug: null | string;
   post: SingleListData;
 }) {
-  // Aggregate views (Everything, Similar) show the collection badge so the user
-  // knows which collection each card belongs to. On a single-collection page
-  // the badge is redundant and is suppressed.
-  if (categorySlug !== EVERYTHING_URL && categorySlug !== SIMILAR_URL) {
+  if (categorySlug !== EVERYTHING_URL) {
     return null;
   }
 
