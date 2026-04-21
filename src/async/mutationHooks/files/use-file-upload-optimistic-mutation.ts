@@ -81,6 +81,7 @@ export default function useFileUploadOptimisticMutation() {
                         "Content-Type": "image/jpg",
                       },
                       retry: 0,
+                      timeout: false,
                     });
                     thumbnailPath = `${STORAGE_FILES_PATH}/${userId}/${thumbnailFileName}`;
                   }

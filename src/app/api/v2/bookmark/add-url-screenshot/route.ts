@@ -48,7 +48,7 @@ export const POST = createAxiomRouteHandler(
         const json = await ky
           .get(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(data.url)}`, {
             retry: 0,
-            timeout: SCREENSHOT_TIMEOUT_MS,
+            signal: AbortSignal.timeout(SCREENSHOT_TIMEOUT_MS),
           })
           .json<unknown>();
         return parseScreenshotResponse(json);
