@@ -47,7 +47,21 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
   // supabase.auth.getUser() client-side and redirects to /login on failure.
   // Crawlers and fresh document loads never set this header, so the guest SSR
   // payload below still renders for SEO.
-  if (context.req.headers["x-nextjs-data"]) {
+  const gsspStart = Date.now();
+  const isClientNav = Boolean(context.req.headers["x-nextjs-data"]);
+  console.log(
+    `[nav-perf][server] gSSP start`,
+    JSON.stringify({
+      isClientNav,
+      ua: context.req.headers["user-agent"]?.slice(0, 60),
+      referer: context.req.headers.referer,
+    }),
+  );
+  if (isClientNav) {
+    console.log(
+      `[nav-perf][server] gSSP SHORT-CIRCUIT`,
+      JSON.stringify({ dtMs: Date.now() - gsspStart }),
+    );
     return {
       props: {
         isAuthenticated: true,
