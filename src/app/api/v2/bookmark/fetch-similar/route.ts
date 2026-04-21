@@ -11,8 +11,8 @@ import { FetchSimilarInputSchema, FetchSimilarOutputSchema } from "./schema";
 
 const ROUTE = "v2-bookmark-fetch-similar";
 
-// Min score matches RPC default; kept here for clarity and future tuning.
-const MIN_SCORE = 4;
+// Passed explicitly to the RPC; override of the RPC default for tuning.
+const MIN_SCORE = 5;
 
 interface BookmarkRow {
   description: string | null;
