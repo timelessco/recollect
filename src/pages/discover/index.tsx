@@ -22,28 +22,25 @@ const Discover: NextPageWithLayout<DiscoverPageProps> = ({ discoverData }) => (
   <DiscoverGuestView discoverData={discoverData} />
 );
 
-// Sync auth probe — returns false on the server (no `document`), so SSR emits
-// the static guest HTML for SEO. On the client it reads the Supabase auth
-// cookie directly so `getLayout` can pick `<Dashboard>{page}</Dashboard>` for
-// authed users in the same render pass. Using the Zustand session instead
-// would force a two-phase render (guest → authed after `useMounted` flips),
-// which unmounts `Dashboard` and thrashes the sidebar on every nav. Cookie
-// name pattern covers both single (`sb-<ref>-auth-token`) and split
+// Must be a sync read in the same render pass as `getLayout` — a Zustand
+// session read behind a `useMounted` gate would force a two-phase render
+// (guest → authed) that unmounts `Dashboard` and thrashes the sidebar on
+// every nav. Pattern covers both unsplit (`sb-<ref>-auth-token`) and split
 // (`sb-<ref>-auth-token.0/.1`) Supabase cookie formats.
+const SUPABASE_AUTH_COOKIE_RE = /sb-[^=]+-auth-token(?:\.\d+)?=/;
+
 const hasSupabaseAuthCookie = (): boolean => {
   if (typeof document === "undefined") {
     return false;
   }
-  return /sb-[^=]+-auth-token(?:\.\d+)?=/.test(document.cookie);
+  return SUPABASE_AUTH_COOKIE_RE.test(document.cookie);
 };
 
-// `getLayout` must return `<Dashboard>{page}</Dashboard>` at the same tree
-// position as `[category_id].tsx`'s `getLayout` so React reconciles Dashboard
-// across `/everything → /discover` and back — otherwise Dashboard unmounts
-// and the sidebar re-renders on every nav. For the initial authed visit to
-// /discover (post-login redirect), the SSR HTML renders the guest view;
-// client hydration re-renders into Dashboard on first paint. Brief swap, but
-// navigations from other dashboard routes are seamless.
+// Must wrap `page` in `<Dashboard>` at the same tree position as
+// `[category_id].tsx`'s `getLayout` — otherwise React reconciles the roots
+// as different types and unmounts Dashboard on every `/everything ↔ /discover`
+// nav. Direct authed visits (post-login redirect) hydrate from the guest
+// SSR HTML into Dashboard on first paint; in-app navigation is seamless.
 Discover.getLayout = (page: ReactElement) => {
   if (!hasSupabaseAuthCookie()) {
     return page;
@@ -51,12 +48,20 @@ Discover.getLayout = (page: ReactElement) => {
   return <Dashboard>{page}</Dashboard>;
 };
 
-// Static generation with ISR — served from Vercel CDN, no serverless function
-// per request. Guest bookmark grid refreshes every 60 s. Previously used gSSP,
-// which incurred a ~3-6 s cold-start for the /discover function on every nav
-// (authed users paid the same cost for a 76-byte short-circuit stub).
+// Discoverable bookmarks are curated public content — no per-user data —
+// so ISR lets every nav hit the CDN instead of cold-starting a serverless
+// function. `revalidate: 60` keeps the grid fresh for crawlers and first
+// paint; authed users refetch client-side via React Query.
 export const getStaticProps: GetStaticProps<DiscoverPageProps> = async () => {
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Stateless server-side read — opt out of the auth state machine the
+  // `@supabase/supabase-js` client would otherwise spin up per invocation.
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      persistSession: false,
+    },
+  });
 
   try {
     const page = 0;

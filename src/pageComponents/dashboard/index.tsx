@@ -147,16 +147,10 @@ const Dashboard = (_props: DashboardProps) => {
 
   const isDiscoverPage = categorySlug === DISCOVER_URL;
 
-  // Onboarding modal gates on profiles.onboarded_at being null. Previously
-  // computed server-side via gSSP and passed in as a prop; now derived from
-  // the already-in-flight user-profile fetch. Only shows on /discover
-  // (onboarding landing route) and only once userProfileData resolves —
-  // modal appears ~200-500 ms after first paint for brand-new users, which
-  // matches UX since the modal is opt-in and not blocking.
-  const showOnboarding =
-    isDiscoverPage &&
-    userProfileData?.[0] !== undefined &&
-    userProfileData[0].onboarded_at === null;
+  // Gated on /discover because that's the post-login landing route; the modal
+  // is opt-in and not blocking, so appearing ~200-500 ms after first paint
+  // (once `userProfileData` resolves) is acceptable.
+  const showOnboarding = isDiscoverPage && userProfileData?.[0]?.onboarded_at === null;
 
   const renderMainPaneContent = () => {
     if (!isInNotFoundPage) {
