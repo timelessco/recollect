@@ -41,6 +41,21 @@ Discover.getLayout = (page: ReactElement, pageProps: DiscoverPageProps) => {
 };
 
 export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (context) => {
+  // Client-side next/link navigations send `x-nextjs-data: 1` for the data-only
+  // /_next/data/<buildId>/discover.json fetch. Skip the auth + profile roundtrips
+  // so dashboard transitions match /everything parity — Dashboard re-runs
+  // supabase.auth.getUser() client-side and redirects to /login on failure.
+  // Crawlers and fresh document loads never set this header, so the guest SSR
+  // payload below still renders for SEO.
+  if (context.req.headers["x-nextjs-data"]) {
+    return {
+      props: {
+        isAuthenticated: true,
+        showOnboarding: false,
+      },
+    };
+  }
+
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
