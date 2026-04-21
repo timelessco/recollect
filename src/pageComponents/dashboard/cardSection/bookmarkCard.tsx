@@ -292,6 +292,7 @@ export const BookmarkCard = memo(BookmarkCardInner, (prev, next) => {
     prev.post.description === next.post.description &&
     prev.post.type === next.post.type &&
     prev.post.trash === next.post.trash &&
+    prev.post.make_discoverable === next.post.make_discoverable &&
     prev.post.inserted_at === next.post.inserted_at &&
     prev.post.meta_data?.ogImgBlurUrl === next.post.meta_data?.ogImgBlurUrl &&
     prev.post.meta_data?.screenshot === next.post.meta_data?.screenshot &&
