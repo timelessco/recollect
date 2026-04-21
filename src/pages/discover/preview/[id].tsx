@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { format } from "date-fns";
+import ky, { HTTPError } from "ky";
 import { z } from "zod";
 
 import type { SingleListData } from "../../../types/apiTypes";
@@ -19,7 +20,6 @@ import {
   NEXT_API_URL,
   V2_FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API,
 } from "../../../utils/constants";
-import { HttpStatus } from "../../../utils/error-utils/common";
 
 const DiscoverPreviewParamsSchema = z.object({
   id: z.string().regex(/^\d+$/u, "Bookmark ID must be numeric").transform(Number),
@@ -96,40 +96,11 @@ export const getStaticProps: GetStaticProps<DiscoverPreviewProps> = async (conte
   const { id: bookmarkId } = validation.data;
 
   try {
-    const response = await fetch(
-      `${getBaseUrl()}${NEXT_API_URL}/${V2_FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API}?id=${bookmarkId}`,
-    );
-
-    if (response.status === HttpStatus.NOT_FOUND) {
-      console.warn(`[${ROUTE}] Bookmark not found`, {
-        bookmarkId,
-      });
-      return { notFound: true };
-    }
-
-    if (!response.ok) {
-      console.error(`[${ROUTE}] Failed to fetch discoverable bookmark: HTTP ${response.status}`, {
-        bookmarkId,
-        status: response.status,
-        statusText: response.statusText,
-      });
-      const severity = response.status >= 500 ? "error" : "warn";
-      logger[severity]("fetch_discoverable_bookmark_failed", {
-        operation: "fetch_discoverable_bookmark",
-        route: ROUTE,
-        context: "incremental_static_regeneration",
-        bookmark_id: bookmarkId,
-        "http.response.status_code": response.status,
-        "http.response.status_text": response.statusText,
-        error_message: `HTTP ${response.status}: ${response.statusText}`,
-      });
-      await logger.flush();
-      return { notFound: true };
-    }
-
-    // v2 returns bare T on 200 — no { data, error } envelope unwrap
-    // oxlint-disable-next-line no-unsafe-type-assertion -- response.json() types as unknown in oxlint
-    const bookmark = (await response.json()) as SingleListData;
+    const bookmark = await ky
+      .get(`${getBaseUrl()}${NEXT_API_URL}/${V2_FETCH_DISCOVERABLE_BOOKMARK_BY_ID_API}`, {
+        searchParams: { id: bookmarkId },
+      })
+      .json<SingleListData>();
 
     return {
       props: {
@@ -138,6 +109,35 @@ export const getStaticProps: GetStaticProps<DiscoverPreviewProps> = async (conte
       revalidate: 300,
     };
   } catch (error) {
+    if (error instanceof HTTPError) {
+      const { status, statusText } = error.response;
+
+      if (status === 404) {
+        console.warn(`[${ROUTE}] Bookmark not found`, {
+          bookmarkId,
+        });
+        return { notFound: true };
+      }
+
+      console.error(`[${ROUTE}] Failed to fetch discoverable bookmark: HTTP ${status}`, {
+        bookmarkId,
+        status,
+        statusText,
+      });
+      const severity = status >= 500 ? "error" : "warn";
+      logger[severity]("fetch_discoverable_bookmark_failed", {
+        operation: "fetch_discoverable_bookmark",
+        route: ROUTE,
+        context: "incremental_static_regeneration",
+        bookmark_id: bookmarkId,
+        "http.response.status_code": status,
+        "http.response.status_text": statusText,
+        error_message: `HTTP ${status}: ${statusText}`,
+      });
+      await logger.flush();
+      return { notFound: true };
+    }
+
     console.error(`[${ROUTE}] Unexpected error fetching discoverable bookmark`, {
       bookmarkId,
       error,
