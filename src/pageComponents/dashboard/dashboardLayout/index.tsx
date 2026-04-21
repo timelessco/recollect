@@ -14,7 +14,7 @@ import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { useSidePaneStore } from "../../../store/sidePaneStore";
 import { optionsMenuListArray } from "../../../utils/commonData";
-import { BOOKMARKS_COUNT_KEY, CATEGORIES_KEY } from "../../../utils/constants";
+import { BOOKMARKS_COUNT_KEY, CATEGORIES_KEY, SIMILAR_URL } from "../../../utils/constants";
 import { SettingsModalPortal } from "../modals/settings-modal";
 import SidePane from "../sidePane";
 import {
@@ -68,7 +68,10 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
   const currentCategoryData = find(categoryData, (item) => item?.category_slug === currentPath);
   const headerName =
-    currentCategoryData?.category_name ?? find(optionsMenuList, (item) => item?.current)?.name;
+    currentPath === SIMILAR_URL
+      ? "Similar vibe"
+      : (currentCategoryData?.category_name ??
+        find(optionsMenuList, (item) => item?.current)?.name);
 
   const dashboardContentElement = () => {
     const onExpandSidePane = () => {

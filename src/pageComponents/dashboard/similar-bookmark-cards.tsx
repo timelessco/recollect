@@ -1,7 +1,6 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 
-import { useFetchBookmarkById } from "../../async/queryHooks/bookmarks/use-fetch-bookmark-by-id";
 import useFetchSimilarBookmarks from "../../async/queryHooks/bookmarks/use-fetch-similar-bookmarks";
 import { useSupabaseSession } from "../../store/componentStore";
 import SignedOutSection from "./signedOutSection";
@@ -26,9 +25,6 @@ export const SimilarBookmarkCards = () => {
   const bookmarkId = Number.parseInt(rawId, 10);
   const isValidId = Number.isFinite(bookmarkId) && bookmarkId > 0;
 
-  const { data: sourceRows } = useFetchBookmarkById(rawId, { enabled: isValidId });
-  const source = sourceRows?.[0];
-
   const { data: similar, isLoading } = useFetchSimilarBookmarks(isValidId ? bookmarkId : undefined);
 
   if (!session) {
@@ -43,13 +39,6 @@ export const SimilarBookmarkCards = () => {
       id="scrollableDiv"
       style={{ overflowAnchor: "none" }}
     >
-      <header className="px-6 pt-6 pb-4">
-        <p className="mb-1 text-sm text-gray-500">Similar to</p>
-        <h1 className="truncate text-xl font-semibold text-plain-reverse">
-          {source?.title ?? (isValidId ? "Loading…" : "Unknown bookmark")}
-        </h1>
-      </header>
-
       {showEmptyState ? (
         renderEmptyState()
       ) : (
