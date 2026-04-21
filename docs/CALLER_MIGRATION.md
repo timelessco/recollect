@@ -158,33 +158,33 @@ Every non-v2 App Router route has a v2 twin except `/api/axiom` (#81, telemetry 
 
 ### Import / Sync / Cron (non-v2)
 
-| #   | Status | Old Path                             | v2 Path                                 | Consumers | Constant                               | Caller                            |
-| --- | ------ | ------------------------------------ | --------------------------------------- | --------- | -------------------------------------- | --------------------------------- |
-| 62  | x      | `/api/raindrop/import`               | `/api/v2/raindrop/import`               | web       | `V2_RAINDROP_IMPORT_API`               | use-import-bookmarks-mutation     |
-| 63  | x      | `/api/bookmarks/check-url`           | `/api/v2/bookmarks/check-url`           | ext       | `V2_CHECK_URL_API`                     | extension api.ts                  |
-| 64  |        | `/api/raindrop/import/retry`         | `/api/v2/raindrop/import/retry`         | —         | `V2_RAINDROP_IMPORT_RETRY_API`         | no caller found (possible orphan) |
-| 65  |        | `/api/raindrop/import/status`        | `/api/v2/raindrop/import/status`        | —         | `V2_RAINDROP_IMPORT_STATUS_API`        | no caller found (possible orphan) |
-| 66  |        | `/api/instagram/sync`                | `/api/v2/instagram/sync`                | ext       | `V2_INSTAGRAM_SYNC_API`                | extension api.ts                  |
-| 67  |        | `/api/instagram/sync/retry`          | `/api/v2/instagram/sync/retry`          | —         | `V2_INSTAGRAM_SYNC_RETRY_API`          | no caller found (possible orphan) |
-| 68  |        | `/api/instagram/sync/status`         | `/api/v2/instagram/sync/status`         | —         | `V2_INSTAGRAM_SYNC_STATUS_API`         | no caller found (possible orphan) |
-| 69  |        | `/api/instagram/last-synced-id`      | `/api/v2/instagram/last-synced-id`      | ext       | `V2_INSTAGRAM_LAST_SYNCED_ID_API`      | extension profile-api.ts          |
-| 70  |        | `/api/twitter/sync`                  | `/api/v2/twitter/sync`                  | ext       | `V2_TWITTER_SYNC_API`                  | extension twitter-upload.ts       |
-| 71  |        | `/api/twitter/sync/retry`            | `/api/v2/twitter/sync/retry`            | —         | `V2_TWITTER_SYNC_RETRY_API`            | no caller found (possible orphan) |
-| 72  |        | `/api/twitter/sync/status`           | `/api/v2/twitter/sync/status`           | —         | `V2_TWITTER_SYNC_STATUS_API`           | no caller found (possible orphan) |
-| 73  |        | `/api/twitter/sync-folders`          | `/api/v2/twitter/sync-folders`          | ext       | `V2_TWITTER_SYNC_FOLDERS_API`          | extension api.ts                  |
-| 74  |        | `/api/twitter/sync-folder-bookmarks` | `/api/v2/twitter/sync-folder-bookmarks` | ext       | `V2_TWITTER_SYNC_FOLDER_BOOKMARKS_API` | extension api.ts                  |
-| 75  |        | `/api/twitter/last-synced-id`        | `/api/v2/twitter/last-synced-id`        | ext       | `V2_TWITTER_LAST_SYNCED_ID_API`        | extension profile-api.ts          |
-| 76  |        | `/api/cron/clear-trash`              | `/api/v2/cron/clear-trash`              | cron      | `V2_CRON_CLEAR_TRASH_API`              | Vercel cron                       |
-| 77  |        | `/api/cron/process-archived`         | `/api/v2/cron/process-archived`         | cron      | `V2_CRON_PROCESS_ARCHIVED_API`         | Vercel cron                       |
+| #   | Status | Old Path                             | v2 Path                                 | Consumers | Constant                       | Caller                            |
+| --- | ------ | ------------------------------------ | --------------------------------------- | --------- | ------------------------------ | --------------------------------- |
+| 62  | x      | `/api/raindrop/import`               | `/api/v2/raindrop/import`               | web       | `V2_RAINDROP_IMPORT_API`       | use-import-bookmarks-mutation     |
+| 63  | x      | `/api/bookmarks/check-url`           | `/api/v2/bookmarks/check-url`           | ext       | —                              | extension api.ts                  |
+| 64  |        | `/api/raindrop/import/retry`         | `/api/v2/raindrop/import/retry`         | —         | `V2_RAINDROP_IMPORT_RETRY_API` | no caller found (possible orphan) |
+| 65  |        | `/api/raindrop/import/status`        | `/api/v2/raindrop/import/status`        | —         | —                              | no caller found (possible orphan) |
+| 66  |        | `/api/instagram/sync`                | `/api/v2/instagram/sync`                | ext       | —                              | extension api.ts                  |
+| 67  |        | `/api/instagram/sync/retry`          | `/api/v2/instagram/sync/retry`          | —         | —                              | no caller found (possible orphan) |
+| 68  |        | `/api/instagram/sync/status`         | `/api/v2/instagram/sync/status`         | —         | —                              | no caller found (possible orphan) |
+| 69  |        | `/api/instagram/last-synced-id`      | `/api/v2/instagram/last-synced-id`      | ext       | —                              | extension profile-api.ts          |
+| 70  |        | `/api/twitter/sync`                  | `/api/v2/twitter/sync`                  | ext       | —                              | extension twitter-upload.ts       |
+| 71  |        | `/api/twitter/sync/retry`            | `/api/v2/twitter/sync/retry`            | —         | —                              | no caller found (possible orphan) |
+| 72  |        | `/api/twitter/sync/status`           | `/api/v2/twitter/sync/status`           | —         | —                              | no caller found (possible orphan) |
+| 73  |        | `/api/twitter/sync-folders`          | `/api/v2/twitter/sync-folders`          | ext       | —                              | extension api.ts                  |
+| 74  |        | `/api/twitter/sync-folder-bookmarks` | `/api/v2/twitter/sync-folder-bookmarks` | ext       | —                              | extension api.ts                  |
+| 75  |        | `/api/twitter/last-synced-id`        | `/api/v2/twitter/last-synced-id`        | ext       | —                              | extension profile-api.ts          |
+| 76  |        | `/api/cron/clear-trash`              | `/api/v2/cron/clear-trash`              | cron      | —                              | Vercel cron                       |
+| 77  |        | `/api/cron/process-archived`         | `/api/v2/cron/process-archived`         | cron      | —                              | Vercel cron                       |
 
 ### Misc (non-v2)
 
-| #   | Status | Old Path                  | v2 Path                      | Consumers | Constant                    | Caller                                              |
-| --- | ------ | ------------------------- | ---------------------------- | --------- | --------------------------- | --------------------------------------------------- |
-| 78  |        | `/api/iphone-share-error` | `/api/v2/iphone-share-error` | ios       | `V2_IPHONE_SHARE_ERROR_API` | iOS share extension                                 |
-| 79  |        | `/api/pdf-thumbnail`      | `/api/v2/pdf-thumbnail`      | ext       | `V2_PDF_THUMBNAIL_API`      | extension file-upload-api.ts                        |
-| 80  |        | `/api/dev/session`        | `/api/v2/dev/session`        | dev       | `V2_DEV_SESSION_API`        | local dev convenience (localhost only)              |
-| 81  | n/a    | `/api/axiom`              | — _(permanent v1)_           | web       | —                           | axiom-client.ts ProxyTransport (telemetry plumbing) |
+| #   | Status | Old Path                  | v2 Path                      | Consumers | Constant | Caller                                              |
+| --- | ------ | ------------------------- | ---------------------------- | --------- | -------- | --------------------------------------------------- |
+| 78  |        | `/api/iphone-share-error` | `/api/v2/iphone-share-error` | ios       | —        | iOS share extension                                 |
+| 79  |        | `/api/pdf-thumbnail`      | `/api/v2/pdf-thumbnail`      | ext       | —        | extension file-upload-api.ts                        |
+| 80  |        | `/api/dev/session`        | `/api/v2/dev/session`        | dev       | —        | local dev convenience (localhost only)              |
+| 81  | n/a    | `/api/axiom`              | — _(permanent v1)_           | web       | —        | axiom-client.ts ProxyTransport (telemetry plumbing) |
 
 ---
 
