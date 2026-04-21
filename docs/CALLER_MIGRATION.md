@@ -248,5 +248,69 @@ Which consumer is hitting how many endpoints:
 
 ---
 
+## Parity Audit (2026-04-21)
+
+Executed after the four API group PRs (toggle/retry/status, public reads, moderate, complex) landed on `dev`. Confirms every old route has a v2 twin and every web caller points at v2.
+
+**Command 1 — Pages Router → v2 twin diff** (run from repo root):
+
+```bash
+comm -23 \
+  <(find src/pages/api -name '*.ts' -not -path '*/_*' \
+    | sed 's|src/pages/api/||; s|/index.ts$||; s|.ts$||; s|^v1/||' | sort) \
+  <(find src/app/api/v2 -name route.ts \
+    | sed 's|src/app/api/v2/||; s|/route.ts$||' | sort)
+```
+
+Output: empty. All 40 Pages Router routes have v2 twins.
+
+**Command 2 — App Router v1 → v2 twin diff**:
+
+```bash
+comm -23 \
+  <(find src/app/api -name route.ts -not -path '*/v2/*' \
+    | sed 's|src/app/api/||; s|/route.ts$||' | sort) \
+  <(find src/app/api/v2 -name route.ts \
+    | sed 's|src/app/api/v2/||; s|/route.ts$||' | sort)
+```
+
+Output: `axiom`. Permanent v1 — SDK-owned contract, documented in `src/app/api/axiom/route.ts`. Not a migration target.
+
+**Command 3 — v2-only extras (reverse diff)**:
+
+Two v2 routes have no v1 counterpart because they were built directly as v2:
+
+- `v2/bookmark/add-bookmark-multiple-categories`
+- `v2/profiles/mark-onboarded`
+
+Plus the v2 twins of Pages Router routes (expected — their v1 lives under `src/pages/api/`, not `src/app/api/`).
+
+**Command 4 — Web-caller sweep**:
+
+```bash
+rg -n 'fetch\(.*/api/(?!v2/)' src/ -g '*.ts' -g '*.tsx'
+```
+
+Output: empty. Every `fetch()` call to `/api/*` from React components, hooks, or shared library code hits `/api/v2/*`. Route-to-route internal calls inside `src/app/api/` or `src/pages/api/` use external URLs (signed URLs, screenshot API, PDF services), not `/api/` self-references.
+
+**Command 5 — Dead-code check**:
+
+```bash
+pnpm lint:knip
+```
+
+Output: zero orphan exports, zero unused imports.
+
+**Out-of-scope deferrals** (tracked for a later caller-cleanup pass):
+
+- Deletion of v1 App Router route files (iOS + extension still hit them).
+- Deletion of `src/async/supabaseCrudHelpers/index.ts`.
+- Deletion of `src/lib/api-helpers/api.ts` (`getApi` / `postApi`).
+- Removal of the legacy `FETCH_PUBLIC_BOOKMARK_BY_ID_API` constant.
+- `pnpm remove axios` (Pages Router handlers still use it).
+- Supabase cron schedule flip for `/api/cron/*` → `/api/v2/cron/*` (out-of-band).
+
+---
+
 _Created: 2026-03-30_
 _Last updated: 2026-04-21_
