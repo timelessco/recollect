@@ -29,7 +29,13 @@ import {
   useMiscellaneousStore,
   useSupabaseSession,
 } from "../../../store/componentStore";
-import { BOOKMARKS_KEY, PREVIEW_ALT_TEXT, TWEETS_URL, viewValues } from "../../../utils/constants";
+import {
+  BOOKMARKS_KEY,
+  PREVIEW_ALT_TEXT,
+  SIMILAR_URL,
+  TWEETS_URL,
+  viewValues,
+} from "../../../utils/constants";
 import { getBookmarkCountForCurrentPage, getPreviewPathInfo } from "../../../utils/helpers";
 import { getCategorySlugFromRouter } from "../../../utils/url";
 import { BookmarkCard, getImgForPost } from "./bookmarkCard";
@@ -248,7 +254,7 @@ const CardSection = ({
     <>
       <div className={listWrapperClass}>{renderItem()}</div>
       <PreviewLightBox
-        bookmarks={isPublicPage ? bookmarksList : undefined}
+        bookmarks={isPublicPage || categorySlug === SIMILAR_URL ? bookmarksList : undefined}
         id={lightboxId}
         open={lightboxOpen}
         setOpen={setLightboxOpen}
