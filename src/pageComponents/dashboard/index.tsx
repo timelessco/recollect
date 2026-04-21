@@ -51,7 +51,6 @@ interface DashboardProps {
   // Dashboard renders its own main-pane tree internally based on route —
   // `children` is intentionally not rendered.
   children?: ReactNode;
-  showOnboarding?: boolean;
 }
 
 const navLog = (label: string, extra?: Record<string, unknown>) => {
@@ -67,7 +66,7 @@ const navLog = (label: string, extra?: Record<string, unknown>) => {
   console.log(`[nav-perf] ${label}`, t.toFixed(0), extra ?? "");
 };
 
-const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
+const Dashboard = (_props: DashboardProps) => {
   const isMounted = useMounted();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -178,6 +177,17 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
   }, [session?.user?.app_metadata?.provider, updateUserProfileMutate, userProfileData]);
 
   const isDiscoverPage = categorySlug === DISCOVER_URL;
+
+  // Onboarding modal gates on profiles.onboarded_at being null. Previously
+  // computed server-side via gSSP and passed in as a prop; now derived from
+  // the already-in-flight user-profile fetch. Only shows on /discover
+  // (onboarding landing route) and only once userProfileData resolves —
+  // modal appears ~200-500 ms after first paint for brand-new users, which
+  // matches UX since the modal is opt-in and not blocking.
+  const showOnboarding =
+    isDiscoverPage &&
+    userProfileData?.[0] !== undefined &&
+    userProfileData[0].onboarded_at === null;
 
   const renderMainPaneContent = () => {
     if (!isInNotFoundPage) {
