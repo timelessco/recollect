@@ -126,6 +126,22 @@ export const GET = createAxiomRouteHandler(
           .overrideTypes<CategoryJoinRow[], { merge: false }>(),
       ]);
 
+      if (tagsResult.error) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: tagsResult.error,
+          message: "Failed to fetch similar bookmark tags",
+          operation: "fetch_similar_tags",
+        });
+      }
+
+      if (categoriesResult.error) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: categoriesResult.error,
+          message: "Failed to fetch similar bookmark categories",
+          operation: "fetch_similar_categories",
+        });
+      }
+
       const { data: bookmarksWithTags } = tagsResult;
       const { data: bookmarksWithCategories } = categoriesResult;
 

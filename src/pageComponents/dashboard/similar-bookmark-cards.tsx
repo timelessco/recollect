@@ -18,20 +18,42 @@ const renderEmptyState = () => (
   </div>
 );
 
+const renderErrorState = () => (
+  <div className="flex w-full items-center justify-center py-16 text-center">
+    <p className="text-lg font-medium text-red-600">
+      Could not load similar bookmarks. Please try again.
+    </p>
+  </div>
+);
+
 export const SimilarBookmarkCards = () => {
   const session = useSupabaseSession((state) => state.session);
   const router = useRouter();
   const rawId = typeof router.query.id === "string" ? router.query.id : "";
-  const bookmarkId = Number.parseInt(rawId, 10);
+  const bookmarkId = /^\d+$/.test(rawId) ? Number(rawId) : Number.NaN;
   const isValidId = Number.isFinite(bookmarkId) && bookmarkId > 0;
 
-  const { data: similar, isLoading } = useFetchSimilarBookmarks(isValidId ? bookmarkId : undefined);
+  const {
+    data: similar,
+    isError,
+    isLoading,
+  } = useFetchSimilarBookmarks(isValidId ? bookmarkId : undefined);
 
   if (!session) {
     return <SignedOutSection />;
   }
 
-  const showEmptyState = !isLoading && (similar?.length ?? 0) === 0;
+  const renderContent = () => {
+    if (!isLoading && isError) {
+      return renderErrorState();
+    }
+
+    if (!isLoading && (similar?.length ?? 0) === 0) {
+      return renderEmptyState();
+    }
+
+    return <CardSection isLoading={isLoading} listData={similar ?? []} />;
+  };
 
   return (
     <div
@@ -39,11 +61,7 @@ export const SimilarBookmarkCards = () => {
       id="scrollableDiv"
       style={{ overflowAnchor: "none" }}
     >
-      {showEmptyState ? (
-        renderEmptyState()
-      ) : (
-        <CardSection isLoading={isLoading} listData={similar ?? []} />
-      )}
+      {renderContent()}
     </div>
   );
 };

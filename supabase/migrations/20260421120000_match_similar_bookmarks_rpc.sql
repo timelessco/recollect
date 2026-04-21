@@ -12,8 +12,8 @@
 --                                        only if ANY candidate color clears
 --                                        the decayed quality floor used by
 --                                        color search:
---                                          lch_color_score(src, cand)
---                                            × exp(-0.4 × (cand_pos − 1))
+--                                          lch_color_score(src, candidate)
+--                                            × exp(-0.4 × (candidate_pos − 1))
 --                                          >= 0.50
 --         +  3 × shared_ai_types       -- image_keywords.type intersect
 --         +  3 × shared_objects        -- image_keywords.object intersect
@@ -23,7 +23,8 @@
 --
 --   Filter: score >= p_min_score (default 4). No single signal qualifies alone;
 --           pure color (2), domain (1), or single category (1) matches are
---           excluded. Order: score desc, then inserted_at desc.
+--           excluded. Order: score desc, then inserted_at desc. Capped at
+--           p_limit rows (default 50) to bound payload and downstream hydration.
 --
 --   The color predicate mirrors public.search_bookmarks_url_tag_scope so color
 --   similarity follows the same priority model as color search: candidate
@@ -38,7 +39,8 @@ BEGIN;
 
 CREATE OR REPLACE FUNCTION public.match_similar_bookmarks(
   p_bookmark_id bigint,
-  p_min_score int DEFAULT 4
+  p_min_score int DEFAULT 4,
+  p_limit int DEFAULT 50
 )
 RETURNS TABLE (
   id bigint,
@@ -183,11 +185,12 @@ AS $$
   SELECT t.id, t.score
   FROM totals t
   WHERE t.score >= p_min_score
-  ORDER BY t.score DESC, t.inserted_at DESC;
+  ORDER BY t.score DESC, t.inserted_at DESC
+  LIMIT p_limit;
 $$;
 
-REVOKE EXECUTE ON FUNCTION public.match_similar_bookmarks(bigint, int) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.match_similar_bookmarks(bigint, int) TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.match_similar_bookmarks(bigint, int, int) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.match_similar_bookmarks(bigint, int, int) TO authenticated;
 
 COMMENT ON FUNCTION public.match_similar_bookmarks IS
   'Ranks bookmarks similar to p_bookmark_id by additive score over AI-extracted visual signals (OKLCh colors via lch_color_score with positional-decay quality floor matching color search, objects, content types), user tags/categories, and url host equality. User-scoped via RLS on public.everything.';

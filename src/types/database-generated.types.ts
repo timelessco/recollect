@@ -553,7 +553,7 @@ export type Database = {
         Returns: Json;
       };
       match_similar_bookmarks: {
-        Args: { p_bookmark_id: number; p_min_score?: number };
+        Args: { p_bookmark_id: number; p_limit?: number; p_min_score?: number };
         Returns: {
           id: number;
           score: number;

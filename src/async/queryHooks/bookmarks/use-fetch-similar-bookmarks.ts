@@ -6,6 +6,10 @@ import { api } from "@/lib/api-helpers/api-v2";
 import { useSupabaseSession } from "@/store/componentStore";
 import { BOOKMARKS_KEY, V2_FETCH_SIMILAR_BOOKMARKS_API } from "@/utils/constants";
 
+export type SimilarBookmark = SingleListData & {
+  similarity_score: number;
+};
+
 interface UseFetchSimilarBookmarksOptions {
   enabled?: boolean;
 }
@@ -25,7 +29,7 @@ export default function useFetchSimilarBookmarks(
         .get(V2_FETCH_SIMILAR_BOOKMARKS_API, {
           searchParams: { bookmark_id: String(bookmarkId) },
         })
-        .json<SingleListData[]>();
+        .json<SimilarBookmark[]>();
       return rows;
     },
     queryKey: [BOOKMARKS_KEY, userId, "similar", bookmarkId],

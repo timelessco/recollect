@@ -7,16 +7,17 @@ import { bearerAuth } from "@/lib/openapi/registry";
 
 export const v2FetchSimilarSupplement = {
   additionalResponses: {
+    400: { description: "Invalid bookmark_id query parameter" },
     401: { description: "Not authenticated" },
   },
   description:
-    "Returns bookmarks similar to `bookmark_id`, scoped to the authenticated user. Ranking is an additive score over OKLCh color similarity (via `lch_color_score`), shared AI-inferred content types, shared detected objects, shared user tags, shared categories, and url host equality. Only results with score ≥ 4 are returned, ordered by score desc then `inserted_at` desc.",
+    "Returns bookmarks similar to `bookmark_id`, scoped to the authenticated user. Ranking is an additive score over OKLCh color similarity (via `lch_color_score`), shared AI-inferred content types, shared detected objects, shared user tags, shared categories, and url host equality. Only results with score ≥ 5 are returned, ordered by score desc then `inserted_at` desc.",
   method: "get",
   parameterExamples: {
     bookmark_id: {
       "no-matches": {
         description:
-          "Send `?bookmark_id=999999` — returns an empty array when no candidate scores ≥ 4.",
+          "Send `?bookmark_id=999999` — returns an empty array when no candidate scores ≥ 5.",
         summary: "Bookmark with no strong matches",
         value: "999999",
       },
