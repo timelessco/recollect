@@ -8,8 +8,13 @@
 --   equality.
 --
 -- Scoring (per candidate Y vs. source X, both owned by current user):
---   score =  2 × color_matches        -- source top-3 colors w/ any candidate
---                                        color where lch_color_score >= 0.5
+--   score =  2 × color_matches        -- source top-3 colors; each qualifies
+--                                        only if ANY candidate color clears
+--                                        the decayed quality floor used by
+--                                        color search:
+--                                          lch_color_score(src, cand)
+--                                            × exp(-0.4 × (cand_pos − 1))
+--                                          >= 0.50
 --         +  3 × shared_ai_types       -- image_keywords.type intersect
 --         +  3 × shared_objects        -- image_keywords.object intersect
 --         +  2 × shared_tags           -- bookmark_tags intersect
@@ -19,6 +24,11 @@
 --   Filter: score >= p_min_score (default 4). No single signal qualifies alone;
 --           pure color (2), domain (1), or single category (1) matches are
 --           excluded. Order: score desc, then inserted_at desc.
+--
+--   The color predicate mirrors public.search_bookmarks_url_tag_scope so color
+--   similarity follows the same priority model as color search: candidate
+--   position 1 (most dominant) is the strictest signal, and each deeper color
+--   must score exponentially higher to still qualify.
 --
 -- RLS: SECURITY INVOKER. Row access gated by the existing RLS policies on
 --      public.everything / bookmark_tags / bookmark_categories (user-scoped).
@@ -74,8 +84,13 @@ AS $$
       AND e.trash IS NULL
       AND e.id <> s.id
   ),
-  -- For each candidate, count how many of source's top-3 dominant colors
-  -- have at least one candidate color scoring >= 0.5 under lch_color_score.
+  -- For each of the source's top-3 dominant colors, count it as a match if
+  -- ANY candidate color clears the decayed quality floor:
+  --     lch_color_score × exp(-0.4 × (candidate_pos − 1)) >= 0.50
+  -- Same predicate used by public.search_bookmarks_url_tag_scope, so color
+  -- similarity here follows the same priority model as color search:
+  -- position 1 (most dominant) is the strictest signal, each deeper color
+  -- has to score exponentially higher to still qualify.
   color_scored AS (
     SELECT
       c.id,
@@ -85,7 +100,7 @@ AS $$
         WHERE sc.ord <= 3
           AND EXISTS (
             SELECT 1
-            FROM jsonb_array_elements(c.kw -> 'colors') AS cc(color)
+            FROM jsonb_array_elements(c.kw -> 'colors') WITH ORDINALITY AS cc(color, pos)
             WHERE public.lch_color_score(
               (sc.color ->> 'l')::double precision,
               (sc.color ->> 'a')::double precision,
@@ -93,7 +108,7 @@ AS $$
               (cc.color ->> 'l')::double precision,
               (cc.color ->> 'a')::double precision,
               (cc.color ->> 'b')::double precision
-            ) >= 0.5
+            ) * exp(-0.4 * (cc.pos - 1)) >= 0.50
           )
       ), 0) AS color_matches
     FROM candidates c, source s
@@ -175,6 +190,6 @@ REVOKE EXECUTE ON FUNCTION public.match_similar_bookmarks(bigint, int) FROM PUBL
 GRANT EXECUTE ON FUNCTION public.match_similar_bookmarks(bigint, int) TO authenticated;
 
 COMMENT ON FUNCTION public.match_similar_bookmarks IS
-  'Ranks bookmarks similar to p_bookmark_id by additive score over AI-extracted visual signals (OKLCh colors via lch_color_score, objects, content types), user tags/categories, and url host equality. User-scoped via RLS on public.everything.';
+  'Ranks bookmarks similar to p_bookmark_id by additive score over AI-extracted visual signals (OKLCh colors via lch_color_score with positional-decay quality floor matching color search, objects, content types), user tags/categories, and url host equality. User-scoped via RLS on public.everything.';
 
 COMMIT;
