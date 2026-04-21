@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import ky, { HTTPError } from "ky";
 import isNull from "lodash/isNull";
 
 import type { PaginatedBookmarks, UploadFileApiPayload } from "../../../types/apiTypes";
@@ -74,17 +75,14 @@ export default function useFileUploadOptimisticMutation() {
                   const base64Data = thumbnailBase64?.split(",")?.[1];
                   if (base64Data) {
                     const buffer = Buffer.from(base64Data, "base64");
-                    const uploadResponse = await fetch(uploadTokenData.signedUrl, {
+                    await ky.put(uploadTokenData.signedUrl, {
                       body: buffer.buffer as BodyInit,
                       headers: {
                         "Content-Type": "image/jpg",
                       },
-                      method: "PUT",
+                      retry: 0,
                     });
-
-                    if (uploadResponse.ok) {
-                      thumbnailPath = `${STORAGE_FILES_PATH}/${userId}/${thumbnailFileName}`;
-                    }
+                    thumbnailPath = `${STORAGE_FILES_PATH}/${userId}/${thumbnailFileName}`;
                   }
                 } catch (uploadError) {
                   console.error("Thumbnail upload error:", uploadError);
@@ -185,20 +183,19 @@ export default function useFileUploadOptimisticMutation() {
 
       if (uploadTokenData?.signedUrl && errorCondition) {
         try {
-          const uploadResponse = await fetch(uploadTokenData.signedUrl, {
-            method: "PUT",
+          await ky.put(uploadTokenData.signedUrl, {
             body: data?.file,
             headers: {
               "Content-Type": data?.file?.type || "application/octet-stream",
             },
+            retry: 0,
           });
-
-          if (!uploadResponse.ok) {
-            const errorMessage = `Upload failed with status: ${uploadResponse.status}`;
-            errorToast(errorMessage);
+        } catch (uploadError) {
+          if (uploadError instanceof HTTPError) {
+            errorToast(`Upload failed with status: ${uploadError.response.status}`);
+          } else {
+            errorToast("Upload failed");
           }
-        } catch {
-          errorToast("Upload failed");
         }
       }
 
