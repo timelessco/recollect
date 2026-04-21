@@ -163,7 +163,7 @@ export const POST = createAxiomRouteHandler(
               "User-Agent": "Mozilla/5.0",
             },
             retry: 0,
-            timeout: IMAGE_DOWNLOAD_TIMEOUT_MS,
+            signal: AbortSignal.timeout(IMAGE_DOWNLOAD_TIMEOUT_MS),
           });
 
           const arrayBuffer = await imageResponse.arrayBuffer();

@@ -189,6 +189,7 @@ export default function useFileUploadOptimisticMutation() {
               "Content-Type": data?.file?.type || "application/octet-stream",
             },
             retry: 0,
+            timeout: false,
           });
         } catch (uploadError) {
           if (uploadError instanceof HTTPError) {

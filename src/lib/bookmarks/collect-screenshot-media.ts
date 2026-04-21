@@ -157,7 +157,7 @@ export async function collectVideo(args: CollectVideoArgs): Promise<CollectVideo
 
     // Fetch with timeout
     const [downloadError, videoResponse] = await vet(() =>
-      ky.get(videoUrl, { retry: 0, timeout: VIDEO_DOWNLOAD_TIMEOUT_MS }),
+      ky.get(videoUrl, { retry: 0, signal: AbortSignal.timeout(VIDEO_DOWNLOAD_TIMEOUT_MS) }),
     );
 
     if (downloadError || !videoResponse) {
