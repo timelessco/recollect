@@ -9,6 +9,7 @@ import isNil from "lodash/isNil";
 import isNull from "lodash/isNull";
 
 import { Spinner } from "@/components/spinner";
+import { isNullable } from "@/utils/assertion-utils";
 
 import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
 import useFetchBookmarksView from "../../async/queryHooks/bookmarks/use-fetch-bookmarks-view";
@@ -54,7 +55,7 @@ interface DashboardProps {
   showOnboarding?: boolean;
 }
 
-const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
+const Dashboard = ({ showOnboarding }: DashboardProps) => {
   const isMounted = useMounted();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -148,6 +149,20 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
 
   const isDiscoverPage = categorySlug === DISCOVER_URL;
 
+  // Prefer an SSR-provided `showOnboarding` when the caller set it; otherwise
+  // derive from the user profile fetch once it resolves. /discover's getServerSideProps
+  // used to pre-compute this flag, but that added a Supabase round-trip that
+  // dominated TTFB — deriving client-side keeps navigation instant and still
+  // mounts the onboarding modal for users who have not yet onboarded once
+  // their profile arrives. The `Array.isArray` guard prevents the modal from
+  // flashing during the loading state (userProfileData is undefined until
+  // the query resolves).
+  const effectiveShowOnboarding =
+    showOnboarding ??
+    (Array.isArray(userProfileData) &&
+      userProfileData.length > 0 &&
+      isNullable(userProfileData[0]?.onboarded_at));
+
   const renderMainPaneContent = () => {
     if (!isInNotFoundPage) {
       if (categorySlug === DISCOVER_URL) {
@@ -180,7 +195,7 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
   return (
     <>
       <DashboardLayout>{renderMainPaneContent()}</DashboardLayout>
-      {showOnboarding ? <OnboardingModal /> : null}
+      {effectiveShowOnboarding ? <OnboardingModal /> : null}
     </>
   );
 };
