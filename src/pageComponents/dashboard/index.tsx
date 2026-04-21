@@ -21,12 +21,13 @@ import useGetSortBy from "../../hooks/useGetSortBy";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
 import { useMounted } from "../../hooks/useMounted";
 import { useSupabaseSession } from "../../store/componentStore";
-import { BOOKMARKS_KEY, DISCOVER_URL, LOGIN_URL } from "../../utils/constants";
+import { BOOKMARKS_KEY, DISCOVER_URL, LOGIN_URL, SIMILAR_URL } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
 import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 import { BookmarkCards } from "./bookmarkCards";
 import { DiscoverBookmarkCards } from "./discoverBookmarkCards";
+import { SimilarBookmarkCards } from "./similar-bookmark-cards";
 
 const DashboardLayout = dynamic(() => import("./dashboardLayout"), {
   ssr: false,
@@ -147,9 +148,14 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
   }, [session?.user?.app_metadata?.provider, updateUserProfileMutate, userProfileData]);
 
   const isDiscoverPage = categorySlug === DISCOVER_URL;
+  const isSimilarPage = categorySlug === SIMILAR_URL;
 
   const renderMainPaneContent = () => {
     if (!isInNotFoundPage) {
+      if (isSimilarPage) {
+        return <SimilarBookmarkCards />;
+      }
+
       if (categorySlug === DISCOVER_URL) {
         return <DiscoverBookmarkCards isDiscoverPage />;
       }
