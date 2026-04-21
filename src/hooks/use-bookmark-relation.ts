@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import type { PaginatedBookmarks, SingleListData } from "@/types/apiTypes";
 
-import { BOOKMARKS_KEY } from "@/utils/constants";
+import { BOOKMARKS_KEY, SIMILAR_URL } from "@/utils/constants";
 
 import { useBookmarkMutationContext } from "./use-bookmark-mutation-context";
 
@@ -93,6 +93,30 @@ export const useBookmarkRelation = (
         result = extractFn(bookmark);
         if (filterFn) {
           result = result.filter(filterFn);
+        }
+      }
+    }
+
+    // Fallback: similar-page caches ([BOOKMARKS_KEY, userId, "similar", sourceId]).
+    // Paginated fetch is disabled on /similar, so the primary/search lookups miss
+    // and chip state would otherwise be empty.
+    if (result.length === 0) {
+      const similarEntries = queryClient.getQueriesData<SingleListData[]>({
+        queryKey: [BOOKMARKS_KEY],
+      });
+      for (const [key, data] of similarEntries) {
+        if (key[2] !== SIMILAR_URL) {
+          continue;
+        }
+
+        const bookmark = data?.find((bm) => bm.id === bookmarkId);
+        if (bookmark) {
+          result = extractFn(bookmark);
+          if (filterFn) {
+            result = result.filter(filterFn);
+          }
+
+          break;
         }
       }
     }

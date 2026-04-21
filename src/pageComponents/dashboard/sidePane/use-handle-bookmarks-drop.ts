@@ -1,12 +1,16 @@
 import { useMemo } from "react";
 
+import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
+
+import type { SingleListData } from "@/types/apiTypes";
 
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/use-fetch-paginated-bookmarks";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/use-search-bookmarks";
 import useFetchCategories from "@/async/queryHooks/category/use-fetch-categories";
 import { useSupabaseSession } from "@/store/componentStore";
+import { BOOKMARKS_KEY, SIMILAR_URL } from "@/utils/constants";
 import { errorToast } from "@/utils/toastMessages";
 
 /**
@@ -17,6 +21,7 @@ import { errorToast } from "@/utils/toastMessages";
  */
 export function useHandleBookmarksDrop() {
   const session = useSupabaseSession((state) => state.session);
+  const queryClient = useQueryClient();
   const { addCategoryToBookmarkOptimisticMutation } = useAddCategoryToBookmarkOptimisticMutation();
   const { allCategories } = useFetchCategories();
   const { everythingData, isEverythingDataLoading } = useFetchPaginatedBookmarks();
@@ -29,8 +34,9 @@ export function useHandleBookmarksDrop() {
 
   // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- react-aria drop event has no stable public type
   const handleBookmarksDrop = async (event: any) => {
-    // Guard: don't process drops while bookmarks are still loading
-    if (isEverythingDataLoading || !everythingData) {
+    // Only block while paginated is actively loading. Don't require its presence
+    // — paginated is disabled on /similar, so `everythingData` is undefined there.
+    if (isEverythingDataLoading) {
       return;
     }
 
@@ -59,11 +65,28 @@ export function useHandleBookmarksDrop() {
         // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- drag event items lack typed API
         ((event?.items ?? []) as any[]).map(async (item: any) => {
           const bookmarkId = (await item.getText("text/plain")) as string;
+          const bookmarkIdNum = Number.parseInt(bookmarkId, 10);
 
-          const foundBookmark = find(
+          let foundBookmark = find(
             mergedBookmarkData,
-            (bookmarkItem) => Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
+            (bookmarkItem) => bookmarkIdNum === bookmarkItem?.id,
           );
+
+          // Fallback: similar-page caches. Paginated fetch is disabled on /similar,
+          // so `mergedBookmarkData` never carries similar bookmarks; fall through to
+          // any active similar cache keyed at [BOOKMARKS_KEY, userId, "similar", X].
+          if (!foundBookmark) {
+            const similarEntries = queryClient.getQueriesData<SingleListData[]>({
+              queryKey: [BOOKMARKS_KEY, session?.user?.id, SIMILAR_URL],
+            });
+            for (const [, data] of similarEntries) {
+              const match = data?.find((bm) => bm?.id === bookmarkIdNum);
+              if (match) {
+                foundBookmark = match;
+                break;
+              }
+            }
+          }
 
           // Ignore drops that aren't bookmarks (e.g., collections dragged between sidebar lists)
           if (!foundBookmark) {
@@ -80,7 +103,7 @@ export function useHandleBookmarksDrop() {
             }
 
             addCategoryToBookmarkOptimisticMutation.mutate({
-              bookmark_id: Number.parseInt(bookmarkId, 10),
+              bookmark_id: bookmarkIdNum,
               category_id: categoryId,
             });
           } else {
