@@ -17,9 +17,13 @@ import { Checkbox } from "@/components/ui/recollect/checkbox";
 import { cn } from "@/utils/tailwind-merge";
 
 import { useMiscellaneousStore } from "../../../store/componentStore";
-import { DISCOVER_URL, viewValues } from "../../../utils/constants";
+import { DISCOVER_URL, SIMILAR_URL, viewValues } from "../../../utils/constants";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../../utils/url";
-import { buildAuthenticatedPreviewUrl, buildPublicPreviewUrl } from "../../../utils/url-builders";
+import {
+  buildAuthenticatedPreviewUrl,
+  buildPublicPreviewUrl,
+  buildSimilarPreviewUrl,
+} from "../../../utils/url-builders";
 
 type OptionDropItemTypes = DraggableItemProps & {
   rendered: ReactNode;
@@ -127,7 +131,16 @@ const Option = ({
             }
           } else {
             const currentCategorySlug = getCategorySlugFromRouter(router);
-            if (currentCategorySlug) {
+            if (currentCategorySlug === SIMILAR_URL) {
+              const sourceId = typeof router.query.id === "string" ? router.query.id : undefined;
+              if (sourceId) {
+                const { as, pathname, query } = buildSimilarPreviewUrl({
+                  bookmarkId: item?.key,
+                  sourceId,
+                });
+                void router.push({ pathname, query }, as, { shallow: true });
+              }
+            } else if (currentCategorySlug) {
               const { as, pathname, query } = buildAuthenticatedPreviewUrl({
                 bookmarkId: item?.key,
                 categorySlug: currentCategorySlug,

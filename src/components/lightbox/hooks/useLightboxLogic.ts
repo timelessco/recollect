@@ -18,11 +18,16 @@ import {
   instagramType,
   PDF_MIME_TYPE,
   PDF_TYPE,
+  SIMILAR_URL,
   tweetType,
   VIDEO_TYPE_PREFIX,
 } from "../../../utils/constants";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../../utils/url";
-import { buildAuthenticatedPreviewUrl, buildPublicPreviewUrl } from "../../../utils/url-builders";
+import {
+  buildAuthenticatedPreviewUrl,
+  buildPublicPreviewUrl,
+  buildSimilarPreviewUrl,
+} from "../../../utils/url-builders";
 import { isYouTubeVideo } from "../LightboxUtils";
 
 /**
@@ -198,7 +203,14 @@ export const useLightboxNavigation = ({
       }
     } else {
       const categorySlug = getCategorySlugFromRouter(router);
-      if (categorySlug) {
+      if (categorySlug === SIMILAR_URL) {
+        const sourceId = typeof router?.query.id === "string" ? router.query.id : undefined;
+        const bookmarkId = bookmarks?.[index]?.id;
+        if (sourceId && bookmarkId) {
+          const { as, pathname, query } = buildSimilarPreviewUrl({ bookmarkId, sourceId });
+          void router?.push({ pathname, query }, as, { shallow: true });
+        }
+      } else if (categorySlug) {
         const { as, pathname, query } = buildAuthenticatedPreviewUrl({
           bookmarkId: bookmarks?.[index]?.id,
           categorySlug,

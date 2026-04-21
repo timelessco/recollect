@@ -11,9 +11,13 @@ import { usePageContext } from "../../hooks/use-page-context";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import { useMiscellaneousStore, useSupabaseSession } from "../../store/componentStore";
-import { BOOKMARKS_KEY, DISCOVER_URL, EVERYTHING_URL } from "../../utils/constants";
+import { BOOKMARKS_KEY, DISCOVER_URL, EVERYTHING_URL, SIMILAR_URL } from "../../utils/constants";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../utils/url";
-import { buildAuthenticatedCategoryUrl, buildPublicCategoryUrl } from "../../utils/url-builders";
+import {
+  buildAuthenticatedCategoryUrl,
+  buildPublicCategoryUrl,
+  buildSimilarUrl,
+} from "../../utils/url-builders";
 import { useLightboxPrefetch } from "./hooks/useLightboxPrefetch";
 import { CustomLightBox } from "./LightBox";
 
@@ -105,8 +109,16 @@ export const PreviewLightBox = ({
     } else {
       // Update URL without page reload for logged-in users
       const categorySlug = getCategorySlugFromRouter(router) ?? EVERYTHING_URL;
-      const { as, pathname, query } = buildAuthenticatedCategoryUrl(categorySlug);
-      void router.push({ pathname, query }, as, { shallow: true });
+      if (categorySlug === SIMILAR_URL) {
+        const sourceId = typeof router.query.id === "string" ? router.query.id : undefined;
+        if (sourceId) {
+          const { as, pathname, query } = buildSimilarUrl(sourceId);
+          void router.push({ pathname, query }, as, { shallow: true });
+        }
+      } else {
+        const { as, pathname, query } = buildAuthenticatedCategoryUrl(categorySlug);
+        void router.push({ pathname, query }, as, { shallow: true });
+      }
     }
 
     // Reset state after animation

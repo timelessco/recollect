@@ -95,3 +95,30 @@ export const buildAuthenticatedCategoryUrl = (categorySlug: string): RoutePushPa
     category_id: categorySlug,
   },
 });
+
+/**
+ * Builds preview URL for similar pages — `/similar/<sourceId>/preview/<bookmarkId>`.
+ * The pathname points at the preview route file so Next.js can resolve deep links
+ * directly to the lightbox overlay while in-app clicks still use `shallow: true`.
+ */
+export const buildSimilarPreviewUrl = (params: {
+  bookmarkId: number | string;
+  sourceId: number | string;
+}): RoutePushParams => {
+  const { bookmarkId, sourceId } = params;
+  return {
+    as: `/similar/${sourceId}${PREVIEW_PATH}/${bookmarkId}`,
+    pathname: `/similar/[id]/preview/[bookmark_id]`,
+    query: { bookmark_id: bookmarkId, id: sourceId },
+  };
+};
+
+/**
+ * Builds base similar URL — `/similar/<sourceId>` — used when closing the lightbox
+ * overlay back to the similar-bookmarks grid.
+ */
+export const buildSimilarUrl = (sourceId: number | string): RoutePushParams => ({
+  as: `/similar/${sourceId}`,
+  pathname: `/similar/[id]`,
+  query: { id: sourceId },
+});
