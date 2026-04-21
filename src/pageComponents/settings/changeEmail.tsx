@@ -58,7 +58,7 @@ const ChangeEmail = ({ onNavigate }: ChangeEmailProps) => {
     }
 
     if (isNil(error)) {
-      successToast("Comformation email sent", "userInvite");
+      successToast("Confirmation email sent", "userInvite");
     }
 
     setChangeEmailLoader(false);

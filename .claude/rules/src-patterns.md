@@ -77,9 +77,17 @@ Three sidebar sections with different `CATEGORY_ID` resolution:
 - **Config**: `siteConfig.ts`
 - **Metadata**: `metadataUtils` for consistent SEO
 
-### HTTP Client
+### HTTP Client (ky)
 
-`axios` is in deps but rule is `fetch`-only — legacy, don't use for new code.
+Native `fetch` is replaced by `ky` repo-wide (`axios` remains in deps but is legacy — don't use). Shared client instance `api` at `src/lib/api-helpers/api-v2.ts`: `ky.create({ prefix: "/api", timeout: 30_000 })`. Always import URL constants from `src/utils/constants.ts`; never inline `"v2/..."` strings.
+
+**ky defaults differ from fetch** — 10s per-attempt timeout, 2 retries on GET/PUT/HEAD/DELETE for 5xx + [408, 413, 429]. POST/PATCH are NOT retried. Two pin patterns to preserve fetch semantics:
+
+- **`timeout: false`** — queue workers, server-to-server dispatches, upstream that owns its own budget. Use when there's no synchronous client waiting (e.g., `after()` bg dispatch, pgmq handlers, external render/screenshot services). ky's 10s default otherwise aborts legitimate long-running ops as `TimeoutError`.
+- **`retry: 0`** — idempotency-unsafe or amplifying calls. Use when: (1) retries duplicate external side effects (HEAD/GET to user URLs), (2) retries amplify bandwidth (PDF/video proxied through the server), (3) best-effort flows with graceful fallback (og-image re-upload).
+- **Client + server pairing** — when the server handler proxies an external URL (e.g., `/v2/bookmarks/get/get-pdf-buffer`), add `retry: 0` at BOTH layers. Server `retry: 0` alone doesn't stop the client `api` instance from re-invoking the whole route on 5xx; cascade amplification needs the caller-side guard too.
+
+Keep explicit `timeout: <ms>` when a user is waiting and UX patience is the real cap (`SCREENSHOT_TIMEOUT_MS = 60_000`, `IMAGE_DOWNLOAD_TIMEOUT_MS = 10_000`). Match server timeout to the client ceiling — a server `timeout: 60_000` behind a client `api` 30s ceiling just wastes cycles after the client abandons.
 
 ### Category Multi-Select
 

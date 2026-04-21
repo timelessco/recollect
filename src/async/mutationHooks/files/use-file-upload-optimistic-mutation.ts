@@ -250,7 +250,7 @@ export default function useFileUploadOptimisticMutation() {
 
         if (data?.file?.type === PDF_MIME_TYPE) {
           try {
-            successToast(`generating  thumbnail`);
+            successToast("Generating thumbnail");
             await handlePdfThumbnailAndUpload({
               fileId: apiResponse[0].id,
               fileUrl: `${getStoragePublicBaseUrl()}/${STORAGE_FILES_PATH}/${session?.user?.id}/${data?.uploadFileNamePath}`,

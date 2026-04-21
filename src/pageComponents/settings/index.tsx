@@ -73,7 +73,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
       await updateUsernameMutation.mutateAsync({
         username: data?.username,
       });
-      successToast("User name has been updated");
+      successToast("Username has been updated");
     } catch {
       errorToast("Failed to update username. Please try again.");
     }
@@ -162,7 +162,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
 
               void uploadPic();
             } else {
-              errorToast("File size is greater then 1MB");
+              errorToast("File size is greater than 1MB");
             }
           }
         }}

@@ -227,7 +227,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
               });
             } catch {
               try {
-                errorToast("retry thumbnail generation");
+                errorToast("Retry thumbnail generation");
                 await handlePdfThumbnailAndUpload({
                   fileId: data.id,
                   fileUrl: data.url,
@@ -235,7 +235,7 @@ export default function useAddBookmarkMinDataOptimisticMutation() {
                 });
               } catch (retryError) {
                 console.error("PDF thumbnail upload failed after retry:", retryError);
-                errorToast("thumbnail generation failed");
+                errorToast("Thumbnail generation failed");
                 void teardownBookmarkEnrichmentSubscription(data.id, "screenshot_failed");
               }
             } finally {
