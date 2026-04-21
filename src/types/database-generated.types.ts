@@ -267,15 +267,9 @@ export type Database = {
           last_synced_instagram_id: string | null;
           last_synced_twitter_id: string | null;
           onboarded_at: string | null;
-          plan: string;
-          plan_updated_at: string | null;
-          polar_customer_id: string | null;
-          polar_subscription_id: string | null;
           preferred_og_domains: string[] | null;
           profile_pic: string | null;
           provider: string | null;
-          subscription_current_period_end: string | null;
-          subscription_status: string | null;
           updated_at: string;
           user_name: string | null;
         };
@@ -293,15 +287,9 @@ export type Database = {
           last_synced_instagram_id?: string | null;
           last_synced_twitter_id?: string | null;
           onboarded_at?: string | null;
-          plan?: string;
-          plan_updated_at?: string | null;
-          polar_customer_id?: string | null;
-          polar_subscription_id?: string | null;
           preferred_og_domains?: string[] | null;
           profile_pic?: string | null;
           provider?: string | null;
-          subscription_current_period_end?: string | null;
-          subscription_status?: string | null;
           updated_at?: string;
           user_name?: string | null;
         };
@@ -319,15 +307,9 @@ export type Database = {
           last_synced_instagram_id?: string | null;
           last_synced_twitter_id?: string | null;
           onboarded_at?: string | null;
-          plan?: string;
-          plan_updated_at?: string | null;
-          polar_customer_id?: string | null;
-          polar_subscription_id?: string | null;
           preferred_og_domains?: string[] | null;
           profile_pic?: string | null;
           provider?: string | null;
-          subscription_current_period_end?: string | null;
-          subscription_status?: string | null;
           updated_at?: string;
           user_name?: string | null;
         };
@@ -379,6 +361,50 @@ export type Database = {
             foreignKeyName: "shared_categories_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      subscriptions: {
+        Row: {
+          created_at: string;
+          plan: string;
+          plan_updated_at: string | null;
+          polar_customer_id: string | null;
+          polar_subscription_id: string | null;
+          subscription_current_period_end: string | null;
+          subscription_status: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          plan?: string;
+          plan_updated_at?: string | null;
+          polar_customer_id?: string | null;
+          polar_subscription_id?: string | null;
+          subscription_current_period_end?: string | null;
+          subscription_status?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          plan?: string;
+          plan_updated_at?: string | null;
+          polar_customer_id?: string | null;
+          polar_subscription_id?: string | null;
+          subscription_current_period_end?: string | null;
+          subscription_status?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
