@@ -109,10 +109,12 @@ const Dashboard = (_props: DashboardProps) => {
 
   const { userProfileData } = useFetchUserProfile();
 
-  // Gate on userProfileData defined so we don't briefly render the modal for
-  // already-onboarded users while the profile query is in-flight. The modal's
+  // Gate on the profile row existing (not just the array being defined) so an
+  // empty resolve — cold cache, transient RLS miss, row-not-yet-created race —
+  // can't flash the onboarding modal at an already-onboarded user. The modal's
   // own 1s useTimeoutEffect further hides any race after this resolves.
-  const showOnboarding = userProfileData ? isNullable(userProfileData[0]?.onboarded_at) : false;
+  const profileRow = userProfileData?.[0];
+  const showOnboarding = profileRow ? isNullable(profileRow.onboarded_at) : false;
 
   const { updateUserProfileOptimisticMutation } = useUpdateUserProfileOptimisticMutation();
   const updateUserProfileMutate = updateUserProfileOptimisticMutation.mutate;
