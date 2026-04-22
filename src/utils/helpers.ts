@@ -39,6 +39,7 @@ import {
   menuListItemName,
   SEARCH_URL,
   SHARED_CATEGORIES_TABLE_NAME,
+  SIMILAR_URL,
   TAG_MARKUP_REGEX,
   TRASH_URL,
   TWEETS_URL,
@@ -74,7 +75,8 @@ export const getCategoryIdFromSlug = (
     slug === TWEETS_URL ||
     slug === INSTAGRAM_URL ||
     slug === AUDIO_URL ||
-    slug === DISCOVER_URL
+    slug === DISCOVER_URL ||
+    slug === SIMILAR_URL
   ) {
     return slug;
   }
@@ -179,6 +181,7 @@ export const isUserInACategory = (url: string) => {
     TWEETS_URL,
     INSTAGRAM_URL,
     DISCOVER_URL,
+    SIMILAR_URL,
   ];
 
   return !nonCategoryPages?.includes(url);

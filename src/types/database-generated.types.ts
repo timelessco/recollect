@@ -552,6 +552,13 @@ export type Database = {
         };
         Returns: Json;
       };
+      match_similar_bookmarks: {
+        Args: { p_bookmark_id: number; p_limit?: number; p_min_score?: number };
+        Returns: {
+          id: number;
+          score: number;
+        }[];
+      };
       process_chrome_bookmark: {
         Args: {
           p_bookmark_id: number;

@@ -26,6 +26,7 @@ import {
   buildAuthenticatedPreviewUrl,
   buildPublicDiscoverPreviewUrl,
   buildPublicPreviewUrl,
+  buildSimilarPreviewUrl,
 } from "../../../utils/url-builders";
 import { isYouTubeVideo } from "../LightboxUtils";
 
@@ -128,7 +129,7 @@ export const useLightboxNavigation = ({
   const router = useRouter();
   const handleClientError = useHandleClientError();
 
-  const { isDiscoverPage, isPublicPage } = usePageContext();
+  const { isDiscoverPage, isPublicPage, isSimilarPage } = usePageContext();
 
   /**
    * Invalidate queries for a given bookmark index.
@@ -209,6 +210,15 @@ export const useLightboxNavigation = ({
           bookmarkId,
           publicInfo,
         });
+        void router?.push({ pathname, query }, as, { shallow: true });
+      }
+      return;
+    }
+
+    if (isSimilarPage) {
+      const sourceId = typeof router?.query.id === "string" ? router.query.id : undefined;
+      if (sourceId) {
+        const { as, pathname, query } = buildSimilarPreviewUrl({ bookmarkId, sourceId });
         void router?.push({ pathname, query }, as, { shallow: true });
       }
       return;

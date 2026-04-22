@@ -15,6 +15,7 @@ import type { BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import type { Many } from "lodash";
 
 import { buildSearchCategorySegment } from "@/hooks/use-bookmark-mutation-context";
+import { usePageContext } from "@/hooks/use-page-context";
 import { cn } from "@/utils/tailwind-merge";
 
 import loaderGif from "../../../../public/loader-gif.gif";
@@ -32,7 +33,6 @@ import {
 import { BOOKMARKS_KEY, PREVIEW_ALT_TEXT, TWEETS_URL, viewValues } from "../../../utils/constants";
 import { getImgForPost, usePreferredDomainsSet } from "../../../utils/getBookmarkImageSource";
 import { getBookmarkCountForCurrentPage, getPreviewPathInfo } from "../../../utils/helpers";
-import { getCategorySlugFromRouter } from "../../../utils/url";
 import { BookmarkCard } from "./bookmarkCard";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import ListBox from "./listBox";
@@ -75,7 +75,7 @@ const CardSection = ({
   const { allCategories } = useFetchCategories();
   const { bookmarksCountData } = useFetchBookmarksCount();
 
-  const categorySlug = getCategorySlugFromRouter(router);
+  const { categorySlug, isSimilarPage } = usePageContext();
   const preferredDomainsSet = usePreferredDomainsSet();
 
   const showAvatar =
@@ -246,7 +246,7 @@ const CardSection = ({
     <>
       <div className={listWrapperClass}>{renderItem()}</div>
       <PreviewLightBox
-        bookmarks={isPublicPage ? bookmarksList : undefined}
+        bookmarks={isPublicPage || isSimilarPage ? bookmarksList : undefined}
         id={lightboxId}
         open={lightboxOpen}
         setOpen={setLightboxOpen}

@@ -14,12 +14,17 @@ import type { CardSectionProps } from ".";
 import type { SingleListData } from "../../../types/apiTypes";
 
 import { Checkbox } from "@/components/ui/recollect/checkbox";
+import { usePageContext } from "@/hooks/use-page-context";
 import { cn } from "@/utils/tailwind-merge";
 
 import { useMiscellaneousStore } from "../../../store/componentStore";
-import { DISCOVER_URL, viewValues } from "../../../utils/constants";
-import { getCategorySlugFromRouter, getPublicPageInfo } from "../../../utils/url";
-import { buildAuthenticatedPreviewUrl, buildPublicPreviewUrl } from "../../../utils/url-builders";
+import { viewValues } from "../../../utils/constants";
+import { getPublicPageInfo } from "../../../utils/url";
+import {
+  buildAuthenticatedPreviewUrl,
+  buildPublicPreviewUrl,
+  buildSimilarPreviewUrl,
+} from "../../../utils/url-builders";
 
 type OptionDropItemTypes = DraggableItemProps & {
   rendered: ReactNode;
@@ -48,8 +53,7 @@ const Option = ({
   const { isSelected, optionProps } = useOption({ key: item.key }, state, ref);
   const { focusProps } = useFocusRing();
   const router = useRouter();
-  const categorySlug = getCategorySlugFromRouter(router);
-  const isDiscoverPage = categorySlug === DISCOVER_URL;
+  const { categorySlug, isDiscoverPage, isSimilarPage } = usePageContext();
   const { lightboxOpen, setLightboxId, setLightboxOpen } = useMiscellaneousStore();
   // Register the item as a drag source.
   const { dragProps } = useDraggableItem(
@@ -125,15 +129,21 @@ const Option = ({
               });
               void router.push({ pathname, query }, as, { shallow: true });
             }
-          } else {
-            const currentCategorySlug = getCategorySlugFromRouter(router);
-            if (currentCategorySlug) {
-              const { as, pathname, query } = buildAuthenticatedPreviewUrl({
+          } else if (isSimilarPage) {
+            const sourceId = typeof router.query.id === "string" ? router.query.id : undefined;
+            if (sourceId) {
+              const { as, pathname, query } = buildSimilarPreviewUrl({
                 bookmarkId: item?.key,
-                categorySlug: currentCategorySlug,
+                sourceId,
               });
               void router.push({ pathname, query }, as, { shallow: true });
             }
+          } else if (categorySlug) {
+            const { as, pathname, query } = buildAuthenticatedPreviewUrl({
+              bookmarkId: item?.key,
+              categorySlug,
+            });
+            void router.push({ pathname, query }, as, { shallow: true });
           }
         }}
       />

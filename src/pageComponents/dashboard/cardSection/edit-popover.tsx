@@ -65,7 +65,7 @@ interface EditPopoverContentProps {
 }
 
 const EditPopoverContent = ({ post, userId }: EditPopoverContentProps) => {
-  const { isDiscoverPage } = usePageContext();
+  const { isDiscoverPage, isSimilarPage } = usePageContext();
   const queryClient = useQueryClient();
 
   // Discover bookmarks are fetched without relations; pull the discoverable
@@ -129,6 +129,30 @@ const EditPopoverContent = ({ post, userId }: EditPopoverContentProps) => {
             .filter((tag): tag is UserTagsData => tag !== undefined)
         : undefined,
     [isDiscoverPage, discoverableBookmark?.addedTags, tagItemsMap],
+  );
+
+  // On /similar the paginated cache is empty (fetch is disabled), so the
+  // cache-driven `useBookmarkCategories` / `useBookmarkTags` lookups in the
+  // multi-selects find nothing. Feed chip state from the bookmark's own
+  // server-stitched relations — same reference-resolution trick as discover.
+  const similarSelectedCategories = useMemo<CategoriesData[] | undefined>(
+    () =>
+      isSimilarPage && post.addedCategories
+        ? post.addedCategories
+            .map((cat) => categoryItemsMap.get(cat.id))
+            .filter((cat): cat is CategoriesData => cat !== undefined)
+        : undefined,
+    [isSimilarPage, post.addedCategories, categoryItemsMap],
+  );
+
+  const similarSelectedTags = useMemo<UserTagsData[] | undefined>(
+    () =>
+      isSimilarPage && post.addedTags
+        ? post.addedTags
+            .map((tag) => tagItemsMap.get(tag.id))
+            .filter((tag): tag is UserTagsData => tag !== undefined)
+        : undefined,
+    [isSimilarPage, post.addedTags, tagItemsMap],
   );
 
   const handleDiscoverAddCategory = useCallback(
@@ -209,7 +233,7 @@ const EditPopoverContent = ({ post, userId }: EditPopoverContentProps) => {
                 bookmarkId={post.id}
                 onAdd={isDiscoverPage ? handleDiscoverAddCategory : undefined}
                 onRemove={isDiscoverPage ? handleDiscoverRemoveCategory : undefined}
-                selectedItems={discoverSelectedCategories}
+                selectedItems={discoverSelectedCategories ?? similarSelectedCategories}
               />
             )}
           </div>
@@ -228,7 +252,7 @@ const EditPopoverContent = ({ post, userId }: EditPopoverContentProps) => {
                 onAdd={isDiscoverPage ? handleDiscoverAddTag : undefined}
                 onCreate={isDiscoverPage ? handleDiscoverCreateTag : undefined}
                 onRemove={isDiscoverPage ? handleDiscoverRemoveTag : undefined}
-                selectedItems={discoverSelectedTags}
+                selectedItems={discoverSelectedTags ?? similarSelectedTags}
               />
             )}
           </div>
