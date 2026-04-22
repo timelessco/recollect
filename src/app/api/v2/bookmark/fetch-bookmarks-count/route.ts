@@ -223,6 +223,7 @@ export const GET = createAxiomRouteHandler(
         total_count: allResult.count ?? 0,
         trash_count: trashResult.count ?? 0,
         category_count_total: allCategoryIds.length,
+        per_category_row_count: bookmarkCategoryRows?.length ?? 0,
       });
 
       return {
