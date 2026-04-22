@@ -95,3 +95,30 @@ export const buildAuthenticatedCategoryUrl = (categorySlug: string): RoutePushPa
     category_id: categorySlug,
   },
 });
+
+/**
+ * Builds preview URL for similar pages — `/similar/<sourceId>/preview/<bookmarkId>`.
+ * Keeps the parent `/similar/[id]` pathname so in-app `shallow: true` pushes stay on
+ * the grid page; deep links land on the preview page file directly via `as`.
+ */
+export const buildSimilarPreviewUrl = (params: {
+  bookmarkId: number | string;
+  sourceId: number | string;
+}): RoutePushParams => {
+  const { bookmarkId, sourceId } = params;
+  return {
+    as: `/similar/${sourceId}${PREVIEW_PATH}/${bookmarkId}`,
+    pathname: `/similar/[id]`,
+    query: { bookmark_id: bookmarkId, id: sourceId },
+  };
+};
+
+/**
+ * Builds base similar URL — `/similar/<sourceId>` — used when closing the lightbox
+ * overlay back to the similar-bookmarks grid.
+ */
+export const buildSimilarUrl = (sourceId: number | string): RoutePushParams => ({
+  as: `/similar/${sourceId}`,
+  pathname: `/similar/[id]`,
+  query: { id: sourceId },
+});

@@ -22,6 +22,7 @@ import {
   highlightSearch,
   searchMatchesText,
 } from "./LightboxUtils";
+import { SeeSimilarButton } from "./see-similar-button";
 
 const formatDate = (dateString: string) => {
   try {
@@ -175,7 +176,12 @@ export function SidepaneContent({
           </div>
         )}
         {!isDiscoverPage && !isPublicPage && (
-          <CategoryMultiSelect bookmarkId={currentBookmark.id} shouldFetch={shouldFetch} />
+          <>
+            <div className="pt-4">
+              <SeeSimilarButton bookmark={currentBookmark} />
+            </div>
+            <CategoryMultiSelect bookmarkId={currentBookmark.id} shouldFetch={shouldFetch} />
+          </>
         )}
       </div>
       {/* oxlint-disable prefer-nullish-coalescing -- boolean condition: empty string should be falsy */}

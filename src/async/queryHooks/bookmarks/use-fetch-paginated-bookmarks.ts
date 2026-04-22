@@ -13,6 +13,7 @@ import {
   BOOKMARKS_KEY,
   DISCOVER_URL,
   PAGINATION_LIMIT,
+  SIMILAR_URL,
   V2_FETCH_BOOKMARKS_DATA_API,
 } from "@/utils/constants";
 
@@ -40,7 +41,7 @@ export default function useFetchPaginatedBookmarks(
     isFetching: isFetchingEverythingData,
     isLoading: isEverythingDataLoading,
   } = useInfiniteQuery({
-    enabled: enabled && CATEGORY_ID !== DISCOVER_URL,
+    enabled: enabled && CATEGORY_ID !== DISCOVER_URL && CATEGORY_ID !== SIMILAR_URL,
     queryFn: ({ pageParam }) =>
       api
         .get(V2_FETCH_BOOKMARKS_DATA_API, {

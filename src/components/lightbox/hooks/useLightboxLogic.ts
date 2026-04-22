@@ -22,7 +22,11 @@ import {
   VIDEO_TYPE_PREFIX,
 } from "../../../utils/constants";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../../utils/url";
-import { buildAuthenticatedPreviewUrl, buildPublicPreviewUrl } from "../../../utils/url-builders";
+import {
+  buildAuthenticatedPreviewUrl,
+  buildPublicPreviewUrl,
+  buildSimilarPreviewUrl,
+} from "../../../utils/url-builders";
 import { isYouTubeVideo } from "../LightboxUtils";
 
 /**
@@ -124,7 +128,7 @@ export const useLightboxNavigation = ({
   const router = useRouter();
   const handleClientError = useHandleClientError();
 
-  const { isDiscoverPage, isPublicPage } = usePageContext();
+  const { isDiscoverPage, isPublicPage, isSimilarPage } = usePageContext();
 
   /**
    * Invalidate queries for a given bookmark index.
@@ -194,6 +198,13 @@ export const useLightboxNavigation = ({
           bookmarkId: bookmarks[index].id,
           publicInfo,
         });
+        void router?.push({ pathname, query }, as, { shallow: true });
+      }
+    } else if (isSimilarPage) {
+      const sourceId = typeof router?.query.id === "string" ? router.query.id : undefined;
+      const bookmarkId = bookmarks?.[index]?.id;
+      if (sourceId && bookmarkId) {
+        const { as, pathname, query } = buildSimilarPreviewUrl({ bookmarkId, sourceId });
         void router?.push({ pathname, query }, as, { shallow: true });
       }
     } else {

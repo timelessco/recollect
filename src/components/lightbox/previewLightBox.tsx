@@ -13,7 +13,11 @@ import useGetSortBy from "../../hooks/useGetSortBy";
 import { useMiscellaneousStore, useSupabaseSession } from "../../store/componentStore";
 import { BOOKMARKS_KEY, DISCOVER_URL, EVERYTHING_URL } from "../../utils/constants";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../utils/url";
-import { buildAuthenticatedCategoryUrl, buildPublicCategoryUrl } from "../../utils/url-builders";
+import {
+  buildAuthenticatedCategoryUrl,
+  buildPublicCategoryUrl,
+  buildSimilarUrl,
+} from "../../utils/url-builders";
 import { useLightboxPrefetch } from "./hooks/useLightboxPrefetch";
 import { CustomLightBox } from "./LightBox";
 
@@ -38,7 +42,7 @@ export const PreviewLightBox = ({
   const { sortBy } = useGetSortBy();
   const searchText = useMiscellaneousStore((state) => state.searchText);
 
-  const { isDiscoverPage, isPublicPage } = usePageContext();
+  const { isDiscoverPage, isPublicPage, isSimilarPage } = usePageContext();
 
   // Determine the correct query key based on whether we're on discover page
   let queryKey;
@@ -102,6 +106,12 @@ export const PreviewLightBox = ({
         const { as, pathname, query } = buildPublicCategoryUrl(publicInfo);
         void router.push({ pathname, query }, as, { shallow: true });
       }
+    } else if (isSimilarPage) {
+      const sourceId = typeof router.query.id === "string" ? router.query.id : undefined;
+      if (sourceId) {
+        const { as, pathname, query } = buildSimilarUrl(sourceId);
+        void router.push({ pathname, query }, as, { shallow: true });
+      }
     } else {
       // Update URL without page reload for logged-in users
       const categorySlug = getCategorySlugFromRouter(router) ?? EVERYTHING_URL;
@@ -111,7 +121,7 @@ export const PreviewLightBox = ({
 
     // Reset state after animation
     setActiveIndex(-1);
-  }, [setOpen, router, isPublicPage, isDiscoverPage]);
+  }, [setOpen, router, isPublicPage, isDiscoverPage, isSimilarPage]);
 
   // Only render CustomLightBox when activeIndex is valid
   if (!open || activeIndex === -1) {

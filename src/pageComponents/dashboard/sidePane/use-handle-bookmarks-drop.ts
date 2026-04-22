@@ -6,6 +6,7 @@ import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHook
 import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/use-fetch-paginated-bookmarks";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/use-search-bookmarks";
 import useFetchCategories from "@/async/queryHooks/category/use-fetch-categories";
+import { usePageContext } from "@/hooks/use-page-context";
 import { useSupabaseSession } from "@/store/componentStore";
 import { errorToast } from "@/utils/toastMessages";
 
@@ -17,6 +18,7 @@ import { errorToast } from "@/utils/toastMessages";
  */
 export function useHandleBookmarksDrop() {
   const session = useSupabaseSession((state) => state.session);
+  const { isSimilarPage } = usePageContext();
   const { addCategoryToBookmarkOptimisticMutation } = useAddCategoryToBookmarkOptimisticMutation();
   const { allCategories } = useFetchCategories();
   const { everythingData, isEverythingDataLoading } = useFetchPaginatedBookmarks();
@@ -29,8 +31,9 @@ export function useHandleBookmarksDrop() {
 
   // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- react-aria drop event has no stable public type
   const handleBookmarksDrop = async (event: any) => {
-    // Guard: don't process drops while bookmarks are still loading
-    if (isEverythingDataLoading || !everythingData) {
+    // Only block while paginated is actively loading. Don't require its presence
+    // — paginated is disabled on /similar, so `everythingData` is undefined there.
+    if (isEverythingDataLoading) {
       return;
     }
 
@@ -59,10 +62,28 @@ export function useHandleBookmarksDrop() {
         // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- drag event items lack typed API
         ((event?.items ?? []) as any[]).map(async (item: any) => {
           const bookmarkId = (await item.getText("text/plain")) as string;
+          const bookmarkIdNum = Number.parseInt(bookmarkId, 10);
+
+          // On /similar the fetch RPC is RLS-scoped to `auth.uid()`, so every
+          // visible bookmark is owned by the current user. Skip the paginated
+          // lookup + client-side owner check and fire straight at the server
+          // (which re-enforces ownership via RLS on the mutation).
+          if (isSimilarPage) {
+            if (!updateAccessCondition) {
+              errorToast("Cannot upload in other owners collection");
+              return;
+            }
+
+            addCategoryToBookmarkOptimisticMutation.mutate({
+              bookmark_id: bookmarkIdNum,
+              category_id: categoryId,
+            });
+            return;
+          }
 
           const foundBookmark = find(
             mergedBookmarkData,
-            (bookmarkItem) => Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
+            (bookmarkItem) => bookmarkIdNum === bookmarkItem?.id,
           );
 
           // Ignore drops that aren't bookmarks (e.g., collections dragged between sidebar lists)
@@ -80,7 +101,7 @@ export function useHandleBookmarksDrop() {
             }
 
             addCategoryToBookmarkOptimisticMutation.mutate({
-              bookmark_id: Number.parseInt(bookmarkId, 10),
+              bookmark_id: bookmarkIdNum,
               category_id: categoryId,
             });
           } else {
