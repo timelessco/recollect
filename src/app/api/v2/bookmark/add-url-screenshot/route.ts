@@ -44,10 +44,17 @@ export const POST = createAxiomRouteHandler(
       setPayload(ctx, { url: data.url });
 
       // 1. Capture screenshot from external API
+      // `timeout: false` disables ky's 10s default headers-arrival timer — the
+      // Vercel-hosted puppeteer service regularly cold-starts for 14–22s
+      // (Chromium launch + ad-blocker init + navigation), and without this
+      // override ky would abort at 10s before the signal timer has a chance
+      // to fire. `signal: AbortSignal.timeout(...)` is the end-to-end
+      // wall-clock bound that survives the body read.
       const [screenshotError, screenshotResponse] = await vet(async () => {
         const json = await ky
           .get(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(data.url)}`, {
             retry: 0,
+            timeout: false,
             signal: AbortSignal.timeout(SCREENSHOT_TIMEOUT_MS),
           })
           .json<unknown>();

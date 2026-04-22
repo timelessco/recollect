@@ -155,9 +155,16 @@ export async function collectVideo(args: CollectVideoArgs): Promise<CollectVideo
       return { error: "unknown", message: "Invalid video URL.", success: false };
     }
 
-    // Fetch with timeout
+    // `timeout: false` disables ky's 10s default headers-arrival timer; the
+    // signal is the end-to-end wall-clock bound that also guards the video
+    // body read. Without this, a slow video source would abort at 10s
+    // regardless of VIDEO_DOWNLOAD_TIMEOUT_MS.
     const [downloadError, videoResponse] = await vet(() =>
-      ky.get(videoUrl, { retry: 0, signal: AbortSignal.timeout(VIDEO_DOWNLOAD_TIMEOUT_MS) }),
+      ky.get(videoUrl, {
+        retry: 0,
+        timeout: false,
+        signal: AbortSignal.timeout(VIDEO_DOWNLOAD_TIMEOUT_MS),
+      }),
     );
 
     if (downloadError || !videoResponse) {
