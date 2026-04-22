@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import isNull from "lodash/isNull";
 
 import useFetchUserProfile from "@/async/queryHooks/user/use-fetch-user-profile";
+import { PlanBadge } from "@/components/planBadge";
 import { Menu } from "@/components/ui/recollect/menu";
 import { AppleIcon } from "@/icons/apple-icon";
 import { ChromeIcon } from "@/icons/chrome-icon";
@@ -115,6 +116,9 @@ const SidePaneUserTrigger = () => {
           ? "Loading..."
           : (userData?.display_name ?? userData?.user_name ?? userData?.email)}
       </p>
+      {userData?.plan && userData.plan !== "free" && (
+        <PlanBadge plan={userData.plan as "plus" | "pro"} />
+      )}
     </div>
   );
 };

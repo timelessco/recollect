@@ -21,8 +21,9 @@ import useGetSortBy from "../../hooks/useGetSortBy";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
 import { useMounted } from "../../hooks/useMounted";
 import { useSupabaseSession } from "../../store/componentStore";
-import { BOOKMARKS_KEY, DISCOVER_URL, LOGIN_URL } from "../../utils/constants";
+import { BOOKMARKS_KEY, DISCOVER_URL, LOGIN_URL, USER_PROFILE } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
+import { successToast } from "../../utils/toastMessages";
 import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 import { BookmarkCards } from "./bookmarkCards";
@@ -98,6 +99,21 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
 
     void fetchSession();
   }, [setSession, categorySlug]);
+
+  // Handle post-checkout success: show toast and refresh profile to pick up new plan
+  useEffect(() => {
+    if (router.query.checkout === "success") {
+      successToast("Subscription activated! It may take a moment to reflect.");
+      void queryClient.invalidateQueries({ queryKey: [USER_PROFILE] });
+      // Remove checkout query param without a page reload
+      const query = { ...router.query };
+      delete query.checkout;
+      void router.replace({ pathname: router.pathname, query }, undefined, {
+        shallow: true,
+      });
+    }
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.query.checkout]);
 
   const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
   const { isInNotFoundPage } = useIsInNotFoundPage();

@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { Dialog } from "@/components/ui/recollect/dialog";
+import { SubscriptionIcon } from "@/icons/subscription-icon";
 
 import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { AvatarIcon } from "../../../icons/avatarIcon";
@@ -14,10 +15,17 @@ import { AiFeatures } from "../../settings/aiFeatures";
 import ChangeEmail from "../../settings/changeEmail";
 import { DeleteAccount } from "../../settings/deleteAccount";
 import { ImportBookmarks } from "../../settings/import";
+import { Subscription } from "../../settings/subscription";
 import SingleListItemComponent from "../sidePane/singleListItemComponent";
 import { MobileSettingsDrawer } from "./mobile-settings-drawer";
 
-export type SettingsPage = "ai-features" | "change-email" | "delete" | "import" | "main";
+export type SettingsPage =
+  | "ai-features"
+  | "change-email"
+  | "delete"
+  | "import"
+  | "main"
+  | "subscription";
 
 /**
  * Trigger-only component that lives inside the sidebar.
@@ -78,70 +86,80 @@ function DesktopSettingsPortal() {
   );
 }
 
+const PAGE_TO_MENU_ID: Record<SettingsPage, number> = {
+  "ai-features": 1,
+  "change-email": 0,
+  delete: 0,
+  import: 2,
+  main: 0,
+  subscription: 3,
+};
+
+const MENU_ID_TO_PAGE: Record<number, SettingsPage> = {
+  0: "main",
+  1: "ai-features",
+  2: "import",
+  3: "subscription",
+};
+
 function DesktopSettingsContent() {
   const { isDesktop } = useIsMobileView();
   const [currentPage, setCurrentPage] = useState<SettingsPage>("main");
 
-  const getSelectedMenuItemId = () => {
-    switch (currentPage) {
-      case "ai-features": {
-        return 1;
-      }
-      case "change-email":
-      case "delete":
-      case "main": {
-        return 0;
-      }
-      case "import": {
-        return 2;
-      }
-      default: {
-        return 0;
-      }
-    }
-  };
-
-  const selectedMenuItemId = getSelectedMenuItemId();
+  const selectedMenuItemId = PAGE_TO_MENU_ID[currentPage];
 
   const optionsList = [
     {
-      count: undefined,
-      current: selectedMenuItemId === 0,
-      href: ``,
       icon: (
         <figure className="flex h-4.5 w-4.5 items-center justify-center text-gray-900">
           <AvatarIcon />
         </figure>
       ),
-      iconColor: "",
-      id: 0,
       name: "My Profile",
+      href: ``,
+      current: selectedMenuItemId === 0,
+      id: 0,
+      count: undefined,
+      iconColor: "",
     },
     {
-      count: undefined,
-      current: selectedMenuItemId === 1,
-      href: ``,
       icon: (
         <figure className="flex h-4.5 w-4.5 items-center justify-center text-gray-900">
           <SettingsAiIcon />
         </figure>
       ),
-      iconColor: "",
-      id: 1,
       name: "AI Features",
+      href: ``,
+      current: selectedMenuItemId === 1,
+      id: 1,
+      count: undefined,
+      iconColor: "",
     },
     {
-      count: undefined,
-      current: selectedMenuItemId === 2,
-      href: ``,
       icon: (
         <figure className="flex items-center justify-center text-gray-900">
           <ImportIcon className="h-4.5 w-4.5" />
         </figure>
       ),
-      iconColor: "",
-      id: 2,
       name: "Import",
+      href: ``,
+      current: selectedMenuItemId === 2,
+      id: 2,
+      count: undefined,
+      iconColor: "",
+    },
+    {
+      icon: (
+        <figure className="flex h-4.5 w-4.5 items-center justify-center text-gray-900">
+          <SubscriptionIcon />
+        </figure>
+      ),
+      name: "Subscription",
+      href: ``,
+      current: selectedMenuItemId === 3,
+      id: 3,
+      count: undefined,
+      iconColor: "",
     },
   ];
 
@@ -161,22 +179,9 @@ function DesktopSettingsContent() {
               item={item}
               key={item.id}
               onClick={() => {
-                switch (item.id) {
-                  case 0: {
-                    setCurrentPage("main");
-                    break;
-                  }
-                  case 1: {
-                    setCurrentPage("ai-features");
-                    break;
-                  }
-                  case 2: {
-                    setCurrentPage("import");
-                    break;
-                  }
-                  default: {
-                    break;
-                  }
+                const page = MENU_ID_TO_PAGE[item.id];
+                if (page) {
+                  setCurrentPage(page);
                 }
               }}
               responsiveIcon
@@ -217,6 +222,10 @@ function SettingsMainContent({
 
   if (currentPage === "import") {
     return <ImportBookmarks onNavigate={onNavigate} />;
+  }
+
+  if (currentPage === "subscription") {
+    return <Subscription />;
   }
 
   return null;
