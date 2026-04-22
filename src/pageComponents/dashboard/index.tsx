@@ -21,6 +21,7 @@ import useGetSortBy from "../../hooks/useGetSortBy";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
 import { useMounted } from "../../hooks/useMounted";
 import { useSupabaseSession } from "../../store/componentStore";
+import { isNullable } from "../../utils/assertion-utils";
 import { BOOKMARKS_KEY, DISCOVER_URL, LOGIN_URL } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
 import { getCategorySlugFromRouter } from "../../utils/url";
@@ -51,10 +52,9 @@ interface DashboardProps {
   // Dashboard renders its own main-pane tree internally based on route —
   // `children` is intentionally not rendered.
   children?: ReactNode;
-  showOnboarding?: boolean;
 }
 
-const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
+const Dashboard = (_props: DashboardProps) => {
   const isMounted = useMounted();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -69,13 +69,9 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
     const fetchSession = async () => {
       const { data, error } = await supabase.auth.getUser();
 
-      // If there's an auth error or no user (expired session), redirect to login
-      // Skip redirect for discover page (public access allowed)
-      // This handles the case where middleware passes but session is actually invalid
-      // Use pathname fallback since categorySlug can be null before Next.js router hydrates
-      const isDiscoverRoute =
-        categorySlug === DISCOVER_URL || window.location.pathname.startsWith(`/${DISCOVER_URL}`);
-      if ((error || !data?.user) && !isDiscoverRoute) {
+      // If there's an auth error or no user (expired session), redirect to login.
+      // This handles the case where middleware passes but session is actually invalid.
+      if (error || !data?.user) {
         // Clear stale auth cookie to prevent redirect loop:
         // middleware getClaims() validates JWT locally (no DB check), so a deleted user's
         // JWT passes middleware → dashboard detects invalid user → must clear session
@@ -87,17 +83,11 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
         return;
       }
 
-      // Set session with user if authenticated, otherwise clear session
-      // Avoids creating truthy object with undefined user that confuses downstream checks
-      if (data?.user) {
-        setSession({ user: data.user });
-      } else {
-        setSession(undefined);
-      }
+      setSession({ user: data.user });
     };
 
     void fetchSession();
-  }, [setSession, categorySlug]);
+  }, [setSession]);
 
   const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
   const { isInNotFoundPage } = useIsInNotFoundPage();
@@ -119,6 +109,11 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
   useFetchSharedCategories();
 
   const { userProfileData } = useFetchUserProfile();
+
+  // Gate on userProfileData defined so we don't briefly render the modal for
+  // already-onboarded users while the profile query is in-flight. The modal's
+  // own 1s useTimeoutEffect further hides any race after this resolves.
+  const showOnboarding = userProfileData ? isNullable(userProfileData[0]?.onboarded_at) : false;
 
   const { updateUserProfileOptimisticMutation } = useUpdateUserProfileOptimisticMutation();
   const updateUserProfileMutate = updateUserProfileOptimisticMutation.mutate;
@@ -146,8 +141,6 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
     }
   }, [session?.user?.app_metadata?.provider, updateUserProfileMutate, userProfileData]);
 
-  const isDiscoverPage = categorySlug === DISCOVER_URL;
-
   const renderMainPaneContent = () => {
     if (!isInNotFoundPage) {
       if (categorySlug === DISCOVER_URL) {
@@ -173,7 +166,7 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
     );
   }
 
-  if (isNil(session) && !isDiscoverPage) {
+  if (isNil(session)) {
     return null;
   }
 
