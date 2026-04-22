@@ -106,10 +106,14 @@ export const GET = createAxiomRouteHandler(
       setPayload(ctx, { invite_accepted: true });
 
       // Redirect to /everything on success — pin 302 explicitly
+      // Query param triggers a welcome toast on the dashboard
       const headersList = await headers();
       const host = headersList.get("host") ?? "localhost:3000";
       const protocol = headersList.get("x-forwarded-proto") ?? "https";
-      return NextResponse.redirect(new URL("/everything", `${protocol}://${host}`), 302);
+      return NextResponse.redirect(
+        new URL("/everything?invite=accepted", `${protocol}://${host}`),
+        302,
+      );
     },
     inputSchema: InviteInputSchema,
     outputSchema: InviteOutputSchema,

@@ -23,6 +23,7 @@ import { useMounted } from "../../hooks/useMounted";
 import { useSupabaseSession } from "../../store/componentStore";
 import { BOOKMARKS_KEY, DISCOVER_URL, LOGIN_URL } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
+import { successToast } from "../../utils/toastMessages";
 import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 import { BookmarkCards } from "./bookmarkCards";
@@ -145,6 +146,16 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
       });
     }
   }, [session?.user?.app_metadata?.provider, updateUserProfileMutate, userProfileData]);
+
+  // Show toast when user arrives from accepting a shared collection invite
+  useEffect(() => {
+    if (router.query.invite === "accepted") {
+      successToast("You've joined the shared collection");
+      // Clean up query param without adding a history entry
+      const { invite: _, ...rest } = router.query;
+      void router.replace({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
+    }
+  }, [router]);
 
   const isDiscoverPage = categorySlug === DISCOVER_URL;
 

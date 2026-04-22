@@ -97,7 +97,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
       if (isNull(catError)) {
         // User has been added as a colaborator to the category
-        response?.redirect(`/${EVERYTHING_URL}`);
+        // Query param triggers a welcome toast on the dashboard
+        response?.redirect(`/${EVERYTHING_URL}?invite=accepted`);
       } else if (catError?.code === "23503") {
         // if collab user does not have an existing account
         response.status(500).json({
