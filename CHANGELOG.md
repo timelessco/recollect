@@ -1,5 +1,49 @@
 # Changelog
 
+## [1.0.0](https://github.com/timelessco/recollect/compare/v0.6.0...v1.0.0) (2026-04-21)
+
+### New Features
+
+* feat(api): ✨ migrate complex route group to v2 ([#963](https://github.com/timelessco/recollect/pull/963)) — @navin-moorthy
+* feat(realtime): live screenshot + enrichment updates for in-session adds ([#950](https://github.com/timelessco/recollect/pull/950)) — @rogerantony-dev
+* feat(api): ✨ migrate 10 moderate routes to v2 ([#954](https://github.com/timelessco/recollect/pull/954)) — @navin-moorthy
+* feat(media-player): morph volume icon into pill-slider ([#946](https://github.com/timelessco/recollect/pull/946)) — @rogerantony-dev
+* feat(search): tighten fuzzy color quality floor (0.22 → 0.50) ([#945](https://github.com/timelessco/recollect/pull/945)) — @rogerantony-dev
+* feat(search): exact-match tiers for color search + instant palette tooltip ([#943](https://github.com/timelessco/recollect/pull/943)) — @rogerantony-dev
+* feat(sidepane): redesign user dropdown with download links ([#942](https://github.com/timelessco/recollect/pull/942)) — @rogerantony-dev
+* feat(api): ✨ migrate 6 public/dev routes to v2 with hardened withPublic defaults ([#939](https://github.com/timelessco/recollect/pull/939)) — @navin-moorthy
+* feat(search): OKLCh two-stage color search ranking ([#938](https://github.com/timelessco/recollect/pull/938)) — @rogerantony-dev
+* feat(add-to-collection-discover): added add to collection support in discover page ([#934](https://github.com/timelessco/recollect/pull/934)) — @rogerantony-dev
+* **BREAKING:** feat(api)!: ✨ drop everything.category_id column and remove it from bookmark responses ([#933](https://github.com/timelessco/recollect/pull/933)) — @navin-moorthy
+
+### Bug Fixes
+
+* fix(edge): switch remaining supabase-js imports from esm.sh to npm ([#960](https://github.com/timelessco/recollect/pull/960)) — @rogerantony-dev
+* fix(edge): switch supabase-js import from esm.sh to npm ([#959](https://github.com/timelessco/recollect/pull/959)) — @rogerantony-dev
+* fix(discover): gate EditPopover fetch-discoverable-by-id on popover open ([#958](https://github.com/timelessco/recollect/pull/958)) — @rogerantony-dev
+* fix(discover): restore SSR-visible bookmark grid on guest /discover ([#948](https://github.com/timelessco/recollect/pull/948)) — @rogerantony-dev
+* fix(dashboard): prefetchable sidebar nav by splitting /discover ([#947](https://github.com/timelessco/recollect/pull/947)) — @rogerantony-dev
+* fix(profiles): 🐛 drop display_name DB CHECK constraint ([#940](https://github.com/timelessco/recollect/pull/940)) — @navin-moorthy
+* fix(security): 🐛 scope RLS policies on 5 previously permissive tables ([#937](https://github.com/timelessco/recollect/pull/937)) — @navin-moorthy
+* fix(profiles): 🐛 validate display_name in zod, escape email html ([#936](https://github.com/timelessco/recollect/pull/936)) — @navin-moorthy
+
+### Code Refactoring
+
+* refactor(api): migrate fetch() callers to ky and prune unused URL constants ([#965](https://github.com/timelessco/recollect/pull/965)) — @navin-moorthy
+* refactor(cards): simplify placeholder text + drive loading state from Realtime ([#951](https://github.com/timelessco/recollect/pull/951)) — @rogerantony-dev
+* refactor(observability): ♻️ route v2 wide-event keys through fields.payload ([#955](https://github.com/timelessco/recollect/pull/955)) — @navin-moorthy
+
+### Documentation Changes
+
+* docs(url-processing): 📝 add comprehensive URL validation documentation ([b027004](https://github.com/timelessco/recollect/commit/b027004be997e8d63575d9c6f7a232a575842f54)) — @navin-moorthy
+
+### Maintenance Updates
+
+* chore(release): 🚀 Release v0.6.0 ([#969](https://github.com/timelessco/recollect/pull/969)) — @navin-moorthy
+* chore(api): finalize v2 migration parity and update caller prompts ([#964](https://github.com/timelessco/recollect/pull/964)) — @navin-moorthy
+* chore(db): 🧹 drop dead search overloads and unused order_index ([#935](https://github.com/timelessco/recollect/pull/935)) — @navin-moorthy
+* chore(lint): 🔧 exclude graphify-out, tag code fences ([aff51d8](https://github.com/timelessco/recollect/commit/aff51d83df5138f0c573af6191f9db60abb7aef5)) — @navin-moorthy
+
 ## [0.6.0](https://github.com/timelessco/recollect/compare/v0.5.0...v0.6.0) (2026-04-14)
 
 ### 👀 Notable Changes

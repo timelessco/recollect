@@ -32,47 +32,42 @@ interface Data {
 const getCategoryCount = async (
   supabase: SupabaseClient,
   categoryIds: number[],
-  sharedCategories: unknown[],
+  sharedCategories: number[],
 ) => {
-  // Count from junction table, filtering out trashed bookmarks
-  const buildCategoryPromises = categoryIds.map(async (categoryId) => {
-    const { count } = await supabase
-      .from(MAIN_TABLE_NAME)
-      .select("id, bookmark_categories!inner(category_id)", {
-        count: "exact",
-        head: true,
-      })
-      .eq("bookmark_categories.category_id", categoryId)
-      .is("trash", null);
+  // Single query replacing the per-category N+1. Same root table + same RLS
+  // + same inner-join + trash filter as the previous loop — only the
+  // category_id filter widens from `= X` to `IN (all)`. Each returned row is
+  // a visible non-trashed bookmark with its matching junction rows as an
+  // embedded array; we tally per-category in JS. One round-trip replaces up
+  // to N.
+  const allCategoryIds = [...new Set([...categoryIds, ...sharedCategories])];
 
-    return {
-      category_id: categoryId,
-      count: count ?? 0,
-    };
-  });
+  if (allCategoryIds.length === 0) {
+    return [];
+  }
 
-  const sharedCategoryPromises = sharedCategories.map(async (sharedCategory) => {
-    const { count } = await supabase
-      .from(MAIN_TABLE_NAME)
-      .select("id, bookmark_categories!inner(category_id)", {
-        count: "exact",
-        head: true,
-      })
-      .eq("bookmark_categories.category_id", sharedCategory)
-      .is("trash", null);
+  const { data: bookmarkCategoryRows } = await supabase
+    .from(MAIN_TABLE_NAME)
+    .select("id, bookmark_categories!inner(category_id)")
+    .in("bookmark_categories.category_id", allCategoryIds)
+    .is("trash", null);
 
-    return {
-      category_id: sharedCategory,
-      count: count ?? 0,
-    };
-  });
+  const countByCategoryId = new Map<number, number>();
+  for (const row of (bookmarkCategoryRows as {
+    bookmark_categories: { category_id: number }[];
+  }[]) ?? []) {
+    for (const junction of row.bookmark_categories ?? []) {
+      countByCategoryId.set(
+        junction.category_id,
+        (countByCategoryId.get(junction.category_id) ?? 0) + 1,
+      );
+    }
+  }
 
-  const [userCategoryResults, sharedCategoryResults] = await Promise.all([
-    Promise.all(buildCategoryPromises),
-    Promise.all(sharedCategoryPromises),
-  ]);
-
-  return [...userCategoryResults, ...sharedCategoryResults];
+  return allCategoryIds.map((categoryId) => ({
+    category_id: categoryId,
+    count: countByCategoryId.get(categoryId) ?? 0,
+  }));
 };
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse<Data>) {

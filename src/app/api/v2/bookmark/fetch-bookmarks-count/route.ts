@@ -181,29 +181,49 @@ export const GET = createAxiomRouteHandler(
       // Deduplicate category IDs (user + shared may overlap)
       const allCategoryIds = [...new Set([...userCategoryIdList, ...sharedCategoryIdList])];
 
-      // Parallel per-category count queries
-      const categoryCountResults = await Promise.all(
-        allCategoryIds.map(async (categoryId) => {
-          const { count } = await supabase
-            .from(MAIN_TABLE_NAME)
-            .select("id, bookmark_categories!inner(category_id)", {
-              count: "exact",
-              head: true,
-            })
-            .eq("bookmark_categories.category_id", categoryId)
-            .is("trash", null);
+      // Single query replacing the per-category N+1. Same root table + same
+      // RLS + same inner-join + trash filter as the previous loop — only the
+      // category_id filter widens from `= X` to `IN (all)`. Each returned row
+      // is a visible non-trashed bookmark with its matching junction rows as
+      // an embedded array; we tally per-category in JS. One round-trip
+      // replaces up to N (observed N=108) at the cost of ~50 KB of wire data.
+      const { data: bookmarkCategoryRows, error: perCategoryError } =
+        allCategoryIds.length === 0
+          ? { data: [], error: null }
+          : await supabase
+              .from(MAIN_TABLE_NAME)
+              .select("id, bookmark_categories!inner(category_id)")
+              .in("bookmark_categories.category_id", allCategoryIds)
+              .is("trash", null);
 
-          return {
-            category_id: categoryId,
-            count: count ?? 0,
-          };
-        }),
-      );
+      if (perCategoryError) {
+        throw new RecollectApiError("service_unavailable", {
+          cause: perCategoryError,
+          message: "Failed to fetch per-category bookmark counts",
+          operation: "bookmarks_count_per_category",
+        });
+      }
+
+      const countByCategoryId = new Map<number, number>();
+      for (const row of bookmarkCategoryRows ?? []) {
+        for (const junction of row.bookmark_categories ?? []) {
+          countByCategoryId.set(
+            junction.category_id,
+            (countByCategoryId.get(junction.category_id) ?? 0) + 1,
+          );
+        }
+      }
+
+      const categoryCountResults = allCategoryIds.map((categoryId) => ({
+        category_id: categoryId,
+        count: countByCategoryId.get(categoryId) ?? 0,
+      }));
 
       setPayload(ctx, {
         total_count: allResult.count ?? 0,
         trash_count: trashResult.count ?? 0,
         category_count_total: allCategoryIds.length,
+        per_category_row_count: bookmarkCategoryRows?.length ?? 0,
       });
 
       return {

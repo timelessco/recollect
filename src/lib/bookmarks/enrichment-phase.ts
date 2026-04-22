@@ -16,7 +16,7 @@
  *
  * Consumers:
  *   - `isRowTerminal` (realtime subscription teardown)
- *   - `getImgForPost` (card renderer — screenshot wins during t2→t3 gap)
+ *   - `getImgForPost` (card + lightbox renderer — screenshot wins during t2→t3 gap)
  */
 export function isBookmarkEnrichmentDone(
   metaData: { ocr_status?: null | string } | null | undefined,

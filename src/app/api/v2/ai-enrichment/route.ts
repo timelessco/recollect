@@ -157,12 +157,17 @@ export const POST = createAxiomRouteHandler(
       if (isRaindropBookmark || isInstagramBookmark) {
         const platform = isRaindropBookmark ? "raindrop" : "instagram";
         try {
+          // `timeout: false` disables ky's 10s default headers-arrival timer;
+          // the signal is the end-to-end wall-clock bound that also guards the
+          // `.arrayBuffer()` body read below. Without this, a slow og-image
+          // source would abort at 10s regardless of IMAGE_DOWNLOAD_TIMEOUT_MS.
           const imageResponse = await ky.get(ogImage, {
             headers: {
               Accept: "image/*,*/*;q=0.8",
               "User-Agent": "Mozilla/5.0",
             },
             retry: 0,
+            timeout: false,
             signal: AbortSignal.timeout(IMAGE_DOWNLOAD_TIMEOUT_MS),
           });
 

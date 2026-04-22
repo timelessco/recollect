@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect } from "react";
 import { Item } from "react-stately";
 
 import { useQueryClient } from "@tanstack/react-query";
@@ -31,8 +31,9 @@ import {
   useSupabaseSession,
 } from "../../../store/componentStore";
 import { BOOKMARKS_KEY, PREVIEW_ALT_TEXT, TWEETS_URL, viewValues } from "../../../utils/constants";
+import { getImgForPost, usePreferredDomainsSet } from "../../../utils/getBookmarkImageSource";
 import { getBookmarkCountForCurrentPage, getPreviewPathInfo } from "../../../utils/helpers";
-import { BookmarkCard, getImgForPost } from "./bookmarkCard";
+import { BookmarkCard } from "./bookmarkCard";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import ListBox from "./listBox";
 import { PublicMoodboardVirtualized } from "./public-moodboard-virtualized";
@@ -70,15 +71,12 @@ const CardSection = ({
   const router = useRouter();
   const userId = useSupabaseSession((state) => state.session)?.user?.id ?? "";
   const { category_id: categoryId } = useGetCurrentCategoryId();
-  const { isLoading: isLoadingProfile, userProfileData: profileData } = useFetchUserProfile();
+  const { isLoading: isLoadingProfile } = useFetchUserProfile();
   const { allCategories } = useFetchCategories();
   const { bookmarksCountData } = useFetchBookmarksCount();
 
   const { categorySlug, isSimilarPage } = usePageContext();
-  const preferredDomainsSet = useMemo(() => {
-    const domains = profileData?.[0]?.preferred_og_domains ?? [];
-    return new Set(domains.map((item) => item.toLowerCase()));
-  }, [profileData]);
+  const preferredDomainsSet = usePreferredDomainsSet();
 
   const showAvatar =
     !isPublicPage &&

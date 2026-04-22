@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import type { RefObject } from "react";
 
 import type { SingleListData } from "../../types/apiTypes";
@@ -14,7 +14,7 @@ import {
   PREVIEW_ALT_TEXT,
   tweetType,
 } from "../../utils/constants";
-import { useBookmarkImageSources } from "../../utils/getBookmarkImageSource";
+import { getImgForPost, usePreferredDomainsSet } from "../../utils/getBookmarkImageSource";
 import { MediaPlayer } from "../media-player";
 
 interface SlideProps {
@@ -32,12 +32,8 @@ interface VideoSlideProps extends SlideProps {
  * Handles double-click to zoom in/out
  */
 export const ImageSlide = ({ bookmark, zoomRef }: SlideProps) => {
-  const bookmarkArray = useMemo(() => (bookmark ? [bookmark] : []), [bookmark]);
-  const imageSources = useBookmarkImageSources(bookmarkArray);
-  const imageSource =
-    bookmark && typeof bookmark.id === "number"
-      ? (imageSources[bookmark.id] ?? bookmark.ogImage)
-      : (bookmark?.ogImage ?? "");
+  const preferredDomainsSet = usePreferredDomainsSet();
+  const imageSource = bookmark ? (getImgForPost(bookmark, preferredDomainsSet) ?? "") : "";
 
   return (
     <div
@@ -183,8 +179,7 @@ export const YouTubeSlide = ({ bookmark, isActive }: SlideProps) => (
  */
 export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
   const iframeEnabled = useIframeStore((state) => state.iframeEnabled);
-  const bookmarkArray = useMemo(() => (bookmark ? [bookmark] : []), [bookmark]);
-  const imageSources = useBookmarkImageSources(bookmarkArray);
+  const preferredDomainsSet = usePreferredDomainsSet();
   // Only render iframe if this is the active slide and iframe is allowed
   if (bookmark?.meta_data?.iframeAllowed && isActive && iframeEnabled) {
     return (
@@ -212,10 +207,7 @@ export const WebEmbedSlide = ({ bookmark, isActive, zoomRef }: SlideProps) => {
   }
 
   // Check if we have a placeholder to show
-  const placeholder =
-    bookmark && typeof bookmark.id === "number"
-      ? (imageSources[bookmark.id] ?? bookmark.ogImage)
-      : bookmark?.ogImage;
+  const placeholder = bookmark ? getImgForPost(bookmark, preferredDomainsSet) : undefined;
   if (placeholder) {
     const placeholderHeight = bookmark?.meta_data?.height ?? 800;
     const placeholderWidth = bookmark?.meta_data?.width ?? 1200;

@@ -61,22 +61,31 @@ export async function ancestorCheck(props) {
 export async function getNextVersion() {
   // Invoke release-it's own `--release-version` flag via the resolved
   // node_modules binary (no pnpm script shim) — that pathway prints the
-  // computed next version to stdout without mutating package.json and without
-  // triggering the pnpm lifecycle hooks attached to the `release:*` scripts.
-  // Falls back to the current package.json version if release-it cannot
-  // resolve a bump (e.g. no bump-triggering commits since the last tag).
-  try {
-    const { stdout } = await execa("./node_modules/.bin/release-it", ["--release-version"]);
-    const version = stdout.trim().split("\n").at(-1)?.trim();
-    if (version) {
-      return version;
-    }
-  } catch {
-    // Fall through to package.json read.
+  // computed next version to stdout without mutating package.json. Overrides:
+  //   --no-git.requireBranch         — .release-it.ts pins to `main`; this
+  //                                    preview runs on `dev`, and the flag is
+  //                                    a read-only query, not a release.
+  //   --no-git.requireCommits        — ancestorCheck already guards empty
+  //                                    diffs.
+  //   --no-git.requireCleanWorkingDir — release-pr builds the branch from
+  //                                    origin/dev; the local tree's state
+  //                                    doesn't affect the computed bump.
+  //   --hooks.before:init=           — skip the interactive `pnpm lint` hook;
+  //                                    the caller runs its own lint pipeline.
+  // Fail loudly on any error: falling back to package.json.version silently
+  // ships a stale PR title (shipped v1.0.0 with a v0.6.0 branch once).
+  const { stdout } = await execa("./node_modules/.bin/release-it", [
+    "--release-version",
+    "--no-git.requireBranch",
+    "--no-git.requireCommits",
+    "--no-git.requireCleanWorkingDir",
+    "--hooks.before:init=",
+  ]);
+  const version = stdout.trim().split("\n").at(-1)?.trim();
+  if (!version || !/^\d+\.\d+\.\d+/u.test(version)) {
+    throw new Error(`release-it printed no parseable version. stdout: ${JSON.stringify(stdout)}`);
   }
-  const pkgRaw = await fs.readFile("package.json", "utf-8");
-  const pkg = JSON.parse(pkgRaw);
-  return pkg.version;
+  return version;
 }
 
 export async function postApiChangelogComment(prNumber) {
