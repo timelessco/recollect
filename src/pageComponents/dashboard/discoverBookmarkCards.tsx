@@ -16,9 +16,7 @@ import { useLoadersStore, useMiscellaneousStore } from "../../store/componentSto
 import { viewValues } from "../../utils/constants";
 import { BookmarksSkeletonLoader } from "./cardSection/bookmarksSkeleton";
 
-const CardSection = dynamic(() => import("./cardSection"), {
-  ssr: false,
-});
+const CardSection = dynamic(() => import("./cardSection"), { ssr: false });
 
 interface SearchProps {
   data: SingleListData[];

@@ -1,14 +1,13 @@
-import type { GetServerSideProps } from "next";
+import type { GetStaticProps } from "next";
 import type { ReactElement } from "react";
 
-import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
 import type { SingleListData } from "../../types/apiTypes";
 import type { NextPageWithLayout } from "../_app";
 
 import { logger } from "@/lib/api-helpers/axiom-logger";
 import { extractErrorFields } from "@/lib/api-helpers/errors";
-import { isNullable } from "@/utils/assertion-utils";
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../../lib/supabase/constants";
 import Dashboard from "../../pageComponents/dashboard";
@@ -16,111 +15,54 @@ import { DiscoverGuestView } from "../../pageComponents/discover/DiscoverGuestVi
 import { MAIN_TABLE_NAME, PAGINATION_LIMIT } from "../../utils/constants";
 
 interface DiscoverPageProps {
-  discoverData?: SingleListData[];
-  isAuthenticated: boolean;
-  showOnboarding: boolean;
+  discoverData: SingleListData[];
 }
 
-const Discover: NextPageWithLayout<DiscoverPageProps> = ({ discoverData, isAuthenticated }) => {
-  // Guest SSR path — DiscoverGuestView renders server-side so crawlers see
-  // the discoverable-bookmark grid. getLayout below returns `page` verbatim
-  // for guests, skipping the Dashboard shell.
-  if (!isAuthenticated && discoverData) {
-    return <DiscoverGuestView discoverData={discoverData} />;
-  }
+const Discover: NextPageWithLayout<DiscoverPageProps> = ({ discoverData }) => (
+  <DiscoverGuestView discoverData={discoverData} />
+);
 
-  // Authenticated — Dashboard (wrapped via getLayout) owns the UI.
-  return null;
+// Must be a sync read in the same render pass as `getLayout` — a Zustand
+// session read behind a `useMounted` gate would force a two-phase render
+// (guest → authed) that unmounts `Dashboard` and thrashes the sidebar on
+// every nav. Pattern covers both unsplit (`sb-<ref>-auth-token`) and split
+// (`sb-<ref>-auth-token.0/.1`) Supabase cookie formats.
+const SUPABASE_AUTH_COOKIE_RE = /sb-[^=]+-auth-token(?:\.\d+)?=/;
+
+const hasSupabaseAuthCookie = (): boolean => {
+  if (typeof document === "undefined") {
+    return false;
+  }
+  return SUPABASE_AUTH_COOKIE_RE.test(document.cookie);
 };
 
-Discover.getLayout = (page: ReactElement, pageProps: DiscoverPageProps) => {
-  if (!pageProps.isAuthenticated) {
+// Must wrap `page` in `<Dashboard>` at the same tree position as
+// `[category_id].tsx`'s `getLayout` — otherwise React reconciles the roots
+// as different types and unmounts Dashboard on every `/everything ↔ /discover`
+// nav. Direct authed visits (post-login redirect) hydrate from the guest
+// SSR HTML into Dashboard on first paint; in-app navigation is seamless.
+Discover.getLayout = (page: ReactElement) => {
+  if (!hasSupabaseAuthCookie()) {
     return page;
   }
-  return <Dashboard showOnboarding={pageProps.showOnboarding}>{page}</Dashboard>;
+  return <Dashboard>{page}</Dashboard>;
 };
 
-export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (context) => {
-  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    cookies: {
-      getAll() {
-        return context.req.cookies
-          ? Object.entries(context.req.cookies).map(([name, value]) => ({
-              name,
-              value: value ?? "",
-            }))
-          : [];
-      },
-      setAll(cookiesToSet) {
-        if (context.res) {
-          try {
-            for (const { name, options, value } of cookiesToSet) {
-              context.res.appendHeader("Set-Cookie", serializeCookieHeader(name, value, options));
-            }
-          } catch {
-            // Cookie setting may fail in certain Server Component contexts
-            // Silently fail to prevent SSR errors
-          }
-        }
-      },
+// Discoverable bookmarks are curated public content — no per-user data —
+// so ISR lets every nav hit the CDN instead of cold-starting a serverless
+// function. `revalidate: 60` keeps the grid fresh for crawlers and first
+// paint; authed users refetch client-side via React Query.
+export const getStaticProps: GetStaticProps<DiscoverPageProps> = async () => {
+  // Stateless server-side read — opt out of the auth state machine the
+  // `@supabase/supabase-js` client would otherwise spin up per invocation.
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      persistSession: false,
     },
   });
 
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (user) {
-      let showOnboarding = false;
-      const { data: profileRow, error: profileError } = await supabase
-        .from("profiles")
-        .select("onboarded_at")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (profileError) {
-        logger.error("fetch_onboarding_flag_failed", {
-          operation: "fetch_onboarding_flag",
-          route: "discover-ssr",
-          user_id: user.id,
-          ...extractErrorFields(profileError),
-        });
-        await logger.flush();
-        // Fail closed — don't show the modal if we can't read the flag.
-      } else {
-        showOnboarding = isNullable(profileRow?.onboarded_at);
-      }
-
-      return {
-        props: {
-          isAuthenticated: true,
-          showOnboarding,
-        },
-      };
-    }
-  } catch (error) {
-    console.error("[discover-ssr] Authenticated SSR branch failed:", error);
-    logger.error("discover_ssr_auth_branch_failed", {
-      operation: "fetch_onboarding_flag",
-      route: "discover-ssr",
-      ...extractErrorFields(error),
-    });
-    await logger.flush();
-    // Conservative fallback: we can't distinguish a throw from supabase.auth.getUser()
-    // vs the profiles query here, so route through Dashboard rather than the guest view.
-    // Safe because DashboardLayout is ssr:false and Dashboard's useEffect re-runs
-    // supabase.auth.getUser() client-side and redirects to /login on failure — no
-    // private data SSRs. getLayout wraps this in <Dashboard showOnboarding=false>.
-    return {
-      props: {
-        isAuthenticated: true,
-        showOnboarding: false,
-      },
-    };
-  }
-
-  // Guest path: SSR the discoverable bookmarks for SEO.
   try {
     const page = 0;
     const rangeStart = page * PAGINATION_LIMIT;
@@ -151,19 +93,15 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
       .range(rangeStart, rangeEnd);
 
     if (error) {
-      console.error("[discover-ssr] Failed to fetch discoverable bookmarks:", error);
       logger.error("fetch_discoverable_bookmarks_failed", {
         operation: "fetch_discoverable_bookmarks",
-        route: "discover-ssr",
+        route: "discover-isr",
         ...extractErrorFields(error),
       });
       await logger.flush();
       return {
-        props: {
-          discoverData: [],
-          isAuthenticated: false,
-          showOnboarding: false,
-        },
+        props: { discoverData: [] },
+        revalidate: 60,
       };
     }
 
@@ -175,26 +113,19 @@ export const getServerSideProps: GetServerSideProps<DiscoverPageProps> = async (
     })) ?? []) as unknown as SingleListData[];
 
     return {
-      props: {
-        discoverData,
-        isAuthenticated: false,
-        showOnboarding: false,
-      },
+      props: { discoverData },
+      revalidate: 60,
     };
   } catch (error) {
-    console.error("[discover-ssr] Error fetching discoverable bookmarks:", error);
-    logger.error("discover_ssr_guest_branch_failed", {
+    logger.error("discover_isr_fetch_failed", {
       operation: "fetch_discoverable_bookmarks",
-      route: "discover-ssr",
+      route: "discover-isr",
       ...extractErrorFields(error),
     });
     await logger.flush();
     return {
-      props: {
-        discoverData: [],
-        isAuthenticated: false,
-        showOnboarding: false,
-      },
+      props: { discoverData: [] },
+      revalidate: 60,
     };
   }
 };
