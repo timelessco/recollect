@@ -346,7 +346,7 @@ export const isGuestPath = (pathname: string) =>
 /**
  * Array of public paths that don't require authentication
  */
-const PUBLIC_PATHS = ["/api-docs", "/discover", "/error", "/openapi.json", "/public"] as const;
+const PUBLIC_PATHS = ["/api-docs", "/error", "/openapi.json", "/public"] as const;
 export const isPublicPath = (pathname: string) =>
   PUBLIC_PATHS.some((path) => pathname.startsWith(path));
 

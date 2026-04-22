@@ -8,6 +8,21 @@ import { EVERYTHING_URL, isGuestPath, isPublicPath, LOGIN_URL } from "@/utils/co
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./constants";
 
+const PUBLIC_DISCOVER_PATH = "/public/discover";
+
+// Unauthenticated hits to /discover (and the preview modal route nested under it)
+// land on the public guest grid instead of the login screen.
+const shouldRedirectToPublicDiscover = (pathname: string) =>
+  pathname === "/discover" || pathname.startsWith("/discover/");
+
+const redirectToPublicDiscover = (request: NextRequest) => {
+  const url = request.nextUrl.clone();
+  url.pathname = PUBLIC_DISCOVER_PATH;
+  url.search = "";
+  url.hash = "";
+  return NextResponse.redirect(url);
+};
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -60,6 +75,10 @@ export async function updateSession(request: NextRequest) {
     // Auth error (4xx: expired JWT, no session, invalid token)
     // This is normal flow - redirect to login
     if (!isGuestPath(pathname)) {
+      if (shouldRedirectToPublicDiscover(pathname)) {
+        return redirectToPublicDiscover(request);
+      }
+
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = `/${LOGIN_URL}`;
       if (!loginUrl.searchParams.has("next")) {
@@ -87,6 +106,10 @@ export async function updateSession(request: NextRequest) {
 
   // Redirect unauthenticated users to login (unless already on a guest path)
   if (!user && !isGuestPath(pathname)) {
+    if (shouldRedirectToPublicDiscover(pathname)) {
+      return redirectToPublicDiscover(request);
+    }
+
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = `/${LOGIN_URL}`;
 
