@@ -22,7 +22,11 @@ import {
   VIDEO_TYPE_PREFIX,
 } from "../../../utils/constants";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../../utils/url";
-import { buildAuthenticatedPreviewUrl, buildPublicPreviewUrl } from "../../../utils/url-builders";
+import {
+  buildAuthenticatedPreviewUrl,
+  buildPublicDiscoverPreviewUrl,
+  buildPublicPreviewUrl,
+} from "../../../utils/url-builders";
 import { isYouTubeVideo } from "../LightboxUtils";
 
 /**
@@ -187,24 +191,36 @@ export const useLightboxNavigation = ({
     }
 
     // Update browser URL for both authenticated and public pages
-    if (isPublicPage && !isDiscoverPage) {
+    const bookmarkId = bookmarks?.[index]?.id;
+    if (!bookmarkId) {
+      return;
+    }
+
+    if (isPublicPage && isDiscoverPage) {
+      const { as, pathname, query } = buildPublicDiscoverPreviewUrl({ bookmarkId });
+      void router?.push({ pathname, query }, as, { shallow: true });
+      return;
+    }
+
+    if (isPublicPage) {
       const publicInfo = getPublicPageInfo(router);
-      if (publicInfo && bookmarks?.[index]?.id) {
+      if (publicInfo) {
         const { as, pathname, query } = buildPublicPreviewUrl({
-          bookmarkId: bookmarks[index].id,
+          bookmarkId,
           publicInfo,
         });
         void router?.push({ pathname, query }, as, { shallow: true });
       }
-    } else {
-      const categorySlug = getCategorySlugFromRouter(router);
-      if (categorySlug) {
-        const { as, pathname, query } = buildAuthenticatedPreviewUrl({
-          bookmarkId: bookmarks?.[index]?.id,
-          categorySlug,
-        });
-        void router?.push({ pathname, query }, as, { shallow: true });
-      }
+      return;
+    }
+
+    const categorySlug = getCategorySlugFromRouter(router);
+    if (categorySlug) {
+      const { as, pathname, query } = buildAuthenticatedPreviewUrl({
+        bookmarkId,
+        categorySlug,
+      });
+      void router?.push({ pathname, query }, as, { shallow: true });
     }
   };
 

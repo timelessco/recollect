@@ -17,7 +17,13 @@ const shouldRedirectToPublicDiscover = (pathname: string) =>
 
 const redirectToPublicDiscover = (request: NextRequest) => {
   const url = request.nextUrl.clone();
-  url.pathname = PUBLIC_DISCOVER_PATH;
+  const { pathname } = url;
+  // Preserve the deep link so /discover/preview/123 lands on
+  // /public/discover/preview/123 (otherwise the bookmark the user was
+  // trying to preview is lost on the redirect).
+  url.pathname = pathname.startsWith("/discover/")
+    ? `${PUBLIC_DISCOVER_PATH}${pathname.slice("/discover".length)}`
+    : PUBLIC_DISCOVER_PATH;
   url.search = "";
   url.hash = "";
   return NextResponse.redirect(url);
