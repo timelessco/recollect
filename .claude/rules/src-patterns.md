@@ -79,21 +79,21 @@ Three sidebar sections with different `CATEGORY_ID` resolution:
 
 ### HTTP Client (ky)
 
-Native `fetch` is replaced by `ky` repo-wide (`axios` remains in deps but is legacy — don't use). Shared client instance `api` at `src/lib/api-helpers/api-v2.ts`: `ky.create({ prefix: "/api", timeout: 30_000 })`. Always import URL constants from `src/utils/constants.ts`; never inline `"v2/..."` strings.
+`fetch` → `ky` repo-wide (axios legacy). Shared `api` at `src/lib/api-helpers/api-v2.ts`: `ky.create({ prefix: "/api", timeout: 30_000 })`. URL constants from `src/utils/constants.ts` — never inline `"v2/..."`.
 
-**ky defaults differ from fetch** — 10s per-attempt timeout, 2 retries on GET/PUT/HEAD/DELETE for 5xx + [408, 413, 429]. POST/PATCH are NOT retried.
+**Defaults:** 10s `timeout`; GET/PUT/HEAD/DELETE retry 2× on 5xx + [408, 413, 429]; POST/PATCH don't retry.
 
-**`timeout` vs `signal`** — not interchangeable. ky's `timeout` option is a *headers-arrival* deadline: the internal timer is cleared the moment `fetch()` settles (headers received), so any subsequent `.arrayBuffer()` / large `.json()` body read is unbounded. A user-supplied `signal` (especially `AbortSignal.timeout(N)`) is a *wall-clock* deadline that ky never clears — it propagates through headers AND body reads via `AbortSignal.any`. Migration trap: `fetch(url, { signal: AbortSignal.timeout(N) })` → `ky.get(url, { timeout: N })` is NOT a semantic-preserving rewrite when the caller does `.arrayBuffer()` on untrusted/large responses (slow-body attack or slow CDN leaves the body read unbounded).
+**`timeout` vs `signal`** — `timeout` = headers-arrival (cleared on settle → body reads unbounded). `signal: AbortSignal.timeout(N)` = wall-clock via `AbortSignal.any` (guards headers + body). `fetch(url, { signal })` → `ky.get(url, { timeout })` breaks semantics on body reads.
 
-Three pin patterns to preserve fetch semantics:
+Pin patterns:
 
-- **`timeout: false`** — queue workers, server-to-server dispatches, upstream that owns its own budget. Use when there's no synchronous client waiting (`after()` bg dispatch, pgmq handlers, external render/screenshot services, client-side R2 PUT uploads where native fetch was unbounded). ky's 10s default otherwise aborts legitimate long-running ops as `TimeoutError`.
-- **`signal: AbortSignal.timeout(N)` + `timeout: false`** — any call followed by `.arrayBuffer()` or large `.json()` where you need an end-to-end wall-clock bound (og-image download, PDF buffer proxy, video download). **Both options are required.** ky applies a 10s `timeout` default even when you pass `signal`, and composes the two via `AbortSignal.any` so whichever fires first wins — without `timeout: false`, a `signal: AbortSignal.timeout(60_000)` never ticks because the default 10s aborts the fetch first. Also, do NOT use `timeout: N` alone for body-read paths — ky clears that timer on headers-arrival, leaving the body read unbounded.
-- **`retry: 0`** — idempotency-unsafe or amplifying calls. Use when: (1) retries duplicate external side effects (HEAD/GET to user URLs), (2) retries amplify bandwidth (PDF/video proxied through the server), (3) best-effort flows with graceful fallback (og-image re-upload), (4) expensive operations (screenshot capture, PDF render) in queue-worker context where pgmq already owns retry.
+- **`timeout: false`** — long server-to-server / background (queue, external render, R2 PUT). On GET/PUT/HEAD/DELETE, also `retry: 0` — else a minute stall becomes 3×. POST/PATCH already non-retrying.
+- **`signal: AbortSignal.timeout(N)` + `timeout: false`** — body-read wall-clock (og-image, PDF, video). **Both required:** the 10s default composes with `signal` via `AbortSignal.any` and fires first, so a 60s signal never ticks without `timeout: false`. Plain `timeout: N` alone is wrong here (headers-arrival only).
+- **`retry: 0`** — idempotency-unsafe / amplifying: HEAD/GET user URLs, proxied PDF/video, best-effort fallbacks, pgmq-owned-retry ops.
 
-**Client + server pairing** — when the server handler proxies an external URL (e.g., `/v2/bookmarks/get/get-pdf-buffer`), add `retry: 0` at BOTH layers. Server `retry: 0` alone doesn't stop the client `api` instance from re-invoking the whole route on 5xx; cascade amplification needs the caller-side guard too.
+**Proxied routes** (e.g. `/v2/bookmarks/get/get-pdf-buffer`) need `retry: 0` on BOTH client and server — server-only doesn't stop the `api` client from re-invoking on 5xx.
 
-When to use plain `timeout: N` (the weaker form): HEAD requests, short-latency small-JSON reads where the body-read bound is irrelevant. Match server timeout to the client ceiling — a server `timeout: 60_000` behind a client `api` 30s ceiling just wastes cycles after the client abandons.
+Plain `timeout: N` fits HEAD / small-JSON only. Server timeout ≤ client ceiling (60_000 behind a 30s client just burns cycles).
 
 ### Category Multi-Select
 
