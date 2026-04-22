@@ -1,16 +1,13 @@
 import { useMemo } from "react";
 
-import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
-
-import type { SingleListData } from "@/types/apiTypes";
 
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/use-fetch-paginated-bookmarks";
 import useSearchBookmarks from "@/async/queryHooks/bookmarks/use-search-bookmarks";
 import useFetchCategories from "@/async/queryHooks/category/use-fetch-categories";
+import { usePageContext } from "@/hooks/use-page-context";
 import { useSupabaseSession } from "@/store/componentStore";
-import { BOOKMARKS_KEY, SIMILAR_URL } from "@/utils/constants";
 import { errorToast } from "@/utils/toastMessages";
 
 /**
@@ -21,7 +18,7 @@ import { errorToast } from "@/utils/toastMessages";
  */
 export function useHandleBookmarksDrop() {
   const session = useSupabaseSession((state) => state.session);
-  const queryClient = useQueryClient();
+  const { isSimilarPage } = usePageContext();
   const { addCategoryToBookmarkOptimisticMutation } = useAddCategoryToBookmarkOptimisticMutation();
   const { allCategories } = useFetchCategories();
   const { everythingData, isEverythingDataLoading } = useFetchPaginatedBookmarks();
@@ -67,26 +64,27 @@ export function useHandleBookmarksDrop() {
           const bookmarkId = (await item.getText("text/plain")) as string;
           const bookmarkIdNum = Number.parseInt(bookmarkId, 10);
 
-          let foundBookmark = find(
+          // On /similar the fetch RPC is RLS-scoped to `auth.uid()`, so every
+          // visible bookmark is owned by the current user. Skip the paginated
+          // lookup + client-side owner check and fire straight at the server
+          // (which re-enforces ownership via RLS on the mutation).
+          if (isSimilarPage) {
+            if (!updateAccessCondition) {
+              errorToast("Cannot upload in other owners collection");
+              return;
+            }
+
+            addCategoryToBookmarkOptimisticMutation.mutate({
+              bookmark_id: bookmarkIdNum,
+              category_id: categoryId,
+            });
+            return;
+          }
+
+          const foundBookmark = find(
             mergedBookmarkData,
             (bookmarkItem) => bookmarkIdNum === bookmarkItem?.id,
           );
-
-          // Fallback: similar-page caches. Paginated fetch is disabled on /similar,
-          // so `mergedBookmarkData` never carries similar bookmarks; fall through to
-          // any active similar cache keyed at [BOOKMARKS_KEY, userId, "similar", X].
-          if (!foundBookmark) {
-            const similarEntries = queryClient.getQueriesData<SingleListData[]>({
-              queryKey: [BOOKMARKS_KEY, session?.user?.id, SIMILAR_URL],
-            });
-            for (const [, data] of similarEntries) {
-              const match = data?.find((bm) => bm?.id === bookmarkIdNum);
-              if (match) {
-                foundBookmark = match;
-                break;
-              }
-            }
-          }
 
           // Ignore drops that aren't bookmarks (e.g., collections dragged between sidebar lists)
           if (!foundBookmark) {
