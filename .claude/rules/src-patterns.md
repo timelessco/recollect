@@ -81,19 +81,15 @@ Three sidebar sections with different `CATEGORY_ID` resolution:
 
 `fetch` → `ky` repo-wide (axios legacy). Shared `api` at `src/lib/api-helpers/api-v2.ts`: `ky.create({ prefix: "/api", timeout: 30_000 })`. URL constants from `src/utils/constants.ts` — never inline `"v2/..."`.
 
-**Defaults:** 10s `timeout`; GET/PUT/HEAD/DELETE retry 2× on 5xx + [408, 413, 429]; POST/PATCH don't retry.
-
-**`timeout` vs `signal`** — `timeout` = headers-arrival (cleared on settle → body reads unbounded). `signal: AbortSignal.timeout(N)` = wall-clock via `AbortSignal.any` (guards headers + body). `fetch(url, { signal })` → `ky.get(url, { timeout })` breaks semantics on body reads.
+**Defaults:** 10s `timeout` (headers-arrival — cleared on settle, so body reads are unbounded); GET/PUT/HEAD/DELETE retry 2× on 5xx + [408, 413, 429]; POST/PATCH don't retry. `signal: AbortSignal.timeout(N)` = wall-clock via `AbortSignal.any`, guards headers + body. Rewriting `fetch+signal → ky+timeout` loses semantics on body reads.
 
 Pin patterns:
 
-- **`timeout: false`** — long server-to-server / background (queue, external render, R2 PUT). On GET/PUT/HEAD/DELETE, also `retry: 0` — else a minute stall becomes 3×. POST/PATCH already non-retrying.
-- **`signal: AbortSignal.timeout(N)` + `timeout: false`** — body-read wall-clock (og-image, PDF, video). **Both required:** the 10s default composes with `signal` via `AbortSignal.any` and fires first, so a 60s signal never ticks without `timeout: false`. Plain `timeout: N` alone is wrong here (headers-arrival only).
-- **`retry: 0`** — idempotency-unsafe / amplifying: HEAD/GET user URLs, proxied PDF/video, best-effort fallbacks, pgmq-owned-retry ops.
+- **`timeout: false`** — long calls (queue, external render, R2 PUT). On GET/PUT/HEAD/DELETE add **`retry: 0`** or a minute stall becomes 3×.
+- **`signal: AbortSignal.timeout(N)` + `timeout: false`** (both) — body-read wall-clock. Without `timeout: false`, the 10s default composes with `signal` via `AbortSignal.any` and fires first; a 60s signal never ticks. `timeout: N` alone is wrong here.
+- **`retry: 0`** — idempotency-unsafe / amplifying / pgmq-owned-retry. Proxied routes (`/v2/bookmarks/get/get-pdf-buffer`) need it at BOTH layers — server-only doesn't stop the `api` client from re-invoking on 5xx.
 
-**Proxied routes** (e.g. `/v2/bookmarks/get/get-pdf-buffer`) need `retry: 0` on BOTH client and server — server-only doesn't stop the `api` client from re-invoking on 5xx.
-
-Plain `timeout: N` fits HEAD / small-JSON only. Server timeout ≤ client ceiling (60_000 behind a 30s client just burns cycles).
+Plain `timeout: N` fits HEAD / small-JSON only. Server timeout ≤ client ceiling.
 
 ### Category Multi-Select
 
