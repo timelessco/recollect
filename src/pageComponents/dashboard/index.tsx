@@ -1,5 +1,4 @@
 import dynamic from "next/dynamic";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
 import type { ReactNode } from "react";
 
@@ -15,15 +14,15 @@ import useFetchBookmarksView from "../../async/queryHooks/bookmarks/use-fetch-bo
 import useFetchCategories from "../../async/queryHooks/category/use-fetch-categories";
 import useFetchSharedCategories from "../../async/queryHooks/share/use-fetch-shared-categories";
 import useFetchUserProfile from "../../async/queryHooks/user/use-fetch-user-profile";
+import { usePageContext } from "../../hooks/use-page-context";
 import { useSignOutRealtimeTeardown } from "../../hooks/use-sign-out-realtime-teardown";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
 import { useMounted } from "../../hooks/useMounted";
 import { useSupabaseSession } from "../../store/componentStore";
-import { BOOKMARKS_KEY, DISCOVER_URL, LOGIN_URL, SIMILAR_URL } from "../../utils/constants";
+import { BOOKMARKS_KEY, DISCOVER_URL, LOGIN_URL } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
-import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 import { BookmarkCards } from "./bookmarkCards";
 import { DiscoverBookmarkCards } from "./discoverBookmarkCards";
@@ -58,8 +57,7 @@ interface DashboardProps {
 const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
   const isMounted = useMounted();
   const queryClient = useQueryClient();
-  const router = useRouter();
-  const categorySlug = getCategorySlugFromRouter(router);
+  const { categorySlug, isDiscoverPage, isSimilarPage } = usePageContext();
 
   const setSession = useSupabaseSession((state) => state.setSession);
   const session = useSupabaseSession((state) => state.session);
@@ -146,9 +144,6 @@ const Dashboard = ({ showOnboarding = false }: DashboardProps) => {
       });
     }
   }, [session?.user?.app_metadata?.provider, updateUserProfileMutate, userProfileData]);
-
-  const isDiscoverPage = categorySlug === DISCOVER_URL;
-  const isSimilarPage = categorySlug === SIMILAR_URL;
 
   const renderMainPaneContent = () => {
     if (!isInNotFoundPage) {

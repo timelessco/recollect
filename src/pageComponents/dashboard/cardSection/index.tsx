@@ -15,6 +15,7 @@ import type { BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import type { Many } from "lodash";
 
 import { buildSearchCategorySegment } from "@/hooks/use-bookmark-mutation-context";
+import { usePageContext } from "@/hooks/use-page-context";
 import { cn } from "@/utils/tailwind-merge";
 
 import loaderGif from "../../../../public/loader-gif.gif";
@@ -29,15 +30,8 @@ import {
   useMiscellaneousStore,
   useSupabaseSession,
 } from "../../../store/componentStore";
-import {
-  BOOKMARKS_KEY,
-  PREVIEW_ALT_TEXT,
-  SIMILAR_URL,
-  TWEETS_URL,
-  viewValues,
-} from "../../../utils/constants";
+import { BOOKMARKS_KEY, PREVIEW_ALT_TEXT, TWEETS_URL, viewValues } from "../../../utils/constants";
 import { getBookmarkCountForCurrentPage, getPreviewPathInfo } from "../../../utils/helpers";
-import { getCategorySlugFromRouter } from "../../../utils/url";
 import { BookmarkCard, getImgForPost } from "./bookmarkCard";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import ListBox from "./listBox";
@@ -80,7 +74,7 @@ const CardSection = ({
   const { allCategories } = useFetchCategories();
   const { bookmarksCountData } = useFetchBookmarksCount();
 
-  const categorySlug = getCategorySlugFromRouter(router);
+  const { categorySlug, isSimilarPage } = usePageContext();
   const preferredDomainsSet = useMemo(() => {
     const domains = profileData?.[0]?.preferred_og_domains ?? [];
     return new Set(domains.map((item) => item.toLowerCase()));
@@ -254,7 +248,7 @@ const CardSection = ({
     <>
       <div className={listWrapperClass}>{renderItem()}</div>
       <PreviewLightBox
-        bookmarks={isPublicPage || categorySlug === SIMILAR_URL ? bookmarksList : undefined}
+        bookmarks={isPublicPage || isSimilarPage ? bookmarksList : undefined}
         id={lightboxId}
         open={lightboxOpen}
         setOpen={setLightboxOpen}

@@ -18,7 +18,6 @@ import {
   instagramType,
   PDF_MIME_TYPE,
   PDF_TYPE,
-  SIMILAR_URL,
   tweetType,
   VIDEO_TYPE_PREFIX,
 } from "../../../utils/constants";
@@ -129,7 +128,7 @@ export const useLightboxNavigation = ({
   const router = useRouter();
   const handleClientError = useHandleClientError();
 
-  const { isDiscoverPage, isPublicPage } = usePageContext();
+  const { isDiscoverPage, isPublicPage, isSimilarPage } = usePageContext();
 
   /**
    * Invalidate queries for a given bookmark index.
@@ -201,16 +200,16 @@ export const useLightboxNavigation = ({
         });
         void router?.push({ pathname, query }, as, { shallow: true });
       }
+    } else if (isSimilarPage) {
+      const sourceId = typeof router?.query.id === "string" ? router.query.id : undefined;
+      const bookmarkId = bookmarks?.[index]?.id;
+      if (sourceId && bookmarkId) {
+        const { as, pathname, query } = buildSimilarPreviewUrl({ bookmarkId, sourceId });
+        void router?.push({ pathname, query }, as, { shallow: true });
+      }
     } else {
       const categorySlug = getCategorySlugFromRouter(router);
-      if (categorySlug === SIMILAR_URL) {
-        const sourceId = typeof router?.query.id === "string" ? router.query.id : undefined;
-        const bookmarkId = bookmarks?.[index]?.id;
-        if (sourceId && bookmarkId) {
-          const { as, pathname, query } = buildSimilarPreviewUrl({ bookmarkId, sourceId });
-          void router?.push({ pathname, query }, as, { shallow: true });
-        }
-      } else if (categorySlug) {
+      if (categorySlug) {
         const { as, pathname, query } = buildAuthenticatedPreviewUrl({
           bookmarkId: bookmarks?.[index]?.id,
           categorySlug,
