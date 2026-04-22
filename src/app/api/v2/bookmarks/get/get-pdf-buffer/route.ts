@@ -18,8 +18,13 @@ export const GET = createAxiomRouteHandler(
       setPayload(ctx, { pdf_url: input.url });
 
       try {
+        // `timeout: false` disables ky's 10s default headers-arrival timer;
+        // the signal is the end-to-end wall-clock bound that also guards the
+        // `.arrayBuffer()` body read below. Without this, a large/slow PDF
+        // would be aborted at 10s regardless of the 30s intent.
         const result = await ky.get(input.url, {
           retry: 0,
+          timeout: false,
           signal: AbortSignal.timeout(30_000),
         });
 
