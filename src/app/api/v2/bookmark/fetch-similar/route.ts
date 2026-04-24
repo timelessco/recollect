@@ -12,7 +12,13 @@ import { FetchSimilarInputSchema, FetchSimilarOutputSchema } from "./schema";
 const ROUTE = "v2-bookmark-fetch-similar";
 
 // Passed explicitly to the RPC; override of the RPC default for tuning.
-const MIN_SCORE = 5;
+// Phase A visual + entity look-alike: max score is 40
+// (6 × up-to-3 color matches + 3 × type + 4 × object + 8 × people
+//  + 5 × creator (brand/author/artist/director/company/character/series)
+//  + 2 × classifier (platform/source/programming_language/framework/genre/location)).
+// MIN_SCORE = 3 means any single weak signal (type match) clears the floor;
+// stronger signals (color, people, creator) clear it easily.
+const MIN_SCORE = 3;
 
 interface BookmarkRow {
   description: string | null;
@@ -83,11 +89,11 @@ export const GET = createAxiomRouteHandler(
       }
 
       if (!scored || scored.length === 0) {
-        setPayload(ctx, { similar_count: 0 });
+        setPayload(ctx, { similar_count: 0, empty_result: true });
         return [];
       }
 
-      setPayload(ctx, { similar_count: scored.length });
+      setPayload(ctx, { similar_count: scored.length, empty_result: false });
 
       const scoreById = new Map(scored.map((row) => [row.id, row.score]));
       const bookmarkIds = scored.map((row) => row.id);

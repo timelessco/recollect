@@ -458,6 +458,7 @@ export type Database = {
         Args: { p_msg_id: number; p_queue_name: string; p_reason: string };
         Returns: boolean;
       };
+      aspect_bucket_from_meta: { Args: { meta: Json }; Returns: string };
       auto_assign_collections: {
         Args: {
           p_bookmark_id: number;

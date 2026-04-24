@@ -19,7 +19,12 @@ export function SeeSimilarButton({ bookmark }: SeeSimilarButtonProps) {
 
   if (!enabled) {
     return (
-      <Button className={className} disabled type="button">
+      <Button
+        className={className}
+        disabled
+        title="Not enough visual data on this bookmark yet"
+        type="button"
+      >
         <span className="flex h-4 w-4 items-center justify-center">
           <GeminiAiIcon />
         </span>
