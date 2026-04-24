@@ -24,6 +24,7 @@ import {
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../../utils/url";
 import {
   buildAuthenticatedPreviewUrl,
+  buildPublicDiscoverPreviewUrl,
   buildPublicPreviewUrl,
   buildSimilarPreviewUrl,
 } from "../../../utils/url-builders";
@@ -191,31 +192,45 @@ export const useLightboxNavigation = ({
     }
 
     // Update browser URL for both authenticated and public pages
-    if (isPublicPage && !isDiscoverPage) {
+    const bookmarkId = bookmarks?.[index]?.id;
+    if (!bookmarkId) {
+      return;
+    }
+
+    if (isPublicPage && isDiscoverPage) {
+      const { as, pathname, query } = buildPublicDiscoverPreviewUrl({ bookmarkId });
+      void router?.push({ pathname, query }, as, { shallow: true });
+      return;
+    }
+
+    if (isPublicPage) {
       const publicInfo = getPublicPageInfo(router);
-      if (publicInfo && bookmarks?.[index]?.id) {
+      if (publicInfo) {
         const { as, pathname, query } = buildPublicPreviewUrl({
-          bookmarkId: bookmarks[index].id,
+          bookmarkId,
           publicInfo,
         });
         void router?.push({ pathname, query }, as, { shallow: true });
       }
-    } else if (isSimilarPage) {
+      return;
+    }
+
+    if (isSimilarPage) {
       const sourceId = typeof router?.query.id === "string" ? router.query.id : undefined;
-      const bookmarkId = bookmarks?.[index]?.id;
-      if (sourceId && bookmarkId) {
+      if (sourceId) {
         const { as, pathname, query } = buildSimilarPreviewUrl({ bookmarkId, sourceId });
         void router?.push({ pathname, query }, as, { shallow: true });
       }
-    } else {
-      const categorySlug = getCategorySlugFromRouter(router);
-      if (categorySlug) {
-        const { as, pathname, query } = buildAuthenticatedPreviewUrl({
-          bookmarkId: bookmarks?.[index]?.id,
-          categorySlug,
-        });
-        void router?.push({ pathname, query }, as, { shallow: true });
-      }
+      return;
+    }
+
+    const categorySlug = getCategorySlugFromRouter(router);
+    if (categorySlug) {
+      const { as, pathname, query } = buildAuthenticatedPreviewUrl({
+        bookmarkId,
+        categorySlug,
+      });
+      void router?.push({ pathname, query }, as, { shallow: true });
     }
   };
 
