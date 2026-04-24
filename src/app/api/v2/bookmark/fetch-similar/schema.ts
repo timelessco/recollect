@@ -47,8 +47,6 @@ export const FetchSimilarOutputSchema = z.array(
       .nullable()
       .meta({ description: "Bookmark type (bookmark, tweet, instagram, MIME type)" }),
     url: z.string().nullable().meta({ description: "Bookmark URL" }),
-    user_id: z
-      .unknown()
-      .meta({ description: "User ID — string or FK join object for shared categories" }),
+    user_id: z.uuid().meta({ description: "UUID of the bookmark owner" }),
   }),
 );

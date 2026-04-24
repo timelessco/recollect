@@ -10,7 +10,11 @@ import { useMiscellaneousStore } from "../../../store/componentStore";
 import { DISCOVER_URL } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../../utils/url";
-import { buildAuthenticatedPreviewUrl, buildPublicPreviewUrl } from "../../../utils/url-builders";
+import {
+  buildAuthenticatedPreviewUrl,
+  buildPublicDiscoverPreviewUrl,
+  buildPublicPreviewUrl,
+} from "../../../utils/url-builders";
 
 interface PublicMoodboardVirtualizedProps {
   bookmarksColumns: number[];
@@ -154,16 +158,17 @@ function BookmarkCardOverlay({ bookmark }: { bookmark: SingleListData }) {
             publicInfo,
           });
           void router.push({ pathname, query }, as, { shallow: true });
-        } else {
-          const categorySlug = getCategorySlugFromRouter(router);
-          if (categorySlug === DISCOVER_URL) {
-            const { as, pathname, query } = buildAuthenticatedPreviewUrl({
-              bookmarkId: bookmark.id,
-              categorySlug,
-            });
-            void router.push({ pathname, query }, as, { shallow: true });
-          }
+          return;
         }
+        const categorySlug = getCategorySlugFromRouter(router);
+        if (categorySlug !== DISCOVER_URL) {
+          return;
+        }
+        const isPublicDiscover = router.asPath?.startsWith("/public/");
+        const { as, pathname, query } = isPublicDiscover
+          ? buildPublicDiscoverPreviewUrl({ bookmarkId: bookmark.id })
+          : buildAuthenticatedPreviewUrl({ bookmarkId: bookmark.id, categorySlug });
+        void router.push({ pathname, query }, as, { shallow: true });
       }}
     />
   );

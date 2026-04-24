@@ -16,6 +16,7 @@ import { getCategorySlugFromRouter, getPublicPageInfo } from "../../utils/url";
 import {
   buildAuthenticatedCategoryUrl,
   buildPublicCategoryUrl,
+  buildPublicDiscoverUrl,
   buildSimilarUrl,
 } from "../../utils/url-builders";
 import { useLightboxPrefetch } from "./hooks/useLightboxPrefetch";
@@ -100,7 +101,10 @@ export const PreviewLightBox = ({
     setOpen(false);
 
     // Update URL to remove preview segment for both authenticated and public pages
-    if (isPublicPage && !isDiscoverPage) {
+    if (isPublicPage && isDiscoverPage) {
+      const { as, pathname, query } = buildPublicDiscoverUrl();
+      void router.push({ pathname, query }, as, { shallow: true });
+    } else if (isPublicPage) {
       const publicInfo = getPublicPageInfo(router);
       if (publicInfo) {
         const { as, pathname, query } = buildPublicCategoryUrl(publicInfo);

@@ -52,7 +52,13 @@ export const SimilarBookmarkCards = () => {
       return renderEmptyState();
     }
 
-    return <CardSection isLoading={isLoading} listData={similar ?? []} />;
+    return (
+      <CardSection
+        flattendPaginationBookmarkData={similar ?? []}
+        isLoading={isLoading}
+        listData={similar ?? []}
+      />
+    );
   };
 
   return (
