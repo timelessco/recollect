@@ -3,9 +3,10 @@
 -- ============================================================================
 -- Purpose:
 --   Rebalance match_similar_bookmarks from a topical-leaning scorer into a
---   visual + entity look-alike ranker. Drops tag/category/domain signals
+--   visual + entity look-alike ranker. Drops tag and category signals
 --   (purely topical). Keeps and upweights color (OKLAB/OKLCh). Keeps type.
---   Re-adds object + people. Adds two unified buckets from features jsonb:
+--   Re-adds object + people. Keeps domain as a low-weight "same-site"
+--   signal. Adds two unified buckets from features jsonb:
 --   creator (brand/author/artist/director/company/character/series) and
 --   classifier (platform/source/programming_language/framework/genre/location).
 --   Aspect-ratio stays a NULL-tolerant hard filter.
@@ -25,8 +26,10 @@
 --         +  2 × classifier_binary   -- 1 if any shared value across features
 --                                       keys: platform/source/programming_
 --                                       language/framework/genre/location
+--         +  2 × domain_binary       -- 1 if same url host (www. stripped,
+--                                       case-insensitive), else 0
 --
---   Max score: 40 (18 + 3 + 4 + 8 + 5 + 2).
+--   Max score: 42 (18 + 3 + 4 + 8 + 5 + 2 + 2).
 --
 -- Filter:
 --   - aspect bucket must match when both sides have dimensions
@@ -43,7 +46,8 @@
 --   6. object_overlap_count     DESC  -- multi-object overlap within binary
 --   7. classifier_overlap_count DESC  -- multi-classifier overlap within binary
 --   8. type_overlap_count       DESC  -- multi-type overlap within binary
---   9. inserted_at              DESC  -- recency fallback
+--   9. domain_match             DESC  -- same-domain prefers (binary)
+--  10. inserted_at              DESC  -- recency fallback
 --
 -- Phase A only. Phase B will add visual embeddings (pgvector) and ship as
 -- a new RPC (match_similar_bookmarks_v2) — the MIN_SCORE / filter semantics
@@ -155,6 +159,7 @@ as $$
         e.meta_data -> 'image_keywords' -> 'features',
         array['platform','source','programming_language','framework','genre','location']
       ) as src_classifier_values,
+      lower(substring(e.url from '(?:https?://)?(?:www\.)?([^/?#]+)')) as src_domain,
       public.aspect_bucket_from_meta(e.meta_data) as src_aspect_bucket,
       case
         when (e.meta_data->>'width')  ~ '^\d+$' and (e.meta_data->>'height') ~ '^\d+$'
@@ -172,6 +177,7 @@ as $$
       e.inserted_at,
       e.meta_data -> 'image_keywords' as kw,
       e.meta_data -> 'image_keywords' -> 'features' as cand_features,
+      lower(substring(e.url from '(?:https?://)?(?:www\.)?([^/?#]+)')) as cand_domain,
       public.aspect_bucket_from_meta(e.meta_data) as aspect_bucket,
       case
         when (e.meta_data->>'width')  ~ '^\d+$' and (e.meta_data->>'height') ~ '^\d+$'
@@ -269,7 +275,13 @@ as $$
           c.cand_features,
           array['platform','source','programming_language','framework','genre','location']
         ))
-      ) t) as classifier_overlap_count
+      ) t) as classifier_overlap_count,
+      -- Domain match: same url host (www. stripped, case-insensitive)
+      case
+        when s.src_domain is not null and c.cand_domain is not null
+         and s.src_domain = c.cand_domain then 1
+        else 0
+      end as domain_match
     from candidates c, source s
   )
   select
@@ -281,6 +293,7 @@ as $$
       + 8 * case when sc.people_overlap_count     > 0 then 1 else 0 end
       + 5 * case when sc.creator_overlap_count    > 0 then 1 else 0 end
       + 2 * case when sc.classifier_overlap_count > 0 then 1 else 0 end
+      + 2 * sc.domain_match
     )::int as score
   from scored sc
   where
@@ -294,6 +307,7 @@ as $$
       + 8 * case when sc.people_overlap_count     > 0 then 1 else 0 end
       + 5 * case when sc.creator_overlap_count    > 0 then 1 else 0 end
       + 2 * case when sc.classifier_overlap_count > 0 then 1 else 0 end
+      + 2 * sc.domain_match
     ) >= p_min_score
   order by
     (6 * sc.color_matches
@@ -301,7 +315,8 @@ as $$
      + 4 * case when sc.object_overlap_count     > 0 then 1 else 0 end
      + 8 * case when sc.people_overlap_count     > 0 then 1 else 0 end
      + 5 * case when sc.creator_overlap_count    > 0 then 1 else 0 end
-     + 2 * case when sc.classifier_overlap_count > 0 then 1 else 0 end) desc,
+     + 2 * case when sc.classifier_overlap_count > 0 then 1 else 0 end
+     + 2 * sc.domain_match) desc,
     sc.color_continuous desc,
     sc.aspect_similarity desc nulls last,
     sc.people_overlap_count desc,
@@ -309,12 +324,13 @@ as $$
     sc.object_overlap_count desc,
     sc.classifier_overlap_count desc,
     sc.type_overlap_count desc,
+    sc.domain_match desc,
     sc.inserted_at desc
   limit p_limit;
 $$;
 
 comment on function public.match_similar_bookmarks is
-  'Visual + entity look-alike ranker (Phase A). Score = 6·color_matches + 3·type_binary + 4·object_binary + 8·people_binary + 5·creator_binary + 2·classifier_binary, max 40. Creator bucket unifies features.{brand,author,artist,director,company,character,series}; classifier bucket unifies features.{platform,source,programming_language,framework,genre,location}. Aspect-ratio bucket is a NULL-tolerant hard filter. Within-bucket ordering uses continuous color quality, continuous aspect similarity, then overlap counts (people → creator → object → classifier → type). User-scoped via RLS on public.everything. Phase B will replace with an ANN-first v2 RPC.';
+  'Visual + entity look-alike ranker (Phase A). Score = 6·color_matches + 3·type_binary + 4·object_binary + 8·people_binary + 5·creator_binary + 2·classifier_binary + 2·domain_binary, max 42. Creator bucket unifies features.{brand,author,artist,director,company,character,series}; classifier bucket unifies features.{platform,source,programming_language,framework,genre,location}. Aspect-ratio bucket is a NULL-tolerant hard filter. Within-bucket ordering uses continuous color quality, continuous aspect similarity, then overlap counts (people → creator → object → classifier → type → domain). User-scoped via RLS on public.everything. Phase B will replace with an ANN-first v2 RPC.';
 
 -- ----------------------------------------------------------------------------
 -- Smoke test (minimal reference pattern — 20260413050000 style):
