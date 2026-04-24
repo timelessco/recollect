@@ -4,7 +4,7 @@
 -- Purpose:
 --   Rebalance match_similar_bookmarks from a topical-leaning scorer into a
 --   visual + entity look-alike ranker. Drops tag and category signals
---   (purely topical). Keeps and upweights color (OKLAB/OKLCh). Keeps type.
+--   (purely topical). Keeps and up-weights color (OKLAB/OKLCh). Keeps type.
 --   Re-adds object + people. Keeps domain as a low-weight "same-site"
 --   signal. Adds two unified buckets from features jsonb:
 --   creator (brand/author/artist/director/company/character/series) and
@@ -48,12 +48,6 @@
 --   8. type_overlap_count       DESC  -- multi-type overlap within binary
 --   9. domain_match             DESC  -- same-domain prefers (binary)
 --  10. inserted_at              DESC  -- recency fallback
---
--- Phase A only. Phase B will add visual embeddings (pgvector) and ship as
--- a new RPC (match_similar_bookmarks_v2) — the MIN_SCORE / filter semantics
--- here are intentionally throwaway.
---
--- See docs/plans/2026-04-24-feat-visual-similar-bookmarks-phase-a-plan.md.
 --
 -- RLS: SECURITY INVOKER. Row access gated by RLS on public.everything.
 -- ============================================================================
@@ -126,7 +120,7 @@ comment on function public.features_text_values(jsonb, text[]) is
   'Flatten text values from meta_data.image_keywords.features[<keys>] into a deduped, lowercased text[]. Handles both string-valued and array-valued keys. Used by match_similar_bookmarks for creator/classifier bucket overlaps.';
 
 -- ----------------------------------------------------------------------------
--- match_similar_bookmarks — visual + entity look-alike ranker (Phase A)
+-- match_similar_bookmarks — visual + entity look-alike ranker
 --   Same signature as 20260421120000. Grants preserved by CREATE OR REPLACE.
 -- ----------------------------------------------------------------------------
 create or replace function public.match_similar_bookmarks(
@@ -176,15 +170,15 @@ as $$
       e.id,
       e.inserted_at,
       e.meta_data -> 'image_keywords' as kw,
-      e.meta_data -> 'image_keywords' -> 'features' as cand_features,
-      lower(substring(e.url from '(?:https?://)?(?:www\.)?([^/?#]+)')) as cand_domain,
+      e.meta_data -> 'image_keywords' -> 'features' as candidate_features,
+      lower(substring(e.url from '(?:https?://)?(?:www\.)?([^/?#]+)')) as candidate_domain,
       public.aspect_bucket_from_meta(e.meta_data) as aspect_bucket,
       case
         when (e.meta_data->>'width')  ~ '^\d+$' and (e.meta_data->>'height') ~ '^\d+$'
          and (e.meta_data->>'width')::int > 0 and (e.meta_data->>'height')::int > 0
         then ln((e.meta_data->>'width')::numeric / (e.meta_data->>'height')::numeric)
         else null
-      end as cand_log_aspect
+      end as candidate_log_aspect
     from public.everything e, source s
     where e.user_id = s.user_id
       and e.trash is null
@@ -197,8 +191,8 @@ as $$
       c.aspect_bucket,
       s.src_aspect_bucket,
       case
-        when s.src_log_aspect is null or c.cand_log_aspect is null then null
-        else 1.0 / (1.0 + abs(s.src_log_aspect - c.cand_log_aspect))
+        when s.src_log_aspect is null or c.candidate_log_aspect is null then null
+        else 1.0 / (1.0 + abs(s.src_log_aspect - c.candidate_log_aspect))
       end as aspect_similarity,
       coalesce((
         select count(*)
@@ -263,7 +257,7 @@ as $$
         select unnest(s.src_creator_values)
         intersect
         select unnest(public.features_text_values(
-          c.cand_features,
+          c.candidate_features,
           array['brand','author','artist','director','company','character','series']
         ))
       ) t) as creator_overlap_count,
@@ -272,14 +266,14 @@ as $$
         select unnest(s.src_classifier_values)
         intersect
         select unnest(public.features_text_values(
-          c.cand_features,
+          c.candidate_features,
           array['platform','source','programming_language','framework','genre','location']
         ))
       ) t) as classifier_overlap_count,
       -- Domain match: same url host (www. stripped, case-insensitive)
       case
-        when s.src_domain is not null and c.cand_domain is not null
-         and s.src_domain = c.cand_domain then 1
+        when s.src_domain is not null and c.candidate_domain is not null
+         and s.src_domain = c.candidate_domain then 1
         else 0
       end as domain_match
     from candidates c, source s
@@ -330,7 +324,7 @@ as $$
 $$;
 
 comment on function public.match_similar_bookmarks is
-  'Visual + entity look-alike ranker (Phase A). Score = 6·color_matches + 3·type_binary + 4·object_binary + 8·people_binary + 5·creator_binary + 2·classifier_binary + 2·domain_binary, max 42. Creator bucket unifies features.{brand,author,artist,director,company,character,series}; classifier bucket unifies features.{platform,source,programming_language,framework,genre,location}. Aspect-ratio bucket is a NULL-tolerant hard filter. Within-bucket ordering uses continuous color quality, continuous aspect similarity, then overlap counts (people → creator → object → classifier → type → domain). User-scoped via RLS on public.everything. Phase B will replace with an ANN-first v2 RPC.';
+  'Visual + entity look-alike ranker. Score = 6·color_matches + 3·type_binary + 4·object_binary + 8·people_binary + 5·creator_binary + 2·classifier_binary + 2·domain_binary, max 42. Creator bucket unifies features.{brand,author,artist,director,company,character,series}; classifier bucket unifies features.{platform,source,programming_language,framework,genre,location}. Aspect-ratio bucket is a NULL-tolerant hard filter. Within-bucket ordering uses continuous color quality, continuous aspect similarity, then overlap counts (people → creator → object → classifier → type → domain). User-scoped via RLS on public.everything.';
 
 -- ----------------------------------------------------------------------------
 -- Smoke test (minimal reference pattern — 20260413050000 style):
@@ -360,7 +354,7 @@ begin
     raise exception 'match_similar_bookmarks not replaced';
   end if;
 
-  raise notice 'Verification passed: match_similar_bookmarks rebalanced (visual + entity look-alike Phase A)';
+  raise notice 'Verification passed: match_similar_bookmarks rebalanced (visual + entity look-alike)';
 end $$;
 
 commit;

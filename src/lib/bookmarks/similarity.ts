@@ -2,10 +2,8 @@ import type { SingleListData } from "@/types/apiTypes";
 
 /**
  * A bookmark has a scoreable visual signal when its `image_keywords` payload
- * contains either non-empty `colors` or non-empty `type`. These are the only
- * two signals contributing points to `match_similar_bookmarks` — aspect-ratio
- * is a filter (can't produce matches alone), and object/tags/categories/domain
- * were dropped in Phase A. See supabase/migrations/20260424063452_*.
+ * contains either non-empty `colors` or non-empty `type` — the two signals
+ * that most reliably contribute points to `match_similar_bookmarks`.
  */
 export function hasVisualSignals(bookmark: Pick<SingleListData, "meta_data">): boolean {
   const keywords = bookmark.meta_data?.image_keywords;
@@ -26,8 +24,8 @@ export function hasVisualSignals(bookmark: Pick<SingleListData, "meta_data">): b
 
 /**
  * Button-enable gate for "See similar": source must have a scoreable visual
- * signal (colors or type). Tags/categories/domain were dropped from the
- * Phase A ranker and no longer qualify a bookmark for similarity search.
+ * signal (colors or type). Tags and categories are not used by the ranker
+ * so don't qualify a bookmark on their own.
  */
 export function canFindSimilar(bookmark: Pick<SingleListData, "meta_data">): boolean {
   return hasVisualSignals(bookmark);

@@ -12,7 +12,7 @@ import { FetchSimilarInputSchema, FetchSimilarOutputSchema } from "./schema";
 const ROUTE = "v2-bookmark-fetch-similar";
 
 // Passed explicitly to the RPC; override of the RPC default for tuning.
-// Phase A visual + entity look-alike: max score is 42
+// Visual + entity look-alike: max score is 42
 // (6 × up-to-3 color matches + 3 × type + 4 × object + 8 × people
 //  + 5 × creator (brand/author/artist/director/company/character/series)
 //  + 2 × classifier (platform/source/programming_language/framework/genre/location)
