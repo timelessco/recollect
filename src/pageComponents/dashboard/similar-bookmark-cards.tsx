@@ -12,7 +12,7 @@ const CardSection = dynamic(() => import("./cardSection"), {
 const renderEmptyState = () => (
   <div className="flex w-full items-center justify-center py-16 text-center">
     <p className="text-lg font-medium text-gray-600">
-      No strong matches yet — your library may still be enriching, or this bookmark is one of a
+      No strong visual matches yet — your library may still be growing, or this bookmark is one of a
       kind.
     </p>
   </div>

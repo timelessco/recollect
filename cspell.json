@@ -122,6 +122,7 @@
     "pkey",
     "plpgsql",
     "pooler",
+    "pronargs",
     "Postg",
     "Postgrest",
     "Prabhakaran",

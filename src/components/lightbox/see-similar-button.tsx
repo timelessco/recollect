@@ -31,6 +31,7 @@ export function SeeSimilarButton({ bookmark }: SeeSimilarButtonProps) {
           />
         ) : undefined
       }
+      title={enabled ? undefined : "Not enough visual data on this bookmark yet"}
       type={enabled ? undefined : "button"}
     >
       <span className="flex h-4 w-4 items-center justify-center">
