@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 
+import { Tooltip } from "@base-ui/react/tooltip";
 import { isNull } from "lodash";
 
 import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
@@ -22,6 +23,7 @@ import { Spinner } from "../../components/spinner";
 import UserAvatar from "../../components/userAvatar";
 import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
 import ImageIcon from "../../icons/imageIcon";
+import { InfoIcon } from "../../icons/info-icon";
 import {
   saveButtonClassName,
   settingsDeleteButtonRedClassName,
@@ -283,48 +285,68 @@ const Settings = ({ onNavigate }: SettingsProps) => {
               void handleSubmit(onSubmit)();
             }}
           >
-            <LabelledComponent label="Username" labelClassName={settingsInputLabelClassName}>
-              <div className={settingsInputContainerClassName}>
-                <Input
-                  autoFocus={false}
-                  errorClassName="absolute  top-[29px]"
-                  tabIndex={-1}
-                  {...register("username", {
-                    maxLength: {
-                      message: "Username must not exceed 100 characters",
-                      value: 100,
-                    },
-                    minLength: {
-                      message: "Username must have a minimum of 4 characters",
-                      value: 4,
-                    },
-                    pattern: {
-                      message: "Only lowercase letters and numbers, no spaces",
-                      value: LETTERS_NUMBERS_CHECK_PATTERN,
-                    },
-                    required: {
-                      message: "Username cannot be empty",
-                      value: true,
-                    },
-                  })}
-                  className={settingsInputClassName}
-                  errorText={errors?.username?.message ?? ""}
-                  id="username"
-                  isError={Boolean(errors?.username)}
-                  placeholder="Enter username"
-                />
-                <Button
-                  className={`px-2 py-[4.5px] ${saveButtonClassName} rounded-[5px] ${
-                    usernameValue !== originalUsername ? "" : "pointer-events-none invisible"
-                  }`}
-                  onClick={() => {
-                    void handleSubmit(onSubmit)();
-                  }}
-                >
-                  Save
-                </Button>
+            <div className="w-full">
+              <div className={`${settingsInputLabelClassName} flex items-center gap-1`}>
+                <span>Username</span>
+                <Tooltip.Provider>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger className="cursor-pointer">
+                      <InfoIcon className="size-3.5 text-gray-500" />
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Positioner className="z-200 max-w-80" sideOffset={8}>
+                        <Tooltip.Popup className="rounded-xl bg-gray-900 px-2 py-1 text-13 font-450 text-gray-0 transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0">
+                          Changing your username will break any share links you&apos;ve already
+                          copied or posted elsewhere.
+                        </Tooltip.Popup>
+                      </Tooltip.Positioner>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
               </div>
-            </LabelledComponent>
+              <div className="w-full">
+                <div className={settingsInputContainerClassName}>
+                  <Input
+                    autoFocus={false}
+                    errorClassName="absolute  top-[29px]"
+                    tabIndex={-1}
+                    {...register("username", {
+                      maxLength: {
+                        message: "Username must not exceed 100 characters",
+                        value: 100,
+                      },
+                      minLength: {
+                        message: "Username must have a minimum of 4 characters",
+                        value: 4,
+                      },
+                      pattern: {
+                        message: "Only lowercase letters and numbers, no spaces",
+                        value: LETTERS_NUMBERS_CHECK_PATTERN,
+                      },
+                      required: {
+                        message: "Username cannot be empty",
+                        value: true,
+                      },
+                    })}
+                    className={settingsInputClassName}
+                    errorText={errors?.username?.message ?? ""}
+                    id="username"
+                    isError={Boolean(errors?.username)}
+                    placeholder="Enter username"
+                  />
+                  <Button
+                    className={`px-2 py-[4.5px] ${saveButtonClassName} rounded-[5px] ${
+                      usernameValue !== originalUsername ? "" : "pointer-events-none invisible"
+                    }`}
+                    onClick={() => {
+                      void handleSubmit(onSubmit)();
+                    }}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </div>
           </form>
         </div>
         <SettingsEmailCard onNavigate={onNavigate} />
