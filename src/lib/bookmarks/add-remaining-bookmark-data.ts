@@ -56,6 +56,32 @@ interface BookmarkEnrichmentRow {
   type: null | string;
 }
 
+/**
+ * Parses Twitter/X OG title format into username and tweet text.
+ * Input: "Username on X: "tweet text" / X" or "Username on X: "tweet text""
+ * Returns resolved title + description, falling back to imageCaption for non-Twitter titles.
+ */
+export function resolveTwitterTitleAndDescription(
+  title: null | string,
+  description: null | string,
+  imageCaption: null | string,
+): { description: null | string; title: null | string } {
+  const match = title ? /^(.+) on X: ["\u201C]([\s\S]+)["\u201D](?: \/ X)?$/u.exec(title) : null;
+
+  if (match) {
+    const [, rawTitle, rawTweetText] = match;
+    const parsedTitle = rawTitle.trim();
+    const parsedDescription = rawTweetText.trim();
+
+    return {
+      description: parsedDescription !== "" ? parsedDescription : (description ?? imageCaption),
+      title: parsedTitle !== "" ? parsedTitle : null,
+    };
+  }
+
+  return { description: description ?? imageCaption, title: null };
+}
+
 export interface AddRemainingBookmarkDataProps {
   favIcon?: null | string;
   id: number;
@@ -561,7 +587,20 @@ export async function addRemainingBookmarkData(
     : imageUrlForMetaDataGeneration;
 
   const finalOgImage = computedOgImage ?? currentData.ogImage;
-  const finalDescription = currentData.description ?? imageCaption;
+
+  const { description: parsedDescription, title: parsedTitle } = resolveTwitterTitleAndDescription(
+    currentData.title,
+    currentData.description,
+    imageCaption,
+  );
+
+  console.log("[add-remaining-bookmark-data] Twitter title parsing:", {
+    bookmarkId: id,
+    currentTitle: currentData.title?.slice(0, 80),
+    currentDescription: currentData.description?.slice(0, 80),
+    parsedTitle,
+    parsedDescription: parsedDescription?.slice(0, 80),
+  });
 
   console.log("[add-remaining-bookmark-data] Updating bookmark in DB:", {
     bookmarkId: id,
@@ -575,9 +614,10 @@ export async function addRemainingBookmarkData(
   const { data: updateData, error: databaseError } = await supabase
     .from(MAIN_TABLE_NAME)
     .update({
-      description: finalDescription,
+      description: parsedDescription,
       meta_data: toJson(meta_data),
       ogImage: finalOgImage,
+      ...(parsedTitle !== null && { title: parsedTitle }),
     })
     .match({ id })
     .select("id");
