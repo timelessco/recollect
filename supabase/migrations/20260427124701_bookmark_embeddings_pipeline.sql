@@ -16,8 +16,13 @@
 -- This migration adds:
 --   1. public.bookmark_embeddings table + HNSW + btree indexes + RLS
 --   2. public.claim_embedding_slot RPC (claim-row idempotency)
---   3. public.admin_enqueue_embedding_backfill RPC (cron-driven backfill)
---   4. public.match_similar_bookmark_embeddings RPC (cosine top-K)
+--   3. public.match_similar_bookmark_embeddings RPC (cosine top-K)
+--
+-- Backfill of existing bookmarks is intentionally NOT in this PR — fresh
+-- bookmarks get embedded automatically once EMBEDDINGS_ENABLED=true. The
+-- backfill seeder for existing rows lands in a follow-up PR before
+-- SIMILARITY_USE_EMBEDDINGS is flipped on (otherwise old bookmarks would
+-- return empty similarity results).
 --
 -- Brainstorm: docs/brainstorms/2026-04-27-feat-visual-embedding-similar-search-brainstorm.md
 -- Plan: docs/plans/2026-04-27-feat-visual-embedding-similar-search-plan.md
@@ -78,7 +83,7 @@ comment on column public.bookmark_embeddings.source_url_hash is
 --
 --   HNSW on the embedding (cosine ops) for similarity search. Built with
 --   ef_construction=200 for ~3pp recall over default 64; one-time build cost
---   is paid during incremental backfill inserts.
+--   is paid incrementally as rows are inserted.
 --
 --   btree on user_id for the post-filter portion of the cosine RPC. Without
 --   this and pgvector iterative_scan, HNSW returns top-K globally before our
@@ -205,94 +210,10 @@ revoke execute on function public.claim_embedding_slot(bigint, uuid, text) from 
 grant execute on function public.claim_embedding_slot(bigint, uuid, text) to service_role;
 
 comment on function public.claim_embedding_slot(bigint, uuid, text) is
-    'Atomically claims a slot in bookmark_embeddings before the worker calls Vertex. Source URL hash is passed as hex-encoded text and decoded to bytea internally to keep the JSON-RPC wire format simple. Returns claimed=true when the caller must fill in the embedding, or false when a current embedding already exists or another worker holds the claim. Closes the double-charge race during backfill replays.';
+    'Atomically claims a slot in bookmark_embeddings before the worker calls Vertex. Source URL hash is passed as hex-encoded text and decoded to bytea internally to keep the JSON-RPC wire format simple. Returns claimed=true when the caller must fill in the embedding, or false when a current embedding already exists or another worker holds the claim. Prevents double-charging Vertex when concurrent workers (pgmq archive replays, retries) pick up the same bookmark.';
 
 -- ----------------------------------------------------------------------------
--- PART 5: admin_enqueue_embedding_backfill RPC.
---
---   Cron-driven backfill seeder. Selects N image-bearing bookmarks lacking
---   embeddings (and not opted out via profiles.ai_enrichment_enabled) and
---   sends them to the existing ai-embeddings pgmq queue. Synthesizes the
---   full payload shape that the existing worker's Zod schema expects.
---
---   Transactional advisory lock prevents concurrent invocations from
---   enqueueing overlapping batches (which would double-charge Vertex on
---   the worker side via the claim RPC's race window).
--- ----------------------------------------------------------------------------
-
-create or replace function public.admin_enqueue_embedding_backfill(
-    p_batch_size int default 500
-)
-returns jsonb
-language plpgsql
-volatile
-security definer
-set search_path = ''
-as $$
-declare
-    v_count int := 0;
-    v_row   record;
-begin
-    if p_batch_size <= 0 or p_batch_size > 5000 then
-        raise exception 'p_batch_size out of range (1-5000), got %', p_batch_size;
-    end if;
-
-    -- Serialize concurrent invocations within the transaction.
-    if not pg_try_advisory_xact_lock(hashtext('embedding_backfill')) then
-        return jsonb_build_object('skipped', true, 'reason', 'concurrent-invocation');
-    end if;
-
-    for v_row in
-        select
-            e.id,
-            e.user_id,
-            e."ogImage",
-            e.url,
-            coalesce(e.meta_data, '{}'::jsonb) as meta_data,
-            coalesce(e.url ilike '%instagram.com%', false) as is_instagram,
-            coalesce(e.url ilike '%raindrop.io%',   false) as is_raindrop,
-            coalesce(e.url ilike '%twitter.com%',   false) as is_twitter
-        from public.everything as e
-        left join public.bookmark_embeddings as be
-            on be.bookmark_id = e.id
-        where e."ogImage" is not null
-          and e.trash is null
-          and be.bookmark_id is null
-        order by e.id
-        limit p_batch_size
-    loop
-        perform pgmq.send(
-            'ai-embeddings',
-            jsonb_build_object(
-                'id',                  v_row.id,
-                'user_id',             v_row.user_id,
-                'ogImage',             v_row."ogImage",
-                'url',                 v_row.url,
-                'queue_name',          'ai-embeddings',
-                'isInstagramBookmark', v_row.is_instagram,
-                'isRaindropBookmark',  v_row.is_raindrop,
-                'isTwitterBookmark',   v_row.is_twitter,
-                'message', jsonb_build_object(
-                    'msg_id',  0,
-                    'message', jsonb_build_object('meta_data', v_row.meta_data)
-                )
-            )
-        );
-        v_count := v_count + 1;
-    end loop;
-
-    return jsonb_build_object('enqueued', v_count);
-end;
-$$;
-
-revoke execute on function public.admin_enqueue_embedding_backfill(int) from public;
-grant execute on function public.admin_enqueue_embedding_backfill(int) to service_role;
-
-comment on function public.admin_enqueue_embedding_backfill(int) is
-    'Bulk-enqueues image-bearing bookmarks lacking embeddings into the ai-embeddings pgmq queue. Designed for cron-driven backfill. Honors profiles.ai_enrichment_enabled. Synthesizes the worker''s expected nested payload shape so no schema change is needed in the consumer.';
-
--- ----------------------------------------------------------------------------
--- PART 6: match_similar_bookmark_embeddings RPC.
+-- PART 5: match_similar_bookmark_embeddings RPC.
 --
 --   Top-K visually similar bookmarks by cosine similarity. Replaces
 --   match_similar_bookmarks (kept alive until follow-up cleanup migration).
@@ -362,7 +283,7 @@ comment on function public.match_similar_bookmark_embeddings(bigint, int) is
     'Top-K visually similar bookmarks by cosine similarity over multimodalembedding@001 vectors. similarity_score is integer 0-100 (cosine similarity * 100, rounded). RLS-scoped via SECURITY INVOKER plus an explicit ownership gate to defeat timing-based enumeration.';
 
 -- ----------------------------------------------------------------------------
--- PART 7: Verification.
+-- PART 6: Verification.
 --
 --   Asserts the migration's structural outputs. Every assertion that fails
 --   raises and rolls back the transaction.
@@ -405,9 +326,6 @@ begin
     -- All three new functions present
     if to_regprocedure('public.claim_embedding_slot(bigint, uuid, text)') is null then
         raise exception 'claim_embedding_slot function missing';
-    end if;
-    if to_regprocedure('public.admin_enqueue_embedding_backfill(int)') is null then
-        raise exception 'admin_enqueue_embedding_backfill function missing';
     end if;
     if to_regprocedure('public.match_similar_bookmark_embeddings(bigint, int)') is null then
         raise exception 'match_similar_bookmark_embeddings function missing';
