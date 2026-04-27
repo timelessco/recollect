@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 
-import { ExternalAccountClient } from "google-auth-library";
+import { ExternalAccountClient, GoogleAuth } from "google-auth-library";
 import { z } from "zod";
 
-import type { BaseExternalAccountClient } from "google-auth-library";
+import type { AuthClient, BaseExternalAccountClient } from "google-auth-library";
 
 import { env } from "@/env/server";
 import { MULTIMODAL_EMBEDDING_MODEL_VERSION } from "@/utils/constants";
@@ -56,54 +56,71 @@ const VertexResponseSchema = z.object({
     .min(1),
 });
 
-let cachedAuthClient: BaseExternalAccountClient | undefined;
+let cachedAuthClient: AuthClient | BaseExternalAccountClient | undefined;
 
-const requireGcpEnv = (): {
+const requireProjectId = (): string => {
+  const id = env.GCP_PROJECT_ID;
+  if (!id) {
+    throw new Error("Vertex AI not configured: GCP_PROJECT_ID missing");
+  }
+  return id;
+};
+
+const requireWifEnv = (): {
   poolId: string;
-  projectId: string;
   projectNumber: string;
   providerId: string;
   serviceAccountEmail: string;
 } => {
   const {
-    GCP_PROJECT_ID,
     GCP_PROJECT_NUMBER,
     GCP_SERVICE_ACCOUNT_EMAIL,
     GCP_WORKLOAD_IDENTITY_POOL_ID,
     GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID,
   } = env;
   if (
-    !GCP_PROJECT_ID ||
     !GCP_PROJECT_NUMBER ||
     !GCP_SERVICE_ACCOUNT_EMAIL ||
     !GCP_WORKLOAD_IDENTITY_POOL_ID ||
     !GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID
   ) {
-    throw new Error("Vertex AI not configured: GCP_* env vars missing (see .env.example)");
+    throw new Error("Vertex AI WIF not configured: GCP_* env vars missing (see .env.example)");
   }
   return {
-    projectId: GCP_PROJECT_ID,
-    projectNumber: GCP_PROJECT_NUMBER,
-    serviceAccountEmail: GCP_SERVICE_ACCOUNT_EMAIL,
     poolId: GCP_WORKLOAD_IDENTITY_POOL_ID,
+    projectNumber: GCP_PROJECT_NUMBER,
     providerId: GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID,
+    serviceAccountEmail: GCP_SERVICE_ACCOUNT_EMAIL,
   };
 };
 
-const getAuthClient = async (): Promise<BaseExternalAccountClient> => {
+const getAuthClient = async (): Promise<AuthClient | BaseExternalAccountClient> => {
   if (cachedAuthClient) {
     return cachedAuthClient;
   }
-  const gcp = requireGcpEnv();
+
+  // Local development path: GOOGLE_APPLICATION_CREDENTIALS points at a
+  // service account key file. Standard Google convention; works anywhere
+  // outside Vercel. Production uses Vercel OIDC + WIF below.
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    const auth = new GoogleAuth({
+      scopes: ["https://www.googleapis.com/auth/cloud-platform"],
+    });
+    const localClient = await auth.getClient();
+    cachedAuthClient = localClient;
+    return localClient;
+  }
+
+  const wif = requireWifEnv();
   // Imported dynamically so test environments without @vercel/functions OIDC
   // support don't hit a ReferenceError at module load.
   const { getVercelOidcToken } = await import("@vercel/functions/oidc");
   const client = ExternalAccountClient.fromJSON({
     type: "external_account",
-    audience: `//iam.googleapis.com/projects/${gcp.projectNumber}/locations/global/workloadIdentityPools/${gcp.poolId}/providers/${gcp.providerId}`,
+    audience: `//iam.googleapis.com/projects/${wif.projectNumber}/locations/global/workloadIdentityPools/${wif.poolId}/providers/${wif.providerId}`,
     subject_token_type: "urn:ietf:params:oauth:token-type:jwt",
     token_url: "https://sts.googleapis.com/v1/token",
-    service_account_impersonation_url: `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${gcp.serviceAccountEmail}:generateAccessToken`,
+    service_account_impersonation_url: `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${wif.serviceAccountEmail}:generateAccessToken`,
     subject_token_supplier: { getSubjectToken: () => getVercelOidcToken() },
   });
   if (!client) {
@@ -138,8 +155,8 @@ const fetchImageBytes = async (imageUrl: string): Promise<{ bytes: Buffer; mime:
 };
 
 const callVertexEmbedding = async (bytes: Buffer, accessToken: string): Promise<number[]> => {
-  const gcp = requireGcpEnv();
-  const endpoint = `https://${VERTEX_LOCATION}-aiplatform.googleapis.com/v1/projects/${gcp.projectId}/locations/${VERTEX_LOCATION}/publishers/google/models/${VERTEX_MODEL}:predict`;
+  const projectId = requireProjectId();
+  const endpoint = `https://${VERTEX_LOCATION}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${VERTEX_LOCATION}/publishers/google/models/${VERTEX_MODEL}:predict`;
 
   const response = await fetch(endpoint, {
     method: "POST",

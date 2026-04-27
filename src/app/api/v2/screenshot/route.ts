@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import ky from "ky";
 
 import { imageToText } from "@/async/ai/image-analysis";
+import { runEmbeddingPipeline } from "@/async/ai/run-embedding-pipeline";
 import { env } from "@/env/server";
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
@@ -289,6 +290,25 @@ export const POST = createAxiomRouteHandler(
           route,
           userId: user_id,
         });
+
+        // Vertex AI multimodal embedding — gated by EMBEDDINGS_ENABLED flag.
+        // Errors here are observability-only and never fail the queue message;
+        // the meta_data update has already committed.
+        if (env.EMBEDDINGS_ENABLED === "true" && ogImage) {
+          try {
+            await runEmbeddingPipeline({
+              bookmarkId: id,
+              ctx,
+              ogImage,
+              supabase,
+              userId: user_id,
+            });
+          } catch (error) {
+            setPayload(ctx, {
+              embedding_unexpected_error: error instanceof Error ? error.message : String(error),
+            });
+          }
+        }
 
         // Delete message from queue on success
         const { error: deleteError } = await supabase.schema("pgmq_public").rpc("delete", {
