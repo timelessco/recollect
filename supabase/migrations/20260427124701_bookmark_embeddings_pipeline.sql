@@ -265,13 +265,13 @@ begin
     return query
     select
         b.bookmark_id as id,
-        round((1 - (b.embedding <=> v_target_embedding)) * 100)::int as similarity_score
+        round((1 - (b.embedding operator(extensions.<=>) v_target_embedding)) * 100)::int as similarity_score
     from public.bookmark_embeddings as b
     inner join public.everything as e
         on e.id = b.bookmark_id and e.trash is null
     where b.bookmark_id <> p_bookmark_id
       and b.user_id = v_owner
-    order by b.embedding <=> v_target_embedding
+    order by b.embedding operator(extensions.<=>) v_target_embedding
     limit p_limit;
 end;
 $$;
