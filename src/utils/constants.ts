@@ -4,6 +4,11 @@ import { BASE_URL } from "@/site-config";
 // AI
 export const GEMINI_MODEL = "gemini-3.1-flash-lite-preview";
 
+// Vertex AI multimodal embedding model. Pinned constant — bookmark_embeddings
+// rows store this in their model_version column for idempotency checks (don't
+// re-embed already-current rows) and future model-upgrade migrations.
+export const MULTIMODAL_EMBEDDING_MODEL_VERSION = "multimodalembedding@001";
+
 // Category IDs
 export const UNCATEGORIZED_CATEGORY_ID = 0;
 
