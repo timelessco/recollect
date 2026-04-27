@@ -1,7 +1,15 @@
+import { createHash } from "node:crypto";
+
 import { NextResponse } from "next/server";
 
 import ky from "ky";
 
+import type { ServerContext } from "@/lib/api-helpers/server-context";
+import type { Database } from "@/types/database.types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { imageToEmbedding } from "@/async/ai/image-embedding";
+import { env } from "@/env/server";
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { storeQueueError } from "@/lib/api-helpers/queue";
@@ -9,7 +17,11 @@ import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { uploadImageToR2 } from "@/lib/bookmarks/add-remaining-bookmark-data";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { autoAssignCollections } from "@/utils/auto-assign-collections";
-import { IMAGE_DOWNLOAD_TIMEOUT_MS, MAIN_TABLE_NAME } from "@/utils/constants";
+import {
+  IMAGE_DOWNLOAD_TIMEOUT_MS,
+  MAIN_TABLE_NAME,
+  MULTIMODAL_EMBEDDING_MODEL_VERSION,
+} from "@/utils/constants";
 import {
   enrichMetadata,
   validateInstagramMediaUrl,
@@ -24,6 +36,131 @@ const ROUTE = "v2-ai-enrichment";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+
+// pgvector wire format for halfvec(N) inserts: "[v1,v2,...,vN]" string.
+const formatHalfvec = (embedding: number[]): string => `[${embedding.join(",")}]`;
+
+// Type-erased Supabase facade for objects added by migration 20260427124701
+// that are not yet in `database-generated.types.ts`. Once `pnpm db:reset &&
+// pnpm db:types` runs locally post-merge, the unsafe casts below collapse to
+// no-ops and this whole block can be inlined. Until then, this is the only
+// place in the codebase that knows the new RPC + table exist.
+//
+// oxlint-disable @typescript-eslint/no-unsafe-type-assertion -- centralized type boundary
+interface PendingProfilesRow {
+  ai_enrichment_enabled: boolean | null;
+}
+interface ClaimResult {
+  claimed: boolean;
+  reason?: string;
+}
+type RpcCall = (
+  fn: string,
+  args: Record<string, unknown>,
+) => Promise<{ data: unknown; error: { message: string } | null }>;
+type FromCall = (table: string) => {
+  delete: () => {
+    eq: (col: string, value: unknown) => Promise<{ error: { message: string } | null }>;
+  };
+  update: (values: Record<string, unknown>) => {
+    eq: (col: string, value: unknown) => Promise<{ error: { message: string } | null }>;
+  };
+};
+
+const fetchUserOptOut = async (
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<boolean> => {
+  const { data } = (await (
+    supabase.from as unknown as (table: "profiles") => {
+      select: (cols: string) => {
+        eq: (
+          col: string,
+          value: unknown,
+        ) => {
+          maybeSingle: () => Promise<{ data: PendingProfilesRow | null }>;
+        };
+      };
+    }
+  )("profiles")
+    .select("ai_enrichment_enabled")
+    .eq("id", userId)
+    .maybeSingle()) as { data: PendingProfilesRow | null };
+  return data?.ai_enrichment_enabled === false;
+};
+
+// Embedding pipeline lives behind the EMBEDDINGS_ENABLED kill switch.
+// Errors here are observability-only: the metadata update has already
+// committed and we never fail the queue message because of an embedding miss.
+// Idempotency is guaranteed by claim_embedding_slot — replays / concurrent
+// workers see "already-current" and skip the Vertex call entirely.
+const runEmbeddingPipeline = async ({
+  bookmarkId,
+  ctx,
+  ogImage,
+  supabase,
+  userId,
+}: {
+  bookmarkId: number;
+  ctx: ServerContext | undefined;
+  ogImage: string;
+  supabase: SupabaseClient<Database>;
+  userId: string;
+}): Promise<void> => {
+  if (await fetchUserOptOut(supabase, userId)) {
+    setPayload(ctx, { embedding_skipped: "user_opted_out" });
+    return;
+  }
+
+  const sourceUrlHash = createHash("sha256").update(ogImage).digest("hex");
+  const rpc = supabase.rpc.bind(supabase) as unknown as RpcCall;
+
+  const claim = await rpc("claim_embedding_slot", {
+    p_bookmark_id: bookmarkId,
+    p_source_url_hash: sourceUrlHash,
+    p_user_id: userId,
+  });
+
+  if (claim.error) {
+    setPayload(ctx, { embedding_claim_error: claim.error.message });
+    return;
+  }
+  const claimResult = claim.data as ClaimResult | null;
+  if (!claimResult?.claimed) {
+    setPayload(ctx, {
+      embedding_skipped: claimResult?.reason ?? "no-claim",
+    });
+    return;
+  }
+
+  const embeddingsTable = (supabase.from as unknown as FromCall)("bookmark_embeddings");
+
+  try {
+    const { embedding, norm } = await imageToEmbedding(ogImage);
+
+    const { error: writeError } = await embeddingsTable
+      .update({
+        embedding: formatHalfvec(embedding),
+        model_version: MULTIMODAL_EMBEDDING_MODEL_VERSION,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("bookmark_id", bookmarkId);
+
+    if (writeError) {
+      await embeddingsTable.delete().eq("bookmark_id", bookmarkId);
+      setPayload(ctx, { embedding_write_error: writeError.message });
+      return;
+    }
+
+    setPayload(ctx, { embedding_written: true, embedding_norm: norm });
+  } catch (error) {
+    await embeddingsTable.delete().eq("bookmark_id", bookmarkId);
+    setPayload(ctx, {
+      embedding_failed: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+// oxlint-enable @typescript-eslint/no-unsafe-type-assertion
 
 export const POST = createAxiomRouteHandler(
   withRawBody({
@@ -251,6 +388,24 @@ export const POST = createAxiomRouteHandler(
         route,
         userId: user_id,
       });
+
+      // Vertex AI multimodal embedding — gated by EMBEDDINGS_ENABLED flag.
+      // Errors here are observability-only and never fail the queue message.
+      if (env.EMBEDDINGS_ENABLED === "true" && ogImage) {
+        try {
+          await runEmbeddingPipeline({
+            bookmarkId: id,
+            ctx,
+            ogImage,
+            supabase,
+            userId: user_id,
+          });
+        } catch (error) {
+          setPayload(ctx, {
+            embedding_unexpected_error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
 
       // Queue lifecycle: delete on full success, store error + keep on partial failure
       if (!isFailed) {

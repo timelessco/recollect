@@ -162,7 +162,7 @@ grant select on public.bookmark_embeddings to authenticated;
 create or replace function public.claim_embedding_slot(
     p_bookmark_id     bigint,
     p_user_id         uuid,
-    p_source_url_hash bytea
+    p_source_url_hash text  -- hex-encoded sha256; decoded to bytea internally
 )
 returns jsonb
 language plpgsql
@@ -171,17 +171,20 @@ security definer
 set search_path = ''
 as $$
 declare
+    v_hash             bytea;
     v_existing_hash    bytea;
     v_existing_version text;
     v_claimed          boolean := false;
 begin
+    v_hash := decode(p_source_url_hash, 'hex');
+
     -- If already embedded with current source + model, skip the work entirely.
     select source_url_hash, model_version
         into v_existing_hash, v_existing_version
     from public.bookmark_embeddings
     where bookmark_id = p_bookmark_id;
 
-    if v_existing_hash = p_source_url_hash
+    if v_existing_hash = v_hash
        and v_existing_version = 'multimodalembedding@001' then
         return jsonb_build_object('claimed', false, 'reason', 'already-current');
     end if;
@@ -194,7 +197,7 @@ begin
         p_bookmark_id,
         p_user_id,
         array_fill(0::real, array[1408])::extensions.halfvec(1408),
-        p_source_url_hash
+        v_hash
     )
     on conflict (bookmark_id) do update
         set source_url_hash = excluded.source_url_hash,
@@ -210,11 +213,11 @@ begin
 end;
 $$;
 
-revoke execute on function public.claim_embedding_slot(bigint, uuid, bytea) from public;
-grant execute on function public.claim_embedding_slot(bigint, uuid, bytea) to service_role;
+revoke execute on function public.claim_embedding_slot(bigint, uuid, text) from public;
+grant execute on function public.claim_embedding_slot(bigint, uuid, text) to service_role;
 
-comment on function public.claim_embedding_slot(bigint, uuid, bytea) is
-    'Atomically claims a slot in bookmark_embeddings before the worker calls Vertex. Returns claimed=true when the caller must fill in the embedding, or false when a current embedding already exists or another worker holds the claim. Closes the double-charge race during backfill replays.';
+comment on function public.claim_embedding_slot(bigint, uuid, text) is
+    'Atomically claims a slot in bookmark_embeddings before the worker calls Vertex. Source URL hash is passed as hex-encoded text and decoded to bytea internally to keep the JSON-RPC wire format simple. Returns claimed=true when the caller must fill in the embedding, or false when a current embedding already exists or another worker holds the claim. Closes the double-charge race during backfill replays.';
 
 -- ----------------------------------------------------------------------------
 -- PART 6: admin_enqueue_embedding_backfill RPC.
@@ -415,7 +418,7 @@ begin
     end if;
 
     -- All three new functions present
-    if to_regprocedure('public.claim_embedding_slot(bigint, uuid, bytea)') is null then
+    if to_regprocedure('public.claim_embedding_slot(bigint, uuid, text)') is null then
         raise exception 'claim_embedding_slot function missing';
     end if;
     if to_regprocedure('public.admin_enqueue_embedding_backfill(int)') is null then
