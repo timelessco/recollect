@@ -15,6 +15,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { env } from "@/env/server";
 import { GEMINI_MODEL } from "@/utils/constants";
+import { assertSafeImageUrl } from "@/utils/safe-fetch";
 
 import { getApikeyAndBookmarkCount, incrementBookmarkCount } from "./api-key";
 import { buildResponseSchema, fullResponseSchema } from "./schemas/image-analysis-schema";
@@ -81,6 +82,10 @@ export const imageToText = async (
     if (!prompt) {
       return EMPTY_RESULT;
     }
+
+    // SSRF guard: reject non-https / RFC1918 / loopback / link-local / metadata
+    // before forwarding bytes to Gemini. See src/utils/safe-fetch.ts.
+    await assertSafeImageUrl(imageUrl);
 
     // Fetch the image
     const imageResponse = await fetch(imageUrl);

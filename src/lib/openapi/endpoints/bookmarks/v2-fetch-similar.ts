@@ -11,7 +11,7 @@ export const v2FetchSimilarSupplement = {
     401: { description: "Not authenticated" },
   },
   description:
-    "Returns bookmarks similar to `bookmark_id`, scoped to the authenticated user. Ranking is an additive score over OKLCh color similarity (via `lch_color_score`), shared AI-inferred content types, shared detected objects, shared user tags, shared categories, and url host equality. Only results with score ≥ 5 are returned, ordered by score desc then `inserted_at` desc.",
+    "Returns bookmarks similar to `bookmark_id`, scoped to the authenticated user. Ranking is selected by the `SIMILARITY_USE_EMBEDDINGS` server flag. When the flag is off (legacy path), score is an additive integer 0–42 over OKLCh color similarity, shared AI-inferred content types, shared detected objects, shared people/creator/classifier signals, and url host equality. When on, score is integer 0–100 derived from cosine similarity over Vertex AI multimodal image embeddings. Wire shape and field names are identical across both paths; only the meaning of `similarity_score` changes.",
   method: "get",
   parameterExamples: {
     bookmark_id: {
