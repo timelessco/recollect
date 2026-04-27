@@ -57,8 +57,42 @@ const isPrivateAddress = (address: string): boolean => {
 };
 
 /**
+ * Build the allowlist of "our own storage" origins from configured env. These
+ * are services we control (Supabase storage in dev, R2 in prod) and bypass
+ * the SSRF guard entirely — the threat model is "user-supplied URL pointing
+ * at private infra," not "our own storage."
+ *
+ * In local dev `NEXT_PUBLIC_SUPABASE_URL` is `http://127.0.0.1:54321` which
+ * would otherwise fail both the https-only and loopback checks below.
+ */
+const buildTrustedOrigins = (): ReadonlySet<string> => {
+  const origins = new Set<string>();
+  for (const envKey of [
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_DEV_SUPABASE_URL",
+    "NEXT_PUBLIC_CLOUDFLARE_PUBLIC_BUCKET_URL",
+  ]) {
+    const value = process.env[envKey];
+    if (!value) {
+      continue;
+    }
+    try {
+      origins.add(new URL(value).origin);
+    } catch {
+      // Skip malformed env values; nothing to trust.
+    }
+  }
+  return origins;
+};
+
+const trustedOrigins = buildTrustedOrigins();
+
+/**
  * Throws if `rawUrl` should not be fetched server-side. Resolves DNS for
  * hostnames so an attacker cannot point a domain at a private IP.
+ *
+ * Trusted origins (configured Supabase + R2 hosts) bypass all checks — they
+ * are services this app controls.
  */
 export const assertSafeImageUrl = async (rawUrl: string): Promise<void> => {
   let url: URL;
@@ -66,6 +100,10 @@ export const assertSafeImageUrl = async (rawUrl: string): Promise<void> => {
     url = new URL(rawUrl);
   } catch {
     throw new Error("Invalid URL");
+  }
+
+  if (trustedOrigins.has(url.origin)) {
+    return;
   }
 
   if (url.protocol !== "https:") {
