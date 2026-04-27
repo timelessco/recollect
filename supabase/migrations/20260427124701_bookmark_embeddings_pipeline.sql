@@ -14,11 +14,10 @@
 -- migration scheduled 14 days post-cutover.
 --
 -- This migration adds:
---   1. profiles.ai_enrichment_enabled (GDPR opt-out)
---   2. public.bookmark_embeddings table + HNSW + btree indexes + RLS
---   3. public.claim_embedding_slot RPC (claim-row idempotency)
---   4. public.admin_enqueue_embedding_backfill RPC (cron-driven backfill)
---   5. public.match_similar_bookmark_embeddings RPC (cosine top-K)
+--   1. public.bookmark_embeddings table + HNSW + btree indexes + RLS
+--   2. public.claim_embedding_slot RPC (claim-row idempotency)
+--   3. public.admin_enqueue_embedding_backfill RPC (cron-driven backfill)
+--   4. public.match_similar_bookmark_embeddings RPC (cosine top-K)
 --
 -- Brainstorm: docs/brainstorms/2026-04-27-feat-visual-embedding-similar-search-brainstorm.md
 -- Plan: docs/plans/2026-04-27-feat-visual-embedding-similar-search-plan.md
@@ -46,18 +45,7 @@ begin
 end $$;
 
 -- ----------------------------------------------------------------------------
--- PART 1: GDPR opt-out toggle on profiles.
---   Worker honors this flag before sending images to Vertex.
--- ----------------------------------------------------------------------------
-
-alter table public.profiles
-    add column if not exists ai_enrichment_enabled boolean not null default true;
-
-comment on column public.profiles.ai_enrichment_enabled is
-    'When false, the AI enrichment worker skips Vertex embedding for this user''s bookmarks. GDPR opt-out toggle.';
-
--- ----------------------------------------------------------------------------
--- PART 2: bookmark_embeddings table.
+-- PART 1: bookmark_embeddings table.
 --
 --   Stores 1408-dim halfvec vectors from multimodalembedding@001.
 --   Idempotency key: (bookmark_id, model_version, source_url_hash).
@@ -86,7 +74,7 @@ comment on column public.bookmark_embeddings.source_url_hash is
     'sha256 of public.everything."ogImage" at embed time. Lets the worker detect stale embeddings when bookmark images are re-uploaded (Raindrop/Instagram pipelines).';
 
 -- ----------------------------------------------------------------------------
--- PART 3: Indexes.
+-- PART 2: Indexes.
 --
 --   HNSW on the embedding (cosine ops) for similarity search. Built with
 --   ef_construction=200 for ~3pp recall over default 64; one-time build cost
@@ -106,7 +94,7 @@ create index bookmark_embeddings_embedding_hnsw_idx
     with (m = 16, ef_construction = 200);
 
 -- ----------------------------------------------------------------------------
--- PART 4: RLS policies.
+-- PART 3: RLS policies.
 --
 --   Authenticated callers can SELECT only their own embeddings (proxy via
 --   denormalized user_id, faster than joining everything per query).
@@ -148,7 +136,7 @@ revoke insert, update, delete on public.bookmark_embeddings from authenticated, 
 grant select on public.bookmark_embeddings to authenticated;
 
 -- ----------------------------------------------------------------------------
--- PART 5: claim_embedding_slot RPC.
+-- PART 4: claim_embedding_slot RPC.
 --
 --   Atomic claim-row pattern. Two concurrent workers picking the same
 --   bookmark would both observe "no row" and double-charge Vertex if we
@@ -220,7 +208,7 @@ comment on function public.claim_embedding_slot(bigint, uuid, text) is
     'Atomically claims a slot in bookmark_embeddings before the worker calls Vertex. Source URL hash is passed as hex-encoded text and decoded to bytea internally to keep the JSON-RPC wire format simple. Returns claimed=true when the caller must fill in the embedding, or false when a current embedding already exists or another worker holds the claim. Closes the double-charge race during backfill replays.';
 
 -- ----------------------------------------------------------------------------
--- PART 6: admin_enqueue_embedding_backfill RPC.
+-- PART 5: admin_enqueue_embedding_backfill RPC.
 --
 --   Cron-driven backfill seeder. Selects N image-bearing bookmarks lacking
 --   embeddings (and not opted out via profiles.ai_enrichment_enabled) and
@@ -267,12 +255,9 @@ begin
         from public.everything as e
         left join public.bookmark_embeddings as be
             on be.bookmark_id = e.id
-        left join public.profiles as p
-            on p.id = e.user_id
         where e."ogImage" is not null
           and e.trash is null
           and be.bookmark_id is null
-          and coalesce(p.ai_enrichment_enabled, true) = true
         order by e.id
         limit p_batch_size
     loop
@@ -307,7 +292,7 @@ comment on function public.admin_enqueue_embedding_backfill(int) is
     'Bulk-enqueues image-bearing bookmarks lacking embeddings into the ai-embeddings pgmq queue. Designed for cron-driven backfill. Honors profiles.ai_enrichment_enabled. Synthesizes the worker''s expected nested payload shape so no schema change is needed in the consumer.';
 
 -- ----------------------------------------------------------------------------
--- PART 7: match_similar_bookmark_embeddings RPC.
+-- PART 6: match_similar_bookmark_embeddings RPC.
 --
 --   Top-K visually similar bookmarks by cosine similarity. Replaces
 --   match_similar_bookmarks (kept alive until follow-up cleanup migration).
@@ -377,7 +362,7 @@ comment on function public.match_similar_bookmark_embeddings(bigint, int) is
     'Top-K visually similar bookmarks by cosine similarity over multimodalembedding@001 vectors. similarity_score is integer 0-100 (cosine similarity * 100, rounded). RLS-scoped via SECURITY INVOKER plus an explicit ownership gate to defeat timing-based enumeration.';
 
 -- ----------------------------------------------------------------------------
--- PART 8: Verification.
+-- PART 7: Verification.
 --
 --   Asserts the migration's structural outputs. Every assertion that fails
 --   raises and rolls back the transaction.
@@ -426,16 +411,6 @@ begin
     end if;
     if to_regprocedure('public.match_similar_bookmark_embeddings(bigint, int)') is null then
         raise exception 'match_similar_bookmark_embeddings function missing';
-    end if;
-
-    -- Profiles toggle column added
-    if not exists (
-        select 1 from information_schema.columns
-        where table_schema = 'public'
-          and table_name   = 'profiles'
-          and column_name  = 'ai_enrichment_enabled'
-    ) then
-        raise exception 'profiles.ai_enrichment_enabled column missing';
     end if;
 
     raise notice 'bookmark_embeddings_pipeline migration applied successfully';

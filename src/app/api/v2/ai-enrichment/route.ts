@@ -47,9 +47,6 @@ const formatHalfvec = (embedding: number[]): string => `[${embedding.join(",")}]
 // place in the codebase that knows the new RPC + table exist.
 //
 // oxlint-disable @typescript-eslint/no-unsafe-type-assertion -- centralized type boundary
-interface PendingProfilesRow {
-  ai_enrichment_enabled: boolean | null;
-}
 interface ClaimResult {
   claimed: boolean;
   reason?: string;
@@ -65,28 +62,6 @@ type FromCall = (table: string) => {
   update: (values: Record<string, unknown>) => {
     eq: (col: string, value: unknown) => Promise<{ error: { message: string } | null }>;
   };
-};
-
-const fetchUserOptOut = async (
-  supabase: SupabaseClient<Database>,
-  userId: string,
-): Promise<boolean> => {
-  const { data } = (await (
-    supabase.from as unknown as (table: "profiles") => {
-      select: (cols: string) => {
-        eq: (
-          col: string,
-          value: unknown,
-        ) => {
-          maybeSingle: () => Promise<{ data: PendingProfilesRow | null }>;
-        };
-      };
-    }
-  )("profiles")
-    .select("ai_enrichment_enabled")
-    .eq("id", userId)
-    .maybeSingle()) as { data: PendingProfilesRow | null };
-  return data?.ai_enrichment_enabled === false;
 };
 
 // Embedding pipeline lives behind the EMBEDDINGS_ENABLED kill switch.
@@ -107,11 +82,6 @@ const runEmbeddingPipeline = async ({
   supabase: SupabaseClient<Database>;
   userId: string;
 }): Promise<void> => {
-  if (await fetchUserOptOut(supabase, userId)) {
-    setPayload(ctx, { embedding_skipped: "user_opted_out" });
-    return;
-  }
-
   const sourceUrlHash = createHash("sha256").update(ogImage).digest("hex");
   const rpc = supabase.rpc.bind(supabase) as unknown as RpcCall;
 
