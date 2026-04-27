@@ -233,7 +233,7 @@ create or replace function public.match_similar_bookmark_embeddings(
 )
 returns table (id bigint, similarity_score int)
 language plpgsql
-stable
+volatile
 security invoker
 set search_path = ''
 as $$
