@@ -1,6 +1,8 @@
 import { promises as dnsPromises } from "node:dns";
 import { isIP } from "node:net";
 
+import ipaddr from "ipaddr.js";
+
 /**
  * Reject URLs that resolve to private / link-local / loopback / metadata
  * addresses before sending the bytes to a third-party (Vertex, Gemini, etc.).
@@ -10,6 +12,15 @@ import { isIP } from "node:net";
  * with `http://169.254.169.254/` (cloud metadata) or `http://localhost:54321/`
  * (Supabase admin) would have its response forwarded to whichever AI service
  * the worker is calling.
+ *
+ * IP classification is delegated to `ipaddr.js` (~80M weekly downloads,
+ * Express/proxy-addr's underlying lib). Its `.range()` method authoritatively
+ * categorizes addresses into `unicast` (the only safe answer here) vs
+ * `private` / `loopback` / `linkLocal` / `uniqueLocal` / `carrierGradeNat` /
+ * `reserved` / `unspecified` / `broadcast` / `multicast`. The library
+ * handles edge cases that hand-rolled regex commonly miss: `100.64.0.0/10`
+ * (carrier-grade NAT), `fe80::/10` link-local with all 6 prefix variants,
+ * IPv4-mapped IPv6 (`::ffff:a.b.c.d`), `0.0.0.0`, etc.
  *
  * Known limitation — DNS rebinding (TOCTOU): the `assertSafeImageUrl` check
  * resolves DNS once, then `fetch` resolves it again. A pathological
@@ -23,51 +34,22 @@ import { isIP } from "node:net";
  * DNS-rebind on the first request is not.
  */
 
-const PRIVATE_IPV4_PATTERNS: readonly RegExp[] = [
-  /^10\./,
-  /^192\.168\./,
-  /^172\.(?:1[6-9]|2\d|3[01])\./,
-  /^127\./,
-  /^169\.254\./,
-  /^0\./,
-  /^100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./,
-];
-
-const PRIVATE_IPV6_PATTERNS: readonly RegExp[] = [
-  /^::1$/,
-  /^::$/,
-  // RFC 4291 link-local is fe80::/10 — covers fe80–febf, not just fe80.
-  /^fe[89ab][0-9a-f]?:/i,
-  /^fc/i,
-  /^fd/i,
-  // Note: IPv4-mapped (::ffff:*) is intentionally NOT a blanket reject — that
-  // would over-block legitimate public mapped addresses like ::ffff:8.8.8.8.
-  // Mapped private IPv4 is handled below via dotted-quad extraction.
-];
-
-const isPrivateIPv4 = (address: string): boolean =>
-  PRIVATE_IPV4_PATTERNS.some((pattern) => pattern.test(address));
-
-const isPrivateIPv6 = (address: string): boolean => {
-  if (PRIVATE_IPV6_PATTERNS.some((pattern) => pattern.test(address))) {
+const isPrivateAddress = (address: string): boolean => {
+  let parsed: ReturnType<typeof ipaddr.parse>;
+  try {
+    parsed = ipaddr.parse(address);
+  } catch {
+    // Not a valid literal — caller already gated on `isIP`, so this is
+    // only reachable for malformed DNS-resolved values; reject defensively.
     return true;
   }
-  const mapped = /^::ffff:([0-9.]+)$/i.exec(address);
-  if (mapped?.[1] && isIP(mapped[1]) === 4) {
-    return isPrivateIPv4(mapped[1]);
+  // IPv4-mapped IPv6 (`::ffff:a.b.c.d`): unwrap to v4 and re-classify.
+  // ipaddr.js classifies the wrapper as `ipv4Mapped` regardless of whether
+  // the inner IPv4 is public or private, so we have to dispatch ourselves.
+  if (parsed instanceof ipaddr.IPv6 && parsed.isIPv4MappedAddress()) {
+    return parsed.toIPv4Address().range() !== "unicast";
   }
-  return false;
-};
-
-const isPrivateAddress = (address: string): boolean => {
-  const family = isIP(address);
-  if (family === 4) {
-    return isPrivateIPv4(address);
-  }
-  if (family === 6) {
-    return isPrivateIPv6(address);
-  }
-  return false;
+  return parsed.range() !== "unicast";
 };
 
 /**
