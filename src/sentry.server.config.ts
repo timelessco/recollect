@@ -5,8 +5,15 @@
 import * as Sentry from "@sentry/nextjs";
 
 import { env } from "@/env/client";
-import { scrubBreadcrumb, scrubEvent } from "@/lib/sentry/scrub";
 
+// SECURITY NOTE: do NOT add `extraErrorDataIntegration()` to integrations[]
+// without first re-introducing the auth-header / Bearer-token scrubber that
+// previously lived at src/lib/sentry/scrub.ts. With current @sentry/nextjs
+// (v10), the default node integrations + sendDefaultPii: true do NOT capture
+// request headers in HTTP breadcrumbs and do NOT extract custom error
+// properties (gaxios `error.config.headers.Authorization`) into the event,
+// so the impersonated GCP access token does not reach Sentry. Adding
+// extraErrorDataIntegration would change that — see PR #973 discussion.
 Sentry.init({
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
@@ -16,12 +23,6 @@ Sentry.init({
   // Adds request headers and IP for users, for more info visit:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
   sendDefaultPii: true,
-
-  // Strip Authorization / x-goog-* / cookie headers + Bearer tokens from
-  // breadcrumbs (HTTP integration auto-records request headers) and from
-  // exception messages (gaxios errors embed config.headers in cause).
-  beforeBreadcrumb: scrubBreadcrumb,
-  beforeSend: scrubEvent,
 
   tracesSampler: (samplingContext) => {
     // Always trace if parent transaction was sampled (distributed tracing)
