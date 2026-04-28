@@ -84,13 +84,3 @@ public/sitemap-0.xml
 .planning
 .vercel
 supabase/seed.sql
-
-# Local-only specs and one-off scripts (never committed)
-docs/brainstorms/
-docs/plans/
-scripts/.spike-results.*
-scripts/.find-user-id.ts
-scripts/.embed-batch.ts
-scripts/.test-embedding.ts
-scripts/.test-pipeline.ts
-scripts/spike-visual-similarity.ts
