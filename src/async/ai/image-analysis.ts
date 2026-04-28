@@ -15,6 +15,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { env } from "@/env/server";
 import { GEMINI_MODEL } from "@/utils/constants";
+import { safeFetch } from "@/utils/safe-fetch";
 
 import { getApikeyAndBookmarkCount, incrementBookmarkCount } from "./api-key";
 import { buildResponseSchema, fullResponseSchema } from "./schemas/image-analysis-schema";
@@ -82,8 +83,10 @@ export const imageToText = async (
       return EMPTY_RESULT;
     }
 
-    // Fetch the image
-    const imageResponse = await fetch(imageUrl);
+    // safeFetch validates the URL (and any redirect targets) against the SSRF
+    // allowlist, follows redirects manually, and refuses to follow into
+    // RFC1918 / loopback / link-local / metadata addresses. See safe-fetch.ts.
+    const imageResponse = await safeFetch(imageUrl);
 
     if (!imageResponse.ok) {
       throw new Error(`Image fetch failed: ${imageResponse.status} ${imageResponse.statusText}`);
