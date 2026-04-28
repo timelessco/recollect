@@ -6,8 +6,10 @@ import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { imageToText } from "@/async/ai/image-analysis";
+import { runEmbeddingPipeline } from "@/async/ai/run-embedding-pipeline";
 import { logger } from "@/lib/api-helpers/axiom";
 import { extractErrorFields } from "@/lib/api-helpers/errors";
+import { getServerContext } from "@/lib/api-helpers/server-context";
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";
@@ -592,7 +594,25 @@ export async function addRemainingBookmarkData(
 
   console.log("[add-remaining-bookmark-data] DB update successful:", { bookmarkId: id });
 
-  // 7. Revalidate public categories
+  // 7. Vertex multimodal embedding for visual-similarity search.
+  //
+  //    Runs after the meta_data + ogImage commit so the bookmark is already
+  //    user-visible by the time we hit Vertex. runEmbeddingPipeline catches
+  //    its own errors (claim_embedding_slot RPC failure, Vertex 4xx/5xx,
+  //    DB write failure) and either logs via setPayload or DELETEs the
+  //    placeholder row — never throws back to the enrichment caller. So an
+  //    embedding miss does not regress the bookmark add.
+  if (finalOgImage) {
+    await runEmbeddingPipeline({
+      bookmarkId: id,
+      ctx: getServerContext(),
+      ogImage: finalOgImage,
+      supabase,
+      userId,
+    });
+  }
+
+  // 8. Revalidate public categories
   try {
     const serviceClient = createServerServiceClient();
 
