@@ -90,4 +90,7 @@ docs/brainstorms/
 docs/plans/
 scripts/.spike-results.*
 scripts/.find-user-id.ts
+scripts/.embed-batch.ts
+scripts/.test-embedding.ts
+scripts/.test-pipeline.ts
 scripts/spike-visual-similarity.ts

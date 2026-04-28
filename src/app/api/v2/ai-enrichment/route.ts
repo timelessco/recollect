@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import ky from "ky";
 
 import { runEmbeddingPipeline } from "@/async/ai/run-embedding-pipeline";
-import { env } from "@/env/server";
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { storeQueueError } from "@/lib/api-helpers/queue";
@@ -254,9 +253,10 @@ export const POST = createAxiomRouteHandler(
         userId: user_id,
       });
 
-      // Vertex AI multimodal embedding — gated by EMBEDDINGS_ENABLED flag.
-      // Errors here are observability-only and never fail the queue message.
-      if (env.EMBEDDINGS_ENABLED === "true" && ogImage) {
+      // Vertex AI multimodal embedding. Errors here are observability-only
+      // and never fail the queue message; the metadata update has already
+      // committed.
+      if (ogImage) {
         try {
           await runEmbeddingPipeline({
             bookmarkId: id,

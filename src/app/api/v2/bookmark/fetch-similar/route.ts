@@ -1,7 +1,3 @@
-import type { Database } from "@/types/database.types";
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-import { env } from "@/env/server";
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
@@ -14,92 +10,7 @@ import {
 import { FetchSimilarInputSchema, FetchSimilarOutputSchema } from "./schema";
 
 const ROUTE = "v2-bookmark-fetch-similar";
-
-// Legacy SQL ranker default — visual + entity look-alike. Max score is 42
-// (6 × up-to-3 color matches + 3 × type + 4 × object + 8 × people
-//  + 5 × creator (brand/author/artist/director/company/character/series)
-//  + 2 × classifier (platform/source/programming_language/framework/genre/location)
-//  + 2 × domain (same url host, www. stripped)).
-// MIN_SCORE = 3 means any single weak signal (type match) clears the floor.
-const MIN_SCORE = 3;
-
-// Cosine RPC: returns similarity_score 0-100 (cosine_similarity * 100, rounded).
 const EMBEDDING_LIMIT = 10;
-
-interface ScoredId {
-  id: number;
-  score: number;
-}
-
-// match_similar_bookmark_embeddings is added by migration 20260427124701.
-// Database types regenerate via `pnpm db:reset && pnpm db:types` — until that
-// happens locally we type the response shape here at the call site.
-interface EmbeddingMatchRow {
-  id: number;
-  similarity_score: number;
-}
-
-// oxlint-disable @typescript-eslint/no-unsafe-type-assertion -- centralized
-// type boundary for the new RPC until generated types are refreshed locally.
-
-const callLegacyRanker = async (
-  supabase: SupabaseClient<Database>,
-  bookmarkId: number,
-): Promise<ScoredId[]> => {
-  const { data, error } = await supabase.rpc("match_similar_bookmarks", {
-    p_bookmark_id: bookmarkId,
-    p_min_score: MIN_SCORE,
-  });
-  if (error) {
-    throw new RecollectApiError("service_unavailable", {
-      cause: error,
-      message: "Failed to compute similar bookmarks",
-      operation: "match_similar_bookmarks",
-    });
-  }
-  return (data ?? []).map((row) => ({ id: row.id, score: row.score }));
-};
-
-const callEmbeddingRanker = async (
-  supabase: SupabaseClient<Database>,
-  bookmarkId: number,
-): Promise<ScoredId[]> => {
-  const { data, error } = (await supabase.rpc(
-    "match_similar_bookmark_embeddings" as Parameters<typeof supabase.rpc>[0],
-    { p_bookmark_id: bookmarkId, p_limit: EMBEDDING_LIMIT } as Parameters<typeof supabase.rpc>[1],
-  )) as unknown as {
-    data: EmbeddingMatchRow[] | null;
-    error: { code?: string; message: string } | null;
-  };
-  if (error) {
-    // no_data_found from ownership gate -> empty result, not 503.
-    if (error.code === "P0002" || error.code === "PGRST116") {
-      return [];
-    }
-    throw new RecollectApiError("service_unavailable", {
-      cause: error,
-      message: "Failed to compute similar bookmarks",
-      operation: "match_similar_bookmark_embeddings",
-    });
-  }
-  return (data ?? []).map((row) => ({ id: row.id, score: row.similarity_score }));
-};
-
-const jaccard = (a: number[], b: number[]): number => {
-  if (a.length === 0 && b.length === 0) {
-    return 1;
-  }
-  const setA = new Set(a);
-  const setB = new Set(b);
-  let intersection = 0;
-  for (const x of setA) {
-    if (setB.has(x)) {
-      intersection += 1;
-    }
-  }
-  const unionSize = setA.size + setB.size - intersection;
-  return unionSize === 0 ? 0 : intersection / unionSize;
-};
 
 interface BookmarkRow {
   description: string | null;
@@ -156,38 +67,30 @@ export const GET = createAxiomRouteHandler(
         ctx.fields.bookmark_id = bookmark_id;
       }
 
-      const useEmbeddings = env.SIMILARITY_USE_EMBEDDINGS === "true";
-      const shadowEnabled = env.SIMILAR_SHADOW === "1";
-
-      let scored: ScoredId[];
       const startedAt = Date.now();
+      const { data: scoredRaw, error: rpcError } = await supabase.rpc(
+        "match_similar_bookmark_embeddings",
+        { p_bookmark_id: bookmark_id, p_limit: EMBEDDING_LIMIT },
+      );
 
-      if (shadowEnabled) {
-        // Run both rankers in parallel; serve the active one, log the comparison.
-        const [legacy, embedding] = await Promise.all([
-          callLegacyRanker(supabase, bookmark_id),
-          callEmbeddingRanker(supabase, bookmark_id),
-        ]);
-        scored = useEmbeddings ? embedding : legacy;
-        setPayload(ctx, {
-          similarity_source: useEmbeddings ? "embedding" : "legacy",
-          similarity_jaccard_top10: jaccard(
-            legacy.slice(0, 10).map((row) => row.id),
-            embedding.slice(0, 10).map((row) => row.id),
-          ),
-          similarity_legacy_count: legacy.length,
-          similarity_embedding_count: embedding.length,
-        });
-      } else {
-        scored = useEmbeddings
-          ? await callEmbeddingRanker(supabase, bookmark_id)
-          : await callLegacyRanker(supabase, bookmark_id);
-        setPayload(ctx, {
-          similarity_source: useEmbeddings ? "embedding" : "legacy",
+      setPayload(ctx, { similarity_rpc_ms: Date.now() - startedAt });
+
+      // The cosine RPC's ownership gate raises no_data_found when the source
+      // bookmark doesn't exist, isn't owned by the caller, or is trashed.
+      // From the route's perspective that maps to an empty result, not a 503.
+      if (rpcError) {
+        if (rpcError.code === "P0002" || rpcError.code === "PGRST116") {
+          setPayload(ctx, { similar_count: 0, empty_result: true });
+          return [];
+        }
+        throw new RecollectApiError("service_unavailable", {
+          cause: rpcError,
+          message: "Failed to compute similar bookmarks",
+          operation: "match_similar_bookmark_embeddings",
         });
       }
 
-      setPayload(ctx, { similarity_rpc_ms: Date.now() - startedAt });
+      const scored = scoredRaw ?? [];
 
       if (scored.length === 0) {
         setPayload(ctx, { similar_count: 0, empty_result: true });
@@ -196,7 +99,7 @@ export const GET = createAxiomRouteHandler(
 
       setPayload(ctx, { similar_count: scored.length, empty_result: false });
 
-      const scoreById = new Map(scored.map((row) => [row.id, row.score]));
+      const scoreById = new Map(scored.map((row) => [row.id, row.similarity_score]));
       const bookmarkIds = scored.map((row) => row.id);
 
       const { data: bookmarkData, error: bookmarkError } = await supabase

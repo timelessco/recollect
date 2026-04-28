@@ -291,10 +291,10 @@ export const POST = createAxiomRouteHandler(
           userId: user_id,
         });
 
-        // Vertex AI multimodal embedding — gated by EMBEDDINGS_ENABLED flag.
-        // Errors here are observability-only and never fail the queue message;
-        // the meta_data update has already committed.
-        if (env.EMBEDDINGS_ENABLED === "true" && ogImage) {
+        // Vertex AI multimodal embedding. Errors here are observability-only
+        // and never fail the queue message; the meta_data update has already
+        // committed.
+        if (ogImage) {
           try {
             await runEmbeddingPipeline({
               bookmarkId: id,
