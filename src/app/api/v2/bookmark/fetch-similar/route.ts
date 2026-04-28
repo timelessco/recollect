@@ -10,7 +10,7 @@ import {
 import { FetchSimilarInputSchema, FetchSimilarOutputSchema } from "./schema";
 
 const ROUTE = "v2-bookmark-fetch-similar";
-const EMBEDDING_LIMIT = 10;
+const EMBEDDING_LIMIT = 50;
 
 interface BookmarkRow {
   description: string | null;

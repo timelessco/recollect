@@ -278,7 +278,7 @@ comment on function public.claim_embedding_slot(bigint, uuid, text) is
 
 create or replace function public.match_similar_bookmark_embeddings(
     p_bookmark_id bigint,
-    p_limit       int default 10
+    p_limit       int default 50
 )
 returns table (id bigint, similarity_score int)
 language plpgsql
