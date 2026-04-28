@@ -146,22 +146,47 @@ const fetchImageBytes = async (imageUrl: string): Promise<{ bytes: Buffer; mime:
     throw new Error(`Unsupported content-type for Vertex multimodal: ${mime ?? "missing"}`);
   }
   // Reject early if Content-Length declares a body larger than we accept.
-  // Without this, a malicious-but-public host that passes the SSRF allowlist
-  // could stream hundreds of MB before the post-buffer size check fires.
+  // Most well-behaved hosts populate this; the streaming loop below handles
+  // chunked / missing / lying Content-Length cases.
   const declaredLength = Number(response.headers.get("content-length") ?? "");
   if (Number.isFinite(declaredLength) && declaredLength > PRE_BASE64_BYTE_LIMIT) {
     throw new Error(
       `Image exceeds Vertex pre-base64 ceiling (declared ${declaredLength} > ${PRE_BASE64_BYTE_LIMIT})`,
     );
   }
-  const bytes = Buffer.from(await response.arrayBuffer());
-  if (bytes.byteLength === 0) {
+  // Stream the body and enforce the cap as bytes arrive. arrayBuffer() would
+  // buffer the entire payload before any size check, so a host that omits
+  // Content-Length (chunked transfer-encoding) and chunk-streams hundreds of
+  // MB would land all of it in memory before the post-buffer check fired.
+  if (!response.body) {
     throw new Error("Empty image body");
   }
-  if (bytes.byteLength > PRE_BASE64_BYTE_LIMIT) {
-    throw new Error(
-      `Image exceeds Vertex pre-base64 ceiling (${bytes.byteLength} > ${PRE_BASE64_BYTE_LIMIT})`,
-    );
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let received = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      received += value.byteLength;
+      if (received > PRE_BASE64_BYTE_LIMIT) {
+        throw new Error(
+          `Image exceeds Vertex pre-base64 ceiling (${received} > ${PRE_BASE64_BYTE_LIMIT})`,
+        );
+      }
+      chunks.push(value);
+    }
+  } catch (error) {
+    await reader.cancel().catch(() => {
+      // Already drained or already errored; nothing to clean up.
+    });
+    throw error;
+  }
+  const bytes = Buffer.concat(chunks);
+  if (bytes.byteLength === 0) {
+    throw new Error("Empty image body");
   }
   return { bytes, mime };
 };
