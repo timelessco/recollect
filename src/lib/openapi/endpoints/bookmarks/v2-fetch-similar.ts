@@ -11,13 +11,13 @@ export const v2FetchSimilarSupplement = {
     401: { description: "Not authenticated" },
   },
   description:
-    "Returns bookmarks similar to `bookmark_id`, scoped to the authenticated user. Ranking is selected by the `SIMILARITY_USE_EMBEDDINGS` server flag. When the flag is off (legacy path), score is an additive integer 0–42 over OKLCh color similarity, shared AI-inferred content types, shared detected objects, shared people/creator/classifier signals, and url host equality. When on, score is integer 0–100 derived from cosine similarity over Vertex AI multimodal image embeddings. Wire shape and field names are identical across both paths; only the meaning of `similarity_score` changes.",
+    "Returns bookmarks similar to `bookmark_id`, scoped to the authenticated user. `similarity_score` is an integer 0–100 derived from cosine similarity over Vertex AI multimodal image embeddings (`multimodalembedding@001`). Source bookmarks without a stored embedding (still queued for processing, or non-image content) return an empty array.",
   method: "get",
   parameterExamples: {
     bookmark_id: {
       "no-matches": {
         description:
-          "Send `?bookmark_id=999999` — returns an empty array when no candidate scores ≥ 5.",
+          "Send `?bookmark_id=999999` — returns an empty array when the source has no embedding or no neighbors exist.",
         summary: "Bookmark with no strong matches",
         value: "999999",
       },
@@ -47,7 +47,7 @@ export const v2FetchSimilarSupplement = {
   },
   responseExamples: {
     "empty-result": {
-      description: "Source has no candidates above the threshold — empty array.",
+      description: "Source has no embedding yet, or no neighbors found — empty array.",
       summary: "No similar bookmarks",
       value: [] as const,
     },

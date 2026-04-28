@@ -496,7 +496,6 @@ export type Database = {
         Args: { p_msg_id: number; p_queue_name: string; p_reason: string };
         Returns: boolean;
       };
-      aspect_bucket_from_meta: { Args: { meta: Json }; Returns: string };
       auto_assign_collections: {
         Args: {
           p_bookmark_id: number;
@@ -549,10 +548,6 @@ export type Database = {
         Returns: {
           keyword: string;
         }[];
-      };
-      features_text_values: {
-        Args: { features: Json; keys: string[] };
-        Returns: string[];
       };
       get_chrome_bookmark_sync_status: {
         Args: { p_user_id: string };
@@ -608,13 +603,6 @@ export type Database = {
         Returns: {
           id: number;
           similarity_score: number;
-        }[];
-      };
-      match_similar_bookmarks: {
-        Args: { p_bookmark_id: number; p_limit?: number; p_min_score?: number };
-        Returns: {
-          id: number;
-          score: number;
         }[];
       };
       process_chrome_bookmark: {

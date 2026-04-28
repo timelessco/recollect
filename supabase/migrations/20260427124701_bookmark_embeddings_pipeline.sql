@@ -2,21 +2,19 @@
 -- Migration: bookmark_embeddings_pipeline
 -- ============================================================================
 -- Purpose:
---   Add image-embedding-based visual similarity. Replaces the SQL ranker in
---   match_similar_bookmarks (PR #972) with cosine similarity over Vertex AI
---   multimodalembedding@001 vectors.
---
--- Shipped behind two env flags:
---   - EMBEDDINGS_ENABLED          gates the worker (write path)
---   - SIMILARITY_USE_EMBEDDINGS   gates the route (read path)
--- Both default false so this migration is a no-op until ops flips the flags.
--- The legacy match_similar_bookmarks RPC stays alive — cleanup is a follow-up
--- migration scheduled 14 days post-cutover.
+--   Replace the SQL ranker in match_similar_bookmarks (PR #972) with cosine
+--   similarity over Vertex AI multimodalembedding@001 vectors, and drop the
+--   now-unused legacy ranker + its helpers in the same transaction.
 --
 -- This migration adds:
 --   1. public.bookmark_embeddings table + HNSW + btree indexes + RLS
 --   2. public.claim_embedding_slot RPC (claim-row idempotency)
 --   3. public.match_similar_bookmark_embeddings RPC (cosine top-K)
+--
+-- And drops:
+--   4. public.match_similar_bookmarks(bigint, int, int) — legacy SQL ranker
+--   5. public.aspect_bucket_from_meta(jsonb)   — helper used only by (4)
+--   6. public.features_text_values(jsonb, text[]) — helper used only by (4)
 --
 -- Backfill of existing bookmarks is intentionally NOT in this PR — fresh
 -- bookmarks get embedded automatically once EMBEDDINGS_ENABLED=true. The
@@ -266,8 +264,8 @@ comment on function public.claim_embedding_slot(bigint, uuid, text) is
 -- ----------------------------------------------------------------------------
 -- PART 5: match_similar_bookmark_embeddings RPC.
 --
---   Top-K visually similar bookmarks by cosine similarity. Replaces
---   match_similar_bookmarks (kept alive until follow-up cleanup migration).
+--   Top-K visually similar bookmarks by cosine similarity. Replaces the
+--   legacy match_similar_bookmarks RPC (dropped in PART 6 below).
 --
 --   Uses pgvector's iterative HNSW scan so user_id post-filtering doesn't
 --   strand small-library users with empty results when their valid
@@ -341,7 +339,24 @@ comment on function public.match_similar_bookmark_embeddings(bigint, int) is
     'Top-K visually similar bookmarks by cosine similarity over multimodalembedding@001 vectors. similarity_score is integer 0-100 (cosine similarity * 100, rounded). RLS-scoped via SECURITY INVOKER plus an explicit ownership gate to defeat timing-based enumeration.';
 
 -- ----------------------------------------------------------------------------
--- PART 6: Verification.
+-- PART 6: Drop the legacy match_similar_bookmarks SQL ranker.
+--
+--   The route (src/app/api/v2/bookmark/fetch-similar/route.ts) no longer
+--   calls this RPC; it has been routed exclusively to the cosine RPC above.
+--   Drop the function and its two helpers — neither helper has any other
+--   caller in the codebase or in any other migration.
+--
+--   IF EXISTS guards keep the migration replayable on environments where the
+--   legacy create-paths never ran (greenfield local databases, branches that
+--   never picked up PR #972 / coalesce-guards / rebalance migrations).
+-- ----------------------------------------------------------------------------
+
+drop function if exists public.match_similar_bookmarks(bigint, int, int);
+drop function if exists public.aspect_bucket_from_meta(jsonb);
+drop function if exists public.features_text_values(jsonb, text[]);
+
+-- ----------------------------------------------------------------------------
+-- PART 7: Verification.
 --
 --   Asserts the migration's structural outputs. Every assertion that fails
 --   raises and rolls back the transaction.
@@ -388,6 +403,17 @@ begin
     end if;
     if to_regprocedure('public.match_similar_bookmark_embeddings(bigint, int)') is null then
         raise exception 'match_similar_bookmark_embeddings function missing';
+    end if;
+
+    -- Legacy ranker + helpers are gone.
+    if to_regprocedure('public.match_similar_bookmarks(bigint, int, int)') is not null then
+        raise exception 'legacy match_similar_bookmarks function still present';
+    end if;
+    if to_regprocedure('public.aspect_bucket_from_meta(jsonb)') is not null then
+        raise exception 'legacy aspect_bucket_from_meta helper still present';
+    end if;
+    if to_regprocedure('public.features_text_values(jsonb, text[])') is not null then
+        raise exception 'legacy features_text_values helper still present';
     end if;
 
     raise notice 'bookmark_embeddings_pipeline migration applied successfully';
