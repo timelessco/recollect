@@ -53,16 +53,22 @@ const isPrivateAddress = (address: string): boolean => {
 };
 
 /**
- * Build the allowlist of "our own storage" origins from configured env. These
- * are services we control (Supabase storage in dev, R2 in prod) and bypass
- * the SSRF guard entirely — the threat model is "user-supplied URL pointing
- * at private infra," not "our own storage."
+ * Build the allowlist of "our own storage" base URLs from configured env.
+ * These are services we control (Supabase storage in dev, R2 in prod) and
+ * bypass the SSRF guard entirely — the threat model is "user-supplied URL
+ * pointing at private infra," not "our own storage."
  *
  * In local dev `NEXT_PUBLIC_SUPABASE_URL` is `http://127.0.0.1:54321` which
  * would otherwise fail both the https-only and loopback checks below.
+ *
+ * Allowlist matches on origin + path prefix, not origin alone. R2 public-
+ * bucket URLs typically include a bucket path (e.g.
+ * `https://pub-xxx.r2.dev/recollect-public`), and Supabase's admin and storage
+ * endpoints share an origin — origin-only matching would let any URL on
+ * `<project>.supabase.co/auth/v1/admin/...` bypass.
  */
-const buildTrustedOrigins = (): ReadonlySet<string> => {
-  const origins = new Set<string>();
+const buildTrustedPrefixes = (): readonly string[] => {
+  const prefixes: string[] = [];
   for (const envKey of [
     "NEXT_PUBLIC_SUPABASE_URL",
     "NEXT_PUBLIC_DEV_SUPABASE_URL",
@@ -73,15 +79,26 @@ const buildTrustedOrigins = (): ReadonlySet<string> => {
       continue;
     }
     try {
-      origins.add(new URL(value).origin);
+      const parsed = new URL(value);
+      // Normalize to a single trailing slash so `/recollect-public` and
+      // `/recollect-public/` both produce the same prefix `…/recollect-public/`.
+      const normalizedPath = parsed.pathname.replace(/\/?$/u, "/");
+      prefixes.push(`${parsed.origin}${normalizedPath}`);
     } catch {
       // Skip malformed env values; nothing to trust.
     }
   }
-  return origins;
+  return prefixes;
 };
 
-const trustedOrigins = buildTrustedOrigins();
+const trustedPrefixes = buildTrustedPrefixes();
+
+const isTrustedTarget = (parsed: URL): boolean => {
+  // Augment the candidate path with a trailing slash before matching so a
+  // prefix `/bucket/` doesn't accidentally accept `/bucket-evil/file`.
+  const candidate = `${parsed.origin}${parsed.pathname.replace(/\/?$/u, "/")}`;
+  return trustedPrefixes.some((prefix) => candidate.startsWith(prefix));
+};
 
 /**
  * Throws if `rawUrl` should not be fetched server-side. Resolves DNS for
@@ -98,7 +115,7 @@ export const assertSafeImageUrl = async (rawUrl: string): Promise<void> => {
     throw new Error("Invalid URL");
   }
 
-  if (trustedOrigins.has(url.origin)) {
+  if (isTrustedTarget(url)) {
     return;
   }
 
@@ -111,12 +128,18 @@ export const assertSafeImageUrl = async (rawUrl: string): Promise<void> => {
     throw new Error("URL hostname missing");
   }
 
-  const literalFamily = isIP(hostname);
+  // WHATWG URL spec returns IPv6 hosts in bracketed form (e.g. `[2001:db8::1]`).
+  // `isIP` and `dns.lookup` both expect the unwrapped form, so strip the
+  // brackets before classification. Non-IPv6 hostnames pass through unchanged.
+  const normalizedHost =
+    hostname.startsWith("[") && hostname.endsWith("]") ? hostname.slice(1, -1) : hostname;
+
+  const literalFamily = isIP(normalizedHost);
   let candidates: string[];
   if (literalFamily) {
-    candidates = [hostname];
+    candidates = [normalizedHost];
   } else {
-    const lookupResults = await dnsPromises.lookup(hostname, { all: true });
+    const lookupResults = await dnsPromises.lookup(normalizedHost, { all: true });
     candidates = lookupResults.map(({ address }) => address);
   }
 
