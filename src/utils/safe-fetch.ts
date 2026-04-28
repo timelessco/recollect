@@ -25,10 +25,13 @@ const PRIVATE_IPV4_PATTERNS: readonly RegExp[] = [
 const PRIVATE_IPV6_PATTERNS: readonly RegExp[] = [
   /^::1$/,
   /^::$/,
-  /^fe80:/i,
+  // RFC 4291 link-local is fe80::/10 — covers fe80–febf, not just fe80.
+  /^fe[89ab][0-9a-f]?:/i,
   /^fc/i,
   /^fd/i,
-  /^::ffff:/i,
+  // Note: IPv4-mapped (::ffff:*) is intentionally NOT a blanket reject — that
+  // would over-block legitimate public mapped addresses like ::ffff:8.8.8.8.
+  // Mapped private IPv4 is handled below via dotted-quad extraction.
 ];
 
 const isPrivateIPv4 = (address: string): boolean =>
@@ -129,4 +132,34 @@ export const assertSafeImageUrl = async (rawUrl: string): Promise<void> => {
       throw new Error(`Refusing to fetch private address: ${address}`);
     }
   }
+};
+
+const MAX_REDIRECTS = 5;
+
+/**
+ * SSRF-safe `fetch`. Validates the input URL via `assertSafeImageUrl`, then
+ * follows up to MAX_REDIRECTS redirects manually — re-validating each Location
+ * header before the next request. Without this wrapper, Node's default
+ * `redirect: "follow"` lets an attacker-controlled domain (which passes the
+ * initial allowlist) serve a 3xx into RFC1918 / loopback space and the SSRF
+ * guard is bypassed.
+ *
+ * Callers get a normal `Response` and don't have to think about redirects.
+ */
+export const safeFetch = async (rawUrl: string, init?: RequestInit): Promise<Response> => {
+  let currentUrl = rawUrl;
+  for (let i = 0; i <= MAX_REDIRECTS; i += 1) {
+    await assertSafeImageUrl(currentUrl);
+    const response = await fetch(currentUrl, { ...init, redirect: "manual" });
+    if (response.status < 300 || response.status >= 400) {
+      return response;
+    }
+    const location = response.headers.get("location");
+    if (!location) {
+      return response;
+    }
+    // Resolve relative redirects against the current URL.
+    currentUrl = new URL(location, currentUrl).href;
+  }
+  throw new Error(`Too many redirects (max ${MAX_REDIRECTS})`);
 };

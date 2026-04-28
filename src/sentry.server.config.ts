@@ -5,24 +5,7 @@
 import * as Sentry from "@sentry/nextjs";
 
 import { env } from "@/env/client";
-
-// Strip auth tokens from any header bag attached to Sentry events. Vertex /
-// gaxios errors carry `cause.config.headers.Authorization` with a short-lived
-// GCP impersonated token; supabase / api errors can echo bearer tokens too.
-// We sanitize defensively across event.request.headers and any
-// contexts payload that might carry a header bag.
-const SENSITIVE_HEADER_PATTERN = /^(?:authorization|x-goog-.*|cookie|set-cookie)$/i;
-
-const isHeaderBag = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === "object" && !Array.isArray(value);
-
-const scrubHeaders = (headers: Record<string, unknown>): Record<string, unknown> => {
-  const scrubbed: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(headers)) {
-    scrubbed[key] = SENSITIVE_HEADER_PATTERN.test(key) ? "[redacted]" : value;
-  }
-  return scrubbed;
-};
+import { scrubBreadcrumb, scrubEvent } from "@/lib/sentry/scrub";
 
 Sentry.init({
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
@@ -34,31 +17,11 @@ Sentry.init({
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
   sendDefaultPii: true,
 
-  beforeSend(event) {
-    if (isHeaderBag(event.request?.headers)) {
-      const scrubbed = scrubHeaders(event.request.headers);
-      Object.assign(event.request.headers, scrubbed);
-    }
-    if (event.contexts) {
-      for (const context of Object.values(event.contexts)) {
-        if (!isHeaderBag(context)) {
-          continue;
-        }
-        const headersField = context.headers;
-        if (isHeaderBag(headersField)) {
-          context.headers = scrubHeaders(headersField);
-        }
-        const configField = context.config;
-        if (isHeaderBag(configField)) {
-          const configHeadersField = configField.headers;
-          if (isHeaderBag(configHeadersField)) {
-            configField.headers = scrubHeaders(configHeadersField);
-          }
-        }
-      }
-    }
-    return event;
-  },
+  // Strip Authorization / x-goog-* / cookie headers + Bearer tokens from
+  // breadcrumbs (HTTP integration auto-records request headers) and from
+  // exception messages (gaxios errors embed config.headers in cause).
+  beforeBreadcrumb: scrubBreadcrumb,
+  beforeSend: scrubEvent,
 
   tracesSampler: (samplingContext) => {
     // Always trace if parent transaction was sampled (distributed tracing)

@@ -38,13 +38,16 @@ begin;
 
 do $$
 declare
-    v_ver text;
+    v_ver   text;
+    v_parts int[];
 begin
     select extversion into v_ver from pg_extension where extname = 'vector';
     if v_ver is null then
         raise exception 'pgvector extension not installed; required >= 0.8.0';
     end if;
-    if v_ver < '0.8.0' then
+    -- Parse "major.minor.patch" so we don't lexicographically compare "0.10.0" < "0.8.0".
+    v_parts := string_to_array(v_ver, '.')::int[];
+    if (v_parts[1], v_parts[2]) < (0, 8) then
         raise exception 'pgvector >= 0.8.0 required for HNSW iterative scan, found: %', v_ver;
     end if;
 end $$;
@@ -115,18 +118,35 @@ for select
 to authenticated
 using ( (select auth.uid()) = user_id );
 
+-- Per repo guideline: one policy per (operation, role). Three operations
+-- (insert/update/delete) × two roles (authenticated, anon) = six deny policies.
 create policy "Authenticated cannot insert embeddings"
 on public.bookmark_embeddings
 as restrictive
 for insert
-to authenticated, anon
+to authenticated
+with check (false);
+
+create policy "Anon cannot insert embeddings"
+on public.bookmark_embeddings
+as restrictive
+for insert
+to anon
 with check (false);
 
 create policy "Authenticated cannot update embeddings"
 on public.bookmark_embeddings
 as restrictive
 for update
-to authenticated, anon
+to authenticated
+using (false)
+with check (false);
+
+create policy "Anon cannot update embeddings"
+on public.bookmark_embeddings
+as restrictive
+for update
+to anon
 using (false)
 with check (false);
 
@@ -134,7 +154,14 @@ create policy "Authenticated cannot delete embeddings"
 on public.bookmark_embeddings
 as restrictive
 for delete
-to authenticated, anon
+to authenticated
+using (false);
+
+create policy "Anon cannot delete embeddings"
+on public.bookmark_embeddings
+as restrictive
+for delete
+to anon
 using (false);
 
 revoke insert, update, delete on public.bookmark_embeddings from authenticated, anon;
@@ -165,10 +192,32 @@ set search_path = ''
 as $$
 declare
     v_hash             bytea;
+    v_owner            uuid;
     v_existing_hash    bytea;
     v_existing_version text;
     v_claimed          boolean := false;
 begin
+    -- Look up the canonical owner from public.everything. The caller's
+    -- p_user_id is treated as a hint, NOT as authority — we always persist
+    -- the owner from the source-of-truth table to prevent ownership
+    -- corruption (e.g., a misconfigured worker passing the wrong user_id).
+    select e.user_id
+        into v_owner
+    from public.everything as e
+    where e.id = p_bookmark_id
+    limit 1;
+
+    if not found then
+        raise exception 'bookmark not found: %', p_bookmark_id
+            using errcode = 'no_data_found';
+    end if;
+
+    if p_user_id is distinct from v_owner then
+        raise exception 'user mismatch for bookmark %: caller=% owner=%',
+            p_bookmark_id, p_user_id, v_owner
+            using errcode = 'insufficient_privilege';
+    end if;
+
     v_hash := decode(p_source_url_hash, 'hex');
 
     -- If already embedded with current source + model, skip the work entirely.
@@ -182,18 +231,20 @@ begin
         return jsonb_build_object('claimed', false, 'reason', 'already-current');
     end if;
 
-    -- Otherwise claim the slot. ON CONFLICT updates the source_url_hash so a
-    -- changed image triggers re-embedding; the worker overwrites the placeholder
-    -- with the real vector on success.
+    -- Claim the slot. ON CONFLICT updates the source_url_hash so a changed
+    -- image triggers re-embedding; the worker overwrites the placeholder
+    -- with the real vector on success. We persist the owner we looked up
+    -- from public.everything (v_owner), not whatever the caller passed.
     insert into public.bookmark_embeddings (bookmark_id, user_id, embedding, source_url_hash)
     values (
         p_bookmark_id,
-        p_user_id,
+        v_owner,
         array_fill(0::real, array[1408])::extensions.halfvec(1408),
         v_hash
     )
     on conflict (bookmark_id) do update
-        set source_url_hash = excluded.source_url_hash,
+        set user_id         = excluded.user_id,
+            source_url_hash = excluded.source_url_hash,
             updated_at      = now()
         where public.bookmark_embeddings.source_url_hash is distinct from excluded.source_url_hash;
 
@@ -262,6 +313,12 @@ begin
     set local hnsw.iterative_scan = strict_order;
     set local hnsw.max_scan_tuples = 20000;
 
+    -- Filter out claim_embedding_slot's zero-vector placeholder. A row exists
+    -- briefly between claim and the real embedding write — and forever if the
+    -- worker process dies after claim. Cosine on a zero vector is NaN; we
+    -- exclude these explicitly so they never bleed into similarity results.
+    -- l2_norm is checked against a small epsilon rather than 0 because the
+    -- halfvec → vector cast can introduce sub-epsilon rounding artifacts.
     return query
     select
         b.bookmark_id as id,
@@ -271,6 +328,7 @@ begin
         on e.id = b.bookmark_id and e.trash is null
     where b.bookmark_id <> p_bookmark_id
       and b.user_id = v_owner
+      and extensions.l2_norm(b.embedding::extensions.vector) > 1e-6
     order by b.embedding operator(extensions.<=>) v_target_embedding
     limit p_limit;
 end;
@@ -319,11 +377,12 @@ begin
     -- All four policies present (1 select + 3 deny)
     select count(*) into v_count from pg_policies
     where schemaname = 'public' and tablename = 'bookmark_embeddings';
-    if v_count <> 4 then
-        raise exception 'expected 4 RLS policies on bookmark_embeddings, found %', v_count;
+    -- 1 permissive select + 6 restrictive deny (3 ops × 2 roles).
+    if v_count <> 7 then
+        raise exception 'expected 7 RLS policies on bookmark_embeddings, found %', v_count;
     end if;
 
-    -- All three new functions present
+    -- Both new functions present (admin_enqueue_embedding_backfill is a follow-up PR).
     if to_regprocedure('public.claim_embedding_slot(bigint, uuid, text)') is null then
         raise exception 'claim_embedding_slot function missing';
     end if;

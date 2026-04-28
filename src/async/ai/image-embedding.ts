@@ -7,7 +7,7 @@ import type { AuthClient, BaseExternalAccountClient } from "google-auth-library"
 
 import { env } from "@/env/server";
 import { MULTIMODAL_EMBEDDING_MODEL_VERSION } from "@/utils/constants";
-import { assertSafeImageUrl } from "@/utils/safe-fetch";
+import { safeFetch } from "@/utils/safe-fetch";
 
 /**
  * Vertex AI multimodalembedding@001 caller. Returns a 1408-dim halfvec-ready
@@ -131,7 +131,10 @@ const getAuthClient = async (): Promise<AuthClient | BaseExternalAccountClient> 
 };
 
 const fetchImageBytes = async (imageUrl: string): Promise<{ bytes: Buffer; mime: string }> => {
-  const response = await fetch(imageUrl, {
+  // safeFetch validates the URL (and any redirect targets) against the SSRF
+  // allowlist, follows redirects manually, and refuses to follow into private
+  // address space.
+  const response = await safeFetch(imageUrl, {
     signal: AbortSignal.timeout(5000),
   });
   if (!response.ok) {
@@ -141,6 +144,15 @@ const fetchImageBytes = async (imageUrl: string): Promise<{ bytes: Buffer; mime:
   const mime = rawMime === "image/jpg" ? "image/jpeg" : rawMime;
   if (!mime || !SUPPORTED_MIME_TYPES.has(mime)) {
     throw new Error(`Unsupported content-type for Vertex multimodal: ${mime ?? "missing"}`);
+  }
+  // Reject early if Content-Length declares a body larger than we accept.
+  // Without this, a malicious-but-public host that passes the SSRF allowlist
+  // could stream hundreds of MB before the post-buffer size check fires.
+  const declaredLength = Number(response.headers.get("content-length") ?? "");
+  if (Number.isFinite(declaredLength) && declaredLength > PRE_BASE64_BYTE_LIMIT) {
+    throw new Error(
+      `Image exceeds Vertex pre-base64 ceiling (declared ${declaredLength} > ${PRE_BASE64_BYTE_LIMIT})`,
+    );
   }
   const bytes = Buffer.from(await response.arrayBuffer());
   if (bytes.byteLength === 0) {
@@ -199,7 +211,7 @@ const computeNorm = (embedding: number[]): number => {
  * size cap, Vertex auth/transport failure, or degenerate (near-zero) output.
  */
 export const imageToEmbedding = async (imageUrl: string): Promise<ImageToEmbeddingResult> => {
-  await assertSafeImageUrl(imageUrl);
+  // safeFetch (inside fetchImageBytes) handles the SSRF guard + redirect chain.
   const { bytes } = await fetchImageBytes(imageUrl);
 
   let accessToken: string | null | undefined;
