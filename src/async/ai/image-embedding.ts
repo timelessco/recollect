@@ -7,7 +7,6 @@ import type { AuthClient, BaseExternalAccountClient } from "google-auth-library"
 
 import { env } from "@/env/server";
 import { MULTIMODAL_EMBEDDING_MODEL_VERSION } from "@/utils/constants";
-import { safeFetch } from "@/utils/safe-fetch";
 
 /**
  * Vertex AI multimodalembedding@001 caller. Returns a 1408-dim halfvec-ready
@@ -21,12 +20,13 @@ import { safeFetch } from "@/utils/safe-fetch";
  * have the GCP_* vars set, and the token cache lives inside the client
  * instance regardless.
  *
- * SSRF: assertSafeImageUrl rejects non-https, RFC1918, loopback, link-local,
- * and IPv4-mapped private IPv6 before any byte leaves the worker.
- *
  * Error sanitization: gaxios errors carry `cause.config.headers.Authorization`
  * with the impersonated GCP access token. We re-throw a generic message so
  * the bearer never reaches Sentry/Axiom even if the caller logs the error.
+ *
+ * Note: SSRF protection + streaming body cap land in #974 alongside the
+ * shared safe-fetch helper. This file ships the bare-fetch path; #974
+ * patches it to safeFetch + getReader() in one focused diff.
  */
 
 interface ImageToEmbeddingResult {
@@ -131,10 +131,7 @@ const getAuthClient = async (): Promise<AuthClient | BaseExternalAccountClient> 
 };
 
 const fetchImageBytes = async (imageUrl: string): Promise<{ bytes: Buffer; mime: string }> => {
-  // safeFetch validates the URL (and any redirect targets) against the SSRF
-  // allowlist, follows redirects manually, and refuses to follow into private
-  // address space.
-  const response = await safeFetch(imageUrl, {
+  const response = await fetch(imageUrl, {
     signal: AbortSignal.timeout(5000),
   });
   if (!response.ok) {
@@ -145,48 +142,14 @@ const fetchImageBytes = async (imageUrl: string): Promise<{ bytes: Buffer; mime:
   if (!mime || !SUPPORTED_MIME_TYPES.has(mime)) {
     throw new Error(`Unsupported content-type for Vertex multimodal: ${mime ?? "missing"}`);
   }
-  // Reject early if Content-Length declares a body larger than we accept.
-  // Most well-behaved hosts populate this; the streaming loop below handles
-  // chunked / missing / lying Content-Length cases.
-  const declaredLength = Number(response.headers.get("content-length") ?? "");
-  if (Number.isFinite(declaredLength) && declaredLength > PRE_BASE64_BYTE_LIMIT) {
-    throw new Error(
-      `Image exceeds Vertex pre-base64 ceiling (declared ${declaredLength} > ${PRE_BASE64_BYTE_LIMIT})`,
-    );
-  }
-  // Stream the body and enforce the cap as bytes arrive. arrayBuffer() would
-  // buffer the entire payload before any size check, so a host that omits
-  // Content-Length (chunked transfer-encoding) and chunk-streams hundreds of
-  // MB would land all of it in memory before the post-buffer check fired.
-  if (!response.body) {
-    throw new Error("Empty image body");
-  }
-  const reader = response.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let received = 0;
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        break;
-      }
-      received += value.byteLength;
-      if (received > PRE_BASE64_BYTE_LIMIT) {
-        throw new Error(
-          `Image exceeds Vertex pre-base64 ceiling (${received} > ${PRE_BASE64_BYTE_LIMIT})`,
-        );
-      }
-      chunks.push(value);
-    }
-  } catch (error) {
-    await reader.cancel().catch(() => {
-      // Already drained or already errored; nothing to clean up.
-    });
-    throw error;
-  }
-  const bytes = Buffer.concat(chunks);
+  const bytes = Buffer.from(await response.arrayBuffer());
   if (bytes.byteLength === 0) {
     throw new Error("Empty image body");
+  }
+  if (bytes.byteLength > PRE_BASE64_BYTE_LIMIT) {
+    throw new Error(
+      `Image exceeds Vertex pre-base64 ceiling (${bytes.byteLength} > ${PRE_BASE64_BYTE_LIMIT})`,
+    );
   }
   return { bytes, mime };
 };
@@ -232,11 +195,10 @@ const computeNorm = (embedding: number[]): number => {
 
 /**
  * Embed a bookmark image via Vertex multimodal embedding.
- * Throws on SSRF rejection, image fetch failure, unsupported content-type,
- * size cap, Vertex auth/transport failure, or degenerate (near-zero) output.
+ * Throws on image fetch failure, unsupported content-type, size cap,
+ * Vertex auth/transport failure, or degenerate (near-zero) output.
  */
 export const imageToEmbedding = async (imageUrl: string): Promise<ImageToEmbeddingResult> => {
-  // safeFetch (inside fetchImageBytes) handles the SSRF guard + redirect chain.
   const { bytes } = await fetchImageBytes(imageUrl);
 
   let accessToken: string | null | undefined;
