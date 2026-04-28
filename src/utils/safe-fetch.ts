@@ -7,9 +7,20 @@ import { isIP } from "node:net";
  *
  * Used by image-fetch paths in src/async/ai/image-embedding.ts and
  * src/async/ai/image-analysis.ts. Without this guard a malicious bookmark
- * with `http://169.254.169.254/` (cloud metadata), `http://localhost:54321/`
- * (Supabase admin), or a redirect chain into RFC1918 space would have its
- * response forwarded to whichever AI service the worker is calling.
+ * with `http://169.254.169.254/` (cloud metadata) or `http://localhost:54321/`
+ * (Supabase admin) would have its response forwarded to whichever AI service
+ * the worker is calling.
+ *
+ * Known limitation — DNS rebinding (TOCTOU): the `assertSafeImageUrl` check
+ * resolves DNS once, then `fetch` resolves it again. A pathological
+ * attacker-controlled DNS server can return a public IP for the first lookup
+ * and a private IP for the second. We accept this for now because the
+ * mitigations (single-resolution + connect-by-IP, or a forwarding proxy)
+ * each carry real costs: connect-by-IP breaks SNI/Host validation for many
+ * CDNs, and a proxy is operational overhead we don't have the budget for.
+ * The redirect-chain wrapper below at least re-runs `assertSafeImageUrl`
+ * for each Location, so a 3xx into RFC1918 is blocked — but a single-shot
+ * DNS-rebind on the first request is not.
  */
 
 const PRIVATE_IPV4_PATTERNS: readonly RegExp[] = [
