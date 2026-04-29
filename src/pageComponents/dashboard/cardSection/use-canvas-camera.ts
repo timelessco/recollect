@@ -4,10 +4,11 @@ interface UseCanvasCameraOptions {
   onAdvance: () => void;
   onRetreat: () => void;
   // Scale at and above which the camera has zoomed past the upper threshold.
-  // Default 1.8 (well below max scale 2.0).
+  // Default 1.95 (just below max scale 2.0) — user must zoom nearly all the
+  // way in before the page swap fires, so casual mid-zoom doesn't trigger.
   thresholdIn?: number;
   // Scale at and below which the camera has zoomed past the lower threshold.
-  // Default 0.6 (well above min scale 0.4).
+  // Default 0.45 (just above min scale 0.4) — symmetric to thresholdIn.
   thresholdOut?: number;
   // Lock duration after a transition fires, in ms. Prevents rapid camera
   // changes from triggering oscillating advance/retreat firings.
@@ -26,8 +27,8 @@ interface UseCanvasCameraReturn {
 }
 
 export function useCanvasCamera({
-  thresholdIn = 1.8,
-  thresholdOut = 0.6,
+  thresholdIn = 1.95,
+  thresholdOut = 0.45,
   transitionLockMs = 600,
   onAdvance,
   onRetreat,

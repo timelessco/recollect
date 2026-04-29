@@ -108,7 +108,7 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
         }}
         panning={{ velocityDisabled: false }}
         smooth
-        wheel={{ step: 0.1 }}
+        wheel={{ step: 0.06 }}
       >
         <TransformComponent contentClass="!w-full !h-full" wrapperClass="!w-full !h-full">
           <AnimatePresence mode="wait">
