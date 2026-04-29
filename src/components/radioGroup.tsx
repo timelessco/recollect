@@ -7,12 +7,13 @@ import type { BookmarksViewTypes } from "../types/componentStoreTypes";
 import { useBookmarksViewUpdate } from "../hooks/useBookmarksViewUpdate";
 import useGetViewValue from "../hooks/useGetViewValue";
 import { TickIcon } from "../icons/tickIcon";
+import CanvasIconGray from "../icons/viewIcons/canvasIconGray";
 import CardIcon from "../icons/viewIcons/cardIcon";
 import ListIcon from "../icons/viewIcons/listIcon";
 import MoodboardIconGray from "../icons/viewIcons/moodboardIconGray";
 import { viewValues } from "../utils/constants";
 
-const VALID_VIEW_TYPES = new Set<string>(["card", "list", "moodboard", "timeline"]);
+const VALID_VIEW_TYPES = new Set<string>(["canvas", "card", "list", "moodboard", "timeline"]);
 
 function isBookmarksViewType(value: string): value is BookmarksViewTypes {
   return VALID_VIEW_TYPES.has(value);
@@ -38,6 +39,11 @@ export const bookmarksViewOptions = [
     icon: <Bars4Icon className="h-4 w-4" />,
     label: "Timeline",
     value: viewValues.timeline,
+  },
+  {
+    icon: <CanvasIconGray />,
+    label: "Canvas",
+    value: viewValues.canvas,
   },
 ];
 

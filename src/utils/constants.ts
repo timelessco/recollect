@@ -284,6 +284,7 @@ export const uncategorizedPages = [
 ];
 
 export const viewValues = {
+  canvas: "canvas",
   card: "card",
   list: "list",
   moodboard: "moodboard",
