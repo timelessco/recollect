@@ -52,7 +52,7 @@ export const POST = createAxiomRouteHandler(
       // wall-clock bound that survives the body read.
       const [screenshotError, screenshotResponse] = await vet(async () => {
         const json = await ky
-          .get(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(data.url)}`, {
+          .get(`${env.SCREENSHOT_API}?url=${encodeURIComponent(data.url)}`, {
             retry: 0,
             timeout: false,
             signal: AbortSignal.timeout(SCREENSHOT_TIMEOUT_MS),
