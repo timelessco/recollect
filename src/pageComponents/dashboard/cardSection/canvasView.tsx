@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import type { ReactZoomPanPinchRef } from "react-zoom-pan-pinch";
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import type { SingleListData } from "@/types/apiTypes";
 
@@ -33,6 +33,8 @@ function chunkBookmarks(list: SingleListData[]): SingleListData[][] {
 }
 
 const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
+  const prefersReducedMotion = useReducedMotion();
+
   // Subscribes to the same React Query cache CardSection's parent already uses,
   // so this is a free read — no extra fetch.
   const { fetchNextPage, hasNextPage } = useFetchPaginatedBookmarks();
@@ -106,8 +108,8 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
             <motion.div
               animate={{ opacity: 1 }}
               className="relative"
-              exit={{ opacity: 0 }}
-              initial={{ opacity: 0 }}
+              exit={{ opacity: prefersReducedMotion ? 1 : 0 }}
+              initial={{ opacity: prefersReducedMotion ? 1 : 0 }}
               key={pageIndex}
               onAnimationComplete={(definition) => {
                 // Only react to the fade-IN completion (opacity hits 1).
@@ -126,7 +128,7 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
                 height: CANVAS_H,
                 width: CANVAS_W,
               }}
-              transition={{ duration: FADE_DURATION_S }}
+              transition={{ duration: prefersReducedMotion ? 0 : FADE_DURATION_S }}
             >
               {currentChunk.map((bookmark) => (
                 <CanvasItem key={bookmark.id} position={procPos(bookmark.id)}>
