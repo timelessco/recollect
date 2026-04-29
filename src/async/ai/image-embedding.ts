@@ -1,5 +1,3 @@
-import { createHash } from "node:crypto";
-
 import { ExternalAccountClient, GoogleAuth } from "google-auth-library";
 import { z } from "zod";
 
@@ -9,30 +7,18 @@ import { env } from "@/env/server";
 import { MULTIMODAL_EMBEDDING_MODEL_VERSION } from "@/utils/constants";
 
 /**
- * Vertex AI multimodalembedding@001 caller. Returns a 1408-dim halfvec-ready
- * float array, the L2 norm (so callers can reject degenerate near-zero
- * vectors before INSERT), and a sha256 of the source URL (used as part of
- * the bookmark_embeddings idempotency key).
- *
- * Auth: Vercel OIDC -> GCP Workload Identity Federation. No long-lived
- * service account JSON. The auth client is lazy + memoized — module-scope
- * instantiation would force every importer (Vitest, type-check tooling) to
- * have the GCP_* vars set, and the token cache lives inside the client
- * instance regardless.
+ * Auth: Vercel OIDC -> GCP Workload Identity Federation. The auth client is
+ * lazy + memoized — module-scope instantiation would force every importer
+ * (Vitest, type-check tooling) to have the GCP_* vars set.
  *
  * Error sanitization: gaxios errors carry `cause.config.headers.Authorization`
  * with the impersonated GCP access token. We re-throw a generic message so
  * the bearer never reaches Sentry/Axiom even if the caller logs the error.
- *
- * Note: SSRF protection + streaming body cap land in #974 alongside the
- * shared safe-fetch helper. This file ships the bare-fetch path; #974
- * patches it to safeFetch + getReader() in one focused diff.
  */
 
 interface ImageToEmbeddingResult {
   embedding: number[];
   norm: number;
-  sourceUrlHash: Buffer;
 }
 
 const VERTEX_LOCATION = "us-central1";
@@ -193,34 +179,30 @@ const computeNorm = (embedding: number[]): number => {
   return Math.sqrt(sum);
 };
 
-/**
- * Embed a bookmark image via Vertex multimodal embedding.
- * Throws on image fetch failure, unsupported content-type, size cap,
- * Vertex auth/transport failure, or degenerate (near-zero) output.
- */
 export const imageToEmbedding = async (imageUrl: string): Promise<ImageToEmbeddingResult> => {
-  const { bytes } = await fetchImageBytes(imageUrl);
+  // Run image fetch and auth in parallel — they're independent, and the auth
+  // path can take 50-500ms on cold-start (WIF handshake). Catch in the IIFE
+  // so the gaxios cause never escapes with the impersonated bearer token.
+  const tokenPromise = (async (): Promise<string> => {
+    try {
+      const client = await getAuthClient();
+      const tokenResponse = await client.getAccessToken();
+      if (!tokenResponse.token) {
+        throw new Error("empty token");
+      }
+      return tokenResponse.token;
+    } catch {
+      throw new Error("Vertex auth failed", { cause: { source: "gcp-auth" } });
+    }
+  })();
 
-  let accessToken: string | null | undefined;
-  try {
-    const client = await getAuthClient();
-    const tokenResponse = await client.getAccessToken();
-    accessToken = tokenResponse.token;
-  } catch {
-    throw new Error("Vertex auth failed", {
-      cause: { source: "gcp-auth" },
-    });
-  }
-  if (!accessToken) {
-    throw new Error("Vertex auth returned empty access token");
-  }
+  const [{ bytes }, accessToken] = await Promise.all([fetchImageBytes(imageUrl), tokenPromise]);
 
   const embedding = await callVertexEmbedding(bytes, accessToken);
   const norm = computeNorm(embedding);
   if (norm < 1e-6) {
     throw new Error("Degenerate (near-zero) embedding from Vertex");
   }
-  const sourceUrlHash = createHash("sha256").update(imageUrl).digest();
 
-  return { embedding, norm, sourceUrlHash };
+  return { embedding, norm };
 };

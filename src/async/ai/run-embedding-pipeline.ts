@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto";
 
+import { z } from "zod";
+
 import type { ServerContext } from "@/lib/api-helpers/server-context";
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -9,33 +11,16 @@ import { setPayload } from "@/lib/api-helpers/server-context";
 import { MULTIMODAL_EMBEDDING_MODEL_VERSION } from "@/utils/constants";
 
 /**
- * Vertex AI embedding step. Called by both the AI-enrichment pgmq worker
- * (Raindrop / Instagram / Twitter imports + retries) and the screenshot
- * route (standard manual bookmark adds), so we only have one place that
- * knows how to call Vertex, claim a slot, and write the row.
- *
- * Errors are observability-only: callers run this AFTER the meta_data
- * update has committed, so an embedding miss never fails the surrounding
- * operation. Idempotency is guaranteed by claim_embedding_slot — replays /
- * concurrent workers see "already-current" and skip the Vertex call.
- *
- * Caller contract:
- *   - bookmarkId / userId / ogImage are persisted (the row exists in
- *     public.everything with an ogImage column).
- *   - supabase is a service-role client (worker-side; bypasses RLS).
- *   - ctx is the per-request observability context, used for setPayload only.
+ * Errors are observability-only — the caller's metadata commit has already
+ * landed, so an embedding miss never fails the surrounding operation.
+ * Idempotency is guaranteed by claim_embedding_slot: replays / concurrent
+ * workers see "already-current" and skip the Vertex call.
  */
 
-interface ClaimResult {
-  claimed: boolean;
-  reason?: string;
-}
-
-const isClaimResult = (value: unknown): value is ClaimResult =>
-  typeof value === "object" &&
-  value !== null &&
-  "claimed" in value &&
-  typeof (value as { claimed: unknown }).claimed === "boolean";
+const ClaimResultSchema = z.object({
+  claimed: z.boolean(),
+  reason: z.string().optional(),
+});
 
 // pgvector wire format for halfvec(N) inserts: "[v1,v2,...,vN]" string.
 const formatHalfvec = (embedding: number[]): string => `[${embedding.join(",")}]`;
@@ -65,12 +50,13 @@ export const runEmbeddingPipeline = async ({
     setPayload(ctx, { embedding_claim_error: claimError.message });
     return;
   }
-  if (!isClaimResult(claimData) || !claimData.claimed) {
-    setPayload(ctx, {
-      embedding_skipped: isClaimResult(claimData)
-        ? (claimData.reason ?? "no-claim")
-        : "invalid-response",
-    });
+  const parsedClaim = ClaimResultSchema.safeParse(claimData);
+  if (!parsedClaim.success) {
+    setPayload(ctx, { embedding_skipped: "invalid-response" });
+    return;
+  }
+  if (!parsedClaim.data.claimed) {
+    setPayload(ctx, { embedding_skipped: parsedClaim.data.reason ?? "no-claim" });
     return;
   }
 

@@ -291,23 +291,14 @@ export const POST = createAxiomRouteHandler(
           userId: user_id,
         });
 
-        // Vertex AI multimodal embedding. Errors here are observability-only
-        // and never fail the queue message; the meta_data update has already
-        // committed.
         if (ogImage) {
-          try {
-            await runEmbeddingPipeline({
-              bookmarkId: id,
-              ctx,
-              ogImage,
-              supabase,
-              userId: user_id,
-            });
-          } catch (error) {
-            setPayload(ctx, {
-              embedding_unexpected_error: error instanceof Error ? error.message : String(error),
-            });
-          }
+          await runEmbeddingPipeline({
+            bookmarkId: id,
+            ctx,
+            ogImage,
+            supabase,
+            userId: user_id,
+          });
         }
 
         // Delete message from queue on success

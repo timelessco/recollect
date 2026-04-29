@@ -594,14 +594,7 @@ export async function addRemainingBookmarkData(
 
   console.log("[add-remaining-bookmark-data] DB update successful:", { bookmarkId: id });
 
-  // 7. Vertex multimodal embedding for visual-similarity search.
-  //
-  //    Runs after the meta_data + ogImage commit so the bookmark is already
-  //    user-visible by the time we hit Vertex. runEmbeddingPipeline catches
-  //    its own errors (claim_embedding_slot RPC failure, Vertex 4xx/5xx,
-  //    DB write failure) and either logs via setPayload or DELETEs the
-  //    placeholder row — never throws back to the enrichment caller. So an
-  //    embedding miss does not regress the bookmark add.
+  // 7. Embedding miss is observability-only — meta_data already committed.
   if (finalOgImage) {
     await runEmbeddingPipeline({
       bookmarkId: id,
