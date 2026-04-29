@@ -43,6 +43,13 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
   const [pageIndex, setPageIndex] = useState(0);
   const transformRef = useRef<null | ReactZoomPanPinchRef>(null);
 
+  // Reset to page 0 whenever the source list changes (e.g. sort change,
+  // category change). Without this, a high pageIndex from the prior list
+  // can land out of range and render blank.
+  useEffect(() => {
+    setPageIndex(0);
+  }, [bookmarksList]);
+
   const advance = useCallback(() => {
     setPageIndex((prev) => {
       const isLastLoadedChunk = prev + 1 >= chunks.length;
