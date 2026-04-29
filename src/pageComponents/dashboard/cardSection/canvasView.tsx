@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import type { ReactZoomPanPinchRef } from "react-zoom-pan-pinch";
 
+import { AnimatePresence, motion } from "motion/react";
+
 import type { SingleListData } from "@/types/apiTypes";
 
 import useFetchPaginatedBookmarks from "@/async/queryHooks/bookmarks/use-fetch-paginated-bookmarks";
@@ -20,6 +22,7 @@ interface CanvasViewProps {
 const MIN_CAMERA_SCALE = 0.4;
 const MAX_CAMERA_SCALE = 2;
 const INITIAL_CAMERA_SCALE = 1;
+const FADE_DURATION_S = 0.4;
 
 function chunkBookmarks(list: SingleListData[]): SingleListData[][] {
   const chunks: SingleListData[][] = [];
@@ -38,10 +41,6 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
   const [pageIndex, setPageIndex] = useState(0);
   const transformRef = useRef<null | ReactZoomPanPinchRef>(null);
 
-  const resetCamera = useCallback(() => {
-    transformRef.current?.setTransform(0, 0, INITIAL_CAMERA_SCALE);
-  }, []);
-
   const advance = useCallback(() => {
     setPageIndex((prev) => {
       const isLastLoadedChunk = prev + 1 >= chunks.length;
@@ -54,13 +53,11 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
       }
       return prev + 1;
     });
-    resetCamera();
-  }, [chunks.length, fetchNextPage, hasNextPage, resetCamera]);
+  }, [chunks.length, fetchNextPage, hasNextPage]);
 
   const retreat = useCallback(() => {
     setPageIndex((prev) => Math.max(0, prev - 1));
-    resetCamera();
-  }, [resetCamera]);
+  }, []);
 
   // Prefetch optimization: when on the last loaded chunk and more is fetchable,
   // eagerly fetch BEFORE the user crosses the threshold so the next page is
@@ -72,10 +69,18 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
     }
   }, [chunks.length, fetchNextPage, hasNextPage, pageIndex]);
 
-  const { report } = useCanvasCamera({
+  const { report, releaseLock } = useCanvasCamera({
     onAdvance: advance,
     onRetreat: retreat,
   });
+
+  // Camera reset is sequenced AFTER the cross-fade in finishes — this avoids
+  // a visual snap during the page transition. Lock-release immediately follows
+  // so the next zoom can fire.
+  const resetCameraAndReleaseLock = useCallback(() => {
+    transformRef.current?.setTransform(0, 0, INITIAL_CAMERA_SCALE);
+    releaseLock();
+  }, [releaseLock]);
 
   const currentChunk = chunks[pageIndex] ?? [];
 
@@ -97,19 +102,39 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
         wheel={{ step: 0.1 }}
       >
         <TransformComponent contentClass="!w-full !h-full" wrapperClass="!w-full !h-full">
-          <div
-            className="relative"
-            style={{
-              height: CANVAS_H,
-              width: CANVAS_W,
-            }}
-          >
-            {currentChunk.map((bookmark) => (
-              <CanvasItem key={bookmark.id} position={procPos(bookmark.id)}>
-                {renderCard(bookmark)}
-              </CanvasItem>
-            ))}
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              animate={{ opacity: 1 }}
+              className="relative"
+              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }}
+              key={pageIndex}
+              onAnimationComplete={(definition) => {
+                // Only react to the fade-IN completion (opacity hits 1).
+                // Fade-out (opacity 0 on exit) is the OLD page leaving — we
+                // wait for the NEW page to be visible before re-arming.
+                if (
+                  typeof definition === "object" &&
+                  definition !== null &&
+                  "opacity" in definition &&
+                  (definition as { opacity?: number }).opacity === 1
+                ) {
+                  resetCameraAndReleaseLock();
+                }
+              }}
+              style={{
+                height: CANVAS_H,
+                width: CANVAS_W,
+              }}
+              transition={{ duration: FADE_DURATION_S }}
+            >
+              {currentChunk.map((bookmark) => (
+                <CanvasItem key={bookmark.id} position={procPos(bookmark.id)}>
+                  {renderCard(bookmark)}
+                </CanvasItem>
+              ))}
+            </motion.div>
+          </AnimatePresence>
         </TransformComponent>
       </TransformWrapper>
     </div>
