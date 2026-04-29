@@ -11,13 +11,13 @@ export const v2FetchSimilarSupplement = {
     401: { description: "Not authenticated" },
   },
   description:
-    "Returns bookmarks similar to `bookmark_id`, scoped to the authenticated user. Ranking is an additive score over OKLCh color similarity (via `lch_color_score`), shared AI-inferred content types, shared detected objects, shared user tags, shared categories, and url host equality. Only results with score ≥ 5 are returned, ordered by score desc then `inserted_at` desc.",
+    "Returns bookmarks similar to `bookmark_id`, scoped to the authenticated user. `similarity_score` is an integer 0–100 derived from cosine similarity over Google Gemini Embedding 2 image embeddings (`gemini-embedding-2`). Source bookmarks without a stored embedding (still queued for processing, or non-image content) return an empty array.",
   method: "get",
   parameterExamples: {
     bookmark_id: {
       "no-matches": {
         description:
-          "Send `?bookmark_id=999999` — returns an empty array when no candidate scores ≥ 5.",
+          "Send `?bookmark_id=999999` — returns an empty array when the source has no embedding or no neighbors exist.",
         summary: "Bookmark with no strong matches",
         value: "999999",
       },
@@ -47,7 +47,7 @@ export const v2FetchSimilarSupplement = {
   },
   responseExamples: {
     "empty-result": {
-      description: "Source has no candidates above the threshold — empty array.",
+      description: "Source has no embedding yet, or no neighbors found — empty array.",
       summary: "No similar bookmarks",
       value: [] as const,
     },

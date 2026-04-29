@@ -10,16 +10,7 @@ import {
 import { FetchSimilarInputSchema, FetchSimilarOutputSchema } from "./schema";
 
 const ROUTE = "v2-bookmark-fetch-similar";
-
-// Passed explicitly to the RPC; override of the RPC default for tuning.
-// Visual + entity look-alike: max score is 42
-// (6 × up-to-3 color matches + 3 × type + 4 × object + 8 × people
-//  + 5 × creator (brand/author/artist/director/company/character/series)
-//  + 2 × classifier (platform/source/programming_language/framework/genre/location)
-//  + 2 × domain (same url host, www. stripped)).
-// MIN_SCORE = 3 means any single weak signal (type match) clears the floor;
-// stronger signals (color, people, creator) clear it easily.
-const MIN_SCORE = 3;
+const EMBEDDING_LIMIT = 50;
 
 interface BookmarkRow {
   description: string | null;
@@ -76,27 +67,39 @@ export const GET = createAxiomRouteHandler(
         ctx.fields.bookmark_id = bookmark_id;
       }
 
-      const { data: scored, error: rpcError } = await supabase.rpc("match_similar_bookmarks", {
-        p_bookmark_id: bookmark_id,
-        p_min_score: MIN_SCORE,
-      });
+      const startedAt = Date.now();
+      const { data: scoredRaw, error: rpcError } = await supabase.rpc(
+        "match_similar_bookmark_embeddings",
+        { p_bookmark_id: bookmark_id, p_limit: EMBEDDING_LIMIT },
+      );
 
+      setPayload(ctx, { similarity_rpc_ms: Date.now() - startedAt });
+
+      // The cosine RPC's ownership gate raises no_data_found when the source
+      // bookmark doesn't exist, isn't owned by the caller, or is trashed.
+      // From the route's perspective that maps to an empty result, not a 503.
       if (rpcError) {
+        if (rpcError.code === "P0002" || rpcError.code === "PGRST116") {
+          setPayload(ctx, { similar_count: 0, empty_result: true });
+          return [];
+        }
         throw new RecollectApiError("service_unavailable", {
           cause: rpcError,
           message: "Failed to compute similar bookmarks",
-          operation: "match_similar_bookmarks",
+          operation: "match_similar_bookmark_embeddings",
         });
       }
 
-      if (!scored || scored.length === 0) {
+      const scored = scoredRaw ?? [];
+
+      if (scored.length === 0) {
         setPayload(ctx, { similar_count: 0, empty_result: true });
         return [];
       }
 
       setPayload(ctx, { similar_count: scored.length, empty_result: false });
 
-      const scoreById = new Map(scored.map((row) => [row.id, row.score]));
+      const scoreById = new Map(scored.map((row) => [row.id, row.similarity_score]));
       const bookmarkIds = scored.map((row) => row.id);
 
       const { data: bookmarkData, error: bookmarkError } = await supabase

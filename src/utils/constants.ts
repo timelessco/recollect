@@ -4,6 +4,16 @@ import { BASE_URL } from "@/site-config";
 // AI
 export const GEMINI_MODEL = "gemini-3.1-flash-lite-preview";
 
+// Gemini multimodal embedding model. Passed as the `model` param to the
+// @google/genai SDK in image-embedding.ts.
+export const EMBEDDING_MODEL_VERSION = "gemini-embedding-2";
+
+// Output dimensionality requested from gemini-embedding-2. Default is 3072;
+// 1536 is a Matryoshka-supported truncation that halves storage with
+// effectively no quality loss for cosine top-K. Must match halfvec(N) in
+// the bookmark_embeddings migration.
+export const EMBEDDING_DIMENSION = 1536;
+
 // Category IDs
 export const UNCATEGORIZED_CATEGORY_ID = 0;
 
