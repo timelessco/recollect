@@ -94,7 +94,7 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
   const currentChunk = chunks[pageIndex] ?? [];
 
   return (
-    <div className="relative -mt-[47px] h-screen w-full overflow-hidden bg-gray-50">
+    <div className="relative -mt-[47px] h-screen w-full overflow-hidden">
       <TransformWrapper
         centerOnInit
         doubleClick={{ disabled: true }}
