@@ -94,10 +94,11 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
   const currentChunk = chunks[pageIndex] ?? [];
 
   return (
-    <div className="relative h-[calc(100vh-120px)] w-full overflow-hidden bg-gray-50">
+    <div className="relative -mt-[47px] h-screen w-full overflow-hidden bg-gray-50">
       <TransformWrapper
         doubleClick={{ disabled: true }}
         initialScale={INITIAL_CAMERA_SCALE}
+        limitToBounds={false}
         maxScale={MAX_CAMERA_SCALE}
         minScale={MIN_CAMERA_SCALE}
         onInit={(ref) => {
@@ -108,7 +109,7 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
         }}
         panning={{ velocityDisabled: false }}
         smooth
-        wheel={{ step: 0.06 }}
+        wheel={{ step: 0.04 }}
       >
         <TransformComponent contentClass="!w-full !h-full" wrapperClass="!w-full !h-full">
           <AnimatePresence mode="wait">
