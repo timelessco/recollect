@@ -96,7 +96,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
       console.log("######################## Screenshot Loading ########################");
       try {
         const { data: screenshotData } = await axios.get(
-          `${env.SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`,
+          `${env.SCREENSHOT_API}/cloudflare?url=${encodeURIComponent(url)}`,
           { responseType: "json" },
         );
 

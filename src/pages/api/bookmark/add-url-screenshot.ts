@@ -67,7 +67,7 @@ export default async function handler(
     });
 
     const [screenshotError, screenShotResponse] = await vet(() =>
-      axios.get(`${env.SCREENSHOT_API}/try?url=${encodeURIComponent(request.body.url)}`, {
+      axios.get(`${env.SCREENSHOT_API}/cloudflare?url=${encodeURIComponent(request.body.url)}`, {
         responseType: "json",
       }),
     );
