@@ -143,7 +143,7 @@ export const POST = createAxiomRouteHandler(
               // (Chrome/Instagram/Raindrop retries) through Cloudflare Browser
               // Rendering instead of Puppeteer. Revert before merge.
               const screenshotData = await ky
-                .get(`${env.SCREENSHOT_API}/cloudflare?url=${encodeURIComponent(url)}`, {
+                .get(`${env.SCREENSHOT_API}?url=${encodeURIComponent(url)}`, {
                   retry: 0,
                   timeout: false,
                 })

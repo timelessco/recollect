@@ -54,7 +54,7 @@ export const POST = createAxiomRouteHandler(
       // Cloudflare Browser Rendering instead of Puppeteer. Revert before merge.
       const [screenshotError, screenshotResponse] = await vet(async () => {
         const json = await ky
-          .get(`${env.SCREENSHOT_API}/cloudflare?url=${encodeURIComponent(data.url)}`, {
+          .get(`${env.SCREENSHOT_API}?url=${encodeURIComponent(data.url)}`, {
             retry: 0,
             timeout: false,
             signal: AbortSignal.timeout(SCREENSHOT_TIMEOUT_MS),
