@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import { Radio } from "@base-ui/react/radio";
 import { RadioGroup as BaseRadioGroup } from "@base-ui/react/radio-group";
 import { Bars4Icon } from "@heroicons/react/20/solid";
@@ -52,6 +54,26 @@ export const RadioGroup = () => {
   const bookmarksViewValueRaw = useGetViewValue("bookmarksView", "");
   const bookmarksViewValue = typeof bookmarksViewValueRaw === "string" ? bookmarksViewValueRaw : "";
 
+  // Canvas view is desktop-only in v1 — no touch / pinch zoom support yet.
+  // Coarse-pointer devices (touchscreens, iPads) get the option hidden.
+  const [isCoarsePointer, setIsCoarsePointer] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse)");
+    setIsCoarsePointer(mq.matches);
+    const listener = (event: MediaQueryListEvent) => {
+      setIsCoarsePointer(event.matches);
+    };
+    mq.addEventListener("change", listener);
+    return () => {
+      mq.removeEventListener("change", listener);
+    };
+  }, []);
+
+  const visibleOptions = bookmarksViewOptions.filter(
+    (item) => !(isCoarsePointer && item.value === viewValues.canvas),
+  );
+
   return (
     <BaseRadioGroup
       className="dropdown-container flex flex-col"
@@ -62,7 +84,7 @@ export const RadioGroup = () => {
       }}
       value={bookmarksViewValue}
     >
-      {bookmarksViewOptions.map((item) => {
+      {visibleOptions.map((item) => {
         const isRadioSelected = bookmarksViewValue === item.value;
         return (
           <label
