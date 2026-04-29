@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useCallback, useEffect } from "react";
@@ -37,6 +38,11 @@ import { BookmarkCard } from "./bookmarkCard";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import ListBox from "./listBox";
 import { PublicMoodboardVirtualized } from "./public-moodboard-virtualized";
+
+// Dynamic import keeps react-zoom-pan-pinch out of the bundle until canvas
+// view is selected. CardSection itself is already client-only via next/dynamic
+// from bookmarkCards.tsx, so ssr:false is for the lib's window access at module load.
+const CanvasView = dynamic(() => import("./canvasView"), { ssr: false });
 
 export interface CardSectionProps {
   categoryViewsFromProps?: BookmarkViewDataTypes;
@@ -210,6 +216,10 @@ const CardSection = ({
       searchBookmarksData?.pages?.length === 0
     ) {
       return renderStatusMessage("No results found");
+    }
+
+    if (cardTypeCondition === viewValues.canvas) {
+      return <CanvasView bookmarksList={bookmarksList} renderCard={renderCard} />;
     }
 
     // Public page (and discover): use virtualized grid
