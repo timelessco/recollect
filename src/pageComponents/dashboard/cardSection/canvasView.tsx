@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import type { ReactNode } from "react";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import type { ReactZoomPanPinchRef } from "react-zoom-pan-pinch";
 
 import type { SingleListData } from "@/types/apiTypes";
 
@@ -8,6 +9,7 @@ import { PAGINATION_LIMIT } from "@/utils/constants";
 
 import { CANVAS_H, CANVAS_W, procPos } from "./canvas-position";
 import { CanvasItem } from "./canvasItem";
+import { useCanvasCamera } from "./use-canvas-camera";
 
 interface CanvasViewProps {
   bookmarksList: SingleListData[];
@@ -30,6 +32,16 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
   const chunks = useMemo(() => chunkBookmarks(bookmarksList), [bookmarksList]);
   const firstChunk = chunks[0] ?? [];
 
+  const { report } = useCanvasCamera({
+    onAdvance: () => {
+      // Page swap lands in Task 7; for now just observe threshold crossings.
+      console.log("[canvas-view] would advance to next page");
+    },
+    onRetreat: () => {
+      console.log("[canvas-view] would retreat to previous page");
+    },
+  });
+
   return (
     <div className="relative h-[calc(100vh-120px)] w-full overflow-hidden bg-gray-50">
       <TransformWrapper
@@ -37,6 +49,9 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
         initialScale={INITIAL_CAMERA_SCALE}
         maxScale={MAX_CAMERA_SCALE}
         minScale={MIN_CAMERA_SCALE}
+        onTransform={(_ref: ReactZoomPanPinchRef, state: { scale: number }) => {
+          report(state.scale);
+        }}
         panning={{ velocityDisabled: false }}
         smooth
         wheel={{ step: 0.1 }}
