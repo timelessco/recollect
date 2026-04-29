@@ -1,3 +1,4 @@
+import { getVercelOidcToken } from "@vercel/functions/oidc";
 import { ExternalAccountClient, GoogleAuth } from "google-auth-library";
 import { z } from "zod";
 
@@ -8,8 +9,8 @@ import { MULTIMODAL_EMBEDDING_MODEL_VERSION } from "@/utils/constants";
 
 /**
  * Auth: Vercel OIDC -> GCP Workload Identity Federation. The auth client is
- * lazy + memoized — module-scope instantiation would force every importer
- * (Vitest, type-check tooling) to have the GCP_* vars set.
+ * built once at module load and reused across invocations. ExternalAccountClient
+ * itself caches access tokens and refreshes via expiry_date.
  *
  * Error sanitization: gaxios errors carry `cause.config.headers.Authorization`
  * with the impersonated GCP access token. We re-throw a generic message so
@@ -42,8 +43,6 @@ const VertexResponseSchema = z.object({
     .min(1),
 });
 
-let cachedAuthClient: AuthClient | BaseExternalAccountClient | undefined;
-
 const requireProjectId = (): string => {
   const id = env.GCP_PROJECT_ID;
   if (!id) {
@@ -52,12 +51,7 @@ const requireProjectId = (): string => {
   return id;
 };
 
-const requireWifEnv = (): {
-  poolId: string;
-  projectNumber: string;
-  providerId: string;
-  serviceAccountEmail: string;
-} => {
+const buildWifClient = (): BaseExternalAccountClient | undefined => {
   const {
     GCP_PROJECT_NUMBER,
     GCP_SERVICE_ACCOUNT_EMAIL,
@@ -70,50 +64,45 @@ const requireWifEnv = (): {
     !GCP_WORKLOAD_IDENTITY_POOL_ID ||
     !GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID
   ) {
-    throw new Error("Vertex AI WIF not configured: GCP_* env vars missing (see .env.example)");
+    return undefined;
   }
-  return {
-    poolId: GCP_WORKLOAD_IDENTITY_POOL_ID,
-    projectNumber: GCP_PROJECT_NUMBER,
-    providerId: GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID,
-    serviceAccountEmail: GCP_SERVICE_ACCOUNT_EMAIL,
-  };
+  return (
+    ExternalAccountClient.fromJSON({
+      type: "external_account",
+      audience: `//iam.googleapis.com/projects/${GCP_PROJECT_NUMBER}/locations/global/workloadIdentityPools/${GCP_WORKLOAD_IDENTITY_POOL_ID}/providers/${GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID}`,
+      subject_token_type: "urn:ietf:params:oauth:token-type:jwt",
+      token_url: "https://sts.googleapis.com/v1/token",
+      service_account_impersonation_url: `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${GCP_SERVICE_ACCOUNT_EMAIL}:generateAccessToken`,
+      // Arrow wrapper (vs bare `getSubjectToken: getVercelOidcToken`) reconciles
+      // the parameter-type mismatch: getVercelOidcToken takes
+      // GetVercelOidcTokenOptions, getSubjectToken expects ExternalAccountSupplierContext.
+      subject_token_supplier: { getSubjectToken: () => getVercelOidcToken() },
+    }) ?? undefined
+  );
 };
 
+// Built once at module load. `undefined` when GCP_* are absent (tests,
+// type-check, environments where Vertex isn't wired up) — getAuthClient()
+// asserts presence at call time so non-embedding code paths stay unaware.
+//
+// `GoogleAuth` is a wrapper that resolves the actual `AuthClient` via async
+// `.getClient()`; `ExternalAccountClient.fromJSON` returns the client directly.
+const authSource: GoogleAuth | BaseExternalAccountClient | undefined = process.env
+  .GOOGLE_APPLICATION_CREDENTIALS
+  ? new GoogleAuth({ scopes: ["https://www.googleapis.com/auth/cloud-platform"] })
+  : buildWifClient();
+
+let resolvedLocalClient: AuthClient | undefined;
+
 const getAuthClient = async (): Promise<AuthClient | BaseExternalAccountClient> => {
-  if (cachedAuthClient) {
-    return cachedAuthClient;
+  if (!authSource) {
+    throw new Error("Vertex AI not configured: GCP_* env vars missing (see .env.example)");
   }
-
-  // Local development path: GOOGLE_APPLICATION_CREDENTIALS points at a
-  // service account key file. Standard Google convention; works anywhere
-  // outside Vercel. Production uses Vercel OIDC + WIF below.
-  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    const auth = new GoogleAuth({
-      scopes: ["https://www.googleapis.com/auth/cloud-platform"],
-    });
-    const localClient = await auth.getClient();
-    cachedAuthClient = localClient;
-    return localClient;
+  if (authSource instanceof GoogleAuth) {
+    resolvedLocalClient ??= await authSource.getClient();
+    return resolvedLocalClient;
   }
-
-  const wif = requireWifEnv();
-  // Imported dynamically so test environments without @vercel/functions OIDC
-  // support don't hit a ReferenceError at module load.
-  const { getVercelOidcToken } = await import("@vercel/functions/oidc");
-  const client = ExternalAccountClient.fromJSON({
-    type: "external_account",
-    audience: `//iam.googleapis.com/projects/${wif.projectNumber}/locations/global/workloadIdentityPools/${wif.poolId}/providers/${wif.providerId}`,
-    subject_token_type: "urn:ietf:params:oauth:token-type:jwt",
-    token_url: "https://sts.googleapis.com/v1/token",
-    service_account_impersonation_url: `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${wif.serviceAccountEmail}:generateAccessToken`,
-    subject_token_supplier: { getSubjectToken: () => getVercelOidcToken() },
-  });
-  if (!client) {
-    throw new Error("Failed to construct GCP ExternalAccountClient");
-  }
-  cachedAuthClient = client;
-  return client;
+  return authSource;
 };
 
 const fetchImageBytes = async (imageUrl: string): Promise<{ bytes: Buffer; mime: string }> => {
