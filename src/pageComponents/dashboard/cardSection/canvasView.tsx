@@ -23,6 +23,9 @@ const MIN_CAMERA_SCALE = 0.4;
 const MAX_CAMERA_SCALE = 2;
 const INITIAL_CAMERA_SCALE = 1;
 const FADE_DURATION_S = 0.4;
+// Transparent buffer added around the card-placement region so the camera
+// has 50px of empty space at the canvas edges instead of cards flush to the limit.
+const CANVAS_EDGE_BUFFER_PX = 50;
 
 function chunkBookmarks(list: SingleListData[]): SingleListData[][] {
   const chunks: SingleListData[][] = [];
@@ -96,9 +99,10 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
   return (
     <div className="relative -mt-[47px] h-screen w-full overflow-hidden bg-gray-50">
       <TransformWrapper
+        centerOnInit
         doubleClick={{ disabled: true }}
         initialScale={INITIAL_CAMERA_SCALE}
-        limitToBounds={false}
+        limitToBounds
         maxScale={MAX_CAMERA_SCALE}
         minScale={MIN_CAMERA_SCALE}
         onInit={(ref) => {
@@ -133,8 +137,10 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
                 }
               }}
               style={{
-                height: CANVAS_H,
-                width: CANVAS_W,
+                height: CANVAS_H + CANVAS_EDGE_BUFFER_PX * 2,
+                paddingLeft: CANVAS_EDGE_BUFFER_PX,
+                paddingTop: CANVAS_EDGE_BUFFER_PX,
+                width: CANVAS_W + CANVAS_EDGE_BUFFER_PX * 2,
               }}
               transition={{ duration: prefersReducedMotion ? 0 : FADE_DURATION_S }}
             >
