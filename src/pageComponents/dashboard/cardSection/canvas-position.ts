@@ -1,5 +1,5 @@
-export const CANVAS_W = 4000;
-export const CANVAS_H = 3000;
+export const CANVAS_W = 2000;
+export const CANVAS_H = 1500;
 export const CARD_Z_MIN = 0.6;
 export const CARD_Z_MAX = 1.4;
 
