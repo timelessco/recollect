@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import ky from "ky";
 
 import { imageToText } from "@/async/ai/image-analysis";
+import { runEmbeddingPipeline } from "@/async/ai/run-embedding-pipeline";
 import { env } from "@/env/server";
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
@@ -289,6 +290,16 @@ export const POST = createAxiomRouteHandler(
           route,
           userId: user_id,
         });
+
+        if (ogImage) {
+          await runEmbeddingPipeline({
+            bookmarkId: id,
+            ctx,
+            ogImage,
+            supabase,
+            userId: user_id,
+          });
+        }
 
         // Delete message from queue on success
         const { error: deleteError } = await supabase.schema("pgmq_public").rpc("delete", {

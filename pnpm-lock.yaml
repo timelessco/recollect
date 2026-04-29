@@ -69,6 +69,9 @@ importers:
       '@total-typescript/ts-reset':
         specifier: 0.6.1
         version: 0.6.1
+      '@vercel/functions':
+        specifier: 3.4.4
+        version: 3.4.4(@aws-sdk/credential-provider-web-identity@3.972.29)
       allotment:
         specifier: 1.20.5
         version: 1.20.5(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -102,6 +105,9 @@ importers:
       ensure-error:
         specifier: 5.0.0
         version: 5.0.0
+      google-auth-library:
+        specifier: 10.6.2
+        version: 10.6.2
       image-size:
         specifier: 2.0.2
         version: 2.0.2
@@ -4555,6 +4561,19 @@ packages:
   '@ver0/deep-equal@1.0.1':
     resolution: {integrity: sha512-XSvL5wKXBZIv7fflMqhQx936sRpEtzxeV25xAEt0rLLXzbF6RCQaRA1jrVIn8JCubMyn/y0TaidphUtilLzl1A==}
     engines: {node: '>=18'}
+
+  '@vercel/functions@3.4.4':
+    resolution: {integrity: sha512-mdmCTMxAUTT5GMSs/iS4EuovzoofXNbb44/iPFwlgqulnJg3FEf6Sk46kLlZL4zuTTJQPT5YPTdBgZVlYZ5Azg==}
+    engines: {node: '>= 20'}
+    peerDependencies:
+      '@aws-sdk/credential-provider-web-identity': '*'
+    peerDependenciesMeta:
+      '@aws-sdk/credential-provider-web-identity':
+        optional: true
+
+  '@vercel/oidc@3.2.1':
+    resolution: {integrity: sha512-UUqZ2y+VXHgVH1Luoo+477/NcrO4X+ln38U70ldRgGiWJAuHhtjTm7cCAnyLkl2feg7ZmTBK3F1kvJKFEQc01w==}
+    engines: {node: '>= 20'}
 
   '@webassemblyjs/ast@1.14.1':
     resolution: {integrity: sha512-nuBEDgQfm1ccRp/8bCQrx1frohyufl4JlbMMZ4P1wpeOfDhF6FQkxZJ1b/e+PLwr6X1Nhw6OLme5usuBWYBvuQ==}
@@ -13044,6 +13063,14 @@ snapshots:
       eslint-visitor-keys: 5.0.1
 
   '@ver0/deep-equal@1.0.1': {}
+
+  '@vercel/functions@3.4.4(@aws-sdk/credential-provider-web-identity@3.972.29)':
+    dependencies:
+      '@vercel/oidc': 3.2.1
+    optionalDependencies:
+      '@aws-sdk/credential-provider-web-identity': 3.972.29
+
+  '@vercel/oidc@3.2.1': {}
 
   '@webassemblyjs/ast@1.14.1':
     dependencies:

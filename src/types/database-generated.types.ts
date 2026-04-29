@@ -101,6 +101,44 @@ export type Database = {
           },
         ];
       };
+      bookmark_embeddings: {
+        Row: {
+          bookmark_id: number;
+          created_at: string;
+          embedding: unknown;
+          model_version: string;
+          source_url_hash: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          bookmark_id: number;
+          created_at?: string;
+          embedding: unknown;
+          model_version?: string;
+          source_url_hash: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          bookmark_id?: number;
+          created_at?: string;
+          embedding?: unknown;
+          model_version?: string;
+          source_url_hash?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bookmark_embeddings_bookmark_id_fkey";
+            columns: ["bookmark_id"];
+            isOneToOne: true;
+            referencedRelation: "everything";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       bookmark_tags: {
         Row: {
           bookmark_id: number;
@@ -458,7 +496,6 @@ export type Database = {
         Args: { p_msg_id: number; p_queue_name: string; p_reason: string };
         Returns: boolean;
       };
-      aspect_bucket_from_meta: { Args: { meta: Json }; Returns: string };
       auto_assign_collections: {
         Args: {
           p_bookmark_id: number;
@@ -468,6 +505,14 @@ export type Database = {
         Returns: undefined;
       };
       check_bookmarks_view_keyed_shape: { Args: { v: Json }; Returns: boolean };
+      claim_embedding_slot: {
+        Args: {
+          p_bookmark_id: number;
+          p_source_url_hash: string;
+          p_user_id: string;
+        };
+        Returns: Json;
+      };
       create_and_assign_tag: {
         Args: { p_bookmark_id: number; p_tag_name: string };
         Returns: {
@@ -553,11 +598,11 @@ export type Database = {
         };
         Returns: Json;
       };
-      match_similar_bookmarks: {
-        Args: { p_bookmark_id: number; p_limit?: number; p_min_score?: number };
+      match_similar_bookmark_embeddings: {
+        Args: { p_bookmark_id: number; p_limit?: number };
         Returns: {
           id: number;
-          score: number;
+          similarity_score: number;
         }[];
       };
       process_chrome_bookmark: {

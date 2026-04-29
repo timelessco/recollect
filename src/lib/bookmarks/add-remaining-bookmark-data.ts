@@ -6,8 +6,10 @@ import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { imageToText } from "@/async/ai/image-analysis";
+import { runEmbeddingPipeline } from "@/async/ai/run-embedding-pipeline";
 import { logger } from "@/lib/api-helpers/axiom";
 import { extractErrorFields } from "@/lib/api-helpers/errors";
+import { getServerContext } from "@/lib/api-helpers/server-context";
 import { revalidateCategoriesIfPublic } from "@/lib/revalidation-helpers";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { fetchAiToggles } from "@/utils/ai-feature-toggles";
@@ -592,7 +594,18 @@ export async function addRemainingBookmarkData(
 
   console.log("[add-remaining-bookmark-data] DB update successful:", { bookmarkId: id });
 
-  // 7. Revalidate public categories
+  // 7. Embedding miss is observability-only — meta_data already committed.
+  if (finalOgImage) {
+    await runEmbeddingPipeline({
+      bookmarkId: id,
+      ctx: getServerContext(),
+      ogImage: finalOgImage,
+      supabase,
+      userId,
+    });
+  }
+
+  // 8. Revalidate public categories
   try {
     const serviceClient = createServerServiceClient();
 

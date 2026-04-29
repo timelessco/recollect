@@ -9,6 +9,15 @@ export const env = createEnv({
     AXIOM_TOKEN: z.string().optional(),
     CRON_SECRET: z.string().optional(),
     DEV_SUPABASE_SERVICE_KEY: z.string().optional(),
+    // GCP Workload Identity Federation (Vercel OIDC) — required for the
+    // visual-similarity embedding pipeline. The image-embedding helper
+    // asserts presence at first use; locally a GOOGLE_APPLICATION_CREDENTIALS
+    // service-account key file overrides this WIF flow.
+    GCP_PROJECT_ID: z.string().optional(),
+    GCP_PROJECT_NUMBER: z.string().optional(),
+    GCP_SERVICE_ACCOUNT_EMAIL: z.string().optional(),
+    GCP_WORKLOAD_IDENTITY_POOL_ID: z.string().optional(),
+    GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID: z.string().optional(),
     GOOGLE_GEMINI_TOKEN: z.string(),
     IMAGE_CAPTION_URL: z.string().optional(),
     PDF_SECRET_KEY: z.string(),

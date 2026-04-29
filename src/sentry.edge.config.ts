@@ -7,6 +7,9 @@ import * as Sentry from "@sentry/nextjs";
 
 import { env } from "@/env/client";
 
+// SECURITY NOTE: see src/sentry.server.config.ts — same constraint applies
+// to edge runtime. Do not enable extraErrorDataIntegration without re-adding
+// header scrubbing.
 Sentry.init({
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
