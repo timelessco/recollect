@@ -139,9 +139,6 @@ export const POST = createAxiomRouteHandler(
             // queue-worker path silently uploaded empty R2 blobs for months before this
             // guard was added, which bubbled up as Gemini `INVALID_ARGUMENT`.
             try {
-              // TESTING: hardcoded cloudflare=true to route queue-worker captures
-              // (Chrome/Instagram/Raindrop retries) through Cloudflare Browser
-              // Rendering instead of Puppeteer. Revert before merge.
               const screenshotData = await ky
                 .get(`${env.SCREENSHOT_API}?url=${encodeURIComponent(url)}`, {
                   retry: 0,

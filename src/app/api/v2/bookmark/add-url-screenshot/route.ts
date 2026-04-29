@@ -50,8 +50,6 @@ export const POST = createAxiomRouteHandler(
       // override ky would abort at 10s before the signal timer has a chance
       // to fire. `signal: AbortSignal.timeout(...)` is the end-to-end
       // wall-clock bound that survives the body read.
-      // TESTING: hardcoded cloudflare=true to route every capture through
-      // Cloudflare Browser Rendering instead of Puppeteer. Revert before merge.
       const [screenshotError, screenshotResponse] = await vet(async () => {
         const json = await ky
           .get(`${env.SCREENSHOT_API}?url=${encodeURIComponent(data.url)}`, {
