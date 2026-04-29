@@ -1,4 +1,11 @@
 ############################
+# Superpowers AI workflow artifacts (local-only, never committed)
+############################
+
+.superpowers/
+docs/superpowers/
+
+############################
 # OS X
 ############################
 
