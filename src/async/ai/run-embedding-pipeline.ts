@@ -61,6 +61,7 @@ export const runEmbeddingPipeline = async ({
   }
 
   const embeddingsTable = supabase.from("bookmark_embeddings");
+  const releaseClaim = () => embeddingsTable.delete().eq("bookmark_id", bookmarkId);
 
   try {
     const { embedding, norm } = await imageToEmbedding(ogImage);
@@ -74,14 +75,14 @@ export const runEmbeddingPipeline = async ({
       .eq("bookmark_id", bookmarkId);
 
     if (writeError) {
-      await embeddingsTable.delete().eq("bookmark_id", bookmarkId);
+      await releaseClaim();
       setPayload(ctx, { embedding_write_error: writeError.message });
       return;
     }
 
     setPayload(ctx, { embedding_written: true, embedding_norm: norm });
   } catch (error) {
-    await embeddingsTable.delete().eq("bookmark_id", bookmarkId);
+    await releaseClaim();
     setPayload(ctx, {
       embedding_failed: error instanceof Error ? error.message : String(error),
     });
