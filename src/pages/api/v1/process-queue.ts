@@ -38,7 +38,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   try {
     const result = await processImageQueue(supabase, {
-      batchSize: 1,
+      batchSize: 10,
       queue_name: "ai-embeddings",
     });
 

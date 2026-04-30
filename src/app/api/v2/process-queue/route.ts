@@ -22,7 +22,7 @@ export const POST = createAxiomRouteHandler(
       setPayload(ctx, { queue_name: "ai-embeddings" });
 
       const result = await processImageQueue(supabase, {
-        batchSize: 1,
+        batchSize: 10,
         queue_name: "ai-embeddings",
       });
 
