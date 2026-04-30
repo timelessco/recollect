@@ -39,9 +39,10 @@ import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import ListBox from "./listBox";
 import { PublicMoodboardVirtualized } from "./public-moodboard-virtualized";
 
-// Dynamic import keeps react-zoom-pan-pinch out of the bundle until canvas
-// view is selected. CardSection itself is already client-only via next/dynamic
-// from bookmarkCards.tsx, so ssr:false is for the lib's window access at module load.
+// Dynamic import keeps the canvas-view bundle (gestures, ResizeObserver,
+// AnimatePresence wiring) out of the main chunk until the canvas view is
+// selected. ssr:false avoids running the wheel/keyboard/ResizeObserver
+// setup during SSR.
 const CanvasView = dynamic(() => import("./canvasView"), { ssr: false });
 
 export interface CardSectionProps {
