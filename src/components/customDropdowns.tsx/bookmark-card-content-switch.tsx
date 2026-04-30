@@ -14,6 +14,11 @@ function isOptionEnabled(
   currentView: string,
   selectedValues: string[],
 ): boolean {
+  // Canvas tiles only render the cover image — toggles are display-only.
+  if (currentView === viewValues.canvas) {
+    return option.label === "Cover";
+  }
+
   if (currentView === viewValues.moodboard || currentView === viewValues.card) {
     return option.label === "Cover" || selectedValues.includes(option.value);
   }
@@ -26,6 +31,12 @@ function isOptionEnabled(
 }
 
 function isOptionDisabled(option: { label: string; value: string }, currentView: string): boolean {
+  // Canvas locks every toggle — the layout has no room for title /
+  // description / tags / info, so all options are read-only.
+  if (currentView === viewValues.canvas) {
+    return true;
+  }
+
   if (currentView === viewValues.moodboard || currentView === viewValues.card) {
     return option.label === "Cover";
   }

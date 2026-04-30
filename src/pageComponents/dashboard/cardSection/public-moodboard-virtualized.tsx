@@ -137,8 +137,10 @@ const getScrollElement = (): HTMLElement | null => {
 /**
  * Overlay anchor — owns router + lightbox store so route changes
  * only re-render this small component, not the whole virtualizer.
+ *
+ * Reused by CanvasView as the click target for canvas-mode bookmarks.
  */
-function BookmarkCardOverlay({ bookmark }: { bookmark: SingleListData }) {
+export function BookmarkCardOverlay({ bookmark }: { bookmark: SingleListData }) {
   const router = useRouter();
   const { setLightboxId, setLightboxOpen } = useMiscellaneousStore();
 

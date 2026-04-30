@@ -38,6 +38,7 @@ export default function useFetchPaginatedBookmarks(
   const {
     data: everythingData,
     fetchNextPage,
+    hasNextPage,
     isFetching: isFetchingEverythingData,
     isLoading: isEverythingDataLoading,
   } = useInfiniteQuery({
@@ -73,6 +74,7 @@ export default function useFetchPaginatedBookmarks(
     everythingData,
     fetchNextPage,
     flattendPaginationBookmarkData,
+    hasNextPage,
     isEverythingDataLoading,
     isFetchingEverythingData,
   };

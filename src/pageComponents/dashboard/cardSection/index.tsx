@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useCallback, useEffect } from "react";
@@ -37,6 +38,12 @@ import { BookmarkCard } from "./bookmarkCard";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import ListBox from "./listBox";
 import { PublicMoodboardVirtualized } from "./public-moodboard-virtualized";
+
+// Dynamic import keeps the canvas-view bundle (gestures, ResizeObserver,
+// AnimatePresence wiring) out of the main chunk until the canvas view is
+// selected. ssr:false avoids running the wheel/keyboard/ResizeObserver
+// setup during SSR.
+const CanvasView = dynamic(() => import("./canvasView"), { ssr: false });
 
 export interface CardSectionProps {
   categoryViewsFromProps?: BookmarkViewDataTypes;
@@ -210,6 +217,10 @@ const CardSection = ({
       searchBookmarksData?.pages?.length === 0
     ) {
       return renderStatusMessage("No results found");
+    }
+
+    if (cardTypeCondition === viewValues.canvas) {
+      return <CanvasView bookmarksList={bookmarksList} renderCard={renderCard} />;
     }
 
     // Public page (and discover): use virtualized grid
