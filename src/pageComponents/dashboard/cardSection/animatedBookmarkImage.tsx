@@ -190,6 +190,10 @@ export const LoaderImgPlaceholder = ({
       cardTypeCondition === viewValues.card || cardTypeCondition === viewValues.timeline,
     "flex h-[48px] w-[80px] items-center justify-center rounded-lg bg-gray-100":
       cardTypeCondition === viewValues.list,
+    // Canvas tiles are square — diamond centered on a 1:1 placeholder so
+    // missing-image cards visually match imaged cards in the floating layout.
+    "flex aspect-square w-full items-center justify-center rounded-lg bg-gray-100":
+      cardTypeCondition === viewValues.canvas,
   });
 
   // Two states only:
