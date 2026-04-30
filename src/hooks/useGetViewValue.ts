@@ -1,19 +1,15 @@
 import { useRouter } from "next/router";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { find, isEmpty } from "lodash";
 
-import type {
-  BookmarkViewDataTypes,
-  CategoriesData,
-  FetchSharedCategoriesData,
-  ProfilesTableTypes,
-} from "../types/apiTypes";
+import type { BookmarkViewDataTypes } from "../types/apiTypes";
 
+import useFetchCategories from "@/async/queryHooks/category/use-fetch-categories";
+import useFetchSharedCategories from "@/async/queryHooks/share/use-fetch-shared-categories";
+import useFetchUserProfile from "@/async/queryHooks/user/use-fetch-user-profile";
 import { getPageViewData, getPageViewKey } from "@/utils/bookmarksViewKeyed";
 
 import { useSupabaseSession } from "../store/componentStore";
-import { CATEGORIES_KEY, SHARED_CATEGORIES_TABLE_NAME, USER_PROFILE } from "../utils/constants";
 import { isUserInACategory } from "../utils/helpers";
 import { getCategorySlugFromRouter } from "../utils/url";
 
@@ -24,7 +20,6 @@ const useGetViewValue = (
   isPublicPage = false,
   categoryViewsFromProps?: BookmarkViewDataTypes,
 ) => {
-  const queryClient = useQueryClient();
   const router = useRouter();
   // cat_id refers to cat slug here as it's got from url
   const categorySlug = getCategorySlugFromRouter(router);
@@ -34,31 +29,15 @@ const useGetViewValue = (
   const userId = userData?.user?.id;
   const userEmail = userData?.user?.email;
 
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
-    CATEGORIES_KEY,
-    userId,
-  ]);
+  const { allCategories: categoryData } = useFetchCategories();
+  const { sharedCategoriesData } = useFetchSharedCategories();
+  const { userProfileData: userProfilesData } = useFetchUserProfile();
 
-  const sharedCategoriesData = queryClient.getQueryData<{ data: FetchSharedCategoriesData[] }>([
-    SHARED_CATEGORIES_TABLE_NAME,
-  ]);
-
-  const userProfilesData = queryClient.getQueryData<{ data: ProfilesTableTypes[] }>([
-    USER_PROFILE,
-    userId,
-  ]);
-
-  const currentCategoryData = find(
-    categoryData?.data,
-    (item) => item?.category_slug === categorySlug,
-  );
+  const currentCategoryData = find(categoryData, (item) => item?.category_slug === categorySlug);
 
   const isUserTheCategoryOwner = userId === currentCategoryData?.user_id?.id;
 
-  const categoryIdFromSlug = find(
-    categoryData?.data,
-    (item) => item?.category_slug === categorySlug,
-  )?.id;
+  const categoryIdFromSlug = find(categoryData, (item) => item?.category_slug === categorySlug)?.id;
 
   if (!isPublicPage) {
     if (categorySlug && isUserInACategory(categorySlug)) {
@@ -67,11 +46,11 @@ const useGetViewValue = (
         return currentCategoryData?.category_views?.[viewType];
       }
 
-      if (!isEmpty(sharedCategoriesData?.data)) {
+      if (!isEmpty(sharedCategoriesData)) {
         // the user is not the category owner
         // gets the collab users layout data for the shared collection
         const sharedCategoriesDataUserData = find(
-          sharedCategoriesData?.data,
+          sharedCategoriesData,
           (item) => item?.email === userEmail && item?.category_id === categoryIdFromSlug,
         );
 
@@ -81,8 +60,8 @@ const useGetViewValue = (
       return defaultReturnValue;
     }
 
-    if (!isEmpty(userProfilesData?.data)) {
-      const bookmarksView = userProfilesData?.data[0]?.bookmarks_view;
+    if (!isEmpty(userProfilesData)) {
+      const bookmarksView = userProfilesData?.[0]?.bookmarks_view;
       const pageKey = getPageViewKey(categorySlug);
       const pageView = getPageViewData(bookmarksView, pageKey);
       const value = pageView?.[viewType];

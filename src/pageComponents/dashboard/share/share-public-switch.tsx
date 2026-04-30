@@ -1,7 +1,7 @@
 import { find } from "lodash";
 
 import { useUpdateCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-update-category-optimistic-mutation";
-import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "@/async/queryHooks/category/use-fetch-categories";
 import { Switch } from "@/components/ui/recollect/switch";
 import useGetCurrentCategoryId from "@/hooks/useGetCurrentCategoryId";
 import { useMiscellaneousStore } from "@/store/componentStore";
@@ -21,13 +21,13 @@ export function SharePublicSwitch({ categoryId }: SharePublicSwitchProps) {
   let numericCategoryId: number | null;
   if (typeof dynamicCategoryId === "number") {
     numericCategoryId = dynamicCategoryId;
-  } else if (typeof dynamicCategoryId === "string" && /^\d+$/u.test(String(dynamicCategoryId))) {
+  } else if (typeof dynamicCategoryId === "string" && /^\d+$/u.test(dynamicCategoryId)) {
     numericCategoryId = Number.parseInt(dynamicCategoryId, 10);
   } else {
     numericCategoryId = null;
   }
 
-  const currentCategory = find(categoryData?.data ?? [], (item) => item?.id === numericCategoryId);
+  const currentCategory = find(categoryData ?? [], (item) => item?.id === numericCategoryId);
 
   const canToggle = numericCategoryId !== null && currentCategory !== undefined;
 

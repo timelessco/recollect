@@ -30,6 +30,13 @@ const getBodySchema = () =>
     id: z.string(),
   });
 
+// Scoped RLS can hide the joined category row, so the FK side returns null — drop those before mapping.
+type CategoryJoinRow = BookmarksWithCategoriesWithCategoryForeignKeys[number];
+const hasCategory = (
+  row: CategoryJoinRow,
+): row is CategoryJoinRow & { category_id: NonNullable<CategoryJoinRow["category_id"]> } =>
+  row.category_id !== null;
+
 /**
  * This api fetches bookmark by its id
  * @param {NextApiRequest<RequestType>} request - The incoming API request
@@ -85,15 +92,15 @@ export default async function handler(
       .eq("bookmark_id", bookmarkId)
       .eq("user_id", userId);
 
-    // Construct addedCategories array
+    // Construct addedCategories array.
     const bookmarkCategories =
       categoriesData as unknown as BookmarksWithCategoriesWithCategoryForeignKeys;
-    const addedCategories = bookmarkCategories?.map((item) => ({
-      category_name: item?.category_id?.category_name,
-      category_slug: item?.category_id?.category_slug,
-      icon: item?.category_id?.icon,
-      icon_color: item?.category_id?.icon_color,
-      id: item?.category_id?.id,
+    const addedCategories = bookmarkCategories?.filter(hasCategory).map((item) => ({
+      category_name: item.category_id.category_name,
+      category_slug: item.category_id.category_slug,
+      icon: item.category_id.icon,
+      icon_color: item.category_id.icon_color,
+      id: item.category_id.id,
     }));
 
     // Add categories to bookmark data

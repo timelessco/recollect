@@ -1,12 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { PaginatedBookmarks } from "../../../types/apiTypes";
+import type { DeleteBookmarkPayload, PaginatedBookmarks } from "../../../types/apiTypes";
+import type { DeleteBookmarkOutput } from "@/app/api/v2/bookmark/delete-bookmark/schema";
+
+import { api } from "@/lib/api-helpers/api-v2";
 
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../../hooks/useGetSortBy";
 import { useSupabaseSession } from "../../../store/componentStore";
-import { BOOKMARKS_COUNT_KEY, BOOKMARKS_KEY } from "../../../utils/constants";
-import { deleteData } from "../../supabaseCrudHelpers";
+import {
+  BOOKMARKS_COUNT_KEY,
+  BOOKMARKS_KEY,
+  V2_DELETE_BOOKMARK_DATA_API,
+} from "../../../utils/constants";
 
 // dels bookmark optimistically
 export default function useDeleteBookmarksOptimisticMutation() {
@@ -17,7 +23,10 @@ export default function useDeleteBookmarksOptimisticMutation() {
   const { sortBy } = useGetSortBy();
 
   const deleteBookmarkOptismicMutation = useMutation({
-    mutationFn: deleteData,
+    mutationFn: (payload: DeleteBookmarkPayload) =>
+      api
+        .post(V2_DELETE_BOOKMARK_DATA_API, { json: { deleteData: payload.deleteData } })
+        .json<DeleteBookmarkOutput>(),
     onMutate: async (data) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
@@ -46,6 +55,8 @@ export default function useDeleteBookmarksOptimisticMutation() {
               ),
             };
           }
+
+          return old;
         },
       );
 

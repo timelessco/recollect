@@ -11,7 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "daily",
       lastModified,
       priority: 0.7,
-      url: `${BASE_URL}/discover`,
+      url: `${BASE_URL}/public/discover`,
     },
     {
       changeFrequency: "monthly",

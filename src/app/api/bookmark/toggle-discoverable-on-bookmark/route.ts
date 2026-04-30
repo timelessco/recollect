@@ -11,6 +11,9 @@ import {
 
 const ROUTE = "toggle-discoverable-on-bookmark";
 
+/**
+ * @deprecated Use /api/v2/bookmark/toggle-discoverable-on-bookmark instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     const { bookmark_id: bookmarkId, make_discoverable: makeDiscoverable } = data;

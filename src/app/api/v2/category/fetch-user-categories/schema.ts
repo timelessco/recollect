@@ -41,7 +41,6 @@ const CategoryWithCollabDataSchema = z.object({
     .boolean()
     .meta({ description: "Whether this category is in the user's favorites (legacy compat)" }),
   is_public: z.boolean().meta({ description: "Whether the category is publicly visible" }),
-  order_index: z.int().nullable().meta({ description: "Category display order index" }),
   user_id: UserProfileJoinSchema,
 });
 

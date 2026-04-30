@@ -98,11 +98,6 @@ export interface TempTag {
   name: string;
 }
 
-export interface FetchUserTagsDataResponse {
-  data: UserTagsData[];
-  error: null | PostgrestError;
-}
-
 export interface BookmarksTagData {
   bookmark_id: number;
   bookmark_tag_id: number;
@@ -207,6 +202,7 @@ export interface ProfilesTableTypes {
   id: string;
   last_synced_instagram_id: null | string;
   last_synced_twitter_id: null | string;
+  onboarded_at: null | string;
   preferred_og_domains?: null | string[];
   profile_pic: string;
   provider: null | string;
@@ -231,12 +227,14 @@ export interface ProfilesTableForPayloadTypes {
 
 export type BookmarksWithTagsWithTagForginKeys = {
   bookmark_id: number;
-  tag_id: { id: number; name: string };
+  // FK side is nullable: scoped RLS hides the joined row when the caller can't read it.
+  tag_id: null | { id: number; name: string };
 }[];
 
 export type BookmarksWithCategoriesWithCategoryForeignKeys = {
   bookmark_id: number;
-  category_id: {
+  // FK side is nullable: scoped RLS hides the joined row when the caller can't read it.
+  category_id: null | {
     category_name: string;
     category_slug: string;
     icon: null | string;
@@ -323,10 +321,6 @@ export interface RemoveUserProfilePicPayload {
   id: string;
 }
 
-export interface GetUserProfilePicPayload {
-  email: string;
-}
-
 export interface DeleteSharedCategoriesUserApiPayload {
   id: number;
   session: SupabaseSessionType;
@@ -364,17 +358,13 @@ export interface UploadProfilePicPayload {
   file: FileType;
 }
 
-type DataResponse = null | SingleListData[];
-type ErrorResponse = null | PostgrestError | string;
-
 export interface GetPublicCategoryBookmarksApiResponseType {
-  category_name: CategoriesData["category_name"] | null;
-  category_views: BookmarkViewDataTypes | null;
-  data: DataResponse;
-  error: ErrorResponse;
+  bookmarks: SingleListData[];
+  categoryName: CategoriesData["category_name"] | null;
+  categoryViews: BookmarkViewDataTypes | null;
   icon: CategoriesData["icon"] | null;
-  icon_color: CategoriesData["icon_color"] | null;
-  is_public: CategoriesData["is_public"] | null;
+  iconColor: CategoriesData["icon_color"] | null;
+  isPublic: CategoriesData["is_public"] | null;
 }
 
 // common types used in next js API

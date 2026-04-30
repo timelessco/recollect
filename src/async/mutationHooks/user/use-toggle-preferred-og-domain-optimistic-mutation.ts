@@ -1,17 +1,15 @@
-import type { TogglePreferredOgDomainResponse } from "@/app/api/profiles/toggle-preferred-og-domain/route";
+import type { TogglePreferredOgDomainOutputSchema } from "@/app/api/v2/profiles/toggle-preferred-og-domain/schema";
 import type { ProfilesTableTypes } from "@/types/apiTypes";
+import type { z } from "zod";
 
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
-import { postApi } from "@/lib/api-helpers/api";
+import { api } from "@/lib/api-helpers/api-v2";
 import { useSupabaseSession } from "@/store/componentStore";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
-import { NEXT_API_URL, TOGGLE_PREFERRED_OG_DOMAIN_API, USER_PROFILE } from "@/utils/constants";
+import { USER_PROFILE, V2_TOGGLE_PREFERRED_OG_DOMAIN_API } from "@/utils/constants";
 import { toggleDomainInArray } from "@/utils/domain";
 
-interface UserProfileCache {
-  data: null | ProfilesTableTypes[];
-  error?: Error;
-}
+type TogglePreferredOgDomainResponse = z.infer<typeof TogglePreferredOgDomainOutputSchema>;
 
 interface TogglePreferredOgDomainInput {
   domain: string;
@@ -26,15 +24,19 @@ export function useTogglePreferredOgDomainOptimisticMutation() {
     Error,
     TogglePreferredOgDomainInput,
     typeof queryKey,
-    undefined | UserProfileCache
+    ProfilesTableTypes[] | undefined
   >({
-    mutationFn: (payload) =>
-      postApi<TogglePreferredOgDomainResponse>(`${NEXT_API_URL}${TOGGLE_PREFERRED_OG_DOMAIN_API}`, {
-        domain: payload.domain,
-      }),
+    mutationFn: async (payload) => {
+      const response = await api
+        .post(V2_TOGGLE_PREFERRED_OG_DOMAIN_API, {
+          json: { domain: payload.domain },
+        })
+        .json<TogglePreferredOgDomainResponse>();
+      return response;
+    },
     queryKey,
     updater: (currentData, variables) => {
-      if (!currentData?.data) {
+      if (!currentData) {
         logCacheMiss("Optimistic Update", "User profile cache missing", {
           userId: session?.user?.id,
         });
@@ -43,21 +45,18 @@ export function useTogglePreferredOgDomainOptimisticMutation() {
 
       const { domain } = variables;
 
-      return {
-        ...currentData,
-        data: currentData.data.map((profile) => {
-          if (profile.id !== session?.user?.id) {
-            return profile;
-          }
+      return currentData.map((profile) => {
+        if (profile.id !== session?.user?.id) {
+          return profile;
+        }
 
-          const existingDomains = profile.preferred_og_domains ?? [];
+        const existingDomains = profile.preferred_og_domains ?? [];
 
-          return {
-            ...profile,
-            preferred_og_domains: toggleDomainInArray(existingDomains, domain),
-          };
-        }),
-      };
+        return {
+          ...profile,
+          preferred_og_domains: toggleDomainInArray(existingDomains, domain),
+        };
+      });
     },
   });
 

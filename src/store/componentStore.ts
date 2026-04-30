@@ -19,24 +19,10 @@ export const useModalStore = create<ModalStoreState>((set) => ({
 }));
 
 export const useLoadersStore = create<LoadersStoreState>((set) => ({
-  addLoadingBookmarkId: (id: number) => {
-    set((state) => {
-      const newSet = new Set([...state.loadingBookmarkIds, id]);
-      return { loadingBookmarkIds: newSet };
-    });
-  },
   isBookmarkAdding: false,
   isSearchLoading: false,
   // this is not handelled by react-query as this is a combination for 2 queries
   isSortByLoading: false,
-  loadingBookmarkIds: new Set<number>(),
-  removeLoadingBookmarkId: (id: number) => {
-    set((state) => {
-      const newSet = new Set(state.loadingBookmarkIds);
-      newSet.delete(id);
-      return { loadingBookmarkIds: newSet };
-    });
-  },
   setIsBookmarkAdding: (value: boolean) => {
     set(() => ({
       isBookmarkAdding: value,

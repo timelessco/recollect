@@ -6,14 +6,16 @@ paths:
 
 ## Zod + Supabase
 
-- `z.looseObject` infers `{ [x: string]: unknown; ... }` -- incompatible with Supabase's `Json` type. Use `z.object` for route handlers returning Supabase data
-- In OpenAPI raw schema objects, do NOT use `as const` on `required` arrays -- creates `readonly` tuple incompatible with `SchemaObject`'s `string[]`. Example data objects SHOULD use `as const`
-- Prefer `z.int()` over `z.number().int()` -- linter auto-transforms
-- `z.iso.datetime()` rejects Supabase's `timestamptz` (`+00:00` offset) -- use `z.string()` for output schemas. Only use `z.iso.datetime()` for input schemas where client sends `Z`-suffix via `toISOString()`
-- Never reference Zod internals in OpenAPI example descriptions -- use tool-agnostic phrasing
+- `z.looseObject` infers `{ [x: string]: unknown; ... }` — incompatible with Supabase's `Json` type. Use `z.object` for route handlers returning Supabase data
+- In OpenAPI raw schema objects, do NOT use `as const` on `required` arrays — creates `readonly` tuple incompatible with `SchemaObject`'s `string[]`. Example data objects SHOULD use `as const`
+- Prefer `z.int()` over `z.number().int()` — linter auto-transforms
+- `z.iso.datetime()` rejects Supabase's `timestamptz` (`+00:00` offset) — use `z.string()` for output schemas. Only use `z.iso.datetime()` for input schemas where the client sends `Z`-suffix via `toISOString()`
+- Never reference Zod internals in OpenAPI example descriptions — use tool-agnostic phrasing
 - Integer DB columns (`id`, `category_id`) must use `z.int()` in output schemas, not `z.number()`
 - Email input fields must use `z.email()`, not bare `z.string()`
-- When porting v1 null-coalescing (`value ?? ""`), verify v1 actually uses `??` -- don't add fallbacks that change behavior
-- `category_id` input schemas must include `.min(0)` per domain convention
-- Supabase FK joins (`.select("fk_col(col1, col2)")`) return `null` when no match -- `.filter()` before `.map()`. Verify unwanted `?.` optional checks -- use strict types only
-- When using Supabase `.like()` or `.ilike()` with user-derived strings, escape `%` and `_` wildcards before the query
+- When porting v1 null-coalescing (`value ?? ""`), verify v1 actually uses `??` — don't add fallbacks that change behavior
+- Supabase FK joins (`.select("fk_col(col1, col2)")`) return `null` when no match OR when scoped RLS hides the joined row. Type as `T | null`, extract a module-scope type-predicate helper, `.filter(hasFk)` before `.map()`. `?.` chains at the dereference site silently leak `undefined` into the payload
+- Normalizing hidden-FK fields with `?? ""` prevents crashes but produces silently-wrong values downstream (`host//slug`, duplicate React keys, empty identity checks). Guard in the consumer before using as URL/key/identifier
+- When using Supabase `.like()`/`.ilike()` with user-derived strings, escape `%` and `_` wildcards before the query
+- `category_id: 0` = Uncategorized (auto-managed virtual category) — keep `.min(0)` in schemas, not `.min(1)`
+- Supabase type boundaries: use `toJson()` / `toDbType()` helpers from `src/utils/type-utils.ts` — never inline `as unknown as Json` at call sites

@@ -1,21 +1,21 @@
 import { produce } from "immer";
 
 import type {
-  RemoveCategoryFromBookmarkPayload,
-  RemoveCategoryFromBookmarkResponse,
-} from "@/app/api/category/remove-category-from-bookmark/schema";
+  RemoveCategoryFromBookmarkInput,
+  RemoveCategoryFromBookmarkOutput,
+} from "@/app/api/v2/category/remove-category-from-bookmark/schema";
 import type { CategoriesData, PaginatedBookmarks } from "@/types/apiTypes";
 
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
-import { postApi } from "@/lib/api-helpers/api";
+import { api } from "@/lib/api-helpers/api-v2";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
 import {
   BOOKMARKS_COUNT_KEY,
   BOOKMARKS_KEY,
   CATEGORIES_KEY,
-  REMOVE_CATEGORY_FROM_BOOKMARK_API,
   UNCATEGORIZED_CATEGORY_ID,
+  V2_REMOVE_CATEGORY_FROM_BOOKMARK_API,
 } from "@/utils/constants";
 
 interface RemoveCategoryMutationOptions {
@@ -35,9 +35,9 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
     useBookmarkMutationContext();
 
   const removeCategoryFromBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
-    RemoveCategoryFromBookmarkResponse,
+    RemoveCategoryFromBookmarkOutput,
     Error,
-    RemoveCategoryFromBookmarkPayload,
+    RemoveCategoryFromBookmarkInput,
     typeof queryKey,
     PaginatedBookmarks
   >({
@@ -67,10 +67,7 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
           if (!hasNonZeroCategories) {
             // Get uncategorized entry from cache
             const allCategories =
-              queryClient.getQueryData<{ data: CategoriesData[] }>([
-                CATEGORIES_KEY,
-                session?.user?.id,
-              ])?.data ?? [];
+              queryClient.getQueryData<CategoriesData[]>([CATEGORIES_KEY, session?.user?.id]) ?? [];
             const uncategorizedEntry = allCategories.find(
               (cat) => cat.id === UNCATEGORIZED_CATEGORY_ID,
             );
@@ -98,10 +95,9 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
       },
     ],
     mutationFn: (payload) =>
-      postApi<RemoveCategoryFromBookmarkResponse>(
-        `/api${REMOVE_CATEGORY_FROM_BOOKMARK_API}`,
-        payload,
-      ),
+      api
+        .post(V2_REMOVE_CATEGORY_FROM_BOOKMARK_API, { json: payload })
+        .json<RemoveCategoryFromBookmarkOutput>(),
     onSettled: (_data, error) => {
       // Single bookmark cache is now updated optimistically via additionalOptimisticUpdates
       if (error) {
@@ -139,8 +135,7 @@ export function useRemoveCategoryFromBookmarkOptimisticMutation({
 
       // Get uncategorized entry upfront (may be needed for exclusive model)
       const allCategories =
-        queryClient.getQueryData<{ data: CategoriesData[] }>([CATEGORIES_KEY, session?.user?.id])
-          ?.data ?? [];
+        queryClient.getQueryData<CategoriesData[]>([CATEGORIES_KEY, session?.user?.id]) ?? [];
       const uncategorizedEntry = allCategories.find((cat) => cat.id === UNCATEGORIZED_CATEGORY_ID);
 
       return produce(currentData, (draft) => {

@@ -4,7 +4,7 @@ import type { CategoriesData } from "@/types/apiTypes";
 
 import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 import { useRemoveCategoryFromBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-remove-category-from-bookmark-optimistic-mutation";
-import useFetchCategories from "@/async/queryHooks/category/useFetchCategories";
+import useFetchCategories from "@/async/queryHooks/category/use-fetch-categories";
 import { useBookmarkCategories } from "@/hooks/use-bookmark-categories";
 import { UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
 
@@ -42,9 +42,9 @@ export const useCategoryMultiSelect = ({
 
   // Compute visible and selected categories
   const visibleCategories = useMemo(() => {
-    const cats = allCategories?.data ?? [];
+    const cats = allCategories ?? [];
     return filterUncategorized ? cats.filter((cat) => cat.id !== UNCATEGORIZED_CATEGORY_ID) : cats;
-  }, [allCategories?.data, filterUncategorized]);
+  }, [allCategories, filterUncategorized]);
 
   const categoryMap = useMemo(
     () => new Map(visibleCategories.map((cat) => [cat.id, cat])),

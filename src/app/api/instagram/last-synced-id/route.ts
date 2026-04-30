@@ -14,6 +14,9 @@ const OutputSchema = z.object({
   last_synced_instagram_id: z.string(),
 });
 
+/**
+ * @deprecated Use /api/v2/instagram/last-synced-id instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     const { data: profile, error } = await supabase

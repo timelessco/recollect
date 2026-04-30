@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/recollect/button";
 import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
 import { createClient } from "@/lib/supabase/client";
 import { EVERYTHING_URL, OTP_URL } from "@/utils/constants";
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 import { cn } from "@/utils/tailwind-merge";
 
 const emailSchema = z.object({
@@ -25,6 +25,7 @@ export function EmailToOtpForm() {
   const [isPending, startTransition] = React.useTransition();
   const extendedIsPending = usePendingWithMinDuration(isPending);
   const [errors, setErrors] = React.useState<Record<string, string[]>>({});
+  const handleClientError = useHandleClientError();
 
   const handleFormSubmit = (formValues: Form.Values) => {
     const result = emailSchema.safeParse(formValues);
@@ -64,7 +65,13 @@ export function EmailToOtpForm() {
 
   return (
     <Form className="flex w-full flex-col gap-4" errors={errors} onFormSubmit={handleFormSubmit}>
-      <React.Suspense fallback={<EmailField />}>
+      {/*
+        `useQueryState` reads from `useSearchParams`, which opts the whole route
+        out of static rendering unless wrapped in a Suspense boundary. Isolating
+        it here keeps the rest of the form static; the fallback renders a plain
+        autofocused input so the field is usable immediately during hydration.
+      */}
+      <React.Suspense fallback={<EmailField autoFocus />}>
         <EmailFieldWithQueryState />
       </React.Suspense>
 
@@ -85,7 +92,9 @@ type EmailFieldProps = Pick<
   "autoFocus" | "onChange" | "ref" | "value"
 >;
 
-function EmailField({ autoFocus, onChange, ref, value }: EmailFieldProps) {
+function EmailField(props: EmailFieldProps) {
+  const { autoFocus, onChange, ref, value } = props;
+
   return (
     <Field.Root className="flex flex-col gap-1" name="email">
       <Field.Control

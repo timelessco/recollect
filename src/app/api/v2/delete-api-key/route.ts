@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { PROFILES } from "@/utils/constants";
 
 import { DeleteApiKeyInputSchema, DeleteApiKeyOutputSchema } from "./schema";
@@ -32,9 +32,7 @@ export const DELETE = createAxiomRouteHandler(
       }
 
       // Outcome flag AFTER the operation
-      if (ctx?.fields) {
-        ctx.fields.key_deleted = true;
-      }
+      setPayload(ctx, { key_deleted: true });
 
       return { success: true };
     },

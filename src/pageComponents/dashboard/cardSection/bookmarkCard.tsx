@@ -11,7 +11,6 @@ import useGetViewValue from "@/hooks/useGetViewValue";
 import useIsUserInTweetsPage from "@/hooks/useIsUserInTweetsPage";
 import { useSupabaseSession } from "@/store/componentStore";
 import { viewValues } from "@/utils/constants";
-import { getDomain } from "@/utils/domain";
 import { getBaseUrl, isBookmarkOwner, isCurrentYear } from "@/utils/helpers";
 import { cn } from "@/utils/tailwind-merge";
 import { getCategorySlugFromRouter } from "@/utils/url";
@@ -19,22 +18,6 @@ import { getCategorySlugFromRouter } from "@/utils/url";
 import { BookmarkAvatar, BookmarkCategoryBadge, BookmarkFavIcon } from "./bookmarkCardParts";
 import { BookmarkOgImage } from "./bookmarkOgImage";
 import { EditAndDeleteIcons } from "./editAndDeleteIcons";
-
-export function getImgForPost(
-  post: SingleListData,
-  preferredDomainsSet: Set<string>,
-): string | undefined {
-  const postUrl = post?.url;
-  const postOgImage = post?.ogImage;
-  const postCoverImage = post?.meta_data?.coverImage;
-  if (preferredDomainsSet.size === 0) {
-    return postOgImage;
-  }
-
-  const domain = getDomain(postUrl ?? "");
-  const isPreferred = domain && preferredDomainsSet.has(domain);
-  return isPreferred ? (postCoverImage ?? postOgImage) : postOgImage;
-}
 
 export interface BookmarkCardProps {
   categoryViewsFromProps?: BookmarkViewDataTypes;
@@ -258,4 +241,43 @@ const BookmarkCardInner = ({
   );
 };
 
-export const BookmarkCard = memo(BookmarkCardInner);
+export const BookmarkCard = memo(BookmarkCardInner, (prev, next) => {
+  // Fast path: same reference means no change
+  if (prev.post === next.post) {
+    return (
+      prev.img === next.img &&
+      prev.isPublicPage === next.isPublicPage &&
+      prev.showAvatar === next.showAvatar &&
+      prev.categoryViewsFromProps === next.categoryViewsFromProps
+    );
+  }
+
+  // Compare post fields by value — prevents re-renders when query refetch
+  // creates new object references for unchanged bookmarks
+  return (
+    prev.post.id === next.post.id &&
+    prev.post.ogImage === next.post.ogImage &&
+    prev.post.url === next.post.url &&
+    prev.post.title === next.post.title &&
+    prev.post.description === next.post.description &&
+    prev.post.type === next.post.type &&
+    prev.post.trash === next.post.trash &&
+    prev.post.make_discoverable === next.post.make_discoverable &&
+    prev.post.inserted_at === next.post.inserted_at &&
+    prev.post.meta_data?.ogImgBlurUrl === next.post.meta_data?.ogImgBlurUrl &&
+    prev.post.meta_data?.screenshot === next.post.meta_data?.screenshot &&
+    prev.post.meta_data?.coverImage === next.post.meta_data?.coverImage &&
+    prev.post.meta_data?.height === next.post.meta_data?.height &&
+    prev.post.meta_data?.width === next.post.meta_data?.width &&
+    prev.post.addedTags?.length === next.post.addedTags?.length &&
+    // Compare by id — a category swap (drag-drop into a new collection) keeps
+    // length identical, so a length-only check would bail the memo and leave
+    // the card's category chip stale.
+    prev.post.addedCategories?.map((cat) => cat.id).join(",") ===
+      next.post.addedCategories?.map((cat) => cat.id).join(",") &&
+    prev.img === next.img &&
+    prev.isPublicPage === next.isPublicPage &&
+    prev.showAvatar === next.showAvatar &&
+    prev.categoryViewsFromProps === next.categoryViewsFromProps
+  );
+});

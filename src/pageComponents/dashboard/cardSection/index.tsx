@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect } from "react";
 import { Item } from "react-stately";
 
 import { useQueryClient } from "@tanstack/react-query";
@@ -15,12 +15,13 @@ import type { BookmarksViewTypes } from "../../../types/componentStoreTypes";
 import type { Many } from "lodash";
 
 import { buildSearchCategorySegment } from "@/hooks/use-bookmark-mutation-context";
+import { usePageContext } from "@/hooks/use-page-context";
 import { cn } from "@/utils/tailwind-merge";
 
 import loaderGif from "../../../../public/loader-gif.gif";
 import useFetchBookmarksCount from "../../../async/queryHooks/bookmarks/use-fetch-bookmarks-count";
-import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
-import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
+import useFetchCategories from "../../../async/queryHooks/category/use-fetch-categories";
+import useFetchUserProfile from "../../../async/queryHooks/user/use-fetch-user-profile";
 import { PreviewLightBox } from "../../../components/lightbox/previewLightBox";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import useGetViewValue from "../../../hooks/useGetViewValue";
@@ -30,9 +31,9 @@ import {
   useSupabaseSession,
 } from "../../../store/componentStore";
 import { BOOKMARKS_KEY, PREVIEW_ALT_TEXT, TWEETS_URL, viewValues } from "../../../utils/constants";
+import { getImgForPost, usePreferredDomainsSet } from "../../../utils/getBookmarkImageSource";
 import { getBookmarkCountForCurrentPage, getPreviewPathInfo } from "../../../utils/helpers";
-import { getCategorySlugFromRouter } from "../../../utils/url";
-import { BookmarkCard, getImgForPost } from "./bookmarkCard";
+import { BookmarkCard } from "./bookmarkCard";
 import { BookmarksSkeletonLoader } from "./bookmarksSkeleton";
 import ListBox from "./listBox";
 import { PublicMoodboardVirtualized } from "./public-moodboard-virtualized";
@@ -70,20 +71,17 @@ const CardSection = ({
   const router = useRouter();
   const userId = useSupabaseSession((state) => state.session)?.user?.id ?? "";
   const { category_id: categoryId } = useGetCurrentCategoryId();
-  const { isLoading: isLoadingProfile, userProfileData: profileData } = useFetchUserProfile();
+  const { isLoading: isLoadingProfile } = useFetchUserProfile();
   const { allCategories } = useFetchCategories();
   const { bookmarksCountData } = useFetchBookmarksCount();
 
-  const categorySlug = getCategorySlugFromRouter(router);
-  const preferredDomainsSet = useMemo(() => {
-    const domains = profileData?.data?.[0]?.preferred_og_domains ?? [];
-    return new Set(domains.map((item) => item.toLowerCase()));
-  }, [profileData]);
+  const { categorySlug, isSimilarPage } = usePageContext();
+  const preferredDomainsSet = usePreferredDomainsSet();
 
   const showAvatar =
     !isPublicPage &&
-    (find(allCategories?.data, (item) => item?.category_slug === categorySlug)?.collabData
-      ?.length ?? 0) > 1;
+    (find(allCategories, (item) => item?.category_slug === categorySlug)?.collabData?.length ?? 0) >
+      1;
   const isBookmarkLoading = useLoadersStore((state) => state.isBookmarkAdding);
   const { lightboxId, lightboxOpen, setLightboxId, setLightboxOpen } = useMiscellaneousStore();
   // Handle route changes for lightbox
@@ -248,7 +246,7 @@ const CardSection = ({
     <>
       <div className={listWrapperClass}>{renderItem()}</div>
       <PreviewLightBox
-        bookmarks={isPublicPage ? bookmarksList : undefined}
+        bookmarks={isPublicPage || isSimilarPage ? bookmarksList : undefined}
         id={lightboxId}
         open={lightboxOpen}
         setOpen={setLightboxOpen}

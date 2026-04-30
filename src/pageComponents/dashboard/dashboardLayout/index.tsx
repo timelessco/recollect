@@ -14,7 +14,7 @@ import { useIsMobileView } from "../../../hooks/useIsMobileView";
 import { useSupabaseSession } from "../../../store/componentStore";
 import { useSidePaneStore } from "../../../store/sidePaneStore";
 import { optionsMenuListArray } from "../../../utils/commonData";
-import { BOOKMARKS_COUNT_KEY, CATEGORIES_KEY } from "../../../utils/constants";
+import { BOOKMARKS_COUNT_KEY, CATEGORIES_KEY, SIMILAR_URL } from "../../../utils/constants";
 import { SettingsModalPortal } from "../modals/settings-modal";
 import SidePane from "../sidePane";
 import {
@@ -57,10 +57,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
   const currentPath = useGetCurrentUrlPath();
 
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
-    CATEGORIES_KEY,
-    userId,
-  ]);
+  const categoryData = queryClient.getQueryData<CategoriesData[]>([CATEGORIES_KEY, userId]);
 
   const bookmarksCountData = queryClient.getQueryData<BookmarksCountTypes>([
     BOOKMARKS_COUNT_KEY,
@@ -69,12 +66,12 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
 
   const optionsMenuList = optionsMenuListArray(currentPath, bookmarksCountData);
 
-  const currentCategoryData = find(
-    categoryData?.data,
-    (item) => item?.category_slug === currentPath,
-  );
+  const currentCategoryData = find(categoryData, (item) => item?.category_slug === currentPath);
   const headerName =
-    currentCategoryData?.category_name ?? find(optionsMenuList, (item) => item?.current)?.name;
+    currentPath === SIMILAR_URL
+      ? "Similar vibe"
+      : (currentCategoryData?.category_name ??
+        find(optionsMenuList, (item) => item?.current)?.name);
 
   const dashboardContentElement = () => {
     const onExpandSidePane = () => {

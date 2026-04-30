@@ -2,30 +2,29 @@ import { NextResponse } from "next/server";
 
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createApiClient, getApiUser } from "@/lib/supabase/api";
 import { getBookmarkMediaCategoryPredicate } from "@/utils/bookmark-category-filters";
 import { isUserOwnerOrAnyCollaborator } from "@/utils/category-auth";
-import { parseSearchColor } from "@/utils/colorUtils";
 import {
   AUDIO_URL,
   bookmarkType,
   DISCOVER_URL,
   DOCUMENTS_URL,
-  GET_HASHTAG_TAG_PATTERN,
   GET_SITE_SCOPE_PATTERN,
   IMAGES_URL,
   instagramType,
   INSTAGRAM_URL,
   LINKS_URL,
   PAGINATION_LIMIT,
-  TAG_MARKUP_REGEX,
   TRASH_URL,
   tweetType,
   TWEETS_URL,
   UNCATEGORIZED_URL,
   VIDEOS_URL,
 } from "@/utils/constants";
+import { parseSearchTokens } from "@/utils/searchTokens";
+import { toJson } from "@/utils/type-utils";
 
 import { SearchBookmarksInputSchema, SearchBookmarksOutputSchema } from "./schema";
 
@@ -53,40 +52,35 @@ function isUserCollection(categoryId: string): boolean {
 }
 
 /**
- * Extracts tag names from search query (e.g., "#typescript" -> ["typescript"]).
- * Ported from helpers.ts extractTagNamesFromSearch.
+ * Two audiences, one URL. The search bar lives on public discover pages
+ * (no user) AND user collections (require identity for ownership +
+ * collaborator scoping).
+ *
+ * Why not two routes: would duplicate the shared RPC + token-parsing
+ * pipeline (color hints, type hints, site scope, media-category predicates).
+ * Why not `withAuth`: would 401 logged-out discover-page searches.
+ * Why not `createServerServiceClient()`: would strip the `user.id` /
+ * `user.email` the authed branch needs for `user_id` filtering and
+ * `isUserOwnerOrAnyCollaborator` checks.
+ *
+ * So: `withPublic` + branch on `category_id === DISCOVER_URL`. Discover is
+ * fully anon. Every other branch calls `getApiUser()` and fails closed with
+ * `unauthorized` if no session is present.
+ *
+ * Spoof safety: `category_id` is caller-provided, but `DISCOVER_URL` matches
+ * only the `make_discoverable IS NOT NULL` filter path below. Setting
+ * `category_id=discover` reaches public data only — no per-user rows are
+ * reachable through the discover branch.
+ *
+ * See pitfall #34 in .claude/agents/references/api-migration-pitfalls.md for
+ * when this conditional-auth pattern is justified vs. when to prefer
+ * `withAuth` or a service client outright.
  */
-function extractTagNames(search: string): string[] | undefined {
-  if (search.length === 0) {
-    return undefined;
-  }
-
-  const matches = search.match(GET_HASHTAG_TAG_PATTERN);
-  if (!matches || matches.length === 0) {
-    return undefined;
-  }
-
-  const tagNames = matches
-    .map((item) => {
-      const markupMatch = TAG_MARKUP_REGEX.exec(item);
-      const display = markupMatch?.groups?.display;
-      return display ?? item.replace("#", "");
-    })
-    .filter((tag): tag is string => typeof tag === "string" && tag.length > 0);
-
-  return tagNames.length === 0 ? undefined : tagNames;
-}
-
 export const GET = createAxiomRouteHandler(
   withPublic({
     handler: async ({ input }) => {
       const { category_id: categoryId, offset, search } = input;
 
-      // Auth derivation: isDiscoverPage = (categoryId === DISCOVER_URL).
-      // categoryId is a client-provided query param, but the comparison is against
-      // the well-known constant "discover". An attacker setting category_id=discover
-      // only triggers the public-bookmarks code path (no private data exposed).
-      // Non-discover paths require valid user auth — failure throws RecollectApiError("unauthorized").
       const isDiscoverPage = categoryId === DISCOVER_URL;
 
       let supabase;
@@ -121,37 +115,32 @@ export const GET = createAxiomRouteHandler(
 
       const ctx = getServerContext();
       if (ctx?.fields) {
-        ctx.fields.is_discover = isDiscoverPage;
         ctx.fields.category_id = categoryId;
-        ctx.fields.offset = offset;
       }
+      setPayload(ctx, {
+        is_discover: isDiscoverPage,
+        offset,
+      });
 
-      // Parse search modifiers: @domain.com site scope, #tag filters, color: prefix
+      // Parse search modifiers: @domain.com site scope, then #-tokens (plain tags + color hints)
       const matchedSiteScope = search.match(GET_SITE_SCOPE_PATTERN);
       const urlScope = matchedSiteScope?.at(0)?.replace("@", "")?.toLowerCase() ?? "";
 
-      // Strip color: prefix first so # in hex values doesn't get parsed as a tag
-      const colorMatch = /color:(\S+)/i.exec(search);
-      const searchColor = colorMatch ? parseSearchColor(colorMatch[1]) : null;
-      const searchWithoutColor = search.replace(/color:\S*/i, "");
+      const searchWithoutSiteScope = search.replace(GET_SITE_SCOPE_PATTERN, "");
+      const {
+        text: searchText,
+        plainTags,
+        colorHints,
+        typeHints,
+      } = parseSearchTokens(searchWithoutSiteScope);
+      const tagName = plainTags.length > 0 ? plainTags : undefined;
 
-      // color: prefix present but invalid color → no results
-      if (colorMatch && !searchColor) {
-        return NextResponse.json([]);
-      }
-
-      const searchText = searchWithoutColor
-        .replace(GET_SITE_SCOPE_PATTERN, "")
-        .replace(GET_HASHTAG_TAG_PATTERN, "")
-        .trim();
-
-      const tagName = extractTagNames(searchWithoutColor);
-
-      if (ctx?.fields) {
-        ctx.fields.search_text = searchText || null;
-        ctx.fields.tag_name = tagName?.at(0) ?? null;
-        ctx.fields.url_scope = urlScope || null;
-      }
+      setPayload(ctx, {
+        has_search_text: searchText.length > 0,
+        search_text_length: searchText.length,
+        has_tag_filter: tagName !== undefined && tagName.length > 0,
+        url_scope: urlScope || null,
+      });
 
       // Determine category_scope for junction table filtering
       // Only set for numeric category IDs, not special URLs (IMAGES_URL, VIDEOS_URL, etc.)
@@ -165,12 +154,17 @@ export const GET = createAxiomRouteHandler(
       let rpcQuery = supabase
         .rpc("search_bookmarks_url_tag_scope", {
           category_scope: isDiscoverPage ? undefined : categoryScope,
-          color_a: searchColor?.a ?? undefined,
-          color_b: searchColor?.b ?? undefined,
-          color_l: searchColor?.l ?? undefined,
-
+          color_hints: toJson(
+            colorHints.map((h) => ({
+              tag_name: h.tagName,
+              l: h.oklab.l,
+              a: h.oklab.a,
+              b: h.oklab.b,
+            })),
+          ),
           search_text: searchText,
           tag_scope: tagName,
+          type_hints: typeHints.length > 0 ? typeHints : undefined,
           url_scope: urlScope,
         })
         .range(offset, offset + PAGINATION_LIMIT - 1);
@@ -228,10 +222,10 @@ export const GET = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.results_count = data?.length ?? 0;
-        ctx.fields.has_tag_filter = tagName !== undefined && tagName.length > 0;
-      }
+      setPayload(ctx, {
+        results_count: data?.length ?? 0,
+        has_tag_filter: tagName !== undefined && tagName.length > 0,
+      });
 
       // Map RPC snake_case fields to camelCase (Pitfall 7)
       // Widen to Record to handle overloaded RPC return union — output schema validates at runtime

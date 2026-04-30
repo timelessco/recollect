@@ -1,5 +1,7 @@
 import type { NextRouter } from "next/router";
 
+import { DISCOVER_URL } from "./constants";
+
 /**
  * Extracts the category slug from the current Next.js router path.
  *
@@ -9,6 +11,9 @@ import type { NextRouter } from "next/router";
  *
  * - URL: /public/username/category-slug
  * - Returns: "category-slug"
+ *
+ * - URL: /public/discover
+ * - Returns: "discover"
  *
  * - URL: /
  * - Returns: null
@@ -23,7 +28,12 @@ export const getCategorySlugFromRouter = (router: NextRouter): null | string => 
 
   const pathSegments = router?.asPath?.split("/")?.filter(Boolean) || [];
 
-  // Handle public routes: /public/[user_name]/[category_slug]
+  // Handle the public guest discover route: /public/discover[/preview/...]
+  if (pathSegments[0] === "public" && pathSegments[1]?.split("?")?.[0] === DISCOVER_URL) {
+    return DISCOVER_URL;
+  }
+
+  // Handle public collection routes: /public/[user_name]/[category_slug]
   if (pathSegments[0] === "public" && pathSegments.length >= 3) {
     return pathSegments[2]?.split("?")?.[0] || null;
   }

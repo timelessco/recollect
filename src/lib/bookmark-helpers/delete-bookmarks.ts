@@ -152,6 +152,9 @@ async function deleteStorageForBookmarks(
 }
 
 interface DeleteBookmarksByIdsResult {
+  // Original DB error object when `error` is set — preserves `cause` for v2
+  // `RecollectApiError` wrapping (api-v2.md: "ALWAYS pass cause when wrapping").
+  cause?: unknown;
   deletedCount: number;
   error: null | string;
 }
@@ -234,7 +237,7 @@ export async function deleteBookmarksByIds(
       tags: { operation: `${route}_delete_bookmarks`, userId },
     });
 
-    return { deletedCount: 0, error: "Failed to delete bookmarks" };
+    return { cause: deleteError, deletedCount: 0, error: "Failed to delete bookmarks" };
   }
 
   return { deletedCount: deletedBookmarks?.length ?? 0, error: null };

@@ -3,30 +3,37 @@ import { Item } from "react-stately";
 
 import type { CollectionItemTypes } from "./singleListItemComponent";
 
-import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
 import { useUpdateFavoriteOrderMutation } from "@/async/mutationHooks/user/use-update-favorite-order-mutation";
-import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
+import useFetchUserProfile from "@/async/queryHooks/user/use-fetch-user-profile";
 import { Collapsible } from "@/components/ui/recollect/collapsible";
+import { bucketHref, emitClientEvent } from "@/lib/api-helpers/axiom-client-events";
+import { useMiscellaneousStore } from "@/store/componentStore";
 import { mutationApiCall } from "@/utils/apiHelpers";
 
 import DownArrowGray from "../../../icons/downArrowGray";
 import { ReorderableListBox } from "./reorderable-list";
 import SingleListItemComponent from "./singleListItemComponent";
+import { useHandleBookmarksDrop } from "./use-handle-bookmarks-drop";
+
+type UseHandleBookmarksDropReturn = ReturnType<typeof useHandleBookmarksDrop>;
 
 interface FavoriteCollectionsListProps {
   favoriteCollections: CollectionItemTypes[];
 }
 
-export function FavoriteCollectionsList({ favoriteCollections }: FavoriteCollectionsListProps) {
+export function FavoriteCollectionsList(props: FavoriteCollectionsListProps) {
+  const { favoriteCollections } = props;
+  const { addCategoryToBookmarkOptimisticMutation, handleBookmarksDrop } = useHandleBookmarksDrop();
   const { updateFavoriteOrderMutation } = useUpdateFavoriteOrderMutation();
   const { userProfileData } = useFetchUserProfile();
+  const isCardDragging = useMiscellaneousStore((storeState) => storeState.isCardDragging);
 
   if (favoriteCollections.length === 0) {
     return null;
   }
 
   const onReorder = (event: DroppableCollectionReorderEvent) => {
-    const currentFavoriteCategories = userProfileData?.data?.[0]?.favorite_categories ?? [];
+    const currentFavoriteCategories = userProfileData?.[0]?.favorite_categories ?? [];
 
     // Fall back to the order from the collections list if no saved order
     const listOrder =
@@ -81,6 +88,10 @@ export function FavoriteCollectionsList({ favoriteCollections }: FavoriteCollect
         <Collapsible.Panel>
           <ReorderableListBox
             aria-label="Favorite collections"
+            highlightDropTarget={isCardDragging}
+            onItemDrop={(event) => {
+              void handleBookmarksDrop(event);
+            }}
             onReorder={onReorder}
             renderDragPreview={(items) => (
               <div className="text-gray-1000">{items[0]["text/plain"]}</div>
@@ -90,7 +101,10 @@ export function FavoriteCollectionsList({ favoriteCollections }: FavoriteCollect
           >
             {favoriteCollections.map((item) => (
               <Item key={item.id} textValue={item.name}>
-                <FavoriteCollectionItem item={item} />
+                <FavoriteCollectionItem
+                  addCategoryToBookmarkOptimisticMutation={addCategoryToBookmarkOptimisticMutation}
+                  item={item}
+                />
               </Item>
             ))}
           </ReorderableListBox>
@@ -101,17 +115,24 @@ export function FavoriteCollectionsList({ favoriteCollections }: FavoriteCollect
 }
 
 interface FavoriteCollectionItemProps {
+  addCategoryToBookmarkOptimisticMutation: UseHandleBookmarksDropReturn["addCategoryToBookmarkOptimisticMutation"];
   item: CollectionItemTypes;
 }
 
-function FavoriteCollectionItem({ item }: FavoriteCollectionItemProps) {
-  const { addCategoryToBookmarkOptimisticMutation } = useAddCategoryToBookmarkOptimisticMutation();
+function FavoriteCollectionItem(props: FavoriteCollectionItemProps) {
+  const { addCategoryToBookmarkOptimisticMutation, item } = props;
 
   return (
     <SingleListItemComponent
       extendedClassname="py-[6px]"
       item={item}
       listNameId="favorite-collection-name"
+      onNavigate={() => {
+        emitClientEvent("category_switch", {
+          source: "sidebar_favorite",
+          to_bucket: bucketHref(item.href ?? ""),
+        });
+      }}
       showDropdown
       showSpinner={
         addCategoryToBookmarkOptimisticMutation.isPending &&

@@ -10,16 +10,17 @@ import type { CollabDataInCategory } from "../../../types/apiTypes";
 
 import { cn } from "@/utils/tailwind-merge";
 
-import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/useDeleteSharedCategoriesUserMutation";
-import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/useSendCollaborationEmailInviteMutation";
-import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
-import useGetUserProfilePic from "../../../async/queryHooks/user/useGetUserProfilePic";
+import useDeleteSharedCategoriesUserMutation from "../../../async/mutationHooks/share/use-delete-shared-categories-user-mutation";
+import useSendCollaborationEmailInviteMutation from "../../../async/mutationHooks/share/use-send-collaboration-email-invite-mutation";
+import useFetchCategories from "../../../async/queryHooks/category/use-fetch-categories";
+import useGetUserProfilePic from "../../../async/queryHooks/user/use-get-user-profile-pic";
 import Input from "../../../components/atoms/input";
 import { Spinner } from "../../../components/spinner";
 import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
 import { CopyIcon } from "../../../icons/copy-icon";
 import { GlobeIcon } from "../../../icons/globe-icon";
 import { DefaultUserIcon } from "../../../icons/user/defaultUserIcon";
+import { emitClientEvent, hashCollectionId } from "../../../lib/api-helpers/axiom-client-events";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import { EMAIL_CHECK_PATTERN } from "../../../utils/constants";
@@ -74,8 +75,8 @@ const AccessUserInfo = (props: { isLoggedinUserTheOwner: boolean; item: CollabDa
 
   const { userProfilePicData } = useGetUserProfilePic(item?.userEmail);
 
-  const profilePicUrl = userProfilePicData?.data?.[0]?.profile_pic;
-  const hasProfilePic = !isNull(userProfilePicData?.data) && profilePicUrl;
+  const profilePicUrl = userProfilePicData?.[0]?.profile_pic;
+  const hasProfilePic = !isNull(userProfilePicData) && profilePicUrl;
 
   const showDefaultIcon = !hasProfilePic || imageError || imageLoading;
 
@@ -187,7 +188,7 @@ const ShareContent = (props: ShareContentProps) => {
     }
   };
 
-  const currentCategory = find(categoryData?.data ?? [], (item) => item?.id === dynamicCategoryId);
+  const currentCategory = find(categoryData ?? [], (item) => item?.id === dynamicCategoryId);
 
   const isUserTheCategoryOwner = currentCategory?.user_id?.id === session?.user?.id;
 
@@ -285,12 +286,20 @@ const ShareContent = (props: ShareContentProps) => {
               if (currentCategory?.is_public) {
                 void navigator.clipboard.writeText(publicUrl);
                 setLinkCopied(true);
+                emitClientEvent("share_link_copy", {
+                  collection_id_hash: hashCollectionId(currentCategory.id),
+                  source: "click",
+                });
               }
             }}
             onKeyDown={(event) => {
               if ((event.key === "Enter" || event.key === " ") && currentCategory?.is_public) {
                 void navigator.clipboard.writeText(publicUrl);
                 setLinkCopied(true);
+                emitClientEvent("share_link_copy", {
+                  collection_id_hash: hashCollectionId(currentCategory.id),
+                  source: "keyboard",
+                });
               }
             }}
             tabIndex={currentCategory?.is_public ? 0 : -1}

@@ -21,8 +21,7 @@
     "perfectionist/sort-decorators": ["error", { "type": "natural", "order": "asc" }],
     "perfectionist/sort-interfaces": ["error", { "type": "natural", "order": "asc" }],
     "perfectionist/sort-jsx-props": ["error", { "type": "natural", "order": "asc" }],
-    // Crashes on src/utils/error-utils/common.ts — upstream bug in eslint-plugin-perfectionist (UnreachableCaseError: null accessibility modifier)
-    "perfectionist/sort-classes": "off",
+    "perfectionist/sort-classes": ["error", { "type": "natural", "order": "asc" }],
     "perfectionist/sort-exports": ["error", { "type": "natural", "order": "asc" }],
     "perfectionist/sort-objects": ["error", { "type": "natural", "order": "asc" }],
     "perfectionist/sort-enums": ["error", { "type": "natural", "order": "asc" }],

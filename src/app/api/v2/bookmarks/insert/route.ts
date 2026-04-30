@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { MAIN_TABLE_NAME } from "@/utils/constants";
 
 // Called by: Chrome extension (recollect-chrome-extension) for bulk bookmark import
@@ -16,8 +16,8 @@ export const POST = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
-        ctx.fields.input_count = data.data.length;
       }
+      setPayload(ctx, { input_count: data.data.length });
 
       const insertData = data.data.map((item) => ({
         ...item,
@@ -37,9 +37,7 @@ export const POST = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.bookmark_count = inserted.length;
-      }
+      setPayload(ctx, { bookmark_count: inserted.length });
 
       return { insertedCount: inserted.length };
     },

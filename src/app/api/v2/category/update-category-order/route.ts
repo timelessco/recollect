@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { PROFILES } from "@/utils/constants";
 
 import { UpdateCategoryOrderInputSchema, UpdateCategoryOrderOutputSchema } from "./schema";
@@ -16,8 +16,8 @@ export const PATCH = createAxiomRouteHandler(
       const ctx = getServerContext();
       if (ctx?.fields) {
         ctx.fields.user_id = userId;
-        ctx.fields.category_count = categoryOrder.length;
       }
+      setPayload(ctx, { category_count: categoryOrder.length });
 
       const { data: updateData, error: updateError } = await supabase
         .from(PROFILES)
@@ -33,9 +33,7 @@ export const PATCH = createAxiomRouteHandler(
         });
       }
 
-      if (ctx?.fields) {
-        ctx.fields.reorder_success = true;
-      }
+      setPayload(ctx, { reorder_success: true });
 
       return updateData;
     },

@@ -19,6 +19,7 @@
     "CHANGELOG.md",
     ".agents/**/*.md",
     ".claude/**/*.md",
-    "docs/API_CHANGELOG.md"
+    "docs/API_CHANGELOG.md",
+    "graphify-out/**/*.md"
   ]
 }

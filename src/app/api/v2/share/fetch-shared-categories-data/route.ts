@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { SHARED_CATEGORIES_TABLE_NAME } from "@/utils/constants";
 
 import {
@@ -41,9 +41,7 @@ export const GET = createAxiomRouteHandler(
       }
 
       // Result count AFTER the operation
-      if (ctx?.fields) {
-        ctx.fields.share_count = data.length;
-      }
+      setPayload(ctx, { share_count: data.length });
 
       return data;
     },

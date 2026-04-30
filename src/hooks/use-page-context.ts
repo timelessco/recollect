@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
-import { DISCOVER_URL, isPublicPath } from "@/utils/constants";
+import { DISCOVER_URL, isPublicPath, SIMILAR_URL } from "@/utils/constants";
 import { getCategorySlugFromRouter } from "@/utils/url";
 
 /**
@@ -20,6 +20,10 @@ export interface PageContext {
    * Whether the current page is a public page (e.g., /public/user/collection)
    */
   isPublicPage: boolean;
+  /**
+   * Whether the current page is a similar-bookmarks page (`/similar/[id]`)
+   */
+  isSimilarPage: boolean;
 }
 
 /**
@@ -51,6 +55,7 @@ export const usePageContext = (): PageContext => {
       categorySlug,
       isDiscoverPage: categorySlug === DISCOVER_URL,
       isPublicPage: isPublicPath(router.asPath),
+      isSimilarPage: categorySlug === SIMILAR_URL,
     };
   }, [router]);
 };

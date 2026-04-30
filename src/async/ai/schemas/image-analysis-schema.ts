@@ -14,13 +14,63 @@ export interface OklabColor {
   l: number;
 }
 
-export interface BookmarkColors {
-  primary_color: OklabColor | null;
-  secondary_colors: OklabColor[];
-}
+/**
+ * Closed list of content types for AI extraction and #hash search.
+ * Single source of truth — consumed by prompt-builder.ts and searchTokens.ts.
+ */
+export const CONTENT_TYPES = [
+  "anime",
+  "article",
+  "blog",
+  "book",
+  "course",
+  "deal",
+  "design",
+  "developertools",
+  "documentation",
+  "ecommerce",
+  "event",
+  "game",
+  "image",
+  "infographic",
+  "instapost",
+  "job",
+  "linkedinpost",
+  "meme",
+  "movie",
+  "musicalbum",
+  "newsletter",
+  "news",
+  "package",
+  "pdf",
+  "photo",
+  "pin",
+  "place",
+  "podcast",
+  "portfolio",
+  "poster",
+  "product",
+  "productivity",
+  "profile",
+  "recipe",
+  "redditpost",
+  "repo",
+  "researchpaper",
+  "restaurant",
+  "review",
+  "socialmedia",
+  "streaming",
+  "thread",
+  "tiktok",
+  "tutorial",
+  "tvshow",
+  "video",
+  "webapp",
+  "xpost",
+] as const;
 
 export interface StructuredKeywords {
-  color?: BookmarkColors;
+  colors?: OklabColor[];
   features?: Record<string, string | string[]>;
   object?: string[];
   people?: string[];
@@ -59,7 +109,12 @@ const sentenceResponseSchema = z.object({
  * `features` uses z.record for arbitrary key-value metadata.
  */
 const keywordsResponseSchema = z.object({
-  color: z.array(z.string()).optional().describe("Hex color codes, primary/dominant color first"),
+  colors: z
+    .array(z.string())
+    .min(1)
+    .describe(
+      "Hex color codes, ordered from most to least dominant in the image. Always extract at least one color.",
+    ),
   features: z
     .record(z.string(), z.union([z.string(), z.array(z.string())]))
     .optional()
@@ -95,11 +150,16 @@ const collectionsResponseSchema = z.object({
  * Full response schema (all toggles on). Used for Zod parsing of the
  * Gemini response in the orchestrator — all fields are optional so
  * partial responses (from dynamic schema) still parse successfully.
+ *
+ * `colors` overrides the stricter `keywordsResponseSchema` constraint
+ * (`.min(1)`) so that a defiant Gemini response with `colors: []` does
+ * not discard the entire enrichment payload at parse time.
  */
 export const fullResponseSchema = z
   .object({
     ...sentenceResponseSchema.shape,
     ...keywordsResponseSchema.shape,
+    colors: z.array(z.string()),
     ...ocrResponseSchema.shape,
     ...collectionsResponseSchema.shape,
   })

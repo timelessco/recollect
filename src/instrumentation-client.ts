@@ -14,7 +14,12 @@ Sentry.init({
   // Enable logs to be sent to Sentry
   enableLogs: true,
 
-  integrations: [],
+  // browserTracingIntegration starts a page-load trace and auto-attaches
+  // `sentry-trace` + `baggage` headers to outgoing fetch/XHR calls matching
+  // `tracePropagationTargets` (defaults to same-origin). This is the first
+  // hop of the trace_id chain that lands in Axiom via the server handler.
+  // eslint-disable-next-line import/namespace -- false positive: export exists in @sentry/nextjs types but oxlint can't resolve the re-export
+  integrations: [Sentry.browserTracingIntegration()],
   // Note: if you want to override the automatic release value, do not set a
   // `release` value here - use the environment variable `SENTRY_RELEASE`, so
   // that it will also get attached to your source maps

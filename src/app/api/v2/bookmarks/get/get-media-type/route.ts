@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 
+import ky, { HTTPError } from "ky";
+
 import { createAxiomRouteHandler, withPublic } from "@/lib/api-helpers/create-handler-v2";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 
 import { GetMediaTypeInputSchema, GetMediaTypeOutputSchema } from "./schema";
 
@@ -22,31 +24,18 @@ export const GET = createAxiomRouteHandler(
       const { url } = input;
 
       const ctx = getServerContext();
-      if (ctx?.fields) {
-        ctx.fields.target_url = url;
-      }
+      setPayload(ctx, { target_url: url });
 
       // D-05 exception: handler-level catch preserves CORS headers on error responses.
       // Throwing RecollectApiError would reach the factory catch, which returns JSON
       // without CORS headers — breaking cross-origin error handling for browser callers.
       // Observability is maintained via ctx.fields (error_type, upstream_status, fetch_error).
       try {
-        const response = await fetch(url, {
+        const response = await ky.head(url, {
           headers: { "User-Agent": USER_AGENT },
-          method: "HEAD",
-          signal: AbortSignal.timeout(5000),
+          retry: 0,
+          timeout: 5000,
         });
-
-        if (!response.ok) {
-          if (ctx?.fields) {
-            ctx.fields.error_type = "upstream_error";
-            ctx.fields.upstream_status = response.status;
-          }
-          return NextResponse.json(
-            { error: "Failed to check media type", mediaType: null, success: false },
-            { headers: CORS_HEADERS },
-          );
-        }
 
         const mediaType = response.headers.get("content-type");
 
@@ -55,9 +44,16 @@ export const GET = createAxiomRouteHandler(
           { headers: CORS_HEADERS },
         );
       } catch (error) {
-        if (ctx?.fields) {
-          ctx.fields.error_type = "fetch_exception";
-          ctx.fields.fetch_error = error instanceof Error ? error.message : String(error);
+        if (error instanceof HTTPError) {
+          setPayload(ctx, {
+            error_type: "upstream_error",
+            upstream_status: error.response.status,
+          });
+        } else {
+          setPayload(ctx, {
+            error_type: "fetch_exception",
+            fetch_error: error instanceof Error ? error.message : String(error),
+          });
         }
         return NextResponse.json(
           { error: "Failed to check media type", mediaType: null, success: false },

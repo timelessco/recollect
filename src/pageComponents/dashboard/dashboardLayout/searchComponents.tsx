@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Mention, MentionsInput } from "react-mentions";
 import type { MentionsInputProps } from "react-mentions";
 
@@ -7,15 +7,23 @@ import { isEmpty } from "lodash";
 import type { CategoriesData } from "@/types/apiTypes";
 import type { CategoryIdUrlTypes } from "@/types/componentTypes";
 
-import useFetchUserTags from "@/async/queryHooks/userTags/useFetchUserTags";
+import useFetchUserTags from "@/async/queryHooks/userTags/use-fetch-user-tags";
 import Button from "@/components/atoms/button";
 import { Spinner } from "@/components/spinner";
 import useDebounce from "@/hooks/useDebounce";
 import SearchInputSearchIcon from "@/icons/searchInputSearchIcon";
 import { useLoadersStore, useMiscellaneousStore } from "@/store/componentStore";
 import { extractTagNamesFromSearch } from "@/utils/helpers";
+import { CSS_COLOR_NAMES, KNOWN_TYPES } from "@/utils/searchTokens";
 
 const SEARCH_DEBOUNCE_MS = 500;
+
+const CSS_COLOR_NAMES_ARRAY = [...CSS_COLOR_NAMES].toSorted();
+const KNOWN_TYPES_ARRAY = [...KNOWN_TYPES].toSorted();
+
+const MAX_COLOR_SUGGESTIONS = 5;
+const MAX_TYPE_SUGGESTIONS = 5;
+const MIN_QUERY_LENGTH_FOR_EXTRAS = 1;
 
 interface SearchBarProps {
   categoryId: CategoryIdUrlTypes;
@@ -91,18 +99,46 @@ const SearchInput = (props: SearchInputTypes) => {
 
   const isSearchLoading = useLoadersStore((state) => state.isSearchLoading);
   const { userTags } = useFetchUserTags();
-  const userTagsData = useMemo(() => userTags?.data ?? [], [userTags]);
+  const userTagsData = useMemo(() => userTags ?? [], [userTags]);
 
   const filteredTagsData = useMemo(
     () =>
       userTagsData
         ?.map((item) => ({
-          display: String(item?.name || ""),
+          display: item?.name ?? "",
           id: String(item?.id || ""),
         }))
-        ?.filter((filterItem) => !addedTags?.includes(String(filterItem?.display || ""))),
+        ?.filter((filterItem) => !addedTags?.includes(filterItem?.display || "")),
     [userTagsData, addedTags],
   );
+
+  /* eslint-disable promise/prefer-await-to-callbacks -- react-mentions data prop requires callback pattern; async is not supported */
+  const getSuggestions = useCallback(
+    (query: string, callback: (data: { display: string; id: string }[]) => void) => {
+      const q = query.toLowerCase();
+
+      const tags = filteredTagsData.filter((t) => t.display.toLowerCase().includes(q));
+
+      if (q.length < MIN_QUERY_LENGTH_FOR_EXTRAS) {
+        callback(tags);
+        return;
+      }
+
+      const tagNames = new Set(tags.map((t) => t.display.toLowerCase()));
+
+      const colors = CSS_COLOR_NAMES_ARRAY.filter((c) => c.startsWith(q) && !tagNames.has(c))
+        .slice(0, MAX_COLOR_SUGGESTIONS)
+        .map((c) => ({ display: c, id: `color:${c}` }));
+
+      const types = KNOWN_TYPES_ARRAY.filter((t) => t.startsWith(q) && !tagNames.has(t))
+        .slice(0, MAX_TYPE_SUGGESTIONS)
+        .map((t) => ({ display: t, id: `type:${t}` }));
+
+      callback([...tags, ...colors, ...types]);
+    },
+    [filteredTagsData],
+  );
+  /* eslint-enable promise/prefer-await-to-callbacks */
 
   const handleChange = (value: string) => {
     setLocalValue(value);
@@ -139,7 +175,7 @@ const SearchInput = (props: SearchInputTypes) => {
       >
         <Mention
           appendSpaceOnAdd
-          data={filteredTagsData}
+          data={getSuggestions}
           displayTransform={(_url, display) => `#${display}`}
           markup="#[__display__](__id__)"
           trigger="#"

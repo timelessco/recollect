@@ -1,10 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import * as Sentry from "@sentry/nextjs";
 import { Resend } from "resend";
 
 import { env } from "@/env/server";
+import { RecollectApiError } from "@/lib/api-helpers/errors";
+import { escapeHtml } from "@/lib/email/escape-html";
 
 const EMAIL_FROM = "admin@share.recollect.so";
 const LOG_PREFIX = "[send-invite-email]";
@@ -22,15 +23,6 @@ export interface SendInviteEmailResult {
 
 const filePath = path.join(process.cwd(), "public", "logo.png");
 const base64Logo = fs.readFileSync(filePath).toString("base64");
-
-function escapeHtml(text: string) {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
 
 function buildEmailHtml(props: { categoryName: string; displayName: string; inviteUrl: string }) {
   const categoryName = escapeHtml(props.categoryName);
@@ -109,22 +101,20 @@ export async function sendInviteEmail(props: SendInviteEmailProps): Promise<Send
   });
 
   if (error) {
-    const resendError = new Error(error.message);
-    console.error(`${LOG_PREFIX} Resend API error:`, error);
-    Sentry.captureException(resendError, {
-      extra: { categoryName, recipientEmail },
-      tags: { operation: "send_invite_email" },
+    throw new RecollectApiError("service_unavailable", {
+      cause: error,
+      message: "Failed to send invite email",
+      operation: "send_invite_email",
+      context: { categoryName, recipientEmail },
     });
-    throw resendError;
   }
 
   if (!data) {
-    const noDataError = new Error("Resend returned no data and no error");
-    Sentry.captureException(noDataError, {
-      extra: { categoryName, recipientEmail },
-      tags: { operation: "send_invite_email" },
+    throw new RecollectApiError("service_unavailable", {
+      message: "Resend returned no data and no error",
+      operation: "send_invite_email",
+      context: { categoryName, recipientEmail },
     });
-    throw noDataError;
   }
 
   console.log(`${LOG_PREFIX} Sent invite email:`, {

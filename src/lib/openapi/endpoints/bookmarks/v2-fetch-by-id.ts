@@ -56,7 +56,6 @@ export const v2FetchByIdSupplement = {
       value: [
         {
           addedCategories: [],
-          category_id: 0,
           description: null,
           id: 90_127,
           inserted_at: "2026-02-26T07:33:01.467254+00:00",
@@ -93,7 +92,6 @@ export const v2FetchByIdSupplement = {
               id: 577,
             },
           ],
-          category_id: 577,
           description: "GitHub is where over 100 million developers...",
           id: 86,
           inserted_at: "2023-10-30T11:49:24.887983+00:00",

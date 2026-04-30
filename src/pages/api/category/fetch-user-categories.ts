@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use the v2 App Router endpoint instead: /api/v2/category/fetch-user-categories
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
 import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
@@ -175,8 +179,29 @@ export default async function handler(
           user_name: userProfile?.user_name ?? "",
         },
       })) || [];
+    // Scoped RLS can hide the joined profile, so user_id inside the category may be null —
+    // normalize with empty-string fallbacks to keep the downstream shape stable.
+    type CollabCategory = Record<string, unknown> & {
+      user_id: null | {
+        email?: null | string;
+        id?: null | string;
+        profile_pic?: null | string;
+        user_name?: null | string;
+      };
+    };
     const flattenedUserCollabCategoryData =
-      userCollabCategoryData?.map((item) => item.category_id) || [];
+      userCollabCategoryData?.map((item) => {
+        const cat = item.category_id as unknown as CollabCategory;
+        return {
+          ...cat,
+          user_id: {
+            email: cat.user_id?.email ?? "",
+            id: cat.user_id?.id ?? "",
+            profile_pic: cat.user_id?.profile_pic ?? "",
+            user_name: cat.user_id?.user_name ?? "",
+          },
+        };
+      }) || [];
 
     const userCategoriesDataWithCollabCategoriesData = [
       ...userCategories,

@@ -41,12 +41,12 @@ const ChangeEmail = ({ onNavigate }: ChangeEmailProps) => {
   const session = useSupabaseSession((state) => state.session);
   const supabase = createClient();
 
-  const userProfilesData = queryClient.getQueryData<{ data: ProfilesTableTypes[] }>([
+  const userProfilesData = queryClient.getQueryData<ProfilesTableTypes[]>([
     USER_PROFILE,
     session?.user?.id,
   ]);
 
-  const userData = userProfilesData?.data?.[0];
+  const userData = userProfilesData?.[0];
 
   const onSubmit: SubmitHandler<SettingsFormTypes> = async (data) => {
     setChangeEmailLoader(true);
@@ -58,7 +58,7 @@ const ChangeEmail = ({ onNavigate }: ChangeEmailProps) => {
     }
 
     if (isNil(error)) {
-      successToast("Comformation email sent", "userInvite");
+      successToast("Confirmation email sent", "userInvite");
     }
 
     setChangeEmailLoader(false);

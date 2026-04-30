@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use the v2 App Router endpoint instead: POST /api/v2/screenshot
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
@@ -12,7 +16,7 @@ import { resolveContentType } from "@/utils/resolve-content-type";
 
 import { imageToText } from "../../../async/ai/image-analysis";
 import { fetchAiToggles } from "../../../utils/ai-feature-toggles";
-import { MAIN_TABLE_NAME, PDF_MIME_TYPE, SCREENSHOT_API } from "../../../utils/constants";
+import { MAIN_TABLE_NAME, PDF_MIME_TYPE } from "../../../utils/constants";
 import { blurhashFromURL } from "../../../utils/getBlurHash";
 import { createServiceClient } from "../../../utils/supabaseClient";
 
@@ -94,7 +98,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
       try {
         const { data: screenshotData } = await axios.get(
-          `${SCREENSHOT_API}/try?url=${encodeURIComponent(url)}`,
+          `${env.SCREENSHOT_API}?url=${encodeURIComponent(url)}`,
           { responseType: "json" },
         );
 

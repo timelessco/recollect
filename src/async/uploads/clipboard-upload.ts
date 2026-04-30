@@ -8,22 +8,21 @@ import type {
 import type { CategoryIdUrlTypes } from "../../types/componentTypes";
 import type { UseMutationResult } from "@tanstack/react-query";
 
-import { mutationApiCall } from "../../utils/apiHelpers";
 import { URL_PATTERN } from "../../utils/constants";
 import { fileUpload } from "./file-upload";
 
 type AddMinDataMutationType = UseMutationResult<
   unknown,
-  { previousData: PaginatedBookmarks },
+  Error,
   AddBookmarkMinDataPayloadTypes,
-  { previousData: unknown }
+  { previousData: PaginatedBookmarks | undefined; tempId: number }
 >;
 
 export type FileUploadMutationType = UseMutationResult<
   unknown,
-  { previousData: PaginatedBookmarks },
+  Error,
   UploadFileApiPayload,
-  { previousData: unknown }
+  { preGeneratedUrl: string; previousData: unknown; tempId: number }
 >;
 
 /**
@@ -50,13 +49,11 @@ export const clipboardUpload = async (
     const isUrl = text?.match(URL_PATTERN);
 
     if (isUrl && !isEmpty(isUrl)) {
-      await mutationApiCall(
-        addBookmarkMinDataOptimisticMutation.mutateAsync({
-          category_id,
-          update_access: true,
-          url: text.trim(),
-        }),
-      );
+      await addBookmarkMinDataOptimisticMutation.mutateAsync({
+        category_id,
+        update_access: true,
+        url: text.trim(),
+      });
     }
   }
 };

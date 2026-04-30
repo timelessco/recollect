@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 
+import ky from "ky";
+
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { storeQueueError } from "@/lib/api-helpers/queue";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { uploadImageToR2 } from "@/lib/bookmarks/add-remaining-bookmark-data";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { autoAssignCollections } from "@/utils/auto-assign-collections";
@@ -81,14 +83,16 @@ export const POST = createAxiomRouteHandler(
 
       if (ctx?.fields) {
         ctx.fields.user_id = user_id;
-        ctx.fields.queue_name = queue_name;
         ctx.fields.msg_id = message.msg_id;
         ctx.fields.bookmark_id = id;
-        ctx.fields.url = url;
-        ctx.fields.is_twitter = isTwitterBookmark ?? false;
-        ctx.fields.is_instagram = isInstagramBookmark ?? false;
-        ctx.fields.is_raindrop = isRaindropBookmark ?? false;
       }
+      setPayload(ctx, {
+        queue_name,
+        url,
+        is_twitter: isTwitterBookmark ?? false,
+        is_instagram: isInstagramBookmark ?? false,
+        is_raindrop: isRaindropBookmark ?? false,
+      });
 
       // Twitter URL validation
       if (isTwitterBookmark) {
@@ -99,11 +103,11 @@ export const POST = createAxiomRouteHandler(
             validateTwitterMediaUrl(message.message.meta_data.video_url);
           }
         } catch (validationError) {
-          if (ctx?.fields) {
-            ctx.fields.url_validation_error = "twitter";
-            ctx.fields.validation_message =
-              validationError instanceof Error ? validationError.message : String(validationError);
-          }
+          setPayload(ctx, {
+            url_validation_error: "twitter",
+            validation_message:
+              validationError instanceof Error ? validationError.message : String(validationError),
+          });
           await storeQueueError({
             errorReason: "ai_enrichment: twitter_url_validation_failed",
             msgId: message.msg_id,
@@ -126,11 +130,11 @@ export const POST = createAxiomRouteHandler(
             validateInstagramMediaUrl(message.message.meta_data.video_url);
           }
         } catch (validationError) {
-          if (ctx?.fields) {
-            ctx.fields.url_validation_error = "instagram";
-            ctx.fields.validation_message =
-              validationError instanceof Error ? validationError.message : String(validationError);
-          }
+          setPayload(ctx, {
+            url_validation_error: "instagram",
+            validation_message:
+              validationError instanceof Error ? validationError.message : String(validationError),
+          });
           await storeQueueError({
             errorReason: "ai_enrichment: instagram_url_validation_failed",
             msgId: message.msg_id,
@@ -153,31 +157,30 @@ export const POST = createAxiomRouteHandler(
       if (isRaindropBookmark || isInstagramBookmark) {
         const platform = isRaindropBookmark ? "raindrop" : "instagram";
         try {
-          const imageResponse = await fetch(ogImage, {
+          // `timeout: false` disables ky's 10s default headers-arrival timer;
+          // the signal is the end-to-end wall-clock bound that also guards the
+          // `.arrayBuffer()` body read below. Without this, a slow og-image
+          // source would abort at 10s regardless of IMAGE_DOWNLOAD_TIMEOUT_MS.
+          const imageResponse = await ky.get(ogImage, {
             headers: {
               Accept: "image/*,*/*;q=0.8",
               "User-Agent": "Mozilla/5.0",
             },
+            retry: 0,
+            timeout: false,
             signal: AbortSignal.timeout(IMAGE_DOWNLOAD_TIMEOUT_MS),
           });
-
-          if (!imageResponse.ok) {
-            throw new Error(`HTTP error! status: ${imageResponse.status}`);
-          }
 
           const arrayBuffer = await imageResponse.arrayBuffer();
           const returnedB64 = Buffer.from(arrayBuffer).toString("base64");
           ogImage = (await uploadImageToR2(returnedB64, user_id, null)) ?? ogImageUrl;
 
-          if (ctx?.fields) {
-            ctx.fields.image_reupload = platform;
-          }
+          setPayload(ctx, { image_reupload: platform });
         } catch (error) {
-          if (ctx?.fields) {
-            ctx.fields.image_reupload_error = platform;
-            ctx.fields.image_reupload_message =
-              error instanceof Error ? error.message : String(error);
-          }
+          setPayload(ctx, {
+            image_reupload_error: platform,
+            image_reupload_message: error instanceof Error ? error.message : String(error),
+          });
         }
       }
 
@@ -188,8 +191,8 @@ export const POST = createAxiomRouteHandler(
         .eq("id", id)
         .single();
 
-      if (fetchError && ctx?.fields) {
-        ctx.fields.fetch_context_error = fetchError.message;
+      if (fetchError) {
+        setPayload(ctx, { fetch_context_error: fetchError.message });
       }
 
       const contentType = resolveContentType({
@@ -220,9 +223,7 @@ export const POST = createAxiomRouteHandler(
         videoUrl: message.message.meta_data.video_url,
       });
 
-      if (ctx?.fields) {
-        ctx.fields.enrichment_failed = isFailed;
-      }
+      setPayload(ctx, { enrichment_failed: isFailed });
 
       // Update database with enriched data
       const { error: updateError } = await supabase
@@ -258,8 +259,8 @@ export const POST = createAxiomRouteHandler(
           queue_name,
         });
 
-        if (deleteError && ctx?.fields) {
-          ctx.fields.queue_delete_error = deleteError.message;
+        if (deleteError) {
+          setPayload(ctx, { queue_delete_error: deleteError.message });
         }
       } else {
         if (enrichError) {
@@ -269,15 +270,12 @@ export const POST = createAxiomRouteHandler(
             p_queue_name: queue_name,
           });
 
-          if (rpcError && ctx?.fields) {
-            ctx.fields.store_error_rpc_error = rpcError.message;
+          if (rpcError) {
+            setPayload(ctx, { store_error_rpc_error: rpcError.message });
           }
         }
 
-        if (ctx?.fields) {
-          ctx.fields.queue_kept = true;
-          ctx.fields.enrich_error = enrichError;
-        }
+        setPayload(ctx, { queue_kept: true, enrich_error: enrichError });
       }
 
       return NextResponse.json({ message: "AI enrichment completed" });

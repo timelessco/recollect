@@ -1,6 +1,6 @@
 import { createAxiomRouteHandler, withAuth } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
-import { getServerContext } from "@/lib/api-helpers/server-context";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { SHARED_CATEGORIES_TABLE_NAME } from "@/utils/constants";
 
 import {
@@ -49,10 +49,14 @@ export const DELETE = createAxiomRouteHandler(
         p_category_id: categoryId,
       });
 
-      if (favCleanupError && ctx?.fields) {
-        ctx.fields.fav_cleanup_failed = true;
-        ctx.fields.fav_cleanup_category_id = categoryId;
-        ctx.fields.fav_cleanup_error_code = favCleanupError.code;
+      if (favCleanupError) {
+        if (ctx?.fields) {
+          ctx.fields.fav_cleanup_category_id = categoryId;
+        }
+        setPayload(ctx, {
+          fav_cleanup_failed: true,
+          fav_cleanup_error_code: favCleanupError.code,
+        });
       }
 
       return deleted;

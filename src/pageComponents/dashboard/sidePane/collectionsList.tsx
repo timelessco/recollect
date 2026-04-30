@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import type { DroppableCollectionReorderEvent } from "react-aria";
 import { Item } from "react-stately";
 
@@ -14,15 +13,11 @@ import type {
 } from "../../../types/apiTypes";
 import type { CollectionItemTypes } from "./singleListItemComponent";
 
-import { useAddCategoryToBookmarkOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-to-bookmark-optimistic-mutation";
-
-import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/useUpdateCategoryOrderOptimisticMutation";
-import useFetchPaginatedBookmarks from "../../../async/queryHooks/bookmarks/use-fetch-paginated-bookmarks";
-import useSearchBookmarks from "../../../async/queryHooks/bookmarks/use-search-bookmarks";
-import useFetchCategories from "../../../async/queryHooks/category/useFetchCategories";
-import useFetchUserProfile from "../../../async/queryHooks/user/useFetchUserProfile";
-import useGetCurrentCategoryId from "../../../hooks/useGetCurrentCategoryId";
+import useUpdateCategoryOrderOptimisticMutation from "../../../async/mutationHooks/category/use-update-category-order-optimistic-mutation";
+import useFetchCategories from "../../../async/queryHooks/category/use-fetch-categories";
+import useFetchUserProfile from "../../../async/queryHooks/user/use-fetch-user-profile";
 import useGetCurrentUrlPath from "../../../hooks/useGetCurrentUrlPath";
+import { bucketHref, emitClientEvent } from "../../../lib/api-helpers/axiom-client-events";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
 import { mutationApiCall } from "../../../utils/apiHelpers";
 import {
@@ -30,26 +25,23 @@ import {
   CATEGORIES_KEY,
   SHARED_CATEGORIES_TABLE_NAME,
 } from "../../../utils/constants";
-import { errorToast } from "../../../utils/toastMessages";
 import { CollectionsListSection } from "./collections-list-section";
 import { FavoriteCollectionsList } from "./favorite-collections-list";
 import { ReorderableListBox } from "./reorderable-list";
 import SingleListItemComponent from "./singleListItemComponent";
+import { useHandleBookmarksDrop } from "./use-handle-bookmarks-drop";
 
 const RenderDragPreview = ({ collectionName }: { collectionName: string }) => {
   const queryClient = useQueryClient();
   const session = useSupabaseSession((state) => state.session);
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
+  const categoryData = queryClient.getQueryData<CategoriesData[]>([
     CATEGORIES_KEY,
     session?.user?.id,
   ]);
 
   const userId = session?.user?.id;
 
-  const singleCategoryData = find(
-    categoryData?.data,
-    (item) => item.category_name === collectionName,
-  );
+  const singleCategoryData = find(categoryData, (item) => item.category_name === collectionName);
 
   const isUserCollectionOwner = singleCategoryData?.user_id?.id === userId;
 
@@ -65,32 +57,19 @@ const CollectionsList = () => {
   const session = useSupabaseSession((state) => state.session);
 
   const isCardDragging = useMiscellaneousStore((storeState) => storeState.isCardDragging);
-  const { addCategoryToBookmarkOptimisticMutation } = useAddCategoryToBookmarkOptimisticMutation();
   const { updateCategoryOrderMutation } = useUpdateCategoryOrderOptimisticMutation();
-  const { allCategories, isLoadingCategories } = useFetchCategories();
+  const { isLoadingCategories } = useFetchCategories();
   const { userProfileData } = useFetchUserProfile();
-  const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
-  const { everythingData, isEverythingDataLoading } = useFetchPaginatedBookmarks();
-  const { flattenedSearchData } = useSearchBookmarks();
-
-  const flattendPaginationBookmarkData = useMemo(
-    () => everythingData?.pages?.flat() ?? [],
-    [everythingData?.pages],
-  );
-
-  const mergedBookmarkData = useMemo(
-    () => [...flattendPaginationBookmarkData, ...(flattenedSearchData ?? [])],
-    [flattendPaginationBookmarkData, flattenedSearchData],
-  );
+  const { addCategoryToBookmarkOptimisticMutation, handleBookmarksDrop } = useHandleBookmarksDrop();
 
   const currentPath = useGetCurrentUrlPath();
 
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
+  const categoryData = queryClient.getQueryData<CategoriesData[]>([
     CATEGORIES_KEY,
     session?.user?.id,
   ]);
 
-  const sharedCategoriesData = queryClient.getQueryData<{ data: FetchSharedCategoriesData[] }>([
+  const sharedCategoriesData = queryClient.getQueryData<FetchSharedCategoriesData[]>([
     SHARED_CATEGORIES_TABLE_NAME,
   ]);
 
@@ -99,65 +78,10 @@ const CollectionsList = () => {
     session?.user?.id,
   ]);
 
-  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleBookmarksDrop = async (event: any) => {
-    // Guard: don't process drops while bookmarks are still loading
-    if (isEverythingDataLoading || !everythingData) {
-      return;
-    }
-
-    if (event?.isInternal === false) {
-      const categoryId = Number.parseInt(event?.target?.key as string, 10);
-
-      const currentCategory =
-        find(allCategories?.data, (item) => item?.id === categoryId) ??
-        find(allCategories?.data, (item) => item?.id === CATEGORY_ID);
-      // only if the user has write access or is owner to this category, then this mutation should happen , or if bookmark is added to uncategorised
-
-      const updateAccessCondition =
-        find(currentCategory?.collabData, (item) => item?.userEmail === session?.user?.email)
-          ?.edit_access === true || currentCategory?.user_id?.id === session?.user?.id;
-
-      await Promise.all(
-        // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- drag event items lack typed API
-        ((event?.items ?? []) as any[]).map(async (item: any) => {
-          const bookmarkId = (await item.getText("text/plain")) as string;
-
-          const foundBookmark = find(
-            mergedBookmarkData,
-            (bookmarkItem) => Number.parseInt(bookmarkId, 10) === bookmarkItem?.id,
-          );
-
-          // Ignore drops that aren't bookmarks (e.g., collections dragged between sidebar lists)
-          if (!foundBookmark) {
-            return;
-          }
-
-          // Handle both nested object (from regular fetch) and plain string (from search)
-          const bookmarkCreatedUserId = foundBookmark?.user_id?.id ?? foundBookmark?.user_id;
-          if (bookmarkCreatedUserId === session?.user?.id) {
-            if (!updateAccessCondition) {
-              // if update access is not there then user cannot drag and drop anything into the collection
-              errorToast("Cannot upload in other owners collection");
-              return;
-            }
-
-            addCategoryToBookmarkOptimisticMutation.mutate({
-              bookmark_id: Number.parseInt(bookmarkId, 10),
-              category_id: categoryId,
-            });
-          } else {
-            errorToast("You cannot move collaborators uploads");
-          }
-        }),
-      );
-    }
-  };
-
-  const favoriteCategories = userProfileData?.data?.[0]?.favorite_categories ?? [];
+  const favoriteCategories = userProfileData?.[0]?.favorite_categories ?? [];
 
   const collectionsList = session
-    ? categoryData?.data?.map((item) => ({
+    ? categoryData?.map((item) => ({
         count: find(
           bookmarksCountData?.categoryCount,
           (catItem) => catItem?.category_id === item?.id,
@@ -167,9 +91,7 @@ const CollectionsList = () => {
         iconColor: item?.icon_color,
         iconValue: item?.icon,
         id: item?.id,
-        isCollab: !isEmpty(
-          find(sharedCategoriesData?.data, (cat) => cat?.category_id === item?.id),
-        ),
+        isCollab: !isEmpty(find(sharedCategoriesData, (cat) => cat?.category_id === item?.id)),
         isFavorite: favoriteCategories.includes(item?.id),
         isPublic: item?.is_public,
         name: item?.category_name,
@@ -177,8 +99,8 @@ const CollectionsList = () => {
     : [];
   const sortedList = () => {
     const array: CollectionItemTypes[] = [];
-    if (!isEmpty(userProfileData?.data)) {
-      const apiCategoryOrder = userProfileData?.data?.[0].category_order;
+    if (!isEmpty(userProfileData)) {
+      const apiCategoryOrder = userProfileData?.[0]?.category_order;
 
       if (!isNull(apiCategoryOrder)) {
         if (apiCategoryOrder) {
@@ -243,11 +165,11 @@ const CollectionsList = () => {
   const favoriteCollections = sortedFavorites();
 
   const onReorder = (event: DroppableCollectionReorderEvent) => {
-    const apiOrder = userProfileData?.data?.[0].category_order;
+    const apiOrder = userProfileData?.[0]?.category_order;
 
     const listOrder = isNull(apiOrder)
       ? collectionsList?.map((item) => item?.id)
-      : userProfileData?.data?.[0].category_order;
+      : userProfileData?.[0]?.category_order;
 
     const targetKey = Number.parseInt(event?.target?.key as string, 10);
     const sourceKey = Number.parseInt(event?.keys?.values().next().value as string, 10);
@@ -301,6 +223,12 @@ const CollectionsList = () => {
                 extendedClassname="py-[6px]"
                 item={item}
                 listNameId="collection-name"
+                onNavigate={() => {
+                  emitClientEvent("category_switch", {
+                    source: "sidebar_collection",
+                    to_bucket: bucketHref(item?.href ?? ""),
+                  });
+                }}
                 showDropdown
                 showSpinner={
                   addCategoryToBookmarkOptimisticMutation.isPending &&

@@ -5,8 +5,10 @@
  * (forbidden in App Router). These functions only depend on server-safe modules.
  */
 
-import * as Sentry from "@sentry/nextjs";
+import ky, { HTTPError } from "ky";
 
+import { logger } from "@/lib/api-helpers/axiom";
+import { extractErrorFields } from "@/lib/api-helpers/errors";
 import { upload, uploadVideo } from "@/lib/storage/media-upload";
 import { MAX_VIDEO_SIZE_BYTES, VIDEO_DOWNLOAD_TIMEOUT_MS } from "@/utils/constants";
 import { vet } from "@/utils/try";
@@ -153,22 +155,27 @@ export async function collectVideo(args: CollectVideoArgs): Promise<CollectVideo
       return { error: "unknown", message: "Invalid video URL.", success: false };
     }
 
-    // Fetch with timeout
+    // `timeout: false` disables ky's 10s default headers-arrival timer; the
+    // signal is the end-to-end wall-clock bound that also guards the video
+    // body read. Without this, a slow video source would abort at 10s
+    // regardless of VIDEO_DOWNLOAD_TIMEOUT_MS.
     const [downloadError, videoResponse] = await vet(() =>
-      fetch(videoUrl, {
-        method: "GET",
+      ky.get(videoUrl, {
+        retry: 0,
+        timeout: false,
         signal: AbortSignal.timeout(VIDEO_DOWNLOAD_TIMEOUT_MS),
       }),
     );
 
-    if (downloadError || !videoResponse?.ok) {
+    if (downloadError || !videoResponse) {
       const errorMessage = downloadError instanceof Error ? downloadError.message : "Unknown error";
       const errorType = getErrorTypeFromAbortSignal(downloadError);
+      const status = downloadError instanceof HTTPError ? downloadError.response.status : undefined;
 
       console.warn("[collectVideo] Video download failed:", {
         error: errorMessage,
         errorType,
-        status: videoResponse?.status,
+        status,
         userId,
         videoUrl,
       });
@@ -293,14 +300,11 @@ export async function collectVideo(args: CollectVideoArgs): Promise<CollectVideo
       videoUrl,
     });
 
-    const normalizedError =
-      error instanceof Error
-        ? error
-        : new Error(typeof error === "string" ? error : JSON.stringify(error, null, 2));
-
-    Sentry.captureException(normalizedError, {
-      extra: { videoUrl },
-      tags: { operation: "collect_video", userId },
+    logger.error("collect_video_failed", {
+      operation: "collect_video",
+      user_id: userId,
+      video_url: videoUrl,
+      ...extractErrorFields(error),
     });
 
     return {
@@ -344,22 +348,17 @@ export async function collectAdditionalImages(
     );
 
   if (failedUploads.length > 0) {
-    for (const { index, result } of failedUploads) {
-      const error =
-        result.status === "rejected" ? String(result.reason) : "Image upload returned null URL";
+    const failureDetails = failedUploads.map(({ index, result }) => ({
+      index,
+      error:
+        result.status === "rejected" ? String(result.reason) : "Image upload returned null URL",
+    }));
 
+    for (const detail of failureDetails) {
       console.warn("collectAdditionalImages upload failed:", {
-        error,
-        imageIndex: index,
+        ...detail,
         operation: "collect_additional_images",
         userId,
-      });
-
-      Sentry.addBreadcrumb({
-        category: "image-upload",
-        data: { error, index, userId },
-        level: "warning",
-        message: `Image ${index} failed`,
       });
     }
 
@@ -368,13 +367,13 @@ export async function collectAdditionalImages(
         result.status === "fulfilled" && typeof result.value === "string",
     ).length;
 
-    Sentry.captureException(new Error("Image uploads failed"), {
-      extra: {
-        failureCount: failedUploads.length,
-        successCount: successfulUploadsCount,
-        totalImages: settledImages.length,
-      },
-      tags: { operation: "collect_additional_images", userId },
+    logger.warn("collect_additional_images_partial_failure", {
+      operation: "collect_additional_images",
+      user_id: userId,
+      failure_count: failedUploads.length,
+      success_count: successfulUploadsCount,
+      total_images: settledImages.length,
+      failures: JSON.stringify(failureDetails),
     });
   }
 

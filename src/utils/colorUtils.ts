@@ -208,25 +208,18 @@ function oklabToHex(color: OklabColor): string {
 
 /**
  * Extract color hex strings from bookmark image_keywords for display.
- * Converts stored OKLAB values to hex. Returns primary color first, then secondary colors.
+ * Converts stored OKLAB values to hex. Colors are sorted by dominance (most present first).
  */
 export function getBookmarkColors(imageKeywords: ImgMetadataType["image_keywords"]): string[] {
   try {
-    if (!imageKeywords || Array.isArray(imageKeywords) || !("color" in imageKeywords)) {
+    if (!imageKeywords || Array.isArray(imageKeywords) || !("colors" in imageKeywords)) {
       return [];
     }
-    const { color } = imageKeywords;
-    if (!color || typeof color === "string") {
+    const { colors } = imageKeywords;
+    if (!colors || !Array.isArray(colors)) {
       return [];
     }
-    const hexes: string[] = [];
-    if (color.primary_color) {
-      hexes.push(oklabToHex(color.primary_color));
-    }
-    for (const c of color.secondary_colors ?? []) {
-      hexes.push(oklabToHex(c));
-    }
-    return hexes;
+    return colors.map(oklabToHex);
   } catch {
     return [];
   }

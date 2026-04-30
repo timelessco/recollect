@@ -2,21 +2,23 @@ import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { useRouter } from "next/router";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-import * as Sentry from "@sentry/nextjs";
+import ky, { HTTPError } from "ky";
 import { isEmpty } from "lodash";
 
 import type { GetPublicCategoryBookmarksApiResponseType } from "../../../types/apiTypes";
 
+import { logger } from "@/lib/api-helpers/axiom-logger";
+import { extractErrorFields } from "@/lib/api-helpers/errors";
+import {
+  BLACK_COLOR,
+  getBaseUrl,
+  V2_FETCH_PUBLIC_CATEGORY_BOOKMARKS_API,
+  WHITE_COLOR,
+} from "@/utils/constants";
+
 import { useFetchPublicCategoryBookmarks } from "../../../async/queryHooks/bookmarks/use-fetch-public-category-bookmarks";
 import CardSection from "../../../pageComponents/dashboard/cardSection";
 import { iconMap } from "../../../utils/commonData";
-import {
-  BLACK_COLOR,
-  FETCH_PUBLIC_CATEGORY_BOOKMARKS_API,
-  getBaseUrl,
-  NEXT_API_URL,
-  WHITE_COLOR,
-} from "../../../utils/constants";
 
 type PublicCategoryPageProps = GetPublicCategoryBookmarksApiResponseType;
 
@@ -39,7 +41,7 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
           <div
             className="mr-2 flex items-center justify-center rounded-full p-0.5"
             style={{
-              backgroundColor: props?.icon_color ?? BLACK_COLOR,
+              backgroundColor: props?.iconColor ?? BLACK_COLOR,
               height: 20,
               width: 20,
             }}
@@ -47,11 +49,9 @@ const CategoryName: NextPage<PublicCategoryPageProps> = (props) => {
             {props?.icon &&
               iconMap
                 .get(props.icon)
-                ?.icon(props?.icon_color === WHITE_COLOR ? BLACK_COLOR : WHITE_COLOR, "14")}
+                ?.icon(props?.iconColor === WHITE_COLOR ? BLACK_COLOR : WHITE_COLOR, "14")}
           </div>
-          <p className="text-xl leading-[23px] font-semibold text-gray-900">
-            {props.category_name}
-          </p>
+          <p className="text-xl leading-[23px] font-semibold text-gray-900">{props.categoryName}</p>
         </div>
       </header>
       <main>
@@ -104,39 +104,13 @@ export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (co
 
   try {
     // Fetch the first full page for SEO and initial render
-    const response = await fetch(
-      `${getBaseUrl()}${NEXT_API_URL}${FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}?category_slug=${categorySlug}&user_name=${userName}&page=0`,
-    );
+    const data = await ky
+      .get(`${getBaseUrl()}/api/${V2_FETCH_PUBLIC_CATEGORY_BOOKMARKS_API}`, {
+        searchParams: { category_slug: categorySlug, user_name: userName, page: 0 },
+      })
+      .json<GetPublicCategoryBookmarksApiResponseType>();
 
-    if (!response.ok) {
-      console.error(
-        `[${ROUTE}] Failed to fetch public category bookmarks: HTTP ${response.status}`,
-        {
-          categorySlug,
-          status: response.status,
-          statusText: response.statusText,
-          userName,
-        },
-      );
-      Sentry.captureException(new Error(`HTTP ${response.status}: ${response.statusText}`), {
-        extra: {
-          categorySlug,
-          status: response.status,
-          statusText: response.statusText,
-          userName,
-        },
-        tags: {
-          context: "static_generation",
-          operation: "fetch_public_category",
-        },
-      });
-      return { notFound: true };
-    }
-
-    // oxlint-disable-next-line no-unsafe-type-assertion -- response.json() types as unknown in oxlint
-    const data = (await response.json()) as GetPublicCategoryBookmarksApiResponseType;
-
-    if (!data?.is_public) {
+    if (!data?.isPublic) {
       console.warn(`[${ROUTE}] Category is not public`, {
         categorySlug,
         userName,
@@ -148,19 +122,44 @@ export const getStaticProps: GetStaticProps<PublicCategoryPageProps> = async (co
       props: data,
     };
   } catch (error) {
-    // Network failures, API errors are system errors (5xx) - console.error + Sentry
+    if (error instanceof HTTPError) {
+      const { status, statusText } = error.response;
+      console.error(`[${ROUTE}] Failed to fetch public category bookmarks: HTTP ${status}`, {
+        categorySlug,
+        status,
+        statusText,
+        userName,
+      });
+      const severity = status >= 500 ? "error" : "warn";
+      logger[severity]("fetch_public_category_failed", {
+        operation: "fetch_public_category",
+        route: ROUTE,
+        context: "static_generation",
+        category_slug: categorySlug,
+        user_name: userName,
+        "http.response.status_code": status,
+        "http.response.status_text": statusText,
+        error_message: `HTTP ${status}: ${statusText}`,
+      });
+      await logger.flush();
+      return { notFound: true };
+    }
+
+    // Network failures / unexpected exceptions during ISR build — log to Axiom
     console.error(`[${ROUTE}] Failed to fetch public category bookmarks`, {
       categorySlug,
       error,
       userName,
     });
-    Sentry.captureException(error, {
-      extra: { categorySlug, userName },
-      tags: {
-        context: "static_generation",
-        operation: "fetch_public_category",
-      },
+    logger.error("fetch_public_category_error", {
+      operation: "fetch_public_category",
+      route: ROUTE,
+      context: "static_generation",
+      category_slug: categorySlug,
+      user_name: userName,
+      ...extractErrorFields(error),
     });
+    await logger.flush();
     return { notFound: true };
   }
 };

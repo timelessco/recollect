@@ -7,6 +7,9 @@ import { AddTagToBookmarkPayloadSchema, AddTagToBookmarkResponseSchema } from ".
 
 const ROUTE = "add-tag-to-bookmark";
 
+/**
+ * @deprecated Use /api/v2/tags/add-tag-to-bookmark instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     const { bookmarkId, tagId } = data;

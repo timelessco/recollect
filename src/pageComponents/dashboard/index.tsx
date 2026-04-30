@@ -1,54 +1,76 @@
 import dynamic from "next/dynamic";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
+import type { ReactNode } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
 import isEmpty from "lodash/isEmpty";
 import isNil from "lodash/isNil";
 import isNull from "lodash/isNull";
 
-import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
-import useFetchBookmarksView from "../../async/queryHooks/bookmarks/useFetchBookmarksView";
-import useFetchCategories from "../../async/queryHooks/category/useFetchCategories";
-import useFetchSharedCategories from "../../async/queryHooks/share/useFetchSharedCategories";
-import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
+import { Spinner } from "@/components/spinner";
+
+import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
+import useFetchBookmarksView from "../../async/queryHooks/bookmarks/use-fetch-bookmarks-view";
+import useFetchCategories from "../../async/queryHooks/category/use-fetch-categories";
+import useFetchSharedCategories from "../../async/queryHooks/share/use-fetch-shared-categories";
+import useFetchUserProfile from "../../async/queryHooks/user/use-fetch-user-profile";
+import { usePageContext } from "../../hooks/use-page-context";
+import { useSignOutRealtimeTeardown } from "../../hooks/use-sign-out-realtime-teardown";
 import useGetCurrentCategoryId from "../../hooks/useGetCurrentCategoryId";
 import useGetSortBy from "../../hooks/useGetSortBy";
 import useIsInNotFoundPage from "../../hooks/useIsInNotFoundPage";
+import { useMounted } from "../../hooks/useMounted";
 import { useSupabaseSession } from "../../store/componentStore";
-import { mutationApiCall } from "../../utils/apiHelpers";
+import { isNullable } from "../../utils/assertion-utils";
 import { BOOKMARKS_KEY, DISCOVER_URL, LOGIN_URL } from "../../utils/constants";
 import { createClient } from "../../utils/supabaseClient";
-import { getCategorySlugFromRouter } from "../../utils/url";
 import NotFoundPage from "../notFoundPage";
 import { BookmarkCards } from "./bookmarkCards";
 import { DiscoverBookmarkCards } from "./discoverBookmarkCards";
+import { SimilarBookmarkCards } from "./similar-bookmark-cards";
 
 const DashboardLayout = dynamic(() => import("./dashboardLayout"), {
   ssr: false,
 });
 
+// @remotion/player touches `window` on import — ssr: false is required.
+// This is the single split point for the entire onboarding tree: modal code,
+// Remotion composition, icons, and the devices.png image. Users past
+// onboarding never download any of this.
+const OnboardingModal = dynamic(
+  async () => {
+    const m = await import("@/pageComponents/onboarding/onboarding-modal");
+    return { default: m.OnboardingModal };
+  },
+  { ssr: false },
+);
+
 const supabase = createClient();
 
-const Dashboard = () => {
+interface DashboardProps {
+  // Accepted so `getLayout` in pages can pass the route page as children.
+  // Dashboard renders its own main-pane tree internally based on route —
+  // `children` is intentionally not rendered.
+  children?: ReactNode;
+}
+
+const Dashboard = (_props: DashboardProps) => {
+  const isMounted = useMounted();
   const queryClient = useQueryClient();
-  const router = useRouter();
-  const categorySlug = getCategorySlugFromRouter(router);
+  const { categorySlug, isSimilarPage } = usePageContext();
 
   const setSession = useSupabaseSession((state) => state.setSession);
   const session = useSupabaseSession((state) => state.session);
+
+  useSignOutRealtimeTeardown();
 
   useEffect(() => {
     const fetchSession = async () => {
       const { data, error } = await supabase.auth.getUser();
 
-      // If there's an auth error or no user (expired session), redirect to login
-      // Skip redirect for discover page (public access allowed)
-      // This handles the case where middleware passes but session is actually invalid
-      // Use pathname fallback since categorySlug can be null before Next.js router hydrates
-      const isDiscoverRoute =
-        categorySlug === DISCOVER_URL || window.location.pathname.startsWith(`/${DISCOVER_URL}`);
-      if ((error || !data?.user) && !isDiscoverRoute) {
+      // If there's an auth error or no user (expired session), redirect to login.
+      // This handles the case where middleware passes but session is actually invalid.
+      if (error || !data?.user) {
         // Clear stale auth cookie to prevent redirect loop:
         // middleware getClaims() validates JWT locally (no DB check), so a deleted user's
         // JWT passes middleware → dashboard detects invalid user → must clear session
@@ -60,17 +82,11 @@ const Dashboard = () => {
         return;
       }
 
-      // Set session with user if authenticated, otherwise clear session
-      // Avoids creating truthy object with undefined user that confuses downstream checks
-      if (data?.user) {
-        setSession({ user: data.user });
-      } else {
-        setSession(undefined);
-      }
+      setSession({ user: data.user });
     };
 
     void fetchSession();
-  }, [setSession, categorySlug]);
+  }, [setSession]);
 
   const { category_id: CATEGORY_ID } = useGetCurrentCategoryId();
   const { isInNotFoundPage } = useIsInNotFoundPage();
@@ -93,41 +109,45 @@ const Dashboard = () => {
 
   const { userProfileData } = useFetchUserProfile();
 
+  // Gate on the profile row existing (not just the array being defined) so an
+  // empty resolve — cold cache, transient RLS miss, row-not-yet-created race —
+  // can't flash the onboarding modal at an already-onboarded user. The modal's
+  // own 1s useTimeoutEffect further hides any race after this resolves.
+  const profileRow = userProfileData?.[0];
+  const showOnboarding = profileRow ? isNullable(profileRow.onboarded_at) : false;
+
   const { updateUserProfileOptimisticMutation } = useUpdateUserProfileOptimisticMutation();
-  const updateUserProfileMutateAsync = updateUserProfileOptimisticMutation.mutateAsync;
+  const updateUserProfileMutate = updateUserProfileOptimisticMutation.mutate;
 
   // if the user email as been changed then this updates the email in the profiles table
   useEffect(() => {
     if (
-      !isNull(userProfileData?.data) &&
-      !isEmpty(userProfileData?.data) &&
-      session?.user?.email !== userProfileData?.data[0]?.email &&
-      userProfileData?.data[0]?.email
+      !isNull(userProfileData) &&
+      !isEmpty(userProfileData) &&
+      session?.user?.email !== userProfileData?.[0]?.email &&
+      userProfileData?.[0]?.email
     ) {
-      void mutationApiCall(
-        updateUserProfileMutateAsync({
-          updateData: { email: session?.user?.email },
-        }),
-      );
+      updateUserProfileMutate({
+        updateData: { email: session?.user?.email },
+      });
     }
-  }, [session?.user?.email, updateUserProfileMutateAsync, userProfileData?.data]);
+  }, [session?.user?.email, updateUserProfileMutate, userProfileData]);
 
   // this updates the provider in the profiles table if its not present
   useEffect(() => {
-    if (!userProfileData?.data?.[0]?.provider && session?.user?.app_metadata?.provider) {
-      void mutationApiCall(
-        updateUserProfileMutateAsync({
-          updateData: { provider: session?.user?.app_metadata?.provider },
-        }),
-      );
+    if (!userProfileData?.[0]?.provider && session?.user?.app_metadata?.provider) {
+      updateUserProfileMutate({
+        updateData: { provider: session?.user?.app_metadata?.provider },
+      });
     }
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [userProfileData?.data?.[0]?.provider]);
-
-  const isDiscoverPage = categorySlug === DISCOVER_URL;
+  }, [session?.user?.app_metadata?.provider, updateUserProfileMutate, userProfileData]);
 
   const renderMainPaneContent = () => {
     if (!isInNotFoundPage) {
+      if (isSimilarPage) {
+        return <SimilarBookmarkCards />;
+      }
+
       if (categorySlug === DISCOVER_URL) {
         return <DiscoverBookmarkCards isDiscoverPage />;
       }
@@ -140,11 +160,27 @@ const Dashboard = () => {
     return <NotFoundPage />;
   };
 
-  if (isNil(session) && !isDiscoverPage) {
+  // Gate on mount so SSR output is a spinner (matches pre-PR behavior).
+  // DashboardLayout is `dynamic(..., { ssr: false })` so without this gate
+  // SSR would emit blank HTML.
+  if (!isMounted) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Spinner className="h-3 w-3 animate-spin" />
+      </div>
+    );
+  }
+
+  if (isNil(session)) {
     return null;
   }
 
-  return <DashboardLayout>{renderMainPaneContent()}</DashboardLayout>;
+  return (
+    <>
+      <DashboardLayout>{renderMainPaneContent()}</DashboardLayout>
+      {showOnboarding ? <OnboardingModal /> : null}
+    </>
+  );
 };
 
 export default Dashboard;

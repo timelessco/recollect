@@ -2,20 +2,20 @@ import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 
-import { isNil, isNull } from "lodash";
+import { Tooltip } from "@base-ui/react/tooltip";
+import { isNull } from "lodash";
 
 import type { SettingsPage } from "@/pageComponents/dashboard/modals/settings-modal";
 
 import { ToggleDarkMode } from "@/components/toggleDarkMode";
-import { useSupabaseSession } from "@/store/componentStore";
 import { cn } from "@/utils/tailwind-merge";
 
-import useUploadProfilePicMutation from "../../async/mutationHooks/settings/useUploadProfilePicMutation";
-import useDeleteUserMutation from "../../async/mutationHooks/user/useDeleteUserMutation";
-import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/useRemoveUserProfilePicMutation";
-import useUpdateUsernameMutation from "../../async/mutationHooks/user/useUpdateUsernameMutation";
-import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/useUpdateUserProfileOptimisticMutation";
-import useFetchUserProfile from "../../async/queryHooks/user/useFetchUserProfile";
+import useUploadProfilePicMutation from "../../async/mutationHooks/settings/use-upload-profile-pic-mutation";
+import useDeleteUserMutation from "../../async/mutationHooks/user/use-delete-user-mutation";
+import useRemoveUserProfilePicMutation from "../../async/mutationHooks/user/use-remove-user-profile-pic-mutation";
+import useUpdateUserProfileOptimisticMutation from "../../async/mutationHooks/user/use-update-user-profile-optimistic-mutation";
+import useUpdateUsernameMutation from "../../async/mutationHooks/user/use-update-username-mutation";
+import useFetchUserProfile from "../../async/queryHooks/user/use-fetch-user-profile";
 import Button from "../../components/atoms/button";
 import Input from "../../components/atoms/input";
 import LabelledComponent from "../../components/labelledComponent";
@@ -23,7 +23,7 @@ import { Spinner } from "../../components/spinner";
 import UserAvatar from "../../components/userAvatar";
 import { WarningIconRed } from "../../icons/actionIcons/warningIconRed";
 import ImageIcon from "../../icons/imageIcon";
-import { mutationApiCall } from "../../utils/apiHelpers";
+import { InfoIcon } from "../../icons/info-icon";
 import {
   saveButtonClassName,
   settingsDeleteButtonRedClassName,
@@ -51,7 +51,6 @@ interface SettingsProps {
 
 const Settings = ({ onNavigate }: SettingsProps) => {
   const inputFileRef = useRef<HTMLInputElement>(null);
-  const session = useSupabaseSession((state) => state.session);
 
   const { userProfileData } = useFetchUserProfile();
 
@@ -64,7 +63,7 @@ const Settings = ({ onNavigate }: SettingsProps) => {
   const { deleteUserMutation } = useDeleteUserMutation();
   const { removeProfilePic } = useRemoveUserProfilePicMutation();
 
-  const userData = userProfileData?.data?.[0];
+  const userData = userProfileData?.[0];
 
   const onSubmit: SubmitHandler<SettingsUsernameFormTypes> = async (data) => {
     if (data?.username === userData?.user_name) {
@@ -73,17 +72,12 @@ const Settings = ({ onNavigate }: SettingsProps) => {
     }
 
     try {
-      const response = await mutationApiCall(
-        updateUsernameMutation.mutateAsync({
-          id: session!.user!.id,
-          username: data?.username,
-        }),
-      );
-      if (!isNil(response?.data)) {
-        successToast("User name has been updated");
-      }
-    } catch (error) {
-      console.error(error);
+      await updateUsernameMutation.mutateAsync({
+        username: data?.username,
+      });
+      successToast("Username has been updated");
+    } catch {
+      errorToast("Failed to update username. Please try again.");
     }
   };
 
@@ -94,15 +88,10 @@ const Settings = ({ onNavigate }: SettingsProps) => {
     }
 
     try {
-      const response = await mutationApiCall(
-        updateUserProfileOptimisticMutation.mutateAsync({
-          updateData: { display_name: data?.displayname },
-        }),
-      );
-
-      if (!isNil(response?.data)) {
-        successToast("Display name has been updated");
-      }
+      await updateUserProfileOptimisticMutation.mutateAsync({
+        updateData: { display_name: data?.displayname },
+      });
+      successToast("Display name has been updated");
     } catch (error) {
       console.error(error);
       errorToast("Something went wrong");
@@ -163,19 +152,19 @@ const Settings = ({ onNavigate }: SettingsProps) => {
             const { size } = uploadedFile;
             if (size < 1_000_000) {
               const uploadPic = async () => {
-                const response = await mutationApiCall(
-                  uploadProfilePicMutation.mutateAsync({
+                try {
+                  await uploadProfilePicMutation.mutateAsync({
                     file: uploadedFile,
-                  }),
-                );
-                if (isNull(response?.error)) {
+                  });
                   successToast("Profile pic has been updated");
+                } catch {
+                  errorToast("Something went wrong");
                 }
               };
 
               void uploadPic();
             } else {
-              errorToast("File size is greater then 1MB");
+              errorToast("File size is greater than 1MB");
             }
           }
         }}
@@ -226,13 +215,11 @@ const Settings = ({ onNavigate }: SettingsProps) => {
                 isDisabled={isNull(userData?.profile_pic)}
                 onClick={() => {
                   async function removePic() {
-                    const response = await mutationApiCall(
-                      removeProfilePic.mutateAsync({
-                        id: userData!.id,
-                      }),
-                    );
-                    if (isNull(response?.error)) {
+                    try {
+                      await removeProfilePic.mutateAsync();
                       successToast("Profile pic has been removed");
+                    } catch {
+                      errorToast("Failed to remove profile pic. Please try again.");
                     }
                   }
 
@@ -298,48 +285,68 @@ const Settings = ({ onNavigate }: SettingsProps) => {
               void handleSubmit(onSubmit)();
             }}
           >
-            <LabelledComponent label="Username" labelClassName={settingsInputLabelClassName}>
-              <div className={settingsInputContainerClassName}>
-                <Input
-                  autoFocus={false}
-                  errorClassName="absolute  top-[29px]"
-                  tabIndex={-1}
-                  {...register("username", {
-                    maxLength: {
-                      message: "Username must not exceed 100 characters",
-                      value: 100,
-                    },
-                    minLength: {
-                      message: "Username must have a minimum of 4 characters",
-                      value: 4,
-                    },
-                    pattern: {
-                      message: "Only lowercase letters and numbers, no spaces",
-                      value: LETTERS_NUMBERS_CHECK_PATTERN,
-                    },
-                    required: {
-                      message: "Username cannot be empty",
-                      value: true,
-                    },
-                  })}
-                  className={settingsInputClassName}
-                  errorText={errors?.username?.message ?? ""}
-                  id="username"
-                  isError={Boolean(errors?.username)}
-                  placeholder="Enter username"
-                />
-                <Button
-                  className={`px-2 py-[4.5px] ${saveButtonClassName} rounded-[5px] ${
-                    usernameValue !== originalUsername ? "" : "pointer-events-none invisible"
-                  }`}
-                  onClick={() => {
-                    void handleSubmit(onSubmit)();
-                  }}
-                >
-                  Save
-                </Button>
+            <div className="w-full">
+              <div className={`${settingsInputLabelClassName} flex items-center gap-1`}>
+                <span>Username</span>
+                <Tooltip.Provider>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger className="cursor-pointer">
+                      <InfoIcon className="size-3.5 text-gray-500" />
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Positioner className="z-200 max-w-80" sideOffset={8}>
+                        <Tooltip.Popup className="rounded-xl bg-gray-900 px-2 py-1 text-13 font-450 text-gray-0 transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0">
+                          Changing your username will break any share links you&apos;ve already
+                          copied or posted elsewhere.
+                        </Tooltip.Popup>
+                      </Tooltip.Positioner>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
               </div>
-            </LabelledComponent>
+              <div className="w-full">
+                <div className={settingsInputContainerClassName}>
+                  <Input
+                    autoFocus={false}
+                    errorClassName="absolute  top-[29px]"
+                    tabIndex={-1}
+                    {...register("username", {
+                      maxLength: {
+                        message: "Username must not exceed 100 characters",
+                        value: 100,
+                      },
+                      minLength: {
+                        message: "Username must have a minimum of 4 characters",
+                        value: 4,
+                      },
+                      pattern: {
+                        message: "Only lowercase letters and numbers, no spaces",
+                        value: LETTERS_NUMBERS_CHECK_PATTERN,
+                      },
+                      required: {
+                        message: "Username cannot be empty",
+                        value: true,
+                      },
+                    })}
+                    className={settingsInputClassName}
+                    errorText={errors?.username?.message ?? ""}
+                    id="username"
+                    isError={Boolean(errors?.username)}
+                    placeholder="Enter username"
+                  />
+                  <Button
+                    className={`px-2 py-[4.5px] ${saveButtonClassName} rounded-[5px] ${
+                      usernameValue !== originalUsername ? "" : "pointer-events-none invisible"
+                    }`}
+                    onClick={() => {
+                      void handleSubmit(onSubmit)();
+                    }}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </div>
           </form>
         </div>
         <SettingsEmailCard onNavigate={onNavigate} />

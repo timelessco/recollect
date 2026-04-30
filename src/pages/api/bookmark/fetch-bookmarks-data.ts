@@ -46,6 +46,17 @@ interface Data {
   error: { message: string } | null | PostgrestError | VerifyErrors;
 }
 
+// Scoped RLS can hide the joined row, so the FK side returns null — drop those before mapping.
+type TagJoinRow = BookmarksWithTagsWithTagForginKeys[number];
+type CategoryJoinRow = BookmarksWithCategoriesWithCategoryForeignKeys[number];
+const hasTag = (
+  row: TagJoinRow,
+): row is TagJoinRow & { tag_id: NonNullable<TagJoinRow["tag_id"]> } => row.tag_id !== null;
+const hasCategory = (
+  row: CategoryJoinRow,
+): row is CategoryJoinRow & { category_id: NonNullable<CategoryJoinRow["category_id"]> } =>
+  row.category_id !== null;
+
 export default async function handler(request: NextApiRequest, response: NextApiResponse<Data>) {
   // disabling as this is not that big of an issue
   const { category_id, sort_by: sortValue } = request.query;
@@ -278,30 +289,34 @@ export default async function handler(request: NextApiRequest, response: NextApi
 
   const finalData = data
     ?.map((item) => {
-      const matchedBookmarkWithTag = bookmarksWithTags?.filter(
-        (tagItem) => tagItem?.bookmark_id === item?.id,
-      ) as unknown as BookmarksWithTagsWithTagForginKeys;
+      const matchedBookmarkWithTag = (
+        bookmarksWithTags?.filter(
+          (tagItem) => tagItem?.bookmark_id === item?.id,
+        ) as unknown as BookmarksWithTagsWithTagForginKeys
+      )?.filter(hasTag);
 
       // Always use separate query result for complete category data
-      const matchedBookmarkWithCategory = bookmarksWithCategories?.filter(
-        (catItem) => catItem?.bookmark_id === item?.id,
-      ) as unknown as BookmarksWithCategoriesWithCategoryForeignKeys;
+      const matchedBookmarkWithCategory = (
+        bookmarksWithCategories?.filter(
+          (catItem) => catItem?.bookmark_id === item?.id,
+        ) as unknown as BookmarksWithCategoriesWithCategoryForeignKeys
+      )?.filter(hasCategory);
 
       return {
         ...item,
         addedCategories: !isEmpty(matchedBookmarkWithCategory)
           ? matchedBookmarkWithCategory?.map((matchedItem) => ({
-              category_name: matchedItem?.category_id?.category_name,
-              category_slug: matchedItem?.category_id?.category_slug,
-              icon: matchedItem?.category_id?.icon,
-              icon_color: matchedItem?.category_id?.icon_color,
-              id: matchedItem?.category_id?.id,
+              category_name: matchedItem.category_id.category_name,
+              category_slug: matchedItem.category_id.category_slug,
+              icon: matchedItem.category_id.icon,
+              icon_color: matchedItem.category_id.icon_color,
+              id: matchedItem.category_id.id,
             }))
           : [],
         addedTags: !isEmpty(matchedBookmarkWithTag)
           ? matchedBookmarkWithTag?.map((matchedItem) => ({
-              id: matchedItem?.tag_id?.id,
-              name: matchedItem?.tag_id?.name,
+              id: matchedItem.tag_id.id,
+              name: matchedItem.tag_id.name,
             }))
           : [],
       };

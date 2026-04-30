@@ -16,6 +16,9 @@ export type TogglePreferredOgDomainPayload = z.infer<typeof TogglePreferredOgDom
 
 export type TogglePreferredOgDomainResponse = z.infer<typeof TogglePreferredOgDomainResponseSchema>;
 
+/**
+ * @deprecated Use /api/v2/profiles/toggle-preferred-og-domain instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     const { domain: rawDomain } = data;

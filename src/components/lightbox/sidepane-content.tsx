@@ -22,6 +22,7 @@ import {
   highlightSearch,
   searchMatchesText,
 } from "./LightboxUtils";
+import { SeeSimilarButton } from "./see-similar-button";
 
 const formatDate = (dateString: string) => {
   try {
@@ -61,7 +62,7 @@ export function SidepaneContent({
   const metaData = currentBookmark?.meta_data;
   const showKeywords = hasKeywords(metaData?.image_keywords) && vercelEnvironment !== "production";
   const bookmarkColors = getBookmarkColors(metaData?.image_keywords);
-  const collapsedOffset = (currentBookmark?.addedTags?.length ?? 0) > 0 ? 145 : 110;
+  const collapsedOffset = (currentBookmark?.addedTags?.length ?? 0) > 0 ? 109 : 74;
 
   useEffect(() => {
     setShowMore(false);
@@ -69,7 +70,7 @@ export function SidepaneContent({
 
     const timeoutId = setTimeout(() => {
       if (expandableRef?.current) {
-        setHasAIOverflowContent(expandableRef.current.scrollHeight > 120);
+        setHasAIOverflowContent(expandableRef.current.scrollHeight > 84);
       }
 
       if (descriptionRef?.current) {
@@ -175,7 +176,12 @@ export function SidepaneContent({
           </div>
         )}
         {!isDiscoverPage && !isPublicPage && (
-          <CategoryMultiSelect bookmarkId={currentBookmark.id} shouldFetch={shouldFetch} />
+          <>
+            <div className="pt-4">
+              <SeeSimilarButton bookmark={currentBookmark} />
+            </div>
+            <CategoryMultiSelect bookmarkId={currentBookmark.id} shouldFetch={shouldFetch} />
+          </>
         )}
       </div>
       {/* oxlint-disable prefer-nullish-coalescing -- boolean condition: empty string should be falsy */}

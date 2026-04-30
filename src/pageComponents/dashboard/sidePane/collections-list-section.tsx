@@ -2,15 +2,13 @@ import router from "next/router";
 import { useState } from "react";
 import type { ReactNode } from "react";
 
-import { isNull } from "lodash";
-
 import { useAddCategoryOptimisticMutation } from "@/async/mutationHooks/category/use-add-category-optimistic-mutation";
-import useFetchUserProfile from "@/async/queryHooks/user/useFetchUserProfile";
+import useFetchUserProfile from "@/async/queryHooks/user/use-fetch-user-profile";
 import { Collapsible } from "@/components/ui/recollect/collapsible";
 import { Menu } from "@/components/ui/recollect/menu";
 import { tagCategoryNameSchema } from "@/lib/validation/tag-category-schema";
 import { MAX_TAG_COLLECTION_NAME_LENGTH, MIN_TAG_COLLECTION_NAME_LENGTH } from "@/utils/constants";
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 
 import AddCategoryIcon from "../../../icons/addCategoryIcon";
 import DownArrowGray from "../../../icons/downArrowGray";
@@ -116,6 +114,7 @@ interface AddCategoryInputProps {
 function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
   const { userProfileData } = useFetchUserProfile();
   const { addCategoryOptimisticMutation } = useAddCategoryOptimisticMutation();
+  const handleClientError = useHandleClientError();
 
   const handleAddNewCategory = (newCategoryName: string) => {
     const result = tagCategoryNameSchema.safeParse(newCategoryName);
@@ -128,10 +127,10 @@ function AddCategoryInput({ onClose, show }: AddCategoryInputProps) {
       return;
     }
 
-    if (userProfileData && !isNull(userProfileData.data)) {
+    if (userProfileData && userProfileData.length > 0) {
       addCategoryOptimisticMutation.mutate(
         {
-          category_order: (userProfileData.data[0]?.category_order ?? []).filter(
+          category_order: (userProfileData[0]?.category_order ?? []).filter(
             (id): id is number => id !== null,
           ),
           name: result.data,

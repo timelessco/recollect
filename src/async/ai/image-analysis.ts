@@ -18,7 +18,7 @@ import { GEMINI_MODEL } from "@/utils/constants";
 
 import { getApikeyAndBookmarkCount, incrementBookmarkCount } from "./api-key";
 import { buildResponseSchema, fullResponseSchema } from "./schemas/image-analysis-schema";
-import { buildPrompt } from "./schemas/prompt-builder";
+import { SYSTEM_INSTRUCTION, buildPrompt } from "./schemas/prompt-builder";
 
 const CONFIDENCE_THRESHOLD = 90;
 
@@ -91,6 +91,16 @@ export const imageToText = async (
 
     const contentType = imageResponse.headers.get("content-type") ?? "image/jpeg";
     const imageBuffer = await imageResponse.arrayBuffer();
+
+    // Second line of defense against an empty upstream payload — R2 happily returns
+    // `200 OK` with `content-length: 0` for blobs that were written empty. Sending
+    // that to Gemini produces a misleading `INVALID_ARGUMENT` instead of the true
+    // root cause (upstream capture stored 0 bytes). Throwing here makes the failure
+    // legible and keeps the archive + replay pipeline intact.
+    if (imageBuffer.byteLength === 0) {
+      throw new Error(`Empty image body from ${imageUrl}`);
+    }
+
     const imageBytes = Buffer.from(imageBuffer).toString("base64");
 
     // Call Gemini with structured output
@@ -101,6 +111,7 @@ export const imageToText = async (
       config: {
         responseMimeType: "application/json",
         responseJsonSchema: responseSchema,
+        systemInstruction: SYSTEM_INSTRUCTION,
       },
       contents: [
         prompt,
@@ -195,10 +206,10 @@ function mapKeywords(parsed: GeminiResponse, toggles: AiToggles): StructuredKeyw
     keywords.place = parsed.place;
   }
 
-  // Convert hex color codes to OKLAB
-  if (parsed.color?.length) {
+  // Convert hex color codes to OKLAB (Gemini returns them sorted by dominance)
+  if (parsed.colors?.length) {
     const toOklab = converter("oklab");
-    const oklabColors = parsed.color
+    const oklabColors = parsed.colors
       .map((hex) => {
         const oklab = toOklab(hex);
         if (!oklab) {
@@ -209,8 +220,7 @@ function mapKeywords(parsed: GeminiResponse, toggles: AiToggles): StructuredKeyw
       .filter((c): c is OklabColor => c !== null);
 
     if (oklabColors.length > 0) {
-      const [primary, ...secondary] = oklabColors;
-      keywords.color = { primary_color: primary, secondary_colors: secondary };
+      keywords.colors = oklabColors;
     }
   }
 

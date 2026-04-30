@@ -4,18 +4,18 @@ import type { GetStaticPaths, GetStaticProps } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
-import * as Sentry from "@sentry/nextjs";
 import { format } from "date-fns";
+import ky, { HTTPError } from "ky";
 import { z } from "zod";
 
-import type { FetchDataResponse, SingleListData } from "../../../../../types/apiTypes";
+import type { SingleListData } from "../../../../../types/apiTypes";
+
+import { logger } from "@/lib/api-helpers/axiom-logger";
+import { extractErrorFields } from "@/lib/api-helpers/errors";
 
 import { CustomLightBox } from "../../../../../components/lightbox/LightBox";
-import { FETCH_PUBLIC_BOOKMARK_BY_ID_API, getBaseUrl } from "../../../../../utils/constants";
-import { HttpStatus } from "../../../../../utils/error-utils/common";
+import { getBaseUrl, V2_FETCH_PUBLIC_BOOKMARK_BY_ID_API } from "../../../../../utils/constants";
 import { buildPublicCategoryUrl } from "../../../../../utils/url-builders";
-
-type FetchPublicBookmarkByIdResponse = FetchDataResponse<null | SingleListData>;
 
 const PublicPreviewParamsSchema = z.object({
   bookmark_id: z.string().regex(/^\d+$/u, "Bookmark ID must be numeric").transform(Number),
@@ -109,51 +109,16 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (context
   const { bookmark_id, id: categorySlug, user_name } = validation.data;
 
   try {
-    const response = await fetch(
-      `${getBaseUrl()}${FETCH_PUBLIC_BOOKMARK_BY_ID_API}?bookmark_id=${bookmark_id}&user_name=${user_name}&category_slug=${categorySlug}`,
-    );
+    const bookmark = await ky
+      .get(`${getBaseUrl()}/api/${V2_FETCH_PUBLIC_BOOKMARK_BY_ID_API}`, {
+        searchParams: { bookmark_id, user_name, category_slug: categorySlug },
+      })
+      .json<null | SingleListData>();
 
-    if (response.status === HttpStatus.NOT_FOUND) {
-      console.warn(`[${ROUTE}] Bookmark not found`, {
+    if (!bookmark) {
+      console.warn(`[${ROUTE}] Bookmark data not found`, {
         bookmark_id,
         categorySlug,
-        user_name,
-      });
-      return { notFound: true };
-    }
-
-    if (!response.ok) {
-      console.error(`[${ROUTE}] Failed to fetch public bookmark: HTTP ${response.status}`, {
-        bookmark_id,
-        categorySlug,
-        status: response.status,
-        statusText: response.statusText,
-        user_name,
-      });
-      Sentry.captureException(new Error(`HTTP ${response.status}: ${response.statusText}`), {
-        extra: {
-          bookmark_id,
-          categorySlug,
-          status: response.status,
-          statusText: response.statusText,
-          user_name,
-        },
-        tags: {
-          context: "incremental_static_regeneration",
-          operation: "fetch_public_bookmark",
-        },
-      });
-      return { notFound: true };
-    }
-
-    // oxlint-disable-next-line no-unsafe-type-assertion -- response.json() types as unknown in oxlint
-    const data = (await response.json()) as FetchPublicBookmarkByIdResponse;
-
-    if (!data?.data || data?.error) {
-      console.warn(`[${ROUTE}] Bookmark data not found or contains error`, {
-        bookmark_id,
-        categorySlug,
-        error: data?.error,
         user_name,
       });
       return { notFound: true };
@@ -161,24 +126,62 @@ export const getStaticProps: GetStaticProps<PublicPreviewProps> = async (context
 
     return {
       props: {
-        bookmark: data.data,
+        bookmark,
       },
       revalidate: 1800,
     };
   } catch (error) {
+    if (error instanceof HTTPError) {
+      const { status, statusText } = error.response;
+
+      if (status === 404) {
+        console.warn(`[${ROUTE}] Bookmark not found`, {
+          bookmark_id,
+          categorySlug,
+          user_name,
+        });
+        return { notFound: true };
+      }
+
+      console.error(`[${ROUTE}] Failed to fetch public bookmark: HTTP ${status}`, {
+        bookmark_id,
+        categorySlug,
+        status,
+        statusText,
+        user_name,
+      });
+      const severity = status >= 500 ? "error" : "warn";
+      logger[severity]("fetch_public_bookmark_failed", {
+        operation: "fetch_public_bookmark",
+        route: ROUTE,
+        context: "incremental_static_regeneration",
+        bookmark_id,
+        category_slug: categorySlug,
+        user_name,
+        "http.response.status_code": status,
+        "http.response.status_text": statusText,
+        error_message: `HTTP ${status}: ${statusText}`,
+      });
+      await logger.flush();
+      return { notFound: true };
+    }
+
     console.error(`[${ROUTE}] Unexpected error fetching public bookmark`, {
       bookmark_id,
       categorySlug,
       error,
       user_name,
     });
-    Sentry.captureException(error, {
-      extra: { bookmark_id, categorySlug, user_name },
-      tags: {
-        context: "incremental_static_regeneration",
-        operation: "fetch_public_bookmark",
-      },
+    logger.error("fetch_public_bookmark_error", {
+      operation: "fetch_public_bookmark",
+      route: ROUTE,
+      context: "incremental_static_regeneration",
+      bookmark_id,
+      category_slug: categorySlug,
+      user_name,
+      ...extractErrorFields(error),
     });
+    await logger.flush();
     return { notFound: true };
   }
 };

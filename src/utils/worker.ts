@@ -1,20 +1,29 @@
 import * as Sentry from "@sentry/nextjs";
-import axios from "axios";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
-  AI_ENRICHMENT_API,
   getBaseUrl,
   instagramType,
   NEXT_API_URL,
   tweetType,
-  WORKER_SCREENSHOT_API,
+  V2_AI_ENRICHMENT_API,
+  V2_SCREENSHOT_API,
 } from "./constants";
 
 interface ProcessParameters {
   batchSize: number;
   queue_name: string;
+}
+
+export interface BackgroundTask {
+  body: string;
+  url: string;
+}
+
+export interface ProcessImageQueueResult {
+  backgroundTasks: BackgroundTask[];
+  messageId: number | undefined;
 }
 
 const SLEEP_SECONDS = 30;
@@ -24,8 +33,9 @@ const MAX_RETRIES = 2;
 export const processImageQueue = async (
   supabase: SupabaseClient,
   parameters: ProcessParameters,
-) => {
+): Promise<ProcessImageQueueResult> => {
   const { batchSize, queue_name } = parameters;
+  const backgroundTasks: BackgroundTask[] = [];
 
   try {
     const { data: messages, error: messageError } = await supabase
@@ -43,10 +53,9 @@ export const processImageQueue = async (
 
     if (!messages?.length) {
       console.log("[process-image-queue] No messages found in queue");
-      return;
     }
 
-    for (const message of messages) {
+    for (const message of messages ?? []) {
       try {
         const { id, url, user_id } = message.message;
 
@@ -150,32 +159,37 @@ export const processImageQueue = async (
         const isRaindropBookmark = message.message.meta_data.is_raindrop_bookmark;
 
         if (ogImage) {
-          // here we upload the image into R2 if it is a raindrop bookmark
-          // and generate ocr imagecaption and bulhash for both twitter and raindrop bookmarks,
-          // we are not awaiting, because we fire this api and vercel will handle the response
-
-          void axios.post(`${getBaseUrl()}${NEXT_API_URL}${AI_ENRICHMENT_API}`, {
-            id,
-            isInstagramBookmark,
-            isRaindropBookmark,
-            isTwitterBookmark,
-            message,
-            ogImage,
-            queue_name,
-            url,
-            user_id,
+          // Uploads image to R2 for raindrop bookmarks and runs OCR/caption/blurhash
+          // for twitter + raindrop. Caller is responsible for dispatching this task —
+          // a raw void fetch() here gets abandoned when the outer function's response
+          // is returned on Vercel Fluid Compute, producing undici unhandled rejections.
+          backgroundTasks.push({
+            body: JSON.stringify({
+              id,
+              isInstagramBookmark,
+              isRaindropBookmark,
+              isTwitterBookmark,
+              message,
+              ogImage,
+              queue_name,
+              url,
+              user_id,
+            }),
+            url: `${getBaseUrl()}${NEXT_API_URL}/${V2_AI_ENRICHMENT_API}`,
           });
         } else {
-          // here we take screenshot of the url for both twitter and raindrop bookmarks
-          // we are not awaiting, because we fire this api and vercel will handle the response
-
-          void axios.post(`${getBaseUrl()}${NEXT_API_URL}${WORKER_SCREENSHOT_API}`, {
-            id,
-            mediaType,
-            message,
-            queue_name,
-            url,
-            user_id,
+          // Screenshot path for twitter + raindrop. Same dispatch-via-caller contract
+          // as the AI enrichment branch above.
+          backgroundTasks.push({
+            body: JSON.stringify({
+              id,
+              mediaType,
+              message,
+              queue_name,
+              url,
+              user_id,
+            }),
+            url: `${getBaseUrl()}${NEXT_API_URL}/${V2_SCREENSHOT_API}`,
           });
         }
       } catch (error) {
@@ -183,7 +197,7 @@ export const processImageQueue = async (
       }
     }
 
-    return { messageId: messages[0]?.msg_id };
+    return { backgroundTasks, messageId: messages[0]?.msg_id };
   } catch (error) {
     console.error("[process-image-queue] Queue processing error:", error);
     throw error;

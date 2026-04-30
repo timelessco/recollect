@@ -13,21 +13,41 @@ import { AppleIcon } from "@/icons/apple-icon";
 import { GoogleIcon } from "@/icons/google-icon";
 import { createClient } from "@/lib/supabase/client";
 import { EVERYTHING_URL } from "@/utils/constants";
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 import { cn } from "@/utils/tailwind-merge";
 
-export function SignInWithGoogleForm() {
-  const [callbackURL] = React.useState<string | undefined>(() => {
-    if ("window" in globalThis) {
-      const urlParams = new URLSearchParams(globalThis.location.search);
-      const next = urlParams.get("next");
+export function ContinueWithEmailLink() {
+  return (
+    <Link
+      className={cn(
+        buttonBaseClasses,
+        "w-full bg-gray-alpha-100 text-gray-950",
+        "gap-2 rounded-[10px] px-2 py-2.5 text-sm leading-[115%] font-medium",
+        "no-underline hover:not-data-disabled:bg-gray-300",
+      )}
+      href="/email"
+    >
+      <div className="relative flex items-center justify-center">
+        <span className="text-center">Continue with Email</span>
+        <div className="absolute -right-4">
+          <LinkHint />
+        </div>
+      </div>
+    </Link>
+  );
+}
 
-      return next ?? undefined;
-    }
-  });
+export function SignInWithGoogleForm() {
+  // oxlint-disable-next-line react/hook-use-state -- read-once value, setter intentionally unused
+  const [callbackURL] = React.useState<string | undefined>(() =>
+    "window" in globalThis
+      ? (new URLSearchParams(globalThis.location.search).get("next") ?? undefined)
+      : undefined,
+  );
 
   const [isPending, startTransition] = React.useTransition();
-  const extendedIsPending = usePendingWithMinDuration(isPending, 500);
+  const extendedIsPending = usePendingWithMinDuration(isPending, 5000);
+  const handleClientError = useHandleClientError();
 
   const handleSocialLogin = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -73,17 +93,16 @@ export function SignInWithGoogleForm() {
 }
 
 export function SignInWithAppleForm() {
-  const [callbackURL] = React.useState<string | undefined>(() => {
-    if ("window" in globalThis) {
-      const urlParams = new URLSearchParams(globalThis.location.search);
-      const next = urlParams.get("next");
-
-      return next ?? undefined;
-    }
-  });
+  // oxlint-disable-next-line react/hook-use-state -- read-once value, setter intentionally unused
+  const [callbackURL] = React.useState<string | undefined>(() =>
+    "window" in globalThis
+      ? (new URLSearchParams(globalThis.location.search).get("next") ?? undefined)
+      : undefined,
+  );
 
   const [isPending, startTransition] = React.useTransition();
-  const extendedIsPending = usePendingWithMinDuration(isPending, 500);
+  const extendedIsPending = usePendingWithMinDuration(isPending, 5000);
+  const handleClientError = useHandleClientError();
 
   const handleSocialLogin = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -125,26 +144,5 @@ export function SignInWithAppleForm() {
         <AppleIcon className="size-5.5" />
       </Button>
     </form>
-  );
-}
-
-export function ContinueWithEmailLink() {
-  return (
-    <Link
-      className={cn(
-        buttonBaseClasses,
-        "w-full bg-gray-alpha-100 text-gray-950",
-        "gap-2 rounded-[10px] px-2 py-2.5 text-sm leading-[115%] font-medium",
-        "no-underline hover:not-data-disabled:bg-gray-300",
-      )}
-      href="/email"
-    >
-      <div className="relative flex items-center justify-center">
-        <span className="text-center">Continue with Email</span>
-        <div className="absolute -right-4">
-          <LinkHint />
-        </div>
-      </div>
-    </Link>
   );
 }

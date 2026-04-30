@@ -10,7 +10,11 @@ import { useMiscellaneousStore } from "../../../store/componentStore";
 import { DISCOVER_URL } from "../../../utils/constants";
 import { getColumnCount } from "../../../utils/helpers";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../../utils/url";
-import { buildAuthenticatedPreviewUrl, buildPublicPreviewUrl } from "../../../utils/url-builders";
+import {
+  buildAuthenticatedPreviewUrl,
+  buildPublicDiscoverPreviewUrl,
+  buildPublicPreviewUrl,
+} from "../../../utils/url-builders";
 
 interface PublicMoodboardVirtualizedProps {
   bookmarksColumns: number[];
@@ -44,6 +48,50 @@ export const PublicMoodboardVirtualized = ({
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
+
+  // SSR + pre-hydration fallback: the virtualizer depends on a scroll element +
+  // viewport dimensions that don't exist server-side, so its output ships
+  // empty — crawlers would see no bookmark content. Render the same
+  // lane-based column layout the old (pre-PR-#815) `PublicMoodboard` used, so
+  // the SSR HTML carries real bookmark cards. After mount, the virtualizer
+  // below takes over and the DOM swaps to the absolute-positioned layout.
+  if (!mounted) {
+    const columns = Array.from({ length: lanes }, (_, col) =>
+      bookmarksList.map((_bookmark, idx) => idx).filter((idx) => idx % lanes === col),
+    );
+
+    return (
+      <div className="relative flex w-full">
+        {columns.map((indices, colIndex) => (
+          <div
+            className="min-w-0 flex-1 pr-3 pl-3"
+            key={
+              indices[0] !== undefined
+                ? (bookmarksList[indices[0]]?.id ?? indices[0])
+                : `moodboard-col-${colIndex}`
+            }
+          >
+            {indices.map((idx) => {
+              const bookmark = bookmarksList[idx];
+              if (!bookmark) {
+                return null;
+              }
+
+              return (
+                <div
+                  className="group relative mb-6 flex rounded-lg outline-hidden duration-150 hover:shadow-lg"
+                  key={bookmark.id}
+                >
+                  <BookmarkCardOverlay bookmark={bookmark} />
+                  {renderCard(bookmark)}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full" style={{ height: rowVirtualizer.getTotalSize() }}>
@@ -110,16 +158,17 @@ function BookmarkCardOverlay({ bookmark }: { bookmark: SingleListData }) {
             publicInfo,
           });
           void router.push({ pathname, query }, as, { shallow: true });
-        } else {
-          const categorySlug = getCategorySlugFromRouter(router);
-          if (categorySlug === DISCOVER_URL) {
-            const { as, pathname, query } = buildAuthenticatedPreviewUrl({
-              bookmarkId: bookmark.id,
-              categorySlug,
-            });
-            void router.push({ pathname, query }, as, { shallow: true });
-          }
+          return;
         }
+        const categorySlug = getCategorySlugFromRouter(router);
+        if (categorySlug !== DISCOVER_URL) {
+          return;
+        }
+        const isPublicDiscover = router.asPath?.startsWith("/public/");
+        const { as, pathname, query } = isPublicDiscover
+          ? buildPublicDiscoverPreviewUrl({ bookmarkId: bookmark.id })
+          : buildAuthenticatedPreviewUrl({ bookmarkId: bookmark.id, categorySlug });
+        void router.push({ pathname, query }, as, { shallow: true });
       }}
     />
   );

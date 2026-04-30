@@ -11,7 +11,9 @@ For v2 route rules (handler composition, error handling, schemas), see `.claude/
 `src/app/api/v2/api-key/route.ts`
 
 ```typescript
-// BEFORE: entity context
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
+
+// BEFORE: entity context (observability primitives stay top-level)
 const ctx = getServerContext();
 if (ctx?.fields) {
   ctx.fields.user_id = userId;
@@ -19,40 +21,47 @@ if (ctx?.fields) {
 
 // ... validate + upsert ...
 
-// AFTER: outcome
-if (ctx?.fields) {
-  ctx.fields.key_upserted = true;
-}
+// AFTER: outcome flag → lands in the `payload` scalar
+setPayload(ctx, { key_upserted: true });
 ```
+
+Non-observability, non-`_id`-suffix writes (counts, flags, outcomes, input descriptors) MUST route
+through `setPayload`. `ServerContext.fields` is narrowed at compile time —
+`ctx.fields.key_upserted = true` is a `tsc` error.
 
 ### Complex mutation with after() — add-bookmark-min-data
 
 `src/app/api/v2/bookmark/add-bookmark-min-data/route.ts`
 
 ```typescript
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
+
 // BEFORE: entity context (set first — survives any throw below)
 const ctx = getServerContext();
 if (ctx?.fields) {
-  ctx.fields.user_id = userId;
-  ctx.fields.url = data.url;
-  ctx.fields.category_id = data.category_id;
+  ctx.fields.user_id = userId;                 // observability primitive
+  ctx.fields.category_id = data.category_id;   // `_id` suffix → `ids` scalar
 }
+// Input descriptor (`url` has no `_id` suffix) → `payload` scalar
+setPayload(ctx, { url: data.url });
 
 // DURING: process-level flags (set as events happen)
-if (scrapperError && ctx?.fields) {
-  ctx.fields.scraper_failed = true;
+if (scrapperError) {
+  setPayload(ctx, { scraper_failed: true });
 }
 
-// AFTER INSERT: entity ID only available now + outcome
+// AFTER INSERT: entity ID available now + outcome flag
 if (ctx?.fields) {
-  ctx.fields.bookmark_id = insertedBookmark.id;
-  ctx.fields.has_og_image = ogImageToBeAdded !== null;
+  ctx.fields.bookmark_id = insertedBookmark.id;   // `_id` suffix
 }
+setPayload(ctx, { has_og_image: ogImageToBeAdded !== null });
 
 // NON-BLOCKING ERROR (junction failure — degraded, not fatal)
-if (junctionError && ctx?.fields) {
-  ctx.fields.junction_error = junctionError.message;
-  ctx.fields.junction_error_code = junctionError.code;
+if (junctionError) {
+  setPayload(ctx, {
+    junction_error: junctionError.message,
+    junction_error_code: junctionError.code,
+  });
 }
 
 // AFTER() CATCH: logger.warn (NOT Sentry — ALS is gone in after())
@@ -89,12 +98,12 @@ if (ctx?.fields) {
   ctx.fields.user_id = userId;
 }
 
-// AFTER: result aggregates
-if (ctx?.fields) {
-  ctx.fields.total_count = allResult.count ?? 0;
-  ctx.fields.trash_count = trashResult.count ?? 0;
-  ctx.fields.category_count_total = allCategoryIds.length;
-}
+// AFTER: result aggregates → `payload` scalar (counts are non-observability)
+setPayload(ctx, {
+  total_count: allResult.count ?? 0,
+  trash_count: trashResult.count ?? 0,
+  category_count_total: allCategoryIds.length,
+});
 ```
 
 ### File upload — upload-file
@@ -102,18 +111,24 @@ if (ctx?.fields) {
 `src/app/api/v2/file/upload-file/route.ts`
 
 ```typescript
-// BEFORE: file metadata (set before return — Pitfall #23)
-ctx.fields.file_name = fileName;
-ctx.fields.file_type = fileType;
-ctx.fields.category_id = data.category_id;
+// BEFORE: entity IDs stay top-level (`_id` suffix → `ids` scalar)
+if (ctx?.fields) {
+  ctx.fields.category_id = data.category_id;
+}
+// File input descriptors → `payload` scalar
+setPayload(ctx, { file_name: fileName, file_type: fileType });
 
-// AFTER INSERT
-ctx.fields.bookmark_id = insertedBookmark.id;
+// AFTER INSERT: `_id` suffix stays top-level
+if (ctx?.fields) {
+  ctx.fields.bookmark_id = insertedBookmark.id;
+}
 
 // NON-BLOCKING ERROR (junction table failure — degraded, not fatal)
-if (junctionError && ctx?.fields) {
-  ctx.fields.junction_error = junctionError.message;
-  ctx.fields.junction_error_code = junctionError.code;
+if (junctionError) {
+  setPayload(ctx, {
+    junction_error: junctionError.message,
+    junction_error_code: junctionError.code,
+  });
 }
 ```
 
@@ -122,13 +137,15 @@ if (junctionError && ctx?.fields) {
 ### Raw PII in ctx.fields
 
 ```typescript
-// BAD: raw email logged to Axiom
+// BAD: raw email logged to Axiom — also a tsc error (not in the narrow)
 ctx.fields.email = email;
 ctx.fields.username = username;
 
-// GOOD: boolean/length signals
-ctx.fields.has_email = Boolean(email);
-ctx.fields.username_length = username.length;
+// GOOD: boolean/length signals via setPayload → `payload` scalar
+setPayload(ctx, {
+  has_email: Boolean(email),
+  username_length: username.length,
+});
 ```
 
 ### Console calls in v2 handlers
@@ -248,6 +265,7 @@ AsyncLocalStorage context is NOT available inside `after()` callbacks:
 | Resource | Location |
 |----------|----------|
 | v2 route rules | `.claude/rules/api-v2.md` |
-| Wide event emission | `src/lib/api-helpers/axiom.ts:115-125` |
+| Wide event emission | `src/lib/api-helpers/axiom.ts` — `partitionFields` (~L196), `createAxiomRouteHandler` (~L242) |
+| `setPayload` helper | `src/lib/api-helpers/server-context.ts` — `setPayload` (~L95) |
 | ServerContext | `src/lib/api-helpers/server-context.ts` |
 | Error class | `src/lib/api-helpers/errors.ts` |

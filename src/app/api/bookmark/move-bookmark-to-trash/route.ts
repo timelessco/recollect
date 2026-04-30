@@ -9,6 +9,9 @@ import { MoveBookmarkToTrashInputSchema, MoveBookmarkToTrashOutputSchema } from 
 
 const ROUTE = "move-bookmark-to-trash";
 
+/**
+ * @deprecated Use /api/v2/bookmark/move-bookmark-to-trash instead. Retained for iOS and extension clients.
+ */
 export const POST = createPostApiHandlerWithAuth({
   handler: async ({ data, route, supabase, user }) => {
     const { data: bookmarkData, isTrash } = data;

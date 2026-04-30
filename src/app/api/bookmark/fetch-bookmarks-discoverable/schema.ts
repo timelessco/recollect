@@ -17,11 +17,8 @@ const OklabColorSchema = z.object({
 });
 
 const BookmarkColorsSchema = z
-  .object({
-    primary_color: OklabColorSchema.nullable().meta({ description: "Primary OKLAB color" }),
-    secondary_colors: z.array(OklabColorSchema).meta({ description: "Secondary OKLAB colors" }),
-  })
-  .meta({ description: "OKLAB color data extracted from image" });
+  .array(OklabColorSchema)
+  .meta({ description: "OKLAB colors sorted by visual dominance (most present first)" });
 
 const MetadataSchema = z.object({
   additionalVideos: z
@@ -41,7 +38,9 @@ const MetadataSchema = z.object({
     .union([
       z.array(z.string()),
       z.object({
-        color: BookmarkColorsSchema.optional(),
+        colors: BookmarkColorsSchema.optional().meta({
+          description: "OKLAB colors detected in the image, sorted by visual dominance",
+        }),
         features: z.record(z.string(), z.union([z.string(), z.array(z.string())])).optional(),
         object: z.array(z.string()).optional(),
         people: z.array(z.string()).optional(),
@@ -89,7 +88,6 @@ const MetadataSchema = z.object({
 });
 
 const DiscoverableBookmarkRowSchema = z.object({
-  category_id: z.number().meta({ description: "Primary category ID for this bookmark" }),
   description: z.string().nullable().meta({ description: "Page or OG description" }),
   id: z.number().meta({ description: "Bookmark ID" }),
   inserted_at: z.string().meta({ description: "ISO timestamp when bookmark was created" }),
@@ -109,6 +107,7 @@ const DiscoverableBookmarkRowSchema = z.object({
     .meta({ description: "ISO timestamp when trashed, null if not trashed" }),
   type: z.string().nullable().meta({ description: "Content type" }),
   url: z.string().nullable().meta({ description: "Bookmarked URL" }),
+  user_id: z.string().meta({ description: "UUID of the bookmark owner" }),
 });
 
 export const FetchDiscoverBookmarksResponseSchema = z.array(DiscoverableBookmarkRowSchema);

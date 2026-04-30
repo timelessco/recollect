@@ -1,60 +1,26 @@
 ## Gotchas
 
-- `middleware.ts` is named `proxy.ts` — exports `proxy` function, not `middleware`
-- Dev server is usually running in another terminal — check `lsof -iTCP:3000` before starting `pnpm dev`
-- `build:ci` skips env validation, OpenAPI gen, and sitemap — use `pnpm build` for local verification
-- `typescript.ignoreBuildErrors: true` in next.config — TS errors do NOT fail production builds
-- No test suite — `pnpm test` exits 0 with "no test specified"
-- CI runs lint checks only (no build gate) — build failures surface on Vercel
-- `pnpm lint:ultracite` requires Next.js generated types — CI runs `pnpm next:typegen` first. Locally, types already exist if `next dev` or `pnpm build` has run; only run `pnpm next:typegen` manually if lint fails on missing generated types
-- Sentry tunnel: events proxied through `/skynet` to bypass ad-blockers
-- Custom image loader: `src/utils/cloudflareImageLoader.ts` (not Next.js default optimizer)
-- `axios` is in dependencies but the rule is `fetch` only — legacy, do not use for new code
-- `profiles.category_order` updates: use batch concatenation (`|| v_new_category_ids`), NOT read-modify-write loops — the Edge Function processes queue messages in parallel (`Promise.allSettled`), and a for-loop that SELECTs the full array into a variable then UPDATEs will cause lost writes. See `20260209` migration for the correct pattern.
-- `src/pages/[category_id].tsx` catches ALL single-segment paths — new App Router pages at `/foo` will 404 in dev because Pages Router dynamic routes take precedence
-- New public pages must be added to `PUBLIC_PATHS` in `src/utils/constants.ts` — otherwise `proxy.ts` middleware treats them as auth-protected
-- `.agents/` and `.claude/` are excluded from all linters/formatters (oxlint, oxfmt, cspell, markdownlint) — but NOT gitignored as directories
-- `AGENTS.md` is a symlink to `CLAUDE.md` — do not replace with a regular file
-- `next.config.ts` has experimental flags (`prefetchInlining`, `appNewScrollHandler`, `sri`) — check Next.js docs before adding/removing
-- Error boundaries (`error.tsx`, `global-error.tsx`) use `unstable_retry()` from `next/error` (not `reset()`) — re-fetches RSC data on retry
-- Sentry `webpack.treeshake.*` and `webpack.*` options are irrelevant — project uses Turbopack only. `bundleSizeOptimizations` (top-level) works via the shared Sentry build plugin for both bundlers
-- `next build` defaults to Turbopack in v16 — hard-fails (`process.exit(1)`) if config has `webpack` key without `turbopack` key
-- Sentry component annotation: use `_experimental.turbopackReactComponentAnnotation` (not the deprecated top-level `reactComponentAnnotation` or `webpack.reactComponentAnnotation`)
-- Sentry `useRunAfterProductionCompileHook` (default `true` for Turbopack) injects Debug IDs into output bundles post-compilation — conflicts with `experimental.sri`. Set to `false` when SRI is enabled
-- `/discover` page is blank without JavaScript — `[category_id].tsx` uses `useMounted()` which gates all rendering behind client-side hydration. `getServerSideProps` fetches data but the component won't render it server-side. Search engines see an empty page
-- `pnpm release:dryrun` is interactive (prompts for version) — can't run via Bash tool. Leaves `package.json` version bump; clean up with `git checkout -- package.json`
-- CHANGELOG.md is excluded from all linters/formatters (oxfmt, markdownlint, cspell) — formatting comes directly from Handlebars templates in `scripts/release-it/templates/`
-- Notable Changes in changelog = `feat`/`fix` commits with a body; Other Notable Changes = `refactor`/`perf`/`docs` with a body; Breaking Changes = `!` in header
-- GitHub blockquotes (`>`) render with constrained max-width — don't use for full-width content in CHANGELOG.md or GitHub releases
-- `@release-it/conventional-changelog` pinned to v9.x — v10.x has `whatBump` bug (unwaited `loadPreset`)
-- Shell scripts must be bash 3.2 compatible (macOS default) — no `declare -A`, use `case` + temp files
-- Release PRs use `release` label — skips CodeRabbit review
-- Release pipeline: `pnpm release:pr:yes` → `gh pr merge --merge --admin` → CI runs release-it → CI backmerges main→dev (clears `docs/API_CHANGELOG.md`) → verify tag + GitHub Release. Full automation via `/release` skill
-- `pnpm release` requires `GITHUB_TOKEN` env var — the changelog writer's `getGithubCommits()` fetches commit author data from GitHub API
-- `release-pr.sh --yes` / `-y` flag auto-confirms all prompts — use for agent-native / CI execution
-- `gh pr merge` on `main` requires `--admin` — branch protection blocks direct merge even with `release` label
-- Backmerge verification: `git log origin/dev..origin/main` should be empty after successful release — if it shows the release commit, the backmerge didn't preserve the merge commit SHA (previously caused by `--amend` in API changelog clear, fixed in `81b92e78`)
-- `docs/API_CHANGELOG.md` is auto-appended by CI on each push to `dev`, posted as PR comment during release, and cleared during backmerge
-- `.ncurc.cjs` pins packages that can't be upgraded (mirrors `.github/renovate.json` blocks) — keep both in sync
-- GitHub Actions use pinned commit SHAs with version comments — use `gh api repos/{owner}/{repo}/git/ref/tags/{tag}` to get SHAs when upgrading
-- CI cspell may flag unknown words — hyphen-split words (e.g. "app-svgs" → "svgs") may need manual additions to `cspell.json` `words` array
-- `lint-staged` uses `*` glob with raw `oxfmt` + `oxlint` (not `ultracite`) — `oxfmt --no-error-on-unmatched-pattern` skips non-matching files, `oxlint` ignores non-JS/TS files
-- `oxlint-disable-next-line` doesn't work for JSX props on different lines — use block-level `/* oxlint-disable rule */` instead
-- All disable directives use `oxlint-disable` (unified in oxlint 1.57) — `eslint-disable` comments are treated as unused/unknown. For multi-line expression violations (e.g. `@tanstack/query/exhaustive-deps` spanning the full `useQuery` call), use block-level `/* oxlint-disable rule */` / `/* oxlint-enable rule */` since `oxlint-disable-next-line` only suppresses violations starting on the very next line
-- `promise-function-async` is off — only add `async` when `await` is present in the function body
-- oxlint `--deny RULE` CLI flag does NOT override config-level `"off"` — to test a disabled rule, copy `.oxlintrc.json` to a temp file, edit the copy, run `npx oxlint -c <copy>` from project root (relative `extends` paths require it), then `trash` the copy
-- `oxlint-disable-next-line` must be on the line immediately before the violation — for multi-line expressions, place on the line with the violation, not the wrapping expression above
-- `typeAware: true` and `typeCheck: true` in root `.oxlintrc.json` — type-aware lint rules and TS compiler diagnostics run during `ultracite check`. No separate `lint:types` needed (non-monorepo, single tsconfig). `no-unsafe-*` + `no-non-null-assertion` disabled in legacy folders via overrides (`src/pages/api/`, `src/async/`, `src/pageComponents/`, `src/utils/{worker,file-upload,helpers,apiHelpers}.ts`, `scripts/`). New code is fully enforced. PostToolUse hook runs oxlint directly with root config — includes typeAware (~1s per file due to type graph build)
-- `prefer-nullish-coalescing` auto-fix converts `||` to `??` — use block-level `/* oxlint-disable prefer-nullish-coalescing */` when `||` is intentional (boolean conditions, empty-string-as-falsy chains)
-- `no-floating-promises` + `no-misused-promises` are both active (pedantic category). Prefix unhandled promises with `void`. `startTransition` accepts async callbacks directly (React 19 types). For event handlers, use a sync wrapper with `void`: `onClick={() => { void doAsyncWork(); }}`. Never use `void (async () => { ... })()` IIFE — it breaks React transition tracking
-- `createServerServiceClient()` (`@/lib/supabase/service`) is synchronous — don't `await` it
-- `require-await` checks the OUTER function scope only — `await` inside nested callbacks (`startTransition(async () => { await ... })`) doesn't count. Remove `async` from the outer function, keep it on the inner callback
-- `npx oxlint <changed-files>` only checks listed files — CI runs `pnpm lint:ultracite` on ALL files. When enabling new rules, run full `pnpm lint:ultracite` locally before pushing
-- `perfectionist/sort-objects` + `sort-union-types` auto-fix oscillates with oxfmt on multi-line objects — upstream wontfix (oxc#20210). To enable: fix all violations manually first; auto-fix is stable only on already-sorted code
-- `prefer-await-to-then` is active — `.then()` chains in `queryFn`/`mutationFn` get flagged. Use `async () => { const data = await api.get(...).json<T>(); return mapFn(data); }` instead
-- Object.Assign routes (`get-media-type`, `get-pdf-buffer`) use raw `NextResponse.json` for errors — NOT `apiError`/`apiWarn`. This is the expected pattern per migrator Section 4 template. Don't flag as a code quality issue
-- `src/lib/supabase/constants.ts`, `src/utils/supabaseClient.ts`, and `src/site-config.ts` mix `NEXT_PUBLIC_*` + server vars and are imported from both contexts — can't fully migrate to `@/env/*` imports. `NEXT_PUBLIC_*` vars use `@/env/client`, server vars stay as `process.env` with comment
-- `environment.d.ts` global augmentation was removed — `process.env.X` is now `string | undefined` by default. Use `env.X` from `@/env/server` or `@/env/client` for typed access. `src/env/process-env.d.ts` augments remaining raw `process.env` server secrets (shared client/server files can't import `@/env/server`). Removing this file causes `string | undefined` → Supabase client `any` → mass `no-unsafe-*` failures across untouched files
-- `pnpm db:types` against a stale local DB drops RPC functions that exist in production — always `pnpm db:reset` before `pnpm db:types`
-- Both paginated and search caches use `PaginatedBookmarks` (bare `SingleListData[][]` pages). Search query key 3rd segment: always use `buildSearchCategorySegment(CATEGORY_ID)` from `use-bookmark-mutation-context.ts` — never `searchSlugKey(categoryData)` (fails on cold loads). `secondaryQueryKey` supported by `useReactQueryOptimisticMutation` only; raw `useMutation` hooks rely on broad `[BOOKMARKS_KEY, userId]` invalidation
-- `@supabase/postgrest-js` 2.101.0+ constrains `.eq()` column to `keyof Row` — for RPC functions with union overloads (multiple arg signatures in generated types), `Row` degrades and rejects valid columns. Use `.filter("col", "eq", val)` instead (same PostgREST query, untyped column). Also pass `undefined` (not `null`) for optional RPC args — `null` doesn't match `T | undefined`, breaking overload resolution
+Path-scoped detail rules (auto-load by file type):
+
+- `build-dev.md` — dev server, test suite, CI lint, `build:ci`, typegen, Supabase preflight (`package.json`, `turbo.json`, `next.config.ts`, `.github/workflows/**`).
+- `react-query-cache.md` — paginated + search cache keys, optimistic mutation hook taxonomy (`src/async/**`, `**/use-*mutation*.ts`).
+- `middleware.md` — `proxy.ts` naming (`**/proxy.ts`).
+- `deps-ci.md` — ncurc pins, GHA pinned SHAs (`.ncurc.cjs`, `renovate.json`, `.github/workflows/**`).
+- `next-config.md` — `next.config.ts`.
+- `release.md` — release scripts / `CHANGELOG.md`.
+- `oxlint.md` — `.oxlintrc.json`.
+- `routing.md` — pages/app routing.
+- `env.md` — env config.
+- `linter-config.md` — lint/fmt config.
+- `api-v1.md` / `api-v2.md` — route handlers (incl. Object.Assign routes exception).
+- `src-patterns.md` — TS/TSX (incl. `axios` legacy/fetch-only rule).
+- `openapi.md` — OpenAPI generation (`src/lib/openapi/**`, `scripts/*openapi*`).
+- `supabase-cli.md` / `supabase-schema.md` — Supabase CLI + schema (`supabase/**`, `seed.sql`).
+- `supabase-migrations.md` — migrations (`supabase/migrations/**`).
+- `supabase-edge-functions.md` — Edge Functions (`supabase/functions/**`).
+- `supabase-sql.md` / `supabase-sql-patterns.md` — SQL conventions (`*.sql`, `supabase/**/*.sql`).
+- `supabase-nextjs.md` — Supabase ↔ Next.js integration (`src/lib/supabase/**`, clients, proxy).
+- `telemetry.md` — Axiom vs Sentry routing (`src/**/*.{ts,tsx}`).
+- `zod-supabase.md` — zod/types conventions (`src/**/*.{ts,tsx}`).
+
+Release workflow: `/release` skill.

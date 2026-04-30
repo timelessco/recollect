@@ -1,7 +1,7 @@
-import * as Sentry from "@sentry/nextjs";
+import { clientLogger } from "@/lib/api-helpers/axiom-client";
 
 /**
- * Log cache misses with dev console warning and Sentry breadcrumb.
+ * Log cache misses with dev console warning and a client-side Axiom wide event.
  * Provides observability for silent cache update failures.
  * @param context - Context label (e.g., "Cache Update", "Optimistic Update")
  * @param message - Descriptive message about the cache miss
@@ -17,10 +17,13 @@ export function logCacheMiss(
     console.warn(`[${context}] ${message}`, data);
   }
 
-  Sentry.addBreadcrumb({
-    category: context.toLowerCase().replaceAll(/\s+/gu, "-"),
-    data,
-    level: "warning",
+  // clientLogger (not useLogger) because logCacheMiss runs inside React Query
+  // mutation callbacks, which fire outside React's render cycle — hooks are
+  // disallowed there. Flush relies on ProxyTransport's autoFlush batching.
+  clientLogger.warn("cache_miss", {
+    operation: "cache_miss",
+    cache_context: context.toLowerCase().replaceAll(/\s+/gu, "-"),
     message,
+    ...data,
   });
 }

@@ -2,7 +2,6 @@ import { useRouter } from "next/router";
 
 import { useQueryClient } from "@tanstack/react-query";
 import find from "lodash/find";
-import isEmpty from "lodash/isEmpty";
 
 import type {
   CategoriesData,
@@ -26,23 +25,17 @@ export default function useGetSortBy() {
 
   const userId = session?.user?.id;
 
-  const categoryData = queryClient.getQueryData<{ data: CategoriesData[] }>([
-    CATEGORIES_KEY,
-    userId,
-  ]);
+  const categoryData = queryClient.getQueryData<CategoriesData[]>([CATEGORIES_KEY, userId]);
 
-  const userProfilesData = queryClient.getQueryData<{ data: ProfilesTableTypes[] }>([
-    USER_PROFILE,
-    userId,
-  ]);
+  const userProfilesData = queryClient.getQueryData<ProfilesTableTypes[]>([USER_PROFILE, userId]);
 
-  const sharedCategoriesData = queryClient.getQueryData<{ data: FetchSharedCategoriesData[] }>([
+  const sharedCategoriesData = queryClient.getQueryData<FetchSharedCategoriesData[]>([
     SHARED_CATEGORIES_TABLE_NAME,
   ]);
 
   const isInNonCategoryPage = typeof categoryId !== "number";
 
-  const currentCategory = find(categoryData?.data, (item) => item?.id === categoryId);
+  const currentCategory = find(categoryData, (item) => item?.id === categoryId);
 
   const getSortValue = () => {
     if (!isInNonCategoryPage) {
@@ -58,19 +51,17 @@ export default function useGetSortBy() {
 
       // if user is not the category owner then get value from the shared category table
       const sharedCategoryUserData = find(
-        sharedCategoriesData?.data,
+        sharedCategoriesData,
         (item) => item?.category_id === categoryId && item?.email === session?.user?.email,
       );
 
       return sharedCategoryUserData?.category_views?.sortBy;
     }
 
-    if (!isEmpty(userProfilesData?.data)) {
-      const bookmarksView = userProfilesData?.data[0]?.bookmarks_view;
-      const pageKey = getPageViewKey(categorySlug);
-      const pageView = getPageViewData(bookmarksView, pageKey);
-      return pageView?.sortBy as string | undefined;
-    }
+    const bookmarksView = userProfilesData?.[0]?.bookmarks_view;
+    const pageKey = getPageViewKey(categorySlug);
+    const pageView = getPageViewData(bookmarksView, pageKey);
+    return pageView?.sortBy as string | undefined;
   };
 
   const sortBy = getSortValue();

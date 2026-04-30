@@ -9,6 +9,9 @@ const ROUTE = "raindrop-import-status";
 
 const StatusInputSchema = z.object({});
 
+/**
+ * @deprecated Use /api/v2/raindrop/import/status instead. Retained for iOS and extension clients.
+ */
 export const GET = createGetApiHandlerWithAuth({
   handler: async ({ route, supabase, user }) => {
     const { data, error } = await supabase.rpc("get_raindrop_sync_status", {

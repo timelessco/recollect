@@ -1,36 +1,26 @@
-import axios from "axios";
 import * as pdfjsLib from "pdfjs-dist/build/pdf";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
 
 import { env } from "@/env/client";
+import { api } from "@/lib/api-helpers/api-v2";
 
 import {
-  GET_PDF_BUFFER_API,
-  getBaseUrl,
-  NEXT_API_URL,
   PDF_MIME_TYPE,
   STORAGE_FILES_PATH,
-  UPLOAD_FILE_REMAINING_DATA_API,
+  V2_GET_PDF_BUFFER_API,
+  V2_UPLOAD_FILE_REMAINING_DATA_API,
 } from "./constants";
 import { getStoragePublicBaseUrl, storageHelpers } from "./storageClient";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 export async function generatePdfThumbnail(file: string): Promise<Blob | null> {
-  const encodedUrl = encodeURIComponent(file);
+  const response = await api.get(V2_GET_PDF_BUFFER_API, {
+    retry: 0,
+    searchParams: { url: file },
+  });
 
-  const response = await fetch(
-    `${getBaseUrl()}${NEXT_API_URL}${GET_PDF_BUFFER_API}?url=${encodedUrl}`,
-    {
-      method: "GET",
-    },
-  );
-
-  if (!response?.ok) {
-    throw new Error("error in arrayBuffer");
-  }
-
-  const arrayBuffer = await response?.arrayBuffer();
+  const arrayBuffer = await response.arrayBuffer();
 
   try {
     const pdf = await pdfjsLib?.getDocument({
@@ -115,11 +105,15 @@ export const handlePdfThumbnailAndUpload = async ({
     const publicUrl = `${getStoragePublicBaseUrl()}/${STORAGE_FILES_PATH}/${sessionUserId}/${thumbnailFileName}`;
 
     try {
-      await axios.post(`${getBaseUrl()}${NEXT_API_URL}${UPLOAD_FILE_REMAINING_DATA_API}`, {
-        id: fileId,
-        mediaType: PDF_MIME_TYPE,
-        publicUrl,
-      });
+      await api
+        .post(V2_UPLOAD_FILE_REMAINING_DATA_API, {
+          json: {
+            id: fileId,
+            mediaType: PDF_MIME_TYPE,
+            publicUrl,
+          },
+        })
+        .json();
     } catch (error) {
       console.error("Error in uploading file remaining data");
       throw error;

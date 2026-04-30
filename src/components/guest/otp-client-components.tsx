@@ -10,9 +10,10 @@ import type { SlotProps } from "input-otp";
 
 import { Button } from "@/components/ui/recollect/button";
 import { usePendingWithMinDuration } from "@/hooks/use-pending-with-min-duration";
+import { resolvePostLoginRedirect } from "@/lib/auth/use-resolve-post-login-redirect";
 import { createClient } from "@/lib/supabase/client";
 import { EVERYTHING_URL } from "@/utils/constants";
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 import { cn } from "@/utils/tailwind-merge";
 
 interface VerifyOtpFormProps {
@@ -25,6 +26,7 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
   const extendedIsPending = usePendingWithMinDuration(isPending);
+  const handleClientError = useHandleClientError();
 
   const verifyOtp = (otpValue: string) => {
     if (isPending) {
@@ -35,7 +37,7 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
       try {
         const supabase = createClient();
 
-        const { error } = await supabase.auth.verifyOtp({
+        const { data, error } = await supabase.auth.verifyOtp({
           email,
           token: otpValue,
           type: "email",
@@ -46,7 +48,16 @@ export function VerifyOtpForm(props: VerifyOtpFormProps) {
           return;
         }
 
-        router.push(`/${EVERYTHING_URL}`);
+        // verifyOtp runs client-side, so the App Router /auth/confirm
+        // callback is bypassed for in-app code entry. Route through the
+        // shared helper so first-timers still land on /discover where the
+        // welcome modal mounts.
+        const fallback = `/${EVERYTHING_URL}`;
+        const destination = data.user
+          ? await resolvePostLoginRedirect(supabase, data.user.id, fallback)
+          : fallback;
+
+        router.push(destination);
       } catch (error) {
         handleClientError(error, "Failed to verify OTP");
       }

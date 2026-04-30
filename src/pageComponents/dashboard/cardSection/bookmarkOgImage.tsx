@@ -85,6 +85,7 @@ export function BookmarkOgImage({
         img={img}
         isPublicPage={isPublicPage}
         sizesLogic={sizesLogic}
+        url={post.url}
       />
     </figure>
   );

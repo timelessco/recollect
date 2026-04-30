@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use the v2 App Router endpoint instead: /api/v2/bookmark/add-bookmark-min-data
+ * This Pages Router route will be removed after all consumers are migrated.
+ */
 import type { NextApiResponse } from "next";
 
 import * as Sentry from "@sentry/nextjs";
@@ -14,6 +18,7 @@ import type {
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import type { VerifyErrors } from "jsonwebtoken";
 
+import { isLikelyValidImageUrl, preflightImageUrl } from "@/lib/bookmarks/image-url-validation";
 import { revalidateCategoryIfPublic } from "@/lib/revalidation-helpers";
 import { vet } from "@/utils/try";
 
@@ -232,11 +237,17 @@ export default async function handler(
       };
     }
 
+    // Shape-check the scraper's ogImage — rejects placeholder URLs like
+    // `https://undefined/...` (Next.js pages with unset metadataBase) before
+    // they enter the system.
+    const rawScrapedOgImage = ogsResult?.result?.ogImage?.[0]?.url ?? null;
+    const sanitizedOgImage = isLikelyValidImageUrl(rawScrapedOgImage) ? rawScrapedOgImage : null;
+
     scrapperResponse = {
       data: {
         description: ogsResult?.result?.ogDescription ?? null,
         favIcon: ogsResult?.result?.favicon ?? null,
-        OgImage: shouldSkipOgImage ? null : (ogsResult?.result?.ogImage?.[0]?.url ?? null),
+        OgImage: shouldSkipOgImage ? null : sanitizedOgImage,
         title: ogsResult?.result?.ogTitle ?? null,
       },
     };
@@ -299,6 +310,16 @@ export default async function handler(
       if (!iframeAllowedValue) {
         console.warn(`Iframe embedding not allowed for URL: ${url}`);
       }
+    }
+
+    // HEAD-preflight the scraped ogImage. Catches dead domains, 404s, and
+    // non-image content that shape-validation alone can't see.
+    if (
+      ogImageToBeAdded &&
+      ogImageToBeAdded !== url &&
+      ogImageToBeAdded !== AUDIO_OG_IMAGE_FALLBACK_URL
+    ) {
+      ogImageToBeAdded = await preflightImageUrl(ogImageToBeAdded);
     }
 
     const favIcon = await getNormalisedImageUrl(scrapperResponse?.data?.favIcon, url);
@@ -391,7 +412,7 @@ export default async function handler(
     if (computedCategoryId !== 0) {
       void revalidateCategoryIfPublic(computedCategoryId as number, {
         operation: "add_bookmark",
-        userId: userId,
+        userId,
       });
     }
 

@@ -1,254 +1,242 @@
 # API Migration Reference
 
-Reference data for the `recollect-api-migrator` agent. Read this file in Step 1 of the migration workflow.
+Reference data for the `recollect-api-migrator` agent. Read in Step 1.
+
+Ground truth files — when this reference disagrees with the source, the source wins:
+
+- `src/lib/api-helpers/create-handler-v2.ts` — factory exports and handler context shapes
+- `src/lib/api-helpers/errors.ts` — `RecollectApiError`, `ERROR_CODES`
+- `src/lib/api-helpers/server-context.ts` — `getServerContext()`, `ServerContext` shape
+- `src/lib/api-helpers/axiom.ts` — `createAxiomRouteHandler`, `logger`
+- `.claude/rules/api-v2.md` — project-level v2 contract rules
 
 ---
 
-## Handler Factories
+## Source → Target Mapping
 
-Factories in `/src/lib/api-helpers/create-handler.ts`:
+The migrator converts an App Router v1 route (`src/app/api/<path>/route.ts`) to an App Router v2 twin (`src/app/api/v2/<same-path>/route.ts`). The v1 file stays alive under `@deprecated` for iOS and extension clients.
 
-| Function                       | Auth     | Method | Use Case               |
-| ------------------------------ | -------- | ------ | ---------------------- |
-| `createGetApiHandler`          | Public   | GET    | Public read endpoints  |
-| `createPostApiHandler`         | Public   | POST   | Public write endpoints |
-| `createGetApiHandlerWithAuth`  | Required | GET    | Authenticated reads    |
-| `createPostApiHandlerWithAuth` | Required | POST   | Authenticated creates  |
-| `createPatchApiHandlerWithAuth` | Required | PATCH  | Authenticated updates  |
-| `createPutApiHandlerWithAuth` | Required | PUT    | Authenticated upserts  |
-| `createDeleteApiHandlerWithAuth` | Required | DELETE | Authenticated deletes  |
-| `createGetApiHandlerWithSecret` | Secret   | GET    | Secret-token protected GETs (cron)  |
-| `createPostApiHandlerWithSecret` | Secret  | POST   | Secret-token protected POSTs (ISR, cron) |
+| Dimension       | v1 (App Router legacy)                                            | v2 (App Router current)                                                                             |
+| --------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| File path       | `src/app/api/<path>/route.ts`                                     | `src/app/api/v2/<same-path>/route.ts`                                                               |
+| URL             | `/api/<path>`                                                     | `/api/v2/<same-path>`                                                                               |
+| Factory         | `create{Method}ApiHandler[WithAuth\|WithSecret]` from `create-handler.ts` | `createAxiomRouteHandler(withAuth\|withPublic\|withSecret\|withRawBody({ ... }))` from `create-handler-v2.ts` |
+| Response        | `{ data, error }` envelope via `apiSuccess`                       | Bare `T` — factory validates `outputSchema` and wraps in `NextResponse.json(data)`                  |
+| Error           | `return apiWarn({...})` / `return apiError({...})`                | `throw new RecollectApiError(code, { cause, message, operation })`                                  |
+| Logging         | `console.log` / `warn` / `error`                                  | `const ctx = getServerContext(); if (ctx?.fields) ctx.fields.<key> = <value>`                        |
+| Sentry          | `apiError` auto-captures                                          | Never import `@sentry/nextjs` — unknown errors propagate to `onRequestError` where Sentry is wired |
+| Fire-and-forget | `void (async () => {...})()` or `.catch(...)`                     | `after(async () => { try ... catch { logger.warn(...) } })` from `next/server`                      |
+| Export          | `export const GET = createXxxApiHandler({...})`                   | `export const GET = createAxiomRouteHandler(withXxx({...}))`                                        |
 
-**Handler factory config:**
+---
 
-| Prop           | Type        | Description                                  |
-| -------------- | ----------- | -------------------------------------------- |
-| `route`        | `string`    | Route name for logging prefix                |
-| `inputSchema`  | `z.ZodType` | Zod schema for request body/query validation |
-| `outputSchema` | `z.ZodType` | Zod schema for response validation           |
-| `handler`      | `function`  | Async handler receiving context              |
+## Factory Selection
 
-**Handler context for auth handlers:**
+Map the v1 factory to the v2 wrapper. HTTP method stays the same — the v1 file already picked the correct verb. Export by method name: `export const GET`, `export const POST`, `export const PATCH`, `export const PUT`, `export const DELETE`.
 
-| Prop       | Type             | Description                  |
-| ---------- | ---------------- | ---------------------------- |
-| `data`     | `TInput`         | Validated request body/query |
-| `supabase` | `SupabaseClient` | Authenticated client         |
-| `user`     | `User`           | Authenticated user           |
-| `route`    | `string`         | Route name                   |
+| v1 factory                                                                                         | v2 wrapper   | Handler context                            | Notes                                                                                              |
+| -------------------------------------------------------------------------------------------------- | ------------ | ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `createGetApiHandlerWithAuth` / `createPostApiHandlerWithAuth` / `createPatch...WithAuth` / `createPut...WithAuth` / `createDelete...WithAuth` | `withAuth`   | `{ data, route, supabase, user }`           | 401 thrown automatically; `ctx.user_id` auto-set                                                   |
+| `createGetApiHandler` / `createPostApiHandler` (even if the v1 handler manually calls `createApiClient()` inside) | `withPublic` | `{ input, route }`                         | No supabase/user provided — handler creates its own client if needed                               |
+| `createGetApiHandlerWithSecret` / `createPostApiHandlerWithSecret`                                 | `withSecret` | `{ input, route }` + config `secretEnvVar` | Uses `timingSafeEqual` internally — don't reimplement                                              |
+| `Object.assign(handler, { config })` for multipart / SSE / queue workers                           | `withRawBody` | `{ request, route }` + config `auth?: "none" \| "required"` | Handler owns auth + body parsing; `auth` is OpenAPI metadata only                                  |
 
-**Handler context for public handlers:**
+Route constant at top of file: `const ROUTE = "v2-<kebab-name>"`. Examples:
 
-| Prop    | Type     | Description                  |
-| ------- | -------- | ---------------------------- |
-| `input` | `TInput` | Validated request body/query |
-| `route` | `string` | Route name                   |
+- `src/app/api/v2/profiles/toggle-favorite-category/route.ts` → `"v2-profiles-toggle-favorite-category"`
+- `src/app/api/v2/bookmark/fetch-bookmarks-data/route.ts` → `"v2-bookmark-fetch-bookmarks-data"`
+- `src/app/api/v2/revalidate/route.ts` → `"v2-revalidate"`
 
-**Handler context for secret handlers:**
+---
 
-| Prop    | Type     | Description                  |
-| ------- | -------- | ---------------------------- |
-| `input` | `TInput` | Validated request body/query |
-| `route` | `string` | Route name                   |
+## Error Codes
 
-Secret handlers check `Authorization: Bearer <secret>` against `process.env[secretEnvVar]`. The handler does NOT receive a Supabase client — create one internally if needed.
+From `src/lib/api-helpers/errors.ts`:
 
-**Handler return behavior:**
+| Code                      | HTTP | Use for                                                           |
+| ------------------------- | ---- | ----------------------------------------------------------------- |
+| `bad_request`             | 400  | Malformed JSON, Zod validation, missing fields                    |
+| `unauthorized`            | 401  | Auth failures — thrown automatically by `withAuth` / `withSecret` |
+| `forbidden`               | 403  | Ownership / access checks                                         |
+| `not_found`               | 404  | Missing record (including Postgrest `PGRST116`)                   |
+| `bookmark_not_found`      | 404  | Domain-specific missing bookmark                                  |
+| `conflict`                | 409  | Unique-violation (Postgres `23505`)                               |
+| `unprocessable_entity`    | 422  | Semantic validation failures                                      |
+| `category_limit_reached`  | 422  | Category limit exceeded                                           |
+| `rate_limit_exceeded`     | 429  | Rate limiting                                                     |
+| `service_unavailable`     | 503  | DB / storage / external-API failures                              |
 
-- Return raw data → wrapped in `apiSuccess` automatically
-- Return `NextResponse` (via `apiWarn`/`apiError`) → passed through directly
-
-**v2 factories** (`create-handler-v2.ts`) use `createAxiomRouteHandler(withAuth/withPublic({...}))` composition. Errors are thrown as `RecollectApiError` (not returned via helper functions). Business context is added via `getServerContext()?.fields` wide events. Return `T` directly (no `apiSuccess` wrapping). Import from `create-handler-v2`, not `create-handler`.
-
-**Response Helpers:**
-
-| Helper       | Use For                                       | Sentry | Status |
-| ------------ | --------------------------------------------- | ------ | ------ |
-| `parseBody`  | Request body validation                       | No     | 400    |
-| `apiWarn`    | User errors (not found, permission denied)    | No     | 4xx    |
-| `apiError`   | System errors (database failures, unexpected) | Yes    | 500    |
-| `apiSuccess` | Success with output validation                | No     | 200    |
-
-**`apiWarn` props:** `route`, `message`, `status`, `context?`
-**`apiError` props:** `route`, `message`, `error`, `operation`, `userId?`, `extra?`
-**`apiSuccess` props:** `route`, `data`, `schema`, `status?`
-
-**`requireAuth` discriminated union:**
+Constructor:
 
 ```typescript
-type AuthResult =
-	| { supabase: SupabaseClient<Database>; user: User; errorResponse: null }
-	| {
-			supabase: null;
-			user: null;
-			errorResponse: NextResponse<ApiErrorResponse>;
-	  };
-```
-
-Auth error responses: `userError` → 400, `!user` → 401
-
-**Critical Rules:**
-
-1. **Root-Level Try-Catch**: Every manual handler MUST wrap all logic in try-catch
-2. **Never Expose Error Details**: Log full errors server-side, send generic messages to client
-3. **Fail-Fast Pattern**: Check errors immediately, return early
-4. **Log Levels**: `console.log` for entry/success, `console.warn` for user issues, `console.error` for system errors
-5. **Sentry Integration**: Always include `tags: { operation, userId }` and optional `extra`
-
----
-
-## HTTP Method Semantics
-
-When migrating a route, do NOT blindly copy the v1 HTTP method. v1 uses POST for everything. v2 must use the semantically correct HTTP method based on the operation:
-
-| Operation | Method | Body | Example |
-|-----------|--------|------|---------|
-| Read data (no side effects) | GET | Query params only | fetch-user-profile, fetch-user-tags |
-| Create new resource | POST | Required | (future: create-bookmark) |
-| Idempotent replace/upsert | PUT | Required | api-key (singleton upsert) |
-| Partial update | PATCH | Required | update-username, update-user-profile |
-| Delete resource | DELETE | Optional (ID) | remove-profile-pic, delete-shared-categories-user |
-
-**Decision rules:**
-
-1. Handler calls `.select()` only → **GET** (use `createGetApiHandlerWithAuth`)
-2. Handler calls `.insert()` → **POST** (use `createPostApiHandlerWithAuth`)
-3. Handler calls `.update()` → **PATCH** (use `createPatchApiHandlerWithAuth`)
-4. Handler calls `.upsert()` on singleton → **PUT** (use `createPutApiHandlerWithAuth`)
-5. Handler calls `.delete()` or nullifies + removes storage → **DELETE** (use `createDeleteApiHandlerWithAuth`)
-6. Empty input schema + auth-only = likely **GET** or **DELETE** (no body needed)
-
-**Quick check:** If v1 is POST but the handler never writes to the DB → it's a GET.
-
----
-
-## factoryName Decision Table
-
-| Route Pattern           | factoryName                                                        | Why                         |
-| ----------------------- | ------------------------------------------------------------------ | --------------------------- |
-| User JWT auth           | `"createGetApiHandlerWithAuth"` / `"createPostApiHandlerWithAuth"` | Scanner adds `bearerAuth`   |
-| Secret token (GET)      | `"createGetApiHandlerWithSecret"`                                  | Secret env var auth         |
-| Secret token (POST)     | `"createPostApiHandlerWithSecret"`                                 | Secret env var auth (ISR)   |
-| Service-role (no auth)  | `"createPostApiHandler"` + internal `createServiceClient()`        | Handler creates own client  |
-| Multipart + user auth   | `"createPostApiHandler"` + `requireAuth` manually                  | Custom auth flow            |
-| Public                  | `"createGetApiHandler"` / `"createPostApiHandler"`                 | No auth                     |
-| Binary response         | `"createGetApiHandler"` with `NextResponse` passthrough            | Returns `new NextResponse(buffer)` |
-
----
-
-## Non-Standard Route Taxonomy (Waves 3-6)
-
-| Route                         | Wave | Pattern       | Notes                                |
-| ----------------------------- | ---- | ------------- | ------------------------------------ |
-| `revalidate`                  | 3    | Secret factory | `createPostApiHandlerWithSecret` + `revalidatePath()` |
-| `get-media-type`              | 3    | Public factory | `createGetApiHandler` + CORS headers |
-| `get-pdf-buffer`              | 3    | Public factory | Binary PDF via NextResponse passthrough |
-| `bookmarks/insert`            | 3    | Auth factory   | Batch insert, `createPostApiHandlerWithAuth` |
-| `v1/process-queue`            | 3    | Public factory | `createPostApiHandler` + internal service client |
-| `fetch-public-category-bookmarks` | 3 | Public factory | `createGetApiHandler` + service client, complex query |
-| `settings/upload-profile-pic` | 4    | Object.assign | Multipart + user auth     |
-| `v1/screenshot`               | 6    | Object.assign | Service-role queue worker |
-| `v1/ai-enrichment`            | 6    | Object.assign | Service-role queue worker |
-
----
-
-## Error Handling Patterns
-
-### V1 Patterns (create-handler.ts)
-
-**Duplicate Detection (Postgres 23505):**
-
-```typescript
-if (
-	error.code === "23505" ||
-	error.message?.includes("unique_constraint_name")
-) {
-	return apiWarn({
-		route,
-		message: "Duplicate name",
-		status: 409,
-		context: { name, userId },
-	});
-}
-```
-
-**Authorization (Ownership):**
-
-```typescript
-if (resourceData?.user_id !== userId) {
-	return apiWarn({
-		route,
-		message: "User is not the owner",
-		status: 403,
-		context: { resourceId, userId },
-	});
-}
-```
-
-**Server Error with Sentry:**
-
-```typescript
-return apiError({
-	route,
-	message: "Error description",
-	error,
-	operation: "operation_name",
-	userId,
-	extra: { additionalContext },
+throw new RecollectApiError(code, {
+  message,    // required — user-safe string, returned in { error: message } HTTP body
+  cause,      // optional — underlying error object (Error, PostgrestError, fetch rejection)
+  operation,  // optional — snake_case identifier for Axiom search
+  context,    // optional — extra structured fields for logging only
 });
 ```
 
-### V2 Patterns (create-handler-v2.ts)
+Rules:
 
-v2 routes throw `RecollectApiError` instead of returning `apiWarn`/`apiError`. Known errors are caught by the inner layer and logged as Axiom warnings (never Sentry). Unknown errors propagate to the outer layer for Sentry capture.
+- **Always pass `cause`** when wrapping a caught error (DB, fetch, storage). `extractCauseFields` reads `cause_message`, `cause_code`, `cause_details`, `cause_hint` off the cause for Axiom.
+- **Omit `cause`** for pure business-logic conditions (access denied, not found, validation).
+- **Never** `import * as Sentry from "@sentry/nextjs"` inside a v2 route. Unknown errors propagate from the inner layer to the outer `createAxiomRouteHandler`, which logs to Axiom and rethrows to Next.js `onRequestError` where Sentry is wired.
+- **Never** `return apiError(...)` / `return apiWarn(...)` / `return NextResponse.json({ error })` in v2 — always `throw new RecollectApiError(...)`.
+- **Never** log an error before throwing — the factory catch block logs it with full context. Pre-logging creates duplicate Axiom entries.
+- **Never** `throw new Error(...)` in v2 route handlers — always `RecollectApiError`. Plain errors are treated as unknown (Sentry) and lose the HTTP-status mapping.
 
-**Known error (DB failure, validation, auth):**
+---
 
-```typescript
-import { RecollectApiError } from "@/lib/api-helpers/errors";
+## v1 → v2 Error Mapping
 
-if (dbError) {
-	throw new RecollectApiError("service_unavailable", {
-		cause: dbError,
-		message: "Failed to fetch data",
-		operation: "fetch_bookmarks",
-	});
-}
-```
+| v1 pattern                                                            | v2 replacement                                                                                     |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `return apiWarn({ status: 400, message })`                            | `throw new RecollectApiError("bad_request", { message })`                                          |
+| `return apiWarn({ status: 403, message, context })`                   | `throw new RecollectApiError("forbidden", { message, context })`                                   |
+| `return apiWarn({ status: 404, message })` / Postgrest `PGRST116`     | `throw new RecollectApiError("not_found", { message })`                                            |
+| `if (error.code === "23505") return apiWarn({ status: 409, ... })`    | `throw new RecollectApiError("conflict", { cause: error, message, operation })`                    |
+| `return apiError({ error, message, operation })`                      | `throw new RecollectApiError("service_unavailable", { cause: error, message, operation })`        |
+| `createApiClient()` manually in handler body (public factory)         | Keep the manual call — use `withPublic` (OpenAPI marks it as unauthenticated)                      |
+| `res.revalidate(path)` (Pages Router leftover)                        | `revalidatePath(path)` from `next/cache`                                                           |
+| `res.setHeader(...)` for CORS                                         | `new NextResponse(body, { headers: { ... } })` — handler returns the response directly            |
 
-**Duplicate Detection:**
+### Observability
 
-```typescript
-if (error.code === "23505") {
-	throw new RecollectApiError("conflict", {
-		cause: error,
-		message: "Duplicate name",
-		operation: "create_tag",
-	});
-}
-```
-
-**Authorization (Ownership):**
-
-```typescript
-if (resourceData?.user_id !== userId) {
-	throw new RecollectApiError("forbidden", {
-		message: "User is not the owner",
-		operation: "update_bookmark",
-	});
-}
-```
-
-**Wide events (business context):**
+Every request emits one wide event. Business context is attached via `getServerContext()?.fields`:
 
 ```typescript
 import { getServerContext } from "@/lib/api-helpers/server-context";
 
 const ctx = getServerContext();
 if (ctx?.fields) {
-	ctx.fields.user_id = userId;
-	ctx.fields.bookmark_count = data.length;
+  // Entity IDs and input context BEFORE the operation
+  ctx.fields.user_id = user.id;
+  ctx.fields.category_id = categoryId;
+}
+
+// ... do work ...
+
+if (ctx?.fields) {
+  // Outcome flags AFTER the operation
+  ctx.fields.result_count = rows.length;
+  ctx.fields.toggled = true;
 }
 ```
 
+- `ctx.user_id` is auto-set by `withAuth` (the factory's ALS context, separate from `ctx.fields`). Handlers additionally set `ctx.fields.user_id` when they want the user ID on the success path's wide event.
+- Never `console.log` / `console.warn` / `console.error` in v2 handler bodies.
+- Never `logger.info()` directly for business context — fields flow through `ctx.fields`.
+- Non-blocking errors (queue delete, enrichment failure): log to `ctx.fields` (e.g., `ctx.fields.queue_delete_error = msg`) instead of throwing.
+
+Auto-included per request by the outer factory — don't re-emit:
+
+- `request_id` (UUID)
+- `source` — `"web"` (no auth header) / `"ios"` (bearer user JWT) / `"edge-function"` (matches `SUPABASE_SERVICE_KEY`)
+- `commit` (`VERCEL_GIT_COMMIT_SHA`)
+- `region` (`VERCEL_REGION`)
+- `user_id` (when `withAuth` resolves)
+
+---
+
+## Fire-and-Forget via `after()`
+
+```typescript
+import { after } from "next/server";
+
+import { logger } from "@/lib/api-helpers/axiom";
+
+after(async () => {
+  try {
+    await someEnrichmentFn({ ... });
+  } catch (error) {
+    logger.warn("[route-name] after() enrichment failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+});
+```
+
+- Register `after()` **before** throwing if the enrichment should run on failure too.
+- ALS is gone inside `after()` — populate `ctx.fields` before `return`, use `logger` directly inside the callback.
+- Never `void (async () => {...})()` — breaks tracing and trips `no-floating-promises`.
+
+---
+
+## Handler Return Behavior
+
+- Return raw data → factory calls `outputSchema.safeParse()` and wraps in `NextResponse.json(validated.data)`.
+- Return `NextResponse` directly → factory passes through (binary responses, redirects, dynamic CORS).
+- Output validation failures throw a programmer error — they are always a schema bug, never a user error.
+- `withRawBody` handlers always return `NextResponse` directly (no output-schema wrapping).
+
+---
+
+## OpenAPI Integration
+
+- The scanner reads `.config` off the exported handler. `createAxiomRouteHandler` passes `.config` through from the inner `withXxx` layer.
+- Scanner detects v2 via `config.contract === "v2"` and uses bare response schemas (no envelope).
+- Per-route supplement: `src/lib/openapi/endpoints/<domain>/v2-<kebab-name>.ts` — data-only `EndpointSupplement` export.
+- Barrel: add `export { v2<CamelName>Supplement } from "./v2-<kebab-name>"` to `src/lib/openapi/endpoints/<domain>/index.ts`.
+- `path` in the supplement uses a leading slash (`"/v2/<same-path>"`) — OpenAPI convention.
+- Security: `[{ [bearerAuth.name]: [] }, {}]` for auth routes (empty `{}` means cookie auth also accepted); `[]` for public routes.
+- Regen: `npx tsx scripts/generate-openapi.ts && npx tsx scripts/merge-openapi-supplements.ts`.
+
+---
+
+## V2 URL Constants
+
+Append to `src/utils/constants.ts`:
+
+```typescript
+export const V2_<SCREAMING_NAME>_API = "v2/<domain>/<kebab-name>";
+```
+
+No leading slash — the `api` ky instance in `src/lib/api-helpers/api-v2.ts` prefixes `/api`. v1 constants keep their leading slash and use `postApi`/`getApi` from `src/lib/api-helpers/api.ts`; v2 constants are slashless and use `api.get()` / `api.post()`.
+
+---
+
+## Caller Repoint
+
+Find callers for the specific route being migrated:
+
+```bash
+grep -rn "<v1-constant-name>\|<old-path>" src/async src/pageComponents src/components src/hooks
+```
+
+Repoint each caller:
+
+```typescript
+// Before (v1)
+import { postApi } from "@/lib/api-helpers/api";
+import { TOGGLE_FAVORITE_CATEGORY_API } from "@/utils/constants";
+
+const { data, error } = await postApi<Response>(TOGGLE_FAVORITE_CATEGORY_API, payload);
+
+// After (v2)
+import { api } from "@/lib/api-helpers/api-v2";
+import { V2_TOGGLE_FAVORITE_CATEGORY_API } from "@/utils/constants";
+
+const data = await api
+  .post(V2_TOGGLE_FAVORITE_CATEGORY_API, { json: payload })
+  .json<Response>();
+```
+
+- GET with query params: `api.get(URL, { searchParams }).json<T>()`.
+- v2 throws on HTTP errors (no envelope) — wrap in try/catch at the call site and update the mutation hook's error handling (inspect the `HTTPError` response for `{ error: string }`).
+- Only repoint callers that hit the exact route being migrated. Leave every other caller untouched.
+
+---
+
+## v1 Route File: `@deprecated` Only
+
+Add directly above the `export const GET` / `POST` in the v1 file:
+
+```typescript
+/**
+ * @deprecated Use /api/v2/<same-path> instead. Retained for iOS and extension clients.
+ */
+export const POST = createPostApiHandlerWithAuth({ ... });
+```
+
+`git diff` on the v1 file must show only the JSDoc hunk. No other edit — no import reshuffling, no whitespace drift, no error-handling fixes. Backport any critical handler fix in a separate commit.

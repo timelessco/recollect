@@ -1,4 +1,6 @@
-import { CATEGORY_ID_PATHNAME, PREVIEW_PATH } from "./constants";
+import { CATEGORY_ID_PATHNAME, DISCOVER_URL, PREVIEW_PATH } from "./constants";
+
+const PUBLIC_DISCOVER_PATHNAME = `/public/${DISCOVER_URL}`;
 
 /**
  * Public page info structure
@@ -94,4 +96,57 @@ export const buildAuthenticatedCategoryUrl = (categorySlug: string): RoutePushPa
   query: {
     category_id: categorySlug,
   },
+});
+
+/**
+ * Builds preview URL for the guest /public/discover page.
+ *
+ * `pathname` stays on /public/discover so the router.push can be shallow on the
+ * guest grid; the address bar shows /public/discover/preview/[id], which is
+ * served by src/pages/public/discover/preview/[id].tsx on reload.
+ */
+export const buildPublicDiscoverPreviewUrl = (params: {
+  bookmarkId: number | string;
+}): RoutePushParams => ({
+  as: `${PUBLIC_DISCOVER_PATHNAME}${PREVIEW_PATH}/${params.bookmarkId}`,
+  pathname: PUBLIC_DISCOVER_PATHNAME,
+  query: {
+    id: params.bookmarkId,
+  },
+});
+
+/**
+ * Builds category URL for the guest /public/discover page (without preview)
+ */
+export const buildPublicDiscoverUrl = (): RoutePushParams => ({
+  as: PUBLIC_DISCOVER_PATHNAME,
+  pathname: PUBLIC_DISCOVER_PATHNAME,
+  query: {},
+});
+
+/**
+ * Builds preview URL for similar pages — `/similar/<sourceId>/preview/<bookmarkId>`.
+ * Keeps the parent `/similar/[id]` pathname so in-app `shallow: true` pushes stay on
+ * the grid page; deep links land on the preview page file directly via `as`.
+ */
+export const buildSimilarPreviewUrl = (params: {
+  bookmarkId: number | string;
+  sourceId: number | string;
+}): RoutePushParams => {
+  const { bookmarkId, sourceId } = params;
+  return {
+    as: `/similar/${sourceId}${PREVIEW_PATH}/${bookmarkId}`,
+    pathname: `/similar/[id]`,
+    query: { bookmark_id: bookmarkId, id: sourceId },
+  };
+};
+
+/**
+ * Builds base similar URL — `/similar/<sourceId>` — used when closing the lightbox
+ * overlay back to the similar-bookmarks grid.
+ */
+export const buildSimilarUrl = (sourceId: number | string): RoutePushParams => ({
+  as: `/similar/${sourceId}`,
+  pathname: `/similar/[id]`,
+  query: { id: sourceId },
 });

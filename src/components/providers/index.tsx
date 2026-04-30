@@ -5,6 +5,8 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { MutationIndicator } from "@/components/ui/recollect/mutation-indicator";
 
+import { AppRouterRouteChangeEmitter } from "./app-router-route-change-emitter";
+import { ClientLoggerIdentityProvider } from "./client-logger-identity-provider";
 import { ReactQueryProvider } from "./react-query-provider";
 
 interface ProvidersProps {
@@ -18,6 +20,8 @@ export function Providers(props: ProvidersProps) {
     <ThemeProvider attribute="class">
       <NuqsAdapter>
         <ReactQueryProvider>
+          <ClientLoggerIdentityProvider />
+          <AppRouterRouteChangeEmitter />
           {children}
           <MutationIndicator />
         </ReactQueryProvider>

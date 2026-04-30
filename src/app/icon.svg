@@ -1,22 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" fill="none" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 32 32">
   <style>
     @media (color-gamut: p3) {
       .foreground {
-        fill: oklch(15.3% 0 0);
-      }
-    }
-    @media (prefers-color-scheme: dark) {
-      .foreground {
-        fill: #f1f1f1;
-      }
-      .foreground {
-        fill: oklch(95.6% 0 0);
+        fill: oklch(100% 0 0);
       }
     }
   </style>
+  <rect width="32" height="32" fill="#000" rx="9.333" />
   <path
-    fill="#0e0e0e"
-    class="foreground"
-    d="M61 18v452.302c0 20.679 23.572 32.519 40.161 20.173l139.677-103.959a25.15 25.15 0 0 1 30.066.028l138.897 103.785c16.584 12.391 40.199.557 40.199-20.145V139.678C450 72.478 395.523 18 328.322 18z"
+    fill="#fff"
+    d="M9.09 8.272v15.417a1 1 0 0 0 1.597.803l4.96-3.685a1 1 0 0 1 1.195.001l4.932 3.678a1 1 0 0 0 1.598-.801V12.272a5 5 0 0 0-5-5H10.09a1 1 0 0 0-1 1"
   />
 </svg>

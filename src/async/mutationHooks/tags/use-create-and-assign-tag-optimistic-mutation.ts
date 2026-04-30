@@ -1,16 +1,16 @@
 import { produce } from "immer";
 
 import type {
-  CreateAndAssignTagPayload,
-  CreateAndAssignTagResponse,
-} from "@/app/api/tags/create-and-assign-tag/schema";
+  CreateAndAssignTagInput,
+  CreateAndAssignTagOutput,
+} from "@/app/api/v2/tags/create-and-assign-tag/schema";
 import type { PaginatedBookmarks, TempTag, UserTagsData } from "@/types/apiTypes";
 
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
-import { postApi } from "@/lib/api-helpers/api";
+import { api } from "@/lib/api-helpers/api-v2";
 import { logCacheMiss } from "@/utils/cache-debug-helpers";
-import { BOOKMARKS_KEY, CREATE_AND_ASSIGN_TAG_API, USER_TAGS_KEY } from "@/utils/constants";
+import { BOOKMARKS_KEY, USER_TAGS_KEY, V2_CREATE_AND_ASSIGN_TAG_API } from "@/utils/constants";
 import {
   swapTempTagId,
   swapTempTagInUserTagsCache,
@@ -22,7 +22,7 @@ import {
  * When provided, both BOOKMARKS_KEY and USER_TAGS_KEY caches use the same
  * temp ID, preventing UI flash from ID mismatches during lookup.
  */
-type CreateAndAssignTagMutationPayload = CreateAndAssignTagPayload & {
+type CreateAndAssignTagMutationPayload = CreateAndAssignTagInput & {
   _tempId?: number;
 };
 
@@ -30,7 +30,7 @@ type CreateAndAssignTagMutationPayload = CreateAndAssignTagPayload & {
  * Internal payload type with guaranteed temp ID.
  * The wrapper ensures _tempId is always set before mutation lifecycle runs.
  */
-type InternalPayload = CreateAndAssignTagPayload & {
+type InternalPayload = CreateAndAssignTagInput & {
   _tempId: number;
 };
 
@@ -42,7 +42,7 @@ export function useCreateAndAssignTagOptimisticMutation() {
   const { queryClient, queryKey, searchQueryKey, session } = useBookmarkMutationContext();
 
   const baseMutation = useReactQueryOptimisticMutation<
-    CreateAndAssignTagResponse,
+    CreateAndAssignTagOutput,
     Error,
     InternalPayload,
     typeof queryKey,
@@ -54,9 +54,9 @@ export function useCreateAndAssignTagOptimisticMutation() {
       {
         getQueryKey: () => [USER_TAGS_KEY, session?.user?.id],
         updater: (currentData, variables) => {
-          const data = currentData as { data: UserTagsData[] } | undefined;
+          const data = currentData as UserTagsData[] | undefined;
 
-          if (!data?.data) {
+          if (!data) {
             logCacheMiss("Optimistic Update", "User tags cache not found", {
               bookmarkId: variables.bookmarkId,
             });
@@ -73,13 +73,17 @@ export function useCreateAndAssignTagOptimisticMutation() {
           };
 
           return produce(data, (draft) => {
-            draft.data.push(tempTag as UserTagsData);
+            draft.push(tempTag as UserTagsData);
           });
         },
       },
     ],
-    mutationFn: (payload) =>
-      postApi<CreateAndAssignTagResponse>(`/api${CREATE_AND_ASSIGN_TAG_API}`, payload),
+    mutationFn: (payload) => {
+      const { _tempId, ...body } = payload;
+      return api
+        .post(V2_CREATE_AND_ASSIGN_TAG_API, { json: body })
+        .json<CreateAndAssignTagOutput>();
+    },
     onSettled: (data, error, variables) => {
       if (error || !data) {
         return;
@@ -105,15 +109,13 @@ export function useCreateAndAssignTagOptimisticMutation() {
       }
 
       // Update USER_TAGS_KEY cache - swap temp tag with real tag
-      queryClient.setQueryData<{ data: UserTagsData[] }>(
-        [USER_TAGS_KEY, session?.user?.id],
-        (current) =>
-          swapTempTagInUserTagsCache(current, tempId, {
-            created_at: realTag.created_at ?? undefined,
-            id: realTag.id,
-            name: realTag.name,
-            user_id: realTag.user_id ?? undefined,
-          }),
+      queryClient.setQueryData<UserTagsData[]>([USER_TAGS_KEY, session?.user?.id], (current) =>
+        swapTempTagInUserTagsCache(current, tempId, {
+          created_at: realTag.created_at ?? undefined,
+          id: realTag.id,
+          name: realTag.name,
+          user_id: realTag.user_id ?? undefined,
+        }),
       );
 
       void queryClient.invalidateQueries({

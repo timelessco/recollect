@@ -141,106 +141,125 @@ media-controller media-mute-button[mediavolumelevel="off"] .vol-off {
   @apply scale-100 opacity-100;
 }
 
-/* ─── Volume popup (appears on hover) ───────────────────────────────────── */
+/* ─── Volume range base ─────────────────────────────────────────────────── */
 media-controller media-volume-range {
   --media-range-track-background: var(--video-track-bg);
   --media-range-thumb-opacity: 0;
 }
 
-@keyframes video-volume-in {
-  0% {
-    transform: translate(calc(-50%), 8px);
-    visibility: hidden;
-    opacity: 0;
-  }
+/* ─── Morphing volume pill ──────────────────────────────────────────────── */
 
-  100% {
-    transform: translate(calc(-50%), 0);
-    visibility: visible;
-    opacity: 1;
-  }
+/* Outer wrapper reserves a fixed pill-width slot in the control bar so the   */
+
+/* pill can grow upward without pushing siblings around.                       */
+media-controller .mute-group {
+  --pill-width: 32px;
+  --pill-expanded-height: calc(5 * var(--video-base));
+
+  @apply relative shrink-0;
+
+  width: var(--pill-width);
+  height: var(--pill-width);
 }
 
-@keyframes video-volume-out {
-  0% {
-    transform: translate(calc(-50%), 0);
-    visibility: visible;
-    opacity: 1;
-  }
+/* The pill IS the slider: its background is the track, the bar-color fill     */
 
-  100% {
-    transform: translate(calc(-50%), 8px);
-    visibility: hidden;
-    opacity: 0;
-  }
+/* grows bottom→top via -90deg rotation. Anchored to the bottom of .mute-group */
+
+/* so height changes extend upward only. The mute button overlays the bottom.  */
+media-controller .mute-group-inner {
+  @apply absolute bottom-0 left-0 overflow-hidden rounded-full;
+
+  width: var(--pill-width);
+  height: var(--pill-width);
+  background: transparent;
+  transition:
+    height 0.25s ease,
+    background-color 0.15s ease;
 }
 
-media-controller .vol-wrap {
-  @apply invisible absolute bottom-[calc(var(--video-base)*2+8px)] left-1/2 flex items-end justify-center opacity-0;
-
-  z-index: 10;
-  transform-origin: center bottom;
-  transform: translateX(calc(-50% + 4px));
-
-  width: calc(2.5 * var(--video-base));
-  height: calc(14 * var(--video-base));
+media-controller .mute-group-inner:hover,
+media-controller .mute-group-inner:has(:focus-visible) {
+  height: var(--pill-expanded-height);
+  background: var(--media-control-hover-background);
 }
 
-/* Invisible bridge covering the gap between the mute button and the popup */
-media-controller .vol-wrap::before {
-  content: "";
-
-  position: absolute;
-  right: -8px;
-  bottom: -16px;
-  left: -8px;
-
-  height: 16px;
-}
-
-media-controller .vol-wrap media-volume-range {
+/* Slider fills the pill exactly. Pre-rotation width = post-rotation height.   */
+media-controller .mute-group-inner media-volume-range {
   --media-range-bar-color: var(--video-accent);
   --media-range-padding-left: 0;
   --media-range-padding-right: 0;
-  --media-range-track-width: calc(14 * var(--video-base));
-  --media-range-track-height: var(--video-base);
+  --media-range-track-width: var(--pill-expanded-height);
+  --media-range-track-height: var(--pill-width);
   --media-range-track-border-radius: 9999px;
-  --media-range-track-backdrop-filter: brightness(80%);
-  --media-range-thumb-width: var(--video-base);
-  --media-range-thumb-border-radius: 9999px;
+  --media-range-track-background: transparent;
+  --media-range-thumb-opacity: 0;
 
+  position: absolute;
+  top: 50%;
+  left: 50%;
   transform-origin: center;
-  transform: translateY(calc(-1 * var(--video-base))) rotate(-90deg);
+  transform: translate(-50%, -50%) rotate(-90deg);
 
-  width: calc(14 * var(--video-base));
-  height: var(--video-base);
+  width: var(--pill-expanded-height);
+  height: var(--pill-width);
 
-  transition: opacity 0s 1s;
+  opacity: 0;
+  background: transparent;
 
-  @apply overflow-hidden rounded-full bg-black/20 px-0 opacity-0;
+  transition: opacity 0.15s ease;
 }
 
-media-controller .vol-wrap media-volume-range[mediavolume] {
-  @apply opacity-100;
+media-controller .mute-group-inner:hover media-volume-range,
+media-controller .mute-group-inner:has(:focus-visible) media-volume-range {
+  opacity: 1;
 }
 
-media-controller .vol-wrap:not(:hover, :focus-within) {
-  animation: video-volume-out 0.3s ease-out;
+/* Mute button is visual-only at the bottom of the pill: pointer-events: none so
+   drag/click passes through to the slider across the entire pill. Icon still
+   swaps via the [mediavolumelevel="off"] attribute. Volume goes to 0 when user
+   drags to the bottom; that's the mute state. Opacity forced to 1 so the base
+   rule's opacity-90 doesn't create a stacking context that would isolate the
+   icon's mix-blend-mode (applied by video override below). */
+media-controller .mute-group-inner media-mute-button,
+media-controller .mute-group-inner media-mute-button:hover,
+media-controller .mute-group-inner media-mute-button:focus,
+media-controller .mute-group-inner media-mute-button:focus-visible {
+  --media-control-hover-background: transparent;
+
+  pointer-events: none;
+
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  width: var(--pill-width);
+  height: var(--pill-width);
+
+  opacity: 1;
+  background: transparent;
 }
 
-media-controller .vol-wrap:hover,
-media-controller .vol-wrap:focus,
-media-controller .vol-wrap:focus-within,
-media-controller .mute-group-inner media-mute-button:hover ~ .vol-wrap,
-media-controller .mute-group-inner media-mute-button:focus ~ .vol-wrap,
-media-controller .mute-group-inner media-mute-button:focus-within ~ .vol-wrap {
-  animation: video-volume-in 0.3s ease-out forwards;
+/* Video context: make the pill more prominent against bright video content
+   (frosted-glass look) and use mix-blend-mode on the icon so it stays visible
+   against both the empty pill bg AND the white fill once it climbs. */
+media-controller:not([audio]) .mute-group-inner:hover,
+media-controller:not([audio]) .mute-group-inner:has(:focus-visible) {
+  background: rgb(0 0 0 / 45%);
+  backdrop-filter: blur(8px);
 }
 
-media-controller[keyboardcontrol] .vol-wrap,
-media-controller[keyboardcontrol] .vol-wrap:focus-within,
-media-controller[keyboardcontrol] .vol-wrap:focus-within media-volume-range {
-  @apply visible;
+media-controller:not([audio]) .mute-group-inner:hover media-mute-button,
+media-controller:not([audio]) .mute-group-inner:has(:focus-visible) media-mute-button {
+  color: #fff;
+  mix-blend-mode: difference;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  media-controller .mute-group-inner,
+  media-controller .mute-group-inner media-volume-range {
+    transition: none;
+  }
 }
 
 /* ─── Time display ─────────────────────────────────────────────────────── */

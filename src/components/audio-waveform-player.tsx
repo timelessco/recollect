@@ -62,6 +62,7 @@ function AudioWaveformPlayerInner({ isActive, onError, src, title }: AudioWavefo
   );
 
   // Create wavesurfer instance once the audio element and container are mounted
+  /* oxlint-disable consistent-return */
   useEffect(() => {
     const container = containerRef.current;
     const audio = audioElRef.current;
@@ -206,14 +207,12 @@ function AudioWaveformPlayerInner({ isActive, onError, src, title }: AudioWavefo
 
         <MediaTimeDisplay showDuration />
 
-        <div className="mute-group flex">
-          <div className="mute-group-inner relative shrink-0">
+        <div className="mute-group">
+          <div className="mute-group-inner">
+            <MediaVolumeRange />
             <MediaMuteButton ref={(el) => el?.setAttribute("notooltip", "")}>
               <MuteIcon className="text-gray-700" />
             </MediaMuteButton>
-            <div className="vol-wrap">
-              <MediaVolumeRange />
-            </div>
           </div>
         </div>
 

@@ -1,55 +1,27 @@
 # Recollect
 
-Bookmark management app with AI enrichment — organize, search, and collaborate on web bookmarks.
+Bookmark manager with AI enrichment.
 
-**Stack**: Next.js 16.2.1 (App + Pages Router), Supabase, React Query, Zustand, Tailwind v4, Base UI
+**Stack**: Next.js 16.2.1 (App + Pages Router), Supabase, React Query, Zustand, Tailwind v4, Base UI.
 
-**Architecture**: Hybrid routing (App Router for new APIs, Pages Router for dashboard), optimistic mutations, pgmq queues for async processing.
+**Architecture**: hybrid routing (App = new APIs, Pages = dashboard), optimistic mutations, pgmq queues for async work.
 
-Before any Next.js work, read the relevant doc in `node_modules/next/dist/docs/` — bundled docs match the installed version exactly.
+Before any Next.js work, read `node_modules/next/dist/docs/`: bundled docs match the installed version.
 
 ## Domain
 
-- **Base UI** (`@base-ui/react`): Primary component library. Combobox in `/src/components/ui/recollect/combobox`, ScrollArea in `scroll-area.tsx`
-- **React Aria**: Legacy (dashboard + lightbox, 4 files)
-- **Ariakit**: Specialized use cases
-- **Multi-select**: `use-category-multi-select` hook with Base UI Combobox + match-sorter
-- `category_id: 0` = Uncategorized (auto-managed) — keep `.min(0)` in schemas
-- `ogImage` (camelCase) — not `og_image`
-- OpenAPI tags are capitalized: `"Bookmarks"`, `"Categories"`, `"iPhone"`
-- `knip` for detecting unused code when making large changes
-- `src/utils/type-utils.ts`: centralized `toJson()` / `toDbType()` for Supabase type boundaries — use instead of inline `as unknown as Json` casts
-- **Ultracite** (Oxlint + Oxfmt) enforces code quality — `pnpm fix` auto-fixes most issues, `pnpm dlx ultracite doctor` for setup diagnostics
-- **Zod `.meta()`**: All schema fields require `.meta({ description })` — flows to OpenAPI spec field descriptions and Scalar UI
-- **Env validation**: `@t3-oss/env-nextjs` in `src/env/` — split server/client pattern. Server env includes Vercel preset. Every `process.env` in codebase has an inline comment explaining why it wasn't migrated
-- **v2 API contract**: Routes under `/api/v2/` return `T` on success (no `{data, error}` envelope). Errors return `{error: string}` with HTTP status. v2 route handlers use `create-handler-v2.ts` (self-contained factory with `error()`/`warn()` context helpers). Non-v2 routes use `create-handler.ts` and keep `{data: T, error: null}` envelope. `response.ts` is FROZEN — never modify `apiSuccess`/`apiError`/`apiWarn`
-  - OpenAPI supplements for v2 routes use bare response examples — `{ field: value }`, not `{ data: { field: value }, error: null }`
-  - v2 URL constants for ky `api` instance (`api-v2.ts`): no leading slash — `"v2/bookmark/fetch-bookmarks-data"`, not `"/v2/..."`. v1 constants keep leading slashes. Both conventions coexist in `constants.ts`
-
-## Commands
-
-```bash
-pnpm fix                  # Fix ALL auto-fixable issues (Ultracite + CSS + MD)
-pnpm lint                 # Run ALL quality checks
-pnpm lint:knip            # Detect unused code/exports/deps
-pnpm lint:types:deno      # Deno type checks for Supabase Edge Functions
-pnpm build                # Verify build passes
-pnpm db:types             # Generate Supabase types from local schema
-pnpm prebuild:next        # Regenerate OpenAPI spec (SKIP_ENV_VALIDATION=1)
-```
+- **UI libs**: Base UI (`@base-ui/react`) primary. React Aria is legacy (4 files: dashboard + lightbox). Ariakit for specialized cases.
+- **Field casing**: `ogImage` not `og_image`.
+- **Ultracite** (Oxlint + Oxfmt): `pnpm fix` auto-fixes. `pnpm dlx ultracite doctor` for setup diagnostics.
 
 ## References
 
-- [`docs/CODEBASE_MAP.md`](./docs/CODEBASE_MAP.md) — Architecture map, module guides, data flows
+- [`docs/CODEBASE_MAP.md`](./docs/CODEBASE_MAP.md) — architecture, modules, data flows
 - [`docs/OPENAPI_GUIDE.md`](./docs/OPENAPI_GUIDE.md) — OpenAPI endpoint docs (`/openapi-endpoints` skill)
-- [`docs/project_overview.md`](./docs/project_overview.md) — Tech stack, features
-- [`docs/project_structure.md`](./docs/project_structure.md) — Directory layout
-- `.claude/agents/references/` — Migration agent reference data (patterns, templates, pitfalls)
+- [`docs/project_overview.md`](./docs/project_overview.md) — tech stack, features
+- [`docs/project_structure.md`](./docs/project_structure.md) — directory layout
 
-## Verification
+### After Every Code Change
 
-After changes, run in order:
-
-1. `pnpm fix` — auto-fix all (Ultracite + CSS + MD)
-2. `pnpm lint` — runs ALL quality checks in parallel (ultracite, types, knip, css, spelling, md)
-3. `pnpm build` — confirm build passes (non-trivial changes)
+1. Run IDE diagnostics (LSP) on modified files.
+2. In parallel: `pnpm fix`, `pnpm lint:knip`, `pnpm lint:spelling`, `pnpm build` (non-trivial only).

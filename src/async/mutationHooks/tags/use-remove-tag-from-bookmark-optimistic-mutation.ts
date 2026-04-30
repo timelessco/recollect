@@ -1,13 +1,13 @@
 import type {
-  RemoveTagFromBookmarkPayload,
-  RemoveTagFromBookmarkResponse,
-} from "@/app/api/tags/remove-tag-from-bookmark/schema";
+  RemoveTagFromBookmarkInput,
+  RemoveTagFromBookmarkOutput,
+} from "@/app/api/v2/tags/remove-tag-from-bookmark/schema";
 import type { PaginatedBookmarks } from "@/types/apiTypes";
 
 import { useBookmarkMutationContext } from "@/hooks/use-bookmark-mutation-context";
 import { useReactQueryOptimisticMutation } from "@/hooks/use-react-query-optimistic-mutation";
-import { postApi } from "@/lib/api-helpers/api";
-import { BOOKMARKS_KEY, REMOVE_TAG_FROM_BOOKMARK_API } from "@/utils/constants";
+import { api } from "@/lib/api-helpers/api-v2";
+import { BOOKMARKS_KEY, V2_REMOVE_TAG_FROM_BOOKMARK_API } from "@/utils/constants";
 import { updateBookmarkInPaginatedData } from "@/utils/query-cache-helpers";
 
 /**
@@ -17,14 +17,16 @@ export function useRemoveTagFromBookmarkOptimisticMutation() {
   const { queryClient, queryKey, searchQueryKey, session } = useBookmarkMutationContext();
 
   const removeTagFromBookmarkOptimisticMutation = useReactQueryOptimisticMutation<
-    RemoveTagFromBookmarkResponse,
+    RemoveTagFromBookmarkOutput,
     Error,
-    RemoveTagFromBookmarkPayload,
+    RemoveTagFromBookmarkInput,
     typeof queryKey,
     PaginatedBookmarks
   >({
     mutationFn: (payload) =>
-      postApi<RemoveTagFromBookmarkResponse>(`/api${REMOVE_TAG_FROM_BOOKMARK_API}`, payload),
+      api
+        .post(V2_REMOVE_TAG_FROM_BOOKMARK_API, { json: payload })
+        .json<RemoveTagFromBookmarkOutput>(),
     onSettled: (_data, error) => {
       if (error) {
         return;

@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { SingleListData } from "../../../types/apiTypes";
 import type { CustomSlide } from "../LightboxUtils";
 
-import { handleClientError } from "@/utils/error-utils/client";
+import { useHandleClientError } from "@/utils/error-utils/client";
 
 import { usePageContext } from "../../../hooks/use-page-context";
 import { useMiscellaneousStore, useSupabaseSession } from "../../../store/componentStore";
@@ -22,7 +22,12 @@ import {
   VIDEO_TYPE_PREFIX,
 } from "../../../utils/constants";
 import { getCategorySlugFromRouter, getPublicPageInfo } from "../../../utils/url";
-import { buildAuthenticatedPreviewUrl, buildPublicPreviewUrl } from "../../../utils/url-builders";
+import {
+  buildAuthenticatedPreviewUrl,
+  buildPublicDiscoverPreviewUrl,
+  buildPublicPreviewUrl,
+  buildSimilarPreviewUrl,
+} from "../../../utils/url-builders";
 import { isYouTubeVideo } from "../LightboxUtils";
 
 /**
@@ -122,8 +127,9 @@ export const useLightboxNavigation = ({
   const isCollectionChanged = useMiscellaneousStore((state) => state.isCollectionChanged);
   const setIsCollectionChanged = useMiscellaneousStore((state) => state.setIsCollectionChanged);
   const router = useRouter();
+  const handleClientError = useHandleClientError();
 
-  const { isDiscoverPage, isPublicPage } = usePageContext();
+  const { isDiscoverPage, isPublicPage, isSimilarPage } = usePageContext();
 
   /**
    * Invalidate queries for a given bookmark index.
@@ -158,7 +164,7 @@ export const useLightboxNavigation = ({
         setIsCollectionChanged(false);
       }
     },
-    [bookmarks, queryClient, session?.user?.id, setIsCollectionChanged],
+    [bookmarks, queryClient, session?.user?.id, setIsCollectionChanged, handleClientError],
   );
 
   /**
@@ -186,24 +192,45 @@ export const useLightboxNavigation = ({
     }
 
     // Update browser URL for both authenticated and public pages
-    if (isPublicPage && !isDiscoverPage) {
+    const bookmarkId = bookmarks?.[index]?.id;
+    if (!bookmarkId) {
+      return;
+    }
+
+    if (isPublicPage && isDiscoverPage) {
+      const { as, pathname, query } = buildPublicDiscoverPreviewUrl({ bookmarkId });
+      void router?.push({ pathname, query }, as, { shallow: true });
+      return;
+    }
+
+    if (isPublicPage) {
       const publicInfo = getPublicPageInfo(router);
-      if (publicInfo && bookmarks?.[index]?.id) {
+      if (publicInfo) {
         const { as, pathname, query } = buildPublicPreviewUrl({
-          bookmarkId: bookmarks[index].id,
+          bookmarkId,
           publicInfo,
         });
         void router?.push({ pathname, query }, as, { shallow: true });
       }
-    } else {
-      const categorySlug = getCategorySlugFromRouter(router);
-      if (categorySlug) {
-        const { as, pathname, query } = buildAuthenticatedPreviewUrl({
-          bookmarkId: bookmarks?.[index]?.id,
-          categorySlug,
-        });
+      return;
+    }
+
+    if (isSimilarPage) {
+      const sourceId = typeof router?.query.id === "string" ? router.query.id : undefined;
+      if (sourceId) {
+        const { as, pathname, query } = buildSimilarPreviewUrl({ bookmarkId, sourceId });
         void router?.push({ pathname, query }, as, { shallow: true });
       }
+      return;
+    }
+
+    const categorySlug = getCategorySlugFromRouter(router);
+    if (categorySlug) {
+      const { as, pathname, query } = buildAuthenticatedPreviewUrl({
+        bookmarkId,
+        categorySlug,
+      });
+      void router?.push({ pathname, query }, as, { shallow: true });
     }
   };
 
