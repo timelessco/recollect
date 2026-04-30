@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import ky from "ky";
 
+import { runEmbeddingPipeline } from "@/async/ai/run-embedding-pipeline";
 import { createAxiomRouteHandler, withRawBody } from "@/lib/api-helpers/create-handler-v2";
 import { RecollectApiError } from "@/lib/api-helpers/errors";
 import { storeQueueError } from "@/lib/api-helpers/queue";
@@ -251,6 +252,16 @@ export const POST = createAxiomRouteHandler(
         route,
         userId: user_id,
       });
+
+      if (ogImage) {
+        await runEmbeddingPipeline({
+          bookmarkId: id,
+          ctx,
+          ogImage,
+          supabase,
+          userId: user_id,
+        });
+      }
 
       // Queue lifecycle: delete on full success, store error + keep on partial failure
       if (!isFailed) {
