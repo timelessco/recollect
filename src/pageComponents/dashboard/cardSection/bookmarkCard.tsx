@@ -53,12 +53,17 @@ const BookmarkCardInner = ({
     categoryViewsFromProps,
   ) as string;
 
-  const bookmarksInfoValue = useGetViewValue(
+  const bookmarksInfoValueRaw = useGetViewValue(
     "cardContentViewArray",
     [],
     isPublicPage,
     categoryViewsFromProps,
   ) as string[] | undefined;
+
+  // Canvas tiles only render the cover — the dropdown locks all other
+  // toggles for canvas, so collapse the rendered fields here too.
+  const bookmarksInfoValue =
+    cardTypeCondition === viewValues.canvas ? ["cover"] : bookmarksInfoValueRaw;
 
   const hasCoverImg = bookmarksInfoValue?.includes("cover");
   const isListView = cardTypeCondition === viewValues.list;
