@@ -174,9 +174,6 @@ importers:
       react-stately:
         specifier: 3.45.0
         version: 3.45.0(react@19.2.4)
-      react-zoom-pan-pinch:
-        specifier: 4.0.3
-        version: 4.0.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       remotion:
         specifier: 4.0.438
         version: 4.0.438(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -7452,13 +7449,6 @@ packages:
     resolution: {integrity: sha512-G3bYr0BIiookpt4H05VeZUuVS/FslQAj2TeT8vDfCiL314Y+LtPXIPe/a3eamCA0wljy7z1EDYKV50Qbz7pcJg==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-
-  react-zoom-pan-pinch@4.0.3:
-    resolution: {integrity: sha512-N2Hi6L78fFmhRra+ORpFSW7WST5x6kxpOPplIvtB0b7b+U2anpo1z1wLgaWRPS2kUSqcraRG+JgBCIlDJnqqAg==}
-    engines: {node: '>=8', npm: '>=5'}
-    peerDependencies:
-      react: '*'
-      react-dom: '*'
 
   react@19.2.4:
     resolution: {integrity: sha512-9nfp2hYpCwOjAN+8TZFGhtWEwgvWHXqESH8qT89AT/lWklpLON22Lc8pEtnpsZz7VmawabSU0gCjnj8aC0euHQ==}
@@ -16351,11 +16341,6 @@ snapshots:
       '@react-stately/tree': 3.9.6(react@19.2.4)
       '@react-types/shared': 3.33.1(react@19.2.4)
       react: 19.2.4
-
-  react-zoom-pan-pinch@4.0.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
-    dependencies:
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
 
   react@19.2.4: {}
 
