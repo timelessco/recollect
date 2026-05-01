@@ -19,8 +19,11 @@ export interface CanvasPosition {
 
 export interface CanvasTuning {
   baseScale: number;
-  cameraZoomZ: number;
   cardBaseWidth: number;
+  // Resting camera Z (px). Negative values zoom the page out by default;
+  // 0 = cards at their base depth. Scroll progress is added on top of
+  // this baseline so the gesture range stays symmetric.
+  defaultCameraZ: number;
   depthScaleBoost: number;
   edgeMargin: number;
   gridAspect: number;
@@ -42,15 +45,15 @@ export interface CanvasTuning {
 
 export const CANVAS_DEFAULT_TUNING: CanvasTuning = {
   baseScale: 0.75,
-  cameraZoomZ: 119,
   cardBaseWidth: 187,
+  defaultCameraZ: -200,
   depthScaleBoost: 0.3,
-  edgeMargin: 0.16,
+  edgeMargin: 0.11,
   gridAspect: 1.35,
-  jitterX: 0.41,
+  jitterX: 0.4,
   jitterY: 0.25,
   lightboxWheelCooldownMs: 500,
-  pageTurnBuffer: 80,
+  pageTurnBuffer: 600,
   panMaxX: 0.72,
   panMaxY: 0.62,
   parallaxMax: 1,
@@ -65,7 +68,7 @@ export const CANVAS_DEFAULT_TUNING: CanvasTuning = {
 
 // djb2 hash — bitwise-free variant matching hashCollectionId in
 // axiom-client-events.ts so output is comparable across the codebase.
-function djb2(input: string): number {
+export function djb2(input: string): number {
   const MOD = 2 ** 32;
   let hash = 5381;
   for (let i = 0; i < input.length; i += 1) {

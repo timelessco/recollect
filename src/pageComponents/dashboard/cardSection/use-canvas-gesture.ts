@@ -75,7 +75,9 @@ export function useCanvasGesture({
 
   const updateDepthProgress = useCallback(
     (nextDepth: number) => {
-      const clampedDepth = Math.max(0, Math.min(depthThreshold, nextDepth));
+      // Symmetric range — backward scroll pushes depth negative so cards
+      // continuously shrink, mirroring the forward zoom-in.
+      const clampedDepth = Math.max(-depthThreshold, Math.min(depthThreshold, nextDepth));
       depthProgressRef.current = clampedDepth;
       setDepthProgress(clampedDepth);
     },
@@ -103,22 +105,27 @@ export function useCanvasGesture({
       const next = depthProgressRef.current + signedDeltaY * scrollSensitivity;
 
       if (next >= depthThreshold) {
-        // Always engage the lock on threshold hit, regardless of whether the
-        // page actually advanced (e.g. end of deck). Prevents the wheel
-        // listener from re-firing every event when depth is clamped at
-        // threshold.
-        beginTransition();
-        updateDepthProgress(0);
-        onAdvance("wheel");
-      } else if (next <= 0) {
-        const retreatOverflow = Math.abs(next);
-        if (retreatOverflow >= depthThreshold * 0.18) {
+        // Lock synchronously to block subsequent wheel events while we
+        // wait for the depth-at-threshold render to commit.
+        isTransitioningRef.current = true;
+        updateDepthProgress(depthThreshold);
+        // Defer the page change one frame so React commits the
+        // depth=threshold render *first* with the old pageIndex. That
+        // becomes the "last seen" element AnimatePresence holds for the
+        // exit — without this, depth=threshold and pageIndex=newIndex
+        // batch into one render and the held wrapper snapshots at the
+        // previous wheel event's depth instead of threshold.
+        requestAnimationFrame(() => {
           beginTransition();
-          updateDepthProgress(depthThreshold);
+          onAdvance("wheel");
+        });
+      } else if (next <= -depthThreshold) {
+        isTransitioningRef.current = true;
+        updateDepthProgress(-depthThreshold);
+        requestAnimationFrame(() => {
+          beginTransition();
           onRetreat("wheel");
-        } else {
-          updateDepthProgress(0);
-        }
+        });
       } else {
         updateDepthProgress(next);
       }
@@ -130,18 +137,27 @@ export function useCanvasGesture({
     if (isTransitioningRef.current) {
       return;
     }
-    beginTransition();
-    updateDepthProgress(0);
-    onAdvance("keyboard");
-  }, [beginTransition, onAdvance, updateDepthProgress]);
+    // Same two-phase commit as the wheel path so the wrapper renders at
+    // +threshold before the pageIndex change, giving AnimatePresence a
+    // held element at the right z.
+    isTransitioningRef.current = true;
+    updateDepthProgress(depthThreshold);
+    requestAnimationFrame(() => {
+      beginTransition();
+      onAdvance("keyboard");
+    });
+  }, [beginTransition, depthThreshold, onAdvance, updateDepthProgress]);
 
   const triggerRetreat = useCallback(() => {
     if (isTransitioningRef.current) {
       return;
     }
-    beginTransition();
-    updateDepthProgress(depthThreshold);
-    onRetreat("keyboard");
+    isTransitioningRef.current = true;
+    updateDepthProgress(-depthThreshold);
+    requestAnimationFrame(() => {
+      beginTransition();
+      onRetreat("keyboard");
+    });
   }, [beginTransition, depthThreshold, onRetreat, updateDepthProgress]);
 
   useEffect(

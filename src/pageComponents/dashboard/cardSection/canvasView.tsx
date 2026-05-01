@@ -23,13 +23,23 @@ interface CanvasViewProps {
   renderCard: (item: SingleListData) => ReactNode;
 }
 
-// Frame fade-out duration when the page changes — the whole canvas
-// briefly goes to white before the new cards stagger in.
-const FRAME_FADE_OUT_S = 0.22;
-// Total transition span: frame fade-out + every card's stagger delay
-// + the slowest card's enter duration. Used to keep the gesture lock
-// held until the new page is fully settled.
-const ENTER_DURATION_S = 0.32;
+// Page-transition duration. Exit and entry both run for this long; with
+// AnimatePresence mode="wait" the total transition is 2× this value.
+const TRANSITION_DURATION_S = 0.4;
+// Cards fade in one-by-one after the wrapper enter completes. Each card's
+// own opacity transition is `STAGGER_PER_CARD_S * index` long, capped by
+// the page size; we use this to extend the gesture lock so the user can't
+// fire another transition before the last card has appeared.
+const STAGGER_TAIL_S = (PAGINATION_LIMIT - 1) * STAGGER_PER_CARD_S;
+// Forward direction (advance): leaving cards subtly grow + dim; entering
+// cards start slightly smaller + dim, settle to base.
+const FORWARD_EXIT = { opacity: 0.7, scale: 1.04 };
+const FORWARD_ENTRY_INITIAL = { opacity: 0.8, scale: 0.96 };
+// Backward direction (retreat): leaving cards shrink + dim; entering
+// cards start slightly larger + dim, settle to base.
+const BACKWARD_EXIT = { opacity: 0.7, scale: 0.9 };
+const BACKWARD_ENTRY_INITIAL = { opacity: 0.9, scale: 1.05 };
+const VISIBLE = { opacity: 1, scale: 1 };
 
 const noopCleanup = () => {
   /* noop — used as cleanup placeholder when an effect's setup short-circuits */
@@ -43,14 +53,54 @@ function chunkBookmarks(list: SingleListData[]): SingleListData[][] {
   return chunks;
 }
 
+function resolveExitTarget({
+  depthProgress,
+  depthThreshold,
+  prefersReducedMotion,
+}: {
+  depthProgress: number;
+  depthThreshold: number;
+  prefersReducedMotion: boolean;
+}) {
+  if (prefersReducedMotion) {
+    return { opacity: 0 };
+  }
+  if (depthProgress >= depthThreshold) {
+    return FORWARD_EXIT;
+  }
+  if (depthProgress <= -depthThreshold) {
+    return BACKWARD_EXIT;
+  }
+  return { opacity: 0 };
+}
+
+function resolveInitialTarget({
+  prefersReducedMotion,
+  transitionDirection,
+}: {
+  prefersReducedMotion: boolean;
+  transitionDirection: "backward" | "forward" | null;
+}) {
+  if (prefersReducedMotion) {
+    return { opacity: 1 };
+  }
+  if (transitionDirection === "forward") {
+    return FORWARD_ENTRY_INITIAL;
+  }
+  if (transitionDirection === "backward") {
+    return BACKWARD_ENTRY_INITIAL;
+  }
+  return { opacity: 0 };
+}
+
 const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
   const prefersReducedMotion = useReducedMotion();
   const canvasControls = useDialKit("Canvas View", {
     depth: {
       baseScale: [CANVAS_DEFAULT_TUNING.baseScale, 0.5, 1.5, 0.01],
-      cameraZoomZ: [CANVAS_DEFAULT_TUNING.cameraZoomZ, 0, 500, 1],
+      defaultCameraZ: [CANVAS_DEFAULT_TUNING.defaultCameraZ, -400, 200, 1],
       depthScaleBoost: [CANVAS_DEFAULT_TUNING.depthScaleBoost, -0.25, 0.8, 0.01],
-      pageTurnBuffer: [CANVAS_DEFAULT_TUNING.pageTurnBuffer, 0, 400, 1],
+      pageTurnBuffer: [CANVAS_DEFAULT_TUNING.pageTurnBuffer, 0, 800, 1],
       perspective: [CANVAS_DEFAULT_TUNING.perspective, 700, 2800, 10],
       zSpread: [CANVAS_DEFAULT_TUNING.zSpread, 0, 800, 1],
     },
@@ -61,7 +111,6 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
       scrollSensitivity: [CANVAS_DEFAULT_TUNING.scrollSensitivity, 0.1, 4, 0.05],
     },
     layout: {
-      cardBaseWidth: [CANVAS_DEFAULT_TUNING.cardBaseWidth, 140, 300, 1],
       edgeMargin: [CANVAS_DEFAULT_TUNING.edgeMargin, 0, 0.24, 0.01],
       worldHeight: [CANVAS_DEFAULT_TUNING.worldHeight, 0.9, 2.4, 0.01],
       worldWidth: [CANVAS_DEFAULT_TUNING.worldWidth, 0.9, 2.6, 0.01],
@@ -75,10 +124,18 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
       ySkew: [CANVAS_DEFAULT_TUNING.ySkew, 0.35, 1.6, 0.01],
     },
   });
+
+  // Live wrapper size — tracked here (instead of further down with the
+  // other refs/state) so `tuning.cardBaseWidth` can derive from it.
+  const [size, setSize] = useState({ height: 0, width: 0 });
+
   const tuning = {
     baseScale: canvasControls.depth.baseScale,
-    cameraZoomZ: canvasControls.depth.cameraZoomZ,
-    cardBaseWidth: canvasControls.layout.cardBaseWidth,
+    // 10% of viewport width, capped at 190px. Falls back to the default
+    // until the wrapper has measured (size.width = 0 on first render).
+    cardBaseWidth:
+      size.width > 0 ? Math.min(size.width * 0.1, 190) : CANVAS_DEFAULT_TUNING.cardBaseWidth,
+    defaultCameraZ: canvasControls.depth.defaultCameraZ,
     depthScaleBoost: canvasControls.depth.depthScaleBoost,
     edgeMargin: canvasControls.layout.edgeMargin,
     gridAspect: canvasControls.placement.gridAspect,
@@ -115,12 +172,17 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
 
   const chunks = useMemo(() => chunkBookmarks(bookmarksList), [bookmarksList]);
   const [pageIndex, setPageIndex] = useState(0);
+  // Drives the wrapper's exit + entry animations. Set in `advance` /
+  // `retreat`; persists across the transition so the entering page can
+  // start from the matching end-state. Subsequent transitions overwrite.
+  const [transitionDirection, setTransitionDirection] = useState<"backward" | "forward" | null>(
+    null,
+  );
 
   // Wrapper element holds the native wheel listener (React's synthetic
   // onWheel is passive, so preventDefault would no-op) and is observed
   // for resize so card positions stay anchored to viewport fractions.
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const [size, setSize] = useState({ height: 0, width: 0 });
   const lightboxWheelResumeAtRef = useRef(0);
   const wasLightboxOpenRef = useRef(false);
 
@@ -136,10 +198,14 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
   const firstBookmarkId = bookmarksList[0]?.id;
   useEffect(() => {
     setPageIndex(0);
+    // Category / sort / search swaps have no meaningful direction — drop the
+    // last transition's tag so the next page mounts with the default fade.
+    setTransitionDirection(null);
   }, [firstBookmarkId]);
 
   const advance = useCallback(
     (source: GestureSource) => {
+      setTransitionDirection("forward");
       // Side effect lives inside the updater because React 18 queues
       // updaters and runs them during the next render — closure variables
       // mutated inside cannot be read synchronously after `setPageIndex`
@@ -167,6 +233,7 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
 
   const retreat = useCallback(
     (source: GestureSource) => {
+      setTransitionDirection("backward");
       setPageIndex((prev) => Math.max(0, prev - 1));
       emitClientEvent("canvas_page_flip", {
         direction: "retreat",
@@ -190,14 +257,11 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
     }
   }, [chunks.length, fetchNextPage, hasNextPage, pageIndex]);
 
-  // Lock duration generously covers the worst-case stagger so a user
-  // who keeps scrolling can't queue another advance before the prior
-  // page has finished rendering.
-  const safetyLockMs =
-    FRAME_FADE_OUT_S * 1000 +
-    PAGINATION_LIMIT * STAGGER_PER_CARD_S * 1000 +
-    ENTER_DURATION_S * 1000 +
-    200;
+  // Lock duration covers exit + entry (`mode="wait"` runs them sequentially)
+  // plus the per-card stagger tail and a grace window so a sustained
+  // gesture can't chain-fire before the last card has finished its
+  // fade-in.
+  const safetyLockMs = (TRANSITION_DURATION_S * 2 + STAGGER_TAIL_S) * 1000 + 100;
   const depthThreshold = Math.max(1, tuning.zSpread + tuning.pageTurnBuffer);
   const { depthProgress, releaseLock, report, resetDepth, triggerAdvance, triggerRetreat } =
     useCanvasGesture({
@@ -207,8 +271,13 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
       scrollSensitivity: tuning.scrollSensitivity,
       transitionLockMs: safetyLockMs,
     });
-  const cameraProgress = Math.min(1, depthProgress / depthThreshold);
-  const cameraZ = cameraProgress * tuning.cameraZoomZ;
+  // Scroll is tied 1:1 to camera Z so cards continuously grow as the user
+  // scrolls forward. `defaultCameraZ` is the resting offset, so each new
+  // page opens at that zoom level (negative = zoomed out). Page flip
+  // fires when `depthProgress` crosses `depthThreshold` (= `zSpread +
+  // pageTurnBuffer`) — measured as a delta from rest, so the gesture
+  // budget is symmetric regardless of the offset.
+  const cameraZ = depthProgress + tuning.defaultCameraZ;
 
   useEffect(() => {
     resetDepth(0);
@@ -267,11 +336,11 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
         return;
       }
       event.preventDefault();
-      // Trackpad pinch fires wheel + ctrlKey: deltaY < 0 → pinch out
-      // (zoom-in intent → advance), deltaY > 0 → pinch in (retreat).
-      // Mouse wheel: deltaY > 0 → scroll down → advance. Inverting
-      // sign for ctrlKey aligns "forward intent" across both inputs.
-      const signed = event.ctrlKey ? -event.deltaY : event.deltaY;
+      // Inverted scroll: scrolling UP (deltaY < 0) advances/zooms in;
+      // scrolling DOWN (deltaY > 0) retreats/zooms out. Trackpad pinch
+      // (wheel + ctrlKey) keeps its natural mapping — pinch-out (deltaY < 0)
+      // is also a zoom-in intent, so the same negation applies.
+      const signed = -event.deltaY;
       report(signed);
     };
     el.addEventListener("wheel", handleWheel, { passive: false });
@@ -288,19 +357,17 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
       releaseLock();
       return noopCleanup;
     }
-    const chunkLength = (chunks[pageIndex] ?? []).length;
-    const transitionMs =
-      FRAME_FADE_OUT_S * 1000 +
-      Math.max(0, chunkLength - 1) * STAGGER_PER_CARD_S * 1000 +
-      ENTER_DURATION_S * 1000 +
-      60;
+    // Exit + entry both run for `TRANSITION_DURATION_S` under mode="wait",
+    // and the cards stagger in for `STAGGER_TAIL_S` after the wrapper
+    // entry settles.
+    const transitionMs = (TRANSITION_DURATION_S * 2 + STAGGER_TAIL_S) * 1000 + 60;
     const timer = setTimeout(() => {
       releaseLock();
     }, transitionMs);
     return () => {
       clearTimeout(timer);
     };
-  }, [chunks, pageIndex, prefersReducedMotion, releaseLock]);
+  }, [pageIndex, prefersReducedMotion, releaseLock]);
 
   // Keyboard navigation. Window-scoped so users don't have to focus the
   // canvas first; gated on lightbox state so arrow keys inside the
@@ -351,28 +418,57 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
         ref={panLayerRef}
         style={{ perspective: tuning.perspective }}
       >
-        {/* Page transition: the wrapper motion.div fades the entire
-            frame to white on exit; the cards inside each fade IN with a
-            per-index stagger so they pop in one by one. mode="wait"
-            ensures the old frame is gone before the new one mounts. */}
-        <AnimatePresence mode="wait">
+        {/* Direction-aware page transition on the wrapper.
+            Forward (advance): exit zooms LARGER, entry mirrors from large.
+            Backward (retreat): exit zooms SMALLER, entry mirrors from small.
+            Exit direction is derived from `depthProgress` (which is at
+            ±threshold at transition start — captured by AnimatePresence
+            from the held element's last render). Entry direction reads
+            from `transitionDirection` state, which persists across the
+            transition. mode="wait" runs exit→entry sequentially. */}
+        <AnimatePresence
+          mode="wait"
+          // Reset camera depth only after the old wrapper finishes its
+          // exit animation. Doing it synchronously inside `report` would
+          // snap cards to base mid-fade.
+          onExitComplete={() => {
+            resetDepth(0);
+          }}
+        >
           <motion.div
+            animate={prefersReducedMotion ? { opacity: 1 } : VISIBLE}
             className="absolute inset-0"
-            exit={{
-              opacity: prefersReducedMotion ? 1 : 0,
-              // Subtle forward push — cards drift slightly toward the
-              // camera as they fade, matching the calm of the entry's
-              // opacity-only animation.
-              z: prefersReducedMotion ? 0 : 40,
-            }}
+            exit={resolveExitTarget({
+              depthProgress,
+              depthThreshold,
+              prefersReducedMotion: Boolean(prefersReducedMotion),
+            })}
+            initial={resolveInitialTarget({
+              prefersReducedMotion: Boolean(prefersReducedMotion),
+              transitionDirection,
+            })}
             key={pageIndex}
-            transition={{ duration: prefersReducedMotion ? 0 : FRAME_FADE_OUT_S }}
+            // The wrapper carries the camera zoom. `preserve-3d` lets the
+            // pan layer's perspective reach the cards. AnimatePresence
+            // freezes the held element's last render so the exit's
+            // starting transform comes from the at-threshold render.
+            // `will-change` promotes the wrapper to its own composited
+            // layer so the page-transition opacity/scale animation
+            // composites cleanly instead of repainting on each frame.
+            // `marginTop: -5vh` lifts the cards' optical center up so the
+            // default zoomed-out view sits comfortably in the viewport.
+            style={{
+              marginTop: "-5vh",
+              transformStyle: "preserve-3d",
+              willChange: "transform, opacity",
+              z: cameraZ,
+            }}
+            transition={{ duration: prefersReducedMotion ? 0 : TRANSITION_DURATION_S }}
           >
             {size.width > 0 &&
               size.height > 0 &&
               renderChunk.map((bookmark, index) => (
                 <CanvasItem
-                  cameraZ={cameraZ}
                   key={bookmark.id}
                   position={procPos(bookmark.id, index, renderChunk.length, tuning)}
                   staggerIndex={index}

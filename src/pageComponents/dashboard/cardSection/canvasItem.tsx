@@ -5,13 +5,11 @@ import { motion, useReducedMotion } from "motion/react";
 import type { CanvasPosition, CanvasTuning } from "./canvas-position";
 
 interface CanvasItemProps {
-  cameraZ: number;
   children: ReactNode;
   className?: string;
   position: CanvasPosition;
-  // 0-based position in the current page's render order. Used to
-  // stagger each card's fade-in so they pop in one after another
-  // instead of all at once.
+  // 0-based render-order index. Used to stagger each card's fade-in so
+  // they pop in one after another instead of all at once.
   staggerIndex?: number;
   tuning: CanvasTuning;
   // Live wrapper size — the canvas re-measures on mount and resize and
@@ -34,11 +32,11 @@ export const STAGGER_PER_CARD_S = 0.04;
 // Continuous z-depth gives size hierarchy; layered shadow + z-index give
 // elevation when cards overlap.
 //
-// The fade-in (with per-card stagger) lives here. Exit is handled by
-// the parent motion.div in canvasView, which fades the whole frame to
-// white before the next page mounts.
+// Per-card opacity stagger lives here. Motion only animates `opacity`,
+// so it leaves `style.transform` (with `var(--pan-x/-y)` parallax + depth
+// transforms) untouched — drag stays smooth. Exit is handled at the page
+// level by the wrapper motion.div in canvasView.
 export const CanvasItem = ({
-  cameraZ,
   children,
   className,
   position,
@@ -56,11 +54,13 @@ export const CanvasItem = ({
 
   const style = {
     "--card-speed": String(position.speed),
+    backfaceVisibility: "hidden",
     boxShadow: `0 ${shadowLift}px ${shadowBlur}px rgba(15, 23, 42, ${shadowOpacity}), 0 1px 3px rgba(15, 23, 42, 0.06)`,
     left: wrapperWidth / 2 + (position.xFrac - 0.5) * wrapperWidth * tuning.worldWidth,
     top: wrapperHeight / 2 + (position.yFrac - 0.5) * wrapperHeight * tuning.worldHeight,
-    transform: `translate(calc(var(--pan-x, 0px) * var(--card-speed, 1)), calc(var(--pan-y, 0px) * var(--card-speed, 1))) translate3d(-50%, -50%, ${position.z + cameraZ}px) scale(${depthScale})`,
+    transform: `translate(calc(var(--pan-x, 0px) * var(--card-speed, 1)), calc(var(--pan-y, 0px) * var(--card-speed, 1))) translate3d(-50%, -50%, ${position.z}px) scale(${depthScale})`,
     width: tuning.cardBaseWidth,
+    willChange: "transform",
     zIndex: Math.round(position.z) + 1,
   } as CSSProperties;
 
