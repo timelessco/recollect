@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
+import { useDialKit } from "dialkit";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import type { GestureSource } from "./use-canvas-gesture";
@@ -11,7 +12,7 @@ import { emitClientEvent } from "@/lib/api-helpers/axiom-client-events";
 import { useMiscellaneousStore } from "@/store/componentStore";
 import { PAGINATION_LIMIT } from "@/utils/constants";
 
-import { procPos } from "./canvas-position";
+import { CANVAS_DEFAULT_TUNING, procPos } from "./canvas-position";
 import { CanvasItem, STAGGER_PER_CARD_S } from "./canvasItem";
 import { BookmarkCardOverlay } from "./public-moodboard-virtualized";
 import { useCanvasGesture } from "./use-canvas-gesture";
@@ -44,6 +45,64 @@ function chunkBookmarks(list: SingleListData[]): SingleListData[][] {
 
 const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
   const prefersReducedMotion = useReducedMotion();
+  const canvasControls = useDialKit("Canvas View", {
+    depth: {
+      baseScale: [CANVAS_DEFAULT_TUNING.baseScale, 0.5, 1.5, 0.01],
+      cameraZoomZ: [CANVAS_DEFAULT_TUNING.cameraZoomZ, 0, 500, 1],
+      depthScaleBoost: [CANVAS_DEFAULT_TUNING.depthScaleBoost, -0.25, 0.8, 0.01],
+      pageTurnBuffer: [CANVAS_DEFAULT_TUNING.pageTurnBuffer, 0, 400, 1],
+      perspective: [CANVAS_DEFAULT_TUNING.perspective, 700, 2800, 10],
+      zSpread: [CANVAS_DEFAULT_TUNING.zSpread, 0, 800, 1],
+    },
+    input: {
+      lightboxWheelCooldownMs: [CANVAS_DEFAULT_TUNING.lightboxWheelCooldownMs, 0, 1500, 25],
+      panMaxX: [CANVAS_DEFAULT_TUNING.panMaxX, 0, 2, 0.01],
+      panMaxY: [CANVAS_DEFAULT_TUNING.panMaxY, 0, 2, 0.01],
+      scrollSensitivity: [CANVAS_DEFAULT_TUNING.scrollSensitivity, 0.1, 4, 0.05],
+    },
+    layout: {
+      cardBaseWidth: [CANVAS_DEFAULT_TUNING.cardBaseWidth, 140, 300, 1],
+      edgeMargin: [CANVAS_DEFAULT_TUNING.edgeMargin, 0, 0.24, 0.01],
+      worldHeight: [CANVAS_DEFAULT_TUNING.worldHeight, 0.9, 2.4, 0.01],
+      worldWidth: [CANVAS_DEFAULT_TUNING.worldWidth, 0.9, 2.6, 0.01],
+    },
+    placement: {
+      gridAspect: [CANVAS_DEFAULT_TUNING.gridAspect, 0.65, 2.4, 0.01],
+      jitterX: [CANVAS_DEFAULT_TUNING.jitterX, 0, 1, 0.01],
+      jitterY: [CANVAS_DEFAULT_TUNING.jitterY, 0, 1, 0.01],
+      parallaxMax: [CANVAS_DEFAULT_TUNING.parallaxMax, 0, 1.6, 0.01],
+      parallaxMin: [CANVAS_DEFAULT_TUNING.parallaxMin, 0, 1.6, 0.01],
+      ySkew: [CANVAS_DEFAULT_TUNING.ySkew, 0.35, 1.6, 0.01],
+    },
+  });
+  const tuning = {
+    baseScale: canvasControls.depth.baseScale,
+    cameraZoomZ: canvasControls.depth.cameraZoomZ,
+    cardBaseWidth: canvasControls.layout.cardBaseWidth,
+    depthScaleBoost: canvasControls.depth.depthScaleBoost,
+    edgeMargin: canvasControls.layout.edgeMargin,
+    gridAspect: canvasControls.placement.gridAspect,
+    jitterX: canvasControls.placement.jitterX,
+    jitterY: canvasControls.placement.jitterY,
+    lightboxWheelCooldownMs: canvasControls.input.lightboxWheelCooldownMs,
+    pageTurnBuffer: canvasControls.depth.pageTurnBuffer,
+    panMaxX: canvasControls.input.panMaxX,
+    panMaxY: canvasControls.input.panMaxY,
+    parallaxMax: Math.max(
+      canvasControls.placement.parallaxMax,
+      canvasControls.placement.parallaxMin,
+    ),
+    parallaxMin: Math.min(
+      canvasControls.placement.parallaxMin,
+      canvasControls.placement.parallaxMax,
+    ),
+    perspective: canvasControls.depth.perspective,
+    scrollSensitivity: canvasControls.input.scrollSensitivity,
+    worldHeight: canvasControls.layout.worldHeight,
+    worldWidth: canvasControls.layout.worldWidth,
+    ySkew: canvasControls.placement.ySkew,
+    zSpread: canvasControls.depth.zSpread,
+  };
 
   // Subscribes to the same React Query cache CardSection's parent already uses,
   // so this is a free read — no extra fetch.
@@ -62,6 +121,8 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
   // for resize so card positions stay anchored to viewport fractions.
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const [size, setSize] = useState({ height: 0, width: 0 });
+  const lightboxWheelResumeAtRef = useRef(0);
+  const wasLightboxOpenRef = useRef(false);
 
   // Keep the last non-empty chunk so a momentary empty page during a
   // prefetch race doesn't render an empty cross-fade target.
@@ -79,65 +140,52 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
 
   const advance = useCallback(
     (source: GestureSource) => {
-      let didAdvance = false;
-      let nextIndex = 0;
+      // Side effect lives inside the updater because React 18 queues
+      // updaters and runs them during the next render — closure variables
+      // mutated inside cannot be read synchronously after `setPageIndex`
+      // returns. Hoisting `fetchNextPage` outside silently breaks pagination.
+      // StrictMode-dev runs the updater twice; TanStack Query dedupes the
+      // second `fetchNextPage` call onto the in-flight promise.
       setPageIndex((prev) => {
         const isLastLoadedChunk = prev + 1 >= chunks.length;
         if (isLastLoadedChunk) {
-          if (hasNextPage) {
-            void fetchNextPage();
-            didAdvance = true;
-            nextIndex = prev + 1;
-            return nextIndex;
+          if (!hasNextPage) {
+            return prev;
           }
-          return prev;
+          void fetchNextPage();
         }
-        didAdvance = true;
-        nextIndex = prev + 1;
-        return nextIndex;
+        return prev + 1;
       });
-      if (didAdvance) {
-        emitClientEvent("canvas_page_flip", {
-          direction: "advance",
-          has_next_page: hasNextPage,
-          page_index: nextIndex,
-          source,
-        });
-      }
+      emitClientEvent("canvas_page_flip", {
+        direction: "advance",
+        has_next_page: hasNextPage,
+        source,
+      });
     },
     [chunks.length, fetchNextPage, hasNextPage],
   );
 
   const retreat = useCallback(
     (source: GestureSource) => {
-      let didRetreat = false;
-      let nextIndex = 0;
-      setPageIndex((prev) => {
-        if (prev === 0) {
-          return prev;
-        }
-        didRetreat = true;
-        nextIndex = prev - 1;
-        return nextIndex;
+      setPageIndex((prev) => Math.max(0, prev - 1));
+      emitClientEvent("canvas_page_flip", {
+        direction: "retreat",
+        has_next_page: hasNextPage,
+        source,
       });
-      if (didRetreat) {
-        emitClientEvent("canvas_page_flip", {
-          direction: "retreat",
-          has_next_page: hasNextPage,
-          page_index: nextIndex,
-          source,
-        });
-      }
     },
     [hasNextPage],
   );
 
-  // Prefetch optimization: when on the last loaded chunk and more is
-  // fetchable, eagerly fetch BEFORE the user crosses the threshold so
-  // the next page is ready when the cross-fade fires.
+  // Catch-up prefetch: when `pageIndex` sits at (or past) the last loaded
+  // chunk and more is fetchable, pull the next page. Bounded by `hasNextPage`
+  // flipping false at end-of-deck, so it does not cascade. Without this,
+  // a rapid double-advance during slow network leaves `pageIndex` ahead of
+  // `chunks.length` with no follow-up fetch — `advance`'s call dedupes onto
+  // the in-flight request, and once that one resolves nothing pulls the
+  // page after it.
   useEffect(() => {
-    const isOnLastLoadedChunk = pageIndex >= chunks.length - 1;
-    if (isOnLastLoadedChunk && hasNextPage) {
+    if (pageIndex >= chunks.length - 1 && hasNextPage) {
       void fetchNextPage();
     }
   }, [chunks.length, fetchNextPage, hasNextPage, pageIndex]);
@@ -150,19 +198,37 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
     PAGINATION_LIMIT * STAGGER_PER_CARD_S * 1000 +
     ENTER_DURATION_S * 1000 +
     200;
-  const { report, releaseLock, triggerAdvance, triggerRetreat } = useCanvasGesture({
-    onAdvance: advance,
-    onRetreat: retreat,
-    transitionLockMs: safetyLockMs,
-  });
+  const depthThreshold = Math.max(1, tuning.zSpread + tuning.pageTurnBuffer);
+  const { depthProgress, releaseLock, report, resetDepth, triggerAdvance, triggerRetreat } =
+    useCanvasGesture({
+      depthThreshold,
+      onAdvance: advance,
+      onRetreat: retreat,
+      scrollSensitivity: tuning.scrollSensitivity,
+      transitionLockMs: safetyLockMs,
+    });
+  const cameraProgress = Math.min(1, depthProgress / depthThreshold);
+  const cameraZ = cameraProgress * tuning.cameraZoomZ;
+
+  useEffect(() => {
+    resetDepth(0);
+  }, [firstBookmarkId, resetDepth]);
+
+  useEffect(() => {
+    if (wasLightboxOpenRef.current && !isLightboxOpen) {
+      resetDepth(0);
+      lightboxWheelResumeAtRef.current = performance.now() + tuning.lightboxWheelCooldownMs;
+    }
+    wasLightboxOpenRef.current = isLightboxOpen;
+  }, [isLightboxOpen, resetDepth, tuning.lightboxWheelCooldownMs]);
 
   // Pan layer sits outside AnimatePresence so its CSS-var-driven offset
   // survives page flips. Bounds at half the wrapper so at least half the
   // canvas stays in view at any pan extent.
   const { isDragging, panHandlers, panLayerRef } = useCanvasPan({
     disabled: isLightboxOpen,
-    maxX: size.width / 2,
-    maxY: size.height / 2,
+    maxX: size.width * tuning.panMaxX,
+    maxY: size.height * tuning.panMaxY,
   });
 
   // ResizeObserver — keeps card positions in sync with the wrapper
@@ -196,7 +262,8 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
       return noopCleanup;
     }
     const handleWheel = (event: WheelEvent) => {
-      if (isLightboxOpen) {
+      if (isLightboxOpen || performance.now() < lightboxWheelResumeAtRef.current) {
+        event.preventDefault();
         return;
       }
       event.preventDefault();
@@ -279,7 +346,11 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
       {/* Owns `--pan-x/y` (per-frame from useCanvasPan); cards consume them.
           `perspective` enables the page-flip exit's translateZ to render
           as actual depth — without it, `z` is a no-op. */}
-      <div className="absolute inset-0" ref={panLayerRef} style={{ perspective: "1500px" }}>
+      <div
+        className="absolute inset-0"
+        ref={panLayerRef}
+        style={{ perspective: tuning.perspective }}
+      >
         {/* Page transition: the wrapper motion.div fades the entire
             frame to white on exit; the cards inside each fade IN with a
             per-index stagger so they pop in one by one. mode="wait"
@@ -301,9 +372,11 @@ const CanvasView = ({ bookmarksList, renderCard }: CanvasViewProps) => {
               size.height > 0 &&
               renderChunk.map((bookmark, index) => (
                 <CanvasItem
+                  cameraZ={cameraZ}
                   key={bookmark.id}
-                  position={procPos(bookmark.id, index, renderChunk.length)}
+                  position={procPos(bookmark.id, index, renderChunk.length, tuning)}
                   staggerIndex={index}
+                  tuning={tuning}
                   wrapperHeight={size.height}
                   wrapperWidth={size.width}
                 >

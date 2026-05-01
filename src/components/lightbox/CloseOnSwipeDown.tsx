@@ -74,6 +74,8 @@ export const PullEffect = ({ enabled }: { enabled?: boolean }): null => {
     // Subscribe to wheel events from the lightbox (Desktop: wheel/trackpad)
     const unsubscribeWheel = subscribeSensors("onWheel", (event) => {
       const element = event.currentTarget;
+      event.preventDefault();
+      event.stopPropagation();
 
       // --- Ignore horizontal swipes (left/right) ---
       // If horizontal movement is stronger than vertical, do nothing

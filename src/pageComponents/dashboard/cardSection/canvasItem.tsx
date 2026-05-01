@@ -2,11 +2,10 @@ import type { CSSProperties, ReactNode } from "react";
 
 import { motion, useReducedMotion } from "motion/react";
 
-import type { CanvasPosition, DepthPlane } from "./canvas-position";
-
-import { PLANE_SCALE } from "./canvas-position";
+import type { CanvasPosition, CanvasTuning } from "./canvas-position";
 
 interface CanvasItemProps {
+  cameraZ: number;
   children: ReactNode;
   className?: string;
   position: CanvasPosition;
@@ -14,17 +13,13 @@ interface CanvasItemProps {
   // stagger each card's fade-in so they pop in one after another
   // instead of all at once.
   staggerIndex?: number;
+  tuning: CanvasTuning;
   // Live wrapper size — the canvas re-measures on mount and resize and
   // forwards the latest values so cards stay correctly placed when the
   // viewport changes.
   wrapperHeight: number;
   wrapperWidth: number;
 }
-
-// BookmarkCard's image is `w-full` so the whole card scales
-// proportionally with this width — change the number, the aspect ratio
-// is preserved.
-const CARD_BASE_WIDTH = 180;
 
 // Per-card fade-in duration once the stagger delay elapses.
 const ENTER_DURATION_S = 0.32;
@@ -33,46 +28,40 @@ const ENTER_DURATION_S = 0.32;
 // read as "one by one".
 export const STAGGER_PER_CARD_S = 0.04;
 
-const PLANE_SHADOW: Record<DepthPlane, string> = {
-  far: "0 4px 10px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04)",
-  near: "0 18px 36px rgba(15, 23, 42, 0.18), 0 6px 12px rgba(15, 23, 42, 0.10)",
-};
-
-const PLANE_Z_INDEX: Record<DepthPlane, number> = {
-  far: 1,
-  near: 10,
-};
-
 // Positions a card absolutely on the canvas surface. Each card is
 // centered on (xFrac × wrapperWidth, yFrac × wrapperHeight) via
 // translate(-50%, -50%) so its actual size doesn't shift the anchor.
-// Per-plane scale gives size hierarchy; layered shadow + z-index give
-// elevation when cards happen to overlap.
+// Continuous z-depth gives size hierarchy; layered shadow + z-index give
+// elevation when cards overlap.
 //
 // The fade-in (with per-card stagger) lives here. Exit is handled by
 // the parent motion.div in canvasView, which fades the whole frame to
 // white before the next page mounts.
 export const CanvasItem = ({
+  cameraZ,
   children,
   className,
   position,
   staggerIndex = 0,
+  tuning,
   wrapperHeight,
   wrapperWidth,
 }: CanvasItemProps) => {
   const prefersReducedMotion = useReducedMotion();
   const wrapperClass = className ? `absolute ${className}` : "absolute";
+  const depthScale = tuning.baseScale + position.depth * tuning.depthScaleBoost;
+  const shadowOpacity = 0.06 + position.depth * 0.14;
+  const shadowBlur = 14 + position.depth * 30;
+  const shadowLift = 6 + position.depth * 18;
 
   const style = {
-    "--card-scale": String(PLANE_SCALE[position.plane]),
     "--card-speed": String(position.speed),
-    boxShadow: PLANE_SHADOW[position.plane],
-    left: position.xFrac * wrapperWidth,
-    top: position.yFrac * wrapperHeight,
-    transform:
-      "translate(calc(var(--pan-x, 0px) * var(--card-speed, 1)), calc(var(--pan-y, 0px) * var(--card-speed, 1))) translate(-50%, -50%) scale(var(--card-scale, 1))",
-    width: CARD_BASE_WIDTH,
-    zIndex: PLANE_Z_INDEX[position.plane],
+    boxShadow: `0 ${shadowLift}px ${shadowBlur}px rgba(15, 23, 42, ${shadowOpacity}), 0 1px 3px rgba(15, 23, 42, 0.06)`,
+    left: wrapperWidth / 2 + (position.xFrac - 0.5) * wrapperWidth * tuning.worldWidth,
+    top: wrapperHeight / 2 + (position.yFrac - 0.5) * wrapperHeight * tuning.worldHeight,
+    transform: `translate(calc(var(--pan-x, 0px) * var(--card-speed, 1)), calc(var(--pan-y, 0px) * var(--card-speed, 1))) translate3d(-50%, -50%, ${position.z + cameraZ}px) scale(${depthScale})`,
+    width: tuning.cardBaseWidth,
+    zIndex: Math.round(position.z) + 1,
   } as CSSProperties;
 
   return (

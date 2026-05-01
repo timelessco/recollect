@@ -104,6 +104,7 @@
     "crypto-js": "4.2.0",
     "culori": "4.0.2",
     "date-fns": "2.29.3",
+    "dialkit": "1.2.0",
     "ensure-error": "5.0.0",
     "image-size": "2.0.2",
     "immer": "11.1.4",

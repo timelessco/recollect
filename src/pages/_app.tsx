@@ -1,7 +1,9 @@
 import "../styles/globals.css";
+import "dialkit/styles.css";
 
 import type { NextPage } from "next";
 import type { AppProps } from "next/app";
+import dynamic from "next/dynamic";
 import Head from "next/head";
 import Router from "next/router";
 import { useEffect, useState } from "react";
@@ -22,6 +24,14 @@ import { ToastSetup } from "@/components/ui/recollect/toast";
 import { emitRouteChange } from "@/lib/api-helpers/axiom-client-events";
 
 import { getBaseUrl } from "../utils/constants";
+
+const DialRoot = dynamic(
+  async () => {
+    const mod = await import("dialkit");
+    return mod.DialRoot;
+  },
+  { ssr: false },
+);
 
 export type NextPageWithLayout<P = Record<string, unknown>> = NextPage<P> & {
   getLayout?: (page: ReactElement, pageProps: P) => ReactElement;
@@ -115,6 +125,7 @@ const MyApp = ({
         <ReactQueryDevtools />
         <TailwindIndicator />
         <MutationIndicator />
+        {process.env.NODE_ENV !== "production" && <DialRoot position="bottom-right" />}
       </QueryClientProvider>
     </ThemeProvider>
   );
