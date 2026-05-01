@@ -8,25 +8,25 @@ export const v2FetchBookmarksDiscoverableSupplement = {
     503: { description: "Database error" },
   },
   description:
-    "Returns a paginated list of all bookmarks marked as discoverable across all users. No authentication required — logged-in and logged-out callers receive identical responses. Results are ordered by `make_discoverable` timestamp ascending. Page size is fixed at the server's `PAGINATION_LIMIT` (25 items).",
+    "Returns a paginated list of all bookmarks marked as discoverable across all users. No authentication required — logged-in and logged-out callers receive identical responses. Results are ordered by `make_discoverable` timestamp ascending. Page size is fixed at the server's `PAGINATION_LIMIT` (24 items).",
   method: "get",
   parameterExamples: {
     page: {
       "beyond-end": {
         description:
-          "Send `?page=10` when there are fewer than 250 discoverable bookmarks — returns an empty array.",
+          "Send `?page=10` when there are fewer than 240 discoverable bookmarks — returns an empty array.",
         summary: "Page beyond end",
         value: "10",
       },
       "first-page": {
         description:
-          "Send `?page=0` — returns first PAGINATION_LIMIT (25) discoverable bookmarks ordered by make_discoverable ascending.",
+          "Send `?page=0` — returns first PAGINATION_LIMIT (24) discoverable bookmarks ordered by make_discoverable ascending.",
         summary: "First page (full)",
         value: "0",
       },
       "partial-page": {
         description:
-          "Send `?page=1` — returns the tail of the discoverable feed (fewer than 25 items when fewer bookmarks remain).",
+          "Send `?page=1` — returns the tail of the discoverable feed (fewer than 24 items when fewer bookmarks remain).",
         summary: "Partial page",
         value: "1",
       },
@@ -65,7 +65,7 @@ export const v2FetchBookmarksDiscoverableSupplement = {
     },
     "happy-path": {
       description:
-        "Send `?page=0` — returns up to 25 discoverable bookmarks. Public feed: identical response for logged-in and logged-out callers. Nullable fields (title, description, screenshot, sort_index, trash) may be null per row.",
+        "Send `?page=0` — returns up to 24 discoverable bookmarks. Public feed: identical response for logged-in and logged-out callers. Nullable fields (title, description, screenshot, sort_index, trash) may be null per row.",
       summary: "Discoverable feed (first page)",
       value: [
         {

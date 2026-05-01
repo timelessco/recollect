@@ -39,9 +39,9 @@ export const v2FetchBookmarksDataSupplement = {
         value: "0",
       },
       "second-page": {
-        description: "Send `?from=25` — returns the second page (offset 25).",
+        description: "Send `?from=24` — returns the second page (offset 24).",
         summary: "Second page",
-        value: "25",
+        value: "24",
       },
     },
     sort_by: {

@@ -66,7 +66,7 @@ export const NEXT_API_URL = `/api`;
 // URL helper functions
 export const PREVIEW_PATH = "/preview";
 
-export const PAGINATION_LIMIT = 25;
+export const PAGINATION_LIMIT = 24;
 
 // bookmark api
 export const ADD_REMAINING_BOOKMARK_API = "/bookmark/add-remaining-bookmark-data";
