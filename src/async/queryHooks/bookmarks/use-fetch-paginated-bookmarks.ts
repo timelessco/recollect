@@ -54,7 +54,8 @@ export default function useFetchPaginatedBookmarks(
         })
         .json<SingleListData[]>(),
     initialPageParam: 0,
-    getNextPageParam: (_lastPage, pages) => pages.length * PAGINATION_LIMIT,
+    getNextPageParam: (lastPage, pages) =>
+      !lastPage || lastPage.length < PAGINATION_LIMIT ? undefined : pages.length * PAGINATION_LIMIT,
     queryKey: [BOOKMARKS_KEY, session?.user?.id, CATEGORY_ID, sortBy],
   });
 
