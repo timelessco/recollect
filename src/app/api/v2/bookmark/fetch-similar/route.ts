@@ -99,8 +99,14 @@ export const GET = createAxiomRouteHandler(
 
       setPayload(ctx, { similar_count: scored.length, empty_result: false });
 
-      const scoreById = new Map(scored.map((row) => [row.id, row.similarity_score]));
-      const bookmarkIds = scored.map((row) => row.id);
+      // Prepend the source bookmark so it appears first on the similar page —
+      // the user compares neighbors against the original on the same surface.
+      // Self-cosine is 1.0 → score 100 under the RPC's [0, 100] clamp.
+      const scoreById = new Map<number, number>([
+        [bookmark_id, 100],
+        ...scored.map((row) => [row.id, row.similarity_score] as const),
+      ]);
+      const bookmarkIds = [bookmark_id, ...scored.map((row) => row.id)];
 
       const { data: bookmarkData, error: bookmarkError } = await supabase
         .from(MAIN_TABLE_NAME)
