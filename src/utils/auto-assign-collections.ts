@@ -1,9 +1,10 @@
-import * as Sentry from "@sentry/nextjs";
-
 import type { UserCollection } from "@/async/ai/schemas/image-analysis-schema";
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/api-helpers/axiom";
+import { extractErrorFields } from "@/lib/api-helpers/errors";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { createServerServiceClient } from "@/lib/supabase/service";
 import { CATEGORIES_TABLE_NAME, PROFILES, UNCATEGORIZED_CATEGORY_ID } from "@/utils/constants";
 
@@ -34,7 +35,7 @@ export async function fetchUserCollections(
         .from(PROFILES)
         .select("ai_features_toggle")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
       const aiFeatures =
         profileData?.ai_features_toggle !== null &&
@@ -63,10 +64,11 @@ export async function fetchUserCollections(
         })) ?? []
     );
   } catch (error) {
-    console.error("[auto-assign] Failed to fetch categories:", error);
-    Sentry.captureException(error, {
-      tags: { operation: "fetch_categories_for_auto_assign", userId },
+    logger.warn("fetch_categories_for_auto_assign_failed", {
+      user_id: userId,
+      ...extractErrorFields(error),
     });
+    setPayload(getServerContext(), { fetch_categories_for_auto_assign_failed: true });
     return [];
   }
 }
@@ -80,8 +82,8 @@ export interface AutoAssignCollectionsProps {
 
 /**
  * Auto-assigns bookmark to matched collections if it's still uncategorized.
- * Uses service client to bypass RLS. Non-critical — failures are logged to Sentry
- * but never thrown.
+ * Uses service client to bypass RLS. Non-critical — failures warn to Axiom
+ * but never throw.
  */
 export async function autoAssignCollections(props: AutoAssignCollectionsProps): Promise<void> {
   const { bookmarkId, matchedCollectionIds, route, userId } = props;
@@ -102,16 +104,14 @@ export async function autoAssignCollections(props: AutoAssignCollectionsProps): 
     if (error) {
       throw error;
     }
-
-    console.log(`[${route}] Auto-assigned collections:`, {
-      bookmarkId,
-      collectionIds: matchedCollectionIds,
-    });
   } catch (error) {
-    console.error(`[${route}] Auto-assign collections failed:`, error);
-    Sentry.captureException(error, {
-      extra: { bookmarkId, matchedCollectionIds },
-      tags: { operation: "auto_assign_collections", userId },
+    logger.warn("auto_assign_collections_failed", {
+      user_id: userId,
+      bookmark_id: bookmarkId,
+      matched_collection_count: matchedCollectionIds.length,
+      route,
+      ...extractErrorFields(error),
     });
+    setPayload(getServerContext(), { auto_assign_collections_failed: true });
   }
 }
