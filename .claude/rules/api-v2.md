@@ -109,7 +109,7 @@ setPayload(ctx, { profile_updated: true });
 - No `console.log`/`console.warn`/`console.error` in handler body
 - No direct `logger.info()` calls in the handler body — business context flows via `ctx.fields` + `setPayload` only. Direct `logger.warn/error` is only sanctioned inside `after()` (see pitfall #23 — ALS is gone there).
 - `ctx.user_id` is auto-set by `withAuth`; handlers additionally set `ctx.fields.user_id` for explicit wide-event inclusion
-- Non-blocking errors: `setPayload(ctx, { junction_error: err.message, junction_error_code: err.code })` instead of throwing
+- Non-blocking errors: `setPayload(ctx, { junction_error: err.message, junction_error_code: err.code })` instead of throwing. **Shared utilities also called from v1/Pages/`after()` must additionally emit `logger.warn`/`logger.error`** — `setPayload` is no-op outside ALS and would silently swallow the failure in those callers. See `telemetry.md § Axiom logger by context → Shared utilities`.
 - Auto-included per request: `commit` (VERCEL_GIT_COMMIT_SHA), `region` (VERCEL_REGION)
 - Flushing: `after(() => logger.flush())` — deferred, non-blocking
 
@@ -160,7 +160,7 @@ after(async () => {
 
 ### Helper Functions
 
-- **Inline helpers** (server-safe, avoid client module imports): return `null` on failure, call `setPayload(getServerContext(), { <op>_error: err.message })` for non-blocking error context
+- **Inline helpers** (server-safe, avoid client module imports): return `null` on failure, call `setPayload(getServerContext(), { <op>_error: err.message })` for non-blocking error context. If the helper is also called from non-v2 callers (v1 Pages, `after()` blocks, raw lib utilities), pair with `logger.warn`/`logger.error` — `setPayload` no-ops outside ALS
 - **Imported helpers**: throw `RecollectApiError` directly — propagates to inner-layer catch
 - **Closures inside handler**: capture `supabase`/`userId` from enclosing scope
 
