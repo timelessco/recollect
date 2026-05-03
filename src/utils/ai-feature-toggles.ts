@@ -1,9 +1,10 @@
-import * as Sentry from "@sentry/nextjs";
-
 import type { AiFeaturesToggle } from "@/types/apiTypes";
 import type { Database } from "@/types/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/api-helpers/axiom";
+import { extractErrorFields } from "@/lib/api-helpers/errors";
+import { getServerContext, setPayload } from "@/lib/api-helpers/server-context";
 import { PROFILES } from "@/utils/constants";
 
 export interface AiToggles {
@@ -29,15 +30,16 @@ export async function fetchAiToggles(props: FetchAiTogglesProps): Promise<AiTogg
     .from(PROFILES)
     .select("ai_features_toggle")
     .eq("id", userId)
-    .single();
+    .maybeSingle();
 
   if (error) {
-    console.error("[fetchAiToggles] Failed to fetch toggles:", {
-      error: error.message,
-      userId,
+    logger.error("fetch_ai_toggles_failed", {
+      user_id: userId,
+      ...extractErrorFields(error),
     });
-    Sentry.captureException(error, {
-      tags: { operation: "fetch_ai_toggles", userId },
+    setPayload(getServerContext(), {
+      fetch_ai_toggles_error: error.message,
+      fetch_ai_toggles_error_code: error.code,
     });
     return {
       aiSummary: false,
